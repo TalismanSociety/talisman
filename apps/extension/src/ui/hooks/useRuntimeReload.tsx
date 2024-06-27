@@ -2,10 +2,9 @@ import { db as balancesDb } from "@talismn/balances"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useState } from "react"
-import Browser from "webextension-polyfill"
 
 export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
-  const [hasRuntimeReloadFn] = useState(() => typeof Browser?.runtime?.reload === "function")
+  const [hasRuntimeReloadFn] = useState(() => typeof chrome?.runtime?.reload === "function")
   const runtimeReload = useCallback(async () => {
     sendAnalyticsEvent({
       ...analyticsPage,
@@ -16,7 +15,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
     // these 2 dbs do not contain any user data, they will be safely recreated on next startup
     await Promise.allSettled([balancesDb.delete(), connectionMetaDb.delete()])
 
-    Browser.runtime.reload()
+    chrome.runtime.reload()
   }, [analyticsPage])
 
   return [hasRuntimeReloadFn, runtimeReload] as const

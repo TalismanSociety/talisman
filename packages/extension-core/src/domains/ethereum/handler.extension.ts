@@ -95,7 +95,7 @@ export class EthHandler extends ExtensionHandler {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
       assert(client, "Missing client for chain " + ethChainId)
 
-      const password = this.stores.password.getPassword()
+      const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
       const privateKey = getPrivateKey(pair, password, "hex")
@@ -181,7 +181,7 @@ export class EthHandler extends ExtensionHandler {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = this.stores.password.getPassword()
+      const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
       const privateKey = getPrivateKey(pair, password, "hex")
       const account = privateKeyToAccount(privateKey)
@@ -257,7 +257,7 @@ export class EthHandler extends ExtensionHandler {
     const { method, request, reject, resolve, url } = queued
 
     const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const pw = this.stores.password.getPassword()
+      const pw = await this.stores.password.getPassword()
       assert(pw, "Unauthorised")
       const privateKey = getPrivateKey(pair, pw, "buffer")
       let signature: string

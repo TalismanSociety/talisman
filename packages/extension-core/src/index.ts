@@ -1,7 +1,4 @@
-export { initSentry } from "./config/sentry"
 export { initPosthog } from "./config/posthog"
-
-export { chaindataProvider } from "./rpcs/chaindata"
 
 export { db, MIGRATION_ERROR_MSG } from "./db"
 
@@ -15,6 +12,8 @@ export {
   ERRORS_STORE_INITIAL_DATA,
   type ErrorsStoreData,
   errorsStore,
+  trackIndexedDbErrorExtras,
+  triggerIndexedDbUnavailablePopup,
 } from "./domains/app/store.errors"
 
 export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"
@@ -74,7 +73,5 @@ export { isEthereumRequest } from "./types/requests"
 export * from "./libs/requests/types"
 
 export * from "./util/abi"
-export { getTypeRegistry } from "./util/getTypeRegistry"
-export { getMetadataDef, getMetadataRpcFromDef, getMetadataFromDef } from "./util/getMetadataDef"
 export { isJsonPayload, isRawPayload } from "./util/isJsonPayload"
 export { roundToFirstInteger } from "./util/roundToFirstInteger"

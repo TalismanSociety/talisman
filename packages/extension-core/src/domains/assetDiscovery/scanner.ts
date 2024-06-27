@@ -27,6 +27,8 @@ const IGNORED_COINGECKO_IDS = [
   "position-token", // BSC - POSI
   "tangyuan", // BSC - TangYuan
   "malou", // BSC - NEVER
+
+  "outter-finance", // BSC - OUT (temporary workaround, error breaks scans with Manifest V3)
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4

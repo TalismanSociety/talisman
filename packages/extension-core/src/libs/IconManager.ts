@@ -1,5 +1,3 @@
-import Browser from "webextension-polyfill"
-
 import { requestStore } from "./requests/store"
 
 class IconManager {
@@ -29,7 +27,7 @@ class IconManager {
       ? "Decrypt"
       : ""
 
-    Browser.browserAction.setBadgeText({ text })
+    chrome.action.setBadgeText({ text })
   }
 }
 

@@ -13,13 +13,11 @@
   "dependencies": {
     "@polkadot/util": "12.6.2",
     "@polkadot/util-crypto": "12.6.2",
-    "@sentry/browser": "7.92.0",
-    "@sentry/integrations": "7.92.0",
-    "@sentry/react": "7.92.0",
-    "@sentry/tracing": "7.92.0",
+    "@sentry/browser": "8.8.0",
+    "@sentry/react": "8.8.0",
     "@talismn/util": "workspace:*",
     "anylogger-loglevel": "^1.0.0",
-    "posthog-js": "^1.96.1",
+    "posthog-js": "^1.139.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {

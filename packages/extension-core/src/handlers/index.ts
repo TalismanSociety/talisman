@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
-import { Runtime } from "webextension-polyfill"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { MessageTypes, TransportRequestMessage } from "../types"
@@ -43,9 +42,14 @@ const formatFrom = (source: string) => {
   }
 }
 
+const PORT_DISCONNECTED_MESSAGES = [
+  "Attempting to use a disconnected port object",
+  "Attempt to postMessage on disconnected port",
+]
+
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
-  port: Runtime.Port,
+  port: chrome.runtime.Port,
   extensionPortName = PORT_EXTENSION
 ): void => {
   const { id, message, request } = data
@@ -60,14 +64,14 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // eslint-disable-next-line no-console
   log.debug(`[${port.name} REQ] ${source}`, { request: shouldLog ? request : OBFUSCATED_PAYLOAD })
 
-  const safePostMessage = (port: Runtime.Port | undefined, message: unknown): void => {
+  const safePostMessage = (port: chrome.runtime.Port | undefined, message: unknown): void => {
     // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
     if (!port) return
 
     try {
       port.postMessage(message)
     } catch (e) {
-      if (e instanceof Error && e.message === "Attempting to use a disconnected port object") {
+      if (e instanceof Error && PORT_DISCONNECTED_MESSAGES.includes(e.message)) {
         // this means that the user has done something like close the tab
         port.disconnect()
         return
@@ -101,10 +105,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
     .catch((error) => {
       log.error(`[${port.name} ERR] ${source}:: ${error.message}`, { error })
 
-      if (
-        error instanceof Error &&
-        error.message === "Attempting to use a disconnected port object"
-      ) {
+      if (error instanceof Error && PORT_DISCONNECTED_MESSAGES.includes(error.message)) {
         // this means that the user has done something like close the tab
         port.disconnect()
         return

@@ -1,14 +1,13 @@
 import { sleep } from "@talismn/util"
 import { IS_FIREFOX } from "extension-shared"
 import { log } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { appStore } from "../domains/app/store.app"
 import { RequestRoute } from "../domains/app/types"
 
-const WINDOW_OPTS: Browser.Windows.CreateCreateDataType & { width: number; height: number } = {
+const WINDOW_OPTS: chrome.windows.CreateData & { width: number; height: number } = {
   type: "popup",
-  url: Browser.runtime.getURL("popup.html"),
+  url: chrome.runtime.getURL("popup.html"),
   width: 400,
   height: 600,
 }
@@ -26,15 +25,15 @@ class WindowManager {
     return Promise.race<void>([
       //promise that waits for page to be loaded
       new Promise((resolve) => {
-        const handler = (id: number, changeInfo: Browser.Tabs.OnUpdatedChangeInfoType) => {
+        const handler = (id: number, changeInfo: chrome.tabs.TabChangeInfo) => {
           if (id !== tabId) return
           if (changeInfo.status === "complete") {
             // dispose of the listener to prevent a memory leak
-            Browser.tabs.onUpdated.removeListener(handler)
+            chrome.tabs.onUpdated.removeListener(handler)
             resolve()
           }
         }
-        Browser.tabs.onUpdated.addListener(handler)
+        chrome.tabs.onUpdated.addListener(handler)
       }),
       // promise for the timeout
       sleep(3000),
@@ -56,22 +55,22 @@ class WindowManager {
     url: string
     baseUrl?: string
     shouldFocus?: boolean
-  }): Promise<Browser.Tabs.Tab> {
+  }): Promise<chrome.tabs.Tab> {
     const queryUrl = baseUrl ?? url
 
-    let [tab] = await Browser.tabs.query({ url: queryUrl })
+    let [tab] = await chrome.tabs.query({ url: queryUrl })
 
-    if (tab) {
-      const options: Browser.Tabs.UpdateUpdatePropertiesType = { active: shouldFocus }
+    if (tab?.id) {
+      const options: chrome.tabs.UpdateProperties = { active: shouldFocus }
       if (url !== tab.url) options.url = url
-      const { windowId } = await Browser.tabs.update(tab.id, options)
+      const { windowId } = await chrome.tabs.update(tab.id, options)
 
       if (shouldFocus && windowId) {
-        const { focused } = await Browser.windows.get(windowId)
-        if (!focused) await Browser.windows.update(windowId, { focused: true })
+        const { focused } = await chrome.windows.get(windowId)
+        if (!focused) await chrome.windows.update(windowId, { focused: true })
       }
     } else {
-      tab = await Browser.tabs.create({ url })
+      tab = await chrome.tabs.create({ url })
     }
 
     // wait for page to be loaded if it isn't
@@ -82,7 +81,7 @@ class WindowManager {
   public async openOnboarding(route?: string) {
     if (this.#onboardingTabOpening) return
     this.#onboardingTabOpening = true
-    const baseUrl = Browser.runtime.getURL(`onboarding.html`)
+    const baseUrl = chrome.runtime.getURL(`onboarding.html`)
 
     const onboarded = await appStore.getIsOnboarded()
 
@@ -95,7 +94,7 @@ class WindowManager {
   }
 
   public async openDashboard({ route }: RequestRoute) {
-    const baseUrl = Browser.runtime.getURL("dashboard.html")
+    const baseUrl = chrome.runtime.getURL("dashboard.html")
 
     await this.openTabOnce({ url: `${baseUrl}#${route}`, baseUrl })
 
@@ -104,16 +103,16 @@ class WindowManager {
 
   async popupClose(id?: number) {
     if (id) {
-      await Browser.windows.remove(id)
+      await chrome.windows.remove(id)
       this.#windows = this.#windows.filter((wid) => wid !== id)
     } else {
-      await Promise.all(this.#windows.map((wid) => Browser.windows.remove(wid)))
+      await Promise.all(this.#windows.map((wid) => chrome.windows.remove(wid)))
       this.#windows = []
     }
   }
 
   async popupOpen(argument?: string, onClose?: () => void) {
-    const currWindow = await Browser.windows.getLastFocused()
+    const currWindow = await chrome.windows.getLastFocused()
     const [widthDelta, heightDelta] = await appStore.get("popupSizeDelta")
 
     const { left, top } = {
@@ -123,23 +122,23 @@ class WindowManager {
         500,
     }
 
-    const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
+    const popupCreateArgs: chrome.windows.CreateData = {
       ...WINDOW_OPTS,
-      url: Browser.runtime.getURL(`popup.html${argument ?? ""}`),
+      url: chrome.runtime.getURL(`popup.html${argument ?? ""}`),
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,
       height: WINDOW_OPTS.height + heightDelta,
     }
 
-    let popup: Browser.Windows.Window
+    let popup: chrome.windows.Window
     try {
-      popup = await Browser.windows.create(popupCreateArgs)
+      popup = await chrome.windows.create(popupCreateArgs)
     } catch (err) {
       log.error("Failed to open popup", err)
 
       // retry with default size, as an invalid size could be the source of the error
-      popup = await Browser.windows.create({
+      popup = await chrome.windows.create({
         ...popupCreateArgs,
         width: WINDOW_OPTS.width,
         height: WINDOW_OPTS.height,
@@ -150,12 +149,12 @@ class WindowManager {
       this.#windows.push(popup.id || 0)
       // firefox compatibility (cannot be set at creation)
       if (IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
-        await Browser.windows.update(popup.id, { left, top })
+        await chrome.windows.update(popup.id, { left, top })
       }
     }
 
     if (onClose) {
-      Browser.windows.onRemoved.addListener((id) => {
+      chrome.windows.onRemoved.addListener((id) => {
         if (id === popup.id) {
           this.#windows = this.#windows.filter((wid) => wid !== id)
           onClose()

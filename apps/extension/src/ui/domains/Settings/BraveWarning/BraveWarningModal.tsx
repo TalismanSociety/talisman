@@ -4,7 +4,6 @@ import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Toggle } from "talisman-ui"
-import Browser from "webextension-polyfill"
 
 type BraveWarningModalProps = {
   className?: string
@@ -47,7 +46,7 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
       <Button
         primary
         onClick={() =>
-          Browser.tabs.create({
+          chrome.tabs.create({
             url: "brave://flags/#restrict-websockets-pool",
             active: true,
           })

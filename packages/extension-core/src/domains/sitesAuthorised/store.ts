@@ -1,6 +1,5 @@
 import { assert } from "@polkadot/util"
 import { convertAddress } from "@talismn/util"
-import Browser from "webextension-polyfill"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
 import { isTalismanHostname } from "../../util/isTalismanHostname"
@@ -22,7 +21,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     // save them to the new SitesAuthorisationStore
     // this code can be removed at some point after Beta launch when we're confident
     // all alpha users have upgraded
-    Browser.storage.local.get(OLD_AUTH_URLS_KEY).then(async (result) => {
+    chrome.storage.local.get(OLD_AUTH_URLS_KEY).then(async (result) => {
       // test if migration required
       if (!result) return
       if (Object.keys(await this.get()).length !== 0) return
@@ -32,7 +31,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
       this.set(previousData)
 
       // clear data from previous store
-      Browser.storage.local.remove(OLD_AUTH_URLS_KEY)
+      chrome.storage.local.remove(OLD_AUTH_URLS_KEY)
     })
   }
 

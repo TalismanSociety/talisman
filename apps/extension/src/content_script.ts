@@ -5,14 +5,25 @@
 
 import { PORT_CONTENT } from "@extension/shared"
 import type { Message } from "@polkadot/extension-base/types"
-import Browser from "webextension-polyfill"
 
 // connect to the extension
-const port = Browser.runtime.connect({ name: PORT_CONTENT })
-// send any messages from the extension back to the page
-port.onMessage.addListener((data): void => {
+const port = chrome.runtime.connect({ name: PORT_CONTENT })
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const messageHandler = (data: any) => {
   window.postMessage({ ...data, origin: "talisman-content" }, window.location.toString())
-})
+}
+
+// send any messages from the extension back to the page
+port.onMessage.addListener(messageHandler)
+
+// handle port disconnection
+const disconnectHandler = () => {
+  port.onMessage.removeListener(messageHandler)
+  port.onDisconnect.removeListener(disconnectHandler)
+}
+
+port.onDisconnect.addListener(disconnectHandler)
 
 // all messages from the page, pass them to the extension
 window.addEventListener("message", ({ data, source }: Message): void => {
@@ -27,7 +38,7 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 
 // inject script that will run in page context, content inlined for instant execution
 const script = document.createElement("script")
-script.textContent = "#TALISMAN_PAGE_SCRIPT#"
+script.src = chrome.runtime.getURL("page.js")
 
 // inject before head element so that it executes before everything else
 const parent = document?.head || document?.documentElement

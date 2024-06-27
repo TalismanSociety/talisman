@@ -4,7 +4,6 @@ import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { addTrailingSlash, encodeAnyAddress } from "@talismn/util"
 import { TEST } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -241,7 +240,7 @@ export default class SigningHandler extends ExtensionHandler {
     // users will most likely stay on Signet anyway to review the pending tx
     // so the popup is not needed here and can be closed
     windowManager.popupClose()
-    await Browser.tabs.create({
+    await chrome.tabs.create({
       url: `${addTrailingSlash(queued.account.signetUrl)}sign?${params.toString()}`,
       active: true,
     })

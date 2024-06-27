@@ -1,5 +1,4 @@
 import { Blake2b as NosimdBlake2b, Xxhash as NosimdXxhash } from "./nosimd"
-import { Blake2b as SimdBlake2b, Xxhash as SimdXxhash } from "./simd"
 
 const testData = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 const expectedTestDataHashes = {
@@ -14,20 +13,6 @@ const expectedTestDataHashes = {
 }
 
 describe("hashers", () => {
-  test("simd variants have expected outputs", () => {
-    const { simd } = getHashers()
-
-    Object.values(simd).forEach((hasher) => hasher.update(testData))
-
-    expect(u8aToHex(simd.blake2_64.digest())).toEqual(expectedTestDataHashes.blake2_64)
-    expect(u8aToHex(simd.blake2_128.digest())).toEqual(expectedTestDataHashes.blake2_128)
-    expect(u8aToHex(simd.blake2_256.digest())).toEqual(expectedTestDataHashes.blake2_256)
-    expect(u8aToHex(simd.blake2_512.digest())).toEqual(expectedTestDataHashes.blake2_512)
-    expect(u8aToHex(simd.twox128.digest())).toEqual(expectedTestDataHashes.twox128)
-    expect(u8aToHex(simd.twox256.digest())).toEqual(expectedTestDataHashes.twox256)
-    expect(u8aToHex(simd.twox64.digest())).toEqual(expectedTestDataHashes.twox64)
-  })
-
   test("nosimd variants have expected outputs", () => {
     const { nosimd } = getHashers()
 
@@ -76,15 +61,6 @@ describe("hashers", () => {
 })
 
 const getHashers = () => ({
-  simd: {
-    blake2_64: new SimdBlake2b(64 / 8),
-    blake2_128: new SimdBlake2b(128 / 8),
-    blake2_256: new SimdBlake2b(256 / 8),
-    blake2_512: new SimdBlake2b(512 / 8),
-    twox128: new SimdXxhash(128 / 64),
-    twox256: new SimdXxhash(256 / 64),
-    twox64: new SimdXxhash(64 / 64),
-  },
   nosimd: {
     blake2_64: new NosimdBlake2b(64 / 8),
     blake2_128: new NosimdBlake2b(128 / 8),

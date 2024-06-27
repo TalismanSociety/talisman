@@ -3,16 +3,17 @@
 const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
 const path = require("path")
-const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
-const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
+// const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
-const { EvalSourceMapDevToolPlugin } = require("webpack")
-const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
-const { getManifestVersionName } = require("./utils.js")
+const { SourceMapDevToolPlugin } = require("webpack")
+const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
 
-const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
+const { updateManifestDetails, browser, distDir, manifestDir } = require("./utils.js")
+
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
+
+console.log(`building for ${browser} with dev config`)
 
 const config = (env) =>
   merge(common(env), {
@@ -22,7 +23,7 @@ const config = (env) =>
       ignored: ["**/node_modules", "**/dist", "apps/extension/public/locales"],
     },
     plugins: [
-      new EvalSourceMapDevToolPlugin({
+      new SourceMapDevToolPlugin({
         // Here we are using a negative look-behind to exclude the `eval()` devtool from content_script.ts and page.ts.
         //
         // If either of these scripts have `eval` in them, the wallet will be unable to inject on dapps with a good
@@ -35,24 +36,11 @@ const config = (env) =>
       new CopyPlugin({
         patterns: [
           {
-            from: "manifest.json",
-            to: distDir,
-            context: "public",
-            transform(content) {
-              // Parse the manifest
-              const manifest = JSON.parse(content.toString())
-
-              // Update the version in the manifest file to match the version in package.json
-              manifest.version = process.env.npm_package_version
-
-              // add a version name key to distinguish in list of installed extensions
-              manifest.version_name = getManifestVersionName(env)
-
-              // Set the dev title and icon because we're doing a dev build
-              manifest.name = `${manifest.name} - Dev`
-              manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Dev`
-
-              // Return the modified manifest
+            from: "common.json",
+            to: path.join(distDir, "manifest.json"),
+            context: manifestDir,
+            transform: async (content) => {
+              const manifest = await updateManifestDetails(env, JSON.parse(content.toString()))
               return JSON.stringify(manifest, null, 2)
             },
           },
@@ -70,21 +58,27 @@ const config = (env) =>
             to: distDir,
             context: "public",
             // do not copy the manifest or the favicons, they're handled separately
-            globOptions: { ignore: [manifestPath, faviconsSrcPath] },
+            globOptions: {
+              ignore: [manifestDir, faviconsSrcPath].concat(
+                // service worker should be excluded for firefox
+                browser === "firefox" ? ["service_worker.js"] : []
+              ),
+            },
           },
         ],
       }),
-      new ExtensionReloader({
-        // avoid reloading every browser tab
-        // extension pages (dashboard.html, popup.html) are always reloaded
-        reloadPage: false,
-        entries: {
-          // The entries used for the content/background scripts
-          contentScript: "content_script", // Use the entry names, not the file name or the path
-          background: "background", // *REQUIRED
-          extensionPage: ["popup", "onboarding", "dashboard"],
-        },
-      }),
+
+      // new ExtensionReloader({
+      //   // avoid reloading every browser tab
+      //   // extension pages (dashboard.html, popup.html) are always reloaded
+      //   reloadPage: false,
+      //   entries: {
+      //     // The entries used for the content/background scripts
+      //     contentScript: "content_script", // Use the entry names, not the file name or the path
+      //     background: "background", // *REQUIRED
+      //     extensionPage: ["popup", "onboarding", "dashboard"],
+      //   },
+      // }),
       new CircularDependencyPlugin({
         // exclude detection of files based on a RegExp
         exclude: /node_modules/,

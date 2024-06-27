@@ -1,13 +1,12 @@
 import { DEBUG } from "@extension/shared"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
+import { DexieError } from "dexie"
 import { FC, ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
-import Browser from "webextension-polyfill"
 
-const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const isDbVersionError = (error as any)?.inner?.name === "VersionError"
+const ErrorMessage: FC<{ error: unknown }> = ({ error }) => {
+  const isDbVersionError = (error as DexieError)?.inner?.name === "VersionError"
 
   const clearDatabases = useCallback(() => {
     indexedDB.deleteDatabase("Talisman")
@@ -15,7 +14,7 @@ const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
     indexedDB.deleteDatabase("TalismanChaindata")
     indexedDB.deleteDatabase("TalismanConnectionMeta")
     alert("Databases cleared. Please click OK for Talisman to reinitialize.")
-    Browser.runtime.reload()
+    chrome.runtime.reload()
   }, [])
 
   return (

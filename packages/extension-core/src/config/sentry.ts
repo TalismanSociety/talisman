@@ -1,13 +1,15 @@
-import * as SentryBrowser from "@sentry/browser"
-import * as SentryReact from "@sentry/react"
+import {
+  BrowserClient,
+  Scope,
+  defaultStackParser,
+  getDefaultIntegrations,
+  makeFetchTransport,
+} from "@sentry/browser"
 import { Event } from "@sentry/types"
 import { DEBUG } from "extension-shared"
 import { ReplaySubject, firstValueFrom } from "rxjs"
 
-import {
-  trackIndexedDbErrorExtras,
-  triggerIndexedDbUnavailablePopup,
-} from "../domains/app/store.errors"
+import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"
 import { settingsStore } from "../domains/app/store.settings"
 
 const normalizeUrl = (url: string) => {
@@ -18,71 +20,82 @@ const normalizeUrl = (url: string) => {
 const useErrorTracking = new ReplaySubject<boolean>(1)
 settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.useErrorTracking))
 
-export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) => {
-  sentry.init({
-    enabled: true,
-    environment: process.env.BUILD,
-    dsn: process.env.SENTRY_DSN,
-    integrations: [new SentryBrowser.BrowserTracing()],
-    release: process.env.RELEASE,
-    sampleRate: 1,
-    maxBreadcrumbs: 20,
-    ignoreErrors: [
-      /(No window with id: )(\d+).?/,
-      /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
-      /^disconnected from .+: [0-9]+:: .+$/,
-      /^unsubscribed from .+: [0-9]+:: .+$/,
-      /(Could not establish connection. Receiving end does not exist.)/,
-    ],
-    // prevents sending the event if user has disabled error tracking
-    beforeSend: async (event, hint) => {
-      // Track extra information about IndexedDB errors
-      await trackIndexedDbErrorExtras(event, hint)
+// setup of the Sentry scope following this guide:
+// https://docs.sentry.io/platforms/javascript/best-practices/browser-extensions/
 
-      // Print to console instead of Sentry in DEBUG/development builds
-      if (DEBUG) {
-        console.error("[DEBUG] Sentry event occurred", event) // eslint-disable-line no-console
-        return null
-      }
+// filter integrations that use the global variable
+const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
+  return !["BrowserApiErrors", "TryCatch", "Breadcrumbs", "GlobalHandlers"].includes(
+    defaultIntegration.name
+  )
+})
 
-      const errorTracking = await firstValueFrom(useErrorTracking)
-      return errorTracking ? event : null
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    beforeBreadcrumb: (breadCrumb, hint) => {
-      if (breadCrumb.data?.url) {
-        breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)
-      }
-      return breadCrumb
-    },
+const client = new BrowserClient({
+  enabled: true,
+  environment: process.env.BUILD,
+  dsn: process.env.SENTRY_DSN,
+  transport: makeFetchTransport,
+  stackParser: defaultStackParser,
+  integrations: integrations,
+  release: process.env.RELEASE,
+  sampleRate: 1,
+  maxBreadcrumbs: 20,
+  ignoreErrors: [
+    /(No window with id: )(\d+).?/,
+    /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
+    /^disconnected from .+: [0-9]+:: .+$/,
+    /^unsubscribed from .+: [0-9]+:: .+$/,
+    /(Could not establish connection. Receiving end does not exist.)/,
+  ],
+  // prevents sending the event if user has disabled error tracking
+  beforeSend: async (event, hint) => {
+    // Track extra information about IndexedDB errors
+    await trackIndexedDbErrorExtras(event, hint)
 
-    // Set tracesSampleRate to capture 5%
-    // of transactions for performance monitoring.
-    // We recommend adjusting this value in production
-    tracesSampleRate: 0.05,
-  })
+    // Print to console instead of Sentry in DEBUG/development builds
+    if (DEBUG) {
+      console.error("[DEBUG] Sentry event occurred", event) // eslint-disable-line no-console
+      return null
+    }
 
-  sentry.configureScope((scope) => {
-    scope.addEventProcessor(async (event: Event) => {
-      if (event.request && event.request.url) {
-        event.request.url = normalizeUrl(event.request.url)
-      }
+    const errorTracking = await firstValueFrom(useErrorTracking)
+    return errorTracking ? event : null
+  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  beforeBreadcrumb: (breadCrumb, hint) => {
+    if (breadCrumb.data?.url) {
+      breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)
+    }
+    return breadCrumb
+  },
 
-      if (event.exception?.values && event.exception.values.length > 0) {
-        const firstValue = event.exception.values[0]
-        if (!firstValue.stacktrace?.frames) return event
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame: any) => {
-          frame.filename = normalizeUrl(frame.filename)
-          return frame
-        })
-      }
+  // Set tracesSampleRate to capture 5%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 0.05,
+})
 
-      return event
+const scope = new Scope()
+scope.setClient(client)
+
+scope.addEventProcessor(async (event: Event) => {
+  if (event.request && event.request.url) {
+    event.request.url = normalizeUrl(event.request.url)
+  }
+
+  if (event.exception?.values && event.exception.values.length > 0) {
+    const firstValue = event.exception.values[0]
+    if (!firstValue.stacktrace?.frames) return event
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame: any) => {
+      frame.filename = normalizeUrl(frame.filename)
+      return frame
     })
-  })
+  }
 
-  window.addEventListener("error", (event) => {
-    triggerIndexedDbUnavailablePopup(event.error)
-  })
+  return event
+})
+
+export const initSentry = (): void => {
+  client.init() // initializing has to be done after setting the client on the scope
 }

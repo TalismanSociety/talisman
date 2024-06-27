@@ -1,5 +1,3 @@
-import Browser from "webextension-polyfill"
-
 import { PasswordStore, generateSalt, getHashedPassword } from "../../../domains/app/store.password"
 
 const spaceyPw = "  passWord  "
@@ -7,7 +5,7 @@ const pwStoreInitial = { isTrimmed: true, isHashed: false }
 
 describe("Test password store password not hashed", () => {
   afterEach(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
   })
 
   test("setting isTrimmed false ensures passwords with spaces are not trimmed", async () => {

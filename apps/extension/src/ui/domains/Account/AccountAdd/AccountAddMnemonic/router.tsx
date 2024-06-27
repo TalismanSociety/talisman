@@ -5,7 +5,7 @@ import { AccountAddMnemonicProvider } from "./context"
 import { AccountAddMnemonicForm } from "./MnemonicForm"
 import { AccountAddMnemonicAccountsForm } from "./MultipleAccountsForm"
 
-export const AccountAddMnemonicWizard = ({ onSuccess }: AccountAddPageProps) => (
+const AccountAddMnemonicWizard = ({ onSuccess }: AccountAddPageProps) => (
   <AccountAddMnemonicProvider onSuccess={onSuccess}>
     <Routes>
       <Route index element={<AccountAddMnemonicForm />} />
@@ -14,3 +14,5 @@ export const AccountAddMnemonicWizard = ({ onSuccess }: AccountAddPageProps) => 
     </Routes>
   </AccountAddMnemonicProvider>
 )
+
+export default AccountAddMnemonicWizard

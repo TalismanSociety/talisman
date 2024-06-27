@@ -59,6 +59,7 @@ import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
+  ping: () => Promise<boolean>
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
   onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>

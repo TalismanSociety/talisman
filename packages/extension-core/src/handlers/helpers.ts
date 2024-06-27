@@ -13,11 +13,11 @@ export const getPairFromAddress = (address: Address) => {
   return pair
 }
 
-const getUnlockedPairFromAddress = (address: Address) => {
+const getUnlockedPairFromAddress = async (address: Address) => {
   const pair = getPairFromAddress(address)
   // if the keyring pair is locked, the password is needed
   if (pair.isLocked) {
-    const pw = passwordStore.getPassword()
+    const pw = await passwordStore.getPassword()
     assert(pw, "Unauthorised")
     pair.decodePkcs8(pw)
   }
@@ -33,7 +33,7 @@ export const getPairForAddressSafely = async <T>(
   try {
     try {
       pair = hasPrivateKey(address)
-        ? getUnlockedPairFromAddress(address)
+        ? await getUnlockedPairFromAddress(address)
         : getPairFromAddress(address)
     } catch (error) {
       passwordStore.clearPassword()

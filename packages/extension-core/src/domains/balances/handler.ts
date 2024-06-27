@@ -63,6 +63,13 @@ const subscribeBalancesByParams = async (
     addressesAndTokens,
   }: RequestBalancesByParamsSubscribe
 ): Promise<boolean> => {
+  // if no addresses, return early
+  if (
+    !Object.keys(addressesByChain).length &&
+    !addressesAndTokens.addresses.length &&
+    !addressesAndEvmNetworks.addresses.length
+  )
+    return true
   // create safe onDisconnect handler
   const onDisconnected = portDisconnected(port)
 
