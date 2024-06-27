@@ -70,7 +70,7 @@ const usePolkadotSigningRequestProvider = ({
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
   const [modifiedPayload, registry, shortMetadata] = useMemo(() => {
-    return !jsonPayload || !payloadMetadata || !payloadMetadata.hasCheckMetadataHash
+    return !jsonPayload || !payloadMetadata
       ? [undefined, undefined, undefined]
       : [
           payloadMetadata.payloadWithMetadataHash,

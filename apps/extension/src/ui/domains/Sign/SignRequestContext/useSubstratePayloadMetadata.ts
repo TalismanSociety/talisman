@@ -44,13 +44,21 @@ export const useSubstratePayloadMetadata = (
         const registry = new TypeRegistry()
         const hexMetadataRpc = u8aToHex(metadataRpc)
         const metadata15 = registry.createType("Metadata", hexMetadataRpc)
-        if (metadata15.version !== 15) throw new Error("Invalid metadata version")
         registry.setMetadata(metadata15, payload.signedExtensions)
 
         // check if runtime supports CheckMetadataHash
         const hasCheckMetadataHash = metadata15.asV15.extrinsic.signedExtensions.some(
           (ext) => ext.identifier.toString() === "CheckMetadataHash"
         )
+
+        if (!hasCheckMetadataHash)
+          return {
+            txMetadata: undefined,
+            metadataHash: undefined,
+            registry,
+            payloadWithMetadataHash: payload,
+            hasCheckMetadataHash,
+          }
 
         const metadataHash = get_metadata_digest(
           trimPrefix(hexMetadataRpc),

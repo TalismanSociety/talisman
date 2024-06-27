@@ -170,6 +170,6 @@ export interface SigningMessages {
   "pri(signing.approveSign)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
   "pri(signing.approveSign.qr)": [RequestSigningApproveSignature, boolean]
-  "pri(signing.approveSign.signet)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
+  "pri(signing.approveSign.signet)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
   "pri(signing.cancel)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
 }
