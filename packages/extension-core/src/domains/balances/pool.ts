@@ -221,6 +221,9 @@ abstract class BalancePool {
     cb: (val: BalanceSubscriptionResponse) => void
   ) {
     this.hasInitialised.then(() => {
+      // fire a single initial balance update so front end knows we're initialising
+      cb({ status: "initialising", data: Object.values(this.#pool.getValue()) })
+
       // create subscription to pool
       const poolSubscription = this.#pool.pipe(firstThenDebounce(500)).subscribe((balances) => {
         return cb({ status: this.poolStatus, data: Object.values(balances) })
