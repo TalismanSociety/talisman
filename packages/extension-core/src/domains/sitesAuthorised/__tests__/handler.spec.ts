@@ -14,6 +14,10 @@ import { AuthorizedSites } from "../types"
 
 keyring.loadAll({ store: new AccountsStore() })
 
+jest.mock("../../../util/isBackgroundPage", () => ({
+  isBackgroundPage: jest.fn().mockResolvedValue(true),
+}))
+
 describe("Sites Authorised Handler", () => {
   let handler: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>

@@ -22,6 +22,10 @@ import { extensionStores } from "./stores"
 
 jest.setTimeout(10_000)
 
+jest.mock("../util/isBackgroundPage", () => ({
+  isBackgroundPage: jest.fn().mockResolvedValue(true),
+}))
+
 // Mock the hasSpiritKey module to return false
 jest.mock("../util/hasSpiritKey", () => {
   return {

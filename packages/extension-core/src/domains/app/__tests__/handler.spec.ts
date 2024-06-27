@@ -16,6 +16,9 @@ import {
 } from "../../../handlers/stores"
 
 jest.setTimeout(20_000)
+jest.mock("../../../util/isBackgroundPage", () => ({
+  isBackgroundPage: jest.fn().mockResolvedValue(true),
+}))
 
 keyring.loadAll({ store: new AccountsStore() })
 
