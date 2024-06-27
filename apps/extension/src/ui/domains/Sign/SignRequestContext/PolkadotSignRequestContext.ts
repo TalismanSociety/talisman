@@ -66,7 +66,7 @@ const usePolkadotSigningRequestProvider = ({
     ? signingRequest.request.payload
     : null
 
-  const { data: payloadMetadata } = useSubstratePayloadMetadata(jsonPayload)
+  const { data: payloadMetadata } = useSubstratePayloadMetadata(jsonPayload, true)
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
   const [modifiedPayload, registry, shortMetadata] = useMemo(() => {

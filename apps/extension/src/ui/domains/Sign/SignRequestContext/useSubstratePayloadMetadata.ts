@@ -14,7 +14,10 @@ import { SignerPayloadJSON } from "extension-core"
 
 const trimPrefix = (str: string) => (str.startsWith("0x") ? str.slice(2) : str)
 
-export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
+export const useSubstratePayloadMetadata = (
+  payload: SignerPayloadJSON | null,
+  suspense = false
+) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
   const token = useToken(chain?.nativeToken?.id)
 
@@ -93,6 +96,6 @@ export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) =
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    suspense: true,
+    suspense,
   })
 }

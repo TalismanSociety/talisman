@@ -59,6 +59,8 @@ export const SendFundsHardwareSubstrate = () => {
     <SignHardwareSubstrate
       fee={subTransaction?.partialFee}
       payload={subTransaction?.unsigned}
+      registry={subTransaction?.registry}
+      shortMetadata={subTransaction?.shortMetadata}
       onSentToDevice={setIsLocked}
       onSigned={handleSigned}
       containerId="main"

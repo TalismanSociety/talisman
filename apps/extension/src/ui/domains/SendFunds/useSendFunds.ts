@@ -37,6 +37,7 @@ import { TransactionRequest } from "viem"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
+import { useSubstratePayloadMetadata } from "../Sign/SignRequestContext/useSubstratePayloadMetadata"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
 import { useSendFundsInputSize } from "./useSendFundsInputSize"
@@ -173,14 +174,38 @@ const useSubTransaction = (
     enabled: !isLocked,
   })
 
+  const qPayloadMetadata = useSubstratePayloadMetadata(
+    qSubstrateEstimateFee?.data?.unsigned ?? null
+  )
+
   return useMemo(() => {
     if (!isSubToken(token)) return undefined
 
-    const { partialFee, unsigned } = qSubstrateEstimateFee.data ?? {}
-    const { isLoading, isRefetching, error } = qSubstrateEstimateFee
+    const { partialFee, unsigned: unsignedOriginal } = qSubstrateEstimateFee.data ?? {}
+    const {
+      registry,
+      txMetadata: shortMetadata,
+      payloadWithMetadataHash,
+    } = qPayloadMetadata.data ?? {}
 
-    return { partialFee, unsigned, isLoading, isRefetching, error }
-  }, [qSubstrateEstimateFee, token])
+    const isLoading = qSubstrateEstimateFee.isLoading || qPayloadMetadata.isLoading
+    const isRefetching = qSubstrateEstimateFee.isRefetching || qPayloadMetadata.isRefetching
+    const error = qSubstrateEstimateFee.error || qPayloadMetadata.error
+
+    const unsigned = payloadWithMetadataHash ?? unsignedOriginal
+
+    return { partialFee, unsigned, isLoading, isRefetching, error, registry, shortMetadata }
+  }, [
+    qPayloadMetadata.data,
+    qPayloadMetadata.error,
+    qPayloadMetadata.isLoading,
+    qPayloadMetadata.isRefetching,
+    qSubstrateEstimateFee.data,
+    qSubstrateEstimateFee.error,
+    qSubstrateEstimateFee.isLoading,
+    qSubstrateEstimateFee.isRefetching,
+    token,
+  ])
 }
 
 export type ToWarning = "DIFFERENT_ACCOUNT_FORMAT" | "AZERO_ID" | undefined

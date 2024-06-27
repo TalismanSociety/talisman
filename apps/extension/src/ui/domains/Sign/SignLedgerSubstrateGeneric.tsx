@@ -104,14 +104,16 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   const signLedger = useCallback(async () => {
     if (!ledger || !payload || !onSigned || !account) return
 
-    if (isJsonPayload(payload) && (!shortMetadata || !registry)) {
-      const hasCheckMetadataHash = registry?.metadata.extrinsic.signedExtensions.some(
+    if (isJsonPayload(payload)) {
+      if (!registry) return setError("Missing registry")
+
+      const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
         (ext) => ext.identifier.toString() === "CheckMetadataHash"
       )
       if (!hasCheckMetadataHash)
-        return setError(
-          t("This network doesn't support signatures from Ledger Polkadot Generic App.")
-        )
+        return setError(t("This network doesn't support Ledger Polkadot Generic App."))
+
+      if (!shortMetadata) return setError("Missing short metadata")
     }
 
     setError(null)

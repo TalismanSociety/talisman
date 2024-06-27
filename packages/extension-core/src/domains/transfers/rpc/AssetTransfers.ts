@@ -251,7 +251,7 @@ export default class AssetTransfersRpc {
       `Failed to handle tx type ${transaction.type} for token '${token.id}'`
     )
 
-    const unsigned = transaction.tx
+    const unsignedTx = transaction.tx
 
     // If the following line of code is not added, the extrinsic (referred to as "unsigned" here)
     // will fail when submitted to the Picasso chain, resulting in a wasm runtime panic.
@@ -273,33 +273,33 @@ export default class AssetTransfersRpc {
     //
     // If we override the default assetId value from @substrate/txwrapper-core (which sets assetId to 0)
     // and instead set assetId back to undefined, our extrinsics also encode the assetId field as 00.
-    if (unsigned.assetId === 0) unsigned.assetId = undefined
+    if (unsignedTx.assetId === 0) unsignedTx.assetId = undefined
 
     // create the unsigned extrinsic
     const tx = registry.createType(
       "Extrinsic",
-      { method: unsigned.method },
-      { version: unsigned.version }
+      { method: unsignedTx.method },
+      { version: unsignedTx.version }
     )
 
-    if (sign) {
-      const payload = { ...unsigned, ...checkMetadataHash } as UnsignedTransaction
+    const unsigned = { ...unsignedTx, ...checkMetadataHash } as UnsignedTransaction
 
+    if (sign) {
       // create signable extrinsic payload
-      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-        version: unsigned.version,
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", unsigned, {
+        version: unsignedTx.version,
       })
 
       // sign it using keyring (will fail if keyring is locked or if address is from hardware device)
       const { signature } = extrinsicPayload.sign(from)
 
       // apply signature
-      tx.addSignature(unsigned.address, signature, payload)
+      tx.addSignature(unsignedTx.address, signature, unsigned)
 
-      return { tx, registry, unsigned: payload, chain, signature }
+      return { tx, registry, unsigned, chain, signature }
     } else {
       // tx signed with fake signature for fee calculation
-      tx.signFake(unsigned.address, {
+      tx.signFake(unsignedTx.address, {
         blockHash,
         genesisHash,
         nonce,
