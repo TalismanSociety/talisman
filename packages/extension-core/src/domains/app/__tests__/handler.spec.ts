@@ -5,7 +5,6 @@ import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { watCryptoWaitReady } from "@talismn/scale"
-import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
@@ -17,6 +16,9 @@ import {
 } from "../../../handlers/stores"
 
 jest.setTimeout(20_000)
+jest.mock("../../../util/isBackgroundPage", () => ({
+  isBackgroundPage: jest.fn().mockResolvedValue(true),
+}))
 
 keyring.loadAll({ store: new AccountsStore() })
 
@@ -42,16 +44,16 @@ describe("App handler when password is not trimmed", () => {
   }
 
   afterAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
   })
 
   beforeAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
 
     keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
 
     extension = await createExtension()
-    const port = Browser.runtime.connect("talismanTest")
+    const port = chrome.runtime.connect("talismanTest")
     messageSender = getMessageSenderFn(extension, port)
 
     await messageSender("pri(app.onboardCreatePassword)", {
@@ -195,15 +197,15 @@ describe("App handler when password is trimmed", () => {
   }
 
   afterAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
   })
 
   beforeAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
     keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
 
     extension = await createExtension()
-    const port = Browser.runtime.connect("talismanTest")
+    const port = chrome.runtime.connect("talismanTest")
     messageSender = getMessageSenderFn(extension, port)
 
     await messageSender("pri(app.onboardCreatePassword)", {

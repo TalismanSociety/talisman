@@ -17,6 +17,7 @@
     "dev": "concurrently --prefix \"{name}\" --prefix-colors auto \"npm:dev:*\"",
     "dev:balances-demo": "yarn workspace balances-demo dev",
     "dev:extension": "preconstruct dev && yarn workspace extension dev",
+    "dev:extension:firefox": "preconstruct dev && yarn workspace extension dev:firefox",
     "dev:playground": "yarn workspace playground dev",
     "update:translations": "turbo run update:translations",
     "build": "turbo run build",

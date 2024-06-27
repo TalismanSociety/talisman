@@ -506,7 +506,7 @@ export class ChainConnector {
 
   private getTalismanSub() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const talismanSub = (window as any)?.talismanSub
+    const talismanSub = typeof window !== "undefined" && (window as any).talismanSub
 
     /* eslint-disable @typescript-eslint/ban-types */
     const rpcByGenesisHashSend: Function | undefined = talismanSub?.rpcByGenesisHashSend

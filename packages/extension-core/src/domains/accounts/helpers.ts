@@ -9,7 +9,6 @@ import { Chain } from "@talismn/chaindata-provider"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
-import Browser from "webextension-polyfill"
 
 import type { Address } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
@@ -132,7 +131,7 @@ export const getNextDerivationPathForMnemonic = (
 }
 
 export const hasQrCodeAccounts = async () => {
-  const localData = await Browser.storage.local.get(null)
+  const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, Account]) =>
       key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr

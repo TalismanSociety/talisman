@@ -1,16 +1,16 @@
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { Chain } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
-import * as $ from "scale-codec"
+import { getMetadataRpcFromDef, log } from "extension-shared"
 
-import { appStore } from "../domains/app/store.app"
-import { passwordStore } from "../domains/app/store.password"
-import { mnemonicsStore } from "../domains/mnemonics/store"
-import { SignerPayloadGenesisHash } from "../domains/signing/types"
-import { chainConnector } from "../rpcs/chain-connector"
-import { chaindataProvider } from "../rpcs/chaindata"
-import { getMetadataDef, getMetadataRpcFromDef } from "../util/getMetadataDef"
+import { appStore } from "../../domains/app/store.app"
+import { passwordStore } from "../../domains/app/store.password"
+import { mnemonicsStore } from "../../domains/mnemonics/store"
+import { SignerPayloadGenesisHash } from "../../domains/signing/types"
+import { chainConnector } from "../../rpcs/chain-connector"
+import { chaindataProvider } from "../../rpcs/chaindata"
+import { getMetadataDef } from "../../util/getMetadataDef"
+import { $addNetworkSpecsPayload, $networkSpecs, $updateNetworkMetadataPayload } from "./codecs"
 
 const getEncryptionForChain = (chain: Chain) => {
   // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
@@ -23,7 +23,7 @@ const getEncryptionForChain = (chain: Chain) => {
 }
 
 export const getVerifierMnemonic = async () => {
-  const pw = passwordStore.getPassword()
+  const pw = await passwordStore.getPassword()
   assert(pw, "Unauthorised")
 
   const mnemonicId = await appStore.get("vaultVerifierCertificateMnemonicId")
@@ -55,24 +55,6 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
  * https://github.com/varovainen/parity-signer/blob/2022-05-25-uos/docs/src/development/UOS.md
  */
 
-/**
- * Add Network Specs
- */
-const $networkSpecs = $.object(
-  $.field("base58prefix", $.u16),
-  $.field("color", $.str),
-  $.field("decimals", $.u8),
-  $.field("encryption", $.u8), // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
-  $.field("genesis_hash", $.sizedUint8Array(32)),
-  $.field("logo", $.str),
-  $.field("name", $.str),
-  $.field("path_id", $.str),
-  $.field("secondary_color", $.str),
-  $.field("title", $.str),
-  $.field("unit", $.str)
-)
-const $addNetworkSpecsPayload = $.object($.field("specs", $.uint8Array))
-
 export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
   const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
   assert(chain, "Chain not found")
@@ -86,7 +68,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
     ? systemProperties?.tokenSymbol[0]
     : systemProperties?.tokenSymbol
 
-  const specs = $networkSpecs.encode({
+  const specs = $networkSpecs.enc({
     base58prefix: chain.prefix ?? 42,
     decimals,
     encryption: getEncryptionForChain(chain),
@@ -103,7 +85,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
   })
 
   const payload = u8aToU8a(
-    $addNetworkSpecsPayload.encode({
+    $addNetworkSpecsPayload.enc({
       specs,
     })
   )
@@ -132,10 +114,6 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
 /**
  * Network Metadata
  */
-const $updateNetworkMetadataPayload = $.object(
-  $.field("meta", $.uint8Array),
-  $.field("genesis_hash", $.sizedUint8Array(32))
-)
 
 export const generateQrUpdateNetworkMetadata = async (
   genesisHash: string,
@@ -145,7 +123,7 @@ export const generateQrUpdateNetworkMetadata = async (
   const metadataRpc = getMetadataRpcFromDef(metadataDef)
   assert(metadataRpc, "Failed to fetch metadata")
 
-  const payload = $updateNetworkMetadataPayload.encode({
+  const payload = $updateNetworkMetadataPayload.enc({
     meta: hexToU8a(metadataRpc),
     genesis_hash: hexToU8a(genesisHash),
   })

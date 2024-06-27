@@ -20,7 +20,6 @@ import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/
 import { assert, isNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { log } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
@@ -281,16 +280,16 @@ export default class Tabs extends TabsHandler {
   private redirectPhishingLanding(phishingWebsite: string): void {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${Browser.runtime.getURL(
+    const url = `${chrome.runtime.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
-    Browser.tabs.query({ url: nonFragment }).then((tabs) => {
+    chrome.tabs.query({ url: nonFragment }).then((tabs) => {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
         .forEach((id) =>
-          Browser.tabs.update(id, { url }).catch((err: Error) => {
+          chrome.tabs.update(id, { url }).catch((err: Error) => {
             // eslint-disable-next-line no-console
             console.error("Failed to redirect tab to phishing page", { err })
             Sentry.captureException(err, { extra: { url } })

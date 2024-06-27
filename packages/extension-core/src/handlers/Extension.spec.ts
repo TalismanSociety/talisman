@@ -10,7 +10,6 @@ import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
 import { watCryptoWaitReady } from "@talismn/scale"
 import { waitFor } from "@testing-library/dom"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../tests/util"
 import { db } from "../db"
@@ -22,6 +21,10 @@ import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
 jest.setTimeout(10_000)
+
+jest.mock("../util/isBackgroundPage", () => ({
+  isBackgroundPage: jest.fn().mockResolvedValue(true),
+}))
 
 // Mock the hasSpiritKey module to return false
 jest.mock("../util/hasSpiritKey", () => {
@@ -70,7 +73,7 @@ describe("Extension", () => {
   }
 
   beforeAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 
@@ -105,7 +108,7 @@ describe("Extension", () => {
 
   test("exports account from keyring", async () => {
     // need to use the pw from the store, because it may need to be trimmed
-    const pw = passwordStore.getPassword()
+    const pw = await passwordStore.getPassword()
     expect(pw).toBeTruthy()
 
     const {

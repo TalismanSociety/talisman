@@ -1,9 +1,7 @@
-import { assert, hexToU8a, isHex, u8aToHex } from "@polkadot/util"
-import { base64Decode, base64Encode } from "@polkadot/util-crypto"
+import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
-import { DEBUG } from "extension-shared"
-import { log } from "extension-shared"
+import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
 import { db } from "../db"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
@@ -16,37 +14,6 @@ const cache: Record<string, TalismanMetadataDef> = {}
 
 const getCacheKey = (genesisHash: HexString, specVersion?: number) =>
   !specVersion || !genesisHash ? null : `${genesisHash}-${specVersion}`
-
-// those are stored as base64 for lower storage size
-const encodeMetadataRpc = (metadataRpc: HexString) => base64Encode(hexToU8a(metadataRpc))
-const decodeMetadataRpc = (encoded: string) => u8aToHex(base64Decode(encoded))
-const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
-
-/**
- *
- * @param metadata
- * @returns a value that can be used to initialize a TypeRegistry
- */
-export const getMetadataFromDef = (metadata: TalismanMetadataDef) => {
-  try {
-    if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
-    if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn("Could not decode metadata from store", { metadata })
-  }
-  return undefined
-}
-
-/**
- *
- * @param metadataDef
- * @returns Decoded metadataRpc which can be used to build transaction payloads
- */
-export const getMetadataRpcFromDef = (metadataDef?: TalismanMetadataDef) => {
-  if (metadataDef?.metadataRpc) return decodeMetadataRpc(metadataDef.metadataRpc)
-  return undefined
-}
 
 /**
  *
@@ -181,7 +148,7 @@ export const getMetadataDef = async (
 // useful for developer when testing updates
 if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).clearMetadata = () => {
+  ;(globalThis as any).clearMetadata = () => {
     Object.keys(cache).forEach((key) => {
       delete cache[key]
     })

@@ -1,9 +1,8 @@
 import { remoteConfigStore } from "@extension/core"
 import { log } from "@extension/shared"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
-import { TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
+import { TokenRatesError, TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
 import { assetDiscoveryScanProgressAtom, tokensArrayAtomFamily } from "@ui/atoms"
-import axios from "axios"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily } from "jotai/utils"
 import { useEffect, useState } from "react"
@@ -78,13 +77,11 @@ export const useAssetDiscoveryFetchTokenRates = () => {
           setCanFetch(true)
         })
         .catch((err) => {
-          if (
-            axios.isAxiosError(err) &&
-            err.response?.status === 429 &&
-            err.response.headers["retry-after"]
-          ) {
-            const timeout = Number(err.response.headers["retry-after"]) * 1000
-            log.debug("429 - retrying in %ss", err.response.headers["retry-after"])
+          if (err instanceof TokenRatesError && err.response?.status === 429) {
+            const retryAfter = err.response.headers.get("retry-after")
+            if (!retryAfter) return
+            const timeout = Number(retryAfter) * 1000
+            log.debug("429 - retrying in %ss", retryAfter)
             setTimeout(() => setCanFetch(true), timeout)
           }
         })

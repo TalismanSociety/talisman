@@ -3,7 +3,6 @@ import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "extension-shared"
 import { BehaviorSubject, Subject } from "rxjs"
-import Browser from "webextension-polyfill"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -219,8 +218,8 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openModal(request: ModalOpenRequest): Promise<void> {
-    const queryUrl = Browser.runtime.getURL("dashboard.html")
-    const [tab] = await Browser.tabs.query({ url: queryUrl })
+    const queryUrl = chrome.runtime.getURL("dashboard.html")
+    const [tab] = await chrome.tabs.query({ url: queryUrl })
     if (!tab) {
       await windowManager.openDashboard({ route: "/portfolio" })
       // wait for newly created page to load and subscribe to backend (max 5 seconds)

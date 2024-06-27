@@ -3,11 +3,11 @@ import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
 import { Chain } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
+import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
 
 import { getUserExtensionsByChainId } from "../domains/metadata/userExtensions"
 import { chaindataProvider } from "../rpcs/chaindata"
-import { getMetadataDef, getMetadataFromDef, getMetadataRpcFromDef } from "./getMetadataDef"
+import { getMetadataDef } from "./getMetadataDef"
 
 // metadata may have been added manually to the store, for a chain that Talisman doesn't know about (not in chaindata)
 // => use either chainId or genesisHash as identifier

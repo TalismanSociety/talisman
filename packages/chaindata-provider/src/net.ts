@@ -21,7 +21,7 @@ export const fetchEvmNetwork = async (evmNetworkId: string) =>
   await (await fetch(chaindataEvmNetworkByIdUrl(evmNetworkId))).json()
 
 export const fetchSubstrateTokens = async () => await (await fetch(chaindataTokensAllUrl)).json()
-export const fetchToken = async (tokenId: string) =>
+export const fetchSubstrateToken = async (tokenId: string) =>
   await (await fetch(chaindataTokenByIdUrl(tokenId))).json()
 
 export const fetchMiniMetadatas = async () =>

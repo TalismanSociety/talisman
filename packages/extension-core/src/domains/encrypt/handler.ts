@@ -24,7 +24,7 @@ export default class EncryptHandler extends ExtensionHandler {
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
 
-      const pw = this.stores.password.getPassword()
+      const pw = await this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
       const pk = getPrivateKey(pair, pw, "u8a")
@@ -63,7 +63,7 @@ export default class EncryptHandler extends ExtensionHandler {
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
 
-      const pw = this.stores.password.getPassword()
+      const pw = await this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
       const pk = getPrivateKey(pair, pw, "u8a")

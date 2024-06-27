@@ -5,7 +5,6 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { watCryptoWaitReady } from "@talismn/scale"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
-import Browser, { Runtime } from "webextension-polyfill"
 
 import { initSentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
@@ -14,24 +13,23 @@ import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
-initSentry(Sentry)
+initSentry()
 
-// eslint-disable-next-line no-void
-void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
+chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 
 // Onboarding and migrations
-Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
   if (reason === "install") {
     // if install, we want to check the storage for prev onboarded info
     // if not onboarded, show the onboard screen
-    Browser.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
+    chrome.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
       // open onboarding when reason === "install" and data?.talismanOnboarded !== true
       // open dashboard data?.talismanOnboarded === true
       const legacyOnboarded =
         data && data.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
       const currentOnboarded = data && data.app && data.app.onboarded === "TRUE"
       if (!legacyOnboarded && !currentOnboarded) {
-        Browser.tabs.create({ url: Browser.runtime.getURL("onboarding.html") })
+        chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") })
       }
     })
 
@@ -51,9 +49,9 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
 // Migrations occur on login to ensure that password is present for any migrations that require it
 const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   if (isLoggedIn === "TRUE") {
-    const password = passwordStore.getPassword()
+    const password = await passwordStore.getPassword()
     if (!password) {
-      Sentry.captureMessage("Unabe to run migrations, no password present")
+      Sentry.captureMessage("Unable to run migrations, no password present")
       return
     }
     // instantiate the migrations runner with migrations to run
@@ -69,24 +67,31 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
 })
 
 // listen to all messages and handle appropriately
-Browser.runtime.onConnect.addListener((_port): void => {
+chrome.runtime.onConnect.addListener((_port): void => {
   // only listen to what we know about
   assert(
     [PORT_CONTENT, PORT_EXTENSION].includes(_port.name),
     `Unknown connection from ${_port.name}`
   )
-  let port: Runtime.Port | undefined = _port
+  let port: chrome.runtime.Port | undefined = _port
 
   port.onDisconnect.addListener(() => {
     port = undefined
   })
 
-  port.onMessage.addListener((data) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const messageHandler = (data: any) => {
     if (port) talismanHandler(data, port)
-  })
+  }
+  port.onMessage.addListener(messageHandler)
+  const disconnectHandler = () => {
+    port?.onMessage.removeListener(messageHandler)
+    port?.onDisconnect.removeListener(disconnectHandler)
+  }
+  port.onDisconnect.addListener(disconnectHandler)
 })
 
-!DEBUG && Browser.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
+!DEBUG && chrome.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
 
 // initial setup
 Promise.all([
