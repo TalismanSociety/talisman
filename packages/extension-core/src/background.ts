@@ -79,9 +79,16 @@ chrome.runtime.onConnect.addListener((_port): void => {
     port = undefined
   })
 
-  port.onMessage.addListener((data) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const messageHandler = (data: any) => {
     if (port) talismanHandler(data, port)
-  })
+  }
+  port.onMessage.addListener(messageHandler)
+  const disconnectHandler = () => {
+    port?.onMessage.removeListener(messageHandler)
+    port?.onDisconnect.removeListener(disconnectHandler)
+  }
+  port.onDisconnect.addListener(disconnectHandler)
 })
 
 !DEBUG && chrome.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
