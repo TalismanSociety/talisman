@@ -13,8 +13,8 @@ import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 
+import { useSubstratePayloadMetadata } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
-import { useSubstratePayloadMetadata } from "./useSubstratePayloadMetadata"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,

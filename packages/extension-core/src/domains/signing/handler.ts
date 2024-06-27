@@ -126,7 +126,7 @@ export default class SigningHandler extends ExtensionHandler {
   private async signingApproveExternal({
     id,
     signature,
-    payload: modifiedPayload, // supplied only if different from the original
+    payload: modifiedPayload,
   }: RequestSigningApproveSignature): Promise<boolean> {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")

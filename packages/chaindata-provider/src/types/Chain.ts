@@ -40,7 +40,6 @@ export type Chain = {
   /** @deprecated has its own store now */
   balancesMetadata: Array<BalancesMetadata>
 
-  // TODO implement in chaindata
   hasCheckMetadataHash?: boolean // Indicates if the chain has the CheckMetadataHash extension, enabling signing with ledger generic app
 }
 export type CustomChain = Chain & {
