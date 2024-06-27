@@ -98,10 +98,7 @@ export default interface MessageTypes {
     signature: HexString,
     payload?: SignerPayloadJSON
   ) => Promise<boolean>
-  approveSignSignet: (
-    id: SigningRequestID<"substrate-sign">,
-    payload?: SignerPayloadJSON
-  ) => Promise<boolean>
+  approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
