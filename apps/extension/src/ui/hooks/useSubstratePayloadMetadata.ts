@@ -69,11 +69,14 @@ export const useSubstratePayloadMetadata = (
           specVersion
         )
 
-        const payloadWithMetadataHash = {
-          ...payload,
-          metadataHash: `0x${metadataHash}`,
-          mode: 1,
-        } as SignerPayloadJSON
+        // payload can be modified only if withSignedTransaction is true
+        const payloadWithMetadataHash = payload.withSignedTransaction
+          ? ({
+              ...payload,
+              metadataHash: `0x${metadataHash}`,
+              mode: 1,
+            } as SignerPayloadJSON)
+          : payload
 
         const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)
         const hexPayload = u8aToHex(extPayload.toU8a(true))

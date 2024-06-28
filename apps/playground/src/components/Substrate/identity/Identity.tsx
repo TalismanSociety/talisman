@@ -93,7 +93,7 @@ const IdentityInner = () => {
           .setIdentity({
             display: { raw: data.display },
           })
-          .signAndSend(account.address, (result) => {
+          .signAndSend(account.address, { withSignedTransaction: true }, (result) => {
             const { status } = result
             setStatus(status)
 

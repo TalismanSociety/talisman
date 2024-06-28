@@ -282,7 +282,11 @@ export default class AssetTransfersRpc {
       { version: unsignedTx.version }
     )
 
-    const unsigned = { ...unsignedTx, ...checkMetadataHash } as UnsignedTransaction
+    const unsigned = {
+      ...unsignedTx,
+      ...checkMetadataHash,
+      withSignedTransaction: true,
+    } as UnsignedTransaction
 
     if (sign) {
       // create signable extrinsic payload
@@ -305,6 +309,7 @@ export default class AssetTransfersRpc {
         nonce,
         runtimeVersion,
         ...checkMetadataHash,
+        withSignedTransaction: true,
       })
 
       return { tx, registry, unsigned, chain, signature: undefined }

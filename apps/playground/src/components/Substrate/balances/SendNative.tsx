@@ -7,9 +7,13 @@ import { Section } from "../../shared/Section"
 import { useApi } from "../shared/useApi"
 import { useWallet } from "../shared/useWallet"
 
-type FormData = { plancks: string }
+type FormData = { recipient: string; plancks: string; withSignedTransaction: boolean }
 
-const DEFAULT_VALUE: FormData = { plancks: "100000000" }
+const DEFAULT_VALUE: FormData = {
+  recipient: "5EXb7e8Kq9m62XTFKVYmGsHFADU4knyFNg6NKJmLKDCz4Gij", // guardians account
+  plancks: "0",
+  withSignedTransaction: false,
+}
 
 export const SendBalance = () => (
   <Section title="Send Native Tokens">
@@ -41,16 +45,20 @@ const SendBalanceInner = () => {
       try {
         setTxProcessing(true)
         const unsub = await api.tx.balances
-          .transferAllowDeath("5EXb7e8Kq9m62XTFKVYmGsHFADU4knyFNg6NKJmLKDCz4Gij", data.plancks)
-          .signAndSend(account.address, (result) => {
-            const { status } = result
-            setStatus(status)
+          .transferAllowDeath(data.recipient, data.plancks)
+          .signAndSend(
+            account.address,
+            { withSignedTransaction: data.withSignedTransaction },
+            (result) => {
+              const { status } = result
+              setStatus(status)
 
-            if (status.isFinalized) {
-              unsub()
-              setTxProcessing(false)
+              if (status.isFinalized) {
+                unsub()
+                setTxProcessing(false)
+              }
             }
-          })
+          )
       } catch (err) {
         setTxError(err as Error)
         setTxProcessing(false)
@@ -64,7 +72,16 @@ const SendBalanceInner = () => {
   return (
     <>
       <form className="mb-8 space-y-8" onSubmit={handleSubmit(onSubmit)}>
-        dest: 5EXb7e8Kq9m62XTFKVYmGsHFADU4knyFNg6NKJmLKDCz4Gij
+        <div className="flex items-center gap-8">
+          <label htmlFor="recipient">Recipient : </label>
+          <input
+            id="recipient"
+            type="text"
+            autoComplete="off"
+            spellCheck={false}
+            {...register("recipient", { required: true })}
+          />
+        </div>
         <div className="flex items-center gap-8">
           <label htmlFor="plancks">Plancks : </label>
           <input
@@ -73,6 +90,14 @@ const SendBalanceInner = () => {
             autoComplete="off"
             spellCheck={false}
             {...register("plancks", { required: true })}
+          />
+        </div>
+        <div className="flex items-center gap-8">
+          <label htmlFor="withSignedTransaction">withSignedTransaction (Ledger support) : </label>
+          <input
+            id="withSignedTransaction"
+            type="checkbox"
+            {...register("withSignedTransaction")}
           />
         </div>
         <div className="flex gap-8">

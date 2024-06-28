@@ -67,16 +67,21 @@ export default class SigningHandler extends ExtensionHandler {
         analyticsProperties.chain = chain?.chainName ?? genesisHash
       }
 
-      const { signature } = request.sign(registry, pair)
+      let signature: HexString | undefined = undefined
       let signedTransaction: HexString | Uint8Array | undefined = undefined
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
+        // create signable extrinsic payload
+        const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+          version: payload.version,
+        })
+        signature = extrinsicPayload.sign(pair).signature
+
         const chains = Object.values(await chaindataProvider.chainsById())
         const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
 
-        // if payload was modified, construct the signed transaction
-        if (modifiedPayload) {
+        if (payload.withSignedTransaction) {
           const tx = registry.createType(
             "Extrinsic",
             { method: payload.method },
@@ -84,7 +89,7 @@ export default class SigningHandler extends ExtensionHandler {
           )
 
           // apply signature to the modified payload
-          tx.addSignature(payload.address, signature, modifiedPayload)
+          tx.addSignature(payload.address, signature, payload)
 
           signedTransaction = tx.toHex()
         }
@@ -101,6 +106,8 @@ export default class SigningHandler extends ExtensionHandler {
             payload.genesisHash
           )
         }
+      } else {
+        signature = request.sign(registry, pair).signature
       }
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
@@ -161,8 +168,7 @@ export default class SigningHandler extends ExtensionHandler {
           signedExtensions
         )
 
-        // if payload was modified, construct the signed transaction
-        if (modifiedPayload) {
+        if (payload.withSignedTransaction) {
           const tx = registry.createType(
             "Extrinsic",
             { method: payload.method },

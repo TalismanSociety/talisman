@@ -105,7 +105,9 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     if (!ledger || !payload || !onSigned || !account) return
 
     if (isJsonPayload(payload)) {
-      if (!registry) return setError("Missing registry")
+      if (!payload.withSignedTransaction)
+        return setError(t("This dapp needs to be updated in order to support Ledger signing."))
+      if (!registry) return setError(t("Missing registry"))
 
       const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
         (ext) => ext.identifier.toString() === "CheckMetadataHash"
@@ -113,7 +115,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       if (!hasCheckMetadataHash)
         return setError(t("This network doesn't support Ledger Polkadot Generic App."))
 
-      if (!shortMetadata) return setError("Missing short metadata")
+      if (!shortMetadata) return setError(t("Missing short metadata"))
     }
 
     setError(null)
