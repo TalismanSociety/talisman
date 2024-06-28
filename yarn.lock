@@ -13898,13 +13898,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dcent-web-connector@npm:^0.14.1":
-  version: 0.14.1
-  resolution: "dcent-web-connector@npm:0.14.1"
+"dcent-web-connector@npm:^0.16.0":
+  version: 0.16.0
+  resolution: "dcent-web-connector@npm:0.16.0"
   dependencies:
     bignumber.js: ^9.1.1
     events: ^3.0.0
-  checksum: 7f5ce96f153b8a4e9b103c06ebc27e8720889ef1255c97915768b03eb3b34ec47df94b76ddbc388584e7e4595e46179da778c6bdf908e0f41c90c4ca596b0d22
+  checksum: 4b40e7362c54e9d7fcdcf06e28a463b67fed0d8f4ba18661200480c572ed7a80f8738fbe8eb513eaf1f78855f855f24527bb21cad0bcf3a86a78f385e0330f30
   languageName: node
   linkType: hard
 
@@ -15971,7 +15971,7 @@ __metadata:
     crypto-browserify: 3.12.0
     css-loader: ^6.7.3
     date-fns: ^2.30.0
-    dcent-web-connector: ^0.14.1
+    dcent-web-connector: ^0.16.0
     decimal.js: 10.4.3
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.7
