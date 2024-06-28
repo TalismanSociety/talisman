@@ -29,14 +29,14 @@ module.exports = {
   // you can use this one instead to help find non-i18n text in the UI
   // first, comment out the above `defaultValue` function, and uncomment this one
   // then, run `rm -rf apps/extension/public/locales/en`
-  // then, run `yarn update:translations`
+  // then, run `pnpm update:translations`
   // all i18n text in the UI will then be surrounded by `T__thetext__T`
   // this makes non-i18n text visibly stand out!
   // but, make sure you don't commit the locales once you're done:
   // to revert, first run `git checkout apps/extension/public/locales/en`
   // then run `git clean -ffd apps/extension/public/locales/en`
   // then comment out this `defaultValue` function, and uncomment the one above
-  // then run `yarn update:translations` and commit the result
+  // then run `pnpm update:translations` and commit the result
   // defaultValue: (locale, _namespace, key) => (locale === "en" ? `T__${key}__T` : ""),
 
   input: [

@@ -1,11 +1,11 @@
 jest.setTimeout(20_000)
 
-// mock the `yarn preconstruct dev` version of the package
+// mock the `pnpm preconstruct dev` version of the package
 jest.mock("@talismn/chaindata-provider/src/net")
 
-// mock the `yarn build:packages` version of the package
+// mock the `pnpm build:packages` version of the package
 //
-// it only exists after calling yarn build:packages,
+// it only exists after calling pnpm build:packages,
 // so there's a `try {} catch {}` to ignore when it doesn't exist
 try {
   jest.mock(

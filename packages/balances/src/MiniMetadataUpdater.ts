@@ -1,8 +1,10 @@
 import { PromisePool } from "@supercharge/promise-pool"
-import { Chain, ChainId, CustomChain } from "@talismn/chaindata-provider"
 import {
-  ChaindataProvider,
   availableTokenLogoFilenames,
+  Chain,
+  ChaindataProvider,
+  ChainId,
+  CustomChain,
   fetchInitMiniMetadatas,
   fetchMiniMetadatas,
 } from "@talismn/chaindata-provider"
@@ -14,7 +16,7 @@ import { ChainConnectors } from "./BalanceModule"
 import log from "./log"
 import { AnyBalanceModule } from "./modules/util"
 import { db as balancesDb } from "./TalismanBalancesDatabase"
-import { MiniMetadata, MiniMetadataStatus, deriveMiniMetadataId } from "./types"
+import { deriveMiniMetadataId, MiniMetadata, MiniMetadataStatus } from "./types"
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
@@ -123,7 +125,9 @@ export class MiniMetadataUpdater {
     const dbHasMiniMetadatas = (await balancesDb.miniMetadatas.count()) > 0
     try {
       try {
-        var miniMetadatas: MiniMetadata[] = await fetchMiniMetadatas() // eslint-disable-line no-var
+        // TODO: Move `fetchMiniMetadatas` into this package,
+        // so that we don't have a circular import between `@talismn/balances` and `@talismn/chaindata-provider`.
+        var miniMetadatas = (await fetchMiniMetadatas()) as MiniMetadata[] // eslint-disable-line no-var
         if (miniMetadatas.length <= 0)
           throw new Error("Ignoring empty chaindata miniMetadatas response")
       } catch (error) {

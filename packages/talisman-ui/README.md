@@ -9,7 +9,7 @@ This library is meant to be used as an internal dependency, which helps consumin
 Add dependencies :
 
 ```bash
-yarn workspace <my-workspace> add -D tailwindcss autoprefixer postcss
+pnpm --filter <my-workspace-name> add -D tailwindcss autoprefixer postcss
 ```
 
 At the root of the new project, create a `tailwind.config.cjs` file with the following content :

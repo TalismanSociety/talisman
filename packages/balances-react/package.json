@@ -23,7 +23,7 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+    "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
     "@talismn/balances": "workspace:*",

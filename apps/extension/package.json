@@ -184,9 +184,9 @@
   },
   "scripts": {
     "start": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
+    "chore:update-translations": "pnpm exec i18next --silent --config i18next-parser.config.cjs",
     "dev": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "dev:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.dev.js --watch",
-    "update:translations": "yarn i18next --silent --config i18next-parser.config.cjs",
     "build:extension": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=qa",
     "build:extension:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.prod.js --env build=qa",
     "build:extension:ci": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=ci",
@@ -199,7 +199,7 @@
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"
+    "clean": "rm -rf dist .turbo node_modules public/locales"
   },
   "browserslist": {
     "production": [

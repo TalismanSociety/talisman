@@ -26,8 +26,8 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
-    "generate-init-data": "ts-node scripts/generateInitData.ts",
-    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+    "chore:generate-init-data": "ts-node scripts/generateInitData.ts",
+    "clean": "rm -rf dist init/*/dist net/dist plugins/dist .turbo node_modules"
   },
   "dependencies": {
     "anylogger": "^1.0.11",
