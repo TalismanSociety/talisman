@@ -1230,6 +1230,9 @@ importers:
       '@polkadot/extension-base':
         specifier: 0.46.6
         version: 0.46.6(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      '@polkadot/extension-inject':
+        specifier: 0.46.6
+        version: 0.46.6(@polkadot/api@12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@polkadot/keyring':
         specifier: 12.6.2
         version: 12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
