@@ -27,18 +27,22 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
+      - name: Enable corepack
+        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: yarn
+          cache: pnpm
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install --frozen-lockfile
       - name: Test
-        run: yarn preconstruct:dev && yarn run test
+        run: pnpm preconstruct:dev && pnpm test
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -47,7 +51,7 @@ jobs:
           npm_package_version=$(cat apps/extension/package.json | jq -r .version)
           echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
       - name: Extract translatable strings
-        run: yarn run update:translations
+        run: pnpm update:translations
       - name: Upload translatable strings
         uses: simplelocalize/github-action-cli@v1
         with:
@@ -56,7 +60,7 @@ jobs:
           cli-version: "2.2.0"
           args: "--apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
       - name: Build
-        run: yarn run build:extension:ci
+        run: pnpm build:extension:ci
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
           API_KEY_ONFINALITY: ${{ secrets.API_KEY_ONFINALITY }}
@@ -69,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build
-          path: ./apps/extension/dist/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}.zip
+          path: ./apps/extension/dist/chrome/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}_chrome.zip
           retention-days: 5
 
   # This job will build and publish a snapshot version of the packages which have changesets in this PR
@@ -81,26 +85,30 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
+      - name: Enable corepack
+        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: yarn
+          cache: pnpm
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install --frozen-lockfile
       - name: Bump changed package versions to a snapshot version
-        run: yarn changeset version --snapshot pr${{ github.event.pull_request.number }}
+        run: pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
       - name: Build snapshot packages
-        run: yarn build:packages
-      - name: Import workspace-tools yarn plugin
-        run: yarn plugin import workspace-tools
-      - name: Publish snapshot packages
-        run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish --tag pr${{ github.event.pull_request.number }}
+        run: pnpm build:packages
+      - name: Set publish config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${PNPM_TOKEN}"
         env:
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PNPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish snapshot packages
+        run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag pr${{ github.event.pull_request.number }}
 
   # This job will check for changed packages in this PR, and will comment on the PR if any changed packages do not yet have changesets
   ensure_pr_has_changeset:
@@ -111,18 +119,22 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # fetch all branches on the repo
           # (we need this in order to compare the changes between this PR and the default branch)
           fetch-depth: 0
+      - name: Enable corepack
+        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: yarn
+          cache: pnpm
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install --frozen-lockfile
       - name: Compile list of changed files
         id: changed-files
         # this will find the files which have been changed in this PR
@@ -159,7 +171,7 @@ jobs:
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
           echo "CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
-          yarn changeset status --since $BASE_REF --output changeset-status.json && cat changeset-status.json | jq '.releases[] | select(.changesets | length > 0) | .name' | sort | uniq >> $GITHUB_OUTPUT
+          pnpm changeset status --since $BASE_REF --output changeset-status.json && cat changeset-status.json | jq '.releases[] | select(.changesets | length > 0) | .name' | sort | uniq >> $GITHUB_OUTPUT
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Check if any changed packages don't have changesets
         id: without-changesets
@@ -202,7 +214,7 @@ jobs:
             ```
 
             Please add a changeset for these packages.  
-            You can do so by running `yarn changeset` in your local development environment.
+            You can do so by running `pnpm changeset` in your local development environment.
 
             Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
       - name: Update PR comment to indicate that all packages have changesets
@@ -247,14 +259,20 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # also get the previous commit
+      - name: Enable corepack
+        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: yarn
+          cache: pnpm
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install --frozen-lockfile
       - name: Create pull request
         id: changesets
         uses: changesets/action@v1
@@ -265,14 +283,14 @@ jobs:
         env:
           # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Import workspace-tools yarn plugin
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        run: yarn plugin import workspace-tools
       - name: Build packages
         if: steps.changesets.outputs.hasChangesets == 'false'
-        run: yarn build:packages
+        run: pnpm build:packages
+      - name: Set publish config
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${PNPM_TOKEN}"
+        env:
+          PNPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish packages
         if: steps.changesets.outputs.hasChangesets == 'false'
-        run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish
-        env:
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm --filter './packages/*' publish --no-git-checks --access public
