@@ -1,6 +1,6 @@
-import { Observable, firstValueFrom } from "rxjs"
+import { firstValueFrom, Observable } from "rxjs"
 
-import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, IToken, Token } from "./types"
+import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, Token } from "./types"
 
 /**
  * Util to add our onfinality api key to any public onfinality RPC urls in an array of chains.
@@ -38,12 +38,12 @@ export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): 
 //
 
 export const parseTokensResponse = (tokens: Token[]): Token[] =>
-  tokens.filter(isITokenPartial).filter(isToken)
+  tokens.filter(isTokenPartial).filter(isToken)
 
-export const isITokenPartial = (token: unknown): token is Partial<IToken> =>
+export const isTokenPartial = (token: unknown): token is Partial<Token> =>
   typeof token === "object" && token !== null
 
-export const isToken = (token: Partial<IToken>): token is IToken & Token => {
+export const isToken = (token: Partial<Token>): token is Token => {
   const id = token.id
   if (typeof id !== "string") return false
 

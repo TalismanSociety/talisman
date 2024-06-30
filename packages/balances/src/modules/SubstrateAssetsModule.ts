@@ -1,20 +1,20 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { BN, assert } from "@polkadot/util"
+import { assert, BN } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
-  ChainId,
   ChaindataProvider,
-  NewTokenType,
+  ChainId,
   githubTokenLogoUrl,
+  Token,
 } from "@talismn/chaindata-provider"
 import {
   $metadataV14,
-  PalletMV14,
-  StorageEntryMV14,
   filterMetadataPalletsAndItems,
   getMetadataVersion,
+  PalletMV14,
+  StorageEntryMV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { decodeAnyAddress } from "@talismn/util"
@@ -24,36 +24,23 @@ import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
 import {
-  GetOrCreateTypeRegistry,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-  StorageHelper,
   buildStorageDecoders,
   createTypeRegistryCache,
   findChainMeta,
+  GetOrCreateTypeRegistry,
   getUniqueChainIds,
+  RpcStateQuery,
+  RpcStateQueryHelper,
+  StorageHelper,
 } from "./util"
 
 type ModuleType = "substrate-assets"
+const moduleType: ModuleType = "substrate-assets"
+
+export type SubAssetsToken = Extract<Token, { type: ModuleType }>
 
 const subAssetTokenId = (chainId: ChainId, assetId: string, tokenSymbol: string) =>
   `${chainId}-substrate-assets-${assetId}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-export type SubAssetsToken = NewTokenType<
-  ModuleType,
-  {
-    existentialDeposit: string
-    assetId: string
-    isFrozen: boolean
-    chain: { id: ChainId }
-  }
->
-
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    "substrate-assets": SubAssetsToken
-  }
-}
 
 export type SubAssetsChainMeta = {
   isTestnet: boolean
@@ -104,7 +91,7 @@ export const SubAssetsModule: NewBalanceModule<
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
 
   return {
-    ...DefaultBalanceModule("substrate-assets"),
+    ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false

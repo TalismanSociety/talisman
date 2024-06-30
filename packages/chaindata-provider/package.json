@@ -17,8 +17,7 @@
   "files": [
     "/dist",
     "/init",
-    "/net",
-    "/plugins"
+    "/net"
   ],
   "engines": {
     "node": ">=18"
@@ -27,7 +26,7 @@
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
     "chore:generate-init-data": "ts-node scripts/generateInitData.ts",
-    "clean": "rm -rf dist init/*/dist net/dist plugins/dist .turbo node_modules"
+    "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules"
   },
   "dependencies": {
     "anylogger": "^1.0.11",
@@ -52,8 +51,7 @@
       "init/evm-networks.ts",
       "init/mini-metadatas.ts",
       "init/tokens.ts",
-      "net.ts",
-      "plugins.ts"
+      "net.ts"
     ]
   },
   "eslintConfig": {

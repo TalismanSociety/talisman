@@ -4,9 +4,9 @@ import {
   BalancesConfigTokenParams,
   EvmNetworkId,
   EvmNetworkList,
-  NewTokenType,
-  TokenList,
   githubTokenLogoUrl,
+  Token,
+  TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
@@ -21,46 +21,23 @@ import {
   BalanceJsonList,
   Balances,
   ExtraAmount,
-  NewBalanceType,
   getBalanceId,
+  NewBalanceType,
 } from "../types"
 import { uniswapV2PairAbi } from "./abis/uniswapV2Pair"
 
 export { uniswapV2PairAbi }
 
 type ModuleType = "evm-uniswapv2"
+const moduleType: ModuleType = "evm-uniswapv2"
+
+export type EvmUniswapV2Token = Extract<Token, { type: ModuleType; isCustom?: true }>
+export type CustomEvmUniswapV2Token = Extract<Token, { type: ModuleType; isCustom: true }>
 
 export const evmUniswapV2TokenId = (
   chainId: EvmNetworkId,
   contractAddress: EvmUniswapV2Token["contractAddress"]
 ) => `${chainId}-evm-uniswapv2-${contractAddress}`.toLowerCase()
-
-export type EvmUniswapV2Token = NewTokenType<
-  ModuleType,
-  {
-    contractAddress: string
-    symbol0: string
-    symbol1: string
-    decimals0: number
-    decimals1: number
-    tokenAddress0: string
-    tokenAddress1: string
-    coingeckoId0?: string
-    coingeckoId1?: string
-    evmNetwork: { id: EvmNetworkId } | null
-  }
->
-
-export type CustomEvmUniswapV2Token = Omit<EvmUniswapV2Token, "isCustom"> & {
-  isCustom: true
-  image?: string
-}
-
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    "evm-uniswapv2": EvmUniswapV2Token
-  }
-}
 
 export type EvmUniswapV2ChainMeta = {
   isTestnet: boolean
@@ -102,7 +79,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
   assert(chainConnector, "This module requires an evm chain connector")
 
   return {
-    ...DefaultBalanceModule("evm-uniswapv2"),
+    ...DefaultBalanceModule(moduleType),
 
     async fetchEvmChainMeta(chainId) {
       const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
