@@ -51,7 +51,7 @@ jobs:
           npm_package_version=$(cat apps/extension/package.json | jq -r .version)
           echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
       - name: Extract translatable strings
-        run: pnpm update:translations
+        run: pnpm chore:update-translations
       - name: Upload translatable strings
         uses: simplelocalize/github-action-cli@v1
         with:

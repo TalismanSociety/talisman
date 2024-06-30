@@ -15,7 +15,9 @@
     "chore:format": "prettier --write \"{apps,config,packages}/**/src/**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "chore:update-translations": "pnpm run --filter extension chore:update-translations",
     "chore:update:translations": "pnpm chore:update-translations",
+    "update:translations": "pnpm chore:update-translations",
     "chore:generate-init-data": "pnpm run --filter @talismn/chaindata-provider chore:generate-init-data",
+    "generate-init-data": "pnpm chore:generate-init-data",
     "dev": "concurrently --prefix \"{name}\" --prefix-colors auto \"pnpm:dev:*\"",
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
     "dev:extension": "preconstruct dev && pnpm run --filter extension dev",
@@ -27,9 +29,9 @@
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
-    "lint": "pnpm run -r lint",
-    "test": "pnpm run -r test",
-    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules"
+    "lint": "pnpm run -r --parallel lint",
+    "test": "pnpm run -r --parallel test",
+    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
   },
   "devDependencies": {
     "@alectalisman/preconstruct-cli": "2.3.0-e",

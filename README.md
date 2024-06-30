@@ -157,7 +157,7 @@ When building UI features, please follow the following spec to ensure they're tr
 
 ### Scripts
 
-- `update:translations` : finds all of the i18n strings in the codebase and adds them to the english translations files which i18next loads in development builds of the wallet
+- `chore:update-translations` : finds all of the i18n strings in the codebase and adds them to the english translations files which i18next loads in development builds of the wallet
 - `dev` : builds and watches all packages/apps with hot reloading
 - `dev:extension` : when working on extension only, for better color output
 - `build`: builds the wallet in `packages/apps/extension/dist/chrome` folder, without sentry keys
