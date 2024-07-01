@@ -166,7 +166,8 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
         type="button"
         // The user can style the trigger based on the state
         data-state={context.open ? "open" : "closed"}
-        {...context.getReferenceProps(props)}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
       >
         {children}
       </button>
@@ -192,7 +193,8 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
             }}
             aria-labelledby={context.labelId}
             aria-describedby={context.descriptionId}
-            {...context.getFloatingProps(props)}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
           >
             {props.children}
           </div>

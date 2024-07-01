@@ -17,7 +17,9 @@ import {
   cloneElement,
   createContext,
   forwardRef,
+  HTMLProps,
   isValidElement,
+  ReactNode,
   useContext,
   useMemo,
   useState,
@@ -107,7 +109,7 @@ export const useTooltipContext = (): NonNullable<ContextType> => {
   return context
 }
 
-export function Tooltip({ children, ...options }: { children: React.ReactNode } & TooltipOptions) {
+export function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
   // This can accept any props as options, e.g. `placement`,
   // or other positioning options.
   const tooltip = useTooltip(options)
@@ -116,7 +118,7 @@ export function Tooltip({ children, ...options }: { children: React.ReactNode } 
 
 export const TooltipTrigger = forwardRef<
   HTMLElement,
-  React.HTMLProps<HTMLElement> & { asChild?: boolean }
+  HTMLProps<HTMLElement> & { asChild?: boolean }
 >(function TooltipTrigger({ children, asChild = false, ...props }, propRef) {
   const context = useTooltipContext()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,14 +143,15 @@ export const TooltipTrigger = forwardRef<
       ref={ref}
       // The user can style the trigger based on the state
       data-state={context.open ? "open" : "closed"}
-      {...context.getReferenceProps(props)}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
     >
       {children}
     </button>
   )
 })
 
-export const TooltipContent = forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>(
+export const TooltipContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(
   function TooltipContent(
     {
       className = "rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-xs shadow",
@@ -172,7 +175,8 @@ export const TooltipContent = forwardRef<HTMLDivElement, React.HTMLProps<HTMLDiv
               visibility: context.x == null ? "hidden" : "visible",
               ...props.style,
             }}
-            {...context.getFloatingProps(props)}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
           />
         )}
       </FloatingPortal>

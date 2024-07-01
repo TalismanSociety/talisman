@@ -23,7 +23,6 @@ import {
   IChaindataProvider,
   Token,
   TokenId,
-  TokenTypes,
 } from "./types"
 import * as util from "./util"
 
@@ -182,13 +181,14 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  async tokensByIdForType<TTokenTYpe extends TokenTypes[keyof TokenTypes]["type"]>(
-    tType: TTokenTYpe
-  ) {
-    const filteredTokensObs = this.tokensObservable
-      .pipe(map((tokens) => tokens.filter((token) => token.type === tType)))
+  async tokensByIdForType<TokenType extends Token["type"]>(type: TokenType) {
+    const tokensByIdForTypeObservable = this.tokensObservable
+      .pipe(map((tokens) => tokens.filter((token) => token.type === type)))
       .pipe(map(util.itemsToMapById))
-    return await util.wrapObservableWithGetter("Failed to get tokenIds", filteredTokensObs)
+    return await util.wrapObservableWithGetter(
+      "Failed to get tokenIds",
+      tokensByIdForTypeObservable
+    )
   }
 
   //
