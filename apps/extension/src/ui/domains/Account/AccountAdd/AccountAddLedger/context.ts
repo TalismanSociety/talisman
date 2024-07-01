@@ -71,7 +71,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
   const importAccounts = useCallback(
     async (accounts: LedgerAccountDef[]) => {
-      assert(data.substrateAppType, "Substrate app type is required")
+      if (data.type !== "ethereum") assert(data.substrateAppType, "Substrate app type is required")
 
       if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
         assert(
@@ -84,14 +84,17 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
       const addresses: string[] = []
       for (const account of accounts)
         addresses.push(
-          await createAccount(account, getSubstrateLedgerAppType(data.substrateAppType))
+          await createAccount(
+            account,
+            data.substrateAppType ? getSubstrateLedgerAppType(data.substrateAppType) : undefined
+          )
         )
 
       api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
       return addresses
     },
-    [chain?.genesisHash, data.substrateAppType]
+    [chain?.genesisHash, data.substrateAppType, data.type]
   )
 
   return { data, updateData, importAccounts, onSuccess }
