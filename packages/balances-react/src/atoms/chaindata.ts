@@ -26,7 +26,7 @@ export const chaindataAtom = atomWithObservable((get) => {
   const enableTestnets = get(enableTestnetsAtom)
 
   const filterTestnets = <T extends { isTestnet: boolean }>(items: T[]) =>
-    enableTestnets ? items : items.filter(({ isTestnet }) => !isTestnet)
+    enableTestnets ? items : items.filter((item) => item && !item.isTestnet)
   const filterMapTestnets = <T extends { isTestnet: boolean }>(items: Record<string, T>) =>
     enableTestnets
       ? items
