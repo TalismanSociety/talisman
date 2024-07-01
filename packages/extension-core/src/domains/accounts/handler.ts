@@ -47,7 +47,7 @@ import type {
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "./types"
-import { AccountImportSources, AccountType } from "./types"
+import { AccountImportSources, AccountType, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(type: string | undefined, method: string) {
@@ -306,20 +306,23 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateLedger({
-    accountIndex,
-    address,
-    addressOffset,
-    genesisHash,
-    name,
-  }: RequestAccountCreateLedgerSubstrate): string {
-    const { pair } = keyring.addHardware(address, "ledger", {
+  private accountsCreateLedgerSubstrate(account: RequestAccountCreateLedgerSubstrate): string {
+    const { address, accountIndex, addressOffset, ledgerApp, name } = account
+
+    const meta: KeyringPair$Meta = {
       accountIndex,
       addressOffset,
-      genesisHash,
       name,
       origin: AccountType.Ledger,
-    })
+      ledgerApp,
+      type: "ed25519",
+    }
+
+    if (account.ledgerApp === SubstrateLedgerAppType.Legacy) meta.genesisHash = account.genesisHash
+    if (account.ledgerApp === SubstrateLedgerAppType.Generic && account.migrationAppName)
+      meta.migrationAppName = account.migrationAppName
+
+    const { pair } = keyring.addHardware(address, "ledger", meta)
 
     this.captureAccountCreateEvent("substrate", "hardware")
 
@@ -607,7 +610,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.create.dcent)":
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.ledger.substrate)":
-        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrate)
+        return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
       case "pri(accounts.create.ledger.ethereum)":
         return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
       case "pri(accounts.create.qr.substrate)":

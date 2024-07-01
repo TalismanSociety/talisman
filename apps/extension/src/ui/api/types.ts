@@ -85,12 +85,20 @@ export default interface MessageTypes {
 
   // signing messages -------------------------------------------------------
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
-  approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  approveSign: (
+    id: SigningRequestID<"substrate-sign">,
+    payload?: SignerPayloadJSON
+  ) => Promise<boolean>
   approveSignHardware: (
     id: SigningRequestID<"substrate-sign">,
-    signature: HexString
+    signature: HexString,
+    payload?: SignerPayloadJSON
   ) => Promise<boolean>
-  approveSignQr: (id: SigningRequestID<"substrate-sign">, signature: HexString) => Promise<boolean>
+  approveSignQr: (
+    id: SigningRequestID<"substrate-sign">,
+    signature: HexString,
+    payload?: SignerPayloadJSON
+  ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
@@ -122,7 +130,7 @@ export default interface MessageTypes {
   ) => Promise<string>
   accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateLedger: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
+  accountCreateLedgerSubstrate: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
   accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (
     name: string,

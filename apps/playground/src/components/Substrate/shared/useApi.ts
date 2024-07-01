@@ -19,7 +19,7 @@ const useApiProvider = ({ options = DEFAULT_OPTIONS }: ApiConfig) => {
   useEffect(() => {
     setError(undefined)
 
-    if (wsUrl?.startsWith("wss://")) {
+    if (wsUrl) {
       setIsConnecting(true)
       // eslint-disable-next-line no-console
       console.log("connecting to", wsUrl)

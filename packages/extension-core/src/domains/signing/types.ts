@@ -1,16 +1,15 @@
 import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
-  ResponseSigning,
 } from "@polkadot/extension-base/background/types"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
 import { RpcTransactionRequest } from "viem"
 
 import { BaseRequest, BaseRequestId } from "../../types/base"
 import { AccountJsonAny } from "../accounts/types"
 import { EthGasSettingsEip1559, EthGasSettingsLegacy, EvmNetworkId } from "../ethereum/types"
 
-export type { ResponseSigning, SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
+export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
 export type {
   RequestSign,
@@ -31,8 +30,14 @@ export type KnownSigningRequestIdOnly<T extends keyof SigningRequests> = {
   id: SigningRequestID<T>
 }
 
+export type KnownSigningRequestApprove<T extends keyof SigningRequests> = {
+  id: SigningRequestID<T>
+  payload?: SignerPayloadJSON
+}
+
 export type RequestSigningApproveSignature = Omit<PolkadotRequestSigningApproveSignature, "id"> & {
   id: SigningRequestID<SUBSTRATE_SIGN>
+  payload?: SignerPayloadJSON
 }
 
 interface BaseSigningRequest<T extends keyof SigningRequests> extends BaseRequest<T> {
@@ -47,6 +52,8 @@ export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SI
   request: RequestSign
   account: AccountJsonAny
 }
+
+export type SubstrateSignResponse = Omit<SignerResult, "id"> & { id: string }
 
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
   ethChainId: EvmNetworkId
@@ -91,7 +98,7 @@ export type AnySigningRequest = SubstrateSigningRequest | AnyEthSigningRequest
 export type SigningRequests = {
   "eth-sign": [EthSignRequest, string]
   "eth-send": [EthSignAndSendRequest, string]
-  "substrate-sign": [SubstrateSigningRequest, ResponseSigning]
+  "substrate-sign": [SubstrateSigningRequest, SubstrateSignResponse]
 }
 
 export type EthResponseSign = string
@@ -160,7 +167,7 @@ export type EthTransactionDetails = {
 
 export interface SigningMessages {
   // signing message signatures
-  "pri(signing.approveSign)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
+  "pri(signing.approveSign)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
   "pri(signing.approveSign.qr)": [RequestSigningApproveSignature, boolean]
   "pri(signing.approveSign.signet)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]

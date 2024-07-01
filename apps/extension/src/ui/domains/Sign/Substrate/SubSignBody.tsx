@@ -1,8 +1,6 @@
 import { log } from "@extension/shared"
 import { GenericExtrinsic } from "@polkadot/types"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
-import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { FC } from "react"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
@@ -45,10 +43,7 @@ const getComponentFromTxDetails = (extrinsic: GenericExtrinsic | null | undefine
 const Fallback: FallbackRender = () => <SubSignBodyDefault />
 
 export const SubSignBody: FC = () => {
-  const { payload } = usePolkadotSigningRequest()
-  const { isLoading, data: extrinsic } = useExtrinsic(payload)
-
-  if (isLoading) return <SignViewBodyShimmer />
+  const { extrinsic } = usePolkadotSigningRequest()
 
   const Component = getComponentFromTxDetails(extrinsic)
 

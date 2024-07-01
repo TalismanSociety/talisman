@@ -1,3 +1,4 @@
+import { TypeRegistry } from "@polkadot/types"
 import { Codec } from "@polkadot/types-codec/types"
 import type { DetectCodec } from "@polkadot/types/types"
 import { u8aConcatStrict } from "@polkadot/util"
@@ -11,19 +12,24 @@ export const stateCall = async <K extends string = string>(
   method: string,
   resultType: K,
   args: Codec[],
-  blockHash?: HexString
+  blockHash?: HexString,
+  isCacheable?: boolean
 ): Promise<Result<DetectCodec<Codec, K>, "Unable to create type" | string>> => {
   try {
-    // on a state call there are always arguments
-    const registry = args[0].registry
+    // use registry from the first argument if any, in case arg is a custom type
+    const registry = args.length ? args[0].registry : new TypeRegistry()
 
-    const bytes = registry.createType("Raw", u8aConcatStrict(args.map((arg) => arg.toU8a())))
+    const bytes = registry.createType(
+      "Raw",
+      args.length ? u8aConcatStrict(args.map((arg) => arg.toU8a())) : undefined
+    )
 
-    const result = await chainConnector.send(chainId, "state_call", [
-      method,
-      bytes.toHex(),
-      blockHash,
-    ])
+    const result = await chainConnector.send(
+      chainId,
+      "state_call",
+      [method, bytes.toHex(), blockHash],
+      isCacheable
+    )
 
     try {
       const createdType = registry.createType(resultType, result)

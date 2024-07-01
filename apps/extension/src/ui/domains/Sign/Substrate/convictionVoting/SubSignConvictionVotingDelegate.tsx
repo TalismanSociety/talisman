@@ -1,5 +1,4 @@
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,8 +9,7 @@ import { getConviction } from "./getConviction"
 
 export const SubSignConvictionVotingDelegate = () => {
   const { t } = useTranslation("request")
-  const { chain, payload } = usePolkadotSigningRequest()
-  const { data: extrinsic } = useExtrinsic(payload)
+  const { chain, extrinsic } = usePolkadotSigningRequest()
 
   const props = useMemo(() => {
     if (!extrinsic || !chain) return null

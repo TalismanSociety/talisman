@@ -54,19 +54,22 @@ export const api: MessageTypes = {
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
-  approveSign: (id) =>
+  approveSign: (id, payload) =>
     messageService.sendMessage("pri(signing.approveSign)", {
       id,
+      payload,
     }),
-  approveSignHardware: (id, signature) =>
+  approveSignHardware: (id, signature, payload) =>
     messageService.sendMessage("pri(signing.approveSign.hardware)", {
       id,
       signature,
+      payload,
     }),
-  approveSignQr: (id, signature) =>
+  approveSignQr: (id, signature, payload) =>
     messageService.sendMessage("pri(signing.approveSign.qr)", {
       id,
       signature,
+      payload,
     }),
   approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
 
@@ -105,14 +108,9 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateLedger: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
-    messageService.sendMessage("pri(accounts.create.ledger.substrate)", {
-      accountIndex,
-      address,
-      addressOffset,
-      genesisHash,
-      name,
-    }),
+  accountCreateLedgerSubstrate: (account) =>
+    messageService.sendMessage("pri(accounts.create.ledger.substrate)", account),
+
   accountCreateLedgerEthereum: (name, address, path) =>
     messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
       name,

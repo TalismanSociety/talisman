@@ -1,4 +1,5 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
+import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
+import { TypeRegistry } from "@polkadot/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -6,7 +7,8 @@ import { FC, Suspense, lazy } from "react"
 
 import { SignDcentSubstrate } from "./SignDcentSubstrate"
 
-const SignLedgerSubstrate = lazy(() => import("./SignLedgerSubstrate"))
+const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
+const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
 
 export type SignHardwareSubstrateProps = {
   payload: SignerPayloadRaw | SignerPayloadJSON | undefined
@@ -15,7 +17,9 @@ export type SignHardwareSubstrateProps = {
   className?: string
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
-  onSigned: (result: { signature: HexString }) => Promise<void> | void
+  onSigned: (result: { signature: HexString; payload?: SignerPayloadJSON }) => Promise<void> | void
+  shortMetadata?: string
+  registry?: TypeRegistry
 }
 
 const getSignHardwareComponent = (account: AccountJsonAny | null) => {
@@ -24,12 +28,18 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
   switch (account?.origin) {
     case AccountType.Dcent:
       return SignDcentSubstrate
-    case AccountType.Ledger:
-    case // @ts-expect-error incomplete migration, remove once migration is completed
-    "HARDWARE":
-      return SignLedgerSubstrate
+    case AccountType.Ledger: {
+      switch (account?.ledgerApp) {
+        case SubstrateLedgerAppType.Legacy:
+          return SignLedgerSubstrateLegacy
+        case SubstrateLedgerAppType.Generic:
+          return SignLedgerSubstrateGeneric
+        default:
+          throw new Error("Not implemented")
+      }
+    }
     default:
-      throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)
+      throw new Error(`Unknown sign hardware account type for account origin ${account?.origin}`)
   }
 }
 

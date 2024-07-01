@@ -5,7 +5,7 @@ import { Port } from "../../types/base"
 import { getMetadataDef } from "../../util/getMetadataDef"
 
 export class SubHandler extends ExtensionHandler {
-  private send: MessageHandler<"pri(substrate.rpc.send)"> = async ({
+  private send: MessageHandler<"pri(substrate.rpc.send)"> = ({
     chainId,
     method,
     params,
@@ -14,7 +14,7 @@ export class SubHandler extends ExtensionHandler {
     return chainConnector.send(chainId, method, params, isCacheable)
   }
 
-  private metadata: MessageHandler<"pri(substrate.metadata.get)"> = async ({
+  private metadata: MessageHandler<"pri(substrate.metadata.get)"> = ({
     genesisHash,
     specVersion,
     blockHash,

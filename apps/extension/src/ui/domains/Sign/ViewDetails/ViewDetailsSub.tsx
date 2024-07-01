@@ -27,15 +27,15 @@ const ViewDetailsContent: FC<{
 }> = ({ onClose }) => {
   const { t } = useTranslation("request")
   const { genericEvent } = useAnalytics()
-  const { request, chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
+  const { chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
   const nativeToken = useToken(chain?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
-  const isExtrinsic = isJsonPayload(request?.payload)
+  const isExtrinsic = isJsonPayload(payload)
 
-  const { data, type } = (request?.payload || {}) as SignerPayloadRaw
-  const { tip: tipRaw } = (request?.payload || {}) as SignerPayloadJSON
+  const { data, type } = (payload || {}) as SignerPayloadRaw
+  const { tip: tipRaw } = (payload || {}) as SignerPayloadJSON
 
   const tip = useMemo(
     () =>
@@ -87,7 +87,7 @@ const ViewDetailsContent: FC<{
         <div className="text-body-secondary">{t("Details")}</div>
         <ViewDetailsAddress
           label={t("From")}
-          address={request.payload.address}
+          address={payload.address}
           chainPrefix={chain?.prefix}
           blockExplorerUrl={chain?.subscanUrl}
         />
@@ -134,18 +134,12 @@ const ViewDetailsContent: FC<{
 }
 
 export const ViewDetailsSub: FC = () => {
-  const { isDecodingExtrinsic } = usePolkadotSigningRequest()
   const { isOpen, open, close } = useOpenClose()
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isDecodingExtrinsic} />
-      <Drawer
-        anchor="bottom"
-        containerId="main"
-        isOpen={isOpen && !isDecodingExtrinsic}
-        onDismiss={close}
-      >
+      <ViewDetailsButton onClick={open} hide={isOpen} />
+      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

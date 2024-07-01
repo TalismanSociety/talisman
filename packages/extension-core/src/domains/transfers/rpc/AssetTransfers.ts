@@ -3,12 +3,15 @@ import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import type { UnsignedTransaction } from "@substrate/txwrapper-core"
+import { SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
 
 import { balanceModules } from "../../../rpcs/balance-modules"
 import { chainConnector } from "../../../rpcs/chain-connector"
 import { chaindataProvider } from "../../../rpcs/chaindata"
 import { Address } from "../../../types/base"
+import { getCheckMetadataHashPayloadProps } from "../../../util/getCheckMetadataHashPayloadProps"
 import { getExtrinsicDispatchInfo } from "../../../util/getExtrinsicDispatchInfo"
 import { getRuntimeVersion } from "../../../util/getRuntimeVersion"
 import { getTypeRegistry } from "../../../util/getTypeRegistry"
@@ -182,6 +185,9 @@ export default class AssetTransfersRpc {
     const token = await chaindataProvider.tokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
+    assert(chain.nativeToken, `Unknown native token for chain ${chainId}`)
+    const nativeToken = (await chaindataProvider.tokenById(chain.nativeToken.id)) as SubNativeToken
+
     const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
       chainConnector.send(chainId, "chain_getBlockHash", [], false),
       chainConnector.send(chainId, "chain_getBlock", [], false),
@@ -210,6 +216,15 @@ export default class AssetTransfersRpc {
         `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`
       )
 
+    const checkMetadataHash = getCheckMetadataHashPayloadProps(
+      registry,
+      metadataRpc,
+      chain.prefix,
+      runtimeVersion.specName,
+      runtimeVersion.specVersion,
+      nativeToken
+    )
+
     const transaction = await palletModule.transferToken({
       tokenId,
       from: from.address,
@@ -236,7 +251,7 @@ export default class AssetTransfersRpc {
       `Failed to handle tx type ${transaction.type} for token '${token.id}'`
     )
 
-    const unsigned = transaction.tx
+    const unsignedTx = transaction.tx
 
     // If the following line of code is not added, the extrinsic (referred to as "unsigned" here)
     // will fail when submitted to the Picasso chain, resulting in a wasm runtime panic.
@@ -258,31 +273,44 @@ export default class AssetTransfersRpc {
     //
     // If we override the default assetId value from @substrate/txwrapper-core (which sets assetId to 0)
     // and instead set assetId back to undefined, our extrinsics also encode the assetId field as 00.
-    if (unsigned.assetId === 0) unsigned.assetId = undefined
+    if (unsignedTx.assetId === 0) unsignedTx.assetId = undefined
 
     // create the unsigned extrinsic
     const tx = registry.createType(
       "Extrinsic",
-      { method: unsigned.method },
-      { version: unsigned.version }
+      { method: unsignedTx.method },
+      { version: unsignedTx.version }
     )
+
+    const unsigned = {
+      ...unsignedTx,
+      ...checkMetadataHash,
+      withSignedTransaction: true,
+    } as UnsignedTransaction
 
     if (sign) {
       // create signable extrinsic payload
       const extrinsicPayload = registry.createType("ExtrinsicPayload", unsigned, {
-        version: unsigned.version,
+        version: unsignedTx.version,
       })
 
       // sign it using keyring (will fail if keyring is locked or if address is from hardware device)
       const { signature } = extrinsicPayload.sign(from)
 
       // apply signature
-      tx.addSignature(unsigned.address, signature, unsigned)
+      tx.addSignature(unsignedTx.address, signature, unsigned)
 
       return { tx, registry, unsigned, chain, signature }
     } else {
       // tx signed with fake signature for fee calculation
-      tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
+      tx.signFake(unsignedTx.address, {
+        blockHash,
+        genesisHash,
+        nonce,
+        runtimeVersion,
+        ...checkMetadataHash,
+        withSignedTransaction: true,
+      })
 
       return { tx, registry, unsigned, chain, signature: undefined }
     }

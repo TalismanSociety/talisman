@@ -1,6 +1,5 @@
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -9,8 +8,7 @@ import { ViewDetailsSub } from "../ViewDetails/ViewDetailsSub"
 
 export const SubSignBodyDefault = () => {
   const { t } = useTranslation("request")
-  const { account, chain, payload } = usePolkadotSigningRequest()
-  const { data: extrinsic } = useExtrinsic(payload)
+  const { account, chain, extrinsic } = usePolkadotSigningRequest()
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {

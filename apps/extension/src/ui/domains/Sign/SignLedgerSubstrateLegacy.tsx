@@ -3,7 +3,7 @@ import { log } from "@extension/shared"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
-import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
+import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,7 +23,7 @@ function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is
   return !!(payload as SignerPayloadRaw).data
 }
 
-const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
+const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   className = "",
   onSigned,
   onSentToDevice,
@@ -37,9 +37,8 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [unsigned, setUnsigned] = useState<Uint8Array>()
   const [isRaw, setIsRaw] = useState<boolean>()
-  const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerSubstrate(
-    account?.genesisHash
-  )
+  const { ledger, refresh, status, message, isReady, requiresManualRetry } =
+    useLedgerSubstrateLegacy(account?.genesisHash)
 
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({
@@ -162,4 +161,4 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
 }
 
 // default export to allow for lazy loading
-export default SignLedgerSubstrate
+export default SignLedgerSubstrateLegacy
