@@ -18,6 +18,7 @@ import type {
   UnsubscribeFn,
 } from "@extension/core"
 import { log } from "@extension/shared"
+import { PORT_EXTENSION } from "@extension/shared"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
@@ -34,28 +35,31 @@ export interface Handler {
 
 export type Handlers = Record<string, Handler>
 
-type MessageServiceConstructorArgs = {
-  origin: OriginTypes
-  messageSource?: Port | Window
-}
-
-export default class MessageService {
+export default class PortMessageService {
   handlers: Handlers = {}
   idCounter = 0
-  origin = "talisman-page"
-  messageSource: Port | Window = window
+  origin = "talisman-extension"
+  port: Port | undefined = undefined
 
-  constructor({ origin, messageSource }: MessageServiceConstructorArgs) {
-    if (origin === "talisman-extension" && !messageSource) {
-      throw Error(
-        "An instance of chrome.runtime.Port must be provided as 'messageSource' when used with extension as origin"
-      )
-    } else if (messageSource) {
-      this.messageSource = messageSource
-    }
-    this.origin = origin
+  constructor() {
     this.handleResponse = this.handleResponse.bind(this)
     this.sendMessage = this.sendMessage.bind(this)
+    this.createPort = this.createPort.bind(this)
+  }
+
+  createPort = () => {
+    this.port = chrome.runtime.connect({ name: PORT_EXTENSION })
+
+    this.port.onMessage.addListener(this.handleResponse)
+
+    const handleDisconnect = () => {
+      this.port?.onMessage.removeListener(this.handleResponse)
+      this.port?.onDisconnect.removeListener(handleDisconnect)
+      this.port = undefined
+    }
+
+    this.port.onDisconnect.addListener(handleDisconnect)
+    return this.port
   }
 
   // a generic message sender that creates an event, returning a promise that will
@@ -93,7 +97,11 @@ export default class MessageService {
         request: request || (null as RequestTypes[TMessageType]),
       }
 
-      this.messageSource.postMessage(transportRequestMessage, window.location.origin)
+      if (!this.port) {
+        this.createPort()
+      }
+
+      this.port?.postMessage(transportRequestMessage)
     })
   }
 
@@ -122,7 +130,11 @@ export default class MessageService {
       request: request || (null as RequestTypes[TMessageType]),
     }
 
-    this.messageSource.postMessage(transportRequestMessage, window.location.origin)
+    if (!this.port) {
+      this.createPort()
+    }
+
+    this.port?.postMessage(transportRequestMessage)
 
     return () => {
       this.sendMessage("pri(unsubscribe)", { id }).then(() => delete this.handlers[id])

@@ -5,16 +5,14 @@ import { DEBUG, isTalismanHostname } from "@extension/shared"
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 
-import MessageService from "./common/MessageService"
+import WindowMessageService from "./common/WindowMessageService"
 import { injectEthereum } from "./inject/ethereum/injectEthereum"
 import TalismanInjected from "./inject/substrate/Injected"
 import { injectExtension } from "./inject/substrate/injectExtension"
 import { injectSubstrate } from "./inject/substrate/injectSubstrate"
 import type { Injected } from "./inject/substrate/types"
 
-const messageService = new MessageService({
-  origin: "talisman-page",
-})
+const messageService = new WindowMessageService()
 
 // setup a response listener (events created by the loader for extension responses)
 window.addEventListener("message", ({ data, source }: Message): void => {
