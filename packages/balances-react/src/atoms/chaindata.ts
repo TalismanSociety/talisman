@@ -25,7 +25,7 @@ export const miniMetadatasAtom = atom(async (get) => (await get(chaindataAtom)).
 export const chaindataAtom = atomWithObservable((get) => {
   const enableTestnets = get(enableTestnetsAtom)
 
-  const filterTestnets = <T extends { isTestnet: boolean }>(items: T[]) =>
+  const filterTestnets = <T extends { isTestnet: boolean }>(items: Array<T | null>) =>
     enableTestnets ? items : items.filter((item) => item && !item.isTestnet)
   const filterMapTestnets = <T extends { isTestnet: boolean }>(items: Record<string, T>) =>
     enableTestnets
