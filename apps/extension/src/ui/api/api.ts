@@ -1,21 +1,8 @@
-import MessageService from "@common/MessageService"
-import { PORT_EXTENSION } from "@extension/shared"
+import PortMessageService from "@common/PortMessageService"
 
 import MessageTypes from "./types"
 
-const port = chrome.runtime.connect({ name: PORT_EXTENSION })
-const messageService = new MessageService({
-  origin: "talisman-extension",
-  messageSource: port,
-})
-port.onMessage.addListener(messageService.handleResponse)
-
-const handleDisconnect = () => {
-  port.onMessage.removeListener(messageService.handleResponse)
-  port.onDisconnect.removeListener(handleDisconnect)
-}
-
-port.onDisconnect.addListener(handleDisconnect)
+const messageService = new PortMessageService()
 
 export const api: MessageTypes = {
   ping: () => messageService.sendMessage("pri(ping)"),
