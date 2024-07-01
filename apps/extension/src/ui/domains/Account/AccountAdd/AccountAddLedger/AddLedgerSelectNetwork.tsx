@@ -118,11 +118,19 @@ const SubstrateMigrationNetworkSelect: FC<{
         renderItem={renderSubstrateMigrationOption}
         onChange={onChange}
       />
-      <p className="text-alert-warn mt-6 text-sm">
-        {t(
-          "Please note: you should not be sending any assets to a Ledger Migration app account. These accounts are intended to help you recover and transfer your assets to Ledger Generic App accounts."
-        )}
-      </p>
+      <div className="text-alert-warn mt-6 flex flex-col gap-4">
+        <h2 className="text-base">{t("Notes on Ledger Migration App accounts")}</h2>
+        <p className="text-sm">
+          {t(
+            "Please do not send any assets to a Ledger Migration app account. These accounts are only intended to help you recover and transfer your assets to Ledger Generic App accounts."
+          )}
+        </p>
+        <p className="text-sm">
+          {t(
+            "Before you can send funds from accounts created with this app, the network needs to perform a runtime upgrade. Please check with the network team before proceeding."
+          )}
+        </p>
+      </div>
     </>
   )
 }
