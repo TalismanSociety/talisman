@@ -10,5 +10,11 @@
   "access": "restricted",
   "baseBranch": "origin/dev",
   "updateInternalDependencies": "patch",
-  "ignore": ["balances-demo", "extension", "playground"]
+  "ignore": [
+    "balances-demo",
+    "extension",
+    "playground",
+    "@talismn/extension-core",
+    "@talismn/extension-shared"
+  ]
 }
