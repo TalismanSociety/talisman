@@ -22,7 +22,7 @@ const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | und
   "43113": { chainFamily: "avalanche", chainNetwork: "fuji" },
   "7777777": { chainFamily: "zora", chainNetwork: "mainnet" },
   "999999999": { chainFamily: "zora", chainNetwork: "sepolia" },
-  "238": { chainFamily: "blast", chainNetwork: "mainnet" },
+  "81457": { chainFamily: "blast", chainNetwork: "mainnet" },
   "168587773": { chainFamily: "blast", chainNetwork: "sepolia" },
   "100": { chainFamily: "gnosis", chainNetwork: "mainnet" },
   "59144": { chainFamily: "linea", chainNetwork: "mainnet" },
