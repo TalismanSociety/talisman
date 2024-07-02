@@ -1,7 +1,6 @@
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
   MiniMetadata,
@@ -28,6 +27,7 @@ import {
 } from "rxjs"
 import { debounceTime, map } from "rxjs/operators"
 
+import { sentry } from "../../config/sentry"
 import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -349,7 +349,7 @@ abstract class BalancePool {
     const token = await chaindataProvider.tokenById(tokenId)
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
-      Sentry.captureException(error)
+      sentry.captureException(error)
       log.error(error)
       return
     }
@@ -358,7 +358,7 @@ abstract class BalancePool {
     const balanceModule = balanceModules.find(({ type }) => type === token.type)
     if (!balanceModule) {
       const error = new Error(`Failed to fetch balance: no module with type ${tokenType}`)
-      Sentry.captureException(error)
+      sentry.captureException(error)
       log.error(error)
       return
     }
@@ -388,7 +388,7 @@ abstract class BalancePool {
           this.#hasInitialised.resolve(true)
         },
         error: (error) =>
-          error?.error?.name !== Dexie.errnames.DatabaseClosed && Sentry.captureException(error),
+          error?.error?.name !== Dexie.errnames.DatabaseClosed && sentry.captureException(error),
       })
   }
 
@@ -705,7 +705,7 @@ class KeyringBalancePool extends BalancePool {
     // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
     return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
       next: (accounts) => this.setAccounts(accounts),
-      error: (error) => Sentry.captureException(error),
+      error: (error) => sentry.captureException(error),
     })
   }
 

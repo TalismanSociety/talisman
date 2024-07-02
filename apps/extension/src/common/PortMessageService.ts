@@ -35,6 +35,8 @@ export interface Handler {
 
 export type Handlers = Record<string, Handler>
 
+export class PortMessageError extends Error {}
+
 export default class PortMessageService {
   handlers: Handlers = {}
   idCounter = 0
@@ -177,7 +179,8 @@ export default class PortMessageService {
             data.rpcData
           )
         )
-      } else handler.reject(new Error(data.error))
+      } else
+        handler.reject(new PortMessageError("Unable to complete action", { cause: data.error }))
     } else handler.resolve(data.response)
   }
 }

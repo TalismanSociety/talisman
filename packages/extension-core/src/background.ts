@@ -2,18 +2,17 @@ import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import * as Sentry from "@sentry/browser"
 import { watCryptoWaitReady } from "@talismn/scale"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 
-import { initSentry } from "./config/sentry"
+import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
-initSentry()
+sentry.init()
 
 chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 
@@ -51,7 +50,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   if (isLoggedIn === "TRUE") {
     const password = await passwordStore.getPassword()
     if (!password) {
-      Sentry.captureMessage("Unable to run migrations, no password present")
+      sentry.captureMessage("Unable to run migrations, no password present")
       return
     }
     // instantiate the migrations runner with migrations to run
@@ -110,7 +109,7 @@ Promise.all([
       },
     })
   })
-  .catch(Sentry.captureException)
+  .catch(sentry.captureException)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const iconManager = new IconManager()

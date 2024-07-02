@@ -1,6 +1,7 @@
 import {
   BrowserClient,
   Scope,
+  captureException,
   defaultStackParser,
   getDefaultIntegrations,
   makeFetchTransport,
@@ -54,7 +55,7 @@ const client = new BrowserClient({
 
     // Print to console instead of Sentry in DEBUG/development builds
     if (DEBUG) {
-      console.error("[DEBUG] Sentry event occurred", event) // eslint-disable-line no-console
+      console.error("[DEBUG - Background] Sentry event occurred", event) // eslint-disable-line no-console
       return null
     }
 
@@ -96,6 +97,17 @@ scope.addEventProcessor(async (event: Event) => {
   return event
 })
 
-export const initSentry = (): void => {
-  client.init() // initializing has to be done after setting the client on the scope
+export const sentry = {
+  init: () => client.init(),
+  captureException: (...[exception, hint]: Parameters<typeof captureException>) => {
+    if (hint) {
+      if ("extra" in hint && hint.extra) scope.setExtras(hint.extra)
+      if ("tags" in hint && hint.tags) scope.setTags(hint.tags)
+    }
+    scope.captureException(exception)
+    if (hint) scope.clear()
+  },
+  captureEvent: (...args: Parameters<typeof scope.captureEvent>) => scope.captureEvent(...args),
+  captureMessage: (...args: Parameters<typeof scope.captureMessage>) =>
+    scope.captureMessage(...args),
 }

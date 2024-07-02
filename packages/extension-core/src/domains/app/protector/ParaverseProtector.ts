@@ -1,11 +1,11 @@
 import { checkHost } from "@polkadot/phishing"
-import * as Sentry from "@sentry/browser"
 import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { log } from "extension-shared"
 import { decompressFromUTF16 } from "lz-string"
 
+import { sentry } from "../../../config/sentry"
 import { db } from "../../../db"
 import { getHostName } from "../helpers"
 
@@ -129,7 +129,7 @@ export default class ParaverseProtector {
           !(cause.name !== Dexie.errnames.DatabaseClosed)
         ) {
           const error = new Error("Failed to persist phishing list", { cause })
-          Sentry.captureException(error)
+          sentry.captureException(error)
         }
       })
     }

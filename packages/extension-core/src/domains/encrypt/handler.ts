@@ -1,8 +1,8 @@
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
-import * as Sentry from "@sentry/browser"
 import { log } from "extension-shared"
 
+import { sentry } from "../../config/sentry"
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -50,7 +50,7 @@ export default class EncryptHandler extends ExtensionHandler {
     if (result.ok) return true
 
     log.log(result.val)
-    Sentry.captureException(result.val)
+    sentry.captureException(result.val)
     throw new Error("Unable to encrypt message.")
   }
 
@@ -84,7 +84,7 @@ export default class EncryptHandler extends ExtensionHandler {
     if (result.ok) return true
 
     log.log(result.val)
-    Sentry.captureException(result.val)
+    sentry.captureException(result.val)
     throw new Error("Unable to decrypt message.")
   }
 

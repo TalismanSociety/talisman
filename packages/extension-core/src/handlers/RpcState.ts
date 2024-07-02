@@ -11,8 +11,8 @@ import type {
 import type { ProviderMeta } from "@polkadot/extension-inject/types"
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { assert } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 
+import { sentry } from "../config/sentry"
 import { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { Port } from "../types/base"
 
@@ -76,7 +76,7 @@ export default class RpcState {
       const provider = this.#injectedProviders.get(port)
 
       if (provider) {
-        provider.disconnect().catch(Sentry.captureException)
+        provider.disconnect().catch(sentry.captureException)
       }
 
       this.#injectedProviders.delete(port)

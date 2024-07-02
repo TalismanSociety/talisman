@@ -2,10 +2,10 @@ import { TypeRegistry } from "@polkadot/types"
 import { OpaqueMetadata } from "@polkadot/types/interfaces"
 import { assert, isHex, u8aToNumber } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import * as Sentry from "@sentry/browser"
 import { ChainId } from "@talismn/chaindata-provider"
 import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
+import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
 import { TalismanMetadataDef } from "../domains/substrate/types"
@@ -141,7 +141,7 @@ export const getMetadataDef = async (
       const message = `Failed to update metadata for chain ${genesisHash}`
       const error = new Error(message, { cause })
       log.error(error)
-      Sentry.captureException(error, { extra: { genesisHash } })
+      sentry.captureException(error, { extra: { genesisHash } })
     }
     metadataUpdatesStore.set(genesisHash, false)
   }
