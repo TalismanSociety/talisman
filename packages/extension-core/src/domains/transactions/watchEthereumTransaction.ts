@@ -1,5 +1,4 @@
 import { assert } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
@@ -7,6 +6,7 @@ import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 import { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
+import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -96,6 +96,6 @@ export const watchEthereumTransaction = async (
       else console.error("Failed to watch transaction", { err })
     }
   } catch (err) {
-    Sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })
+    sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })
   }
 }

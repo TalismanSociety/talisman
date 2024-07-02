@@ -117,9 +117,7 @@ class WindowManager {
 
     const { left, top } = {
       top: 100 + (currWindow?.top ?? 0),
-      left:
-        (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -
-        500,
+      left: currWindow?.width ? (currWindow.left ?? 0) + currWindow.width - 500 : 500,
     }
 
     const popupCreateArgs: chrome.windows.CreateData = {

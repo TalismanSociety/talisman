@@ -1,5 +1,4 @@
-import * as Sentry from "@sentry/browser"
-
+import { sentry } from "../config/sentry"
 import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
 export type NotificationType = "submitted" | "success" | "error" | "not_found"
@@ -63,6 +62,6 @@ export const createNotification = async (
     const options = getNotificationOptions(type, networkName, error)
     chrome.notifications.create(url, options)
   } catch (err) {
-    Sentry.captureException(err)
+    sentry.captureException(err)
   }
 }

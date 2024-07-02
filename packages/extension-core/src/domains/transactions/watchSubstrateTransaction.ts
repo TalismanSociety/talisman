@@ -3,11 +3,11 @@ import { Hash } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
-import * as Sentry from "@sentry/browser"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
 
+import { sentry } from "../../config/sentry"
 import { NotificationType, createNotification } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { settingsStore } from "../app/store.settings"
@@ -142,7 +142,7 @@ const watchExtrinsicStatus = async (
           cause: error,
         })
         log.error(err)
-        Sentry.captureException(err, { extra: { chainId } })
+        sentry.captureException(err, { extra: { chainId } })
         return
       }
 
@@ -165,7 +165,7 @@ const watchExtrinsicStatus = async (
         )
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
-        Sentry.captureException(error, { extra: { chainId } })
+        sentry.captureException(error, { extra: { chainId } })
       }
     }
   )
@@ -183,7 +183,7 @@ const watchExtrinsicStatus = async (
           cause: error,
         })
         log.error(err)
-        Sentry.captureException(err, { extra: { chainId } })
+        sentry.captureException(err, { extra: { chainId } })
         return
       }
 
@@ -214,7 +214,7 @@ const watchExtrinsicStatus = async (
           if (timeout !== null) clearTimeout(timeout)
         }
       } catch (error) {
-        Sentry.captureException(error, { extra: { chainId } })
+        sentry.captureException(error, { extra: { chainId } })
       }
     }
   )
@@ -273,7 +273,7 @@ export const watchSubstrateTransaction = async (
   }).catch((err) => {
     // eslint-disable-next-line no-console
     console.warn("Failed to watch extrinsic", { err })
-    Sentry.captureException(err, { extra: { chainId: chain.id, chainName: chain.name } })
+    sentry.captureException(err, { extra: { chainId: chain.id, chainName: chain.name } })
   })
 
   return hash

@@ -2,6 +2,7 @@ import { assert } from "@polkadot/util"
 import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
 
+import { sentry } from "../config/sentry"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { MessageTypes, TransportRequestMessage } from "../types"
 import { AnyEthRequest } from "../types/domains"
@@ -123,7 +124,11 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
           isEthProviderRpcError: true,
         })
-      } else safePostMessage(port, { id, error: error.message })
+      } else {
+        // log to sentry because we need to know the traceback
+        sentry.captureException(error)
+        safePostMessage(port, { id, error: error.message })
+      }
     })
     .finally(() => {
       // heap cleanup

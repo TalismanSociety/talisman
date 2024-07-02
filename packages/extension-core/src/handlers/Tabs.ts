@@ -18,9 +18,9 @@ import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert, isNumber } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import { log } from "extension-shared"
 
+import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import { RequestAccountList } from "../domains/accounts/types"
@@ -255,7 +255,7 @@ export default class Tabs extends TabsHandler {
 
     port.onDisconnect.addListener((): void => {
       unsubscribe(id)
-      this.rpcUnsubscribe({ ...request, subscriptionId }, port).catch(Sentry.captureException)
+      this.rpcUnsubscribe({ ...request, subscriptionId }, port).catch(sentry.captureException)
     })
 
     return true
@@ -296,7 +296,7 @@ export default class Tabs extends TabsHandler {
           chrome.tabs.update(id, { url }).catch((err: Error) => {
             // eslint-disable-next-line no-console
             console.error("Failed to redirect tab to phishing page", { err })
-            Sentry.captureException(err, { extra: { url } })
+            sentry.captureException(err, { extra: { url } })
           })
         )
     })
@@ -306,7 +306,7 @@ export default class Tabs extends TabsHandler {
     const isInDenyList = await protector.isPhishingSite(url)
 
     if (isInDenyList) {
-      Sentry.captureEvent({
+      sentry.captureEvent({
         message: "Redirect from phishing site",
         extra: { url },
       })
