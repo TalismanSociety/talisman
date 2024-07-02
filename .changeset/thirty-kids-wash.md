@@ -1,11 +1,9 @@
 ---
 "@talismn/chain-connector-evm": patch
 "@talismn/chaindata-provider": patch
-"extension-shared": patch
 "@talismn/chain-connector": patch
 "@talismn/connection-meta": patch
 "@talismn/balances-react": patch
-"extension-core": patch
 "@talismn/on-chain-id": patch
 "talisman-ui": patch
 "@talismn/token-rates": patch

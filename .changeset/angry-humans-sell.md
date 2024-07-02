@@ -1,5 +1,4 @@
 ---
-"extension-core": patch
 "@talismn/balances": patch
 ---
 

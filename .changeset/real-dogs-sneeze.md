@@ -1,5 +1,4 @@
 ---
-"extension-core": minor
 "@talismn/balances": minor
 ---
 
