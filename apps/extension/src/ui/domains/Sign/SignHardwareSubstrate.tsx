@@ -30,12 +30,11 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
       return SignDcentSubstrate
     case AccountType.Ledger: {
       switch (account?.ledgerApp) {
-        case SubstrateLedgerAppType.Legacy:
-          return SignLedgerSubstrateLegacy
         case SubstrateLedgerAppType.Generic:
           return SignLedgerSubstrateGeneric
+        case SubstrateLedgerAppType.Legacy:
         default:
-          throw new Error("Not implemented")
+          return SignLedgerSubstrateLegacy
       }
     }
     default:
