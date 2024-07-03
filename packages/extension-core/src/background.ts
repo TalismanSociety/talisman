@@ -65,6 +65,12 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   }
 })
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "wakeup") {
+    sendResponse({ status: "awake" })
+  }
+})
+
 // listen to all messages and handle appropriately
 chrome.runtime.onConnect.addListener((_port): void => {
   // only listen to what we know about
@@ -74,18 +80,16 @@ chrome.runtime.onConnect.addListener((_port): void => {
   )
   let port: chrome.runtime.Port | undefined = _port
 
-  port.onDisconnect.addListener(() => {
-    port = undefined
-  })
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messageHandler = (data: any) => {
     if (port) talismanHandler(data, port)
   }
   port.onMessage.addListener(messageHandler)
+
   const disconnectHandler = () => {
     port?.onMessage.removeListener(messageHandler)
     port?.onDisconnect.removeListener(disconnectHandler)
+    port = undefined
   }
   port.onDisconnect.addListener(disconnectHandler)
 })

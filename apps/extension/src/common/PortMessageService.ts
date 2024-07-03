@@ -37,6 +37,15 @@ export type Handlers = Record<string, Handler>
 
 export class PortMessageError extends Error {}
 
+async function isBackgroundPageAlive(): Promise<boolean> {
+  try {
+    await chrome.runtime.sendMessage({ type: "wakeup" })
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 export default class PortMessageService {
   handlers: Handlers = {}
   idCounter = 0
@@ -49,19 +58,34 @@ export default class PortMessageService {
     this.createPort = this.createPort.bind(this)
   }
 
-  createPort = () => {
-    this.port = chrome.runtime.connect({ name: PORT_EXTENSION })
+  createPort = async (maxAttempts = 5, delayMs = 1000): Promise<Port> => {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (await isBackgroundPageAlive()) {
+        this.port = chrome.runtime.connect({ name: PORT_EXTENSION })
+        this.port.onMessage.addListener(this.handleResponse)
+        this.port.onDisconnect.addListener(() => {
+          this.port = undefined
+        })
 
-    this.port.onMessage.addListener(this.handleResponse)
-
-    const handleDisconnect = () => {
-      this.port?.onMessage.removeListener(this.handleResponse)
-      this.port?.onDisconnect.removeListener(handleDisconnect)
-      this.port = undefined
+        return this.port
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
+      }
     }
 
-    this.port.onDisconnect.addListener(handleDisconnect)
-    return this.port
+    throw new Error("Failed to create port after multiple attempts")
+  }
+
+  private async ensurePortAndSendMessage<TMessageType extends MessageTypes>(
+    message: TransportRequestMessage<TMessageType>
+  ): Promise<void> {
+    if (!this.port) await this.createPort()
+
+    if (this.port) {
+      this.port.postMessage(message)
+    } else {
+      throw new Error("Failed to create port")
+    }
   }
 
   // a generic message sender that creates an event, returning a promise that will
@@ -84,7 +108,7 @@ export default class PortMessageService {
     request?: RequestTypes[TMessageType],
     subscriber?: (data: unknown) => void
   ): Promise<ResponseTypes[TMessageType]> {
-    return new Promise((resolve, reject): void => {
+    return new Promise((resolve, reject) => {
       const id = crypto.randomUUID()
 
       this.handlers[id] = {
@@ -99,11 +123,7 @@ export default class PortMessageService {
         request: request || (null as RequestTypes[TMessageType]),
       }
 
-      if (!this.port) {
-        this.createPort()
-      }
-
-      this.port?.postMessage(transportRequestMessage)
+      this.ensurePortAndSendMessage(transportRequestMessage)
     })
   }
 
@@ -132,11 +152,7 @@ export default class PortMessageService {
       request: request || (null as RequestTypes[TMessageType]),
     }
 
-    if (!this.port) {
-      this.createPort()
-    }
-
-    this.port?.postMessage(transportRequestMessage)
+    this.ensurePortAndSendMessage(transportRequestMessage)
 
     return () => {
       this.sendMessage("pri(unsubscribe)", { id }).then(() => delete this.handlers[id])
@@ -166,7 +182,7 @@ export default class PortMessageService {
     // lost 4 hours on this, a warning would have helped :)
     if (typeof data.subscription === "boolean")
       log.warn(
-        "MessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans"
+        "PortMessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans"
       )
 
     if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
