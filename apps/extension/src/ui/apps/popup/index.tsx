@@ -18,6 +18,7 @@ import { Suspense, useEffect } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
+import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
@@ -71,6 +72,7 @@ const Popup = () => {
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />
         <BackupWarningDrawer />
+        <LedgerPolkadotUpgradeAlertDrawer />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

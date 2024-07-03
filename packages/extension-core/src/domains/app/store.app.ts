@@ -30,6 +30,7 @@ export type AppStoreData = {
   showAssetDiscoveryAlert?: boolean
   dismissedAssetDiscoveryAlertScanId?: string
   isAssetDiscoveryScanPending?: boolean
+  showLedgerPolkadotGenericMigrationAlert?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -46,6 +47,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hideStakingBanner: [],
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
   showAssetDiscoveryAlert: false,
+  showLedgerPolkadotGenericMigrationAlert: false,
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {
