@@ -13,7 +13,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
       action: "Reload Talisman button",
     })
 
-    // these 2 dbs do not contain any user data, they will be safely recreated on next startup
+    // these do not contain any user data, they will be safely recreated on next startup
     await Promise.allSettled([
       balancesDb.delete(),
       connectionMetaDb.delete(),
