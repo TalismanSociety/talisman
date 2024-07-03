@@ -148,12 +148,11 @@ abstract class BalancePool {
     this.#persist = Boolean(persist)
 
     // check for use outside of the background/service worker
-    isBackgroundPage().then((backgroudPage) => {
-      if (!backgroudPage) {
-        throw new Error(
-          `Balances pool should only be used in the background page - used in: ${window.location.href}`
-        )
-      }
+    isBackgroundPage().then((backgroundPage) => {
+      if (backgroundPage) return
+      throw new Error(
+        `Balances pool should only be used in the background page - used in: ${window.location.href}`
+      )
     })
 
     this.#balances = combineLatest([

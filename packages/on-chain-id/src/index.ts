@@ -1,9 +1,4 @@
-import {
-  lookupAddresses,
-  lookupAznsAddresses,
-  lookupEnsAddresses,
-  lookupPolkadotAddresses,
-} from "./util/addressesToNames"
+import { lookupAddresses, lookupAznsAddresses, lookupEnsAddresses } from "./util/addressesToNames"
 import { resolveAznsNames, resolveEnsNames, resolveNames } from "./util/namesToAddresses"
 import { Config, DropFirst, OptionalConfig } from "./util/types"
 
@@ -22,7 +17,6 @@ export class OnChainId {
   constructor(config: OptionalConfig) {
     this.#config = {
       ...config,
-      chainIdPolkadot: config.chainIdPolkadot ?? "polkadot",
       chainIdAlephZero: config.chainIdAlephZero ?? "aleph-zero",
       aznsSupportedChainIdAlephZero: config.aznsSupportedChainIdAlephZero ?? "alephzero",
       networkIdEthereum: config.networkIdEthereum ?? "1",
@@ -38,8 +32,6 @@ export class OnChainId {
 
   lookupAddresses = (...args: DropFirst<Parameters<typeof lookupAddresses>>) =>
     lookupAddresses(this.#config, ...args)
-  lookupPolkadotAddresses = (...args: DropFirst<Parameters<typeof lookupPolkadotAddresses>>) =>
-    lookupPolkadotAddresses(this.#config, ...args)
   lookupAznsAddresses = (...args: DropFirst<Parameters<typeof lookupAznsAddresses>>) =>
     lookupAznsAddresses(this.#config, ...args)
   lookupEnsAddresses = (...args: DropFirst<Parameters<typeof lookupEnsAddresses>>) =>
