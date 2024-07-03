@@ -3,11 +3,11 @@ import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import {
   AddressesByToken,
+  db as balancesDb,
+  configureStore,
   MiniMetadata,
   StoredBalanceJson,
-  db as balancesDb,
 } from "@talismn/balances"
-import { configureStore } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
@@ -18,12 +18,12 @@ import omit from "lodash/omit"
 import pick from "lodash/pick"
 import {
   BehaviorSubject,
+  combineLatest,
+  firstValueFrom,
   Observable,
   ReplaySubject,
   Subject,
   Subscription,
-  combineLatest,
-  firstValueFrom,
 } from "rxjs"
 import { debounceTime, map } from "rxjs/operators"
 
@@ -45,8 +45,8 @@ import {
   AddressesAndTokens,
   Balance,
   BalanceJson,
-  BalanceSubscriptionResponse,
   Balances,
+  BalanceSubscriptionResponse,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
 } from "./types"
@@ -145,12 +145,11 @@ abstract class BalancePool {
     this.#persist = Boolean(persist)
 
     // check for use outside of the background/service worker
-    isBackgroundPage().then((backgroudPage) => {
-      if (!backgroudPage) {
-        throw new Error(
-          `Balances pool should only be used in the background page - used in: ${window.location.href}`
-        )
-      }
+    isBackgroundPage().then((backgroundPage) => {
+      if (backgroundPage) return
+      throw new Error(
+        `Balances pool should only be used in the background page - used in: ${window.location.href}`
+      )
     })
 
     // subscribe this store to all of the inputs it depends on

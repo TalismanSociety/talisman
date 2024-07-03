@@ -32,7 +32,6 @@
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/scale": "workspace:*",
-    "@talismn/subshape-fork": "^0.0.2",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
@@ -41,6 +40,7 @@
     "lodash": "4.17.21",
     "pako": "^2.1.0",
     "rxjs": "^7.8.1",
+    "scale-ts": "^1.6.0",
     "viem": "^2.8.18"
   },
   "devDependencies": {

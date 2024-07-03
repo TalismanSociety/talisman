@@ -17,12 +17,9 @@ export type NsLookupType = "ens" | "azns"
 export type Config = {
   // TODO: Create a package for `/apps/extension/src/core/util/getTypeRegistry.ts` which
   // can be used from outside of the wallet.
-  registryPolkadot: TypeRegistry
   registryAlephZero: TypeRegistry
   chainConnectors: ChainConnectors
 
-  /** Used for polkadot identity lookups */
-  chainIdPolkadot: string
   /** Used for azns lookups */
   chainIdAlephZero: string
   /** Used for azns lookups */
@@ -32,7 +29,6 @@ export type Config = {
 }
 
 export type OptionalConfigParams =
-  | "chainIdPolkadot"
   | "chainIdAlephZero"
   | "aznsSupportedChainIdAlephZero"
   | "networkIdEthereum"
