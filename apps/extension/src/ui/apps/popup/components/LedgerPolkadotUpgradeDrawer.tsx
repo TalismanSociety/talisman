@@ -40,11 +40,16 @@ export const LedgerPolkadotUpgradeAlertDrawer = () => {
               "Make sure to update your Ledger device with the latest Polkadot app to access your accounts."
             )}
           </p>
+          <p className="text-body-secondary text-sm">
+            {t(
+              "For Ledger accounts for other Polkadot network chains, please use the Ledger Migration app to upgrade."
+            )}
+          </p>
         </div>
         <div className="grid w-full grid-cols-2 gap-8">
           <Button onClick={handleLearnMoreClick}>{t("Learn More")}</Button>
           <Button primary onClick={handleCloseClick}>
-            {t("I Got It")}
+            {t("Got It")}
           </Button>
         </div>
       </div>
