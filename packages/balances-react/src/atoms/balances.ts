@@ -5,9 +5,7 @@ import {
   Balances,
   HydrateDb,
   balances as balancesFn,
-  deleteSubscriptionId,
   getBalanceId,
-  getValidSubscriptionIds,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
@@ -44,11 +42,6 @@ export const allBalancesAtom = atom(async (get) => {
     get(balancesObservableAtom),
     get(balancesHydrateDataAtom),
   ])
-
-  const subscriptionIds = getValidSubscriptionIds()
-  if (subscriptionIds.size < 1) {
-    Object.values(balances).forEach((b) => (b.status = "cache"))
-  }
 
   return new Balances(
     Object.values(balances).filter((balance) => !!hydrateData?.tokens?.[balance.tokenId]),
@@ -288,19 +281,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       })
     }, 30_000)
 
-    // TODO: Create subscriptions in a service worker, where we can detect page closes
-    // and therefore reliably delete the subscriptionId when the user closes our dapp
-    //
-    // For more information, check out https://developer.chrome.com/blog/page-lifecycle-api/#faqs
-    // and scroll down to:
-    // - `What is the back/forward cache?`, and
-    // - `If I can't run asynchronous APIs in the frozen or terminated states, how can I save data to IndexedDB?
-    //
-    // For now, we'll just last-ditch remove the subscriptionId (it works surprisingly well!) in the beforeunload event
-    window.onbeforeunload = () => {
-      deleteSubscriptionId()
-    }
-
     return balanceModules.map((balanceModule) => {
       const unsub = balancesFn(
         balanceModule,
@@ -375,7 +355,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       unsubs?.forEach((unsub) => unsub())
     })
   abort.signal.addEventListener("abort", () => setTimeout(unsubscribe, 2_000))
-  abort.signal.addEventListener("abort", () => deleteSubscriptionId())
 
   return () => abort.abort("Unsubscribed")
 })
