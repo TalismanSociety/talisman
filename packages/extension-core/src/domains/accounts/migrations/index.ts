@@ -1,6 +1,5 @@
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
-import { log } from "extension-shared"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
@@ -77,7 +76,6 @@ export const migratePolkadotLedgerAccounts: Migration = {
         account.meta.genesisHash === POLKADOT_GENESIS_HASH
       ) {
         const { name, accountIndex, addressOffset } = account.meta
-        const stop = log.timer("Migrating " + name)
 
         const newMeta: KeyringPair$Meta = {
           name,
@@ -89,7 +87,6 @@ export const migratePolkadotLedgerAccounts: Migration = {
         }
 
         keyring.addHardware(account.address, "ledger", newMeta)
-        stop()
 
         appStore.set({ showLedgerPolkadotGenericMigrationAlert: true })
       }
