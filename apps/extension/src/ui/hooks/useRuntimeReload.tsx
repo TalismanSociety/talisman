@@ -1,6 +1,7 @@
 import { db as balancesDb } from "@talismn/balances"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { db as talismanDb } from "extension-core"
 import { useCallback, useState } from "react"
 
 export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
@@ -12,8 +13,12 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
       action: "Reload Talisman button",
     })
 
-    // these 2 dbs do not contain any user data, they will be safely recreated on next startup
-    await Promise.allSettled([balancesDb.delete(), connectionMetaDb.delete()])
+    // these do not contain any user data, they will be safely recreated on next startup
+    await Promise.allSettled([
+      balancesDb.delete(),
+      connectionMetaDb.delete(),
+      talismanDb.metadata.clear(),
+    ])
 
     chrome.runtime.reload()
   }, [analyticsPage])
