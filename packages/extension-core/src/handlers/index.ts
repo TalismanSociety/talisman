@@ -3,7 +3,9 @@ import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
 
 import { sentry } from "../config/sentry"
+import { TalismanNotOnboardedError } from "../domains/app/utils"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
+import { SitesAuthorizedError } from "../domains/sitesAuthorised/store"
 import { MessageTypes, TransportRequestMessage } from "../types"
 import { AnyEthRequest } from "../types/domains"
 import Extension from "./Extension"
@@ -124,16 +126,37 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
           isEthProviderRpcError: true,
         })
-      } else {
-        // log to sentry because we need to know the traceback
-        sentry.captureException(error)
-        safePostMessage(port, { id, error: error.message })
+        return
       }
+
+      // log to sentry because we need to know the traceback
+      if (!sentryIgnoreTalismanHandlerError(error)) sentry.captureException(error)
+      safePostMessage(port, { id, error: error.message })
     })
     .finally(() => {
       // heap cleanup
       data.request = null
     })
+}
+
+/**
+ * If any of our handlers throw an error, we will (by default) log that error to sentry.
+ *
+ * However, there are some errors we expect to see during normal operation.
+ * These are errors which the frontend knows to look for and handle appropriately.
+ *
+ * For example, the error which is thrown when no accounts are authorised for a dapp.
+ *
+ * This function is used to distinguish between the errors which we don't expect to see,
+ * and the errors which we do expect to see - only the latter of which should be logged.
+ */
+const sentryIgnoreTalismanHandlerError = (error?: unknown): boolean => {
+  // ignore (don't log to sentry) these errors
+  if (error instanceof TalismanNotOnboardedError) return true
+  if (error instanceof SitesAuthorizedError) return true
+
+  // log all other errors
+  return false
 }
 
 export default talismanHandler

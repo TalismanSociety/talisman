@@ -1,4 +1,3 @@
-import { assert } from "@polkadot/util"
 import { convertAddress } from "@talismn/util"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
@@ -7,6 +6,8 @@ import { urlToDomain } from "../../util/urlToDomain"
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
 
 const OLD_AUTH_URLS_KEY = "authUrls"
+
+export class SitesAuthorizedError extends Error {}
 
 // exported only for test purposes
 export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
@@ -49,15 +50,21 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   ): Promise<boolean> {
     const entry = await this.getSiteFromUrl(url)
     const addresses = ethereum ? entry?.ethAddresses : entry?.addresses
-    assert(addresses, `Site ${url} has not been authorised for Talisman yet`)
-    assert(addresses.length, `No Talisman wallet accounts are authorised to connect to ${url}`)
+    if (!addresses) {
+      const message = `Site ${url} has not been authorised for Talisman yet`
+      throw new SitesAuthorizedError(message)
+    }
+    if (!addresses.length) {
+      const message = `No Talisman wallet accounts are authorised to connect to ${url}`
+      throw new SitesAuthorizedError(message)
+    }
 
     // check the supplied address is authorised to interact with this URL
-    if (address)
-      assert(
-        addresses.includes(convertAddress(address, null)),
-        `The source ${url} is not allowed to intract with this account.`
-      )
+    if (address && !addresses.includes(convertAddress(address, null))) {
+      const message = `The source ${url} is not allowed to interact with this account.`
+      throw new SitesAuthorizedError(message)
+    }
+
     return true
   }
 
