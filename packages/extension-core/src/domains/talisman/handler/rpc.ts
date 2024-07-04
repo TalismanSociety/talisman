@@ -1,5 +1,3 @@
-import assert from "assert"
-
 import { TabsHandler } from "../../../libs/Handler"
 import { chainConnector } from "../../../rpcs/chain-connector"
 import { chaindataProvider } from "../../../rpcs/chaindata"
@@ -12,6 +10,8 @@ import {
   UnknownJsonRpcResponse,
 } from "../types"
 
+export class ChaindataChainNotFoundError extends Error {}
+
 export default class TalismanRpcHandler extends TabsHandler {
   #talismanByGenesisHashSubscriptions = new Map<string, (unsubscribeMethod: string) => void>()
 
@@ -21,7 +21,8 @@ export default class TalismanRpcHandler extends TabsHandler {
     const { genesisHash, method, params } = request
 
     const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
-    assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
+    if (!chain)
+      throw new ChaindataChainNotFoundError(`Chain with genesisHash '${genesisHash}' not found`)
 
     return await chainConnector.send(chain.id, method, params)
   }
@@ -36,7 +37,8 @@ export default class TalismanRpcHandler extends TabsHandler {
     const { genesisHash, subscribeMethod, responseMethod, params, timeout } = request
 
     const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
-    assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
+    if (!chain)
+      throw new ChaindataChainNotFoundError(`Chain with genesisHash '${genesisHash}' not found`)
 
     const unsubscribe = await chainConnector.subscribe(
       chain.id,

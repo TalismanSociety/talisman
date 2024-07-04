@@ -6,6 +6,7 @@ import { sentry } from "../config/sentry"
 import { TalismanNotOnboardedError } from "../domains/app/utils"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { SitesAuthorizedError } from "../domains/sitesAuthorised/store"
+import { ChaindataChainNotFoundError } from "../domains/talisman/handler/rpc"
 import { MessageTypes, TransportRequestMessage } from "../types"
 import { AnyEthRequest } from "../types/domains"
 import Extension from "./Extension"
@@ -154,6 +155,7 @@ const sentryIgnoreTalismanHandlerError = (error?: unknown): boolean => {
   // ignore (don't log to sentry) these errors
   if (error instanceof TalismanNotOnboardedError) return true
   if (error instanceof SitesAuthorizedError) return true
+  if (error instanceof ChaindataChainNotFoundError) return true
 
   // log all other errors
   return false
