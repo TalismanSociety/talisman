@@ -21,6 +21,7 @@
   "dependencies": {
     "@metamask/browser-passworder": "4.3.0",
     "@metamask/eth-sig-util": "7.0.1",
+    "@polkadot-api/merkleize-metadata": "^1.1.0",
     "@polkadot/apps-config": "0.132.1",
     "@polkadot/extension-base": "0.46.6",
     "@polkadot/keyring": "12.6.2",
@@ -37,7 +38,6 @@
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/connection-meta": "workspace:*",
-    "@talismn/metadata-shortener-wasm": "0.1.4",
     "@talismn/on-chain-id": "workspace:*",
     "@talismn/scale": "workspace:*",
     "@talismn/token-rates": "workspace:*",

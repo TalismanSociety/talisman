@@ -1,10 +1,5 @@
 jest.setTimeout(20_000)
 
-jest.mock("@talismn/metadata-shortener-wasm", () => ({
-  get_metadata_digest: jest.fn(() => "1234"),
-  get_short_metadata_from_tx_blob: jest.fn(() => "1234"),
-}))
-
 // mock the `yarn preconstruct dev` version of the package
 jest.mock("@talismn/chaindata-provider/src/net")
 
