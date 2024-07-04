@@ -180,7 +180,8 @@ const ConnectAccountMethodButtons = () => {
       />
       <AccountCreateMethodButton
         title={t("Connect Signet")}
-        subtitle={t("Connect your Signet Vault")}
+        subtitle={!IS_FIREFOX ? t("Connect your Signet Vault") : t("Not supported on this browser")}
+        disabled={IS_FIREFOX}
         networks={["polkadot"]}
         to={`/accounts/add/signet`}
       />
