@@ -37,12 +37,12 @@ export type Handlers = Record<string, Handler>
 
 export class PortMessageError extends Error {}
 
-async function isBackgroundPageAlive(): Promise<boolean> {
+async function wakeupBackground(): Promise<Error | null> {
   try {
     await chrome.runtime.sendMessage({ type: "wakeup" })
-    return true
-  } catch (error) {
-    return false
+    return null
+  } catch (cause) {
+    return cause instanceof Error ? cause : new Error(String(cause))
   }
 }
 
@@ -59,21 +59,26 @@ export default class PortMessageService {
   }
 
   createPort = async (maxAttempts = 5, delayMs = 1000): Promise<Port> => {
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      if (await isBackgroundPageAlive()) {
-        this.port = chrome.runtime.connect({ name: PORT_EXTENSION })
-        this.port.onMessage.addListener(this.handleResponse)
-        this.port.onDisconnect.addListener(() => {
-          this.port = undefined
-        })
+    let lastError: Error | null = null
 
-        return this.port
-      } else {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const error = await wakeupBackground()
+      if (error) {
+        lastError = error
         await new Promise((resolve) => setTimeout(resolve, delayMs))
+        continue
       }
+
+      this.port = chrome.runtime.connect({ name: PORT_EXTENSION })
+      this.port.onMessage.addListener(this.handleResponse)
+      this.port.onDisconnect.addListener(() => {
+        this.port = undefined
+      })
+
+      return this.port
     }
 
-    throw new Error("Failed to create port after multiple attempts")
+    throw new Error("Failed to create port after multiple attempts", { cause: lastError })
   }
 
   private async ensurePortAndSendMessage<TMessageType extends MessageTypes>(
