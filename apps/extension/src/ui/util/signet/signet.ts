@@ -12,34 +12,69 @@ export const signet = {
     const newTab = window.open(`${addTrailingSlash(signetUrl)}connect`)
 
     return new Promise<SignetVault[]>((resolve, reject) => {
-      if (!newTab) return reject("Failed to open new tab")
+      // NOTE: In Firefox, attempting to access `newTab` after the signet tab has been closed
+      // will throw an error with the message `can’t access dead object`:
+      // https://blog.mozilla.org/addons/2012/09/12/what-does-cant-access-dead-object-mean
+      //
+      // To handle this, we guard this call with a `try {} catch {}`,
+      // and if it throws we'll consider newTab to be falsy
+      try {
+        if (!newTab) throw new Error()
+      } catch {
+        return reject("Failed to open new tab")
+      }
 
-      const intervalId = setInterval(() => {
-        if (newTab.closed) reject("Canceled")
-      }, 500)
+      let checkTabClosedInterval: ReturnType<typeof setInterval> | null = null
 
-      const url = new URL(signetUrl)
+      const signetOrigin = new URL(signetUrl).origin
       const handleNewMessage = (event: MessageEvent) => {
         const close = () => {
-          clearInterval(intervalId)
-          newTab.close()
+          checkTabClosedInterval && clearInterval(checkTabClosedInterval)
+          try {
+            newTab.close()
+          } catch {
+            // no-op - either we managed to close the tab, or we can't access it via `newTab` anymore
+          }
           window.removeEventListener("message", handleNewMessage)
         }
 
-        if (event.origin !== url.origin) return
+        if (event.origin !== signetOrigin) return
 
         if (event.data.type === "signet(connect.cancel)") {
           close()
-          reject("Canceled")
+          return reject("Canceled")
         }
 
         if (event.data.type === "signet(connect.continue)") {
           close()
-          resolve(event.data.vaults as SignetVault[])
+          return resolve(event.data.vaults as SignetVault[])
         }
       }
-
       window.addEventListener("message", handleNewMessage)
+
+      checkTabClosedInterval = setInterval(() => {
+        // NOTE: In Firefox, attempting to access `newTab` after the signet tab has been closed
+        // will throw an error with the message `can’t access dead object`:
+        // https://blog.mozilla.org/addons/2012/09/12/what-does-cant-access-dead-object-mean
+        //
+        // To handle this, we guard this call with a `try {} catch {}`,
+        // and if it throws we'll consider newTab.closed to be true
+        const closed = (() => {
+          try {
+            if (!newTab) throw new Error()
+            return newTab.closed
+          } catch {
+            return true
+          }
+        })()
+
+        if (!closed) return // tab still open
+
+        checkTabClosedInterval && clearInterval(checkTabClosedInterval)
+        window.removeEventListener("message", handleNewMessage)
+
+        reject("Signet tab closed")
+      }, 500)
     })
   },
 }
