@@ -394,14 +394,14 @@ async function buildQueries(
             change,
             `Failed to decode lock on chain ${chainId}`
           )
-          if (!decoded) return balanceJson
 
-          locksQueryLocks = decoded.map?.((lock) => ({
-            type: "locked",
-            source: "substrate-native-locks",
-            label: getLockedType(lock?.id?.asText?.()),
-            amount: (lock?.amount ?? 0n).toString(),
-          }))
+          locksQueryLocks =
+            decoded?.map?.((lock) => ({
+              type: "locked",
+              source: "substrate-native-locks",
+              label: getLockedType(lock?.id?.asText?.()),
+              amount: (lock?.amount ?? 0n).toString(),
+            })) ?? []
 
           // locked values should be replaced entirely, not merged or appended
           const nonLockValues = balanceJson.values.filter(
@@ -437,14 +437,13 @@ async function buildQueries(
             `Failed to decode freeze on chain ${chainId}`
           )
 
-          if (!decoded) return balanceJson
-
-          freezesQueryLocks = decoded?.map?.((lock) => ({
-            type: "locked",
-            source: "substrate-native-freezes",
-            label: getLockedType(lock?.id?.type?.toLowerCase?.()),
-            amount: lock?.amount?.toString?.() ?? "0",
-          }))
+          freezesQueryLocks =
+            decoded?.map?.((lock) => ({
+              type: "locked",
+              source: "substrate-native-freezes",
+              label: getLockedType(lock?.id?.type?.toLowerCase?.()),
+              amount: lock?.amount?.toString?.() ?? "0",
+            })) ?? []
 
           // freezes values should be replaced entirely, not merged or appended
           const nonFreezesValues = balanceJson.values.filter(
