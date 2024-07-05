@@ -15874,6 +15874,7 @@ __metadata:
     bcryptjs: ^2.4.3
     bignumber.js: ^9.1.2
     blueimp-md5: 2.19.0
+    dcent-web-connector: ^0.16.0
     dexie: ^3.2.4
     eslint: ^8.52.0
     eth-phishing-detect: latest
@@ -16035,7 +16036,6 @@ __metadata:
     crypto-browserify: 3.12.0
     css-loader: ^6.7.3
     date-fns: ^2.30.0
-    dcent-web-connector: ^0.16.0
     decimal.js: 10.4.3
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.7

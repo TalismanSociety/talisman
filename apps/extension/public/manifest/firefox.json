@@ -2,6 +2,7 @@
   "background": {
     "scripts": ["./vendor-background.js", "./background.js"]
   },
+  "permissions": ["storage", "tabs", "notifications"],
   "browser_specific_settings": {
     "gecko": {
       "strict_min_version": "109.0",

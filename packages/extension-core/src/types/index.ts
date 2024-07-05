@@ -5,6 +5,7 @@ import { AppMessages } from "../domains/app/types"
 import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
 import { BalancesMessages } from "../domains/balances/types"
 import { ChainsMessages } from "../domains/chains/types"
+import { DcentMessages } from "../domains/dcent/types"
 import { EncryptMessages } from "../domains/encrypt/types"
 import { EthMessages } from "../domains/ethereum/types"
 import { MetadataMessages } from "../domains/metadata/types"
@@ -83,7 +84,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TokenMessages &
   TokenRatesMessages &
   SubstrateMessages &
-  AssetDiscoveryMessages
+  AssetDiscoveryMessages &
+  DcentMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

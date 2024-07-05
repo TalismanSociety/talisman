@@ -1,4 +1,3 @@
-export * from "./types"
 export * from "./dcent"
 export * from "./useDcentAccountInfo"
 export * from "./useDcentAddress"

@@ -2,5 +2,10 @@
   "background": {
     "service_worker": "service_worker.js"
   },
+  "externally_connectable": {
+    "matches": ["https://*.dcentwallet.com/*"]
+  },
+  "host_permissions": ["https://*.dcentwallet.com/*"],
+  "permissions": ["storage", "tabs", "notifications", "scripting"],
   "minimum_chrome_version": "102"
 }

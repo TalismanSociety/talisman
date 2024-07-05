@@ -9,6 +9,7 @@ import { trackPopupSummaryData } from "../domains/app/popupSummaries"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
 import { ChainsHandler } from "../domains/chains"
+import { DcentHandler } from "../domains/dcent/handler"
 import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
 import { MetadataHandler } from "../domains/metadata"
@@ -41,6 +42,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       chains: new ChainsHandler(stores),
+      dcent: new DcentHandler(stores),
       app: new AppHandler(stores),
       assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),

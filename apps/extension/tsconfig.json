@@ -18,6 +18,11 @@
       "@extension/shared/*": ["../../../packages/extension-shared/src/*"]
     }
   },
-  "include": ["src", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "src",
+    "**/*.ts",
+    "**/*.tsx",
+    "../../packages/extension-core/src/domains/dcent/dcent.ts"
+  ],
   "exclude": ["node_modules", ".next", ".turbo", ".dist"]
 }

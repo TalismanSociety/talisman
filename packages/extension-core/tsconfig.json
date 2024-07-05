@@ -1,6 +1,6 @@
 {
   "extends": "@talismn/tsconfig/es6-node.json",
-  "include": ["src"],
+  "include": ["src", "../../apps/extension/src/ui/util/dcent/dcent.ts"],
   "compilerOptions": {
     "outDir": "dist"
   },

@@ -1,6 +1,5 @@
 import { log } from "@extension/shared"
-import DcentWebConnector from "dcent-web-connector"
-
+import { api } from "@ui/api"
 import {
   DcentAccountAddress,
   DcentAccountInfo,
@@ -12,7 +11,7 @@ import {
   DcentInfo,
   DcentSubstratePayload,
   DcentSubstrateSignature,
-} from "./types"
+} from "extension-core/src/domains/dcent/types"
 
 type DcentResponseStatus = "success" | "error"
 
@@ -80,36 +79,34 @@ const dcentCall = async <T>(func: () => Promise<DcentResponse<T>>): Promise<T> =
 
 // typed api that hides the response envelopes
 export const dcent = {
-  getAccountInfo: () => dcentCall<DcentAccountInfo>(DcentWebConnector.getAccountInfo),
+  getAccountInfo: () => dcentCall<DcentAccountInfo>(() => api.dcentProxy("getAccountInfo")),
 
   getAddress: (coinType: string, keyPath: string) =>
-    dcentCall<DcentAccountAddress>(() => DcentWebConnector.getAddress(coinType, keyPath)),
+    dcentCall<DcentAccountAddress>(() => api.dcentProxy("getAddress", coinType, keyPath)),
 
-  getDeviceInfo: () => dcentCall<DcentDeviceInfo>(DcentWebConnector.getDeviceInfo),
+  getDeviceInfo: () => dcentCall<DcentDeviceInfo>(() => api.dcentProxy("getDeviceInfo")),
 
   getEthereumSignedData: (accountPath: string, version: string, payload: unknown) =>
     dcentCall<DcentEthereumSignedData>(() =>
-      DcentWebConnector.getSignedData(accountPath, { version, payload })
+      api.dcentProxy("getSignedData", accountPath, { version, payload })
     ),
 
   getEthereumSignedMessage: (accountPath: string, text: string) =>
     dcentCall<DcentEthereumSignedMessage>(() =>
-      DcentWebConnector.getEthereumSignedMessage(text, accountPath)
+      api.dcentProxy("getEthereumSignedMessage", text, accountPath)
     ),
 
   getEthereumSignedTransaction: (...args: unknown[]) =>
     dcentCall<DcentEthereumSignedTransaction>(() =>
-      DcentWebConnector.getEthereumSignedTransaction(...args)
+      api.dcentProxy("getEthereumSignedTransaction", ...args)
     ),
 
-  getInfo: () => dcentCall<DcentInfo>(DcentWebConnector.info),
+  getInfo: () => dcentCall<DcentInfo>(() => api.dcentProxy("info")),
 
   getPolkadotSignedTransaction: (payload: DcentSubstratePayload) =>
     dcentCall<DcentSubstrateSignature>(() =>
-      DcentWebConnector.getPolkadotSignedTransaction(payload)
+      api.dcentProxy("getPolkadotSignedTransaction", payload)
     ),
 
-  popupWindowClose: () => {
-    DcentWebConnector.popupWindowClose()
-  },
+  popupWindowClose: () => dcentCall(() => api.dcentProxy("popupWindowClose")),
 }

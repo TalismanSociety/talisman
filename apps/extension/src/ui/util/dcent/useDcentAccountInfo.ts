@@ -1,7 +1,7 @@
 import { UseQueryOptions, UseQueryResult, useQuery } from "@tanstack/react-query"
+import { DcentAccountInfo, DcentError } from "extension-core/src/domains/dcent/types"
 
 import { dcent } from "./dcent"
-import { DcentAccountInfo, DcentError } from "./types"
 
 export const useDcentAccountInfo = (options: UseQueryOptions = {}) => {
   return useQuery({

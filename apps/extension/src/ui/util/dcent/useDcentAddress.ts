@@ -1,7 +1,7 @@
 import { UseQueryOptions, UseQueryResult, useQuery } from "@tanstack/react-query"
+import { DcentAccountAddress, DcentError } from "extension-core/src/domains/dcent/types"
 
 import { dcent } from "./dcent"
-import { DcentAccountAddress, DcentError } from "./types"
 
 export const useDcentAddress = (
   coinType: string,

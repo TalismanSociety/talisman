@@ -1,3 +1,4 @@
+import DcentWebConnector from "dcent-web-connector"
 import i18next from "i18next"
 
 export class DcentError extends Error {
@@ -83,4 +84,20 @@ export type DcentEthereumSignedTransaction = {
   sign_r: string
   sign_s: string
   signed: string
+}
+
+type FunctionInfo<T> = {
+  [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? [K, ...Parameters<T[K]>] : never
+}[keyof T]
+
+type FunctionReturnInfo<T> = {
+  [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? ReturnType<T[K]> : never
+}[keyof T]
+
+export type DcentProxyRequest = FunctionInfo<typeof DcentWebConnector>
+export type DcentProxyResponse = FunctionReturnInfo<typeof DcentWebConnector>
+
+export interface DcentMessages {
+  // Encrypt message signatures
+  "pri(dcent.proxy)": [DcentProxyRequest, DcentProxyResponse]
 }

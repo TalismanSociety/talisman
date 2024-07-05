@@ -49,6 +49,7 @@ import {
   RequestAccountsCatalogAction,
   Trees,
 } from "@extension/core/domains/accounts/helpers.catalog"
+import { DcentProxyRequest, DcentProxyResponse } from "@extension/core/domains/dcent/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
@@ -324,4 +325,6 @@ export default interface MessageTypes {
 
   assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>
   assetDiscoveryStopScan: () => Promise<boolean>
+
+  dcentProxy: (...request: DcentProxyRequest) => Promise<DcentProxyResponse>
 }

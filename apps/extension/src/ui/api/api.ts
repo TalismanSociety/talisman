@@ -340,4 +340,8 @@ export const api: MessageTypes = {
   assetDiscoveryStartScan: (mode, addresses) =>
     messageService.sendMessage("pri(assetDiscovery.scan.start)", { mode, addresses }),
   assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
+
+  // dcent Proxy
+  dcentProxy: (method, ...params) =>
+    messageService.sendMessage("pri(dcent.proxy)", [method, ...params]),
 }
