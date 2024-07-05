@@ -1,8 +1,7 @@
+import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { TypeRegistry } from "@polkadot/types"
+import { u8aToHex } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances"
-import { get_metadata_digest } from "@talismn/metadata-shortener-wasm"
-
-const trimPrefix = (str: string) => (str.startsWith("0x") ? str.slice(2) : str)
 
 export const getCheckMetadataHashPayloadProps = (
   metadataRpc: string,
@@ -21,17 +20,16 @@ export const getCheckMetadataHashPayloadProps = (
     )
   if (!hasCheckMetadataHash) return {}
 
-  const metadataHash = get_metadata_digest(
-    trimPrefix(metadataRpc),
-    token.symbol,
-    token.decimals,
-    chainPrefix ?? 42,
+  const metadataHash = merkleizeMetadata(metadataRpc, {
+    tokenSymbol: token.symbol,
+    decimals: token.decimals,
+    base58Prefix: chainPrefix ?? 42,
     specName,
-    specVersion
-  )
+    specVersion,
+  }).digest()
 
   return {
-    metadataHash: `0x${metadataHash}`,
+    metadataHash: u8aToHex(metadataHash),
     mode: 1,
   }
 }
