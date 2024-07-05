@@ -13,7 +13,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "1002004",
+    specVersion: "1002005",
     nativeToken: {
       id: "polkadot-substrate-native",
     },
@@ -61,9 +61,6 @@ export const chains = [
       },
       {
         url: "wss://dot-rpc.stakeworld.io",
-      },
-      {
-        url: "wss://polkadot.rpc.subquery.network/public/ws",
       },
     ],
     evmNetworks: [],
@@ -312,7 +309,7 @@ export const chains = [
       },
     ],
     balancesMetadata: [],
-    hasCheckMetadataHash: false,
+    hasCheckMetadataHash: true,
   },
   {
     id: "kusama",
@@ -363,9 +360,6 @@ export const chains = [
         url: "wss://1rpc.io/ksm",
       },
       {
-        url: "wss://kusama-public-rpc.blockops.network/ws",
-      },
-      {
         url: "wss://rpc-kusama.luckyfriday.io",
       },
       {
@@ -376,9 +370,6 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io",
-      },
-      {
-        url: "wss://kusama.rpc.subquery.network/public/ws",
       },
     ],
     evmNetworks: [],
@@ -519,9 +510,14 @@ export const chains = [
         name: "Kusama Bridge Hub",
       },
       {
+        id: "kusama-people",
+        paraId: 1004,
+        name: "Kusama People",
+      },
+      {
         id: "kusama-coretime",
         paraId: 1005,
-        name: "Coretime",
+        name: "Kusama Coretime",
       },
       {
         id: "litmus",
@@ -612,7 +608,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 441,
+    sortIndex: 445,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -718,7 +714,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 442,
+    sortIndex: 446,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -784,7 +780,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 630,
+    sortIndex: 639,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -794,7 +790,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemint",
     specName: "statemint",
-    specVersion: "1002004",
+    specVersion: "1002005",
     nativeToken: {
       id: "polkadot-asset-hub-substrate-native",
     },
@@ -901,13 +897,13 @@ export const chains = [
       },
     ],
     balancesMetadata: [],
-    hasCheckMetadataHash: false,
+    hasCheckMetadataHash: true,
   },
   {
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 631,
+    sortIndex: 640,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -917,7 +913,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-polkadot",
     specName: "bridge-hub-polkadot",
-    specVersion: "1002004",
+    specVersion: "1002005",
     nativeToken: {
       id: "polkadot-bridge-hub-substrate-native",
     },
@@ -967,6 +963,6 @@ export const chains = [
     },
     balancesConfig: [],
     balancesMetadata: [],
-    hasCheckMetadataHash: false,
+    hasCheckMetadataHash: true,
   },
 ]
