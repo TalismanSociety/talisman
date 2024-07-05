@@ -217,7 +217,6 @@ export default class AssetTransfersRpc {
       )
 
     const checkMetadataHash = getCheckMetadataHashPayloadProps(
-      registry,
       metadataRpc,
       chain.prefix,
       runtimeVersion.specName,

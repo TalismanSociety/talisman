@@ -11,7 +11,7 @@ import { SignerPayloadJSON } from "extension-core"
 
 export const useSubstratePayloadMetadata = (
   payload: SignerPayloadJSON | null,
-  suspense = false,
+  suspense = false
 ) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
   const token = useToken(chain?.nativeToken?.id)
@@ -38,13 +38,15 @@ export const useSubstratePayloadMetadata = (
         // metadata v15 is required by the shortener
         const registry = new TypeRegistry()
         const hexMetadataRpc = u8aToHex(metadataRpc)
-        const metadata15 = registry.createType("Metadata", hexMetadataRpc)
-        registry.setMetadata(metadata15, payload.signedExtensions)
+        const metadata = registry.createType("Metadata", hexMetadataRpc)
+        registry.setMetadata(metadata, payload.signedExtensions)
 
         // check if runtime supports CheckMetadataHash
-        const hasCheckMetadataHash = metadata15.asV15.extrinsic.signedExtensions.some(
-          (ext) => ext.identifier.toString() === "CheckMetadataHash",
-        )
+        const hasCheckMetadataHash =
+          metadata.version >= 15 &&
+          metadata.asLatest.extrinsic.signedExtensions.some(
+            (ext) => ext.identifier.toString() === "CheckMetadataHash"
+          )
 
         if (!hasCheckMetadataHash)
           return {

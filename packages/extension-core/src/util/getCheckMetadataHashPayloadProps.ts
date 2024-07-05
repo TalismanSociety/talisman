@@ -4,16 +4,20 @@ import { u8aToHex } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances"
 
 export const getCheckMetadataHashPayloadProps = (
-  registry: TypeRegistry,
   metadataRpc: string,
   chainPrefix: number | null,
   specName: string,
   specVersion: number,
   token: SubNativeToken
 ) => {
-  const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
-    (ext) => ext.identifier.toString() === "CheckMetadataHash"
-  )
+  const registry = new TypeRegistry()
+  const metadata = registry.createType("Metadata", metadataRpc)
+
+  const hasCheckMetadataHash =
+    metadata.version >= 15 &&
+    metadata.asLatest.extrinsic.signedExtensions.some(
+      (ext) => ext.identifier.toString() === "CheckMetadataHash"
+    )
   if (!hasCheckMetadataHash) return {}
 
   const metadataHash = merkleizeMetadata(metadataRpc, {
