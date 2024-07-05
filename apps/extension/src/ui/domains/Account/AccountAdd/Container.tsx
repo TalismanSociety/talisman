@@ -174,14 +174,15 @@ const ConnectAccountMethodButtons = () => {
             ? t("Connect your D'CENT Biometric Wallet")
             : t("Not supported on this browser")
         }
+        networks={!IS_FIREFOX ? ["ethereum", "polkadot"] : []}
         disabled={IS_FIREFOX}
-        networks={["ethereum", "polkadot"]}
         to={`/accounts/add/dcent`}
       />
       <AccountCreateMethodButton
         title={t("Connect Signet")}
-        subtitle={t("Connect your Signet Vault")}
-        networks={["polkadot"]}
+        subtitle={!IS_FIREFOX ? t("Connect your Signet Vault") : t("Not supported on this browser")}
+        networks={!IS_FIREFOX ? ["polkadot"] : []}
+        disabled={IS_FIREFOX}
         to={`/accounts/add/signet`}
       />
     </>
