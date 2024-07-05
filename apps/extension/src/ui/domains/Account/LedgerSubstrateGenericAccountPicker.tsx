@@ -27,6 +27,7 @@ import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
 import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
 
 const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
@@ -198,6 +199,9 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
 
   return (
     <>
+      <div className="mb-8">
+        <LedgerConnectionStatus {...connectionStatus} />
+      </div>
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances
@@ -331,7 +335,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
     setAccountDetails((prev) => ({ ...prev, name: e.target.value }))
   }, [])
 
-  const { address, error } = useLedgerAccountAddress(accountDetails, app)
+  const { address, error, connectionStatus } = useLedgerAccountAddress(accountDetails, app)
 
   const accountImportDefs = useMemo<AccountImportDef[]>(
     () =>
@@ -368,6 +372,9 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
 
   return (
     <div className="mt-8">
+      <div className="mb-8">
+        <LedgerConnectionStatus {...connectionStatus} />
+      </div>
       <div className="grid grid-cols-2 gap-8">
         <div className="text-alert-warn bg-alert-warn/5 col-span-2 flex items-center gap-6 rounded-sm p-8 text-sm">
           <div className="bg-alert-warn/10 rounded-full p-4">
