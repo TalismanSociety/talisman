@@ -12,6 +12,7 @@ export const getCheckMetadataHashPayloadProps = (
 ) => {
   const registry = new TypeRegistry()
   const metadata = registry.createType("Metadata", metadataRpc)
+  registry.setMetadata(metadata)
 
   const hasCheckMetadataHash =
     metadata.version >= 15 &&
@@ -23,7 +24,7 @@ export const getCheckMetadataHashPayloadProps = (
   const metadataHash = merkleizeMetadata(metadataRpc, {
     tokenSymbol: token.symbol,
     decimals: token.decimals,
-    base58Prefix: chainPrefix ?? 42,
+    base58Prefix: registry.chainSS58 ?? 42,
     specName,
     specVersion,
   }).digest()
