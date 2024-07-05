@@ -60,7 +60,7 @@ export const useSubstratePayloadMetadata = (
         const merkleizedMetadata = merkleizeMetadata(metadataRpc, {
           tokenSymbol: token.symbol,
           decimals: token.decimals,
-          base58Prefix: chain.prefix ?? 42,
+          base58Prefix: registry.chainSS58 ?? 42,
           specName,
           specVersion,
         })
