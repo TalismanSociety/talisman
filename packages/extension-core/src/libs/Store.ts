@@ -11,7 +11,6 @@ import {
   tap,
   zip,
 } from "rxjs"
-import Browser, { Storage } from "webextension-polyfill"
 
 import { createSubscription, unsubscribe } from "../handlers/subscriptions"
 import { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
@@ -52,7 +51,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
     this.#subscribeMutationQueue()
 
     // Subscribe replay subject to storage changes.
-    Browser.storage.onChanged.addListener(this.#onStorageChanged)
+    chrome.storage.onChanged.addListener(this.#onStorageChanged)
 
     // Publish initial value from storage into replay subject.
     this.get().then((value) => this.#subscriptionSubject.next(value))
@@ -65,7 +64,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   /** Clean up resources used by this store. */
   destroy = () => {
     this.#mutationQueue.unsubscribe()
-    Browser.storage.onChanged.removeListener(this.#onStorageChanged)
+    chrome.storage.onChanged.removeListener(this.#onStorageChanged)
   }
 
   /**
@@ -133,7 +132,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
         // store the result in browser storage, then notify the callbacks once stored
         // concatMap ensures that we wait before proceeding
         concatMap(async ([newValue, callbacks]) => {
-          await Browser.storage.local.set({ [this.#prefix]: newValue })
+          await chrome.storage.local.set({ [this.#prefix]: newValue })
 
           callbacks.forEach((callback) => callback())
         }),
@@ -147,15 +146,15 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   /**
    * Inform subscribers when the storage has changed.
    *
-   * This method subscribes to `Browser.storage.onChanged` inside the class constructor.
+   * This method subscribes to `chrome.storage.onChanged` inside the class constructor.
    * It shouldn't be called from anywhere else.
    */
-  #onStorageChanged = (changes: Record<string, Storage.StorageChange>, areaName: string) => {
+  #onStorageChanged = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
     if (areaName !== "local") return
     const change = changes[this.#prefix]
     if (!change) return
 
-    const { newValue }: { oldValue?: T; newValue?: T } = change
+    const { newValue } = change
     if (!newValue) return
 
     this.#subscriptionSubject.next({
@@ -170,7 +169,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   async get<K extends keyof T, V = T[K]>(key?: K): Promise<T | V> {
     const initializedStorage = {
       ...this.#initialData,
-      ...(await Browser.storage.local.get(this.#prefix))[this.#prefix],
+      ...(await chrome.storage.local.get(this.#prefix))[this.#prefix],
     }
 
     return key !== undefined ? initializedStorage[key] : initializedStorage

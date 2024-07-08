@@ -1,6 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { gt } from "semver"
-import Browser from "webextension-polyfill"
 
 import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
@@ -31,6 +30,7 @@ export type AppStoreData = {
   showAssetDiscoveryAlert?: boolean
   dismissedAssetDiscoveryAlertScanId?: string
   isAssetDiscoveryScanPending?: boolean
+  showLedgerPolkadotGenericMigrationAlert?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -47,6 +47,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hideStakingBanner: [],
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
   showAssetDiscoveryAlert: false,
+  showLedgerPolkadotGenericMigrationAlert: false,
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {
@@ -54,13 +55,13 @@ export class AppStore extends StorageProvider<AppStoreData> {
     super("app", DEFAULT_APP_STATE)
 
     // One time migration to using this store instead of storing directly in local storage from State
-    Browser.storage.local.get("talismanOnboarded").then((result) => {
+    chrome.storage.local.get("talismanOnboarded").then((result) => {
       const legacyOnboarded =
         result && "talismanOnboarded" in result && result.talismanOnboarded === TRUE
 
       if (legacyOnboarded) {
         this.set({ onboarded: TRUE })
-        Browser.storage.local.remove("talismanOnboarded")
+        chrome.storage.local.remove("talismanOnboarded")
       }
     })
 
@@ -95,8 +96,8 @@ export class AppStore extends StorageProvider<AppStoreData> {
 
 export const appStore = new AppStore()
 
-if (DEBUG) {
-  // helper for developers, allowing to reset settings by calling resetAppSettings() in dev console
+if (DEBUG && typeof window !== "undefined") {
+  // helper for developers, allowing ot reset settings by calling resetAppSettings() in dev console
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).resetAppSettings = () => {
     appStore.set({

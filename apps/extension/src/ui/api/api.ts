@@ -1,16 +1,11 @@
-import MessageService from "@common/MessageService"
-import { PORT_EXTENSION } from "@extension/shared"
+import PortMessageService from "@common/PortMessageService"
 
 import MessageTypes from "./types"
 
-const port = chrome.runtime.connect({ name: PORT_EXTENSION })
-const messageService = new MessageService({
-  origin: "talisman-extension",
-  messageSource: port,
-})
-port.onMessage.addListener(messageService.handleResponse)
+const messageService = new PortMessageService()
 
 export const api: MessageTypes = {
+  ping: () => messageService.sendMessage("pri(ping)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>
@@ -46,19 +41,22 @@ export const api: MessageTypes = {
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
-  approveSign: (id) =>
+  approveSign: (id, payload) =>
     messageService.sendMessage("pri(signing.approveSign)", {
       id,
+      payload,
     }),
-  approveSignHardware: (id, signature) =>
+  approveSignHardware: (id, signature, payload) =>
     messageService.sendMessage("pri(signing.approveSign.hardware)", {
       id,
       signature,
+      payload,
     }),
-  approveSignQr: (id, signature) =>
+  approveSignQr: (id, signature, payload) =>
     messageService.sendMessage("pri(signing.approveSign.qr)", {
       id,
       signature,
+      payload,
     }),
   approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
 
@@ -97,14 +95,9 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateLedger: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
-    messageService.sendMessage("pri(accounts.create.ledger.substrate)", {
-      accountIndex,
-      address,
-      addressOffset,
-      genesisHash,
-      name,
-    }),
+  accountCreateLedgerSubstrate: (account) =>
+    messageService.sendMessage("pri(accounts.create.ledger.substrate)", account),
+
   accountCreateLedgerEthereum: (name, address, path) =>
     messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
       name,

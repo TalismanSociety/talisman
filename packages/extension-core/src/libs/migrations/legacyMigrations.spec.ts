@@ -78,7 +78,7 @@ describe("App migrations", () => {
 
     expect(await passwordStore.get("isHashed")).toBe(true)
 
-    const hashedPw = passwordStore.getPassword()
+    const hashedPw = await passwordStore.getPassword()
     expect(hashedPw === "$2a$13$7AHTA/Vs6L.Yhj0P12wlo.nV9cP0/YiID9TtHCjLroCQdETKafqVa")
     expect(hashedPw !== password)
     const newRootAccounts = keyring

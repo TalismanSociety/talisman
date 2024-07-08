@@ -8,7 +8,7 @@ export const useAccountByAddress = (address?: string | null) => {
   // use this instead of accountsByAddressAtomFamily(address) to prevent triggering suspense on first mount for each address
   const accountsMap = useAtomValue(accountsMapAtom)
 
-  return useMemo(() => {
+  return useMemo<AccountJsonAny | null>(() => {
     if (!address) return null
     if (accountsMap[address]) return accountsMap[address] as AccountJsonAny
     try {

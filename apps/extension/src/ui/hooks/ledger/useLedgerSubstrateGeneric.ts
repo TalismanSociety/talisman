@@ -1,42 +1,46 @@
-import { log } from "@extension/shared"
-import { Ledger } from "@polkadot/hw-ledger"
-import { assert } from "@polkadot/util"
+import Transport from "@ledgerhq/hw-transport"
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
+import { PolkadotGenericApp } from "@zondax/ledger-substrate"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useChainByGenesisHash } from "../useChainByGenesisHash"
 import { useSetInterval } from "../useSetInterval"
 import {
-  ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
-  ERROR_LEDGER_NO_APP,
+  LedgerError,
   LedgerStatus,
   getLedgerErrorProps,
+  getPolkadotLedgerDerivationPath,
 } from "./common"
-import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
+import { SubstrateMigrationApp } from "./useLedgerSubstrateMigrationApps"
 
-export const useLedgerSubstrate = (genesis?: string | null, persist = false) => {
+type UseLedgerSubstrateGenericProps = {
+  persist?: boolean
+  app?: SubstrateMigrationApp | null
+}
+
+const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}
+
+export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
   const { t } = useTranslation()
-  const chain = useChainByGenesisHash(genesis)
-  const app = useLedgerSubstrateApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
-  const [ledger, setLedger] = useState<Ledger | null>(null)
+  const [ledger, setLedger] = useState<PolkadotGenericApp | null>(null)
 
   const refConnecting = useRef(false)
+  const refTransport = useRef<Transport | null>(null)
 
   useEffect(() => {
     return () => {
       // ensures the transport is closed on unmount, allowing other tabs to access the ledger
       // the persist argument can be used to prevent this behaviour, when the hook is used
       // in two components that need to share the ledger connection
-      !persist &&
-        ledger?.withApp(async (app) => {
-          await app?.transport.close()
-        })
+      if (!persist && ledger?.transport) {
+        ledger.transport.close()
+      }
     }
   }, [ledger, persist])
 
@@ -52,23 +56,32 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
       if (resetError) setError(undefined)
 
       try {
-        assert(getIsLedgerCapable(), t("Sorry, Ledger is not supported on your browser."))
-        assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
-        assert(app?.name, ERROR_LEDGER_NO_APP)
+        await refTransport.current?.close()
+        refTransport.current = await TransportWebUSB.create()
 
-        const ledger = new Ledger("webusb", app.name)
+        const ledger = new PolkadotGenericApp(refTransport.current)
+
+        const bip44path = getPolkadotLedgerDerivationPath({ app })
 
         // verify that Ledger connection is ready by querying first address
         await Promise.race([
-          ledger.getAddress(false),
-          throwAfter(5_000, "Timeout on Ledger Substrate connection"),
+          ledger.getAddress(bip44path, 42, false),
+          throwAfter(5_000, "Timeout on Ledger Substrate Generic connection"),
         ])
 
         setLedger(ledger)
         setError(undefined)
         setIsReady(true)
       } catch (err) {
-        log.error("connectLedger Substrate " + (err as Error).message, { err })
+        log.error("connectLedger Substrate Generic : " + (err as LedgerError).message, { err })
+
+        try {
+          await refTransport.current?.close()
+          refTransport.current = null
+        } catch (err2) {
+          log.error("Can't close ledger transport", err2)
+          // ignore
+        }
 
         setLedger(null)
         setError(err as Error)
@@ -77,7 +90,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
       refConnecting.current = false
       setIsLoading(false)
     },
-    [app, chain, t]
+    [app]
   )
 
   const { status, message, requiresManualRetry } = useMemo<{
@@ -85,7 +98,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (error) return getLedgerErrorProps(error, app?.label ?? t("Unknown app"))
+    if (error) return getLedgerErrorProps(error, app ? "Polkadot Migration" : "Polkadot")
 
     if (isLoading)
       return {
@@ -127,7 +140,6 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
     requiresManualRetry,
     status,
     message,
-    network: app,
     ledger,
     refresh,
   }

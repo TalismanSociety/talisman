@@ -1,52 +1,23 @@
-import { assert, hexToU8a, isHex, u8aToHex } from "@polkadot/util"
-import { base64Decode, base64Encode } from "@polkadot/util-crypto"
+import { TypeRegistry } from "@polkadot/types"
+import { OpaqueMetadata } from "@polkadot/types/interfaces"
+import { assert, isHex, u8aToNumber } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import * as Sentry from "@sentry/browser"
-import { DEBUG } from "extension-shared"
-import { log } from "extension-shared"
+import { ChainId } from "@talismn/chaindata-provider"
+import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
+import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
 import { TalismanMetadataDef } from "../domains/substrate/types"
 import { chainConnector } from "../rpcs/chain-connector"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
+import { stateCall } from "./stateCall"
 
 const cache: Record<string, TalismanMetadataDef> = {}
 
 const getCacheKey = (genesisHash: HexString, specVersion?: number) =>
   !specVersion || !genesisHash ? null : `${genesisHash}-${specVersion}`
-
-// those are stored as base64 for lower storage size
-const encodeMetadataRpc = (metadataRpc: HexString) => base64Encode(hexToU8a(metadataRpc))
-const decodeMetadataRpc = (encoded: string) => u8aToHex(base64Decode(encoded))
-const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
-
-/**
- *
- * @param metadata
- * @returns a value that can be used to initialize a TypeRegistry
- */
-export const getMetadataFromDef = (metadata: TalismanMetadataDef) => {
-  try {
-    if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
-    if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn("Could not decode metadata from store", { metadata })
-  }
-  return undefined
-}
-
-/**
- *
- * @param metadataDef
- * @returns Decoded metadataRpc which can be used to build transaction payloads
- */
-export const getMetadataRpcFromDef = (metadataDef?: TalismanMetadataDef) => {
-  if (metadataDef?.metadataRpc) return decodeMetadataRpc(metadataDef.metadataRpc)
-  return undefined
-}
 
 /**
  *
@@ -112,7 +83,7 @@ export const getMetadataDef = async (
 
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
-      chainConnector.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
+      getLatestMetadataRpc(chain.id, blockHash),
       chainConnector.send(chain.id, "system_properties", [], true),
     ]).catch((rpcError) => {
       // not a useful error, do not log to sentry
@@ -170,7 +141,7 @@ export const getMetadataDef = async (
       const message = `Failed to update metadata for chain ${genesisHash}`
       const error = new Error(message, { cause })
       log.error(error)
-      Sentry.captureException(error, { extra: { genesisHash } })
+      sentry.captureException(error, { extra: { genesisHash } })
     }
     metadataUpdatesStore.set(genesisHash, false)
   }
@@ -181,10 +152,74 @@ export const getMetadataDef = async (
 // useful for developer when testing updates
 if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).clearMetadata = () => {
+  ;(globalThis as any).clearMetadata = () => {
     Object.keys(cache).forEach((key) => {
       delete cache[key]
     })
     db.metadata.clear()
+  }
+}
+
+const getLatestMetadataRpc = async (chainId: ChainId, blockHash?: string) => {
+  const stop = log.timer(`getLatestMetadataRpc(${chainId})`)
+  try {
+    const versions = await stateCall(
+      chainId,
+      "Metadata_metadata_versions",
+      "Vec<u32>",
+      [],
+      blockHash as HexString,
+      true
+    )
+    if (versions.err) versions.unwrap()
+
+    const numVersions = versions.unwrap().toJSON() as number[]
+    const latest = Math.max(...numVersions.filter((v) => v <= 15)) // 15 is the max Talisman supports for now
+    const version = new TypeRegistry().createType("u32", latest)
+
+    const maybeOpaqueMetadata = await stateCall(
+      chainId,
+      "Metadata_metadata_at_version",
+      "OpaqueMetadata",
+      [version],
+      blockHash as HexString,
+      true
+    )
+
+    if (maybeOpaqueMetadata.err) maybeOpaqueMetadata.unwrap()
+
+    const opaqueMetadata = maybeOpaqueMetadata.unwrap()
+
+    return metadataFromOpaque(opaqueMetadata)
+  } catch (err) {
+    // maybe the chain doesn't have metadata_versions or metadata_at_version runtime calls - ex: crust standalone
+    // fetch metadata the old way
+    if ((err as { message?: string })?.message?.includes("is not found"))
+      return chainConnector.send<HexString>(chainId, "state_getMetadata", [blockHash], !!blockHash)
+
+    // eslint-disable-next-line no-console
+    console.error("getLatestMetadataRpc", { err })
+
+    throw err
+  } finally {
+    stop()
+  }
+}
+
+const metadataFromOpaque = (opaque: OpaqueMetadata) => {
+  try {
+    // pjs codec for OpaqueMetadata doesn't allow us to decode the actual Metadata, find it ourselves
+    const u8aBytes = opaque.toU8a()
+    for (let i = 0; i < 20; i++) {
+      // skip until we find the magic number that is used as prefix of metadata objects (usually in the first 10 bytes)
+      if (u8aToNumber(u8aBytes.slice(i, i + 4)) !== 0x6174656d) continue
+
+      const metadata = new TypeRegistry().createType("Metadata", u8aBytes.slice(i))
+
+      return metadata.toHex()
+    }
+    throw new Error("Magic number not found")
+  } catch (cause) {
+    throw new Error("Failed to decode metadata from OpaqueMetadata", { cause })
   }
 }

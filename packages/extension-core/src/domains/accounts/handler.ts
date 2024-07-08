@@ -47,7 +47,7 @@ import type {
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "./types"
-import { AccountImportSources, AccountType } from "./types"
+import { AccountImportSources, AccountType, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(type: string | undefined, method: string) {
@@ -59,7 +59,7 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
-    const password = this.stores.password.getPassword()
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const allAccounts = keyring.getAccounts()
@@ -123,7 +123,7 @@ export default class AccountsHandler extends ExtensionHandler {
     suri,
     type,
   }: RequestAccountCreateFromSuri): Promise<string> {
-    const password = this.stores.password.getPassword()
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const expectedAddress = addressFromSuri(suri, type)
@@ -186,7 +186,7 @@ export default class AccountsHandler extends ExtensionHandler {
   private async accountCreateJson({
     unlockedPairs,
   }: RequestAccountCreateFromJson): Promise<string[]> {
-    const password = this.stores.password.getPassword()
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const addresses: string[] = []
@@ -306,28 +306,35 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateLedger({
-    accountIndex,
-    address,
-    addressOffset,
-    genesisHash,
-    name,
-  }: RequestAccountCreateLedgerSubstrate): string {
-    const { pair } = keyring.addHardware(address, "ledger", {
+  private accountsCreateLedgerSubstrate(account: RequestAccountCreateLedgerSubstrate): string {
+    const { address, accountIndex, addressOffset, ledgerApp, name } = account
+
+    const meta: KeyringPair$Meta = {
       accountIndex,
       addressOffset,
-      genesisHash,
       name,
       origin: AccountType.Ledger,
-    })
+      ledgerApp,
+      type: "ed25519",
+    }
+
+    if (account.ledgerApp === SubstrateLedgerAppType.Legacy) meta.genesisHash = account.genesisHash
+    if (account.ledgerApp === SubstrateLedgerAppType.Generic && account.migrationAppName)
+      meta.migrationAppName = account.migrationAppName
+
+    const { pair } = keyring.addHardware(address, "ledger", meta)
 
     this.captureAccountCreateEvent("substrate", "hardware")
 
     return pair.address
   }
 
-  private accountsCreateQr({ name, address, genesisHash }: RequestAccountCreateExternal): string {
-    const password = this.stores.password.getPassword()
+  private async accountsCreateQr({
+    name,
+    address,
+    genesisHash,
+  }: RequestAccountCreateExternal): Promise<string> {
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const exists = keyring
@@ -347,12 +354,12 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountCreateWatched({
+  private async accountCreateWatched({
     name,
     address,
     isPortfolio,
-  }: RequestAccountCreateWatched): string {
-    const password = this.stores.password.getPassword()
+  }: RequestAccountCreateWatched): Promise<string> {
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const safeAddress = encodeAnyAddress(address)
@@ -554,7 +561,7 @@ export default class AccountsHandler extends ExtensionHandler {
     if ("mnemonicId" in lookup) {
       const { mnemonicId, derivationPath, type } = lookup
 
-      const password = this.stores.password.getPassword()
+      const password = await this.stores.password.getPassword()
       assert(password, "Not logged in")
       const mnemonicResult = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
       assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
@@ -575,7 +582,7 @@ export default class AccountsHandler extends ExtensionHandler {
     mnemonicId,
     type,
   }: RequestNextDerivationPath): Promise<string> {
-    const password = this.stores.password.getPassword()
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const { val: mnemonic, ok } = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
@@ -603,7 +610,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.create.dcent)":
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.ledger.substrate)":
-        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrate)
+        return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
       case "pri(accounts.create.ledger.ethereum)":
         return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
       case "pri(accounts.create.qr.substrate)":

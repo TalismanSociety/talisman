@@ -1,6 +1,5 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { lt } from "semver"
-import Browser from "webextension-polyfill"
 
 import { hasQrCodeAccounts } from "../../domains/accounts/helpers"
 import { changePassword } from "../../domains/app/helpers"
@@ -14,7 +13,7 @@ export const migrateConnectAllSubstrate = async (previousVersion: string) => {
   // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
   const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
   if (!site) {
-    const localData = await Browser.storage.local.get()
+    const localData = await chrome.storage.local.get()
     const addresses = Object.entries(localData)
       .filter(([key]) => key.startsWith("account:0x"))
       .map(([, value]: [string, { address: string }]) => value.address)

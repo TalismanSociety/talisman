@@ -6,7 +6,6 @@ import { Chain, Token } from "@talismn/chaindata-provider"
 import * as $ from "@talismn/subshape-fork"
 import { encodeAnyAddress } from "@talismn/util"
 import useChains from "@ui/hooks/useChains"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import isEqual from "lodash/isEqual"
@@ -140,8 +139,7 @@ const getTarget = (
 
 export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
-  const { chain, payload, account } = usePolkadotSigningRequest()
-  const { data: extrinsic } = useExtrinsic(payload)
+  const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
   const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const tokenRates = useTokenRatesMap()

@@ -34,6 +34,8 @@ type AccountJsonHardwareSubstrateOwnProperties = {
   isHardware: true
   accountIndex: number
   addressOffset: number
+  ledgerApp?: SubstrateLedgerAppType
+  migrationAppName?: string
 }
 
 export type AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
@@ -44,6 +46,12 @@ type AccountJsonHardwareEthereumOwnProperties = {
 }
 
 export type AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
+
+type AccountJsonHardwarePolkadotOwnProperties = {
+  isHardware: true
+  path: string
+}
+export type AccountJsonHardwarePolkadot = AccountJson & AccountJsonHardwarePolkadotOwnProperties
 
 type AccountJsonQrOwnProperties = {
   isQr: true
@@ -118,6 +126,11 @@ export type AccountsList = Account[]
 
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
+export enum SubstrateLedgerAppType {
+  Legacy = "substrate-legacy",
+  Generic = "substrate-generic",
+}
+
 export interface RequestAccountCreateFromSuri {
   name: string
   suri: string
@@ -128,13 +141,31 @@ export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
 
-export type RequestAccountCreateLedgerSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
+export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
+  RequestAccountCreateHardware,
+  "hardwareType"
+> & {
+  ledgerApp: SubstrateLedgerAppType.Legacy
+}
+
+export type RequestAccountCreateLedgerSubstrateGeneric = Omit<
+  RequestAccountCreateHardware,
+  "hardwareType" | "genesisHash"
+> & {
+  ledgerApp: SubstrateLedgerAppType.Generic
+  migrationAppName?: string
+}
+
+export type RequestAccountCreateLedgerSubstrate =
+  | RequestAccountCreateLedgerSubstrateLegacy
+  | RequestAccountCreateLedgerSubstrateGeneric
 
 export interface RequestAccountCreateLedgerEthereum {
   name: string
   address: string
   path: string
 }
+
 export interface RequestAccountCreateDcent {
   name: string
   address: string

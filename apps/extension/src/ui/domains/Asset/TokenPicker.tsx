@@ -16,7 +16,7 @@ import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash/sortBy"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
 
@@ -226,14 +226,6 @@ const TokensList: FC<TokensListProps> = ({
   )
 
   const accountCompatibleTokens = useMemo(() => {
-    // wait until all dependencies are loaded
-    if (
-      !Object.keys(chainsMap).length ||
-      !Object.keys(evmNetworksMap).length ||
-      !Object.keys(tokenRatesMap).length
-    )
-      return []
-
     return allTokens
       .filter(tokenFilter)
       .filter(filterAccountCompatibleTokens)
@@ -400,6 +392,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
 }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState(initialSearch)
+  const deferredSearch = useDeferredValue(search)
 
   return (
     <div
@@ -418,7 +411,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
         <TokensList
           address={address}
           selected={selected}
-          search={search}
+          search={deferredSearch}
           showEmptyBalances={showEmptyBalances}
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}

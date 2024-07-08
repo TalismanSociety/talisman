@@ -1,6 +1,10 @@
-import { AccountAddMnemonicWizard } from "@ui/domains/Account/AccountAdd/AccountAddMnemonic/router"
+import { lazy } from "react"
 
 import { AccountAddWrapper } from "./AccountAddWrapper"
+
+const AccountAddMnemonicWizard = lazy(
+  () => import("@ui/domains/Account/AccountAdd/AccountAddMnemonic/router")
+)
 
 export const AccountAddMnemonicOnboardWizard = () => {
   return (

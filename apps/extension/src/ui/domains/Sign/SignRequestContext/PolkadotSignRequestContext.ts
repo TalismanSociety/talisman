@@ -9,16 +9,15 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { balancesHydrateAtom } from "@ui/atoms"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import useChains from "@ui/hooks/useChains"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 
+import { useSubstratePayloadMetadata } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
-  payload: SignerPayloadJSON | SignerPayloadRaw | undefined,
+  payload: SignerPayloadJSON | SignerPayloadRaw,
   extrinsic: GenericExtrinsic | null | undefined
 ) => {
   const chain = useChainByGenesisHash(
@@ -62,7 +61,39 @@ const usePolkadotSigningRequestProvider = ({
   signingRequest: SubstrateSigningRequest
 }) => {
   useAtomValue(balancesHydrateAtom)
-  const payload = signingRequest?.request?.payload
+
+  const jsonPayload = isJsonPayload(signingRequest.request.payload)
+    ? signingRequest.request.payload
+    : null
+
+  const { data: payloadMetadata } = useSubstratePayloadMetadata(jsonPayload, true)
+
+  // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
+  const [modifiedPayload, registry, shortMetadata] = useMemo(() => {
+    return !jsonPayload || !payloadMetadata
+      ? [undefined, undefined, undefined]
+      : [
+          payloadMetadata.payloadWithMetadataHash,
+          payloadMetadata.registry,
+          payloadMetadata.txMetadata,
+        ]
+  }, [payloadMetadata, jsonPayload])
+
+  const payload = useMemo(
+    () => modifiedPayload || signingRequest.request.payload,
+    [modifiedPayload, signingRequest.request.payload]
+  )
+
+  const [extrinsic, errorDecodingExtrinsic] = useMemo(() => {
+    try {
+      return [
+        isJsonPayload(payload) && registry ? registry.createType("Extrinsic", payload) : null,
+        null,
+      ]
+    } catch (err) {
+      return [null, err]
+    }
+  }, [payload, registry])
 
   const baseRequest = useAnySigningRequest({
     currentRequest: signingRequest,
@@ -70,18 +101,8 @@ const usePolkadotSigningRequestProvider = ({
     cancelSignFn: api.cancelSignRequest,
   })
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
-  const chain = useMemo(() => {
-    if (!signingRequest) return
-    const { genesisHash } = (signingRequest?.request?.payload ?? {}) as SignerPayloadJSON
-    return (genesisHash && (chains || []).find((c) => c.genesisHash === genesisHash)) || null
-  }, [signingRequest, chains])
+  const chain = useChainByGenesisHash(jsonPayload?.genesisHash)
 
-  const {
-    data: extrinsic,
-    isLoading: isDecodingExtrinsic,
-    error: errorDecodingExtrinsic,
-  } = useExtrinsic(payload)
   const { data: fee, isLoading: isLoadingFee, error: errorFee } = usePartialFee(payload, extrinsic)
 
   const approveHardware = useCallback(
@@ -89,14 +110,14 @@ const usePolkadotSigningRequestProvider = ({
       if (!baseRequest || !baseRequest.id) return
       baseRequest.setStatus.processing("Approving request")
       try {
-        await api.approveSignHardware(baseRequest.id, signature)
+        await api.approveSignHardware(baseRequest.id, signature, modifiedPayload)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest]
+    [baseRequest, modifiedPayload]
   )
 
   const approveQr = useCallback(
@@ -104,14 +125,14 @@ const usePolkadotSigningRequestProvider = ({
       baseRequest.setStatus.processing("Approving request")
       if (!baseRequest || !baseRequest.id) return
       try {
-        await api.approveSignQr(baseRequest.id, signature)
+        await api.approveSignQr(baseRequest.id, signature, modifiedPayload)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve qr", { err })
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest]
+    [baseRequest, modifiedPayload]
   )
 
   const approveSignet = useCallback(async () => {
@@ -126,20 +147,34 @@ const usePolkadotSigningRequestProvider = ({
     }
   }, [baseRequest])
 
+  const approve = useCallback(async () => {
+    baseRequest.setStatus.processing("Approving request")
+    if (!baseRequest || !baseRequest.id) return
+    try {
+      await api.approveSign(baseRequest.id, modifiedPayload)
+      baseRequest.setStatus.success("Approved")
+    } catch (err) {
+      log.error("failed to approve", { err })
+      baseRequest.setStatus.error("Failed to approve sign request")
+    }
+  }, [baseRequest, modifiedPayload])
+
   return {
     payload,
     signingRequest,
     ...baseRequest,
     chain,
+    approve,
     approveSignet,
     approveHardware,
     approveQr,
     extrinsic,
-    isDecodingExtrinsic,
     errorDecodingExtrinsic,
     fee,
     isLoadingFee,
     errorFee,
+    registry,
+    shortMetadata,
   }
 }
 

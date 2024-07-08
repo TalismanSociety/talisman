@@ -1,9 +1,9 @@
 import { assert } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import { isEthereumAddress, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
 import { privateKeyToAccount } from "viem/accounts"
 
+import { sentry } from "../../config/sentry"
 import { getPairForAddressSafely, getPairFromAddress } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
@@ -189,7 +189,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     } catch (err) {
       const error = err as Error & { reason?: string; error?: Error }
       log.error(error.message, { err })
-      Sentry.captureException(err, { extra: { tokenId, evmNetworkId } })
+      sentry.captureException(err, { extra: { tokenId, evmNetworkId } })
       throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
     }
   }
@@ -226,7 +226,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = this.stores.password.getPassword()
+      const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
       const privateKey = getPrivateKey(pair, password, "hex")
@@ -260,7 +260,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     } else {
       const error = result.val as Error & { reason?: string; error?: Error }
       log.error("Failed to send transaction", { err: result.val })
-      Sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })
+      sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })
       throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
     }
   }

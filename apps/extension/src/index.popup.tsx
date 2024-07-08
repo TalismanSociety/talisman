@@ -6,7 +6,6 @@ import { log } from "@extension/shared"
 import { IS_FIREFOX } from "@extension/shared"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
-import Browser from "webextension-polyfill"
 
 const adjustPopupSize = async () => {
   // on embedded popup, zoom is disabled and the frame automatically syncs with the size of content
@@ -14,8 +13,8 @@ const adjustPopupSize = async () => {
 
   try {
     const [currentWindow, currentZoom] = await Promise.all([
-      Browser.windows.getCurrent(),
-      Browser.tabs.getZoom(),
+      chrome.windows.getCurrent(),
+      chrome.tabs.getZoom(),
     ])
 
     // exit if popup is opened in a normal window (common for devs)
@@ -24,9 +23,9 @@ const adjustPopupSize = async () => {
     // make sure zoom is reset before adjusting size or size will be incorrect
     // test the necessity to apply the zoom settings, otherwise a zoom update message would appear
     if (currentZoom !== 1) {
-      if (IS_FIREFOX) await Browser.tabs.setZoom(1)
+      if (IS_FIREFOX) await chrome.tabs.setZoom(1)
       else
-        await Browser.tabs.setZoomSettings(undefined, {
+        chrome.tabs.setZoomSettings({
           defaultZoomFactor: 1,
           mode: "disabled",
           scope: "per-tab",
@@ -48,7 +47,7 @@ const adjustPopupSize = async () => {
       throw new Error(`Invalid width (${width}) or height (${height})`)
 
     if (width !== window.outerWidth || height !== window.outerHeight) {
-      Browser.windows.update(Browser.windows.WINDOW_ID_CURRENT, {
+      chrome.windows.update(chrome.windows.WINDOW_ID_CURRENT, {
         width,
         height,
       })

@@ -1,6 +1,4 @@
-import * as Sentry from "@sentry/browser"
-import Browser from "webextension-polyfill"
-
+import { sentry } from "../config/sentry"
 import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
 export type NotificationType = "submitted" | "success" | "error" | "not_found"
@@ -9,7 +7,7 @@ const getNotificationOptions = (
   type: NotificationType,
   networkName: string,
   error?: Error & { shortMessage?: string; reason?: string }
-): Browser.Notifications.CreateNotificationOptions => {
+): chrome.notifications.NotificationOptions<true> => {
   switch (type) {
     case "submitted":
       return {
@@ -59,11 +57,11 @@ export const createNotification = async (
     // we use url as notification id
     // delete previous notification before creating a new one, to make sure user sees the toast
 
-    if (url) await Browser.notifications.clear(url)
+    if (url) chrome.notifications.clear(url)
 
     const options = getNotificationOptions(type, networkName, error)
-    await Browser.notifications.create(url, options)
+    chrome.notifications.create(url, options)
   } catch (err) {
-    Sentry.captureException(err)
+    sentry.captureException(err)
   }
 }

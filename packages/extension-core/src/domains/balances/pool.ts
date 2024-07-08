@@ -1,13 +1,11 @@
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
   MiniMetadata,
   StoredBalanceJson,
   db as balancesDb,
-  deleteSubscriptionId,
 } from "@talismn/balances"
 import { configureStore } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
@@ -28,13 +26,14 @@ import {
   firstValueFrom,
 } from "rxjs"
 import { debounceTime, map } from "rxjs/operators"
-import Browser from "webextension-polyfill"
 
+import { sentry } from "../../config/sentry"
 import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
+import { isBackgroundPage } from "../../util/isBackgroundPage"
 import { settingsStore } from "../app/store.settings"
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { Chain } from "../chains/types"
@@ -144,12 +143,16 @@ abstract class BalancePool {
    */
   constructor({ persist }: { persist?: boolean }) {
     this.#persist = Boolean(persist)
-    Browser.runtime.getBackgroundPage().then((b) => {
-      if (window.location.href !== b.location.href)
+
+    // check for use outside of the background/service worker
+    isBackgroundPage().then((backgroudPage) => {
+      if (!backgroudPage) {
         throw new Error(
           `Balances pool should only be used in the background page - used in: ${window.location.href}`
         )
+      }
     })
+
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
 
@@ -218,8 +221,11 @@ abstract class BalancePool {
     cb: (val: BalanceSubscriptionResponse) => void
   ) {
     this.hasInitialised.then(() => {
+      // fire a single initial balance update so front end knows we're initialising
+      cb({ status: "initialising", data: Object.values(this.#pool.getValue()) })
+
       // create subscription to pool
-      const poolSubscription = this.#pool.pipe(debounceTime(500)).subscribe((balances) => {
+      const poolSubscription = this.#pool.pipe(firstThenDebounce(500)).subscribe((balances) => {
         return cb({ status: this.poolStatus, data: Object.values(balances) })
       })
       // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
@@ -343,7 +349,7 @@ abstract class BalancePool {
     const token = await chaindataProvider.tokenById(tokenId)
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
-      Sentry.captureException(error)
+      sentry.captureException(error)
       log.error(error)
       return
     }
@@ -352,7 +358,7 @@ abstract class BalancePool {
     const balanceModule = balanceModules.find(({ type }) => type === token.type)
     if (!balanceModule) {
       const error = new Error(`Failed to fetch balance: no module with type ${tokenType}`)
-      Sentry.captureException(error)
+      sentry.captureException(error)
       log.error(error)
       return
     }
@@ -382,7 +388,7 @@ abstract class BalancePool {
           this.#hasInitialised.resolve(true)
         },
         error: (error) =>
-          error?.error?.name !== Dexie.errnames.DatabaseClosed && Sentry.captureException(error),
+          error?.error?.name !== Dexie.errnames.DatabaseClosed && sentry.captureException(error),
       })
   }
 
@@ -655,12 +661,6 @@ abstract class BalancePool {
       // this way the rpcs will remain connected for an extra ten seconds
       .forEach((cb) => cb.then((close) => setTimeout(close, 10_000)))
 
-    try {
-      deleteSubscriptionId()
-    } catch (cause) {
-      log.error(new Error("Failed to delete subscriptionId", { cause }))
-    }
-
     this.setSubscriptionsState("Closed")
     log.log("Closed balance subscriptions")
   }
@@ -705,7 +705,7 @@ class KeyringBalancePool extends BalancePool {
     // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
     return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
       next: (accounts) => this.setAccounts(accounts),
-      error: (error) => Sentry.captureException(error),
+      error: (error) => sentry.captureException(error),
     })
   }
 

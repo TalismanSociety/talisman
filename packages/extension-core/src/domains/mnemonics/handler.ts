@@ -19,7 +19,7 @@ export default class MnemonicHandler extends ExtensionHandler {
         assert(mnemonic, "Mnemonic should be provided")
         const isValidMnemonic = mnemonicValidate(mnemonic)
         assert(isValidMnemonic, "Invalid mnemonic")
-        const password = this.stores.password.getPassword()
+        const password = await this.stores.password.getPassword()
         if (!password) throw new Error("Unauthorised")
         const { err, val } = await this.stores.mnemonics.add(
           "Vault Verifier Certificate Mnemonic",

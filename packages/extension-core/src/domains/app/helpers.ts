@@ -1,11 +1,10 @@
 import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { KeyringJson } from "@polkadot/ui-keyring/types"
-import * as Sentry from "@sentry/browser"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
-import Browser from "webextension-polyfill"
 
+import { sentry } from "../../config/sentry"
 import {
   MnemonicErrors,
   MnemonicsStoreData,
@@ -27,7 +26,7 @@ const eligiblePairFilter = (pair: KeyringPair | KeyringJson) =>
 export const restoreBackupKeyring = async (
   password: string
 ): Promise<Result<boolean, "No keyring backup found" | "Unable to restore backup keyring">> => {
-  const backupJsonObj = await Browser.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY)
+  const backupJsonObj = await chrome.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY)
 
   if (!backupJsonObj || !backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY])
     return Err("No keyring backup found")
@@ -38,7 +37,7 @@ export const restoreBackupKeyring = async (
   } catch (error) {
     return Err("Unable to restore backup keyring")
   }
-  await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
+  await chrome.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
   return Ok(true)
 }
 
@@ -57,7 +56,7 @@ const migratePairs = async (
       successfulPairs.push(pair)
     })
   } catch (error) {
-    Sentry.captureException(error)
+    sentry.captureException(error)
     log.error("Error migrating pairs: ", error)
     return Err("Error re-encrypting keypairs")
   }
@@ -86,7 +85,7 @@ const migrateMnemonic = async (
 
     return Ok(result)
   } catch (error) {
-    Sentry.captureException(error)
+    sentry.captureException(error)
     return Err(MnemonicErrors.UnableToEncrypt)
   }
 }
@@ -101,7 +100,7 @@ export const changePassword = async (
       keyring.getPairs().map(({ address }) => address),
       currentPw
     )
-    await Browser.storage.local.set({ [TALISMAN_BACKUP_KEYRING_KEY]: JSON.stringify(backupJson) })
+    await chrome.storage.local.set({ [TALISMAN_BACKUP_KEYRING_KEY]: JSON.stringify(backupJson) })
 
     // attempt to migrate keypairs first
     const keypairMigrationResult = await migratePairs(currentPw, newPw)
@@ -137,7 +136,7 @@ export const changePassword = async (
     log.error("Error migrating password: ", error)
     return Err("Error changing password")
   }
-  await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
+  await chrome.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
   // success
   return Ok(true)
 }

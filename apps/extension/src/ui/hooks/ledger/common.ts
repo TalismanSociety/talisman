@@ -1,4 +1,6 @@
 import { DEBUG } from "@extension/shared"
+import { supportedApps } from "@zondax/ledger-substrate"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { t } from "i18next"
 
 export class LedgerError extends Error {
@@ -211,4 +213,22 @@ export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerEr
     message: t("Failed to connect to your Ledger. Click here to retry."),
     requiresManualRetry: true,
   }
+}
+
+export const getPolkadotLedgerDerivationPath = ({
+  accountIndex = 0,
+  addressOffset = 0,
+  app,
+}: {
+  accountIndex?: number
+  addressOffset?: number
+  app?: SubstrateAppParams | null
+}) => {
+  if (!app) app = supportedApps.find((a) => a.name === "Polkadot")!
+
+  const HARDENED = 0x80000000
+  const slip = app.slip0044 - HARDENED
+
+  //354 for polkadot
+  return `m/44'/${slip}'/${accountIndex}'/0'/${addressOffset}'`
 }

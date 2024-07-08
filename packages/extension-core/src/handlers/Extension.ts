@@ -1,6 +1,5 @@
 import keyring from "@polkadot/ui-keyring"
 import { log } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"
@@ -66,7 +65,7 @@ export default class Extension extends ExtensionHandler {
     })
 
     // update the autolock timer whenever a setting is changed
-    Browser.storage.onChanged.addListener(() => {
+    chrome.storage.onChanged.addListener(() => {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
@@ -125,7 +124,7 @@ export default class Extension extends ExtensionHandler {
 
   private cleanup() {
     // remove legacy entries from localStorage
-    return Browser.storage.local.remove([
+    return chrome.storage.local.remove([
       "chains",
       "ethereumNetworks",
       "tokens",
@@ -228,7 +227,8 @@ export default class Extension extends ExtensionHandler {
     // Then try remaining which are present in this class
     // --------------------------------------------------------------------
     switch (type) {
-      // NOTE: The remaining message handlers which used to be here have now all been moved into subhandlers :)
+      case "pri(ping)":
+        return true
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

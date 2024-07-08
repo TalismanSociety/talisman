@@ -1,7 +1,6 @@
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import uiKeyring from "@polkadot/ui-keyring"
 import { KeyringJson } from "@polkadot/ui-keyring/types"
-import Browser from "webextension-polyfill"
 
 import { hasPrivateKey, hasQrCodeAccounts } from "../helpers"
 import { AccountType } from "../types"
@@ -16,7 +15,7 @@ describe("hasQrCodeAccounts", () => {
       },
     }
     // add the local data to the mock storage
-    await Browser.storage.local.set(localData)
+    await chrome.storage.local.set(localData)
 
     expect(await hasQrCodeAccounts()).toEqual(true)
   })
@@ -30,7 +29,7 @@ describe("hasQrCodeAccounts", () => {
       },
     }
     // add the local data to the mock storage
-    await Browser.storage.local.set(localData)
+    await chrome.storage.local.set(localData)
 
     expect(await hasQrCodeAccounts()).toEqual(false)
   })

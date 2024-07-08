@@ -1,9 +1,9 @@
-import { isChainActive } from "@extension/core"
+import { SubstrateLedgerAppType, isChainActive } from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
-import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
-import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import { validateHexString } from "@talismn/util"
+import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
+import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
@@ -11,6 +11,10 @@ import useChain from "@ui/hooks/useChain"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import {
+  LedgerAccountDefSubstrate,
+  LedgerAccountDefSubstrateLegacy,
+} from "./AccountAdd/AccountAddLedger/context"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
 const useLedgerChainAccounts = (
@@ -22,7 +26,7 @@ const useLedgerChainAccounts = (
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
   const chain = useChain(chainId)
-  const app = useLedgerSubstrateApp(chain?.genesisHash)
+  const app = useLedgerSubstrateLegacyApp(chain?.genesisHash)
   const activeChains = useActiveChainsState()
   const withBalances = useMemo(
     () => !!chain && isChainActive(chain, activeChains),
@@ -35,7 +39,7 @@ const useLedgerChainAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrate(chain?.genesisHash)
+  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateLegacy(chain?.genesisHash)
 
   const loadPage = useCallback(async () => {
     if (!app || !ledger || !isReady || !chain) return
@@ -79,7 +83,7 @@ const useLedgerChainAccounts = (
       ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ecdsa", genesisHash: acc.genesisHash }))
+            .map((acc) => ({ address: acc.address, type: "ed25519", genesisHash: acc.genesisHash }))
         : [],
     [itemsPerPage, ledgerAccounts]
   )
@@ -147,7 +151,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
   const { t } = useTranslation()
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateLegacy[]>([])
   const { accounts, withBalances, error, isBusy } = useLedgerChainAccounts(
     chainId,
     selectedAccounts,
@@ -161,7 +165,14 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
     setSelectedAccounts((prev) =>
       prev.some((pa) => pa.address === address)
         ? prev.filter((pa) => pa.address !== address)
-        : prev.concat({ accountIndex, address, addressOffset, genesisHash, name })
+        : prev.concat({
+            ledgerApp: SubstrateLedgerAppType.Legacy,
+            accountIndex,
+            address,
+            addressOffset,
+            genesisHash: validateHexString(genesisHash as string),
+            name,
+          })
     )
   }, [])
 

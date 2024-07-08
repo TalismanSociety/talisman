@@ -2,15 +2,15 @@ import { Transaction, TransactionMode, liveQuery } from "dexie"
 import { ReplaySubject, SubscriptionLike, map } from "rxjs"
 
 import { githubTokenLogoUrl, githubUnknownTokenLogoUrl } from "./constants"
-import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
+import { fetchInitChains, fetchInitEvmNetworks, fetchInitSubstrateTokens } from "./init"
 import log from "./log"
 import {
   fetchChain,
   fetchChains,
   fetchEvmNetwork,
   fetchEvmNetworks,
+  fetchSubstrateToken,
   fetchSubstrateTokens,
-  fetchToken,
 } from "./net"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 import { IChaindataProvider, TokenTypes } from "./types"
@@ -280,7 +280,7 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!builtInChain) throw new Error("Cannot reset non-built-in chain")
     if (!builtInChain.nativeToken?.id)
       throw new Error("Failed to lookup native token (no token exists for chain)")
-    const builtInNativeToken = await fetchToken(builtInChain?.nativeToken?.id)
+    const builtInNativeToken = await fetchSubstrateToken(builtInChain?.nativeToken?.id)
     if (!util.isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
     if (!util.isToken(builtInNativeToken))
       throw new Error("Failed to lookup native token (isToken test failed)")
@@ -662,7 +662,7 @@ export class ChaindataProvider implements IChaindataProvider {
         // initialize the DB with the list of tokens inside our init/tokens.json file.
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
-        var tokens = util.parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
+        var tokens = util.parseTokensResponse(await fetchInitSubstrateTokens()) // eslint-disable-line no-var
       }
 
       await this.#db.transaction("rw", this.#db.tokens, async () => {

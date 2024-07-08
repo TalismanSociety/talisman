@@ -51,10 +51,20 @@ const AccountButton: FC<AccountButtonProps> = ({
   connected,
   selected,
   onClick,
-  isBalanceLoading,
   withBalances,
+  isBalanceLoading,
 }) => {
   const totalFiat = useBalancesFiatTotal(balances)
+
+  const [isInitializing, isLoading] = useMemo(
+    () => [
+      // none are loaded yet
+      isBalanceLoading && !balances.each.some((b) => b.status === "live"),
+      // some are loaded, some are still loading
+      isBalanceLoading && balances.each.some((b) => b.status === "live"),
+    ],
+    [balances.each, isBalanceLoading]
+  )
 
   return (
     <button
@@ -73,16 +83,19 @@ const AccountButton: FC<AccountButtonProps> = ({
         </div>
       </div>
       <div className="flex items-center justify-end gap-2">
-        {withBalances && (
-          <Tooltip placement="bottom-end">
-            <TooltipTrigger asChild>
-              <span className={classNames(isBalanceLoading && "animate-pulse")}>
-                <Fiat className="leading-none" amount={totalFiat} isBalance />
-              </span>
-            </TooltipTrigger>
-            <BalancesSummaryTooltipContent balances={balances} />
-          </Tooltip>
-        )}
+        {withBalances &&
+          (isInitializing ? (
+            <div className="rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse"></div>
+          ) : (
+            <Tooltip placement="bottom-end">
+              <TooltipTrigger asChild>
+                <span className={classNames(isLoading && "animate-pulse")}>
+                  <Fiat className="leading-none" amount={totalFiat} isBalance />
+                </span>
+              </TooltipTrigger>
+              <BalancesSummaryTooltipContent balances={balances} />
+            </Tooltip>
+          ))}
       </div>
       <div className="flex w-12 shrink-0 flex-col items-center justify-center">
         {connected ? (
@@ -100,10 +113,9 @@ export type DerivedAccountBase = AccountJson & {
   accountIndex: number
   address: string
   balances: Balances
-  isBalanceLoading: boolean
-
   connected?: boolean
   selected?: boolean
+  isBalanceLoading?: boolean
 }
 
 type AccountButtonProps = DerivedAccountBase & {
@@ -157,6 +169,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
             <AccountButton
               key={`${keyPrefix}::${account.address}`}
               withBalances={withBalances}
+              isBalanceLoading={account.isBalanceLoading}
               {...account}
               onClick={handleToggleAccount(account)}
             />

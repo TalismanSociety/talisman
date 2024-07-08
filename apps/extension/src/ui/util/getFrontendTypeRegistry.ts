@@ -1,19 +1,19 @@
-import { Chain, isJsonPayload } from "@extension/core"
-import { getMetadataFromDef, getMetadataRpcFromDef } from "@extension/core"
-import { chaindataProvider } from "@extension/core"
+import { Chain } from "@extension/core"
 import { getUserExtensionsByChainId } from "@extension/core/domains/metadata/userExtensions"
+import { getMetadataFromDef, getMetadataRpcFromDef } from "@extension/shared"
 import { log } from "@extension/shared"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { hexToNumber, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
+import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
-// do not reuse getTypeRegistry because we're on front-end, we need to leverage backend's metadata cache
-const getFrontEndTypeRegistry = async (
+/**
+ * do not reuse getTypeRegistry because we're on frontend, we need to leverage backend's metadata cache
+ */
+export const getFrontendTypeRegistry = async (
   chainIdOrHash: string,
   specVersion?: number | string,
   blockHash?: string,
@@ -85,35 +85,4 @@ const getFrontEndTypeRegistry = async (
   }
 
   return { registry, metadataRpc }
-}
-
-const decodeExtrinsic = async (payload: SignerPayloadJSON) => {
-  try {
-    const { genesisHash, signedExtensions, specVersion: hexSpecVersion } = payload
-
-    const { registry } = await getFrontEndTypeRegistry(
-      genesisHash,
-      hexToNumber(hexSpecVersion),
-      undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, do not specify payload's blockHash or it could throw
-      signedExtensions
-    )
-
-    return registry.createType("Extrinsic", payload)
-  } catch (err) {
-    log.error("Failed to decode extrinsic", { err })
-    throw err
-  }
-}
-
-export const useExtrinsic = (payload?: SignerPayloadJSON | SignerPayloadRaw) => {
-  return useQuery({
-    queryKey: ["useExtrinsic", payload],
-    queryFn: () => (payload && isJsonPayload(payload) ? decodeExtrinsic(payload) : null),
-    refetchOnMount: false,
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
-    retryOnMount: false,
-    retry: 2,
-  })
 }

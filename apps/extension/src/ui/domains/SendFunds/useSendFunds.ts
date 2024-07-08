@@ -1,4 +1,4 @@
-import { AssetTransferMethod } from "@extension/core"
+import { AssetTransferMethod, SignerPayloadJSON } from "@extension/core"
 import { roundToFirstInteger } from "@extension/core"
 import { AccountType } from "@extension/core"
 import {
@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { TransactionRequest } from "viem"
 
+import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMetadata"
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
 import { useFeeToken } from "./useFeeToken"
@@ -173,14 +174,38 @@ const useSubTransaction = (
     enabled: !isLocked,
   })
 
+  const qPayloadMetadata = useSubstratePayloadMetadata(
+    qSubstrateEstimateFee?.data?.unsigned ?? null
+  )
+
   return useMemo(() => {
     if (!isSubToken(token)) return undefined
 
-    const { partialFee, unsigned } = qSubstrateEstimateFee.data ?? {}
-    const { isLoading, isRefetching, error } = qSubstrateEstimateFee
+    const { partialFee, unsigned: unsignedOriginal } = qSubstrateEstimateFee.data ?? {}
+    const {
+      registry,
+      txMetadata: shortMetadata,
+      payloadWithMetadataHash,
+    } = qPayloadMetadata.data ?? {}
 
-    return { partialFee, unsigned, isLoading, isRefetching, error }
-  }, [qSubstrateEstimateFee, token])
+    const isLoading = qSubstrateEstimateFee.isLoading || qPayloadMetadata.isLoading
+    const isRefetching = qSubstrateEstimateFee.isRefetching || qPayloadMetadata.isRefetching
+    const error = qSubstrateEstimateFee.error || qPayloadMetadata.error
+
+    const unsigned = payloadWithMetadataHash ?? unsignedOriginal
+
+    return { partialFee, unsigned, isLoading, isRefetching, error, registry, shortMetadata }
+  }, [
+    qPayloadMetadata.data,
+    qPayloadMetadata.error,
+    qPayloadMetadata.isLoading,
+    qPayloadMetadata.isRefetching,
+    qSubstrateEstimateFee.data,
+    qSubstrateEstimateFee.error,
+    qSubstrateEstimateFee.isLoading,
+    qSubstrateEstimateFee.isRefetching,
+    token,
+  ])
 }
 
 export type ToWarning = "DIFFERENT_ACCOUNT_FORMAT" | "AZERO_ID" | undefined
@@ -603,15 +628,21 @@ const useSendFundsProvider = () => {
   ])
 
   const sendWithSignature = useCallback(
-    async (signature: HexString) => {
+    async (signature: HexString, payload?: SignerPayloadJSON) => {
       try {
         setIsProcessing(true)
         if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
-          const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature, {
-            tokenId: token.id,
-            value: amount,
-            to,
-          })
+          // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload had to be modified to include metadata hash
+          // otherwise, signature is for the initial payload
+          const { hash } = await api.assetTransferApproveSign(
+            payload || subTransaction.unsigned,
+            signature,
+            {
+              tokenId: token.id,
+              value: amount,
+              to,
+            }
+          )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return

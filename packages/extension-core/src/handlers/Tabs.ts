@@ -18,10 +18,9 @@ import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert, isNumber } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import { log } from "extension-shared"
-import Browser from "webextension-polyfill"
 
+import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import { RequestAccountList } from "../domains/accounts/types"
@@ -38,7 +37,6 @@ import {
 import { EthTabsHandler } from "../domains/ethereum"
 import { requestInjectMetadata } from "../domains/metadata/requests"
 import { signSubstrate } from "../domains/signing/requests"
-import type { ResponseSigning } from "../domains/signing/types"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
 import {
   AuthorizedSite,
@@ -51,6 +49,7 @@ import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
 import type { Port } from "../types/base"
+import { SubstrateSignResponse } from "../types/domains"
 import { isTalismanUrl } from "../util/isTalismanUrl"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
@@ -146,7 +145,11 @@ export default class Tabs extends TabsHandler {
     return pair
   }
 
-  private bytesSign(url: string, request: SignerPayloadRaw, port: Port): Promise<ResponseSigning> {
+  private bytesSign(
+    url: string,
+    request: SignerPayloadRaw,
+    port: Port
+  ): Promise<SubstrateSignResponse> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
@@ -165,7 +168,7 @@ export default class Tabs extends TabsHandler {
     url: string,
     request: SignerPayloadJSON,
     port: Port
-  ): Promise<ResponseSigning> {
+  ): Promise<SubstrateSignResponse> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
@@ -252,7 +255,7 @@ export default class Tabs extends TabsHandler {
 
     port.onDisconnect.addListener((): void => {
       unsubscribe(id)
-      this.rpcUnsubscribe({ ...request, subscriptionId }, port).catch(Sentry.captureException)
+      this.rpcUnsubscribe({ ...request, subscriptionId }, port).catch(sentry.captureException)
     })
 
     return true
@@ -281,19 +284,19 @@ export default class Tabs extends TabsHandler {
   private redirectPhishingLanding(phishingWebsite: string): void {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${Browser.runtime.getURL(
+    const url = `${chrome.runtime.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
-    Browser.tabs.query({ url: nonFragment }).then((tabs) => {
+    chrome.tabs.query({ url: nonFragment }).then((tabs) => {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
         .forEach((id) =>
-          Browser.tabs.update(id, { url }).catch((err: Error) => {
+          chrome.tabs.update(id, { url }).catch((err: Error) => {
             // eslint-disable-next-line no-console
             console.error("Failed to redirect tab to phishing page", { err })
-            Sentry.captureException(err, { extra: { url } })
+            sentry.captureException(err, { extra: { url } })
           })
         )
     })
@@ -303,7 +306,7 @@ export default class Tabs extends TabsHandler {
     const isInDenyList = await protector.isPhishingSite(url)
 
     if (isInDenyList) {
-      Sentry.captureEvent({
+      sentry.captureEvent({
         message: "Redirect from phishing site",
         extra: { url },
       })
