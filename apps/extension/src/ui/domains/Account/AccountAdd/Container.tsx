@@ -169,13 +169,9 @@ const ConnectAccountMethodButtons = () => {
       />
       <AccountCreateMethodButton
         title={t("Connect D'CENT")}
-        subtitle={
-          !IS_FIREFOX
-            ? t("Connect your D'CENT Biometric Wallet")
-            : t("Not supported on this browser")
-        }
-        networks={!IS_FIREFOX ? ["ethereum", "polkadot"] : []}
-        disabled={IS_FIREFOX}
+        subtitle={t("Disabled - please contact support")}
+        networks={[]}
+        disabled={true}
         to={`/accounts/add/dcent`}
       />
       <AccountCreateMethodButton
