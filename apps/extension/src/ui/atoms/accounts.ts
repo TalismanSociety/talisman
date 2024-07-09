@@ -10,6 +10,7 @@ import { atomWithSubscription } from "./utils/atomWithSubscription"
 export type AccountCategory = "all" | "watched" | "owned" | "portfolio" | "signet"
 
 const IS_EXTERNAL: Partial<Record<AccountType, true>> = {
+  [AccountType.Dcent]: true,
   [AccountType.Watched]: true,
   [AccountType.Signet]: true,
 }

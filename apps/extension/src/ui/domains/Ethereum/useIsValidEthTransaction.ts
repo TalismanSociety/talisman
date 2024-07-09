@@ -1,4 +1,5 @@
 import {
+  AccountType,
   EthPriorityOptionName,
   getMaxTransactionCost,
   serializeTransactionRequest,
@@ -33,6 +34,9 @@ export const useIsValidEthTransaction = (
 
       if (account.origin === "WATCHED")
         throw new Error(t("Cannot sign transactions with a watched account"))
+
+      if (account.origin === AccountType.Dcent)
+        throw new Error(t("Cannot sign transactions with a D'CENT account"))
 
       // balance checks
       const value = tx.value ?? 0n

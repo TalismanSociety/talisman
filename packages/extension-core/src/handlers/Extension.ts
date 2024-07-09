@@ -93,7 +93,8 @@ export default class Extension extends ExtensionHandler {
             const newAddresses = Object.values(addresses)
               .filter(
                 ({ json: { meta } }) =>
-                  isTalismanHostname(autoAddSite.url) || meta.origin !== AccountType.Watched
+                  isTalismanHostname(autoAddSite.url) ||
+                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType)
               )
               .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)
