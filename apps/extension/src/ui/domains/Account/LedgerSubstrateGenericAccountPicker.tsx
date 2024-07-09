@@ -27,6 +27,7 @@ import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
 import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
 
 const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
@@ -43,7 +44,7 @@ const useLedgerSubstrateGenericAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
+  const { isReady, ledger, getAddress, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
 
   const loadPage = useCallback(async () => {
     if (!ledger || !isReady) return
@@ -62,12 +63,13 @@ const useLedgerSubstrateGenericAccounts = (
 
         const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset, app })
 
-        const { address } = await ledger.getAddress(path, app?.ss58_addr_type ?? 42, false)
+        const genericAddress = await getAddress(path, app?.ss58_addr_type ?? 42)
+        if (!genericAddress) throw new Error("Unable to get address")
 
         newAccounts[i] = {
           accountIndex,
           addressOffset,
-          address,
+          address: genericAddress.address,
           name: t("Ledger {{appName}} {{accountIndex}}", {
             appName: app?.chain?.name ?? "Polkadot",
             accountIndex: accountIndex + 1,
@@ -83,7 +85,7 @@ const useLedgerSubstrateGenericAccounts = (
     }
 
     setIsBusy(false)
-  }, [app, isReady, itemsPerPage, ledger, pageIndex, t])
+  }, [app, isReady, itemsPerPage, ledger, getAddress, pageIndex, t])
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const accountImportDefs = useMemo<AccountImportDef[]>(
@@ -198,6 +200,9 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
 
   return (
     <>
+      <div className="mb-8">
+        <LedgerConnectionStatus {...connectionStatus} />
+      </div>
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances
@@ -331,7 +336,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
     setAccountDetails((prev) => ({ ...prev, name: e.target.value }))
   }, [])
 
-  const { address, error } = useLedgerAccountAddress(accountDetails, app)
+  const { address, error, connectionStatus } = useLedgerAccountAddress(accountDetails, app)
 
   const accountImportDefs = useMemo<AccountImportDef[]>(
     () =>
@@ -368,8 +373,8 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-2 gap-8">
-        <div className="text-alert-warn bg-alert-warn/5 col-span-2 flex items-center gap-6 rounded-sm p-8 text-sm">
+      <div className="mb-8 flex flex-col gap-4">
+        <div className="text-alert-warn bg-alert-warn/5  flex items-center gap-6 rounded-sm p-8 text-sm">
           <div className="bg-alert-warn/10 rounded-full p-4">
             <InfoIcon className="shrink-0 text-lg" />
           </div>
@@ -379,6 +384,11 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
             )}
           </div>
         </div>
+        <div>
+          <LedgerConnectionStatus {...connectionStatus} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-8">
         <FormFieldContainer label={t("Account index")}>
           <FormFieldInputText
             type="number"

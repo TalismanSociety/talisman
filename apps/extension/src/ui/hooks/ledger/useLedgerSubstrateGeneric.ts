@@ -2,6 +2,7 @@ import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
+import { GenericeResponseAddress } from "@zondax/ledger-substrate/dist/common"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,10 +23,57 @@ type UseLedgerSubstrateGenericProps = {
 
 const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}
 
+const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
+
+const safelyCreateTransport = async (attempt = 1): Promise<Transport> => {
+  if (attempt > 5) throw new Error("Unable to connect to Ledger")
+  try {
+    return await TransportWebUSB.create()
+  } catch (e) {
+    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
+      await new Promise((resolve) => setTimeout(resolve, 200 * attempt))
+      return await safelyCreateTransport(attempt + 1)
+    } else throw e
+  }
+}
+
+const safelyCloseTransport = async (transport: Transport | null, attempt = 1): Promise<void> => {
+  if (attempt > 5) throw new Error("Unable to disconnect Ledger")
+  try {
+    await transport?.close()
+  } catch (e) {
+    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
+      await new Promise((resolve) => setTimeout(resolve, 100 * attempt))
+      return await safelyCloseTransport(transport, attempt + 1)
+    } else throw e
+  }
+}
+
+const safelyGetAddress = async (
+  ledger: PolkadotGenericApp,
+  bip44path: string,
+  ss58prefix = 42,
+  attempt = 1
+): Promise<GenericeResponseAddress> => {
+  if (!ledger) throw new Error("Ledger not connected")
+
+  if (attempt > 5) throw new Error("Unable to connect to Ledger")
+  try {
+    return await ledger.getAddress(bip44path, ss58prefix, false)
+  } catch (err) {
+    if (
+      (err as Error).message.includes(LEDGER_IN_PROGRESS_ERROR) ||
+      (err as Error).message === "Unknown transport error"
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 200 * attempt))
+      return await safelyGetAddress(ledger, bip44path, undefined, attempt + 1)
+    } else throw err
+  }
+}
+
 export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
-  const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
   const [ledger, setLedger] = useState<PolkadotGenericApp | null>(null)
@@ -39,10 +87,25 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
       // the persist argument can be used to prevent this behaviour, when the hook is used
       // in two components that need to share the ledger connection
       if (!persist && ledger?.transport) {
-        ledger.transport.close()
+        safelyCloseTransport(ledger.transport as Transport).then(() => {
+          refTransport.current = null
+          setLedger(null)
+        })
       }
     }
   }, [ledger, persist])
+
+  const getAddress = useCallback(
+    async (bip44path: string, ss58prefix = 42) => {
+      if (!ledger) return
+
+      return await Promise.race([
+        safelyGetAddress(ledger, bip44path, ss58prefix),
+        throwAfter(5_000, "Timeout on Ledger Substrate Generic getAddress"),
+      ])
+    },
+    [ledger]
+  )
 
   const connectLedger = useCallback(
     async (resetError?: boolean) => {
@@ -56,8 +119,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
       if (resetError) setError(undefined)
 
       try {
-        await refTransport.current?.close()
-        refTransport.current = await TransportWebUSB.create()
+        refTransport.current = await safelyCreateTransport()
 
         const ledger = new PolkadotGenericApp(refTransport.current)
 
@@ -65,7 +127,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
 
         // verify that Ledger connection is ready by querying first address
         await Promise.race([
-          ledger.getAddress(bip44path, 42, false),
+          safelyGetAddress(ledger, bip44path),
           throwAfter(5_000, "Timeout on Ledger Substrate Generic connection"),
         ])
 
@@ -76,7 +138,12 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
         log.error("connectLedger Substrate Generic : " + (err as LedgerError).message, { err })
 
         try {
-          await refTransport.current?.close()
+          if (
+            refTransport.current &&
+            "device" in refTransport.current &&
+            (refTransport.current.device as USBDevice).opened
+          )
+            await refTransport.current?.close()
           refTransport.current = null
         } catch (err2) {
           log.error("Can't close ledger transport", err2)
@@ -118,15 +185,20 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
   }, [isReady, isLoading, error, app, t])
 
   // automatic connection (startup + polling)
+  // use a ref to avoid re-renders when refreshCounter changes
+  const refreshCounterRef = useRef(0)
+
   useEffect(() => {
     connectLedger()
-  }, [connectLedger, refreshCounter])
+  }, [connectLedger])
 
   // if not connected, poll every 2 seconds
   // this will recreate the ledger instance which triggers automatic connection
   useSetInterval(() => {
-    if (!isLoading && !requiresManualRetry && ["warning", "error", "unknown"].includes(status))
-      setRefreshCounter((idx) => idx + 1)
+    if (!isLoading && !requiresManualRetry && ["warning", "error", "unknown"].includes(status)) {
+      refreshCounterRef.current += 1
+      connectLedger()
+    }
   }, 2000)
 
   // manual connection
@@ -141,6 +213,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
     status,
     message,
     ledger,
+    getAddress,
     refresh,
   }
 }
