@@ -192,7 +192,8 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
     connectLedger()
   }, [connectLedger])
 
-  // Replace the existing useSetInterval with:
+  // if not connected, poll every 2 seconds
+  // this will recreate the ledger instance which triggers automatic connection
   useSetInterval(() => {
     if (!isLoading && !requiresManualRetry && ["warning", "error", "unknown"].includes(status)) {
       refreshCounterRef.current += 1
