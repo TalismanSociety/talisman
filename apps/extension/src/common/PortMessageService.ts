@@ -200,10 +200,7 @@ export default class PortMessageService {
             data.rpcData
           )
         )
-      } else
-        handler.reject(
-          new PortMessageError("Unable to complete action", { cause: new Error(data.error) })
-        )
+      } else handler.reject(new Error(data.error))
     } else handler.resolve(data.response)
   }
 }
