@@ -428,6 +428,12 @@ const useSendFundsProvider = () => {
           error: t("Cannot send from a watched account"),
         }
 
+      if (fromAccount?.origin === AccountType.Dcent)
+        return {
+          isValid: false,
+          error: t("Cannot send from a D'CENT account"),
+        }
+
       if (token && !isTransferableToken(token))
         return {
           isValid: false,

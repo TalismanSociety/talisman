@@ -91,7 +91,11 @@ export const getPublicAccounts = (
   options = { includeWatchedAccounts: false }
 ) =>
   filterFn(accounts)
-    .filter((a) => options.includeWatchedAccounts || a.json.meta.origin !== AccountType.Watched)
+    .filter(
+      (a) =>
+        options.includeWatchedAccounts ||
+        ![AccountType.Watched, AccountType.Dcent].includes(a.json.meta.origin as AccountType)
+    )
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 

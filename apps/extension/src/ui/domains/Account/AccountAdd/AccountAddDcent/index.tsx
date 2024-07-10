@@ -1,16 +1,24 @@
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Trans, useTranslation } from "react-i18next"
 
-import { AccountAddPageProps } from "../types"
-import { ConnectDcentAccountsPage } from "./ConnectDcentAccountsPage"
-import { ConnectDcentBridgePage } from "./ConnectDcentBridgePage"
-import { DcentConnectProvider } from "./context"
-
-export const AccountAddDcentWizard = ({ onSuccess }: AccountAddPageProps) => (
-  <DcentConnectProvider onSuccess={onSuccess}>
-    <Routes>
-      <Route path="" element={<ConnectDcentBridgePage />} />
-      <Route path="accounts" element={<ConnectDcentAccountsPage />} />
-      <Route path="*" element={<Navigate to="" replace />} />
-    </Routes>
-  </DcentConnectProvider>
-)
+export const AccountAddDcentDisabledMessage = () => {
+  const { t } = useTranslation("admin")
+  return (
+    <>
+      <h2 className="">{t("D'CENT support is currently unavailable")}</h2>
+      <p className="text-body-secondary">
+        <Trans t={t}>
+          For more information, please contact our support team on{" "}
+          <a
+            className="text-body underline"
+            href="https://discord.gg/talisman"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Discord
+          </a>
+          .
+        </Trans>
+      </p>
+    </>
+  )
+}

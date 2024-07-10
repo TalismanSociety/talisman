@@ -10,6 +10,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import useToken from "@ui/hooks/useToken"
+import { AccountType } from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -154,9 +155,15 @@ export const SendFundsRecipientPicker = () => {
 
   const { myAccounts, watchedAccounts } = useMemo(
     () => ({
-      myAccounts: accounts.filter((account) => account.origin !== "WATCHED" || account.isPortfolio),
+      myAccounts: accounts.filter(
+        (account) =>
+          (account.origin !== AccountType.Watched || account.isPortfolio) &&
+          account.origin !== AccountType.Dcent
+      ),
       watchedAccounts: accounts.filter(
-        (account) => account.origin === "WATCHED" && !account.isPortfolio
+        (account) =>
+          (account.origin === AccountType.Watched && !account.isPortfolio) ||
+          account.origin === AccountType.Dcent
       ),
     }),
     [accounts]
