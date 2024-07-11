@@ -2,7 +2,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { OpaqueMetadata } from "@polkadot/types/interfaces"
 import { assert, isHex, u8aToNumber } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { ChainId } from "@talismn/chaindata-provider"
+import { Chain, ChainId } from "@talismn/chaindata-provider"
 import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
 import { sentry } from "../config/sentry"
@@ -31,14 +31,7 @@ export const getMetadataDef = async (
   specVersion?: number,
   blockHash?: string
 ): Promise<TalismanMetadataDef | undefined> => {
-  let genesisHash = isHex(chainIdOrHash) ? chainIdOrHash : null
-  const chain = await (genesisHash
-    ? chaindataProvider.chainByGenesisHash(genesisHash)
-    : chaindataProvider.chainById(chainIdOrHash))
-  if (!genesisHash) genesisHash = chain?.genesisHash as HexString
-
-  // throw if neither a known chainId or genesisHash
-  assert(genesisHash, `Unknown chain : ${chainIdOrHash}`)
+  const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
 
   const cacheKey = getCacheKey(genesisHash, specVersion)
   if (cacheKey && cache[cacheKey]) return cache[cacheKey]
@@ -59,12 +52,13 @@ export const getMetadataDef = async (
   }
 
   if (!chain) {
-    log.warn(`Metadata for unknown isn't up to date`, storeMetadata?.chain ?? genesisHash)
+    log.warn(`Metadata for unknown chain isn't up to date`, storeMetadata?.chain ?? genesisHash)
     return storeMetadata
   }
 
   try {
     const { specVersion: runtimeSpecVersion } = await getRuntimeVersion(chain.id, blockHash)
+    assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
 
     // if specVersion wasn't specified, but store version is up to date, look no further
     if (storeMetadata?.metadataRpc && runtimeSpecVersion === storeMetadata.specVersion)
@@ -81,39 +75,14 @@ export const getMetadataDef = async (
     // if (DEBUG) await sleep(5_000)
     // if (DEBUG) throw new Error("Failed to update metadata (debugging)")
 
-    // fetch the metadata from the chain
-    const [metadataRpc, chainProperties] = await Promise.all([
-      getLatestMetadataRpc(chain.id, blockHash),
-      chainConnector.send(chain.id, "system_properties", [], true),
-    ]).catch((rpcError) => {
-      // not a useful error, do not log to sentry
-      if ((rpcError as Error).message === "RPC connect timeout reached") {
-        log.error(rpcError)
-        metadataUpdatesStore.set(genesisHash as HexString, false)
-        return [undefined, undefined]
-      }
-      // otherwise allow wrapping try/catch to handle
-      throw rpcError
-    })
-    // unable to get data from rpc, return nothing
-    if (!metadataRpc || !chainProperties) return
-
-    assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
-
-    const newData = {
+    // fetch the metadataDef from the chain
+    const newData = await fetchMetadataDefFromChain(
+      chain,
       genesisHash,
-      chain: chain.chainName,
-      specVersion: runtimeSpecVersion,
-      ss58Format: chainProperties.ss58Format,
-      tokenSymbol: Array.isArray(chainProperties.tokenSymbol)
-        ? chainProperties.tokenSymbol[0]
-        : chainProperties.tokenSymbol,
-      tokenDecimals: Array.isArray(chainProperties.tokenDecimals)
-        ? chainProperties.tokenDecimals[0]
-        : chainProperties.tokenDecimals,
-      metaCalls: undefined, // won't be used anymore, yeet
-      metadataRpc: encodeMetadataRpc(metadataRpc),
-    } as TalismanMetadataDef
+      runtimeSpecVersion,
+      blockHash
+    )
+    if (!newData) return // unable to get data from rpc, return nothing
 
     // save in cache
     cache[cacheKey] = newData
@@ -149,6 +118,68 @@ export const getMetadataDef = async (
   return storeMetadata
 }
 
+export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: string) => {
+  const chainId = !isHex(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
+  const hash = isHex(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
+
+  const chain = chainId
+    ? await chaindataProvider.chainById(chainId)
+    : hash
+    ? await chaindataProvider.chainByGenesisHash(hash)
+    : null
+
+  const genesisHash = hash ?? chain?.genesisHash
+  // throw if neither a known chainId or genesisHash
+  assert(genesisHash, `Unknown chain: ${chainIdOrGenesisHash}`)
+
+  return [chain, genesisHash] as const
+}
+
+export const fetchMetadataDefFromChain = async (
+  chain: Chain,
+  genesisHash: `0x${string}`,
+  runtimeSpecVersion?: number,
+  blockHash?: string,
+
+  /** defaults to `getLatestMetadataRpc`, but can be overridden */
+  fetchMethod: (
+    chainId: ChainId,
+    blockHash?: string
+  ) => Promise<`0x${string}`> = getLatestMetadataRpc
+): Promise<TalismanMetadataDef | undefined> => {
+  const [metadataRpc, chainProperties] = await Promise.all([
+    fetchMethod(chain.id, blockHash),
+    chainConnector.send(chain.id, "system_properties", [], true),
+  ]).catch((rpcError) => {
+    // not a useful error, do not log to sentry
+    if ((rpcError as Error).message === "RPC connect timeout reached") {
+      log.error(rpcError)
+      metadataUpdatesStore.set(genesisHash as HexString, false)
+      return [undefined, undefined]
+    }
+    // otherwise allow wrapping try/catch to handle
+    throw rpcError
+  })
+
+  // unable to get data from rpc, return nothing
+  if (!metadataRpc || !chainProperties) return
+
+  return {
+    genesisHash,
+    chain: chain.chainName,
+    specVersion: runtimeSpecVersion,
+    ss58Format: chainProperties.ss58Format,
+    tokenSymbol: Array.isArray(chainProperties.tokenSymbol)
+      ? chainProperties.tokenSymbol[0]
+      : chainProperties.tokenSymbol,
+    tokenDecimals: Array.isArray(chainProperties.tokenDecimals)
+      ? chainProperties.tokenDecimals[0]
+      : chainProperties.tokenDecimals,
+    metaCalls: undefined, // won't be used anymore, yeet
+    metadataRpc: encodeMetadataRpc(metadataRpc),
+  } as TalismanMetadataDef
+}
+
 // useful for developer when testing updates
 if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,7 +191,10 @@ if (DEBUG) {
   }
 }
 
-const getLatestMetadataRpc = async (chainId: ChainId, blockHash?: string) => {
+export const getLatestMetadataRpc = async (
+  chainId: ChainId,
+  blockHash?: string
+): Promise<`0x${string}`> => {
   const stop = log.timer(`getLatestMetadataRpc(${chainId})`)
   try {
     const versions = await stateCall(
@@ -195,7 +229,7 @@ const getLatestMetadataRpc = async (chainId: ChainId, blockHash?: string) => {
     // maybe the chain doesn't have metadata_versions or metadata_at_version runtime calls - ex: crust standalone
     // fetch metadata the old way
     if ((err as { message?: string })?.message?.includes("is not found"))
-      return chainConnector.send<HexString>(chainId, "state_getMetadata", [blockHash], !!blockHash)
+      return await getLegacyMetadataRpc(chainId, blockHash)
 
     // eslint-disable-next-line no-console
     console.error("getLatestMetadataRpc", { err })
@@ -204,6 +238,18 @@ const getLatestMetadataRpc = async (chainId: ChainId, blockHash?: string) => {
   } finally {
     stop()
   }
+}
+
+export const getLegacyMetadataRpc = async (
+  chainId: ChainId,
+  blockHash?: string
+): Promise<`0x${string}`> => {
+  return await chainConnector.send<HexString>(
+    chainId,
+    "state_getMetadata",
+    [blockHash],
+    !!blockHash
+  )
 }
 
 const metadataFromOpaque = (opaque: OpaqueMetadata) => {
