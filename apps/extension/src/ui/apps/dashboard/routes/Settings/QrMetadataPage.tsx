@@ -4,7 +4,7 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Chain } from "@talismn/chaindata-provider"
-import { SecretIcon } from "@talismn/icons"
+import { LoaderIcon, SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import {
   MnemonicCreateModal,
@@ -217,7 +217,10 @@ const MetadataPortalContent = () => {
                 {t("Network Metadata")}
               </Button>
             </div>
-            <div className="flex aspect-square h-[40rem] w-[40rem] justify-center rounded-xl bg-white p-12">
+            <div className="relative flex aspect-square w-[40rem] justify-center bg-white p-12">
+              <div className="text-body-secondary absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                <LoaderIcon className="animate-spin-slow text-3xl" />
+              </div>
               {tab === "specs" && (
                 <NetworkSpecsQrCode genesisHash={chain.genesisHash} qrCodeSource="talisman" />
               )}
