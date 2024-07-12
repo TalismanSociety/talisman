@@ -13,7 +13,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "1002005",
+    specVersion: "1002006",
     nativeToken: {
       id: "polkadot-substrate-native",
     },
@@ -435,16 +435,6 @@ export const chains = [
         name: "GM",
       },
       {
-        id: "heiko-kusama",
-        paraId: 2085,
-        name: "Parallel Heiko",
-      },
-      {
-        id: "hyperbridge-kusama",
-        paraId: 3340,
-        name: "Hyperbridge",
-      },
-      {
         id: "imbue",
         paraId: 2121,
         name: "Imbue",
@@ -780,7 +770,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 639,
+    sortIndex: 640,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -790,7 +780,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemint",
     specName: "statemint",
-    specVersion: "1002005",
+    specVersion: "1002006",
     nativeToken: {
       id: "polkadot-asset-hub-substrate-native",
     },
@@ -903,7 +893,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 640,
+    sortIndex: 641,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
