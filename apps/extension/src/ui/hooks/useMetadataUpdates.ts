@@ -1,50 +1,27 @@
 import { db } from "@extension/core"
-import { isTestChain } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useMemo, useState } from "react"
-import { useDebounce } from "react-use"
 
-import useChains from "./useChains"
+import { useChainByGenesisHash } from "./useChainByGenesisHash"
 
-type ChainMetadata = {
-  isReady: boolean
-  isLoading: boolean
-  isKnownChain: boolean
-  hasMetadata: boolean
-  isMetadataUpToDate: boolean
-  isMetadataUpdating: boolean
-  hasMetadataUpdateFailed: boolean
-  requiresUpdate: boolean
-  updateUrl?: string
-}
+const useMetadata = (genesisHash?: HexString) => {
+  const metadata = useLiveQuery(
+    async () => (genesisHash ? (await db.metadata.get(genesisHash)) ?? null : null),
+    [genesisHash]
+  )
 
-const DEFAULT_VALUE: ChainMetadata = {
-  isReady: false,
-  isLoading: true,
-  isKnownChain: false,
-  hasMetadata: false,
-  isMetadataUpToDate: false,
-  isMetadataUpdating: false,
-  hasMetadataUpdateFailed: false,
-  requiresUpdate: false,
+  return { isLoaded: metadata !== undefined, metadata: metadata ?? null }
 }
 
 export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number) => {
+  const chain = useChainByGenesisHash(genesisHash)
+
   const [isMetadataUpdating, setIsMetadataUpdating] = useState(false)
   const [hasMetadataUpdated, setHasMetadataUpdated] = useState(false)
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
-  const chain = useMemo(
-    () => chains.find((c) => c.genesisHash === genesisHash) ?? null,
-    [chains, genesisHash]
-  )
-
-  const metadata = useLiveQuery(
-    () => (genesisHash ? db.metadata.get(genesisHash) : undefined),
-    [genesisHash]
-  )
+  const { isLoaded, metadata } = useMetadata(genesisHash)
 
   // listen for metadata updates from backend
   useEffect(() => {
@@ -59,55 +36,26 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
     })
   }, [genesisHash])
 
-  // there is a short delay after a metadata update for the chain and metadata available here to be updated
-  // debouncing prevents false positives
-  const [result, setResult] = useState(DEFAULT_VALUE)
-  useDebounce(
-    () => {
-      const hasMetadata = !!metadata
-      const isMetadataUpToDate =
-        specVersion === undefined ? !!metadata : metadata?.specVersion === specVersion
-      const rpcUrl = chain?.rpcs?.[0]?.url
-      const updateUrl = rpcUrl
-        ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
-        : undefined
+  return useMemo(() => {
+    const isKnownChain = !!chain
 
-      const isLoading = !chains.length
-      const isKnownChain = !!chain
+    const isMetadataUpToDate =
+      specVersion === undefined ? !!metadata : metadata?.specVersion === specVersion
+    const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
 
-      // consider ready to sign either if we can't update or if an update has been attempted.
-      const isReady = !isLoading && (!chain || isMetadataUpToDate || hasMetadataUpdated)
-      const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
+    const rpcUrl = chain?.rpcs?.[0]?.url
+    const updateUrl = rpcUrl
+      ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
+      : undefined
 
-      // PolkadotJs-Apps does not prompt the user to update metadata for chains where this variable is true.
-      //
-      // The variable `isDevelopment` is set up here:
-      // https://github.com/polkadot-js/apps/blob/acd48f9158e559b12384ec562e75d3869fbadedb/packages/react-api/src/Api.tsx#L147
-      //
-      // Which is then used to hide the metadata update prompt here:
-      // https://github.com/polkadot-js/apps/blob/acd48f9158e559b12384ec562e75d3869fbadedb/packages/page-settings/src/useExtensions.ts#L162-L167
-      const metadataNotNeeded =
-        chain?.chainType === "Development" ||
-        chain?.chainType === "Local" ||
-        isTestChain(chain?.chainName)
+    const requiresUpdate = isLoaded && !isMetadataUpToDate
 
-      const requiresUpdate = !isLoading && !isMetadataUpToDate && !metadataNotNeeded
-
-      setResult({
-        isReady,
-        isLoading,
-        isKnownChain,
-        hasMetadata,
-        isMetadataUpToDate,
-        isMetadataUpdating,
-        hasMetadataUpdateFailed,
-        updateUrl,
-        requiresUpdate,
-      })
-    },
-    1000,
-    [chain, chains.length, hasMetadataUpdated, isMetadataUpdating, metadata, specVersion]
-  )
-
-  return result
+    return {
+      isKnownChain,
+      isMetadataUpdating,
+      hasMetadataUpdateFailed,
+      updateUrl,
+      requiresUpdate,
+    }
+  }, [chain, hasMetadataUpdated, isLoaded, isMetadataUpdating, metadata, specVersion])
 }
