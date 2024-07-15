@@ -96,10 +96,12 @@ export class AppStore extends StorageProvider<AppStoreData> {
 
 export const appStore = new AppStore()
 
-if (DEBUG && typeof window !== "undefined") {
-  // helper for developers, allowing ot reset settings by calling resetAppSettings() in dev console
+// helpers for developers
+if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).resetAppSettings = () => {
+  const hostObj = globalThis as any
+
+  hostObj.resetAppSettings = () => {
     appStore.set({
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
@@ -108,10 +110,9 @@ if (DEBUG && typeof window !== "undefined") {
       hideBackupWarningUntil: undefined,
     })
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).setAppSettings = (settings: Partial<AppStoreData>) => {
+  hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {
     appStore.set(settings)
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).migratePasswordV2ToV1 = migratePasswordV2ToV1
+
+  hostObj.migratePasswordV2ToV1 = migratePasswordV2ToV1
 }
