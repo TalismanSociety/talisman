@@ -37,16 +37,16 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
   }, [genesisHash])
 
   return useMemo(() => {
+    const isKnownChain = !!chain
+
     const isMetadataUpToDate =
       specVersion === undefined ? !!metadata : metadata?.specVersion === specVersion
+    const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
+
     const rpcUrl = chain?.rpcs?.[0]?.url
     const updateUrl = rpcUrl
       ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
       : undefined
-
-    const isKnownChain = !!chain
-
-    const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
 
     const requiresUpdate = isLoaded && !isMetadataUpToDate
 
