@@ -65,9 +65,9 @@ const QrCodeInner = ({ data, image, imageOptions }: Props) => {
           data: decodeString(dataFrame),
           margin: 0,
           qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
-          dotsOptions: { type: "dots" },
-          cornersSquareOptions: { type: "extra-rounded" },
-          cornersDotOptions: { type: "dot" },
+          dotsOptions: { type: "square" },
+          cornersSquareOptions: { type: "square" },
+          cornersDotOptions: { type: "square" },
           image: image ?? talismanRedHandSvg,
           imageOptions: {
             hideBackgroundDots: true,

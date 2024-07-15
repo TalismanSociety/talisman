@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@extension/core"
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
@@ -36,6 +36,11 @@ export const useSendFundsPopup = (
       return {
         canSendFunds: false,
         cannotSendFundsReason: t("Watched accounts cannot send funds"),
+      }
+    if (account?.origin === AccountType.Dcent)
+      return {
+        canSendFunds: false,
+        cannotSendFundsReason: t("D'CENT accounts cannot send funds"),
       }
     if (account?.origin === "SIGNET")
       return {

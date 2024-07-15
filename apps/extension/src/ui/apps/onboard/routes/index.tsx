@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from "react-router-dom"
 
 import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
 import { AddAccountPage } from "./AddAccount"
-import { AccountAddDcentOnboardingWizard } from "./AddAccount/AccountAddDcentWizard"
 import { AccountAddDerivedPage } from "./AddAccount/AccountAddDerivedPage"
 import { AccountAddJsonOnboardPage } from "./AddAccount/AccountAddJsonPage"
 import { AccountAddLedgerOnboardWizard } from "./AddAccount/AccountAddLedgerWizard"
@@ -37,7 +36,6 @@ const OnboardingRoutes = () => {
             <Route path="ledger/*" element={<AccountAddLedgerOnboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrOnboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
-            <Route path="dcent/*" element={<AccountAddDcentOnboardingWizard />} />
             <Route path="signet/*" element={<AccountAddSignetOnboardingWizard />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>

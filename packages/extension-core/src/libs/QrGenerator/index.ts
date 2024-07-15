@@ -9,7 +9,12 @@ import { mnemonicsStore } from "../../domains/mnemonics/store"
 import { SignerPayloadGenesisHash } from "../../domains/signing/types"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { getMetadataDef } from "../../util/getMetadataDef"
+import {
+  fetchMetadataDefFromChain,
+  getChainAndGenesisHashFromIdOrHash,
+  getLegacyMetadataRpc,
+} from "../../util/getMetadataDef"
+import { getRuntimeVersion } from "../../util/getRuntimeVersion"
 import { $addNetworkSpecsPayload, $networkSpecs, $updateNetworkMetadataPayload } from "./codecs"
 
 const getEncryptionForChain = (chain: Chain) => {
@@ -116,10 +121,24 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
  */
 
 export const generateQrUpdateNetworkMetadata = async (
-  genesisHash: string,
+  chainIdOrHash: string,
   specVersion?: number
 ) => {
-  const metadataDef = await getMetadataDef(genesisHash, specVersion)
+  const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
+  if (!chain) return
+
+  const { specVersion: runtimeSpecVersion } = await getRuntimeVersion(chain.id)
+  assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
+
+  const metadataDef = await fetchMetadataDefFromChain(
+    chain,
+    genesisHash,
+    runtimeSpecVersion,
+    undefined,
+    getLegacyMetadataRpc
+  )
+  assert(metadataDef, "Failed to fetch metadata")
+
   const metadataRpc = getMetadataRpcFromDef(metadataDef)
   assert(metadataRpc, "Failed to fetch metadata")
 
