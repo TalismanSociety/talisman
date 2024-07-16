@@ -113,7 +113,7 @@ export const api: MessageTypes = {
       tokenIds,
     }),
   accountCreateQr: (name, address, genesisHash) =>
-    messageService.sendMessage("pri(accounts.create.qr.substrate)", {
+    messageService.sendMessage("pri(accounts.create.qr)", {
       name,
       address,
       genesisHash,

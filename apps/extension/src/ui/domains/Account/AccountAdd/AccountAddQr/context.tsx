@@ -84,9 +84,16 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
       const { content: address, genesisHash } = scanned
 
-      if (decodeAnyAddress(address).byteLength !== 32)
+      const SUBSTRATE_ADDRESS_BYTE_LENGTH = 32
+      const ETHEREUM_ADDRESS_BYTE_LENGTH = 20
+      const isSubstrateAddress =
+        decodeAnyAddress(address).byteLength === SUBSTRATE_ADDRESS_BYTE_LENGTH
+      const isEthereumAddress =
+        decodeAnyAddress(address).byteLength === ETHEREUM_ADDRESS_BYTE_LENGTH
+
+      if (!isSubstrateAddress && !isEthereumAddress)
         return { type: "SCAN", enable: true, scanError: "QR code contains an invalid address" }
-      if (!genesisHash || !genesisHash.startsWith("0x"))
+      if (isSubstrateAddress && (!genesisHash || !genesisHash.startsWith("0x")))
         return { type: "SCAN", enable: true, scanError: "QR code contains an invalid genesisHash" }
 
       return {
