@@ -1,6 +1,5 @@
 import type {
   AccountJson,
-  RequestAccountCreateExternal,
   RequestAccountCreateHardware,
   RequestAccountSubscribe,
   ResponseAccountExport,
@@ -13,7 +12,7 @@ import { NsLookupType } from "@talismn/on-chain-id"
 import { Address } from "../../types/base"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 
-export type { ResponseAccountExport, AccountJson, RequestAccountCreateExternal }
+export type { ResponseAccountExport, AccountJson }
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
 
 export type {
@@ -174,6 +173,12 @@ export interface RequestAccountCreateDcent {
   tokenIds: TokenId[]
 }
 
+export interface RequestAccountCreateQr {
+  address: string
+  genesisHash: `0x${string}` | null
+  name: string
+}
+
 export interface RequestAccountCreateWatched {
   name: string
   address: string
@@ -262,7 +267,7 @@ export interface AccountsMessages {
   "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
   "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
-  "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
+  "pri(accounts.create.qr)": [RequestAccountCreateQr, string]
   "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
   "pri(accounts.create.signet)": [RequestAccountCreateSignet, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]

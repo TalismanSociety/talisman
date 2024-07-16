@@ -29,11 +29,11 @@ import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import type {
   RequestAccountCreate,
   RequestAccountCreateDcent,
-  RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateQr,
   RequestAccountCreateSignet,
   RequestAccountCreateWatched,
   RequestAccountExport,
@@ -333,23 +333,41 @@ export default class AccountsHandler extends ExtensionHandler {
     name,
     address,
     genesisHash,
-  }: RequestAccountCreateExternal): Promise<string> {
+  }: RequestAccountCreateQr): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const exists = keyring
       .getAccounts()
-      .some((account) => encodeAnyAddress(account.address) === encodeAnyAddress(address))
+      .some((account) => encodeAnyAddress(account.address) === address)
     assert(!exists, "Account already exists")
 
-    const { pair } = keyring.addExternal(address, {
-      isQr: true,
-      name,
-      genesisHash,
-      origin: AccountType.Qr,
-    })
+    // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      isEthereumAddress(address)
+        ? { type: "ethereum", toSS58: ethereumEncode }
+        : { type: "sr25519", toSS58: keyring.encodeAddress },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        genesisHash,
+        isQr: true,
+        isExternal: true,
+        isPortfolio: true,
+        origin: AccountType.Qr,
+      },
+      null
+    )
 
-    this.captureAccountCreateEvent("substrate", "qr")
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    this.captureAccountCreateEvent(isEthereumAddress(address) ? "ethereum" : "substrate", "qr")
 
     return pair.address
   }
@@ -613,8 +631,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
       case "pri(accounts.create.ledger.ethereum)":
         return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
-      case "pri(accounts.create.qr.substrate)":
-        return this.accountsCreateQr(request as RequestAccountCreateExternal)
+      case "pri(accounts.create.qr)":
+        return this.accountsCreateQr(request as RequestAccountCreateQr)
       case "pri(accounts.create.watched)":
         return this.accountCreateWatched(request as RequestAccountCreateWatched)
       case "pri(accounts.create.signet)":

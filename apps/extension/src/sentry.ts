@@ -31,6 +31,7 @@ export const initSentryFrontend = () => {
       /^disconnected from .+: [0-9]+:: .+$/,
       /^unsubscribed from .+: [0-9]+:: .+$/,
       /(Could not establish connection. Receiving end does not exist.)/,
+      /(track.getCapabilities is not a function)/,
     ],
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event, hint) => {
