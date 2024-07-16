@@ -1,26 +1,80 @@
 import { Balances } from "@extension/core"
-import { ChevronLeftIcon, SendIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { Token } from "@talismn/chaindata-provider"
+import { SendIcon } from "@talismn/icons"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
+import {
+  BalanceSummary,
+  useTokenBalancesSummary,
+} from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { FC, useCallback, useEffect, useMemo } from "react"
+import { t } from "i18next"
+import { FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-const AssetStats: FC<{ balances: Balances; symbol: string }> = ({ balances, symbol }) => {
-  const navigate = useNavigate()
-  const { token, rate, summary } = useTokenBalancesSummary(balances)
-  const { genericEvent } = useAnalytics()
+import { DashboardBreadcrumb } from "../../layout/DashboardBreadcrumb"
+import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
+
+const HeaderRow: FC<{
+  token: Token | undefined
+  summary: BalanceSummary
+}> = ({ token, summary }) => {
+  const { t } = useTranslation()
+  const canHaveLockedState = Boolean(token?.chain?.id)
+
+  return (
+    <div className="text-body-secondary bg-grey-850 rounded p-8 text-left text-base">
+      <div className="grid grid-cols-[40%_30%_30%]">
+        <Statistics
+          className="h-auto w-auto p-0"
+          title={t("Total Value")}
+          tokens={summary.totalTokens}
+          fiat={summary.totalFiat}
+          token={token}
+          showTokens
+        />
+        {canHaveLockedState ? (
+          <>
+            <Statistics
+              className="h-auto w-auto items-end p-0 pr-8"
+              title={t("Locked")}
+              tokens={summary.lockedTokens}
+              fiat={summary.lockedFiat}
+              token={token}
+              locked
+              showTokens
+            />
+            <Statistics
+              className="h-auto w-auto items-end p-0"
+              title={t("Available")}
+              tokens={summary.availableTokens}
+              fiat={summary.availableFiat}
+              token={token}
+              showTokens
+            />
+          </>
+        ) : (
+          <>
+            <div></div>
+            <div></div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
   const { account } = useSelectedAccount()
 
   // don't set the token id here because it could be one of many
@@ -30,36 +84,44 @@ const AssetStats: FC<{ balances: Balances; symbol: string }> = ({ balances, symb
     symbol
   )
 
-  const canHaveLockedState = Boolean(token?.chain?.id)
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <PortfolioToolbarButton onClick={openSendFundsPopup} disabled={!canSendFunds}>
+          <SendIcon />
+        </PortfolioToolbarButton>
+      </TooltipTrigger>
+      <TooltipContent>
+        {canSendFunds ? t("Send {{symbol}}", { symbol }) : cannotSendFundsReason}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
-  const handleSendFundsClick = useCallback(() => {
-    openSendFundsPopup()
-    genericEvent("open send funds", { from: "dashboard portfolio" })
-  }, [openSendFundsPopup, genericEvent])
-
-  const handleBackBtnClick = useCallback(() => navigate("/portfolio/tokens"), [navigate])
+const Breadcrumb: FC<{
+  balances: Balances
+  symbol: string
+  token: Token | undefined
+  rate: number | null | undefined
+}> = ({ balances, symbol, token, rate }) => {
   const { t } = useTranslation()
+
+  const navigate = useNavigate()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
-  return (
-    <div className="flex h-48 w-full gap-8">
-      <div className="flex grow flex-col justify-center gap-8">
-        <button
-          className="text-body-secondary hover:text-grey-300 text:text-sm flex cursor-pointer items-center whitespace-nowrap bg-none p-0 text-base"
-          type="button"
-          onClick={handleBackBtnClick}
-        >
-          <ChevronLeftIcon />
-          <span className="text-sm">{t("Asset")}</span>
-        </button>
-        <div className="flex items-center gap-6">
-          <div className="text-3xl">
-            <TokenLogo tokenId={token?.id} className="text-3xl" />
-          </div>
-          <div>
-            <div className="text-md">{token?.symbol}</div>
+  const items = useMemo(() => {
+    return [
+      {
+        label: t("All Tokens"),
+        onClick: () => navigate("/portfolio/tokens"),
+      },
+      {
+        label: (
+          <div className="flex items-center gap-2">
+            <TokenLogo tokenId={token?.id} className="text-md" />
+            <div className="text-body font-bold">{token?.symbol ?? symbol}</div>
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <div className="text-body-secondary whitespace-nowrap">
                 <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
@@ -69,66 +131,16 @@ const AssetStats: FC<{ balances: Balances; symbol: string }> = ({ balances, symb
               <Fiat amount={rate} className="text-body-secondary" />
             )}
           </div>
-          <div className="flex flex-wrap">
-            <Tooltip>
-              <TooltipTrigger
-                onClick={canSendFunds ? handleSendFundsClick : undefined}
-                className={classNames(
-                  "text-body-secondary flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm",
-                  canSendFunds
-                    ? "hover:bg-grey-800 focus-visible:bg-grey-800 hover:text-body"
-                    : "cursor-default opacity-50"
-                )}
-              >
-                <SendIcon />
-              </TooltipTrigger>
-              <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-      </div>
-      <Statistics
-        className="max-w-[40%]"
-        title={t("Total Asset Value")}
-        tokens={summary.totalTokens}
-        fiat={summary.totalFiat}
-        token={token}
-        showTokens
-      />
-      {canHaveLockedState && (
-        <>
-          <Statistics
-            className="max-w-[40%]"
-            title={t("Locked")}
-            tokens={summary.lockedTokens}
-            fiat={summary.lockedFiat}
-            token={token}
-            locked
-            showTokens
-          />
-          <Statistics
-            className="max-w-[40%]"
-            title={t("Available")}
-            tokens={summary.availableTokens}
-            fiat={summary.availableFiat}
-            token={token}
-            showTokens
-          />
-        </>
-      )}
-    </div>
-  )
-}
-
-const PageContent: FC<{ balances: Balances; symbol: string }> = ({ balances, symbol }) => {
-  const balancesToDisplay = useDisplayBalances(balances) // TODO atom
+        ),
+        onClick: undefined,
+      },
+    ]
+  }, [t, token?.id, token?.symbol, symbol, isUniswapV2LpToken, tvl, rate, navigate])
 
   return (
-    <div>
-      <AssetStats balances={balancesToDisplay} symbol={symbol} />
-      <div className="mt-24">
-        <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
-      </div>
+    <div className="flex items-center justify-between">
+      <DashboardBreadcrumb items={items} />
+      <SendFundsButton symbol={symbol} />
     </div>
   )
 }
@@ -147,11 +159,20 @@ export const PortfolioAsset = () => {
     [allBalances, isTestnet, symbol]
   )
 
+  const { token, rate, summary } = useTokenBalancesSummary(balances)
+  const balancesToDisplay = useDisplayBalances(balances)
+
   useEffect(() => {
     pageOpenEvent("portfolio asset", { symbol })
   }, [pageOpenEvent, symbol])
 
   if (!symbol) return <Navigate to="/portfolio" />
 
-  return <PageContent balances={balances} symbol={symbol} />
+  return (
+    <DashboardPortfolioLayout>
+      <Breadcrumb token={token} rate={rate} balances={balances} symbol={symbol} />
+      <HeaderRow token={token} summary={summary} />
+      <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
+    </DashboardPortfolioLayout>
+  )
 }

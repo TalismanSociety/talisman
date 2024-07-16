@@ -24,7 +24,7 @@ export const DashboardNftCollection = () => {
   }, [])
 
   return (
-    <div className="mt-7">
+    <div>
       <Suspense>
         {viewMode === "list" ? (
           <NftsList onNftClick={handleNftClick} />

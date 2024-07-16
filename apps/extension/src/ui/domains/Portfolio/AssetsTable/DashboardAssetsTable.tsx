@@ -1,7 +1,10 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { Statistics } from "../Statistics"
+import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolio } from "../usePortfolio"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { AssetRow } from "./DashboardAssetRow"
@@ -36,6 +39,43 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   )
 }
 
+const HeaderRow = () => {
+  const balances = usePortfolioDisplayBalances("network")
+  const { t } = useTranslation()
+
+  const currency = useSelectedCurrency()
+
+  const {
+    total: portfolio,
+    transferable: available,
+    unavailable: locked,
+  } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
+
+  return (
+    <div className="text-body-secondary bg-grey-850 mb-12 rounded p-8 text-left text-base">
+      <div className="grid grid-cols-[40%_30%_30%]">
+        <Statistics
+          className="h-auto w-auto p-0"
+          title={t("Total Value")}
+          fiat={portfolio}
+          showCurrencyToggle
+        />
+        <Statistics
+          className="h-auto w-auto items-end p-0 pr-8"
+          title={t("Locked")}
+          fiat={locked}
+          locked
+        />
+        <Statistics
+          className="h-auto w-auto items-end p-0"
+          title={t("Available")}
+          fiat={available}
+        />
+      </div>
+    </div>
+  )
+}
+
 export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolio()
@@ -45,7 +85,7 @@ export const DashboardAssetsTable = () => {
 
   if (!symbolBalances.length && !isInitialising) {
     return (
-      <div className="text-body-secondary bg-grey-850 mt-12 rounded-sm p-8">
+      <div className="text-body-secondary bg-grey-850 rounded-sm p-8">
         {account ? t("No assets were found on this account.") : t("No assets were found.")}
       </div>
     )
@@ -53,13 +93,7 @@ export const DashboardAssetsTable = () => {
 
   return (
     <div className="text-body-secondary min-w-[45rem] text-left text-base">
-      {/* <NetworkPicker /> */}
-
-      <div className="text-body-disabled my-5 mt-7 grid grid-cols-[40%_30%_30%] text-sm font-normal">
-        <div className="pl-8">{t("Asset")}</div>
-        <div className="pr-8 text-right">{t("Locked")}</div>
-        <div className="pr-8 text-right">{t("Available")}</div>
-      </div>
+      {!!symbolBalances.length && <HeaderRow />}
 
       {symbolBalances.map(([symbol, b]) => (
         <AssetRow key={symbol} balances={b} />

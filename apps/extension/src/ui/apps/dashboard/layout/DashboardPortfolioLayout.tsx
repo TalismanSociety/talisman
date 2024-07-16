@@ -1,3 +1,4 @@
+import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { FC, PropsWithChildren, useCallback } from "react"
@@ -55,7 +56,10 @@ export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) =>
   return (
     // TODO check with no account that there is no regression
     <div className="flex w-full flex-col">
-      <PortfolioAccountCheck>{children}</PortfolioAccountCheck>
+      <PortfolioAccountCheck>
+        <PortfolioTabs className="text-md my-0 h-14 font-bold" />
+        <div className="flex w-full flex-col gap-12 py-12">{children}</div>
+      </PortfolioAccountCheck>
     </div>
   )
 }

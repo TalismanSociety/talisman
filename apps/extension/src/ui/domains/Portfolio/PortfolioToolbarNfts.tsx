@@ -24,7 +24,7 @@ import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./AssetsTable/u
 import { NetworkFilterModal } from "./NetworkPickerDialog"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
-const ViewModeToggleButton = () => {
+export const NftViewModeToggleButton = () => {
   const [viewMode, setViewMode] = useSetting("nftsViewMode")
 
   const handleViewModeClick = useCallback(
@@ -157,7 +157,7 @@ export const PortfolioToolbarNfts = () => {
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
-        <ViewModeToggleButton />
+        <NftViewModeToggleButton />
         <VisibilityFilterButton />
         <NetworkFilterButton />
       </div>

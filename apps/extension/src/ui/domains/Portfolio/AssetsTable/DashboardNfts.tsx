@@ -33,37 +33,9 @@ export const DashboardNfts: FC<{ className?: string }> = () => {
   const data = usePortfolioNfts()
 
   const [dialogNftId, setDialogNftId] = useState<string | null>(null)
-  // const nftDialogInputs = useAtomValue(nftDataAtomFamily(dialogNftId))
-
-  // const filteredData = useMemo<NftData>(() => {
-  //   if (!search) return data
-
-  //   const searchLower = search.toLowerCase()
-  //   const collections = data.collections.filter(
-  //     (collection) =>
-  //       collection.name?.toLowerCase().includes(searchLower) ||
-  //       collection.description?.toLowerCase().includes(searchLower)
-  //   )
-  //   const nfts = data.nfts.filter(
-  //     (nft) =>
-  //       nft.name?.toLowerCase().includes(searchLower) ||
-  //       nft.description?.toLowerCase().includes(searchLower)
-  //   )
-
-  //   // keep all collections that are matched themselves, or that include a matched NFT
-  //   const collectionIds = [
-  //     ...new Set([...collections.map((c) => c.id), nfts.map((n) => n.collectionId)]),
-  //   ]
-
-  //   return {
-  //     ...data,
-  //     collections: data.collections.filter((c) => collectionIds.includes(c.id)),
-  //     nfts: data.nfts.filter((nft) => collectionIds.includes(nft.collectionId)),
-  //   }
-  // }, [data, search])
 
   return (
-    <div className="mt-7">
+    <div>
       {!data.collections.length ? (
         <NoNftFound />
       ) : viewMode === "list" ? (
