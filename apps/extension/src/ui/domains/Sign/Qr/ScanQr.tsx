@@ -5,7 +5,9 @@ import { selectedVideoInputAtom, videoInputDevicesAtom } from "@ui/atoms"
 import { BrowserQRCodeReader } from "@zxing/browser"
 import { useAtom, useAtomValue } from "jotai"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
+import { Toggle } from "talisman-ui"
 
 type Types = "address" | "signature"
 type CommonProps<T extends Types> = {
@@ -44,6 +46,10 @@ export const ScanQr = <T extends Types>({
   onError,
   size = 260,
 }: Props<T>) => {
+  const { t } = useTranslation()
+
+  const [blur, setBlur] = useState(true)
+
   const handleScan = useCallback(
     (data: string) => {
       try {
@@ -59,16 +65,29 @@ export const ScanQr = <T extends Types>({
   )
 
   return (
-    <div
-      className="bg-grey-900 relative overflow-hidden rounded-xl"
-      style={{ width: `${size}px`, height: `${size}px` }}
-    >
-      {enable ? <Scanner onScan={handleScan} onError={onError} /> : null}
-      <CameraMarker
-        className="pointer-events-none absolute left-0 top-0 h-full w-full"
-        active={enable}
-        error={error}
-      />
+    <div className="flex flex-col gap-2">
+      <div
+        className="bg-grey-900 relative overflow-hidden rounded-xl"
+        style={{ width: `${size}px`, height: `${size}px` }}
+      >
+        {enable ? <Scanner onScan={handleScan} onError={onError} blur={blur} /> : null}
+        <CameraMarker
+          className="pointer-events-none absolute left-0 top-0 h-full w-full"
+          active={enable}
+          error={error}
+        />
+      </div>
+      {enable && (
+        <span className={`flex w-[${size}px] justify-end`}>
+          <Toggle
+            checked={blur}
+            onChange={({ target }) => setBlur(target.checked)}
+            className="text-grey-300 text-sm"
+          >
+            {t("Blur image for privacy")}
+          </Toggle>
+        </span>
+      )}
     </div>
   )
 }
@@ -76,9 +95,11 @@ export const ScanQr = <T extends Types>({
 const Scanner = ({
   onScan,
   onError,
+  blur = true,
 }: {
   onScan: (data: string) => void
   onError?: (error: Error) => void
+  blur?: boolean
 }) => {
   const preview = useRef<HTMLVideoElement>(null)
 
@@ -115,7 +136,10 @@ const Scanner = ({
 
   return (
     <div className="absolute h-full w-full">
-      <video ref={preview} className="absolute h-full w-full -scale-x-100 object-cover blur-sm" />
+      <video
+        ref={preview}
+        className={`absolute h-full w-full -scale-x-100 object-cover${blur ? " blur-sm" : ""}`}
+      />
       {inputDevices.length > 1 ? (
         <div className="absolute left-1/2 top-10 -translate-x-1/2">
           <ChevronDownIcon
