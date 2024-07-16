@@ -27,12 +27,14 @@ export const nftsNetworkOptionsAtom = atom(async (get) => {
 
   return evmNetworks
     .filter((network) => networkIdsWithNfts.includes(network.id))
-    .map<NetworkOption>((evmNetwork) => ({
-      id: evmNetwork.id,
-      name: evmNetwork.name ?? `Network ${evmNetwork.id}`,
-      evmNetworkId: evmNetwork.id,
-      sortIndex: evmNetwork.sortIndex,
-    }))
+    .map<NetworkOption>((evmNetwork) => {
+      return {
+        id: evmNetwork.substrateChain?.id ?? evmNetwork.id,
+        name: evmNetwork.name ?? `Network ${evmNetwork.id}`,
+        evmNetworkId: evmNetwork.id,
+        sortIndex: evmNetwork.sortIndex,
+      }
+    })
 })
 
 export const nftsNetworkFilterAtom = atom<NetworkOption | undefined>(undefined)
@@ -48,16 +50,17 @@ export const nftsVisibilityFilterAtom = atom<NftVisibilityFilter>(NftVisibilityF
 export const { debouncedValueAtom: nftsPortfolioSearchAtom } = atomWithDebounce<string>("")
 
 export const nftsAtom = atom(async (get) => {
-  const {
-    status,
-    nfts: allNfts,
-    collections: allCollections,
-    hiddenNftCollectionIds,
-    favoriteNftIds,
-  } = await get(nftDataAtom)
+  const [
+    { status, nfts: allNfts, collections: allCollections, hiddenNftCollectionIds, favoriteNftIds },
+    accounts,
+    networks,
+  ] = await Promise.all([
+    get(nftDataAtom),
+    get(accountsByCategoryAtomFamily("portfolio")),
+    get(nftsNetworkOptionsAtom),
+  ])
+
   const visibility = get(nftsVisibilityFilterAtom)
-  const accounts = await get(accountsByCategoryAtomFamily("portfolio"))
-  const networks = await get(nftsNetworkOptionsAtom)
   const account = get(portfolioAccountAtom)
   const networkFilter = get(nftsNetworkFilterAtom)
   const lowerSearch = get(nftsPortfolioSearchAtom).toLowerCase()

@@ -54,7 +54,7 @@ const NetworkFilterButton = () => {
 
   const handleChange = useCallback(
     (networkId: string | null) => {
-      setNetworkFilter(networks.find((network) => network.id === networkId))
+      setNetworkFilter(networks.find((n) => n.id === networkId))
       close()
     },
     [close, networks, setNetworkFilter]

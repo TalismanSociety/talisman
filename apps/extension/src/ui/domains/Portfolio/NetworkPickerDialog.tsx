@@ -84,8 +84,11 @@ const NetworkFilterModalContent: FC<{
   const filteredNetworks = useMemo(() => {
     const lowerSearch = search.toLowerCase()
     return networks.filter((network) => {
+      const thisNetworkIds = [
+        ...new Set([network.id, network.evmNetworkId, network.chainId].filter(Boolean) as string[]),
+      ]
       return (
-        networkIds.includes(network.id) &&
+        thisNetworkIds.some((id) => networkIds.includes(id)) &&
         (network.name.toLowerCase().includes(lowerSearch) ||
           network.symbols?.find((symbol) => symbol.toLowerCase().includes(lowerSearch)))
       )
