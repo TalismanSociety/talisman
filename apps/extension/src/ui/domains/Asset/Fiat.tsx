@@ -41,7 +41,7 @@ export const Fiat = ({
     <span
       ref={refReveal}
       className={classNames(
-        "fiat",
+        "fiat whitespace-nowrap",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
         className
