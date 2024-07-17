@@ -21,7 +21,7 @@ import {
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./AssetsTable/usePortfolioNfts"
-import { NetworkFilterModal } from "./NetworkPickerDialog"
+import { NetworkFilterModal } from "./NetworkFilterModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 export const NftViewModeToggleButton = () => {

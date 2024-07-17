@@ -76,17 +76,14 @@ const getNetworkOptions = ({
   type?: AccountAddressType
   balances?: Balances
 }) => {
-  const result: NetworkOption[] = []
-
-  if (chains && (!type || type === "sr25519"))
-    chains.forEach(({ id, name, sortIndex }) =>
-      result.push({
-        id,
-        chainId: id,
-        name: name ?? t("Unknown chain"),
-        sortIndex,
-      })
-    )
+  // register all chains to account for hybrid chains, delete non-ethereum ones later if necessary
+  // this ensures hybrid chain ids are consistent (substrate id should be the id, even if account only supports ethereum networks)
+  let result: NetworkOption[] = chains.map(({ id, name, sortIndex }) => ({
+    id,
+    chainId: id,
+    name: name ?? t("Unknown chain"),
+    sortIndex,
+  }))
 
   if (evmNetworks && (!type || type === "ethereum"))
     evmNetworks.forEach(({ id, name, substrateChain, sortIndex }) => {
@@ -101,6 +98,9 @@ const getNetworkOptions = ({
           sortIndex,
         })
     })
+
+  // if ethereum account is selected, remove all chains that don't have an evm network
+  if (type === "ethereum") result = result.filter(({ evmNetworkId }) => !!evmNetworkId)
 
   // fill symbols
   result.forEach((network) => {

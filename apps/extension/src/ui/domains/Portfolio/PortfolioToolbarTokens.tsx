@@ -18,7 +18,7 @@ import {
 } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import { NetworkFilterModal } from "./NetworkPickerDialog"
+import { NetworkFilterModal } from "./NetworkFilterModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 import { usePortfolio, usePortfolioSearch } from "./usePortfolio"
 
