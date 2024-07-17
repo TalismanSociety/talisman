@@ -1,5 +1,4 @@
 ---
-"extension-core": patch
 "talisman-ui": patch
 ---
 

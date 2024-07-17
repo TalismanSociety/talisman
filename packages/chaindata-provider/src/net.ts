@@ -24,6 +24,8 @@ export const fetchSubstrateTokens = async () => await (await fetch(chaindataToke
 export const fetchSubstrateToken = async (tokenId: string) =>
   await (await fetch(chaindataTokenByIdUrl(tokenId))).json()
 
+// TODO: Move `fetchMiniMetadatas` into `@talismn/balances`,
+// so that we don't have a circular import between `@talismn/balances` and `@talismn/chaindata-provider`.
 export const fetchMiniMetadatas = async () =>
   await (await fetch(chaindataMiniMetadatasAllUrl)).json()
 

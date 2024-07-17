@@ -7,9 +7,9 @@ import { ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
   ChainId,
-  NewTokenType,
-  TokenList,
   githubTokenLogoUrl,
+  Token,
+  TokenList,
 } from "@talismn/chaindata-provider"
 import isEqual from "lodash/isEqual"
 
@@ -20,24 +20,12 @@ import psp22Abi from "./abis/psp22.json"
 import { makeContractCaller } from "./util/makeContractCaller"
 
 type ModuleType = "substrate-psp22"
+const moduleType: ModuleType = "substrate-psp22"
+
+export type SubPsp22Token = Extract<Token, { type: ModuleType }>
 
 const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-export type SubPsp22Token = NewTokenType<
-  ModuleType,
-  {
-    existentialDeposit: string
-    contractAddress: string
-    chain: { id: ChainId }
-  }
->
-
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    SubPsp22Token: SubPsp22Token
-  }
-}
 
 export type SubPsp22ChainMeta = {
   isTestnet: boolean
@@ -87,7 +75,7 @@ export const SubPsp22Module: NewBalanceModule<
   assert(chainConnector, "This module requires a substrate chain connector")
 
   return {
-    ...DefaultBalanceModule("substrate-psp22"),
+    ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false

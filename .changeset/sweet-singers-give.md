@@ -1,8 +1,6 @@
 ---
 "@talismn/chaindata-provider": patch
-"extension-shared": patch
 "@talismn/balances-react": patch
-"extension-core": patch
 "@talismn/token-rates": patch
 "@talismn/balances": patch
 "@talismn/util": patch

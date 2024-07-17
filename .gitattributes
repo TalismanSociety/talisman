@@ -1,6 +1,2 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
-
-# Don't render text diffs for yarn plugins and releases
-/.yarn/plugins/** binary
-/.yarn/releases/** binary

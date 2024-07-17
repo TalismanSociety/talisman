@@ -1,7 +1,7 @@
 import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChainId, ChaindataProvider, IToken } from "@talismn/chaindata-provider"
+import { ChaindataProvider, ChainId, Token } from "@talismn/chaindata-provider"
 
 import {
   AddressesByToken,
@@ -11,7 +11,7 @@ import {
   UnsubscribeFn,
 } from "./types"
 
-export type ExtendableTokenType = IToken
+export type SelectableTokenType = Token
 export type ExtendableChainMeta = Record<string, unknown> | undefined
 export type DefaultChainMeta = undefined
 export type ExtendableModuleConfig = Record<string, unknown> | undefined
@@ -32,7 +32,7 @@ export type Hydrate = {
 
 export type NewBalanceModule<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -42,7 +42,7 @@ export type NewBalanceModule<
 
 export interface BalanceModule<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -58,7 +58,7 @@ export interface BalanceModule<
 // TODO: Document default balances module purpose/usage
 export const DefaultBalanceModule = <
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -104,7 +104,7 @@ export const DefaultBalanceModule = <
 
 interface BalanceModuleSubstrate<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -126,7 +126,7 @@ interface BalanceModuleSubstrate<
 
 interface BalanceModuleEvm<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -149,7 +149,7 @@ export type SubscriptionResultWithStatus = {
 
 interface BalanceModuleCommon<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TTransferParams extends ExtendableTransferParams
 > {
   get type(): TModuleType

@@ -3,9 +3,9 @@ import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
   EvmNetworkId,
-  NewTokenType,
-  TokenList,
   githubTokenLogoUrl,
+  Token,
+  TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import { Address, PublicClient } from "viem"
@@ -20,27 +20,13 @@ export { erc20Abi }
 type ModuleType = "evm-erc20"
 const moduleType: ModuleType = "evm-erc20"
 
+export type EvmErc20Token = Extract<Token, { type: ModuleType; isCustom?: true }>
+export type CustomEvmErc20Token = Extract<Token, { type: ModuleType; isCustom: true }>
+
 export const evmErc20TokenId = (
   chainId: EvmNetworkId,
   tokenContractAddress: EvmErc20Token["contractAddress"]
 ) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
-
-export type EvmErc20Token = NewTokenType<
-  ModuleType,
-  {
-    contractAddress: string
-    evmNetwork: { id: EvmNetworkId } | null
-    isCustom?: true
-    image?: string
-  }
->
-export type CustomEvmErc20Token = Omit<EvmErc20Token, "isCustom"> & { isCustom: true }
-
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    [moduleType]: EvmErc20Token
-  }
-}
 
 export type EvmErc20ChainMeta = {
   isTestnet: boolean
@@ -108,7 +94,7 @@ export const EvmErc20Module: NewBalanceModule<
   }
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType("evm-erc20")) as Record<string, EvmErc20Token>
+    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, EvmErc20Token>
   }
 
   return {

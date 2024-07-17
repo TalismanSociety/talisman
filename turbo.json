@@ -1,15 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "pipeline": {
-    "postinstall": {
-      "cache": false
-    },
-    "dev": {
-      "cache": false
-    },
-    "update:translations": {
-      "outputs": ["public/locales/**"]
-    },
     "build": {
       "dependsOn": ["//#build:packages", "^build"],
       "outputs": ["dist/**"],
@@ -20,6 +11,10 @@
       "outputs": ["packages/**/dist/**/*"]
     },
     "build:extension": {
+      "dependsOn": ["//#build:packages"],
+      "outputs": ["dist/**"]
+    },
+    "build:extension:firefox": {
       "dependsOn": ["//#build:packages"],
       "outputs": ["dist/**"]
     },
@@ -36,7 +31,7 @@
       ],
       "outputs": ["dist/**"]
     },
-    "build:extension:prod": {
+    "build:extension:ci:firefox": {
       "dependsOn": [
         "//#build:packages",
         "$SIMPLE_LOCALIZE_API_KEY",
@@ -62,18 +57,44 @@
       ],
       "outputs": ["dist/**"]
     },
-    "lint": {
-      "outputs": [],
-      "cache": false
+    "build:extension:canary:firefox": {
+      "dependsOn": [
+        "//#build:packages",
+        "$SIMPLE_LOCALIZE_API_KEY",
+        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN",
+        "$BLOWFISH_BASE_PATH",
+        "$BLOWFISH_API_KEY"
+      ],
+      "outputs": ["dist/**"]
     },
-    "clean": {
-      "cache": false
+    "build:extension:prod": {
+      "dependsOn": [
+        "//#build:packages",
+        "$SIMPLE_LOCALIZE_API_KEY",
+        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN",
+        "$BLOWFISH_BASE_PATH",
+        "$BLOWFISH_API_KEY"
+      ],
+      "outputs": ["dist/**"]
     },
-    "test": {
-      "dependsOn": []
-    },
-    "test:watch": {
-      "dependsOn": []
+    "build:extension:prod:firefox": {
+      "dependsOn": [
+        "//#build:packages",
+        "$SIMPLE_LOCALIZE_API_KEY",
+        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN",
+        "$BLOWFISH_BASE_PATH",
+        "$BLOWFISH_API_KEY"
+      ],
+      "outputs": ["dist/**"]
     }
   }
 }

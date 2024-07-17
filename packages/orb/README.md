@@ -10,6 +10,9 @@ Install :
 # for npm
 npm install @talismn/orb
 
+# for pnpm
+pnpm install @talismn/orb
+
 # for yarn
 yarn add @talismn/orb
 ```

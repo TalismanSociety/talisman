@@ -9,8 +9,8 @@ import type {
 } from "@talismn/balances"
 import { deriveMiniMetadataId } from "@talismn/balances"
 
-import { fetchChains, fetchEvmNetworks, fetchMiniMetadatas, fetchSubstrateTokens } from "../src/net"
 import type { Chain, EvmNetwork, Token } from "../src/types"
+import { fetchChains, fetchEvmNetworks, fetchMiniMetadatas, fetchSubstrateTokens } from "../src/net"
 
 // These allowlists are used to reduce the size of the initdata.
 // We only keep a few chains/networks, and expect the wallet to fetch the rest of them
@@ -166,6 +166,6 @@ class InitDataFilter {
 // Use this command to run this file:
 //
 // ```
-// yarn workspace @talismn/chaindata-provider generate-init-data
+// `pnpm chore:generate-init-data`
 // ```
 generateInitData()

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "compile-contracts": "hardhat compile && cp ./artifacts/contracts/TestBasics.sol/TestBasics.json ./src/contracts/ && cp ./artifacts/contracts/TestERC721.sol/TestERC721.json ./src/contracts/ && cp ./artifacts/contracts/TestERC20.sol/TestERC20.json ./src/contracts/"
+    "compile-contracts": "hardhat compile && cp ./artifacts/contracts/TestBasics.sol/TestBasics.json ./src/contracts/ && cp ./artifacts/contracts/TestERC721.sol/TestERC721.json ./src/contracts/ && cp ./artifacts/contracts/TestERC20.sol/TestERC20.json ./src/contracts/",
+    "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
     "@headlessui/react": "1.7.17",

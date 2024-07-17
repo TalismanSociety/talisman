@@ -1,10 +1,10 @@
 import {
-  FloatingFocusManager,
-  FloatingPortal,
-  Placement,
   autoUpdate,
   flip,
+  FloatingFocusManager,
+  FloatingPortal,
   offset,
+  Placement,
   shift,
   useClick,
   useDismiss,
@@ -13,9 +13,21 @@ import {
   useMergeRefs,
   useRole,
 } from "@floating-ui/react"
-import * as React from "react"
+import {
+  cloneElement,
+  createContext,
+  Dispatch,
+  forwardRef,
+  HTMLProps,
+  isValidElement,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useState,
+} from "react"
 
-export interface PopoverOptions {
+export type PopoverOptions = {
   initialOpen?: boolean
   placement?: Placement
   modal?: boolean
@@ -23,16 +35,28 @@ export interface PopoverOptions {
   onOpenChange?: (open: boolean) => void
 }
 
+/** Needed because of https://github.com/microsoft/TypeScript/issues/47663#issuecomment-1519138189 */
+export type UsePopoverReturnType = ReturnType<typeof useInteractions> &
+  ReturnType<typeof useFloating> & {
+    open: boolean
+    setOpen: (open: boolean) => void
+    modal?: boolean
+    labelId?: string
+    descriptionId?: string
+    setLabelId: Dispatch<SetStateAction<string | undefined>>
+    setDescriptionId: Dispatch<SetStateAction<string | undefined>>
+  }
+
 export function usePopover({
   initialOpen = false,
   placement = "bottom",
   modal,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
-}: PopoverOptions = {}) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen)
-  const [labelId, setLabelId] = React.useState<string | undefined>()
-  const [descriptionId, setDescriptionId] = React.useState<string | undefined>()
+}: PopoverOptions = {}): UsePopoverReturnType {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen)
+  const [labelId, setLabelId] = useState<string | undefined>()
+  const [descriptionId, setDescriptionId] = useState<string | undefined>()
 
   const open = controlledOpen ?? uncontrolledOpen
   const setOpen = setControlledOpen ?? setUncontrolledOpen
@@ -63,7 +87,7 @@ export function usePopover({
 
   const interactions = useInteractions([click, dismiss, role])
 
-  return React.useMemo(
+  return useMemo(
     () => ({
       open,
       setOpen,
@@ -81,15 +105,15 @@ export function usePopover({
 
 type ContextType =
   | (ReturnType<typeof usePopover> & {
-      setLabelId: React.Dispatch<React.SetStateAction<string | undefined>>
-      setDescriptionId: React.Dispatch<React.SetStateAction<string | undefined>>
+      setLabelId: Dispatch<SetStateAction<string | undefined>>
+      setDescriptionId: Dispatch<SetStateAction<string | undefined>>
     })
   | null
 
-const PopoverContext = React.createContext<ContextType>(null)
+const PopoverContext = createContext<ContextType>(null)
 
-export const usePopoverContext = () => {
-  const context = React.useContext(PopoverContext)
+export const usePopoverContext: () => NonNullable<ContextType> = () => {
+  const context = useContext(PopoverContext)
 
   if (context == null) {
     throw new Error("Popover components must be wrapped in <Popover />")
@@ -103,7 +127,7 @@ export function Popover({
   modal = false,
   ...restOptions
 }: {
-  children: React.ReactNode
+  children: ReactNode
 } & PopoverOptions) {
   // This can accept any props as options, e.g. `placement`,
   // or other positioning options.
@@ -112,46 +136,46 @@ export function Popover({
 }
 
 export interface PopoverTriggerProps {
-  children: React.ReactNode
+  children: ReactNode
   asChild?: boolean
 }
 
-export const PopoverTrigger = React.forwardRef<
-  HTMLElement,
-  React.HTMLProps<HTMLElement> & PopoverTriggerProps
->(function PopoverTrigger({ children, asChild = false, ...props }, propRef) {
-  const context = usePopoverContext()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const childrenRef = (children as any).ref
-  const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
+export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & PopoverTriggerProps>(
+  function PopoverTrigger({ children, asChild = false, ...props }, propRef) {
+    const context = usePopoverContext()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const childrenRef = (children as any).ref
+    const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
 
-  // `asChild` allows the user to pass any element as the anchor
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(
-      children,
-      context.getReferenceProps({
-        ref,
-        ...props,
-        ...children.props,
-        "data-state": context.open ? "open" : "closed",
-      })
+    // `asChild` allows the user to pass any element as the anchor
+    if (asChild && isValidElement(children)) {
+      return cloneElement(
+        children,
+        context.getReferenceProps({
+          ref,
+          ...props,
+          ...children.props,
+          "data-state": context.open ? "open" : "closed",
+        })
+      )
+    }
+
+    return (
+      <button
+        ref={ref}
+        type="button"
+        // The user can style the trigger based on the state
+        data-state={context.open ? "open" : "closed"}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
+      >
+        {children}
+      </button>
     )
   }
+)
 
-  return (
-    <button
-      ref={ref}
-      type="button"
-      // The user can style the trigger based on the state
-      data-state={context.open ? "open" : "closed"}
-      {...context.getReferenceProps(props)}
-    >
-      {children}
-    </button>
-  )
-})
-
-export const PopoverContent = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>(
+export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(
   function PopoverContent(props, propRef) {
     const { context: floatingContext, ...context } = usePopoverContext()
     const ref = useMergeRefs([context.refs.setFloating, propRef])
@@ -169,7 +193,8 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, React.HTMLProps<H
             }}
             aria-labelledby={context.labelId}
             aria-describedby={context.descriptionId}
-            {...context.getFloatingProps(props)}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
           >
             {props.children}
           </div>

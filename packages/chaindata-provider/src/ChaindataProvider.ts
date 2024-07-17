@@ -1,5 +1,5 @@
-import { Transaction, TransactionMode, liveQuery } from "dexie"
-import { ReplaySubject, SubscriptionLike, map } from "rxjs"
+import { liveQuery, Transaction, TransactionMode } from "dexie"
+import { map, ReplaySubject, SubscriptionLike } from "rxjs"
 
 import { githubTokenLogoUrl, githubUnknownTokenLogoUrl } from "./constants"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitSubstrateTokens } from "./init"
@@ -13,7 +13,6 @@ import {
   fetchSubstrateTokens,
 } from "./net"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
-import { IChaindataProvider, TokenTypes } from "./types"
 import {
   Chain,
   ChainId,
@@ -21,7 +20,7 @@ import {
   CustomEvmNetwork,
   EvmNetwork,
   EvmNetworkId,
-  IToken,
+  IChaindataProvider,
   Token,
   TokenId,
 } from "./types"
@@ -182,13 +181,14 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  async tokensByIdForType<TTokenTYpe extends TokenTypes[keyof TokenTypes]["type"]>(
-    tType: TTokenTYpe
-  ) {
-    const filteredTokensObs = this.tokensObservable
-      .pipe(map((tokens) => tokens.filter((token) => token.type === tType)))
+  async tokensByIdForType<TokenType extends Token["type"]>(type: TokenType) {
+    const tokensByIdForTypeObservable = this.tokensObservable
+      .pipe(map((tokens) => tokens.filter((token) => token.type === type)))
       .pipe(map(util.itemsToMapById))
-    return await util.wrapObservableWithGetter("Failed to get tokenIds", filteredTokensObs)
+    return await util.wrapObservableWithGetter(
+      "Failed to get tokenIds",
+      tokensByIdForTypeObservable
+    )
   }
 
   //
@@ -281,7 +281,7 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!builtInChain.nativeToken?.id)
       throw new Error("Failed to lookup native token (no token exists for chain)")
     const builtInNativeToken = await fetchSubstrateToken(builtInChain?.nativeToken?.id)
-    if (!util.isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
+    if (!util.isTokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
     if (!util.isToken(builtInNativeToken))
       throw new Error("Failed to lookup native token (isToken test failed)")
 
@@ -347,11 +347,11 @@ export class ChaindataProvider implements IChaindataProvider {
       throw new Error("Failed to lookup native token (no token exists for network)")
 
     const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName } =
-      nativeModule.moduleConfig as IToken
+      nativeModule.moduleConfig as Token
     if (!symbol) throw new Error("Missing native token symbol")
     if (!decimals) throw new Error("Missing native token decimals")
 
-    const builtInNativeToken: IToken = {
+    const builtInNativeToken: Token = {
       id: getNativeTokenId(evmNetworkId, "evm-native"),
       type: "evm-native",
       evmNetwork: { id: evmNetworkId },
