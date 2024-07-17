@@ -26,7 +26,7 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@azns/resolver-core": "https://gitpkg.now.sh/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main",
+    "@azns/resolver-core": "https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main",
     "@talismn/balances": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11"
