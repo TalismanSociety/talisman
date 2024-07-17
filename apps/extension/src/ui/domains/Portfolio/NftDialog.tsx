@@ -1,3 +1,4 @@
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { ChevronLeftIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
@@ -66,13 +67,34 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const hadnleRefreshMetadataClick = useCallback(async () => {
     if (isRefreshing) return
     setIsRefreshing(true)
+
+    const notificationId = notify(
+      {
+        type: "processing",
+        title: t("Requesting refresh"),
+        subtitle: t("Please wait"),
+      },
+      { autoClose: false }
+    )
+
     try {
       await api.nftsRefreshMetadata(nft.id)
+
+      notifyUpdate(notificationId, {
+        type: "success",
+        title: t("Request succeeded"),
+        subtitle: t("Come back in few minutes"),
+      })
     } catch (err) {
       log.error("Failed to refresh metadata", { err })
+      notifyUpdate(notificationId, {
+        type: "error",
+        title: t("Request failed"),
+        subtitle: (err as Error)?.message ?? "",
+      })
     }
     setIsRefreshing(false)
-  }, [isRefreshing, nft.id])
+  }, [isRefreshing, nft.id, t])
 
   useEffect(() => {
     setIsRefreshing(false)

@@ -9,7 +9,7 @@ import { getNftsAccountsList } from "./helpers"
 import { nftsStore } from "./store"
 import { NftData, NftLoadingStatus } from "./types"
 
-const UPDATE_INTERVAL = 60 * 60 * 1000 // 1 hour
+let UPDATE_INTERVAL = 60 * 60 * 1000 // 1 hour
 const UPDATE_CHECK_INTERVAL = 10 * 1000 // 10 seconds
 
 const status = new BehaviorSubject<NftLoadingStatus>("stale")
@@ -163,8 +163,10 @@ export const refreshNftMetadata = async (id: string) => {
 
   await fetchRefreshNftMetadata(evmNetworkId, contractAddress, tokenId)
 
-  // wait for metadata to update
-  await sleep(15_000)
+  // force an update after 10 seconds, might be lucky !
+  await sleep(10_000)
+  updateData()
 
-  await updateData()
+  // we don't know when the refresh will be done, lower the update interval to 10 minute for this session
+  UPDATE_INTERVAL = 60 * 1000
 }
