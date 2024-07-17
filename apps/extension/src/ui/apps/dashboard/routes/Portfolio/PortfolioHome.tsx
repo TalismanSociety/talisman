@@ -1,6 +1,6 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
-import { DashboardNfts } from "@ui/domains/Portfolio/AssetsTable/DashboardNfts"
+import { DashboardNfts } from "@ui/domains/Portfolio/Nfts/DashboardNfts"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

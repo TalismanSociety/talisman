@@ -9,12 +9,12 @@ import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
+import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
-import { getPortfolioNftCollectionPreviewUrl } from "../Nfts/helpers"
 import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
-import { NetworksLogoStack } from "./NetworksLogoStack"
+import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
 const NoNftFound = () => {

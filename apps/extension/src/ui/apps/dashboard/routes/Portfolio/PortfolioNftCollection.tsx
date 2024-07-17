@@ -1,5 +1,5 @@
-import { DashboardNftCollection } from "@ui/domains/Portfolio/AssetsTable/DashboardNftCollection"
-import { usePortfolioNfts } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNfts"
+import { DashboardNftCollection } from "@ui/domains/Portfolio/Nfts/DashboardNftCollection"
+import { usePortfolioNfts } from "@ui/domains/Portfolio/Nfts/usePortfolioNfts"
 import { NftViewModeToggleButton } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEffect, useMemo } from "react"

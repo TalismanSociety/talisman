@@ -20,8 +20,8 @@ import {
 } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./AssetsTable/usePortfolioNfts"
 import { NetworkFilterModal } from "./NetworkFilterModal"
+import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./Nfts/usePortfolioNfts"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 export const NftViewModeToggleButton = () => {
