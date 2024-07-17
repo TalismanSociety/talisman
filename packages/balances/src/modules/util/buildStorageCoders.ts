@@ -51,7 +51,7 @@ export const buildStorageCoders = <
               try {
                 return [[key, scaleBuilder.buildStorage(module, method)] as const]
               } catch (cause) {
-                log.warn(
+                log.trace(
                   `Failed to build SCALE coder for chain ${chainId} (${module}::${method})`,
                   cause
                 )
