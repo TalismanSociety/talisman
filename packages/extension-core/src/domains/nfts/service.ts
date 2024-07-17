@@ -1,8 +1,10 @@
+import { sleep } from "@talismn/util"
 import { log } from "extension-shared"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
 
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { fetchNfts } from "./fetchNfts"
+import { fetchRefreshNftMetadata } from "./fetchRefreshNftMetadata"
 import { getNftsAccountsList } from "./helpers"
 import { nftsStore } from "./store"
 import { NftData, NftLoadingStatus } from "./types"
@@ -151,4 +153,18 @@ export const setFavoriteNft = (id: string, isFavorite: boolean) => {
     ...nftsStore.value,
     favoriteNftIds,
   })
+}
+
+export const refreshNftMetadata = async (id: string) => {
+  const nft = nftsStore.value.nfts.find((n) => n.id === id)
+  if (!nft) return
+
+  const { evmNetworkId, contractAddress, tokenId } = nft
+
+  await fetchRefreshNftMetadata(evmNetworkId, contractAddress, tokenId)
+
+  // wait for metadata to update
+  await sleep(15_000)
+
+  await updateData()
 }

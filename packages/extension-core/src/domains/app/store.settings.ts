@@ -20,6 +20,7 @@ export interface SettingsStoreData {
   newFeaturesDismissed: string
   autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
   nftsViewMode: "list" | "grid"
+  tokensSortMode: "name" | "total" | "locked" | "available"
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   selectedCurrency: "usd",
   newFeaturesDismissed: "0",
   nftsViewMode: "list",
+  tokensSortMode: "total",
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

@@ -12,6 +12,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { IS_POPUP } from "@ui/util/constants"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
+import { log } from "extension-shared"
 import { useAtomValue } from "jotai"
 import {
   CSSProperties,
@@ -61,6 +62,22 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     api.nftsSetHidden(nft.collectionId, !isCollectionHidden)
   }, [isCollectionHidden, nft.collectionId])
 
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const hadnleRefreshMetadataClick = useCallback(async () => {
+    if (isRefreshing) return
+    setIsRefreshing(true)
+    try {
+      await api.nftsRefreshMetadata(nft.id)
+    } catch (err) {
+      log.error("Failed to refresh metadata", { err })
+    }
+    setIsRefreshing(false)
+  }, [isRefreshing, nft.id])
+
+  useEffect(() => {
+    setIsRefreshing(false)
+  }, [nft.id])
+
   return (
     <ContextMenu>
       <ContextMenuTrigger className="text-body-secondary hover:text-body">
@@ -74,6 +91,9 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         ))}
         <ContextMenuItem onClick={handleHideCollectionClick}>
           {isCollectionHidden ? t("Show collection") : t("Hide collection")}
+        </ContextMenuItem>
+        <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
+          {t("Refresh Metadata")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -137,6 +157,12 @@ const TabContentNft: FC<{
   return (
     <>
       <div className="leading-paragraph grid grid-cols-2 gap-8">
+        {!!nft.tokenId && (
+          <>
+            <div className="text-body-secondary">{t("Token ID")}</div>
+            <div className="flex items-center justify-end gap-[0.5em]">{nft.tokenId}</div>
+          </>
+        )}
         {nft.owner && (
           <>
             <div className="text-body-secondary">{t("Owner")}</div>

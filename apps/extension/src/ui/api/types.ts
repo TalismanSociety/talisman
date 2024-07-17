@@ -329,4 +329,5 @@ export default interface MessageTypes {
   nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
   nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
   nftsSetFavorite: (id: string, isFavorite: boolean) => Promise<boolean>
+  nftsRefreshMetadata: (id: string) => Promise<boolean>
 }

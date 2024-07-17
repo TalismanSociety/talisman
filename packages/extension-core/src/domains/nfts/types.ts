@@ -1,3 +1,4 @@
+import { RequestIdOnly } from "../../types/base"
 import { NftStoreData } from "./store"
 
 /**
@@ -67,6 +68,12 @@ export type FetchNftsResponse = {
   nfts: Nft[]
 }
 
+export type RefreshNftMetadataRequestBody = {
+  evmNetworkId: string
+  contractAddress: string
+  tokenId: string
+}
+
 /**
  * Types below are local to the wallet
  */
@@ -83,4 +90,5 @@ export interface NftsMessages {
   "pri(nfts.subscribe)": [null, boolean, NftData]
   "pri(nfts.collection.setHidden)": [SetHiddenNftCollectionRequest, boolean]
   "pri(nfts.setFavorite)": [SetFavoriteNftRequest, boolean]
+  "pri(nfts.refreshMetadata)": [RequestIdOnly, boolean]
 }

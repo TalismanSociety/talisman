@@ -11,6 +11,11 @@ import { useMemo } from "react"
 import { portfolioDisplayBalancesAtomFamily } from "../useDisplayBalances"
 
 type SymbolBalances = [string, Balances]
+
+const sortSymbolBalancesByName = ([aSymbol]: SymbolBalances, [bSymbol]: SymbolBalances): number => {
+  return aSymbol.localeCompare(bSymbol)
+}
+
 const sortSymbolBalancesBy =
   (type: "total" | "available" | "locked", currency: TokenRateCurrency) =>
   ([aSymbol, aBalances]: SymbolBalances, [bSymbol, bBalances]: SymbolBalances): number => {
@@ -92,7 +97,7 @@ const sortSymbolBalancesBy =
 
 const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network" | "search") =>
   atom(async (get) => {
-    const [currency, { hideDust }] = await Promise.all([
+    const [currency, { hideDust, tokensSortMode }] = await Promise.all([
       get(selectedCurrencyAtom),
       get(settingsAtom),
     ])
@@ -111,9 +116,14 @@ const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network" 
       return acc
     }, {})
 
+    const sortFn =
+      tokensSortMode === "name"
+        ? sortSymbolBalancesByName
+        : sortSymbolBalancesBy(tokensSortMode, currency)
+
     const symbolBalances = Object.entries(groupedByToken)
       .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])
-      .sort(sortSymbolBalancesBy("total", currency))
+      .sort(sortFn)
       .filter(
         hideDust
           ? ([, balances]) =>

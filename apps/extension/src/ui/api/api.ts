@@ -347,4 +347,5 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(nfts.collection.setHidden)", { id, isHidden }),
   nftsSetFavorite: (id, isFavorite) =>
     messageService.sendMessage("pri(nfts.setFavorite)", { id, isFavorite }),
+  nftsRefreshMetadata: (id) => messageService.sendMessage("pri(nfts.refreshMetadata)", { id }),
 }

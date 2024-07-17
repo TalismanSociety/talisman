@@ -8,7 +8,12 @@ import {
   SubscriptionHandler,
 } from "../../types"
 import { Port } from "../../types/base"
-import { setFavoriteNft, setHiddenNftCollection, subscribeNfts } from "./service"
+import {
+  refreshNftMetadata,
+  setFavoriteNft,
+  setHiddenNftCollection,
+  subscribeNfts,
+} from "./service"
 
 const handleSubscribeNfts: SubscriptionHandler<"pri(nfts.subscribe)"> = (id, port) => {
   const cb = createSubscription(id, port)
@@ -38,6 +43,12 @@ const handleSetFavoriteNft: MessageHandler<"pri(nfts.setFavorite)"> = (request) 
   return true
 }
 
+const handleRefreshNftMetadata: MessageHandler<"pri(nfts.refreshMetadata)"> = async (request) => {
+  const { id } = request
+  await refreshNftMetadata(id)
+  return true
+}
+
 // TODO cooldown: change handle method arg list to an object so we can use type as discriminant and don't have to cast request & response
 export class NftsHandler extends ExtensionHandler {
   public async handle<
@@ -60,6 +71,11 @@ export class NftsHandler extends ExtensionHandler {
 
       case "pri(nfts.setFavorite)":
         return handleSetFavoriteNft(request as RequestTypes["pri(nfts.setFavorite)"]) as Response
+
+      case "pri(nfts.refreshMetadata)":
+        return handleRefreshNftMetadata(
+          request as RequestTypes["pri(nfts.refreshMetadata)"]
+        ) as Response
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -1,11 +1,21 @@
 import { SearchInput } from "@talisman/components/SearchInput"
-import { GlobeIcon } from "@talismn/icons"
+import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useSetting } from "@ui/hooks/useSettings"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkPickerDialog"
@@ -73,6 +83,50 @@ const PortfolioSearch = () => {
   )
 }
 
+const TokensSortButton = () => {
+  const { t } = useTranslation()
+  const [viewMode, setViewMode] = useSetting("tokensSortMode")
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <PortfolioToolbarButton>
+                <ToolbarSortIcon />
+              </PortfolioToolbarButton>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuOptionItem
+                label={t("Total")}
+                selected={viewMode === "total"}
+                onClick={() => setViewMode("total")}
+              />
+              <ContextMenuOptionItem
+                label={t("Available")}
+                selected={viewMode === "available"}
+                onClick={() => setViewMode("available")}
+              />
+              <ContextMenuOptionItem
+                label={t("Locked")}
+                selected={viewMode === "locked"}
+                onClick={() => setViewMode("locked")}
+              />
+              <ContextMenuOptionItem
+                label={t("Symbol")}
+                selected={viewMode === "name"}
+                onClick={() => setViewMode("name")}
+              />
+            </ContextMenuContent>
+          </ContextMenu>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t("Sort")}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 export const PortfolioToolbarTokens = () => {
   return (
     <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
@@ -80,6 +134,7 @@ export const PortfolioToolbarTokens = () => {
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
+        <TokensSortButton />
         <NetworkFilterButton />
       </div>
     </div>
