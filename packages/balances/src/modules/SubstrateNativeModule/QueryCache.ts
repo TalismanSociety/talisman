@@ -10,7 +10,6 @@ import {
   firstValueFrom,
   from,
   map,
-  Observable,
   pipe,
   shareReplay,
   Subscription,
@@ -102,32 +101,29 @@ const AccountInfoOverrides: Record<
   "nftmart": RegularAccountInfoFallback,
 }
 
-let commonMetadataObservable: Observable<Map<string, MiniMetadata>> | null = null
+// NOTE: `liveQuery` is not initialized until commonMetadataObservable is subscribed to.
+const commonMetadataObservable = from(
+  liveQuery(() => balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray())
+).pipe(
+  map((items) => new Map(items.map((item) => [item.id, item]))),
+  // `refCount: true` will unsubscribe from the DB when commonMetadataObservable has no more subscribers
+  shareReplay({ bufferSize: 1, refCount: true })
+)
 
 export class QueryCache {
   private balanceQueryCache = new Map<QueryKey, RpcStateQuery<SubNativeBalance>[]>()
-  private metadataSub: Subscription
+  private metadataSub: Subscription | null = null
 
-  constructor(private chaindataProvider: ChaindataProvider) {
-    if (!commonMetadataObservable) {
-      commonMetadataObservable = from(
-        liveQuery(() =>
-          balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
-        )
-      ).pipe(
-        map(
-          (miniMetadatas) =>
-            new Map(miniMetadatas.map((miniMetadata) => [miniMetadata.id, miniMetadata]))
-        ),
-        shareReplay({ bufferSize: 1, refCount: true })
-      )
-    }
+  constructor(private chaindataProvider: ChaindataProvider) {}
+
+  ensureSetup() {
+    if (this.metadataSub) return
 
     this.metadataSub = commonMetadataObservable
       .pipe(
         firstThenDebounce(500),
         detectMiniMetadataChanges(),
-        combineLatestWith(chaindataProvider.tokensObservable),
+        combineLatestWith(this.chaindataProvider.tokensObservable),
         distinctUntilChanged()
       )
       .subscribe(([miniMetadataChanges, tokens]) => {
@@ -158,11 +154,12 @@ export class QueryCache {
   }
 
   destroy() {
-    this.metadataSub.unsubscribe()
+    this.metadataSub?.unsubscribe()
   }
 
   async getQueries(addressesByToken: AddressesByToken<SubNativeToken>) {
-    if (!commonMetadataObservable) throw new Error("commonMetadataObservable is not initialized")
+    this.ensureSetup()
+
     const chains = await this.chaindataProvider.chainsById()
     const tokens = await this.chaindataProvider.tokensById()
 
