@@ -7,7 +7,7 @@ type BreadcrumbItem = {
   onClick?: () => void
 }
 
-export const DashboardBreadcrumb: FC<{
+export const Breadcrumb: FC<{
   items: BreadcrumbItem[]
   className?: string
 }> = ({ items, className }) => {
@@ -17,7 +17,10 @@ export const DashboardBreadcrumb: FC<{
         return (
           <Fragment key={index}>
             {item.onClick ? (
-              <button onClick={item.onClick} className="hover:text-grey-300 truncate underline">
+              <button
+                onClick={item.onClick}
+                className="bg-grey-900 hover:bg-grey-800 hover:text-grey-300 h-[3.2rem] truncate rounded-sm px-4"
+              >
                 {item.label}
               </button>
             ) : (

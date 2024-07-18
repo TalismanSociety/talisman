@@ -1,6 +1,13 @@
-import { Balances } from "@extension/core"
 import { Token } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
+import { t } from "i18next"
+import { FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { Balances } from "@extension/core"
+import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -16,14 +23,6 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { t } from "i18next"
-import { FC, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { DashboardBreadcrumb } from "../../layout/DashboardBreadcrumb"
-import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
 
 const HeaderRow: FC<{
   token: Token | undefined
@@ -98,7 +97,7 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
   )
 }
 
-const Breadcrumb: FC<{
+const TokenBreadcrumb: FC<{
   balances: Balances
   symbol: string
   token: Token | undefined
@@ -139,7 +138,7 @@ const Breadcrumb: FC<{
 
   return (
     <div className="flex items-center justify-between">
-      <DashboardBreadcrumb items={items} />
+      <Breadcrumb items={items} />
       <SendFundsButton symbol={symbol} />
     </div>
   )
@@ -169,10 +168,10 @@ export const PortfolioAsset = () => {
   if (!symbol) return <Navigate to="/portfolio" />
 
   return (
-    <DashboardPortfolioLayout>
-      <Breadcrumb token={token} rate={rate} balances={balances} symbol={symbol} />
+    <>
+      <TokenBreadcrumb token={token} rate={rate} balances={balances} symbol={symbol} />
       <HeaderRow token={token} summary={summary} />
       <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
-    </DashboardPortfolioLayout>
+    </>
   )
 }

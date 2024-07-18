@@ -1,13 +1,11 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useEffect } from "react"
+import { useMatch } from "react-router-dom"
+
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { DashboardNfts } from "@ui/domains/Portfolio/Nfts/DashboardNfts"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { Suspense, useEffect } from "react"
-import { useMatch } from "react-router-dom"
-
-import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
 
 export const PortfolioHome = () => {
   const { pageOpenEvent } = useAnalytics()
@@ -17,25 +15,24 @@ export const PortfolioHome = () => {
   const matchNfts = useMatch("/portfolio/nfts")
 
   useEffect(() => {
-    pageOpenEvent("portfolio assets")
-  }, [pageOpenEvent])
+    if (matchTokens) pageOpenEvent("portfolio assets")
+    if (matchNfts) pageOpenEvent("portfolio nfts")
+  }, [matchNfts, matchTokens, pageOpenEvent])
 
   return (
-    <DashboardPortfolioLayout>
-      <Suspense fallback={<SuspenseTracker name="PortfolioHome content" />}>
-        {!!matchTokens && (
-          <>
-            <PortfolioToolbarTokens />
-            <DashboardAssetsTable />
-          </>
-        )}
-        {!!matchNfts && (
-          <>
-            <PortfolioToolbarNfts />
-            <DashboardNfts />
-          </>
-        )}
-      </Suspense>
-    </DashboardPortfolioLayout>
+    <>
+      {!!matchTokens && (
+        <>
+          <PortfolioToolbarTokens />
+          <DashboardAssetsTable />
+        </>
+      )}
+      {!!matchNfts && (
+        <>
+          <PortfolioToolbarNfts />
+          <DashboardNfts />
+        </>
+      )}
+    </>
   )
 }

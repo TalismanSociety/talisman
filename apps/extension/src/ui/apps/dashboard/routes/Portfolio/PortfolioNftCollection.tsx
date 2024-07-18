@@ -1,15 +1,15 @@
-import { DashboardNftCollection } from "@ui/domains/Portfolio/Nfts/DashboardNftCollection"
-import { usePortfolioNfts } from "@ui/domains/Portfolio/Nfts/usePortfolioNfts"
-import { NftViewModeToggleButton } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 
-import { DashboardBreadcrumb } from "../../layout/DashboardBreadcrumb"
-import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
+import { DashboardNftCollection } from "@ui/domains/Portfolio/Nfts/DashboardNftCollection"
+import { usePortfolioNfts } from "@ui/domains/Portfolio/Nfts/usePortfolioNfts"
+import { NftViewModeToggleButton } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-const Breadcrumb = () => {
+import { Breadcrumb } from "../../../../../@talisman/components/Breadcrumb"
+
+const DashboardNftsBreadcrumb = () => {
   const { t } = useTranslation()
   const { collectionId } = useParams()
   const navigate = useNavigate()
@@ -35,7 +35,7 @@ const Breadcrumb = () => {
 
   return (
     <div className="flex items-center justify-between">
-      <DashboardBreadcrumb items={items} />
+      <Breadcrumb items={items} />
       <NftViewModeToggleButton />
     </div>
   )
@@ -49,9 +49,9 @@ export const PortfolioNftCollection = () => {
   }, [pageOpenEvent])
 
   return (
-    <DashboardPortfolioLayout>
-      <Breadcrumb />
+    <>
+      <DashboardNftsBreadcrumb />
       <DashboardNftCollection />
-    </DashboardPortfolioLayout>
+    </>
   )
 }

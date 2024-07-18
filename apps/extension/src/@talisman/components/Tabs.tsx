@@ -47,7 +47,7 @@ export const Tabs: FC<{
     <div
       ref={refTabs}
       className={classNames(
-        "border-grey-700 relative mb-5 flex h-12 w-full gap-12 border-b text-sm font-light",
+        "border-grey-700 relative flex h-12 w-full gap-12 border-b text-sm font-light",
         indicatorStyle ? "visible" : "invisible", // wait for indicator's style to be ready, prevents flickering
         className
       )}

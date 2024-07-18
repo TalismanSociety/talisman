@@ -1,10 +1,12 @@
-import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import { FC, PropsWithChildren, useCallback } from "react"
+import { FC, PropsWithChildren, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
+
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
+import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
+import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
 import { NoAccountsFullscreen } from "../routes/Portfolio/NoAccountsFullscreen"
 
@@ -56,10 +58,16 @@ export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) =>
   return (
     // TODO check with no account that there is no regression
     <div className="flex w-full flex-col">
-      <PortfolioAccountCheck>
-        <PortfolioTabs className="text-md my-0 h-14 font-bold" />
-        <div className="flex w-full flex-col gap-12 py-12">{children}</div>
-      </PortfolioAccountCheck>
+      <Suspense
+        fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
+      >
+        <PortfolioAccountCheck>
+          <PortfolioTabs className="text-md my-0 h-14 font-bold" />
+          <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>
+            <div className="flex w-full flex-col gap-12 py-12">{children}</div>
+          </Suspense>
+        </PortfolioAccountCheck>
+      </Suspense>
     </div>
   )
 }

@@ -1,9 +1,11 @@
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
-import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useEffect } from "react"
 import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
+import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
+
 import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioHome } from "./PortfolioHome"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
@@ -25,14 +27,16 @@ export const PortfolioRoutes = () => {
     // share layout to prevent sidebar flickering when navigating between the 2 pages
     <DashboardLayout centered large className="min-w-[auto]">
       <PortfolioContainer>
-        <Routes>
-          <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-          <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
-          {/* Sharing a single component for tokens & nfts to prevent stats & tabs to reset when switching tabs */}
-          <Route path="tokens" element={<PortfolioHome />} />
-          <Route path="nfts" element={<PortfolioHome />} />
-          <Route path="*" element={<Navigate to="tokens" />} />
-        </Routes>
+        <DashboardPortfolioLayout>
+          <Routes>
+            <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+            <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+            {/* Sharing a single component for tokens & nfts to prevent stats & tabs to reset when switching tabs */}
+            <Route path="tokens" element={<PortfolioHome />} />
+            <Route path="nfts" element={<PortfolioHome />} />
+            <Route path="*" element={<Navigate to="tokens" />} />
+          </Routes>
+        </DashboardPortfolioLayout>
       </PortfolioContainer>
     </DashboardLayout>
   )
