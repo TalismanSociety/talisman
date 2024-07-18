@@ -1,6 +1,4 @@
-import type { MiniMetadata } from "@talismn/balances"
-import type { Chain, EvmNetwork, Token } from "@talismn/chaindata-provider"
-
+import type { Chain, EvmNetwork, Token } from "../types"
 import { chains as initChains } from "./chains"
 import { evmNetworks as initEvmNetworks } from "./evm-networks"
 import { miniMetadatas as initMiniMetadatas } from "./mini-metadatas"
@@ -14,10 +12,13 @@ import { tokens as initSubstrateTokens } from "./tokens"
 //
 // They should be periodically updated with the latest state of chaindata.
 // You can update them by running the following command:
-// `yarn workspace @talismn/chaindata-provider generate-init-data`
+// `pnpm chore:generate-init-data`
 
 export const fetchInitChains = async (): Promise<Chain[]> => initChains as Chain[]
 export const fetchInitEvmNetworks = async (): Promise<EvmNetwork[]> => initEvmNetworks
 export const fetchInitSubstrateTokens = async (): Promise<Token[]> => initSubstrateTokens as Token[]
-export const fetchInitMiniMetadatas = async (): Promise<MiniMetadata[]> =>
-  initMiniMetadatas as MiniMetadata[]
+
+// TODO: Move `fetchMiniMetadatas` into `@talismn/balances`,
+// so that we don't have a circular import between `@talismn/balances` and `@talismn/chaindata-provider`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fetchInitMiniMetadatas = async (): Promise<any[]> => initMiniMetadatas

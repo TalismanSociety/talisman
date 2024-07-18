@@ -14,9 +14,9 @@
   ],
   "scripts": {
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules",
     "test": "PORT_PREFIX=talisman jest --maxWorkers=50% --collectCoverage",
-    "test:watch": "PORT_PREFIX=talisman jest --watch"
+    "test:watch": "PORT_PREFIX=talisman jest --watch",
+    "clean": "rm -rf dist background/dist .turbo node_modules"
   },
   "dependencies": {
     "@metamask/browser-passworder": "4.3.0",
@@ -24,6 +24,7 @@
     "@polkadot-api/merkleize-metadata": "^1.1.0",
     "@polkadot/apps-config": "0.132.1",
     "@polkadot/extension-base": "0.46.6",
+    "@polkadot/extension-inject": "0.46.6",
     "@polkadot/keyring": "12.6.2",
     "@polkadot/phishing": "latest",
     "@polkadot/types": "12.0.2",

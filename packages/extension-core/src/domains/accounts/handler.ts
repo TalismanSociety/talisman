@@ -29,11 +29,11 @@ import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import type {
   RequestAccountCreate,
   RequestAccountCreateDcent,
-  RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateQr,
   RequestAccountCreateSignet,
   RequestAccountCreateWatched,
   RequestAccountExport,
@@ -333,23 +333,56 @@ export default class AccountsHandler extends ExtensionHandler {
     name,
     address,
     genesisHash,
-  }: RequestAccountCreateExternal): Promise<string> {
+  }: RequestAccountCreateQr): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const exists = keyring
       .getAccounts()
-      .some((account) => encodeAnyAddress(account.address) === encodeAnyAddress(address))
+      .some((account) => encodeAnyAddress(account.address) === address)
     assert(!exists, "Account already exists")
 
-    const { pair } = keyring.addExternal(address, {
-      isQr: true,
-      name,
-      genesisHash,
-      origin: AccountType.Qr,
-    })
+    // TODO: Hit up PVault devs with the following test case:
+    //
+    // 1. Add Moonbeam chainspec & metadata via https://metadata.novasama.io
+    // 2. Create Moonbeam account in the vault
+    // 3. Connect Moonbeam account to https://polkadot.js.org/apps/
+    // 4. Prepare a transfer TX to be signed by the vault
+    // 5. Scan the QR code with the vault, and note the `Please Add The Network You Want To Transact in` error
+    //
+    // When step (5) no longer shows this error, try the above steps but using Talisman instead of Novasama's metadata portal & pjs apps.
+    // Fix any issues in the Talisman implementation, then remove the following `assert()`
+    assert(
+      !isEthereumAddress(address),
+      "Ethereum-style accounts are not yet able to sign transactions in Polkadot Vault"
+    )
 
-    this.captureAccountCreateEvent("substrate", "qr")
+    // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      isEthereumAddress(address)
+        ? { type: "ethereum", toSS58: ethereumEncode }
+        : { type: "sr25519", toSS58: keyring.encodeAddress },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        genesisHash,
+        isQr: true,
+        isExternal: true,
+        isPortfolio: true,
+        origin: AccountType.Qr,
+      },
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    this.captureAccountCreateEvent(isEthereumAddress(address) ? "ethereum" : "substrate", "qr")
 
     return pair.address
   }
@@ -613,8 +646,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
       case "pri(accounts.create.ledger.ethereum)":
         return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
-      case "pri(accounts.create.qr.substrate)":
-        return this.accountsCreateQr(request as RequestAccountCreateExternal)
+      case "pri(accounts.create.qr)":
+        return this.accountsCreateQr(request as RequestAccountCreateQr)
       case "pri(accounts.create.watched)":
         return this.accountCreateWatched(request as RequestAccountCreateWatched)
       case "pri(accounts.create.signet)":

@@ -1,30 +1,40 @@
-// Because both of these prettier plugins hijack the typescript parser,
-// we can only use one of them at a time!
-//
-// If we try to use both, the second will overwrite the first.
-//
-// What follows is a workaround stolen from:
-// https://github.com/tailwindlabs/prettier-plugin-tailwindcss/issues/31#issuecomment-1203264916
-
-const pluginImportSort = require("prettier-plugin-import-sort")
-const pluginTailwindcss = require("prettier-plugin-tailwindcss")
-
-/** @type {import("prettier").Parser}  */
-const myParser = {
-  ...pluginImportSort.parsers.typescript,
-  parse:
-    pluginTailwindcss.parsers.typescript.parse,
+/** @type {import('prettier').Config} */
+const pluginsConfig = {
+  plugins: [require("@ianvs/prettier-plugin-sort-imports"), require("prettier-plugin-tailwindcss")],
 }
 
-/** @type {import("prettier").Plugin}  */
-const myPlugin = {
-  parsers: {
-    typescript: myParser,
-  },
+/** @type {import('prettier').Config} */
+const importSortConfig = {
+  importOrder: [
+    // built-ins like `node:fs`
+    "<TYPES>^(node:)", // type imports
+    "<BUILT_IN_MODULES>", // imports
+    "", // a gap
+
+    // anything which doesn't match any other rules
+    "<TYPES>", // type imports
+    "<THIRD_PARTY_MODULES>", // imports
+    "", // a gap
+
+    // local aliases / packages starting with one of these prefixes
+    "<TYPES>^(@common|@talisman|@ui|@tests|@extension/core|@extension/shared)(/.*)?$", // type imports
+    "^(@common|@talisman|@ui|@tests|@extension/core|@extension/shared)(/.*)?$", // imports
+    "", // a gap
+
+    // local `./blah/something` packages
+    "<TYPES>^[.]", // type imports
+    "^[.]", // imports
+  ],
+
+  // defaults to "1.0.0" - higher versions of typescript unlock more import-sort capabilities
+  // https://github.com/IanVS/prettier-plugin-sort-imports?tab=readme-ov-file#importordertypescriptversion
+  importOrderTypeScriptVersion: "5.2.2",
 }
 
+/** @type {import('prettier').Config} */
 module.exports = {
-  plugins: [myPlugin],
+  ...pluginsConfig,
+  ...importSortConfig,
 
   printWidth: 100,
   quoteProps: "consistent",

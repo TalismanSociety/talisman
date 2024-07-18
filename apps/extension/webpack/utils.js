@@ -12,7 +12,8 @@ const ValidBrowsers = ["chrome", "firefox"]
 const browser = ValidBrowsers.includes(process.env.BROWSER?.toLowerCase())
   ? process.env.BROWSER.toLowerCase()
   : "chrome"
-const distDir = path.join(rootDir, "dist", browser)
+const useOneDistDir = Boolean(process.env.USE_ONE_DIST_DIR)
+const distDir = useOneDistDir ? path.join(rootDir, "dist") : path.join(rootDir, "dist", browser)
 
 const publicDir = path.join(rootDir, "public")
 const manifestDir = path.join(publicDir, "manifest")

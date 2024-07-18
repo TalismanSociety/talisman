@@ -1,6 +1,6 @@
 import keyring from "@polkadot/ui-keyring"
 import { Address, Balances } from "@talismn/balances"
-import { ChainId, IToken, TokenId } from "@talismn/chaindata-provider"
+import { ChainId, Token, TokenId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { combineLatest, debounceTime } from "rxjs"
 
@@ -23,7 +23,7 @@ const MAX_UPDATE_INTERVAL = 2_000 // update every 2 seconds maximum
 type AddressStatuses = Record<Address, ShouldShowBanner>
 export type ChainAddressStatuses = Record<ChainId, AddressStatuses>
 
-const safelyGetExistentialDeposit = (token?: IToken | null): bigint => {
+const safelyGetExistentialDeposit = (token?: Token | null): bigint => {
   if (token && "existentialDeposit" in token && typeof token.existentialDeposit === "string")
     return BigInt(token.existentialDeposit)
   return 0n

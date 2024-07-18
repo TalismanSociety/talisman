@@ -24,7 +24,7 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+    "clean": "rm -rf dist plugins/dist .turbo node_modules"
   },
   "dependencies": {
     "@supercharge/promise-pool": "^3.1.0",

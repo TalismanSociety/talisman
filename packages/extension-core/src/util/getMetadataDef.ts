@@ -14,10 +14,13 @@ import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 import { stateCall } from "./stateCall"
 
-const cache: Record<string, TalismanMetadataDef> = {}
+const CACHE_RESULTS = new Map<string, TalismanMetadataDef>()
+const CACHE_PROMISES = new Map<string, Promise<TalismanMetadataDef | undefined>>()
 
-const getCacheKey = (genesisHash: HexString, specVersion?: number) =>
+const getResultCacheKey = (genesisHash: HexString, specVersion?: number) =>
   !specVersion || !genesisHash ? null : `${genesisHash}-${specVersion}`
+const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number, blockHash?: string) =>
+  [chainIdOrHash, specVersion ?? "", blockHash ?? ""].join("-")
 
 /**
  *
@@ -31,10 +34,29 @@ export const getMetadataDef = async (
   specVersion?: number,
   blockHash?: string
 ): Promise<TalismanMetadataDef | undefined> => {
+  const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion, blockHash)
+
+  // prevent concurrent calls that would fetch the same data
+  if (!CACHE_PROMISES.has(cacheKey))
+    CACHE_PROMISES.set(
+      cacheKey,
+      getMetadataDefInner(chainIdOrHash, specVersion, blockHash).finally(() => {
+        CACHE_PROMISES.delete(cacheKey)
+      })
+    )
+
+  return CACHE_PROMISES.get(cacheKey)
+}
+
+const getMetadataDefInner = async (
+  chainIdOrHash: string,
+  specVersion?: number,
+  blockHash?: string
+): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
 
-  const cacheKey = getCacheKey(genesisHash, specVersion)
-  if (cacheKey && cache[cacheKey]) return cache[cacheKey]
+  const cacheKey = getResultCacheKey(genesisHash, specVersion)
+  if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
 
   try {
     // eslint-disable-next-line no-var
@@ -65,8 +87,8 @@ export const getMetadataDef = async (
       return storeMetadata
 
     // check cache using runtimeSpecVersion
-    const cacheKey = getCacheKey(genesisHash, runtimeSpecVersion) as string
-    if (cache[cacheKey]) return cache[cacheKey]
+    const cacheKey = getResultCacheKey(genesisHash, runtimeSpecVersion) as string
+    if (CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
 
     // mark as updating in database (can be picked up by frontend via subscription)
     metadataUpdatesStore.set(genesisHash, true)
@@ -85,7 +107,7 @@ export const getMetadataDef = async (
     if (!newData) return // unable to get data from rpc, return nothing
 
     // save in cache
-    cache[cacheKey] = newData
+    CACHE_RESULTS.set(cacheKey, newData)
 
     metadataUpdatesStore.set(genesisHash, false)
 
@@ -102,8 +124,8 @@ export const getMetadataDef = async (
     }
 
     // save full object in cache
-    cache[cacheKey] = (await db.metadata.get(genesisHash)) as TalismanMetadataDef
-    return cache[cacheKey]
+    CACHE_RESULTS.set(cacheKey, (await db.metadata.get(genesisHash)) as TalismanMetadataDef)
+    return CACHE_RESULTS.get(cacheKey)
   } catch (cause) {
     if ((cause as Error).message !== "RPC connect timeout reached") {
       // not a useful error, do not log to sentry
@@ -183,11 +205,17 @@ export const fetchMetadataDefFromChain = async (
 // useful for developer when testing updates
 if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).clearMetadata = () => {
-    Object.keys(cache).forEach((key) => {
-      delete cache[key]
-    })
-    db.metadata.clear()
+  const hostObj = globalThis as any
+
+  hostObj.clearMetadata = async () => {
+    await db.metadata.clear()
+    CACHE_RESULTS.clear()
+  }
+
+  hostObj.makeOldMetadata = async () => {
+    const allMetadata = await db.metadata.toArray()
+    await db.metadata.bulkPut(allMetadata.map((m) => ({ ...m, specVersion: 1 })))
+    CACHE_RESULTS.clear()
   }
 }
 

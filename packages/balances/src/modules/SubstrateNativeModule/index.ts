@@ -6,26 +6,25 @@ import PromisePool from "@supercharge/promise-pool"
 import { ChainConnectionError, ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
-  ChainId,
   ChaindataProvider,
-  NewTokenType,
-  TokenId,
+  ChainId,
   githubTokenLogoUrl,
+  Token,
+  TokenId,
 } from "@talismn/chaindata-provider"
 import {
   $metadataV14,
-  PalletMV14,
-  StorageEntryMV14,
   filterMetadataPalletsAndItems,
   getMetadataVersion,
+  PalletMV14,
+  StorageEntryMV14,
   transformMetadataV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
-import { Deferred, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
+import { decodeAnyAddress, Deferred, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
 import {
   BehaviorSubject,
-  Observable,
   combineLatest,
   concatMap,
   debounceTime,
@@ -34,6 +33,7 @@ import {
   from,
   interval,
   map,
+  Observable,
   scan,
   share,
   switchAll,
@@ -48,21 +48,21 @@ import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import {
   AddressesByToken,
   Balances,
-  NewBalanceType,
-  SubscriptionCallback,
   getBalanceId,
   getValueId,
+  NewBalanceType,
+  SubscriptionCallback,
 } from "../../types"
 import {
-  GetOrCreateTypeRegistry,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-  StorageHelper,
   buildStorageDecoders,
   createTypeRegistryCache,
   detectTransferMethod,
   findChainMeta,
+  GetOrCreateTypeRegistry,
   getUniqueChainIds,
+  RpcStateQuery,
+  RpcStateQueryHelper,
+  StorageHelper,
 } from "../util"
 import {
   asObservable,
@@ -72,6 +72,10 @@ import {
 import { QueryCache } from "./QueryCache"
 
 type ModuleType = "substrate-native"
+const moduleType: ModuleType = "substrate-native"
+
+export type SubNativeToken = Extract<Token, { type: ModuleType; isCustom?: true }>
+export type CustomSubNativeToken = Extract<Token, { type: ModuleType; isCustom: true }>
 
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
@@ -109,24 +113,6 @@ const mergeBalances = (
     values: Object.values(mergedValues),
   }
   return merged
-}
-
-export type SubNativeToken = NewTokenType<
-  ModuleType,
-  {
-    existentialDeposit: string
-    chain: { id: ChainId }
-  }
->
-export type CustomSubNativeToken = SubNativeToken & {
-  isCustom: true
-}
-
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    SubNativeToken: SubNativeToken
-    CustomSubNativeToken: CustomSubNativeToken
-  }
 }
 
 export type SubNativeChainMeta = {
@@ -204,14 +190,11 @@ export const SubNativeModule: NewBalanceModule<
   const queryCache = new QueryCache(chaindataProvider, getOrCreateTypeRegistry)
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType("substrate-native")) as Record<
-      string,
-      SubNativeToken
-    >
+    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, SubNativeToken>
   }
 
   return {
-    ...DefaultBalanceModule("substrate-native"),
+    ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false

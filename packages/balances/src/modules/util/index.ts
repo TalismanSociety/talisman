@@ -1,5 +1,5 @@
-import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
+import { decorateStorage, Metadata, StorageKey, TypeRegistry } from "@polkadot/types"
 import { ChainConnector } from "@talismn/chain-connector"
 import { Chain, ChainId, ChainList, TokenList } from "@talismn/chaindata-provider"
 import { $metadataV14, getShape } from "@talismn/scale"
@@ -15,19 +15,19 @@ import {
   DefaultTransferParams,
   ExtendableChainMeta,
   ExtendableModuleConfig,
-  ExtendableTokenType,
   ExtendableTransferParams,
   NewBalanceModule,
+  SelectableTokenType,
   SubscriptionResultWithStatus,
 } from "../../BalanceModule"
 import log from "../../log"
 import {
   AddressesByToken,
   Balances,
+  deriveMiniMetadataId,
   MiniMetadata,
   SubscriptionCallback,
   UnsubscribeFn,
-  deriveMiniMetadataId,
 } from "../../types"
 
 /**
@@ -36,7 +36,7 @@ import {
  */
 export async function balances<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -46,7 +46,7 @@ export async function balances<
 ): Promise<Balances>
 export async function balances<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams
@@ -57,7 +57,7 @@ export async function balances<
 ): Promise<UnsubscribeFn>
 export async function balances<
   TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
+  TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams

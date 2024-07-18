@@ -2,12 +2,12 @@ import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
   EvmNetworkId,
-  NewTokenType,
-  TokenList,
   githubTokenLogoUrl,
+  Token,
+  TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import { PublicClient, hexToBigInt, isHex } from "viem"
+import { hexToBigInt, isHex, PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
@@ -15,6 +15,10 @@ import { Address, AddressesByToken, Balances, NewBalanceType } from "../types"
 import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
+const moduleType: ModuleType = "evm-native"
+
+export type EvmNativeToken = Extract<Token, { type: ModuleType }>
+export type CustomEvmNativeToken = Extract<Token, { type: ModuleType }>
 
 export const evmNativeTokenId = (chainId: EvmNetworkId) =>
   `${chainId}-evm-native`.toLowerCase().replace(/ /g, "-")
@@ -23,20 +27,6 @@ const getEvmNetworkIdFromTokenId = (tokenId: string) => {
   const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
   if (!evmNetworkId) throw new Error(`Can't detect chainId for token ${tokenId}`)
   return evmNetworkId
-}
-
-export type EvmNativeToken = NewTokenType<
-  ModuleType,
-  {
-    evmNetwork: { id: EvmNetworkId }
-    isCustom?: true
-  }
->
-export type CustomEvmNativeToken = EvmNativeToken
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    "evm-native": EvmNativeToken
-  }
 }
 
 export type EvmNativeChainMeta = {
@@ -65,17 +55,17 @@ export const EvmNativeModule: NewBalanceModule<
   const { chainConnectors, chaindataProvider } = hydrate
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType("evm-native")) as Record<
+    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<
       string,
       EvmNativeToken | CustomEvmNativeToken
     >
   }
 
   return {
-    ...DefaultBalanceModule("evm-native"),
+    ...DefaultBalanceModule(moduleType),
 
     get tokens() {
-      return chaindataProvider.tokensByIdForType(this.type) as Promise<
+      return chaindataProvider.tokensByIdForType(moduleType) as Promise<
         Record<string, EvmNativeToken | CustomEvmNativeToken>
       >
     },

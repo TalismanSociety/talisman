@@ -1,14 +1,16 @@
 import {
   BrowserClient,
-  Scope,
+  captureEvent,
   captureException,
+  captureMessage,
   defaultStackParser,
   getDefaultIntegrations,
   makeFetchTransport,
+  Scope,
 } from "@sentry/browser"
 import { Event } from "@sentry/types"
 import { DEBUG } from "extension-shared"
-import { ReplaySubject, firstValueFrom } from "rxjs"
+import { firstValueFrom, ReplaySubject } from "rxjs"
 
 import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"
 import { settingsStore } from "../domains/app/store.settings"
@@ -47,6 +49,7 @@ const client = new BrowserClient({
     /^disconnected from .+: [0-9]+:: .+$/,
     /^unsubscribed from .+: [0-9]+:: .+$/,
     /(Could not establish connection. Receiving end does not exist.)/,
+    /(track.getCapabilities is not a function)/,
   ],
   // prevents sending the event if user has disabled error tracking
   beforeSend: async (event, hint) => {
@@ -97,17 +100,44 @@ scope.addEventProcessor(async (event: Event) => {
   return event
 })
 
-export const sentry = {
-  init: () => client.init(),
-  captureException: (...[exception, hint]: Parameters<typeof captureException>) => {
-    if (hint) {
-      if ("extra" in hint && hint.extra) scope.setExtras(hint.extra)
-      if ("tags" in hint && hint.tags) scope.setTags(hint.tags)
-    }
-    scope.captureException(exception)
-    if (hint) scope.clear()
-  },
-  captureEvent: (...args: Parameters<typeof scope.captureEvent>) => scope.captureEvent(...args),
-  captureMessage: (...args: Parameters<typeof scope.captureMessage>) =>
-    scope.captureMessage(...args),
+type TalismanSentryClient = {
+  init: () => void
+  captureException: typeof captureException
+  captureEvent: typeof captureEvent
+  captureMessage: typeof captureMessage
 }
+
+export const sentry: TalismanSentryClient = {
+  init: () => client.init(),
+  captureException: (exception, hintOrContext) => {
+    // From https://github.com/getsentry/sentry-javascript/blob/0d558dea4a580dce7717f5093ad3b62a3c4733bd/packages/core/src/utils/prepareEvent.ts#L358
+    const hint =
+      isScopeOrFunction(hintOrContext) || isScopeContext(hintOrContext)
+        ? { captureContext: hintOrContext }
+        : hintOrContext
+
+    return scope.captureException(exception, hint)
+  },
+  captureEvent: (event, hint) => scope.captureEvent(event, hint),
+  captureMessage: (message, captureContext) => {
+    const level = typeof captureContext === "string" ? captureContext : undefined
+    const context = typeof captureContext !== "string" ? { captureContext } : undefined
+
+    return scope.captureMessage(message, level, context)
+  },
+}
+
+// From https://github.com/getsentry/sentry-javascript/blob/0d558dea4a580dce7717f5093ad3b62a3c4733bd/packages/core/src/utils/prepareEvent.ts#L386C1-L396C1
+const captureContextKeys = [
+  "user",
+  "level",
+  "extra",
+  "contexts",
+  "tags",
+  "fingerprint",
+  "requestSession",
+  "propagationContext",
+]
+const isScopeOrFunction = (hint?: object) => hint instanceof Scope || typeof hint === "function"
+const isScopeContext = (hint?: object) =>
+  Object.keys(hint ?? {}).some((key) => captureContextKeys.includes(key))

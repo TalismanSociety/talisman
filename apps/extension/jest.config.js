@@ -6,7 +6,7 @@ const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
   transformIgnorePatterns: [
-    "/node_modules/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|nanoid)",
+    "/node_modules/.pnpm/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|nanoid|@talismn|scale-ts)",
   ],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest"],

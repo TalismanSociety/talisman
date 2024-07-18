@@ -5,17 +5,17 @@ import { assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
-  ChainId,
   ChaindataProvider,
-  NewTokenType,
+  ChainId,
   githubTokenLogoUrl,
+  Token,
 } from "@talismn/chaindata-provider"
 import {
   $metadataV14,
-  PalletMV14,
-  StorageEntryMV14,
   filterMetadataPalletsAndItems,
   getMetadataVersion,
+  PalletMV14,
+  StorageEntryMV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { decodeAnyAddress, isBigInt } from "@talismn/util"
@@ -25,35 +25,23 @@ import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import {
-  GetOrCreateTypeRegistry,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-  StorageHelper,
   buildStorageDecoders,
   createTypeRegistryCache,
   findChainMeta,
+  GetOrCreateTypeRegistry,
   getUniqueChainIds,
+  RpcStateQuery,
+  RpcStateQueryHelper,
+  StorageHelper,
 } from "./util"
 
 type ModuleType = "substrate-equilibrium"
+const moduleType: ModuleType = "substrate-equilibrium"
+
+export type SubEquilibriumToken = Extract<Token, { type: ModuleType }>
 
 const subEquilibriumTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-equilibrium-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-export type SubEquilibriumToken = NewTokenType<
-  ModuleType,
-  {
-    existentialDeposit: string
-    assetId: string
-    chain: { id: ChainId }
-  }
->
-
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
-    SubEquilibriumToken: SubEquilibriumToken
-  }
-}
 
 export type SubEquilibriumChainMeta = {
   isTestnet: boolean
@@ -105,7 +93,7 @@ export const SubEquilibriumModule: NewBalanceModule<
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
 
   return {
-    ...DefaultBalanceModule("substrate-equilibrium"),
+    ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
