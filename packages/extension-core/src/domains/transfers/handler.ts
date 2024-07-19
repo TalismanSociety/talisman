@@ -3,12 +3,12 @@ import { isEthereumAddress, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
 import { privateKeyToAccount } from "viem/accounts"
 
+import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
 import { getPairForAddressSafely, getPairFromAddress } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getPrivateKey } from "../../util/getPrivateKey"
 import { validateHexString } from "../../util/validateHexString"
@@ -16,8 +16,8 @@ import {
   getEthTransferTransactionBase,
   parseGasSettings,
   prepareTransaction,
+  serializeTransactionRequest,
 } from "../ethereum/helpers"
-import { serializeTransactionRequest } from "../ethereum/helpers"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 import { watchEthereumTransaction } from "../transactions"
 import { transferAnalytics } from "./helpers"
@@ -48,11 +48,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       const tokenType = token.type
       if (
-        tokenType === "substrate-native" ||
         tokenType === "substrate-assets" ||
-        tokenType === "substrate-tokens" ||
+        tokenType === "substrate-equilibrium" ||
+        tokenType === "substrate-foreignassets" ||
+        tokenType === "substrate-native" ||
         tokenType === "substrate-psp22" ||
-        tokenType === "substrate-equilibrium"
+        tokenType === "substrate-tokens"
       ) {
         try {
           const hash = await AssetTransfersRpc.transfer(
@@ -113,11 +114,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
     const tokenType = token.type
     if (
-      tokenType === "substrate-native" ||
       tokenType === "substrate-assets" ||
-      tokenType === "substrate-tokens" ||
+      tokenType === "substrate-equilibrium" ||
+      tokenType === "substrate-foreignassets" ||
+      tokenType === "substrate-native" ||
       tokenType === "substrate-psp22" ||
-      tokenType === "substrate-equilibrium"
+      tokenType === "substrate-tokens"
     ) {
       const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
       try {
