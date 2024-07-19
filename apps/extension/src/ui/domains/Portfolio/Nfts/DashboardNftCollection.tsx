@@ -65,12 +65,13 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
       onClick={onClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
-      <div className="col-span-2 flex items-center gap-6 overflow-hidden">
+      <div className=" flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
         </div>
       </div>
+      <div className="text-right">{nft.tokenId ? `#${nft.tokenId}` : null}</div>
       <div className="text-right">
         {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
       </div>
