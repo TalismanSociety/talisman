@@ -206,15 +206,6 @@ importers:
 
   apps/extension:
     dependencies:
-      '@alectalisman/webpack-ext-reloader':
-        specifier: ^1.1.9-a
-        version: 1.1.9-a(@swc/core@1.3.14)(bufferutil@4.0.8)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8))(webpack@5.89.0))(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      '@babel/core':
-        specifier: ^7.23.7
-        version: 7.23.7
-      '@babel/eslint-parser':
-        specifier: ^7.23.3
-        version: 7.23.3(@babel/core@7.23.7)(eslint@8.52.0)
       '@blowfishxyz/api-client':
         specifier: 0.1.13
         version: 0.1.13
@@ -290,9 +281,6 @@ importers:
       '@sentry/react':
         specifier: 8.8.0
         version: 8.8.0(react@18.2.0)
-      '@sentry/webpack-plugin':
-        specifier: 2.10.2
-        version: 2.10.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       '@solana/qr-code-styling':
         specifier: 1.6.0
         version: 1.6.0
@@ -302,9 +290,9 @@ importers:
       '@substrate/txwrapper-core':
         specifier: 7.2.0
         version: 7.2.0(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)(bufferutil@4.0.8)
-      '@svgr/webpack':
-        specifier: ^6.5.1
-        version: 6.5.1
+      '@tailwindcss/forms':
+        specifier: ^0.5.3
+        version: 0.5.3(tailwindcss@3.4.1(ts-node@10.9.1(@swc/core@1.3.14)(@types/node@17.0.45)(typescript@5.3.3)))
       '@talismn/balances':
         specifier: workspace:*
         version: link:../../packages/balances
@@ -338,18 +326,6 @@ importers:
       '@tanstack/react-query':
         specifier: 4.29.19
         version: 4.29.19(react-dom@18.2.0(react@18.2.0))(react-native@0.74.2(@babel/core@7.23.7)(@babel/preset-env@7.23.7(@babel/core@7.23.7))(@types/react@18.0.14)(bufferutil@4.0.8)(react@18.2.0))(react@18.2.0)
-      '@testing-library/dom':
-        specifier: ^8.14.0
-        version: 8.16.1
-      '@testing-library/jest-dom':
-        specifier: ^5.11.4
-        version: 5.16.5
-      '@testing-library/react':
-        specifier: ^13.3.0
-        version: 13.3.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@testing-library/user-event':
-        specifier: ^13.5.0
-        version: 13.5.0(@testing-library/dom@8.16.1)
       '@types/blueimp-md5':
         specifier: 2.18.0
         version: 2.18.0
@@ -407,9 +383,6 @@ importers:
       assert:
         specifier: ^2.0.0
         version: 2.0.0
-      babel-eslint:
-        specifier: ^10.1.0
-        version: 10.1.0(eslint@8.52.0)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -422,21 +395,9 @@ importers:
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
-      case-sensitive-paths-webpack-plugin:
-        specifier: ^2.4.0
-        version: 2.4.0
       check-password-strength:
         specifier: ^2.0.7
         version: 2.0.7
-      circular-dependency-plugin:
-        specifier: ^5.2.2
-        version: 5.2.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      copy-webpack-plugin:
-        specifier: ^10.2.4
-        version: 10.2.4(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      css-loader:
-        specifier: ^6.7.3
-        version: 6.7.3(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
@@ -455,27 +416,12 @@ importers:
       dompurify:
         specifier: ^3.0.6
         version: 3.0.6
-      dotenv:
-        specifier: ^16.3.1
-        version: 16.3.1
-      dotenv-webpack:
-        specifier: ^7.1.1
-        version: 7.1.1(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      esbuild-loader:
-        specifier: ^4.2.2
-        version: 4.2.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       extension-core:
         specifier: workspace:*
         version: link:../../packages/extension-core
       extension-shared:
         specifier: workspace:*
         version: link:../../packages/extension-shared
-      fork-ts-checker-notifier-webpack-plugin:
-        specifier: ^6.0.0
-        version: 6.0.0(fork-ts-checker-webpack-plugin@7.3.0(typescript@5.3.3)(vue-template-compiler@2.7.14)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0)))
-      fork-ts-checker-webpack-plugin:
-        specifier: ^7.3.0
-        version: 7.3.0(typescript@5.3.3)(vue-template-compiler@2.7.14)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       framer-motion:
         specifier: 10.12.18
         version: 10.12.18(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -524,9 +470,6 @@ importers:
       raptorq:
         specifier: 1.7.24
         version: 1.7.24
-      raw-loader:
-        specifier: ^4.0.2
-        version: 4.0.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -560,36 +503,18 @@ importers:
       react-use:
         specifier: 17.4.0
         version: 17.4.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      remove-files-webpack-plugin:
-        specifier: ^1.5.0
-        version: 1.5.0(@swc/core@1.3.14)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8))(webpack@5.89.0))(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
       semver:
         specifier: ~7.5.4
         version: 7.5.4
-      speed-measure-webpack-plugin:
-        specifier: ^1.5.0
-        version: 1.5.0(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      style-loader:
-        specifier: 3.3.3
-        version: 3.3.3(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       talisman-ui:
         specifier: workspace:*
         version: link:../../packages/talisman-ui
-      terser-webpack-plugin:
-        specifier: 5.3.9
-        version: 5.3.9(@swc/core@1.3.14)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      ts-loader:
-        specifier: 9.4.4
-        version: 9.4.4(typescript@5.3.3)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       ts-results:
         specifier: 3.3.0
         version: 3.3.0
-      tsconfig-paths-webpack-plugin:
-        specifier: ^4.1.0
-        version: 4.1.0
       typescript:
         specifier: ^5.2.2
         version: 5.3.3
@@ -599,25 +524,19 @@ importers:
       viem:
         specifier: ^2.8.18
         version: 2.8.18(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.3)
-      webpack:
-        specifier: ^5.89.0
-        version: 5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0)
-      webpack-cli:
-        specifier: ^4.10.0
-        version: 4.10.0(webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8))(webpack@5.89.0)
-      webpack-manifest-plugin:
-        specifier: 5.0.0
-        version: 5.0.0(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
-      webpack-merge:
-        specifier: ^5.10.0
-        version: 5.10.0
-      webpack-sources:
-        specifier: ^3.2.3
-        version: 3.2.3
       yup:
         specifier: 0.32.11
         version: 0.32.11
     devDependencies:
+      '@alectalisman/webpack-ext-reloader':
+        specifier: ^1.1.9-a
+        version: 1.1.9-a(@swc/core@1.3.14)(bufferutil@4.0.8)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8))(webpack@5.89.0))(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      '@babel/core':
+        specifier: ^7.23.7
+        version: 7.23.7
+      '@babel/eslint-parser':
+        specifier: ^7.23.3
+        version: 7.23.3(@babel/core@7.23.7)(eslint@8.52.0)
       '@babel/plugin-syntax-flow':
         specifier: ^7.23.3
         version: 7.23.3(@babel/core@7.23.7)
@@ -633,6 +552,12 @@ importers:
       '@peculiar/webcrypto':
         specifier: ^1.4.3
         version: 1.4.3
+      '@sentry/webpack-plugin':
+        specifier: 2.10.2
+        version: 2.10.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      '@svgr/webpack':
+        specifier: ^6.5.1
+        version: 6.5.1
       '@swc/core':
         specifier: ^1.3.14
         version: 1.3.14
@@ -642,15 +567,24 @@ importers:
       '@swc/jest':
         specifier: ^0.2.23
         version: 0.2.23(@swc/core@1.3.14)
-      '@tailwindcss/forms':
-        specifier: ^0.5.3
-        version: 0.5.3(tailwindcss@3.4.1(ts-node@10.9.1(@swc/core@1.3.14)(@types/node@17.0.45)(typescript@5.3.3)))
       '@talismn/eslint-config':
         specifier: workspace:*
         version: link:../../config/eslint-config
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
+      '@testing-library/dom':
+        specifier: ^8.14.0
+        version: 8.16.1
+      '@testing-library/jest-dom':
+        specifier: ^5.11.4
+        version: 5.16.5
+      '@testing-library/react':
+        specifier: ^13.3.0
+        version: 13.3.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@testing-library/user-event':
+        specifier: ^13.5.0
+        version: 13.5.0(@testing-library/dom@8.16.1)
       '@types/bcryptjs':
         specifier: ^2.4.2
         version: 2.4.2
@@ -672,6 +606,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.12
         version: 10.4.12(postcss@8.4.33)
+      babel-eslint:
+        specifier: ^10.1.0
+        version: 10.1.0(eslint@8.52.0)
       babel-jest:
         specifier: 27.5.1
         version: 27.5.1(@babel/core@7.23.7)
@@ -681,9 +618,30 @@ importers:
       browserify-zlib:
         specifier: ^0.2.0
         version: 0.2.0
+      case-sensitive-paths-webpack-plugin:
+        specifier: ^2.4.0
+        version: 2.4.0
+      circular-dependency-plugin:
+        specifier: ^5.2.2
+        version: 5.2.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      copy-webpack-plugin:
+        specifier: ^10.2.4
+        version: 10.2.4(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       crypto-browserify:
         specifier: 3.12.0
         version: 3.12.0
+      css-loader:
+        specifier: ^6.7.3
+        version: 6.7.3(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.3.1
+      dotenv-webpack:
+        specifier: ^7.1.1
+        version: 7.1.1(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      esbuild-loader:
+        specifier: ^4.2.2
+        version: 4.2.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       eslint:
         specifier: ^8.52.0
         version: 8.52.0
@@ -693,6 +651,12 @@ importers:
       fake-indexeddb:
         specifier: 4.0.2
         version: 4.0.2
+      fork-ts-checker-notifier-webpack-plugin:
+        specifier: ^6.0.0
+        version: 6.0.0(fork-ts-checker-webpack-plugin@7.3.0(typescript@5.3.3)(vue-template-compiler@2.7.14)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0)))
+      fork-ts-checker-webpack-plugin:
+        specifier: ^7.3.0
+        version: 7.3.0(typescript@5.3.3)(vue-template-compiler@2.7.14)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       html-webpack-plugin:
         specifier: ^5.5.3
         version: 5.5.3(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
@@ -723,24 +687,60 @@ importers:
       postcss-loader:
         specifier: ^7.0.2
         version: 7.0.2(postcss@8.4.33)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      raw-loader:
+        specifier: ^4.0.2
+        version: 4.0.2(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      remove-files-webpack-plugin:
+        specifier: ^1.5.0
+        version: 1.5.0(@swc/core@1.3.14)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8))(webpack@5.89.0))(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       sinon-chrome:
         specifier: ^3.0.1
         version: 3.0.1
+      speed-measure-webpack-plugin:
+        specifier: ^1.5.0
+        version: 1.5.0(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       stream-http:
         specifier: ^3.2.0
         version: 3.2.0
+      style-loader:
+        specifier: 3.3.3
+        version: 3.3.3(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       tailwindcss:
         specifier: ^3.4.1
         version: 3.4.1(ts-node@10.9.1(@swc/core@1.3.14)(@types/node@17.0.45)(typescript@5.3.3))
+      terser-webpack-plugin:
+        specifier: 5.3.9
+        version: 5.3.9(@swc/core@1.3.14)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
       ts-jest:
         specifier: 29.1.1
         version: 29.1.1(@babel/core@7.23.7)(@jest/types@29.6.3)(babel-jest@27.5.1(@babel/core@7.23.7))(jest@29.7.0(@types/node@17.0.45)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.3.14)(@types/node@17.0.45)(typescript@5.3.3)))(typescript@5.3.3)
+      ts-loader:
+        specifier: 9.4.4
+        version: 9.4.4(typescript@5.3.3)(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      tsconfig-paths-webpack-plugin:
+        specifier: ^4.1.0
+        version: 4.1.0
       url:
         specifier: ^0.11.3
         version: 0.11.3
+      webpack:
+        specifier: ^5.89.0
+        version: 5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0)
       webpack-bundle-analyzer:
         specifier: ^4.10.1
         version: 4.10.1(bufferutil@4.0.8)
+      webpack-cli:
+        specifier: ^4.10.0
+        version: 4.10.0(webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8))(webpack@5.89.0)
+      webpack-manifest-plugin:
+        specifier: 5.0.0
+        version: 5.0.0(webpack@5.89.0(@swc/core@1.3.14)(webpack-cli@4.10.0))
+      webpack-merge:
+        specifier: ^5.10.0
+        version: 5.10.0
+      webpack-sources:
+        specifier: ^3.2.3
+        version: 3.2.3
 
   apps/playground:
     dependencies:
