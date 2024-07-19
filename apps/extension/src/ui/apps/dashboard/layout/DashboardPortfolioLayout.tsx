@@ -56,7 +56,6 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
 
 export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
-    // TODO check with no account that there is no regression
     <div className="flex w-full flex-col">
       <Suspense
         fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
