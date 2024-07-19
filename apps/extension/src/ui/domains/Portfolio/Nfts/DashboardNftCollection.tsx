@@ -95,16 +95,30 @@ const NftRow: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> =
 
 const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
+  const { t } = useTranslation()
   const { collection, nfts } = usePortfolioNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-col gap-5">
-      {!!collection &&
-        nfts.map((nft) => (
-          <NftRow key={nft.id} collection={collection} nft={nft} onClick={() => onNftClick(nft)} />
-        ))}
+    <div>
+      <div className="text-body-disabled mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-sm">
+        <div className="pl-[4.4rem]">{t("Name")}</div>
+        <div className="text-right">{t("Token ID")}</div>
+        <div className="text-right">{t("Acquired on")}</div>
+      </div>
+
+      <div className="flex flex-col gap-5">
+        {!!collection &&
+          nfts.map((nft) => (
+            <NftRow
+              key={nft.id}
+              collection={collection}
+              nft={nft}
+              onClick={() => onNftClick(nft)}
+            />
+          ))}
+      </div>
     </div>
   )
 }

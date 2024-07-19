@@ -137,7 +137,7 @@ const TokenBreadcrumb: FC<{
   }, [t, token?.id, token?.symbol, symbol, isUniswapV2LpToken, tvl, rate, navigate])
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex h-20 items-center justify-between">
       <Breadcrumb items={items} />
       <SendFundsButton symbol={symbol} />
     </div>

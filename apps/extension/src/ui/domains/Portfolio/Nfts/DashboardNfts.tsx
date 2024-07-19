@@ -129,17 +129,26 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
   data,
   onNftClick,
 }) => {
+  const { t } = useTranslation()
+
   return (
-    <div className="flex flex-col gap-5">
-      <div className="text-primary-500">{status}</div>
-      {data.collections.map((collection, i) => (
-        <NftCollectionRow
-          key={`${collection.id}-${i}`}
-          collection={collection}
-          data={data}
-          onNftClick={onNftClick}
-        />
-      ))}
+    <div>
+      <div className="text-body-disabled mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-sm">
+        <div className="pl-[4.4rem]">{t("Collection")}</div>
+        <div className="text-right">{t("Floor")}</div>
+        <div className="text-right">{t("Owned")}</div>
+      </div>
+
+      <div className="flex flex-col gap-5">
+        {data.collections.map((collection, i) => (
+          <NftCollectionRow
+            key={`${collection.id}-${i}`}
+            collection={collection}
+            data={data}
+            onNftClick={onNftClick}
+          />
+        ))}
+      </div>
     </div>
   )
 }
