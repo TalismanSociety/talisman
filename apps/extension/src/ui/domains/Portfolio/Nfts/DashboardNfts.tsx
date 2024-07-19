@@ -1,12 +1,13 @@
-import { isFavoriteNftAtomFamily } from "@ui/atoms"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useSetting } from "@ui/hooks/useSettings"
 import { NftCollection, NftData } from "extension-core"
 import { useAtomValue } from "jotai"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
+
+import { isFavoriteNftAtomFamily } from "@ui/atoms"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useSetting } from "@ui/hooks/useSettings"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -39,9 +40,9 @@ export const DashboardNfts: FC<{ className?: string }> = () => {
       {!data.collections.length ? (
         <NoNftFound />
       ) : viewMode === "list" ? (
-        <NftCollectionsList data={data} onNftClick={setDialogNftId} />
+        <NftCollectionsRows data={data} onNftClick={setDialogNftId} />
       ) : (
-        <NftCollectionsGrid data={data} onNftClick={setDialogNftId} />
+        <NftCollectionsTiles data={data} onNftClick={setDialogNftId} />
       )}
       <NftDialog nftId={dialogNftId} onDismiss={() => setDialogNftId(null)} />
     </div>
@@ -124,7 +125,7 @@ const NftCollectionRow: FC<{
   )
 }
 
-const NftCollectionsList: FC<{ data: NftData; onNftClick: (nftId: string) => void }> = ({
+const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => void }> = ({
   data,
   onNftClick,
 }) => {
@@ -170,6 +171,7 @@ const NftCollectionTileInner: FC<{
 
   return (
     <NftTile
+      count={nfts.length}
       isFavorite={isFavorite}
       imageUrl={imageUrl}
       label={collection.name ?? ""}
@@ -197,7 +199,7 @@ const NftCollectionTile: FC<{
   )
 }
 
-const NftCollectionsGrid: FC<{ data: NftData; onNftClick: (nftId: string) => void }> = ({
+const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => void }> = ({
   data,
   onNftClick,
 }) => {

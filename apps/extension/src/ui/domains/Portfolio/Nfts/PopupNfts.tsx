@@ -183,6 +183,7 @@ const NftCollectionTileInner: FC<{
   return (
     <NftTile
       imageUrl={imageUrl}
+      count={nfts.length}
       label={collection.name ?? ""}
       networkIds={networkIds}
       isFavorite={isFavorite}
