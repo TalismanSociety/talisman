@@ -19,7 +19,7 @@ export interface SettingsStoreData {
   selectedCurrency: TokenRateCurrency
   newFeaturesDismissed: string
   autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
-  nftsViewMode: "list" | "grid"
+  nftsViewMode: "list" | "tiles"
   tokensSortMode: "name" | "total" | "locked" | "available"
 }
 
@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   selectableCurrencies: ["usd", "dot", "eth"],
   selectedCurrency: "usd",
   newFeaturesDismissed: "0",
-  nftsViewMode: "list",
+  nftsViewMode: "tiles",
   tokensSortMode: "total",
 }
 

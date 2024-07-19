@@ -1,9 +1,5 @@
-import { SearchInput } from "@talisman/components/SearchInput"
 import { GlobeIcon, ToolbarFilterIcon, ToolbarListIcon, ToolbarTilesIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { NftVisibilityFilter, nftsVisibilityFilterAtom } from "@ui/atoms"
-import { useSetting } from "@ui/hooks/useSettings"
-import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
@@ -19,6 +15,11 @@ import {
   useOpenClose,
 } from "talisman-ui"
 
+import { SearchInput } from "@talisman/components/SearchInput"
+import { nftsVisibilityFilterAtom, NftVisibilityFilter } from "@ui/atoms"
+import { useSetting } from "@ui/hooks/useSettings"
+import { IS_POPUP } from "@ui/util/constants"
+
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkFilterModal"
 import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./Nfts/usePortfolioNfts"
@@ -28,7 +29,7 @@ export const NftViewModeToggleButton = () => {
   const [viewMode, setViewMode] = useSetting("nftsViewMode")
 
   const handleViewModeClick = useCallback(
-    () => setViewMode((prev) => (prev === "list" ? "grid" : "list")),
+    () => setViewMode((prev) => (prev === "list" ? "tiles" : "list")),
     [setViewMode]
   )
 
@@ -36,11 +37,11 @@ export const NftViewModeToggleButton = () => {
     <Tooltip>
       <TooltipTrigger asChild>
         <PortfolioToolbarButton onClick={handleViewModeClick}>
-          {viewMode === "list" ? <ToolbarListIcon /> : <ToolbarTilesIcon />}
+          {viewMode === "tiles" ? <ToolbarListIcon /> : <ToolbarTilesIcon />}
         </PortfolioToolbarButton>
       </TooltipTrigger>
       <TooltipContent>
-        {viewMode === "list" ? t("Toggle to grid view") : t("Toggle to list view")}
+        {viewMode === "list" ? t("Toggle to tiles view") : t("Toggle to list view")}
       </TooltipContent>
     </Tooltip>
   )
