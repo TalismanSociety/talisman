@@ -26,7 +26,7 @@ export const PopupNftCollection: FC<{ className?: string }> = () => {
   }, [])
 
   return (
-    <div className="mt-7">
+    <div>
       <Suspense fallback={<SuspenseTracker name="PopupNftCollection" />}>
         {viewMode === "list" ? (
           <NftsRows onNftClick={handleNftClick} />
