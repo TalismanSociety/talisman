@@ -7,9 +7,9 @@ import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
+import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
-import { PortfolioTokens } from "./PortfolioTokens"
 
 export const PortfolioRoutes = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -33,7 +33,7 @@ export const PortfolioRoutes = () => {
             <Route path="tokens/:symbol" element={<PortfolioAsset />} />
             <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
             {/* Sharing a single component for tokens & nfts to prevent stats & tabs to reset when switching tabs */}
-            <Route path="tokens" element={<PortfolioTokens />} />
+            <Route path="tokens" element={<PortfolioAssets />} />
             <Route path="nfts" element={<PortfolioNfts />} />
             <Route path="*" element={<Navigate to="tokens" />} />
           </Routes>
