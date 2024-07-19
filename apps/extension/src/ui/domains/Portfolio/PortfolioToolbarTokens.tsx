@@ -1,8 +1,5 @@
-import { SearchInput } from "@talisman/components/SearchInput"
 import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSetting } from "@ui/hooks/useSettings"
-import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,6 +13,10 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
+
+import { SearchInput } from "@talisman/components/SearchInput"
+import { useSetting } from "@ui/hooks/useSettings"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkFilterModal"
@@ -134,7 +135,7 @@ export const PortfolioToolbarTokens = () => {
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
-        <TokensSortButton />
+        {!IS_POPUP && <TokensSortButton />}
         <NetworkFilterButton />
       </div>
     </div>
