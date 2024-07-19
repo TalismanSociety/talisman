@@ -64,6 +64,7 @@ const config = (env) => ({
         issuer: /\.[jt]sx?$/,
         type: "asset",
         resourceQuery: /url/, // import with 'import x from *.svg?url'
+        exclude: /node_modules/,
       },
       {
         test: /\.svg$/i,
@@ -78,32 +79,36 @@ const config = (env) => ({
             },
           },
         ],
+        exclude: /node_modules/,
       },
       {
         test: /\.(png|jpg|gif)$/i,
         resourceQuery: { not: [/url/] },
         type: "asset",
+        exclude: /node_modules/,
       },
       {
         test: /\.md$/i,
         use: "raw-loader",
+        exclude: /node_modules/,
       },
       {
         test: /\.css$/,
-        include: /node_modules/,
         use: [
           { loader: "style-loader" },
+          // no tailwind / postcss on css files inside of node_modules
           { loader: "css-loader", options: { sourceMap: false, url: false, import: false } },
         ],
+        include: /node_modules/,
       },
       {
         test: /\.css$/,
-        exclude: /node_modules/,
         use: [
           { loader: "style-loader" },
           { loader: "css-loader", options: { sourceMap: false, url: false, import: false } },
           { loader: "postcss-loader", options: { sourceMap: false } },
         ],
+        exclude: /node_modules/,
       },
     ],
   },
