@@ -3,10 +3,10 @@ import { classNames } from "@talismn/util"
 import {
   ButtonHTMLAttributes,
   FC,
+  forwardRef,
   HTMLAttributes,
   MouseEvent,
   ReactNode,
-  forwardRef,
   useCallback,
 } from "react"
 
@@ -74,7 +74,7 @@ export const ContextMenuOptionItem: FC<{
   <ContextMenuItem
     className={classNames(
       "flex items-center justify-between gap-16",
-      selected ? "text-body" : "text-body-disabled hover:text-body-secondary"
+      selected ? "text-body" : "text-body-secondary"
     )}
     onClick={onClick}
   >
