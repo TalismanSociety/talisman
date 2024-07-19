@@ -1,4 +1,5 @@
-import { NFTS_API_KEY } from "extension-shared"
+import { NFTS_API_BASE_PATH, NFTS_API_KEY } from "extension-shared"
+import urlJoin from "url-join"
 
 import { RefreshNftMetadataRequestBody } from "./types"
 
@@ -12,8 +13,7 @@ export const fetchRefreshNftMetadata = async (
   const headers: HeadersInit = { "Content-Type": "application/json" }
   if (NFTS_API_KEY) headers["X-API-KEY"] = NFTS_API_KEY
 
-  const nftsApiUrl = "https://nfts-api.talisman.xyz/refresh_metadata"
-  // const nftsApiUrl = "http://localhost:44009/refresh_metadata"
+  const nftsApiUrl = urlJoin(NFTS_API_BASE_PATH, "refresh_metadata")
 
   const req = await fetch(nftsApiUrl, {
     method: "POST",

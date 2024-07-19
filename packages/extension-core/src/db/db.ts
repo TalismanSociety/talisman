@@ -40,12 +40,13 @@ class TalismanDatabase extends Dexie {
       transactions: "hash, status, timestamp",
       blobs: "id",
 
-      balances: null, // delete legacy table
-      chainMetadataRpc: null, // delete legacy table
-      chains: null, // delete legacy table
-      evmNetworks: null, // delete legacy table
-      metadataRpc: null, // delete legacy table
-      tokens: null, // delete legacy table
+      // delete legacy tables
+      balances: null,
+      chainMetadataRpc: null,
+      chains: null,
+      evmNetworks: null,
+      metadataRpc: null,
+      tokens: null,
     })
   }
 }

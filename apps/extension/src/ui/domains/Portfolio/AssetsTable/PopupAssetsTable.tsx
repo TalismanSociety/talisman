@@ -1,18 +1,19 @@
+import { LockIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+
 import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { LockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
@@ -167,11 +168,6 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     </>
   )
 }
-
-// type GroupedAssetsTableProps = {
-//   balances: Balances
-//   isInitialising: boolean
-// }
 
 type GroupProps = {
   label: ReactNode

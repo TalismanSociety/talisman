@@ -1,1 +1,1 @@
-export const IS_POPUP = window.location.pathname === "/popup.html"
+export const IS_POPUP = typeof window !== "undefined" && window.location.pathname === "/popup.html"

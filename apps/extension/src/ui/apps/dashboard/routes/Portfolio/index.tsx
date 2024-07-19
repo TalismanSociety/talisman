@@ -25,14 +25,14 @@ export const PortfolioRoutes = () => {
   }, [openBuyTokensModal, searchParams, updateSearchParams])
 
   return (
-    // share layout to prevent sidebar flickering when navigating between the 2 pages
+    // share layout to prevent sidebar flickering when navigating between pages
     <DashboardLayout centered large className="min-w-[auto]">
       <PortfolioContainer>
+        {/* share layout to prevent tabs flickering */}
         <DashboardPortfolioLayout>
           <Routes>
             <Route path="tokens/:symbol" element={<PortfolioAsset />} />
             <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
-            {/* Sharing a single component for tokens & nfts to prevent stats & tabs to reset when switching tabs */}
             <Route path="tokens" element={<PortfolioAssets />} />
             <Route path="nfts" element={<PortfolioNfts />} />
             <Route path="*" element={<Navigate to="tokens" />} />

@@ -1,16 +1,5 @@
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { Tabs } from "@talisman/components/Tabs"
 import { ChevronLeftIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import {
-  isFavoriteNftAtomFamily,
-  isHiddenNftCollectionAtomFamily,
-  nftDataAtomFamily,
-} from "@ui/atoms"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { IS_POPUP } from "@ui/util/constants"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
 import { log } from "extension-shared"
@@ -39,6 +28,18 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
+
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { Tabs } from "@talisman/components/Tabs"
+import { api } from "@ui/api"
+import {
+  isFavoriteNftAtomFamily,
+  isHiddenNftCollectionAtomFamily,
+  nftDataAtomFamily,
+} from "@ui/atoms"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
@@ -323,11 +324,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       className={classNames(
         "h-full w-full",
         "@2xl:overflow-hidden",
-        // //"lg:h-[60rem] lg:w-[100rem] lg:flex-row lg:rounded-lg",
-        // "@lg:w-[100rem] @lg:h-[60rem] @lg:rounded-lg",
-        // TODO bg-grey-900
         "bg-black shadow",
-
         "@2xl:grid-cols-2 @2xl:grid"
       )}
     >
@@ -345,7 +342,6 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         className={classNames(
           "flex h-full grow flex-col overflow-y-auto font-light",
           "@2xl:overflow-hidden"
-          //@2xl:py-8 @2xl:pl-12 @2xl:gap-12
         )}
       >
         <div className="@2xl:bg-transparent @2xl:px-12 @2xl:py-8 flex w-full items-center gap-4 bg-black px-8 py-6">

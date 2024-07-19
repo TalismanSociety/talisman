@@ -24,6 +24,7 @@ declare namespace NodeJS {
     readonly BLOWFISH_BASE_PATH?: string
     readonly BLOWFISH_API_KEY?: string
     readonly NFTS_API_KEY?: string
+    readonly NFTS_API_BASE_PATH?: string
   }
 }
 

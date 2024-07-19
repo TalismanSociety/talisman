@@ -1,10 +1,11 @@
-import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
 import { atom } from "jotai"
+
+import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
+import { isEvmToken } from "@ui/util/isEvmToken"
+import { isSubToken } from "@ui/util/isSubToken"
 
 import {
   balancesByAccountCategoryAtomFamily,
@@ -247,12 +248,7 @@ const portfolioBaseAtom = atom((get) => {
   }
 })
 
-export const {
-  //currentValueAtom: portfolioSearchAtom,
-  //clearTimeoutAtom: clearPortfolioSearchTimeoutAtom,
-  debouncedValueAtom: portfolioSearchAtom,
-  //isDebouncingAtom: isPortfolioSearchDebouncingAtom,
-} = atomWithDebounce<string>("")
+export const { debouncedValueAtom: portfolioSearchAtom } = atomWithDebounce<string>("")
 
 // recomputes on each search change
 export const portfolioAtom = atom((get) => {

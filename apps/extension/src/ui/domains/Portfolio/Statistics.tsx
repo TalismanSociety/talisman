@@ -1,33 +1,14 @@
 import { Token } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
-import { PropsWithChildren, ReactNode } from "react"
+import { ReactNode } from "react"
+
+import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 
 import { currencyConfig } from "../Asset/currencyConfig"
 import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
-
-type GenericStatisticsProps = PropsWithChildren & {
-  title: ReactNode
-  className?: string
-}
-
-// TODO turn this into StatisticsBase and leverage it in Statistics
-export const GenericStatistics = ({ title, className, children }: GenericStatisticsProps) => {
-  return (
-    <div
-      className={classNames(
-        "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8 ",
-        className
-      )}
-    >
-      <div className="text-body-secondary flex items-center gap-2 text-sm">{title}</div>
-      <div className="flex items-center gap-2">{children}</div>
-    </div>
-  )
-}
 
 type StatisticsProps = {
   title: ReactNode
