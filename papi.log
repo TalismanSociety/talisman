@@ -1,0 +1,1665 @@
+npx papi add polkadot -w wss://apps-rpc.polkadot.io >&2
+Replacing existing polkadot config
+- Loading metadata
+✔ Metadata saved as polkadot.scale
+Saved new spec "polkadot"
+
+npx papi add kusama -w wss://kusama-rpc.polkadot.io >&2
+Replacing existing kusama config
+- Loading metadata
+✔ Metadata saved as kusama.scale
+Saved new spec "kusama"
+
+npx papi add 3-dpass -w wss://rpc.3dpscan.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add acala -w wss://acala-rpc.dwellir.com >&2
+Replacing existing acala config
+- Loading metadata
+✔ Metadata saved as acala.scale
+Saved new spec "acala"
+
+npx papi add acurast -w wss://acurast-canarynet-ws.prod.gke.papers.tech >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add ajuna -w wss://rpc-parachain.ajuna.network >&2
+- Loading metadata
+Unable to connect to wss://rpc-parachain.ajuna.network
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add aleph-zero -w wss://ws.azero.dev >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add altair -w wss://fullnode.altair.centrifuge.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add amplitude -w wss://amplitude-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add astar -w wss://astar-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add aventus -w wss://public-rpc.mainnet.aventus.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add bajun -w wss://rpc-parachain.bajun.network >&2
+Replacing existing bajun config
+- Loading metadata
+✔ Metadata saved as bajun.scale
+Saved new spec "bajun"
+
+npx papi add basilisk -w wss://basilisk-rpc.dwellir.com >&2
+Replacing existing basilisk config
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add bifrost-kusama -w wss://bifrost-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add bifrost-polkadot -w wss://bifrost-polkadot-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as bifrost-polkadot.scale
+Saved new spec "bifrost-polkadot"
+
+npx papi add bitcountry-pioneer -w wss://pioneer-rpc-3.bit.country/wss >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add bitgreen -w wss://mainnet.bitgreen.org >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add bittensor -w wss://entrypoint-finney.opentensor.ai:443 >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add calamari -w wss://calamari.systems >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add centrifuge-polkadot -w wss://centrifuge-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as centrifuge-polkadot.scale
+Saved new spec "centrifuge-polkadot"
+
+npx papi add cere -w wss://archive.mainnet.cere.network/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add chainflip -w wss://chainflip-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add chainx -w wss://mainnet.chainx.org/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add commune-ai -w wss://commune.api.onfinality.io/public-ws >&2
+- Loading metadata
+✔ Metadata saved as commune-ai.scale
+Saved new spec "commune-ai"
+
+npx papi add composable-finance -w wss://composable-rpc.dwellir.com >&2
+- Loading metadata
+
+npx papi add continuum -w wss://continuum-rpc-1.metaverse.network/wss >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add crab -w wss://crab-rpc.darwinia.network/ >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add creditcoin -w wss://mainnet.creditcoin.network/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add crust -w wss://crust-mainnet-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add crust-parachain -w wss://crust-parachain.crustapps.net >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add curio -w wss://parachain.curioinvest.com/ >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add darwinia -w wss://darwinia-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add debio -w wss://gateway.mainnet.octopus.network/debionetwork/ae48005a0c7ecb4053394559a7f4069e >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add dock-pos-mainnet -w wss://mainnet-node.dock.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add edgeware -w wss://edgeware-rpc1.jelliedowl.net >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add encointer -w wss://encointer-kusama-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as encointer.scale
+Saved new spec "encointer"
+
+npx papi add enjin-matrixchain -w wss://rpc.matrix.blockchain.enjin.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add enjin-relay -w wss://rpc.relay.blockchain.enjin.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add equilibrium-polkadot -w wss://equilibrium-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add ewx -w wss://public-rpc.mainnet.energywebx.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add frequency -w wss://frequency-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add geminis -w wss://rpc.geminis.network >&2
+- Loading metadata
+Unable to connect to wss://rpc.geminis.network
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add gm -w wss://ws.gm.bldnodes.org/ >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add hashed -w wss://c1.hashed.network >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add humanode -w wss://explorer-rpc-ws.mainnet.stages.humanode.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add hydradx -w wss://hydradx-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add hyperbridge-polkadot -w wss://hyperbridge-nexus-rpc.blockops.network >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '2',
+  output: '0x018e8906006d6574610f3906000c1c73705f636f72651863727970746f2c4163636f756e7449643332000004000401205b75383b2033325d0000040000032000000008000800000503000c08306672616d655f73797374656d2c4163636f756e74496e666f08144e6f6e636501102c4163636f756e74446174610114001401146e6f6e63651001144e6f6e6365000124636f6e73756d657273100120526566436f756e7400012470726f766964657273100120526566436f756e7400012c73756666696369656e7473100120526566436f756e740001106461746114012c4163636f756e74446174610000100000050500140c3c70616c6c65745f62616c616e6365731474797065732c4163636f756e7444617461041c42616c616e63650118001001106672656518011c42616c616e6365000120726573657276656418011c42616c616e636500011866726f7a656e18011c42616c616e6365000114666c6167731c01284578747261466c61677300001800000507001c0c3c70616c6c65745f62616c616e636573147479706573284578747261466c61677300000400180110753132380000200c346672616d655f737570706f7274206469737061746368405065724469737061746368436c6173730404540124000c01186e6f726d616c2401045400012c6f7065726174696f6e616c240104540001246d616e6461746f7279240104540000240c2873705f77656967687473247765696768745f76321857656967687400000801207265665f74696d6528010c75363400012870726f6f665f73697a6528010c7536340000280000062c002c000005060030083c7072696d69746976655f74797065731048323536000004000401205b75383b2033325d000034000002080038102873705f72756e74696d651c67656e65726963186469676573741844696765737400000401106c6f67733c013c5665633c4469676573744974656d3e00003c000002400040102873705f72756e74696d651c67656e6572696318646967657374284469676573744974656d0001142850726552756e74696d650800440144436f6e73656e737573456e67696e654964000034011c5665633c75383e00060024436f6e73656e7375730800440144436f6e73656e737573456e67696e654964000034011c5665633c75383e000400105365616c0800440144436f6e73656e737573456e67696e654964000034011c5665633c75383e000500144f74686572040034011c5665633c75383e0000006452756e74696d65456e7669726f6e6d656e74557064617465640008000044000003040000000800480000024c004c08306672616d655f73797374656d2c4576656e745265636f7264080445015004540130000c01147068617365d901011450686173650001146576656e7450010445000118746f70696373dd0101185665633c543e00005008346e657875735f72756e74696d653052756e74696d654576656e740001341853797374656d04005401706672616d655f73797374656d3a3a4576656e743c52756e74696d653e0000003c50617261636861696e53797374656d04007c01bc63756d756c75735f70616c6c65745f70617261636861696e5f73797374656d3a3a4576656e743c52756e74696d653e0002002042616c616e636573040084017c70616c6c65745f62616c616e6365733a3a4576656e743c52756e74696d653e000a00485472616e73616374696f6e5061796d656e7404008c01a870616c6c65745f7472616e73616374696f6e5f7061796d656e743a3a4576656e743c52756e74696d653e000b0044436f6c6c61746f7253656c656374696f6e04009001a470616c6c65745f636f6c6c61746f725f73656c656374696f6e3a3a4576656e743c52756e74696d653e0015001c53657373696f6e040098015470616c6c65745f73657373696f6e3a3a4576656e74001600105375646f04009c016c70616c6c65745f7375646f3a3a4576656e743c52756e74696d653e0019002458636d7051756575650400ac01a463756d756c75735f70616c6c65745f78636d705f71756575653a3a4576656e743c52756e74696d653e001e002c506f6c6b61646f7458636d0400b0016870616c6c65745f78636d3a3a4576656e743c52756e74696d653e001f002843756d756c757358636d04009101018863756d756c75735f70616c6c65745f78636d3a3a4576656e743c52756e74696d653e002000304d657373616765517565756504009501019070616c6c65745f6d6573736167655f71756575653a3a4576656e743c52756e74696d653e0021001049736d700400a501016c70616c6c65745f69736d703a3a4576656e743c52756e74696d653e0028002049736d7044656d6f0400c901016469736d705f64656d6f3a3a4576656e743c52756e74696d653e002a0000540c306672616d655f73797374656d1870616c6c6574144576656e7404045400011c4045787472696e7369635375636365737304013464697370617463685f696e666f5801304469737061746368496e666f00000490416e2065787472696e73696320636f6d706c65746564207375636365737366756c6c792e3c45787472696e7369634661696c656408013864697370617463685f6572726f7264013444697370617463684572726f7200013464697370617463685f696e666f5801304469737061746368496e666f00010450416e2065787472696e736963206661696c65642e2c436f64655570646174656400020450603a636f6465602077617320757064617465642e284e65774163636f756e7404011c6163636f756e74000130543a3a4163636f756e7449640003046841206e6577206163636f756e742077617320637265617465642e344b696c6c65644163636f756e7404011c6163636f756e74000130543a3a4163636f756e74496400040458416e206163636f756e7420776173207265617065642e2052656d61726b656408011873656e646572000130543a3a4163636f756e7449640001106861736830011c543a3a48617368000504704f6e206f6e2d636861696e2072656d61726b2068617070656e65642e4455706772616465417574686f72697a6564080124636f64655f6861736830011c543a3a48617368000134636865636b5f76657273696f6e780110626f6f6c00060468416e20757067726164652077617320617574686f72697a65642e04704576656e7420666f72207468652053797374656d2070616c6c65742e580c346672616d655f737570706f7274206469737061746368304469737061746368496e666f00000c0118776569676874240118576569676874000114636c6173735c01344469737061746368436c617373000120706179735f6665656001105061797300005c0c346672616d655f737570706f7274206469737061746368344469737061746368436c61737300010c184e6f726d616c0000002c4f7065726174696f6e616c000100244d616e6461746f727900020000600c346672616d655f737570706f727420646973706174636810506179730001080c596573000000084e6f0001000064082873705f72756e74696d653444697370617463684572726f72000138144f746865720000003043616e6e6f744c6f6f6b7570000100244261644f726967696e000200184d6f64756c65040068012c4d6f64756c654572726f7200030044436f6e73756d657252656d61696e696e670004002c4e6f50726f76696465727300050040546f6f4d616e79436f6e73756d65727300060014546f6b656e04006c0128546f6b656e4572726f720007002841726974686d65746963040070013c41726974686d657469634572726f72000800345472616e73616374696f6e616c04007401485472616e73616374696f6e616c4572726f7200090024457868617573746564000a0028436f7272757074696f6e000b002c556e617661696c61626c65000c0038526f6f744e6f74416c6c6f776564000d000068082873705f72756e74696d652c4d6f64756c654572726f720000080114696e64657808010875380001146572726f7244018c5b75383b204d41585f4d4f44554c455f4552524f525f454e434f4445445f53495a455d00006c082873705f72756e74696d6528546f6b656e4572726f720001284046756e6473556e617661696c61626c65000000304f6e6c7950726f76696465720001003042656c6f774d696e696d756d0002003043616e6e6f7443726561746500030030556e6b6e6f776e41737365740004001846726f7a656e0005002c556e737570706f727465640006004043616e6e6f74437265617465486f6c64000700344e6f74457870656e6461626c650008001c426c6f636b65640009000070083473705f61726974686d657469633c41726974686d657469634572726f7200010c24556e646572666c6f77000000204f766572666c6f77000100384469766973696f6e42795a65726f0002000074082873705f72756e74696d65485472616e73616374696f6e616c4572726f72000108304c696d6974526561636865640000001c4e6f4c61796572000100007800000500007c0c7c63756d756c75735f70616c6c65745f70617261636861696e5f73797374656d1870616c6c6574144576656e740404540001186056616c69646174696f6e46756e6374696f6e53746f726564000004d05468652076616c69646174696f6e2066756e6374696f6e20686173206265656e207363686564756c656420746f206170706c792e6456616c69646174696f6e46756e6374696f6e4170706c69656404015472656c61795f636861696e5f626c6f636b5f6e756d10015452656c6179436861696e426c6f636b4e756d62657200010445015468652076616c69646174696f6e2066756e6374696f6e20776173206170706c696564206173206f662074686520636f6e7461696e65642072656c617920636861696e20626c6f636b206e756d6265722e6c56616c69646174696f6e46756e6374696f6e446973636172646564000204b05468652072656c61792d636861696e2061626f727465642074686520757067726164652070726f636573732e60446f776e776172644d657373616765735265636569766564040114636f756e7410010c7533320003040101536f6d6520646f776e77617264206d657373616765732068617665206265656e20726563656976656420616e642077696c6c2062652070726f6365737365642e64446f776e776172644d6573736167657350726f63657373656408012c7765696768745f75736564240118576569676874000120646d715f6865616430014472656c61795f636861696e3a3a48617368000404e0446f776e77617264206d6573736167657320776572652070726f636573736564207573696e672074686520676976656e207765696768742e445570776172644d65737361676553656e740401306d6573736167655f6861736880013c4f7074696f6e3c58636d486173683e000504b8416e20757077617264206d657373616765207761732073656e7420746f207468652072656c617920636861696e2e047c54686520604576656e746020656e756d206f6620746869732070616c6c65748004184f7074696f6e04045401040108104e6f6e6500000010536f6d650400040000010000840c3c70616c6c65745f62616c616e6365731870616c6c6574144576656e740804540004490001541c456e646f77656408011c6163636f756e74000130543a3a4163636f756e744964000130667265655f62616c616e6365180128543a3a42616c616e6365000004b8416e206163636f756e74207761732063726561746564207769746820736f6d6520667265652062616c616e63652e20447573744c6f737408011c6163636f756e74000130543a3a4163636f756e744964000118616d6f756e74180128543a3a42616c616e63650001083d01416e206163636f756e74207761732072656d6f7665642077686f73652062616c616e636520776173206e6f6e2d7a65726f206275742062656c6f77204578697374656e7469616c4465706f7369742c78726573756c74696e6720696e20616e206f75747269676874206c6f73732e205472616e736665720c011066726f6d000130543a3a4163636f756e744964000108746f000130543a3a4163636f756e744964000118616d6f756e74180128543a3a42616c616e63650002044c5472616e73666572207375636365656465642e2842616c616e636553657408010c77686f000130543a3a4163636f756e74496400011066726565180128543a3a42616c616e636500030468412062616c616e6365207761732073657420627920726f6f742e20526573657276656408010c77686f000130543a3a4163636f756e744964000118616d6f756e74180128543a3a42616c616e6365000404e0536f6d652062616c616e63652077617320726573657276656420286d6f7665642066726f6d206672656520746f207265736572766564292e28556e726573657276656408010c77686f000130543a3a4163636f756e744964000118616d6f756e74180128543a3a42616c616e6365000504e8536f6d652062616c616e63652077617320756e726573657276656420286d6f7665642066726f6d20726573657276656420746f2066726565292e4852657365727665526570617472696174656410011066726f6d000130543a3a4163636f756e744964000108746f000130543a3a4163636f756e744964000118616d6f756e74180128543a3a42616c616e636500014864657374696e6174696f6e5f7374617475738801185374617475730006084d01536f6d652062616c616e636520776173206d6f7665642066726f6d207468652072657365727665206f6620746865'... 204226 more characters
+}
+
+npx papi add imbue -w wss://kusama.imbuenetwork.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add integritee-kusama -w wss://kusama.api.integritee.network >&2
+- Loading metadata
+✔ Metadata saved as integritee-kusama.scale
+Saved new spec "integritee-kusama"
+
+npx papi add integritee-polkadot -w wss://integritee-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as integritee-polkadot.scale
+Saved new spec "integritee-polkadot"
+
+npx papi add interlay -w wss://interlay-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add invarch -w wss://invarch-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add ipci -w wss://kusama.rpc.ipci.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add joystream -w wss://rpc.joyutils.org >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add k-laos -w wss://rpc.klaos.laosfoundation.io >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add kabocha -w wss://kabocha.jelliedowl.net >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add karura -w wss://karura-rpc-0.aca-api.network >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add khala -w wss://khala-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as khala.scale
+Saved new spec "khala"
+
+npx papi add kilt-spiritnet -w wss://kilt-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add kintsugi -w wss://kintsugi-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add kpron -w wss://kusama-kpron-rpc.apron.network/ >&2
+- Loading metadata
+Unable to connect to wss://kusama-kpron-rpc.apron.network/
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add kreivo -w wss://kreivo.kippu.rocks/ >&2
+- Loading metadata
+Unable to connect to wss://kreivo.kippu.rocks/
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add krest -w wss://krest.api.onfinality.io/public-ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add kulupu -w wss://rpc.kulupu.corepaper.org/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add kusama-asset-hub -w wss://sys.ibp.network/statemine >&2
+- Loading metadata
+✔ Metadata saved as kusama-asset-hub.scale
+Saved new spec "kusama-asset-hub"
+
+npx papi add kusama-bridge-hub -w wss://kusama-bridge-hub-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://kusama-bridge-hub-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add kusama-people -w wss://people-kusama-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as kusama-people.scale
+Saved new spec "kusama-people"
+
+npx papi add kusama-coretime -w wss://coretime-kusama-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as kusama-coretime.scale
+Saved new spec "kusama-coretime"
+
+npx papi add liberland -w wss://liberland-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add litentry -w wss://litentry-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add litmus -w wss://rpc.litmus-parachain.litentry.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add logion-polkadot -w wss://para-rpc01.logion.network >&2
+- Loading metadata
+✔ Metadata saved as logion-polkadot.scale
+Saved new spec "logion-polkadot"
+
+npx papi add mangata -w wss://kusama-archive.mangata.online >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:285
+      value: innerDecoder(bytes)
+             ^
+
+TypeError: innerDecoder is not a function
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:285:14
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:56:43
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-bindings@0.4.0/node_modules/@polkadot-api/substrate-bindings/dist/index.mjs:310:28
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:358:17
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:56:43
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:333:88
+    at Array.map (<anonymous>)
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:333:71
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:56:43
+    at file:///workspaces/talisman/node_modules/.pnpm/scale-ts@1.6.0/node_modules/scale-ts/dist/scale-ts.mjs:94:61
+
+npx papi add manta -w wss://ws.manta.systems >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add moonbeam -w wss://moonbeam-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add moonriver -w wss://moonriver-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add myriad -w wss://gateway.mainnet.octopus.network/myriad/a4cb0a6e30ff5233a3567eb4e8cb71e0 >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add mythos -w wss://polkadot-mythos-rpc.polkadot.io >&2
+- Loading metadata
+✔ Metadata saved as mythos.scale
+Saved new spec "mythos"
+
+npx papi add neatcoin -w wss://rpc.neatcoin.org/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add neuroweb -w wss://origintrail-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://origintrail-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add nftmart -w wss://mainnet.nftmart.io/rpc/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add nodle-polkadot -w wss://nodle-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add oak -w wss://rpc.oak.tech >&2
+- Loading metadata
+Unable to connect to wss://rpc.oak.tech
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add omnibtc -w wss://psc-parachain.coming.chat >&2
+- Loading metadata
+Unable to connect to wss://psc-parachain.coming.chat
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add parallel -w wss://parallel-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add pendulum -w wss://rpc-pendulum.prd.pendulumchain.tech >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add phala -w wss://phala-rpc.dwellir.com >&2
+- Loading metadata
+
+npx papi add picasso -w wss://picasso-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add polimec -w wss://polimec.rpc.amforc.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add polkadex-polkadot-2 -w wss://polkadex-parachain-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add polkadex-standalone -w wss://polkadex-mainnet-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add polkadot-asset-hub -w wss://sys.ibp.network/statemint >&2
+- Loading metadata
+✔ Metadata saved as polkadot-asset-hub.scale
+Saved new spec "polkadot-asset-hub"
+
+npx papi add polkadot-bridge-hub -w wss://polkadot-bridge-hub-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://polkadot-bridge-hub-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add polkadot-collectives -w wss://polkadot-collectives-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://polkadot-collectives-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add polymesh -w wss://mainnet-rpc.polymesh.network >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add quartz -w wss://quartz-rpc.dwellir.com >&2
+- Loading metadata
+✔ Metadata saved as quartz.scale
+Saved new spec "quartz"
+
+npx papi add robonomics-kusama -w wss://robonomics-rpc.dwellir.com >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add sakura -w wss://api-sakura.clover.finance >&2
+- Loading metadata
+Unable to connect to wss://api-sakura.clover.finance
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add shadow-kusama -w wss://rpc-shadow.crust.network/ >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add shiden-kusama -w wss://shiden-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://shiden-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add sora-kusama -w wss://ws.parachain-collator-2.c2.sora2.soramitsu.co.jp >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add sora-polkadot -w wss://ws.parachain-collator-3.pc3.sora2.soramitsu.co.jp >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add sora-standalone -w wss://ws.mof.sora.org >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add subdao -w wss://parachain-rpc.subdao.org >&2
+- Loading metadata
+Unable to connect to wss://parachain-rpc.subdao.org
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add subsocial-polkadot -w wss://subsocial-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://subsocial-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add t-3-rn -w wss://ws.t3rn.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add tangle -w wss://rpc.tangle.tools >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add ternoa -w wss://mainnet.ternoa.network >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add thebifrost-mainnet -w wss://public-01.mainnet.bifrostnetwork.com/wss >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add tinker -w wss://tinkernet-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add turing -w wss://rpc.turing.oak.tech >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add unique -w wss://unique-rpc.dwellir.com >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+
+npx papi add vara -w wss://rpc.vara.network >&2
+- Loading metadata
+Uknown operationId on {
+  event: 'operationCallDone',
+  operationId: '1',
+  output: '0x080e0000000f000000'
+}
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at Receiver.dataMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:603:14) {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add vtb -w wss://substratenode.vtbcfoundation.org/explorer >&2
+- Loading metadata
+✔ Metadata saved as vtb.scale
+Saved new spec "vtb"
+
+npx papi add watr -w wss://watr.public.curie.radiumblock.co/ws >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add xode -w wss://rpcnodea01.xode.net/n7yoxCmcIrCF6VziCcDmYTwL8R03a/rpc >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}
+
+npx papi add xxnetwork -w wss://rpc.xx.network/ >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+npx papi add zeitgeist -w wss://zeitgeist-rpc.dwellir.com >&2
+- Loading metadata
+Unable to connect to wss://zeitgeist-rpc.dwellir.com
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607
+        iRest[1]?.onError(new Error(`Unsupported method ${method2}`));
+                          ^
+
+Error: Unsupported method chainHead_v1_follow
+    at enhancedRequest (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:607:27)
+    at file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:638:19
+
+npx papi add zero -w wss://rpc-1.kusama.node.zero.io >&2
+- Loading metadata
+file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521
+        return error ? cb.onError(new RpcError(error)) : cb.onSuccess(result, (opaqueId, subscriber) => {
+                                  ^
+
+RpcError: invalid type: sequence, expected a (both 0x-prefixed or not) hex string or byte array containing 32 bytes at line 1 column 0
+    at onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+substrate-client@0.1.1/node_modules/@polkadot-api/substrate-client/dist/index.mjs:521:35)
+    at onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:209:5)
+    at _onMessageProxy (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+json-rpc-provider-proxy@0.1.0/node_modules/@polkadot-api/json-rpc-provider-proxy/dist/index.mjs:254:9)
+    at WS._onMessage (file:///workspaces/talisman/node_modules/.pnpm/@polkadot-api+ws-provider@0.1.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/@polkadot-api/ws-provider/dist/node/node.mjs:26:9)
+    at callListener (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:290:14)
+    at WS.onMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/event-target.js:209:9)
+    at WS.emit (node:events:517:28)
+    at Receiver.receiverOnMessage (/workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/websocket.js:1209:20)
+    at Receiver.emit (node:events:517:28)
+    at /workspaces/talisman/node_modules/.pnpm/ws@8.16.0_bufferutil@4.0.8_utf-8-validate@6.0.3/node_modules/ws/lib/receiver.js:608:16 {
+  code: -32602,
+  data: undefined
+}

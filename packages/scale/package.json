@@ -26,9 +26,9 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@polkadot-api/metadata-builders": "^0.2.0",
-    "@polkadot-api/substrate-bindings": "^0.2.0",
-    "@polkadot-api/utils": "^0.0.1",
+    "@polkadot-api/metadata-builders": "^0.3.2",
+    "@polkadot-api/substrate-bindings": "^0.6.0",
+    "@polkadot-api/utils": "^0.1.0",
     "anylogger": "^1.0.11",
     "scale-ts": "^1.6.0"
   },

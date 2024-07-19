@@ -29,6 +29,7 @@
   "dependencies": {
     "@supercharge/promise-pool": "^3.1.0",
     "@talismn/chain-connector": "workspace:*",
+    "polkadot-api": "^0.6.0",
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/scale": "workspace:*",
