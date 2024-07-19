@@ -34,9 +34,6 @@ export { getCoinGeckoErc20Coin } from "./util/coingecko/getCoinGeckoErc20Coin"
 export { getCoingeckoToken } from "./util/coingecko/getCoinGeckoToken"
 export { getCoingeckoTokensList } from "./util/coingecko/getCoinGeckoTokensList"
 
-export { isTalismanUrl } from "./util/isTalismanUrl"
-export { isTalismanHostname } from "./util/isTalismanHostname"
-
 export * from "./domains/staking/constants"
 export * from "./domains/ethereum/helpers"
 
