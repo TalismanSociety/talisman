@@ -22,10 +22,12 @@ const NoNftFound = () => {
   const { t } = useTranslation()
   const { account } = useSelectedAccount()
 
-  const msg = useMemo(
-    () => (account ? t("No NFTs found for this account") : t("No NFTs found")),
-    [account, t]
-  )
+  const { status } = usePortfolioNfts()
+
+  const msg = useMemo(() => {
+    if (status === "loading") return t("Loading NFTs...")
+    return account ? t("No NFTs found for this account") : t("No NFTs found")
+  }, [account, status, t])
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
 }
