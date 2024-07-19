@@ -4,6 +4,8 @@ require("dotenv").config()
 
 const webpack = require("webpack")
 const path = require("path")
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
@@ -12,6 +14,7 @@ const EslintWebpackPlugin = require("eslint-webpack-plugin")
 
 const { browser, srcDir, distDir, getRelease, getGitShortHash, dropConsole } = require("./utils")
 
+/** @type { import('webpack').Configuration } */
 const config = (env) => ({
   entry: {
     // Wallet ui
@@ -42,6 +45,7 @@ const config = (env) => ({
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)
     globalObject: "self",
   },
+  stats: "minimal",
   experiments: {
     asyncWebAssembly: true,
   },
@@ -50,11 +54,8 @@ const config = (env) => ({
       {
         test: /\.tsx?$/,
         use: {
-          loader: "ts-loader",
-          options: {
-            // disable type checker - we will use it in fork plugin
-            transpileOnly: true,
-          },
+          loader: "esbuild-loader",
+          options: { target: "esnext" },
         },
         exclude: /node_modules/,
       },
@@ -89,17 +90,25 @@ const config = (env) => ({
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader", "postcss-loader"],
+        include: /node_modules/,
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-loader", options: { sourceMap: false, url: false, import: false } },
+        ],
+      },
+      {
+        test: /\.css$/,
+        exclude: /node_modules/,
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-loader", options: { sourceMap: false, url: false, import: false } },
+          { loader: "postcss-loader", options: { sourceMap: false } },
+        ],
       },
     ],
   },
   resolve: {
     alias: {
-      "@common": path.resolve(srcDir, "common/"),
-      "@talisman": path.resolve(srcDir, "@talisman/"),
-      "@ui": path.resolve(srcDir, "ui/"),
-      "@extension/core": path.resolve(srcDir, "../../../packages/extension-core/src/"),
-      "@extension/shared": path.resolve(srcDir, "../../../packages/extension-shared/src/"),
       // https://github.com/facebook/react/issues/20235
       // fix for @polkadot/react-identicons which uses react 16
       "react/jsx-runtime": path.resolve("../../node_modules/react/jsx-runtime.js"),
@@ -107,6 +116,8 @@ const config = (env) => ({
       "dexie": path.resolve("../../node_modules/dexie/dist/modern/dexie.mjs"),
     },
     extensions: [".ts", ".tsx", ".js", ".css"],
+    /** Brings in our @common/@ui/etc paths from tsconfig.json's compilerOptions.paths property  */
+    plugins: [new TsconfigPathsPlugin()],
     fallback: {
       stream: false,
       http: require.resolve("stream-http"),
@@ -118,6 +129,9 @@ const config = (env) => ({
     },
   },
   plugins: [
+    env.build !== "ci" && new webpack.ProgressPlugin(),
+    Boolean(process.env.MEASURE_WEBPACK_SPEED) &&
+      new SpeedMeasurePlugin({ outputFormat: "humanVerbose" }),
     new webpack.DefinePlugin({
       // passthroughs from the environment
 
@@ -137,36 +151,33 @@ const config = (env) => ({
       "process.env.SIMPLE_LOCALIZE_API_KEY": JSON.stringify(
         process.env.SIMPLE_LOCALIZE_API_KEY || ""
       ),
-      "process?.env?.TXWRAPPER_METADATA_CACHE_MAX": undefined,
       "process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE": JSON.stringify(60 * 1000),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
-      "process.env.PASSWORD": JSON.stringify(
-        env.build === undefined ? process.env.PASSWORD || "" : ""
-      ),
+      "process.env.PASSWORD": JSON.stringify(env.build === "dev" ? process.env.PASSWORD || "" : ""),
       "process.env.TEST_MNEMONIC": JSON.stringify(
-        env.build === undefined ? process.env.TEST_MNEMONIC || "" : ""
+        env.build === "dev" ? process.env.TEST_MNEMONIC || "" : ""
       ),
       "process.env.EVM_LOGPROXY": JSON.stringify(
-        env.build === undefined ? process.env.EVM_LOGPROXY || "" : ""
+        env.build === "dev" ? process.env.EVM_LOGPROXY || "" : ""
       ),
       "process.env.COINGECKO_API_URL": JSON.stringify(
-        env.build === undefined ? process.env.COINGECKO_API_URL || "" : ""
+        env.build === "dev" ? process.env.COINGECKO_API_URL || "" : ""
       ),
       "process.env.COINGECKO_API_KEY_NAME": JSON.stringify(
-        env.build === undefined ? process.env.COINGECKO_API_KEY_NAME || "" : ""
+        env.build === "dev" ? process.env.COINGECKO_API_KEY_NAME || "" : ""
       ),
       "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
-        env.build === undefined ? process.env.COINGECKO_API_KEY_VALUE || "" : ""
+        env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : ""
       ),
       "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
-        env.build === undefined ? process.env.BLOWFISH_BASE_PATH || "" : ""
+        env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : ""
       ),
       // prod build doesn't need an api key
       // dev builds need one that should not change often
       // canary/ci/qa builds need one that can be rotated easily and without impacting developers
       "process.env.BLOWFISH_API_KEY": JSON.stringify(
-        env.build === undefined
+        env.build === "dev"
           ? process.env.BLOWFISH_API_KEY || ""
           : ["canary", "ci", "qa"].includes(env.build)
           ? process.env.BLOWFISH_QA_API_KEY || ""
@@ -200,9 +211,7 @@ const config = (env) => ({
     new ForkTsCheckerWebpackPlugin(),
     new ForkTsCheckerNotifierWebpackPlugin({ title: "TypeScript", excludeWarnings: false }),
     new EslintWebpackPlugin({ context: "../", extensions: ["ts", "tsx"] }),
-    new webpack.ProvidePlugin({
-      Buffer: ["buffer", "Buffer"],
-    }),
+    new webpack.ProvidePlugin({ Buffer: ["buffer", "Buffer"] }),
   ],
 })
 
