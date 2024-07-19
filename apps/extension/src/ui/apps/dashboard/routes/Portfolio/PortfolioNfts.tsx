@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 
-import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
-import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
+import { DashboardNfts } from "@ui/domains/Portfolio/Nfts/DashboardNfts"
+import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 export const PortfolioNfts = () => {
@@ -13,8 +13,8 @@ export const PortfolioNfts = () => {
 
   return (
     <>
-      <PortfolioToolbarTokens />
-      <DashboardAssetsTable />
+      <PortfolioToolbarNfts />
+      <DashboardNfts />
     </>
   )
 }
