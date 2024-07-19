@@ -1,5 +1,3 @@
-import { isFavoriteNftAtomFamily } from "@ui/atoms"
-import { useSetting } from "@ui/hooks/useSettings"
 import format from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { useAtomValue } from "jotai"
@@ -7,6 +5,9 @@ import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
+
+import { isFavoriteNftAtomFamily } from "@ui/atoms"
+import { useSetting } from "@ui/hooks/useSettings"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
@@ -27,9 +28,9 @@ export const DashboardNftCollection = () => {
     <div>
       <Suspense>
         {viewMode === "list" ? (
-          <NftsList onNftClick={handleNftClick} />
+          <NftsRows onNftClick={handleNftClick} />
         ) : (
-          <NftsGrid onNftClick={handleNftClick} />
+          <NftsTiles onNftClick={handleNftClick} />
         )}
       </Suspense>
       <NftDialog nftId={dialogNftId} onDismiss={() => setDialogNftId(null)} />
@@ -64,13 +65,12 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
       onClick={onClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
-      <div className="flex items-center gap-6 overflow-hidden">
+      <div className="col-span-2 flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
         </div>
       </div>
-      <div className="text-right">{nft.name}</div>
       <div className="text-right">
         {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
       </div>
@@ -92,7 +92,7 @@ const NftRow: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> =
   )
 }
 
-const NftsList: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
+const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
   const { collection, nfts } = usePortfolioNftCollection(collectionId)
 
@@ -101,13 +101,8 @@ const NftsList: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   return (
     <div className="flex flex-col gap-5">
       {!!collection &&
-        nfts.map((nft, i) => (
-          <NftRow
-            key={`${collection.id}-TODO NFT ID-${i}`}
-            collection={collection}
-            nft={nft}
-            onClick={() => onNftClick(nft)}
-          />
+        nfts.map((nft) => (
+          <NftRow key={nft.id} collection={collection} nft={nft} onClick={() => onNftClick(nft)} />
         ))}
     </div>
   )
@@ -150,7 +145,7 @@ const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   )
 }
 
-const NftsGrid: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
+const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
   const { collection, nfts } = usePortfolioNftCollection(collectionId)
 

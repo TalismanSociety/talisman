@@ -1,6 +1,3 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { isFavoriteNftAtomFamily } from "@ui/atoms"
-import { useSetting } from "@ui/hooks/useSettings"
 import { format } from "date-fns"
 import { Nft, NftCollection } from "extension-core"
 import { useAtomValue } from "jotai"
@@ -8,6 +5,10 @@ import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
+
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { isFavoriteNftAtomFamily } from "@ui/atoms"
+import { useSetting } from "@ui/hooks/useSettings"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
@@ -28,9 +29,9 @@ export const PopupNftCollection: FC<{ className?: string }> = () => {
     <div className="mt-7">
       <Suspense fallback={<SuspenseTracker name="PopupNftCollection" />}>
         {viewMode === "list" ? (
-          <NftsList onNftClick={handleNftClick} />
+          <NftsRows onNftClick={handleNftClick} />
         ) : (
-          <NftsGrid onNftClick={handleNftClick} />
+          <NftsTiles onNftClick={handleNftClick} />
         )}
         <NftDialog nftId={dialogNftId} onDismiss={() => setDialogNftId(null)} />
       </Suspense>
@@ -96,7 +97,7 @@ const NftRow: FC<{
   )
 }
 
-const NftsList: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
+const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
   const { collection, nfts } = usePortfolioNftCollection(collectionId)
 
@@ -158,7 +159,7 @@ const NftTileItem: FC<{
   )
 }
 
-const NftsGrid: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
+const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
   const { collection, nfts } = usePortfolioNftCollection(collectionId)
 
