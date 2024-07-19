@@ -1,14 +1,15 @@
-import { AccountType } from "@extension/core"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FC, ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { AccountType } from "@extension/core"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -100,7 +101,7 @@ const AccountRow: FC<AccountRowProps> = ({
         genesisHash={account.genesisHash}
         className="!text-lg"
       />
-      <div className="flex grow items-center overflow-hidden">
+      <div className="flex grow items-center justify-between overflow-hidden">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">
             <div className="truncate">

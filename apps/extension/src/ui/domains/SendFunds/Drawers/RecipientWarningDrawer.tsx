@@ -1,9 +1,10 @@
 import { InfoIcon } from "@talismn/icons"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
+
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
 
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"
@@ -45,7 +46,7 @@ export const RecipientWarningDrawer = ({
           {recipientWarning === "DIFFERENT_ACCOUNT_FORMAT" && (
             <Trans
               t={t}
-              defaults="The address you entered has been converted to a <Chain><ChainLogo />{{chainName}}</Chain> address. Make sure this is the chain you intend to transfer on."
+              defaults="The recipient address is in an incompatible format for <Chain><ChainLogo />{{chainName}}</Chain>. This could result in loss of funds. Make sure this is the chain you intend to transfer on."
               components={{
                 Chain: <div className="text-body inline-flex items-baseline gap-1" />,
                 ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
