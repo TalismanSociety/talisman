@@ -1,12 +1,12 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { NetworkOption } from "@ui/atoms"
-import { IS_POPUP } from "@ui/util/constants"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal } from "talisman-ui"
+
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { NetworkOption } from "@ui/atoms"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { usePortfolio } from "./usePortfolio"
@@ -29,9 +29,6 @@ const NetworkRow: FC<{ id: string; name: string; isSelected?: boolean; onClick: 
     >
       <ChainLogo id={id} className="shrink-0 text-xl" />
       <div className="text-body flex grow flex-col gap-2 truncate text-left">{name}</div>
-      <div>
-        <ChevronRightIcon className="text-lg" />
-      </div>
     </button>
   )
 }
