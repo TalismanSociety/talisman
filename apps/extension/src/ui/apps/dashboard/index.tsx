@@ -1,4 +1,8 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
+import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { Navigate, Route, Routes, useMatch, useSearchParams } from "react-router-dom"
+
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
@@ -7,9 +11,6 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
-import { useTranslation } from "react-i18next"
-import { Navigate, Route, Routes, useMatch, useSearchParams } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
 import { AccountAddMenu } from "./routes/AccountAdd"
@@ -192,7 +193,7 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
     else if (!isLoggedIn) {
       // if user was logged in and locked the extension from the popup, close the tab
       if (wasLoggedIn.current) window.close()
-      // else (open from a bookmark ?), prompt login
+      // else (open from a bookmark?), prompt login
       else api.promptLogin()
     }
   }, [isLoggedIn, isOnboarded])

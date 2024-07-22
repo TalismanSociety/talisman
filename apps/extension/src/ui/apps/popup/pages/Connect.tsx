@@ -1,8 +1,13 @@
-import { AccountJsonAny, ProviderType } from "@extension/core"
-import { KnownRequestIdOnly } from "@extension/core"
+import { InfoIcon } from "@talismn/icons"
+import capitalize from "lodash/capitalize"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button, Drawer } from "talisman-ui"
+
+import { AccountJsonAny, KnownRequestIdOnly, ProviderType } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
-import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
@@ -10,11 +15,6 @@ import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPol
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import capitalize from "lodash/capitalize"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -37,7 +37,7 @@ const NoAccountWarning = ({
         <p className="text-body-secondary text-center">
           <Trans
             t={t}
-            defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one ?"
+            defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one?"
             components={{ strong: <strong className="text-body" />, br: <br /> }}
             values={{ type: capitalize(type) }}
           />

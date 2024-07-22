@@ -1,12 +1,5 @@
-import { convertAddress } from "@talisman/util/convertAddress"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
-import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import { SubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
 import { AccountJsonAny, SubstrateLedgerAppType } from "extension-core"
 import { log } from "extension-shared"
 import {
@@ -21,6 +14,14 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "talisman-ui"
+
+import { convertAddress } from "@talisman/util/convertAddress"
+import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
+import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
+import { SubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import useAccounts from "@ui/hooks/useAccounts"
 
 import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
@@ -364,8 +365,9 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
       balances: balances.balances.find((b) => convertAddress(b.address, null) === address),
       isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
       connected: !!walletAccounts.find((wa) => convertAddress(wa.address, null) === address),
+      migrationAppName: app?.name,
     }
-  }, [accountDetails, address, balances.balances, balances.status, walletAccounts])
+  }, [accountDetails, address, app?.name, balances.balances, balances.status, walletAccounts])
 
   useEffect(() => {
     if (onChange) onChange(accountDef ? [accountDef] : [])
