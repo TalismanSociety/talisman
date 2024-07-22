@@ -5,7 +5,6 @@
 "@talismn/connection-meta": patch
 "@talismn/balances-react": patch
 "@talismn/on-chain-id": patch
-"talisman-ui": patch
 "@talismn/token-rates": patch
 "@talismn/balances": patch
 "@talismn/icons": patch

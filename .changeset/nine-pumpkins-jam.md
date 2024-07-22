@@ -1,5 +1,4 @@
 ---
-"talisman-ui": patch
 "@talismn/icons": patch
 ---
 

@@ -1,8 +1,13 @@
 /* eslint-env es2021 */
-const postcssImport = require("postcss-import")
-const tailwindcss = require("tailwindcss")
-const autoprefixer = require("autoprefixer")
 
-module.exports = {
-  plugins: [postcssImport, tailwindcss("./tailwind.config.cjs"), autoprefixer],
+/** @type {import('postcss-load-config').Config} */
+const config = {
+  plugins: [
+    require("postcss-import"),
+    require("tailwindcss/nesting"),
+    require("tailwindcss")("./tailwind.config.cjs"),
+    require("autoprefixer"),
+  ],
 }
+
+module.exports = config

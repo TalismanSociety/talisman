@@ -5,16 +5,17 @@ const common = require("./webpack.common.js")
 const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
 // const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
-const CircularDependencyPlugin = require("circular-dependency-plugin")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
+const startCase = require("lodash/startCase.js")
 
 const { updateManifestDetails, browser, distDir, manifestDir } = require("./utils.js")
 
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
-console.log(`building for ${browser} with dev config`)
+console.log(`Building for ${startCase(browser)} with dev config `)
 
+/** @type { import('webpack').Configuration } */
 const config = (env) =>
   merge(common(env), {
     devtool: false,
@@ -28,7 +29,7 @@ const config = (env) =>
         //
         // If either of these scripts have `eval` in them, the wallet will be unable to inject on dapps with a good
         // content security policy, like https://app.uniswap.org/swap for example.
-        test: /(?<!(content_script|page))\.(ts|js|mts|mjs|css)/,
+        test: /(?<!(content_script|page))\.(ts|js|mts|mjs)/,
       }),
       new SimpleLocalizeDownloadPlugin({
         devMode: true, // TODO env variable
@@ -79,17 +80,6 @@ const config = (env) =>
       //     extensionPage: ["popup", "onboarding", "dashboard"],
       //   },
       // }),
-      new CircularDependencyPlugin({
-        // exclude detection of files based on a RegExp
-        exclude: /node_modules/,
-        // add errors to webpack instead of warnings
-        failOnError: false,
-        // allow import cycles that include an asyncronous import,
-        // e.g. via import(/* webpackMode: "weak" */ './file.js')
-        allowAsyncCycles: false,
-        // set the current working directory for displaying module paths
-        cwd: process.cwd(),
-      }),
     ],
   })
 

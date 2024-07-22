@@ -41,8 +41,8 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.3.0",
     "@talismn/eslint-config": "workspace:*",
     "@testing-library/react": "^14.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.9.0",
-    "@typescript-eslint/parser": "^6.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "concurrently": "^7.6.0",
     "husky": "^8.0.3",
     "lint-staged": "^12.5.0",
@@ -118,8 +118,9 @@
       "@substrate/txwrapper-registry": "7.2.0",
       "@substrate/txwrapper-substrate": "7.2.0",
       "@substrate/txwrapper-template": "7.2.0",
-      "glob-parent": "^5.1.2",
+      "caniuse-lite": "1.0.30001642",
       "decode-uri-component": "0.2.1",
+      "glob-parent": "^5.1.2",
       "semver": "~7.5.4"
     }
   },

@@ -1,9 +1,10 @@
 import { QuestStarIcon } from "@talismn/icons"
-import { useRandomInterval } from "@ui/hooks/useRandomInterval"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ReactComponent as QuestsSvg } from "./assets/quests.svg"
+import { useRandomInterval } from "@ui/hooks/useRandomInterval"
+
+import QuestsSvg from "./assets/quests.svg?url"
 
 const QuestsBg = `linear-gradient(
   89.9deg,
@@ -29,7 +30,7 @@ export const QuestsBanner = ({ onClick }: { onClick: () => void }) => {
         <QuestSparkles />
         {t("Join")}
       </div>
-      <QuestsSvg className="mt-4 h-auto w-2/3" />
+      <img alt="" src={QuestsSvg} className="mt-4 aspect-[300/73] w-2/3" />
     </button>
   )
 }
