@@ -2,6 +2,7 @@
 
 const nodeFetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args))
 const { DefinePlugin } = require("webpack")
+const { EsbuildPlugin } = require("esbuild-loader")
 
 const apiKey = process.env.SIMPLE_LOCALIZE_API_KEY
 const projectToken = process.env.SIMPLE_LOCALIZE_PROJECT_TOKEN
@@ -143,7 +144,8 @@ const setSupportedLanguages = (
   devMode = false
 ) => {
   const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
-  if (!definePlugin)
+  const esbuildPlugin = options.plugins.find((plugin) => plugin instanceof EsbuildPlugin)
+  if (!definePlugin && !esbuildPlugin)
     return console.warn(
       `No DefinePlugin found - process.env.SUPPORTED_LANGUAGES will not be substituted`
     )
@@ -165,9 +167,15 @@ const setSupportedLanguages = (
   // >
   // > Typically, this is done either with either alternate quotes, such as '"production"',
   // > or by using JSON.stringify('production').
-  definePlugin.definitions["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
-    JSON.stringify(supportedLanguages)
-  )
+  if (definePlugin)
+    definePlugin.definitions["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
+      JSON.stringify(supportedLanguages)
+    )
+
+  if (esbuildPlugin)
+    esbuildPlugin.options.define["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
+      JSON.stringify(supportedLanguages)
+    )
 }
 
 const simpleLocalizeFetch = (url) =>

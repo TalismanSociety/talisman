@@ -150,7 +150,7 @@ jobs:
         # this will turn the list of files changed by this PR into a list of packages changed by this PR
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          FILES_IN_PACKAGES="$(echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' | { grep ^packages || true; })"
+          FILES_IN_PACKAGES="$(echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' | { grep ^packages || true; } | { grep -v -e '^packages/extension-core' -e '^packages/extension-shared' -e '^packages/talisman-ui' || true; })"
           if [[ $FILES_IN_PACKAGES != '' ]]; then
             UNIQ_PACKAGE_DIRS="$(echo $FILES_IN_PACKAGES | cut -d/ -f1-2 | sort | uniq)"
             UNIQ_PACKAGE_JSONS="$(find $UNIQ_PACKAGE_DIRS -name node_modules -prune -o -name package.json -print || true)"

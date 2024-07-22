@@ -1,11 +1,12 @@
-import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import React, { useCallback, useMemo } from "react"
 import CountUp from "react-countup"
+
+import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null
@@ -45,7 +46,7 @@ export const Fiat = ({
     <span
       ref={refReveal}
       className={classNames(
-        "fiat",
+        "fiat whitespace-nowrap",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
         className

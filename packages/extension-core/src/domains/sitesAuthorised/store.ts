@@ -1,8 +1,8 @@
 import { assert } from "@polkadot/util"
 import { convertAddress } from "@talismn/util"
+import { isTalismanHostname } from "extension-shared"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
-import { isTalismanHostname } from "../../util/isTalismanHostname"
 import { urlToDomain } from "../../util/urlToDomain"
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
 

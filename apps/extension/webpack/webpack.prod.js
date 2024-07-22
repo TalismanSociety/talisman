@@ -5,6 +5,7 @@ const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
 const ZipPlugin = require("./plugins/ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
+const CircularDependencyPlugin = require("circular-dependency-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
@@ -22,6 +23,7 @@ const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPl
 
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
+/** @type { import('webpack').Configuration } */
 const config = (env) => {
   if (env.build === "production") {
     if (!process.env.POSTHOG_AUTH_TOKEN) {
@@ -73,6 +75,17 @@ const config = (env) => {
             },
           },
         ],
+      }),
+      new CircularDependencyPlugin({
+        // exclude detection of files based on a RegExp
+        exclude: /node_modules/,
+        // add errors to webpack instead of warnings
+        failOnError: false,
+        // allow import cycles that include an asyncronous import,
+        // e.g. via import(/* webpackMode: "weak" */ './file.js')
+        allowAsyncCycles: false,
+        // set the current working directory for displaying module paths
+        cwd: process.cwd(),
       }),
       new SimpleLocalizeDownloadPlugin(),
       // Do not include source maps in the zip file

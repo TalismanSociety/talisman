@@ -1,2 +1,38 @@
-@import "./fonts/fonts.css";
 @import "talisman-ui/src/styles/styles.css";
+
+@font-face {
+  font-family: "Surt";
+  font-weight: normal;
+  src: url("/fonts/Surt-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Surt";
+  font-weight: bold;
+  src: url("/fonts/Surt-SemiBold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "SurtExpanded";
+  font-weight: normal;
+  src: url("/fonts/Surt-SemiBoldExp.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "WhyteInktrapMedium";
+  font-weight: normal;
+  src: url("/fonts/Whyte-Inktrap-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-optical-sizing: auto;
+  font-variation-settings: "slnt" 0;
+  src: url("/fonts/Inter.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Unbounded";
+  font-optical-sizing: auto;
+  src: url("/fonts/Unbounded.ttf") format("truetype");
+}
