@@ -303,7 +303,7 @@ export const AddLedgerSelectNetwork = () => {
       <div className="flex-grow">
         <HeaderBlock
           title={t("Connect Ledger")}
-          text={t("What type of account would you like to connect ?")}
+          text={t("What type of account would you like to connect?")}
         />
         <Spacer small />
         <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
