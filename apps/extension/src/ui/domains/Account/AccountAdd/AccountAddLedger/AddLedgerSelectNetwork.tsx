@@ -1,8 +1,16 @@
-import { AccountAddressType, Chain } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { classNames } from "@talismn/util"
+import { DEBUG } from "extension-shared"
+import { FC, ReactNode, useCallback, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Button, Dropdown } from "talisman-ui"
+import * as yup from "yup"
+
+import { AccountAddressType, Chain } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { classNames } from "@talismn/util"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
@@ -13,13 +21,6 @@ import {
 } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import useChain from "@ui/hooks/useChain"
 import { useAllChains } from "@ui/hooks/useChains"
-import { DEBUG } from "extension-shared"
-import { FC, ReactNode, useCallback, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button, Dropdown } from "talisman-ui"
-import * as yup from "yup"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
@@ -301,8 +302,8 @@ export const AddLedgerSelectNetwork = () => {
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
         <HeaderBlock
-          title={t("Import from Ledger")}
-          text={t("What type of account would you like to import ?")}
+          title={t("Connect Ledger")}
+          text={t("What type of account would you like to connect ?")}
         />
         <Spacer small />
         <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />

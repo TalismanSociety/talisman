@@ -1,16 +1,17 @@
-import { LedgerEthDerivationPathType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
-import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
-import { useLedgerSubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Navigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
+
+import { LedgerEthDerivationPathType } from "@extension/core"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
+import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
+import { useLedgerSubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 
 import { LedgerSubstrateGenericAccountPicker } from "../../LedgerSubstrateGenericAccountPicker"
 import { AddSubstrateLedgerAppType, LedgerAccountDef, useAddLedgerAccount } from "./context"
@@ -67,7 +68,7 @@ type FormData = {
 
 export const AddLedgerSelectAccount = () => {
   const { t } = useTranslation("admin")
-  const { data, importAccounts, onSuccess } = useAddLedgerAccount()
+  const { data, connectAccounts: importAccounts, onSuccess } = useAddLedgerAccount()
 
   const app = useLedgerSubstrateMigrationApp(data.migrationAppName)
 
@@ -96,7 +97,7 @@ export const AddLedgerSelectAccount = () => {
       const notificationId = notify(
         {
           type: "processing",
-          title: t("Importing account", { count: accounts.length }),
+          title: t("Connecting account", { count: accounts.length }),
           subtitle: t("Please wait"),
         },
         { autoClose: false }
@@ -109,14 +110,14 @@ export const AddLedgerSelectAccount = () => {
         const addresses = await importAccounts(accounts)
         notifyUpdate(notificationId, {
           type: "success",
-          title: t("Account imported", { count: accounts.length }),
+          title: t("Account connected", { count: accounts.length }),
           subtitle: null,
         })
         onSuccess(addresses[0])
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
-          title: t("Importing account", { count: accounts.length }),
+          title: t("Connecting account", { count: accounts.length }),
           subtitle: (err as Error).message,
         })
       }
@@ -150,7 +151,7 @@ export const AddLedgerSelectAccount = () => {
   return (
     <form className="flex max-h-screen flex-col gap-12" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
-        <h1 className="m-0">{t("Import from Ledger")}</h1>
+        <h1 className="m-0">{t("Connect Ledger")}</h1>
         {data.type === "ethereum" && (
           <>
             <p className="text-body-secondary mb-12 mt-[1em]">
@@ -168,7 +169,7 @@ export const AddLedgerSelectAccount = () => {
           </>
         )}
         <p className="text-body-secondary mb-12 mt-[1em]">
-          {t("Please select which account(s) you'd like to import.")}
+          {t("Please select which account(s) you'd like to connect.")}
           {data.type === "ethereum" && (
             <>
               <br />
