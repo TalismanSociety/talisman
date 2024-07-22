@@ -159,9 +159,9 @@ export const refreshNftMetadata = async (id: string) => {
   const nft = nftsStore.value.nfts.find((n) => n.id === id)
   if (!nft) return
 
-  const { evmNetworkId, contractAddress, tokenId } = nft
+  const { evmNetworkId, contract, tokenId } = nft
 
-  await fetchRefreshNftMetadata(evmNetworkId, contractAddress, tokenId)
+  await fetchRefreshNftMetadata(evmNetworkId, contract.address, tokenId)
 
   // force an update after 10 seconds, might be lucky !
   await sleep(10_000)

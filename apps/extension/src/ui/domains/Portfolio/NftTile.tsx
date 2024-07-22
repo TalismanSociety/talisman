@@ -7,7 +7,7 @@ import { NftImage } from "./NftImage"
 
 export const NftTile: FC<{
   imageUrl: string | null
-  count?: number
+  count?: number | null
   label: string
   networkIds: string[]
   isFavorite?: boolean

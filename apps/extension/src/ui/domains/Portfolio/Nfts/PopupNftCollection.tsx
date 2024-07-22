@@ -137,6 +137,7 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
       onClick={onClick}
       label={nft.name ?? (nft.tokenId ? `#${nft.tokenId}` : "")}
       networkIds={collection.evmNetworkIds}
+      count={nft.quantity}
     />
   )
 }

@@ -43,7 +43,12 @@ export type Nft = {
   tokenId: string
   collectionId: string
   evmNetworkId: string
-  contractAddress: string
+  contract: {
+    address: string
+    type: string | null
+    name: string | null
+    symbol: string | null
+  }
   name: string | null
   description: string | null
   imageUrl: string | null
@@ -57,6 +62,7 @@ export type Nft = {
   }
   marketplaces: NftMarketplaceInfo[]
   acquiredAt: string | null
+  quantity: number | null
 }
 
 export type FetchNftsRequestBody = {

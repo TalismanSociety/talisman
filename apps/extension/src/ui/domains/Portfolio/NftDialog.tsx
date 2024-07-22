@@ -158,15 +158,19 @@ const TabContentCollection: FC<{
         </div>
         <div className="text-body-secondary">{t("Contract")}</div>
         <div className="text-right">
-          <NetworkAddress address={nft.contractAddress} networkId={nft.evmNetworkId} />
+          <NetworkAddress address={nft.contract.address} networkId={nft.evmNetworkId} />
         </div>
+        <div className="text-body-secondary">{t("Type")}</div>
+        <div className="text-right">{nft.contract.type ?? t("Unknown")}</div>
       </div>
-      <div className="bg-grey-800 h-0.5"></div>
       {!!collection.description && (
-        <div className="space-y-8 hyphens-auto">
-          <div className="text-body-secondary">{t("Description")}</div>
-          <div>{collection.description}</div>
-        </div>
+        <>
+          <div className="bg-grey-800 h-0.5"></div>
+          <div className="space-y-8 hyphens-auto">
+            <div className="text-body-secondary">{t("Description")}</div>
+            <div>{collection.description}</div>
+          </div>
+        </>
       )}
     </>
   )
@@ -199,10 +203,16 @@ const TabContentNft: FC<{
             <div className="text-right">
               {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
             </div>
+            {nft.quantity && nft.quantity > 1 && (
+              <>
+                <div className="text-body-secondary">{t("Quantity")}</div>
+                <div className="text-right">{nft.quantity}</div>
+              </>
+            )}
           </>
         )}
       </div>
-      <div className="bg-grey-800 h-0.5"></div>
+      {(!!nft.description || !!nft.properties.length) && <div className="bg-grey-800 h-0.5"></div>}
       {!!nft.description && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Description")}</div>
