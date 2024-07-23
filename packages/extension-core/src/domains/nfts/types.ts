@@ -52,6 +52,10 @@ export type Nft = {
   name: string | null
   description: string | null
   imageUrl: string | null
+  videoUrl: string | null
+  audioUrl: string | null
+  modelUrl: string | null
+  otherUrl: string | null
   owner: string | null
   properties: NftProperty[]
   previews: {

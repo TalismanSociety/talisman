@@ -25,7 +25,7 @@ const NoNftFound = () => {
   const { status } = usePortfolioNfts()
 
   const msg = useMemo(() => {
-    if (status === "loading") return t("Loading NFTs...")
+    if (status === "loading") return <span className="animate-pulse">{t("Loading NFTs...")}</span>
     return account ? t("No NFTs found for this account") : t("No NFTs found")
   }, [account, status, t])
 

@@ -309,6 +309,81 @@ const FavoriteButton: FC<{ nftId: string }> = ({ nftId }) => {
   )
 }
 
+const NftVideo: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
+  const refPlayer = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const player = refPlayer.current
+
+    const timeout = setTimeout(() => {
+      // there are 2 in the page, only play the one that is visible
+      if (player?.checkVisibility()) player.play()
+    }, 250)
+
+    return () => {
+      clearTimeout(timeout)
+      if (player) player.pause()
+    }
+  }, [])
+
+  const handleClick: React.MouseEventHandler<HTMLVideoElement> = useCallback(() => {
+    const player = refPlayer.current
+    if (player) player.pause()
+  }, [])
+
+  if (!nft.videoUrl) return null
+  return (
+    <div className={classNames("relative", className)}>
+      <video
+        ref={refPlayer}
+        className="absolute size-full"
+        src={nft.videoUrl}
+        controls
+        controlsList="nofullscreen" // exiting fullscreen mode crashes the browser
+        onClick={handleClick}
+      />
+    </div>
+  )
+}
+
+const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
+  const refPlayer = useRef<HTMLAudioElement>(null)
+
+  useEffect(() => {
+    const player = refPlayer.current
+
+    const timeout = setTimeout(() => {
+      // there are 2 in the page, only play the one that is visible
+      if (player?.checkVisibility()) player.play()
+    }, 250)
+
+    return () => {
+      clearTimeout(timeout)
+      if (player) player.pause()
+    }
+  }, [])
+
+  const handleBgClick = useCallback(() => {
+    // audio will open in another tab, pause it first
+    if (refPlayer.current) refPlayer.current.pause()
+  }, [])
+
+  if (!nft.audioUrl) return null
+  return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div className={classNames("relative", className)} onClick={handleBgClick}>
+      <NftImage src={nft.imageUrl} className="absolute size-full" />
+      <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
+    </div>
+  )
+}
+
+const NftDisplay: FC<{ nft: Nft }> = ({ nft }) => {
+  if (nft.videoUrl) return <NftVideo nft={nft} className="h-full w-full" />
+  if (nft.audioUrl) return <NftAudio nft={nft} className={"h-full w-full object-cover"} />
+  return <NftImage src={nft.imageUrl} className="h-full w-full object-cover" />
+}
+
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({
   onDismiss,
   collection,
@@ -325,9 +400,18 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
     [t]
   )
 
-  const handleFullScreenViewClick = () => {
-    if (nft.imageUrl) window.open(nft.imageUrl, "_blank", "noopener noreferrer")
-  }
+  useEffect(() => {
+    log.log("NftDialog opened", { nft, collection })
+  }, [nft, collection])
+
+  const webResourceUrl = useMemo(
+    () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
+    [nft.imageUrl, nft.audioUrl, nft.modelUrl, nft.otherUrl, nft.videoUrl]
+  )
+
+  const handleFullScreenViewClick = useCallback(() => {
+    if (webResourceUrl) window.open(webResourceUrl, "_blank", "noopener noreferrer")
+  }, [webResourceUrl])
 
   return (
     <div
@@ -338,14 +422,14 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         "@2xl:grid-cols-2 @2xl:grid"
       )}
     >
-      <div className="@2xl:block hidden">
+      <div className="@2xl:block hidden overflow-hidden">
         <Tooltip>
           <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
-            <div className="h-full w-full shrink-0 cursor-pointer ">
-              <NftImage className="h-full w-full rounded-r-none object-cover" src={nft.imageUrl} />
+            <div className="h-full w-full shrink-0 cursor-pointer overflow-hidden rounded-r-none">
+              <NftDisplay nft={nft} />
             </div>
           </TooltipTrigger>
-          {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
+          {!!webResourceUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
         </Tooltip>
       </div>
       <div
@@ -372,8 +456,8 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         <div className="@2xl:hidden bg-grey-800 block h-[38.5rem] shrink-0 p-8">
           <Tooltip>
             <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
-              <div className="size-full cursor-pointer rounded-lg bg-black">
-                <NftImage className="size-full object-cover" src={nft.imageUrl} />
+              <div className="relative size-full cursor-pointer rounded-lg bg-black">
+                <NftDisplay nft={nft} />
               </div>
             </TooltipTrigger>
             {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
