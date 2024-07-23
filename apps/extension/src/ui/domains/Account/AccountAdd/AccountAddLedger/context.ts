@@ -1,18 +1,19 @@
+import { assert } from "@polkadot/util"
+import { useCallback, useState } from "react"
+import { useSearchParams } from "react-router-dom"
+
 import {
   AccountAddressType,
+  AssetDiscoveryMode,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateLedgerSubstrateGeneric,
   RequestAccountCreateLedgerSubstrateLegacy,
   SubstrateLedgerAppType,
 } from "@extension/core"
-import { AssetDiscoveryMode } from "@extension/core"
-import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import useChain from "@ui/hooks/useChain"
-import { useCallback, useState } from "react"
-import { useSearchParams } from "react-router-dom"
 
 export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
 export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
@@ -69,7 +70,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
     }))
   }, [])
 
-  const importAccounts = useCallback(
+  const connectAccounts = useCallback(
     async (accounts: LedgerAccountDef[]) => {
       if (data.type !== "ethereum") assert(data.substrateAppType, "Substrate app type is required")
 
@@ -97,7 +98,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
     [chain?.genesisHash, data.substrateAppType, data.type]
   )
 
-  return { data, updateData, importAccounts, onSuccess }
+  return { data, updateData, connectAccounts, onSuccess }
 }
 
 export const [AddLedgerAccountProvider, useAddLedgerAccount] = provideContext(

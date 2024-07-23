@@ -1,13 +1,14 @@
-import { AccountJsonAny } from "@extension/core"
-import { log } from "@extension/shared"
 import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { AccountJsonAny } from "@extension/core"
+import { log } from "@extension/shared"
 import useChains from "@ui/hooks/useChains"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -67,7 +68,12 @@ const getTargetChain = (
   if (multiLocation.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()
     const interior = multiLocation.value.interior
-    if (interior.type === "Here" && chain) return chain
+    if (interior.type === "Here" && chain)
+      if (multiLocation.value.parents === 0) return chain
+      else if (multiLocation.value.parents === 1) {
+        const targetChain = chains.find((c) => c.id === chain.relay?.id)
+        if (targetChain) return targetChain
+      }
     if (interior.type === "X1" && chain && interior.value.type === "Parachain") {
       const paraId = interior.value.value
       const relayId = chain.relay ? chain.relay.id : chain.id
