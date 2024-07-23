@@ -598,7 +598,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 445,
+    sortIndex: 454,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -704,7 +704,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 446,
+    sortIndex: 455,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -770,7 +770,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 640,
+    sortIndex: 656,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -885,6 +885,69 @@ export const chains = [
           ],
         },
       },
+      {
+        moduleType: "substrate-foreignassets",
+        moduleConfig: {
+          tokens: [
+            {
+              assetId: '{"parents":1,"interior":{"X1":{"Parachain":2011}}}',
+              symbol: "EQ",
+              coingeckoId: "equilibrium-token",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eq.svg",
+            },
+            {
+              assetId:
+                '{"parents":2,"interior":{"X2":[{"GlobalConsensus":{"Ethereum":{"chainId":1} }},{"AccountKey20":{"network":null,"key":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}}]}}',
+              symbol: "WETH",
+              coingeckoId: "weth",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/weth.webp",
+            },
+            {
+              assetId: '{"parents":2,"interior":{"X1":{"GlobalConsensus":"Kusama"}}}',
+              symbol: "KSM",
+              coingeckoId: "kusama",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/ksm.svg",
+            },
+            {
+              assetId:
+                '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
+              symbol: "BNC",
+              coingeckoId: "bifrost-native-coin",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bnc.svg",
+            },
+            {
+              assetId:
+                '{"parents":1,"interior":{"X2":[{"Parachain":2011},{"GeneralKey":{"length":3,"data":"0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
+              symbol: "EQD",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eqd.svg",
+            },
+            {
+              assetId: '{"parents":1,"interior":{"X2":[{"Parachain":2004},{"PalletInstance":10}]}}',
+              symbol: "GLMR",
+              coingeckoId: "moonbeam",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/moonbeam.webp",
+            },
+            {
+              assetId:
+                '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
+              symbol: "vDOT",
+              coingeckoId: "voucher-dot",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/vdot.svg",
+            },
+            {
+              assetId: '{"parents":1,"interior":{"X2":[{"Parachain":2034},{"GeneralIndex":0}]}}',
+              symbol: "HDX",
+              coingeckoId: "hydradx",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/hydradx.webp",
+            },
+            {
+              assetId: '{"parents":1,"interior":{"X1":{"Parachain":2051}}}',
+              symbol: "AJUN",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+          ],
+        },
+      },
     ],
     balancesMetadata: [],
     hasCheckMetadataHash: true,
@@ -893,7 +956,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 641,
+    sortIndex: 657,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
