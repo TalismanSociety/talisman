@@ -1,13 +1,12 @@
-import { log } from "@extension/shared"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import { TypeRegistry } from "@polkadot/types"
-import { hexToNumber, u8aToHex } from "@polkadot/util"
-import { base64Decode } from "@polkadot/util-crypto"
+import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
+import { SignerPayloadJSON } from "extension-core"
+
+import { log } from "@extension/shared"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useToken from "@ui/hooks/useToken"
-import { SignerPayloadJSON } from "extension-core"
+import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 
 export const useSubstratePayloadMetadata = (
   payload: SignerPayloadJSON | null,
@@ -25,21 +24,18 @@ export const useSubstratePayloadMetadata = (
         if (!chain.specName) throw new Error("Missing chain specName")
 
         const specVersion = hexToNumber(payload.specVersion)
-        const [metadataDef, { specName }] = await Promise.all([
-          api.subChainMetadata(payload.genesisHash, specVersion, payload.blockHash),
-          api.subSend<{ specName: string }>(chain.id, "state_getRuntimeVersion", [], true),
-        ])
-        if (!metadataDef?.metadataRpc) throw new Error("Metadata unavailable")
-        if (metadataDef.specVersion !== specVersion) throw new Error("Spec version mismatch")
-
-        // decompress
-        const metadataRpc = base64Decode(metadataDef.metadataRpc)
 
         // metadata v15 is required by the shortener
-        const registry = new TypeRegistry()
-        const hexMetadataRpc = u8aToHex(metadataRpc)
-        const metadata = registry.createType("Metadata", hexMetadataRpc)
-        registry.setMetadata(metadata, payload.signedExtensions)
+        const { registry, metadataRpc } = await getFrontendTypeRegistry(
+          chain.id,
+          payload.specVersion,
+          payload.blockHash,
+          payload.signedExtensions
+        )
+        assert(metadataRpc, "Unable to get metadata rpc")
+
+        // TODO try and avoid creating new metadata object
+        const metadata = registry.createType("Metadata", metadataRpc)
 
         // check if runtime supports CheckMetadataHash
         const hasCheckMetadataHash =
@@ -61,7 +57,7 @@ export const useSubstratePayloadMetadata = (
           tokenSymbol: token.symbol,
           decimals: token.decimals,
           base58Prefix: registry.chainSS58 ?? 42,
-          specName,
+          specName: chain.specName,
           specVersion,
         })
         const metadataHash = u8aToHex(merkleizedMetadata.digest())
