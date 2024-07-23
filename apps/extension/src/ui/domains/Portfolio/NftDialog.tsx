@@ -429,7 +429,7 @@ const NftDialogInner: FC<{
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >
-      {!!current && <DialogContent {...current} onDismiss={close} />}
+      {!!current && <DialogContent {...current} onDismiss={handleDismiss} />}
     </Modal>
   )
 }
