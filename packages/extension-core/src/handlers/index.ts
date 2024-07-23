@@ -1,8 +1,6 @@
 import { assert } from "@polkadot/util"
-import { PORT_EXTENSION } from "extension-shared"
-import { log } from "extension-shared"
+import { log, PORT_EXTENSION } from "extension-shared"
 
-import { sentry } from "../config/sentry"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { MessageTypes, TransportRequestMessage } from "../types"
 import { AnyEthRequest } from "../types/domains"
@@ -125,8 +123,6 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           isEthProviderRpcError: true,
         })
       } else {
-        // log to sentry because we need to know the traceback
-        sentry.captureException(error)
         safePostMessage(port, { id, error: error.message })
       }
     })
