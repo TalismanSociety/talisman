@@ -1,7 +1,8 @@
+import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal } from "talisman-ui"
+import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -70,7 +71,8 @@ const NetworkFilterModalContent: FC<{
   networkIds: string[]
   networkId: string | null
   onChange: (networkId: string | null) => void
-}> = ({ networkIds, networkId, onChange }) => {
+  onClose?: () => void
+}> = ({ networkIds, networkId, onChange, onClose }) => {
   const { t } = useTranslation()
   // network options may include pairs of evm+chain networks
   const { networks } = usePortfolio()
@@ -94,7 +96,21 @@ const NetworkFilterModalContent: FC<{
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
-      <div className="text-secondary px-12 pt-8 text-center">{t("Network Filter")}</div>
+      <div className="flex w-full items-center px-8 pt-8">
+        <IconButton
+          className={classNames("size-12 shrink-0", !IS_POPUP && "invisible")}
+          onClick={onClose}
+        >
+          <ChevronLeftIcon />
+        </IconButton>
+        <div className="text-secondary grow text-center">{t("Network Filter")}</div>
+        <IconButton
+          className={classNames("size-12 shrink-0", IS_POPUP && "invisible")}
+          onClick={onClose}
+        >
+          <XIcon />
+        </IconButton>
+      </div>
       <div className="flex w-full shrink-0 items-center gap-8 px-12 py-8">
         {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
         <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
@@ -127,6 +143,7 @@ export const NetworkFilterModal: FC<{
         networkIds={networkIds}
         networkId={networkId}
         onChange={onChange}
+        onClose={onClose}
       />
     </Modal>
   )
