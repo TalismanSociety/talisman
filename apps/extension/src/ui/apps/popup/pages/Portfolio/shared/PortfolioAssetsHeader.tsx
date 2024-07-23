@@ -3,7 +3,7 @@ import { classNames } from "@talismn/util"
 import { AccountJsonAny, Balance, Balances } from "extension-core"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import {
   ContextMenuTrigger,
   IconButton,
@@ -83,7 +83,7 @@ const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
   )
 }
 
-export const PortfolioAssetsHeader = () => {
+export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo }) => {
   const { t } = useTranslation()
   const currency = useSelectedCurrency()
 
@@ -119,14 +119,15 @@ export const PortfolioAssetsHeader = () => {
           networkBalances,
     [account, balancesByAddress, folder, networkBalances]
   )
-  //const balancesToDisplay = useDisplayBalances(balances)
 
   const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
 
+  const location = useLocation()
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
-    navigate(-1)
-  }, [navigate])
+    if (backBtnTo) navigate(backBtnTo + location.search)
+    else navigate(-1)
+  }, [backBtnTo, location.search, navigate])
 
   return (
     <div className="flex w-full gap-8">

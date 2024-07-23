@@ -17,7 +17,7 @@ export const PortfolioNftCollection = () => {
 
   return (
     <>
-      <PortfolioAssetsHeader />
+      <PortfolioAssetsHeader backBtnTo={"/portfolio/nfts"} />
       <PortfolioTabs className="mb-6 mt-[3.8rem]" />
 
       <Suspense fallback={<SuspenseTracker name="PortfolioNftCollection.TabContent" />}>

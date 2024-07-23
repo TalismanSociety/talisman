@@ -66,7 +66,7 @@ const PageContent = () => {
 
   return (
     <>
-      <PortfolioAssetsHeader />
+      <PortfolioAssetsHeader backBtnTo={"/portfolio"} />
       <PortfolioTabs className="mb-6 mt-[3.8rem]" />
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
         {!!matchTokens && <PortfolioToolbarTokens />}
