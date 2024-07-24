@@ -1,18 +1,17 @@
 import format from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
-import { useAtomValue } from "jotai"
 import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { isFavoriteNftAtomFamily } from "@ui/atoms"
 import { useSetting } from "@ui/hooks/useSettings"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
+import { useIsFavoriteNft } from "./useIsFavoriteNft"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
 export const DashboardNftCollection = () => {
@@ -129,7 +128,7 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
   onClick,
 }) => {
   // favorites are the first ones in the list, can check just the first one
-  const isFavorite = useAtomValue(isFavoriteNftAtomFamily(nft.id))
+  const isFavorite = useIsFavoriteNft(nft.id)
 
   const imageUrl = useMemo(() => {
     return nft.previews.small ?? nft.imageUrl

@@ -1,11 +1,9 @@
 import { NftCollection, NftData } from "extension-core"
-import { useAtomValue } from "jotai"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { isFavoriteNftAtomFamily } from "@ui/atoms"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
 
@@ -15,6 +13,7 @@ import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { useIsFavoriteNft } from "./useIsFavoriteNft"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
 const NoNftFound = () => {
@@ -166,7 +165,7 @@ const NftCollectionTileInner: FC<{
   )
 
   // favorites are the first ones in the list, can check just the first one
-  const isFavorite = useAtomValue(isFavoriteNftAtomFamily(nfts[0].id))
+  const isFavorite = useIsFavoriteNft(nfts[0].id)
 
   const imageUrl = useMemo(() => {
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)

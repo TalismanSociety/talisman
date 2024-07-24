@@ -3,7 +3,6 @@ import { classNames } from "@talismn/util"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
 import { log } from "extension-shared"
-import { useAtomValue } from "jotai"
 import {
   CSSProperties,
   FC,
@@ -33,11 +32,6 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
-import {
-  isFavoriteNftAtomFamily,
-  isHiddenNftCollectionAtomFamily,
-  nftDataAtomFamily,
-} from "@ui/atoms"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -47,6 +41,9 @@ import { NetworkAddress } from "../Account/AddressLinkOrCopy"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
+import { useIsFavoriteNft } from "./Nfts/useIsFavoriteNft"
+import { useIsHiddenNftCollection } from "./Nfts/useIsHiddenNftCollection"
+import { useNft } from "./Nfts/useNft"
 
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()
@@ -58,7 +55,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     []
   )
 
-  const isCollectionHidden = useAtomValue(isHiddenNftCollectionAtomFamily(nft.collectionId))
+  const isCollectionHidden = useIsHiddenNftCollection(nft.collectionId)
 
   const handleHideCollectionClick = useCallback(() => {
     api.nftsSetHidden(nft.collectionId, !isCollectionHidden)
@@ -296,7 +293,7 @@ const ScrollableArea: FC<
 }
 
 const FavoriteButton: FC<{ nftId: string }> = ({ nftId }) => {
-  const isFavorite = useAtomValue(isFavoriteNftAtomFamily(nftId))
+  const isFavorite = useIsFavoriteNft(nftId)
 
   const handleClick = useCallback(() => {
     api.nftsSetFavorite(nftId, !isFavorite)
@@ -522,7 +519,7 @@ const NftDialogWrapper: FC<{ nftId: string | null; onDismiss: () => void }> = ({
   nftId,
   onDismiss,
 }) => {
-  const nftData = useAtomValue(nftDataAtomFamily(nftId))
+  const nftData = useNft(nftId)
   return <NftDialogInner data={nftData} onDismiss={onDismiss} />
 }
 

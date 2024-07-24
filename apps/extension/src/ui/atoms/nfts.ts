@@ -1,7 +1,8 @@
-import { api } from "@ui/api"
 import { NftData } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
+
+import { api } from "@ui/api"
 
 import { accountsByCategoryAtomFamily } from "./accounts"
 import { evmNetworksArrayAtomFamily } from "./chaindata"
@@ -10,7 +11,10 @@ import { settingsAtomFamily } from "./settings"
 import { atomWithDebounce } from "./utils/atomWithDebounce"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 
-const nftDataAtom = atomWithSubscription(api.nftsSubscribe, "nftDataAtom")
+const nftDataAtom = atomWithSubscription(api.nftsSubscribe, {
+  debugLabel: "nftDataAtom",
+  refCount: true,
+})
 
 export const nftsNetworkOptionsAtom = atom(async (get) => {
   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
@@ -139,7 +143,7 @@ export const nftsAtom = atom(async (get) => {
       return (c1.name ?? "").localeCompare(c2.name ?? "")
     })
 
-  return { status, nfts, collections } as NftData
+  return { status, nfts, collections, favoriteNftIds, hiddenNftCollectionIds } as NftData
 })
 
 export const isHiddenNftCollectionAtomFamily = atomFamily((id: string) =>

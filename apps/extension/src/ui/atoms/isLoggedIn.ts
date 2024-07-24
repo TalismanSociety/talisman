@@ -4,5 +4,5 @@ import { atomWithSubscription } from "./utils/atomWithSubscription"
 
 export const isLoggedInAtom = atomWithSubscription<boolean>(
   (callback) => api.authStatusSubscribe((v) => callback(v === "TRUE")),
-  "isLoggedInAtom"
+  { debugLabel: "isLoggedInAtom" }
 )

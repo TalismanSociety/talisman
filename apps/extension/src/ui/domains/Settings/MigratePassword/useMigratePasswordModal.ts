@@ -1,18 +1,19 @@
-import { passwordStore } from "@extension/core"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 
+import { passwordStore } from "@extension/core"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
+
 const dismissAtom = atom(false)
 
 export const shouldMigratePasswordAtom = atomWithSubscription<boolean>((callback) => {
-  const { unsubscribe } = passwordStore.observable.subscribe(({ isHashed }) => {
+  const sub = passwordStore.observable.subscribe(({ isHashed }) => {
     callback(!isHashed)
   })
-  return unsubscribe
-}, "shouldMigratePasswordAtom")
+  return () => sub.unsubscribe()
+})
 
 export const useMigratePasswordModal = () => {
   const location = useLocation()
