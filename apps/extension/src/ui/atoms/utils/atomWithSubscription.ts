@@ -29,7 +29,6 @@ export const atomWithSubscription = <T>(
       let unsubscribe: UnsubscribeFn | undefined
 
       try {
-        // eslint-disable-next-line no-var
         unsubscribe = subscribe((value) => {
           if (debugLabel) log.debug(`[${debugLabel}] callback`, { value })
           subscriber.next(value)
