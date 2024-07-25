@@ -1,9 +1,9 @@
 import { Nft, NftCollection } from "extension-core"
 
-export const getPortfolioNftPreviewUrl = (nft: Nft, collection: NftCollection) => {
+export const getPortfolioNftPreviewUrl = (nft: Nft, collection?: NftCollection) => {
   if (nft.previews.small) return nft.previews.small
   if (nft.imageUrl) return nft.imageUrl
-  if (collection.imageUrl) return collection.imageUrl
+  if (collection?.imageUrl) return collection.imageUrl
   return null
 }
 

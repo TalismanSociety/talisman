@@ -390,16 +390,16 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className={classNames("relative", className)} onClick={handleBgClick}>
-      <NftImage src={nft.imageUrl} className="absolute size-full" />
+      <NftImage src={nft.previews.medium ?? nft.imageUrl} className="absolute size-full" />
       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
     </div>
   )
 }
 
 const NftDisplay: FC<{ nft: Nft }> = ({ nft }) => {
-  if (nft.videoUrl) return <NftVideo nft={nft} className="h-full w-full" />
-  if (nft.audioUrl) return <NftAudio nft={nft} className={"h-full w-full object-cover"} />
-  return <NftImage src={nft.imageUrl} className="h-full w-full object-cover" />
+  if (nft.videoUrl) return <NftVideo nft={nft} className="size-full" />
+  if (nft.audioUrl) return <NftAudio nft={nft} className={"size-full object-cover"} />
+  return <NftImage src={nft.previews.medium ?? nft.imageUrl} className="size-full object-contain" />
 }
 
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({
@@ -526,7 +526,7 @@ const NftDialogInner: FC<{
       isOpen={isOpen}
       onDismiss={handleDismiss}
       className={classNames(
-        "@container h-[60rem] w-[40rem] overflow-hidden bg-black",
+        "@container h-[50rem] w-[40rem] overflow-hidden bg-black",
         !IS_POPUP && "lg:w-[100rem] lg:rounded-lg"
       )}
       containerId={IS_POPUP ? "main" : undefined}
