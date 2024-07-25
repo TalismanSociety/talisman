@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
+import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
@@ -32,6 +32,7 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
+import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -139,7 +140,7 @@ const TabContentCollection: FC<{
 
   return (
     <>
-      <div className="leading-paragraph grid grid-cols-2 gap-8">
+      <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
         <div className="text-body-secondary">{t("Floor Price")}</div>
         <div className="text-right">
           {floorPrice ? <Fiat amount={floorPrice} forceCurrency="usd" /> : t("Unavailable")}
@@ -178,13 +179,28 @@ const TabContentNft: FC<{
 }> = ({ nft }) => {
   const { t } = useTranslation()
 
+  const copyToClipboard = useCopyToClipboard()
+
   return (
     <>
-      <div className="leading-paragraph grid grid-cols-2 gap-8">
+      <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
         {!!nft.tokenId && (
           <>
             <div className="text-body-secondary">{t("Token ID")}</div>
-            <div className="flex items-center justify-end gap-[0.5em]">{nft.tokenId}</div>
+
+            <div className="flex items-center justify-end gap-[0.5em] overflow-hidden">
+              <div className="truncate">{nft.tokenId}</div>
+              {nft.tokenId && (
+                <div className="shrink-0">
+                  <IconButton
+                    className="text-base"
+                    onClick={() => copyToClipboard(nft.tokenId.toString())}
+                  >
+                    <CopyIcon />
+                  </IconButton>
+                </div>
+              )}
+            </div>
           </>
         )}
         {nft.owner && (
@@ -195,6 +211,11 @@ const TabContentNft: FC<{
               <div className="truncate">
                 <Address address={nft.owner} />
               </div>
+              {nft.owner && (
+                <IconButton className="text-base" onClick={() => copyToClipboard(nft.owner!)}>
+                  <CopyIcon />
+                </IconButton>
+              )}
             </div>
             <div className="text-body-secondary">{t("Acquired on")}</div>
             <div className="text-right">
