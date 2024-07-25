@@ -1,5 +1,8 @@
 import keyring from "@polkadot/ui-keyring"
 import { isEthereumAddress } from "@talismn/util"
+import { firstValueFrom } from "rxjs"
+
+import { activeEvmNetworksObservable } from "../balances/pool"
 
 /**
  * IMPORTANT : make sure keyring is loaded before calling this
@@ -12,4 +15,8 @@ export const getNftsAccountsList = () => {
     .map(({ address }) => address)
     .filter(isEthereumAddress)
     .sort()
+}
+
+export const getNftsNetworkIdsList = async () => {
+  return (await firstValueFrom(activeEvmNetworksObservable)).map((n) => n.id).sort()
 }

@@ -71,6 +71,7 @@ export type Nft = {
 
 export type FetchNftsRequestBody = {
   addresses: string[]
+  evmNetworkIds: string[]
 }
 
 export type FetchNftsResponse = {
@@ -89,7 +90,7 @@ export type RefreshNftMetadataRequestBody = {
  */
 export type NftLoadingStatus = "stale" | "loading" | "loaded"
 
-export type NftData = Omit<NftStoreData, "id" | "accountsKey"> & {
+export type NftData = Omit<NftStoreData, "id" | "accountsKey" | "networksKey"> & {
   status: NftLoadingStatus
 }
 

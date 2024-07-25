@@ -6,6 +6,7 @@ import { Nft, NftCollection } from "./types"
 export type NftStoreData = {
   id: "nfts"
   accountsKey: string
+  networksKey: string
   timestamp: number | null
   collections: NftCollection[]
   nfts: Nft[]
@@ -16,6 +17,7 @@ export type NftStoreData = {
 const DEFAULT_DATA: NftStoreData = {
   id: "nfts",
   accountsKey: "",
+  networksKey: "",
   timestamp: null,
   collections: [],
   nfts: [],

@@ -5,7 +5,7 @@ import { BehaviorSubject, combineLatest, map } from "rxjs"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { fetchNfts } from "./fetchNfts"
 import { fetchRefreshNftMetadata } from "./fetchRefreshNftMetadata"
-import { getNftsAccountsList } from "./helpers"
+import { getNftsAccountsList, getNftsNetworkIdsList } from "./helpers"
 import { nftsStore } from "./store"
 import { NftData, NftLoadingStatus } from "./types"
 
@@ -30,12 +30,13 @@ const updateData = async () => {
   await awaitKeyringLoaded()
 
   const addresses = getNftsAccountsList()
-
-  const { collections, nfts } = await fetchNfts(addresses)
+  const evnNetworkIds = await getNftsNetworkIdsList()
+  const { collections, nfts } = await fetchNfts(addresses, evnNetworkIds)
 
   nftsStore.next({
     ...nftsStore.value,
     accountsKey: addresses.join(","),
+    networksKey: evnNetworkIds.join(","),
     nfts,
     collections,
     timestamp: Date.now(),
@@ -55,16 +56,20 @@ const watchData = async () => {
     if (stop) return
     if (promise) return
 
+    // ignore if a network has been removed, but refresh if one has been added
+    const prevNetworkIds = nftsStore.value.networksKey.split(",")
+    const networkIds = await getNftsNetworkIdsList()
+    const requiresUpdateNetwork = networkIds.some((id) => !prevNetworkIds.includes(id))
+
     // ignore if an account has been removed, but refresh if one has been added
     const prevAccounts = nftsStore.value.accountsKey.split(",")
     const accounts = getNftsAccountsList()
-
     const requiresUpdateAccount = accounts.some((account) => !prevAccounts.includes(account))
 
     const requiresUpdateTimestamp =
       !nftsStore.value.timestamp || Date.now() - nftsStore.value.timestamp >= UPDATE_INTERVAL
 
-    if (!requiresUpdateAccount && !requiresUpdateTimestamp) return
+    if (!requiresUpdateAccount && !requiresUpdateTimestamp && !requiresUpdateNetwork) return
 
     status.next("loading")
     promise = updateData()
