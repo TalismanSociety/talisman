@@ -25,9 +25,12 @@ export const atomWithSubscription = <T>(
   return atomWithObservable(() =>
     new Observable<T>((subscriber) => {
       if (debugLabel) log.debug(`[${debugLabel}] subscribing`)
+
+      let unsubscribe: UnsubscribeFn | undefined
+
       try {
         // eslint-disable-next-line no-var
-        var unsubscribe = subscribe((value) => {
+        unsubscribe = subscribe((value) => {
           if (debugLabel) log.debug(`[${debugLabel}] callback`, { value })
           subscriber.next(value)
         })
@@ -38,7 +41,7 @@ export const atomWithSubscription = <T>(
 
       return () => {
         if (debugLabel) log.debug(`[${debugLabel}] unsubscribing`)
-        unsubscribe()
+        unsubscribe?.()
       }
     }).pipe(shareReplay({ bufferSize: 1, refCount }))
   )
