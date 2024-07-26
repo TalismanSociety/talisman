@@ -1,4 +1,4 @@
-import { EvmNetwork, Token } from "@talismn/chaindata-provider"
+import { EvmNetwork } from "@talismn/chaindata-provider"
 import { Chain } from "viem"
 import * as chains from "viem/chains"
 
@@ -24,13 +24,10 @@ export type ChainOptions = {
 
 export const getChainFromEvmNetwork = (
   evmNetwork: EvmNetwork,
-  nativeToken: Token,
+  nativeToken: { symbol: string; decimals: number } | null,
   options: ChainOptions = {}
 ): Chain => {
-  if (!evmNetwork?.nativeToken?.id) throw new Error("Undefined native token")
-  if (evmNetwork.nativeToken.id !== nativeToken.id) throw new Error("Native token mismatch")
-
-  const { symbol, decimals } = nativeToken
+  const { symbol, decimals } = nativeToken ?? { symbol: "ETH", decimals: 18 }
 
   if (!chainsCache.has(evmNetwork.id)) {
     const chainRpcs =

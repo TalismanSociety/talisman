@@ -1,5 +1,5 @@
 import { EvmNetwork, Token } from "@talismn/chaindata-provider"
-import { PublicClient, createPublicClient } from "viem"
+import { createPublicClient, PublicClient } from "viem"
 
 import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
 import { getTransportForEvmNetwork } from "./getTransportForEvmNetwork"
@@ -23,7 +23,7 @@ type PublicClientOptions = {
 
 export const getEvmNetworkPublicClient = (
   evmNetwork: EvmNetwork,
-  nativeToken: Token,
+  nativeToken: Token | null,
   options: PublicClientOptions = {}
 ): PublicClient => {
   const chain = getChainFromEvmNetwork(evmNetwork, nativeToken)
