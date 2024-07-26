@@ -34,7 +34,6 @@ export class ChainConnectorEvm {
     if (!network?.nativeToken?.id) return null
 
     const nativeToken = await this.#chaindataProvider.tokenById(network.nativeToken.id)
-    if (!nativeToken) return null
 
     return getEvmNetworkPublicClient(network, nativeToken, {
       onFinalityApiKey: this.#onfinalityApiKey,
