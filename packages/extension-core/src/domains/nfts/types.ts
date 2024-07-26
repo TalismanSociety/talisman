@@ -56,7 +56,6 @@ export type Nft = {
   audioUrl: string | null
   modelUrl: string | null
   otherUrl: string | null
-  owner: string | null
   properties: NftProperty[]
   previews: {
     small: string | null
@@ -65,8 +64,11 @@ export type Nft = {
     color: string | null
   }
   marketplaces: NftMarketplaceInfo[]
-  acquiredAt: string | null
-  quantity: number | null
+  owners: {
+    address: string
+    quantity: number
+    acquiredAt: string
+  }[]
 }
 
 export type FetchNftsRequestBody = {

@@ -1,12 +1,13 @@
-import { Balance, Balances } from "@extension/core"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { selectedCurrencyAtom, settingsAtom } from "@ui/atoms"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useSetting } from "@ui/hooks/useSettings"
 import { atom, useAtomValue } from "jotai"
 import { atomFamily } from "jotai/utils"
 import { useMemo } from "react"
+
+import { Balance, Balances } from "@extension/core"
+import { selectedCurrencyAtom, settingsAtom } from "@ui/atoms"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useSetting } from "@ui/hooks/useSettings"
 
 import { portfolioDisplayBalancesAtomFamily } from "../useDisplayBalances"
 
@@ -97,7 +98,7 @@ const sortSymbolBalancesBy =
 
 const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network" | "search") =>
   atom(async (get) => {
-    const [currency, { hideDust, tokensSortMode }] = await Promise.all([
+    const [currency, { hideDust, tokensSortBy }] = await Promise.all([
       get(selectedCurrencyAtom),
       get(settingsAtom),
     ])
@@ -117,9 +118,9 @@ const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network" 
     }, {})
 
     const sortFn =
-      tokensSortMode === "name"
+      tokensSortBy === "name"
         ? sortSymbolBalancesByName
-        : sortSymbolBalancesBy(tokensSortMode, currency)
+        : sortSymbolBalancesBy(tokensSortBy, currency)
 
     const symbolBalances = Object.entries(groupedByToken)
       .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])

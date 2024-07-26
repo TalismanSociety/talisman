@@ -1,4 +1,10 @@
-import { GlobeIcon, ToolbarFilterIcon, ToolbarListIcon, ToolbarTilesIcon } from "@talismn/icons"
+import {
+  GlobeIcon,
+  ToolbarFilterIcon,
+  ToolbarListIcon,
+  ToolbarSortIcon,
+  ToolbarTilesIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
 import { useAtom } from "jotai"
@@ -151,6 +157,45 @@ const VisibilityFilterButton = () => {
   )
 }
 
+export const SortByButton = () => {
+  const { t } = useTranslation()
+  const [sortBy, setSortBy] = useSetting("nftsSortBy")
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <PortfolioToolbarButton>
+                <ToolbarSortIcon />
+              </PortfolioToolbarButton>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuOptionItem
+                label={t("Last acquired")}
+                selected={sortBy === "date"}
+                onClick={() => setSortBy("date")}
+              />
+              <ContextMenuOptionItem
+                label={t("Floor price")}
+                selected={sortBy === "floor"}
+                onClick={() => setSortBy("floor")}
+              />
+              <ContextMenuOptionItem
+                label={t("Name")}
+                selected={sortBy === "name"}
+                onClick={() => setSortBy("name")}
+              />
+            </ContextMenuContent>
+          </ContextMenu>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t("Sort")}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 export const PortfolioToolbarNfts = () => {
   return (
     <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
@@ -159,6 +204,7 @@ export const PortfolioToolbarNfts = () => {
       </div>
       <div className="flex shrink-0 gap-4">
         <NftViewModeToggleButton />
+        <SortByButton />
         <VisibilityFilterButton />
         <NetworkFilterButton />
       </div>

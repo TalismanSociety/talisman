@@ -1,3 +1,4 @@
+import { StarIcon } from "@talismn/icons"
 import { NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -5,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
@@ -12,7 +14,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
-import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
 import { useIsFavoriteNft } from "./useIsFavoriteNft"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
@@ -68,18 +70,23 @@ const NftCollectionRowInner: FC<{
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
-  const floorUsdValue = useMemo(() => {
-    const floorUsdValues = collection.marketplaces
-      .filter((c) => c.floorUsd !== null)
-      .map((c) => c.floorUsd!)
-    return floorUsdValues.length ? Math.min(...floorUsdValues) : null
-  }, [collection.marketplaces])
+  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets: true })
+  const networkName = useMemo(() => {
+    if (networkIds.length !== 1) return null
+    const network = evmNetworksMap[networkIds[0]]
+    return network?.name ?? null
+  }, [evmNetworksMap, networkIds])
+
+  const floorUsdValue = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     if (nfts.length === 1) onNftClick(nfts[0].id)
     else navigate(`/portfolio/nfts/${collection.id}`)
   }, [collection.id, navigate, nfts, onNftClick])
+
+  // favorites are the first ones in the list, can check just the first one
+  const isFavorite = useIsFavoriteNft(nfts[0].id)
 
   return (
     <button
@@ -90,9 +97,13 @@ const NftCollectionRowInner: FC<{
       <div className="flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
-          <div className="truncate text-base font-bold">{collection.name}</div>
-          <div>
+          <div className="flex w-full gap-2 overflow-hidden text-base">
+            <div className="truncate font-bold">{collection.name}</div>
+            {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
+          </div>
+          <div className="flex w-full gap-2 overflow-hidden text-base">
             <NetworksLogoStack networkIds={networkIds} />
+            <div className="text-body-secondary text-sm">{networkName}</div>
           </div>
         </div>
       </div>

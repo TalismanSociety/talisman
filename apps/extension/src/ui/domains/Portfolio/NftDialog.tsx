@@ -1,11 +1,12 @@
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import format from "date-fns/format"
-import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
+import { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import {
   CSSProperties,
   FC,
+  Fragment,
   PropsWithChildren,
   Suspense,
   useCallback,
@@ -42,6 +43,7 @@ import { NetworkAddress } from "../Account/AddressLinkOrCopy"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
+import { getNftCollectionFloorUsd } from "./Nfts/helpers"
 import { useIsFavoriteNft } from "./Nfts/useIsFavoriteNft"
 import { useIsHiddenNftCollection } from "./Nfts/useIsHiddenNftCollection"
 import { useNft } from "./Nfts/useNft"
@@ -121,8 +123,6 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   )
 }
 
-type MarketPlaceWithFloor = NftCollectionMarketplace & { floorUsd: number }
-
 const TabContentCollection: FC<{
   collection: NftCollection
   nft: Nft
@@ -130,13 +130,7 @@ const TabContentCollection: FC<{
   const { t } = useTranslation()
   const network = useEvmNetwork(nft.evmNetworkId)
 
-  const floorPrice = useMemo(() => {
-    const floorPrices = collection?.marketplaces
-      .filter((mp): mp is MarketPlaceWithFloor => typeof mp.floorUsd === "number")
-      .sort((mp1, mp2) => mp1.floorUsd - mp2.floorUsd)
-
-    return floorPrices.length ? floorPrices[0].floorUsd : null
-  }, [collection?.marketplaces])
+  const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
   return (
     <>
@@ -203,32 +197,29 @@ const TabContentNft: FC<{
             </div>
           </>
         )}
-        {nft.owner && (
-          <>
+        {nft.owners.map(({ address, acquiredAt, quantity }) => (
+          <Fragment key={address}>
             <div className="text-body-secondary">{t("Owner")}</div>
             <div className="flex items-center justify-end gap-[0.5em]">
-              <AccountIcon address={nft.owner} className="text-md" />
+              <AccountIcon address={address} className="text-md" />
               <div className="truncate">
-                <Address address={nft.owner} />
+                <Address address={address} />
               </div>
-              {nft.owner && (
-                <IconButton className="text-base" onClick={() => copyToClipboard(nft.owner!)}>
-                  <CopyIcon />
-                </IconButton>
-              )}
+
+              <IconButton className="text-base" onClick={() => copyToClipboard(address)}>
+                <CopyIcon />
+              </IconButton>
             </div>
             <div className="text-body-secondary">{t("Acquired on")}</div>
-            <div className="text-right">
-              {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
-            </div>
-            {nft.quantity && nft.quantity > 1 && (
+            <div className="text-right">{format(new Date(acquiredAt), "P")}</div>
+            {quantity > 1 && (
               <>
                 <div className="text-body-secondary">{t("Quantity")}</div>
-                <div className="text-right">{nft.quantity}</div>
+                <div className="text-right">{quantity}</div>
               </>
             )}
-          </>
-        )}
+          </Fragment>
+        ))}
       </div>
       {(!!nft.description || !!nft.properties.length) && <div className="bg-grey-800 h-0.5"></div>}
       {!!nft.description && (

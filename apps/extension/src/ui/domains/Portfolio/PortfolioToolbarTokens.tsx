@@ -86,7 +86,7 @@ const PortfolioSearch = () => {
 
 const TokensSortButton = () => {
   const { t } = useTranslation()
-  const [viewMode, setViewMode] = useSetting("tokensSortMode")
+  const [sortBy, setSortBy] = useSetting("tokensSortBy")
 
   return (
     <Tooltip>
@@ -101,23 +101,23 @@ const TokensSortButton = () => {
             <ContextMenuContent>
               <ContextMenuOptionItem
                 label={t("Total")}
-                selected={viewMode === "total"}
-                onClick={() => setViewMode("total")}
+                selected={sortBy === "total"}
+                onClick={() => setSortBy("total")}
               />
               <ContextMenuOptionItem
                 label={t("Available")}
-                selected={viewMode === "available"}
-                onClick={() => setViewMode("available")}
+                selected={sortBy === "available"}
+                onClick={() => setSortBy("available")}
               />
               <ContextMenuOptionItem
                 label={t("Locked")}
-                selected={viewMode === "locked"}
-                onClick={() => setViewMode("locked")}
+                selected={sortBy === "locked"}
+                onClick={() => setSortBy("locked")}
               />
               <ContextMenuOptionItem
                 label={t("Symbol")}
-                selected={viewMode === "name"}
-                onClick={() => setViewMode("name")}
+                selected={sortBy === "name"}
+                onClick={() => setSortBy("name")}
               />
             </ContextMenuContent>
           </ContextMenu>

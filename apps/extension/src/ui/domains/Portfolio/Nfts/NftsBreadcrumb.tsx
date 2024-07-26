@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom"
 
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 
-import { NftViewModeToggleButton } from "../PortfolioToolbarNfts"
+import { NftViewModeToggleButton, SortByButton } from "../PortfolioToolbarNfts"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
 export const NftsBreadcrumb = () => {
@@ -36,6 +36,9 @@ export const NftsBreadcrumb = () => {
     <div className="flex h-20 items-center justify-between gap-8">
       <div className="grow overflow-hidden">
         <Breadcrumb items={items} />
+      </div>
+      <div className="shrink-0">
+        <SortByButton />
       </div>
       <div className="shrink-0">
         <NftViewModeToggleButton />

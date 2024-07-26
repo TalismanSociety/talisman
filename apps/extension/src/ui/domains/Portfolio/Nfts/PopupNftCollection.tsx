@@ -1,3 +1,4 @@
+import { StarIcon } from "@talismn/icons"
 import { format } from "date-fns"
 import { Nft, NftCollection } from "extension-core"
 import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
@@ -12,6 +13,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
+import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
 import { useIsFavoriteNft } from "./useIsFavoriteNft"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
@@ -59,6 +61,8 @@ const NftRowInner: FC<{
     return nft.previews.small ?? nft.imageUrl
   }, [nft.imageUrl, nft.previews.small])
 
+  const isFavorite = useIsFavoriteNft(nft.id)
+
   return (
     <button
       type="button"
@@ -67,13 +71,12 @@ const NftRowInner: FC<{
     >
       <div className="flex grow items-center gap-6 overflow-hidden ">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
-        <div className="flex grow flex-col gap-2 overflow-hidden">
+        <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
+          {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
         </div>
       </div>
-      <div className="text-right">
-        {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
-      </div>
+      <div className="text-right">{format(new Date(getNftLastAcquiredAt(nft)), "P")}</div>
     </button>
   )
 }
@@ -136,7 +139,7 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
       onClick={onClick}
       label={nft.name ?? (nft.tokenId ? `#${nft.tokenId}` : "")}
       networkIds={collection.evmNetworkIds}
-      count={nft.quantity}
+      count={getNftQuantity(nft)}
     />
   )
 }
