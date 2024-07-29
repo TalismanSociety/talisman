@@ -1,5 +1,6 @@
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
+import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 import { AccountsMessages } from "../domains/accounts/types"
 import { AppMessages } from "../domains/app/types"
 import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
@@ -17,7 +18,6 @@ import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
 import { TokenMessages } from "../domains/tokens/types"
 import { AssetTransferMessages } from "../domains/transfers/types"
-import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
 
 export declare type RequestTypes = {
   [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
@@ -125,7 +125,7 @@ export type SubscriptionHandler<
   TMessageType extends MessageTypesWithSubscriptions,
   Req = RequestType<TMessageType>,
   Res = ResponseType<TMessageType>
-> = (id: string, port: Port, req: Req) => Res | Promise<Res>
+> = (id: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
 
 // TODO cooldown
 // export type SubscriptionByIdHandler<
