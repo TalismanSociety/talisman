@@ -1,6 +1,7 @@
 import { sleep } from "@talismn/util"
 import { log } from "extension-shared"
-import { BehaviorSubject, combineLatest, map } from "rxjs"
+import { isEqual } from "lodash"
+import { BehaviorSubject, combineLatest, distinctUntilChanged, map } from "rxjs"
 
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { fetchNfts } from "./fetchNfts"
@@ -175,3 +176,13 @@ export const refreshNftMetadata = async (id: string) => {
   // we don't know when the refresh will be done, lower the update interval to 10 minute for this session
   UPDATE_INTERVAL = 60 * 1000
 }
+
+// reset the update interval to 1 hour, if we detect any changes
+nftsStore
+  .pipe(
+    map(({ nfts, collections }) => ({ nfts, collections })),
+    distinctUntilChanged(isEqual)
+  )
+  .subscribe(() => {
+    UPDATE_INTERVAL = 60 * 60 * 1000
+  })
