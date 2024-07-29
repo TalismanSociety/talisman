@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 
@@ -11,6 +11,7 @@ export const NftsBreadcrumb = () => {
   const { t } = useTranslation()
   const { collectionId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const { collections } = usePortfolioNfts()
   const collection = useMemo(
@@ -23,14 +24,14 @@ export const NftsBreadcrumb = () => {
       {
         label: t("All NFTs"),
         className: "shrink-0",
-        onClick: () => navigate("/portfolio/nfts"),
+        onClick: () => navigate("/portfolio/nfts" + location.search),
       },
       {
         label: collection?.name ?? t("Collection"),
         onClick: undefined,
       },
     ]
-  }, [collection?.name, navigate, t])
+  }, [collection?.name, location.search, navigate, t])
 
   return (
     <div className="flex h-20 items-center justify-between gap-8">
