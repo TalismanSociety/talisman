@@ -28,6 +28,7 @@
     "build:extension": "turbo run build:extension",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
+    "build:extension:prod:firefox": "turbo run build:extension:prod:firefox",
     "build:extension:canary": "turbo run build:extension:canary",
     "lint": "pnpm run -r --parallel lint",
     "test": "pnpm run -r --parallel test",
