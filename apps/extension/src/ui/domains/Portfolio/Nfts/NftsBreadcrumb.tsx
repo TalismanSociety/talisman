@@ -38,10 +38,10 @@ export const NftsBreadcrumb = () => {
         <Breadcrumb items={items} />
       </div>
       <div className="shrink-0">
-        <SortByButton />
+        <NftViewModeToggleButton />
       </div>
       <div className="shrink-0">
-        <NftViewModeToggleButton />
+        <SortByButton />
       </div>
     </div>
   )
