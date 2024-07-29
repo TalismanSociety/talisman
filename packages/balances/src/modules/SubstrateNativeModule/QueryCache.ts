@@ -1,12 +1,10 @@
-import { TypeRegistry, createType, i128 } from "@polkadot/types"
-import { Chain, ChainId, ChaindataProvider, Token } from "@talismn/chaindata-provider"
+import { createType, i128, TypeRegistry } from "@polkadot/types"
+import { Chain, ChaindataProvider, ChainId, Token } from "@talismn/chaindata-provider"
 import * as $ from "@talismn/subshape-fork"
 import { blake2Concat, decodeAnyAddress, firstThenDebounce, isEthereumAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import {
-  Observable,
-  Subscription,
   combineLatestWith,
   distinctUntilChanged,
   filter,
@@ -15,22 +13,23 @@ import {
   map,
   pipe,
   shareReplay,
+  Subscription,
 } from "rxjs"
 
+import { SubNativeBalance, SubNativeToken } from "."
 import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
-import { AddressesByToken, AmountWithLabel, MiniMetadata, getValueId } from "../../types"
+import { AddressesByToken, AmountWithLabel, getValueId, MiniMetadata } from "../../types"
 import {
+  buildStorageDecoders,
+  findChainMeta,
   GetOrCreateTypeRegistry,
+  getUniqueChainIds,
   RpcStateQuery,
   StorageDecoders,
   StorageHelper,
-  buildStorageDecoders,
-  findChainMeta,
-  getUniqueChainIds,
 } from "../util"
 import { getLockedType } from "../util/substrate-native"
-import { SubNativeBalance, SubNativeToken } from "."
 
 type QueryKey = string
 
@@ -104,38 +103,32 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-let commonMetadataObservable: Observable<Map<string, MiniMetadata>> | null = null
+// NOTE: `liveQuery` is not initialized until commonMetadataObservable is subscribed to.
+const commonMetadataObservable = from(
+  liveQuery(() => balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray())
+).pipe(
+  map((items) => new Map(items.map((item) => [item.id, item]))),
+  // `refCount: true` will unsubscribe from the DB when commonMetadataObservable has no more subscribers
+  shareReplay({ bufferSize: 1, refCount: true })
+)
 
 export class QueryCache {
   private balanceQueryCache = new Map<QueryKey, RpcStateQuery<SubNativeBalance>[]>()
-  private metadataSub: Subscription
-  private getOrCreateTypeRegistry: GetOrCreateTypeRegistry
+  private metadataSub: Subscription | null = null
 
   constructor(
     private chaindataProvider: ChaindataProvider,
-    getOrCreateTypeRegistry: GetOrCreateTypeRegistry
-  ) {
-    this.getOrCreateTypeRegistry = getOrCreateTypeRegistry
+    private getOrCreateTypeRegistry: GetOrCreateTypeRegistry
+  ) {}
 
-    if (!commonMetadataObservable) {
-      commonMetadataObservable = from(
-        liveQuery(() =>
-          balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
-        )
-      ).pipe(
-        map(
-          (miniMetadatas) =>
-            new Map(miniMetadatas.map((miniMetadata) => [miniMetadata.id, miniMetadata]))
-        ),
-        shareReplay({ bufferSize: 1, refCount: true })
-      )
-    }
+  ensureSetup() {
+    if (this.metadataSub) return
 
     this.metadataSub = commonMetadataObservable
       .pipe(
         firstThenDebounce(500),
         detectMiniMetadataChanges(),
-        combineLatestWith(chaindataProvider.tokensObservable),
+        combineLatestWith(this.chaindataProvider.tokensObservable),
         distinctUntilChanged()
       )
       .subscribe(([miniMetadataChanges, tokens]) => {
@@ -166,11 +159,12 @@ export class QueryCache {
   }
 
   destroy() {
-    this.metadataSub.unsubscribe()
+    this.metadataSub?.unsubscribe()
   }
 
   async getQueries(addressesByToken: AddressesByToken<SubNativeToken>) {
-    if (!commonMetadataObservable) throw new Error("commonMetadataObservable is not initialized")
+    this.ensureSetup()
+
     const chains = await this.chaindataProvider.chainsById()
     const tokens = await this.chaindataProvider.tokensById()
 
