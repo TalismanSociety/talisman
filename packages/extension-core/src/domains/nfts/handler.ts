@@ -7,7 +7,6 @@ import {
   ResponseType,
   SubscriptionHandler,
 } from "../../types"
-import { Port } from "../../types/base"
 import {
   refreshNftMetadata,
   setFavoriteNft,
@@ -55,7 +54,7 @@ export class NftsHandler extends ExtensionHandler {
     Type extends MessageTypes,
     Request = RequestTypes[Type],
     Response = ResponseType<Type>
-  >(id: string, type: Type, request: Request, port: Port): Promise<Response> {
+  >(id: string, type: Type, request: Request, port: chrome.runtime.Port): Promise<Response> {
     switch (type) {
       case "pri(nfts.subscribe)":
         return handleSubscribeNfts(
