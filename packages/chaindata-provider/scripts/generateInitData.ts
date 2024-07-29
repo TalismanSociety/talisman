@@ -30,6 +30,8 @@ const ETHEREUM_MAINNET_ERC20_ALLOWLIST = [
 ]
 const BALANCE_MODULE_ALLOWLIST = [
   "substrate-assets",
+  "substrate-equilibrium",
+  "substrate-foreignassets",
   "substrate-native",
   "substrate-psp22",
   "substrate-tokens",

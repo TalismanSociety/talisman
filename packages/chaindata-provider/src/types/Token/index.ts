@@ -3,6 +3,7 @@ import { EvmNativeToken } from "./EvmNativeToken"
 import { CustomEvmUniswapV2Token, EvmUniswapV2Token } from "./EvmUniswapV2Token"
 import { SubAssetsToken } from "./SubstrateAssetsToken"
 import { SubEquilibriumToken } from "./SubstrateEquilibriumToken"
+import { SubForeignAssetsToken } from "./SubstrateForeignAssetsToken"
 import { CustomSubNativeToken, SubNativeToken } from "./SubstrateNativeToken"
 import { SubPsp22Token } from "./SubstratePsp22Token"
 import { SubTokensToken } from "./SubstrateTokensToken"
@@ -25,6 +26,7 @@ export type Token = TokenBase &
     | CustomEvmUniswapV2Token
     | SubAssetsToken
     | SubEquilibriumToken
+    | SubForeignAssetsToken
     | SubNativeToken
     | CustomSubNativeToken
     | SubPsp22Token

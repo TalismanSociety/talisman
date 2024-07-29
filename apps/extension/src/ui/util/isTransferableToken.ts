@@ -20,14 +20,15 @@ export const isTransferableToken = (t: Token) => {
   if (UNTRANSFERABLE_TOKENS.includes(t.id)) return false
 
   switch (t.type) {
-    case "substrate-native":
-    case "substrate-assets":
-    case "substrate-tokens":
-    case "substrate-psp22":
-    case "substrate-equilibrium":
-    case "evm-uniswapv2":
     case "evm-erc20":
     case "evm-native":
+    case "evm-uniswapv2":
+    case "substrate-assets":
+    case "substrate-equilibrium":
+    case "substrate-foreignassets":
+    case "substrate-native":
+    case "substrate-psp22":
+    case "substrate-tokens":
       return true
     default:
       return false

@@ -176,7 +176,10 @@ export const SubEquilibriumModule: NewBalanceModule<
             chain: { id: chainId },
           }
 
-          if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+          if (tokenConfig?.symbol) {
+            token.symbol = tokenConfig?.symbol
+            token.id = subEquilibriumTokenId(chainId, token.symbol)
+          }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf

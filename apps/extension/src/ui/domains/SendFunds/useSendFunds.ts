@@ -1,18 +1,24 @@
-import { AssetTransferMethod, SignerPayloadJSON } from "@extension/core"
-import { roundToFirstInteger } from "@extension/core"
-import { AccountType } from "@extension/core"
-import {
-  getEthTransferTransactionBase,
-  serializeGasSettings,
-  serializeTransactionRequest,
-} from "@extension/core"
-import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
-import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
+import { TransactionRequest } from "viem"
+
+import {
+  AccountType,
+  AssetTransferMethod,
+  getEthTransferTransactionBase,
+  roundToFirstInteger,
+  serializeGasSettings,
+  serializeTransactionRequest,
+  SignerPayloadJSON,
+} from "@extension/core"
+import { log } from "@extension/shared"
+import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -30,10 +36,6 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation } from "react-router-dom"
-import { TransactionRequest } from "viem"
 
 import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMetadata"
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
@@ -74,11 +76,12 @@ const useIsSendingEnough = (
         case "evm-erc20":
         case "evm-native":
           return true
-        case "substrate-native":
         case "substrate-assets":
-        case "substrate-tokens":
+        case "substrate-equilibrium":
+        case "substrate-foreignassets":
+        case "substrate-native":
         case "substrate-psp22":
-        case "substrate-equilibrium": {
+        case "substrate-tokens": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
             token.decimals
