@@ -17,6 +17,8 @@ import {
   optimism,
   optimismSepolia,
   polygon,
+  scroll,
+  scrollSepolia,
   sepolia,
 } from "wagmi/chains"
 
@@ -137,4 +139,6 @@ export const talismanChains = [
   mantaTestnet,
   bob,
   optimismSepolia,
+  scroll,
+  scrollSepolia,
 ] as const

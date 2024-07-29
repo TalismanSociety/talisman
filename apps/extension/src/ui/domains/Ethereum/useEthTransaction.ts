@@ -1,35 +1,32 @@
+import { isBigInt } from "@talismn/util"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { encodeFunctionData, PublicClient, TransactionRequest } from "viem"
+
 import {
+  EthGasSettings,
+  EthGasSettingsEip1559,
+  EthGasSettingsLegacy,
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
+  EvmNetworkId,
   GasSettingsByPriority,
-} from "@extension/core"
-import { getHumanReadableErrorMessage } from "@extension/core"
-import {
   getGasLimit,
   getGasSettingsEip1559,
+  getHumanReadableErrorMessage,
   getTotalFeesFromGasSettings,
   isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
 } from "@extension/core"
-import {
-  EthGasSettings,
-  EthGasSettingsEip1559,
-  EthGasSettingsLegacy,
-  EvmNetworkId,
-} from "@extension/core"
-import { isBigInt } from "@talismn/util"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { PublicClient, TransactionRequest, encodeFunctionData } from "viem"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
-import { isOpStackEvmNetwork } from "./opStack"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
@@ -56,10 +53,13 @@ const useNonce = (
 
 // TODO : could be skipped for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
 const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
+  const evmNetwork = useEvmNetwork(publicClient?.chain?.id?.toString())
+
   const { data, ...rest } = useQuery({
-    queryKey: ["useHasEip1559Support", publicClient?.chain?.id],
+    queryKey: ["useHasEip1559Support", publicClient?.chain?.id, evmNetwork?.id],
     queryFn: async () => {
       if (!publicClient) return null
+      if (evmNetwork?.feeType) return evmNetwork.feeType === "eip-1559"
 
       try {
         const {
@@ -306,6 +306,7 @@ const useGasSettings = ({
   isReplacement: boolean | undefined
   isContractCall: boolean | undefined
 }) => {
+  const evmNetwork = useEvmNetwork(evmNetworkId)
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
 
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
@@ -345,7 +346,7 @@ const useGasSettings = ({
           mapMaxPriority.high = minimumMaxPriorityFeePerGas
       }
 
-      if (evmNetworkId && isOpStackEvmNetwork(evmNetworkId)) {
+      if (evmNetworkId && evmNetwork?.l2FeeType?.type === "op-stack") {
         // On op stack, transaction requires a priority fee, as low as 1 wei
         if (mapMaxPriority.low === 0n) mapMaxPriority.low = 1n
         if (mapMaxPriority.medium === 0n) mapMaxPriority.medium = 1n
@@ -416,6 +417,7 @@ const useGasSettings = ({
     customSettings,
     feeHistoryAnalysis,
     baseFeePerGas,
+    evmNetwork?.l2FeeType?.type,
   ])
 
   const gasSettings = useMemo(() => {
