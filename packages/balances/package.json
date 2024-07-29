@@ -41,7 +41,7 @@
     "lodash": "4.17.21",
     "pako": "^2.1.0",
     "rxjs": "^7.8.1",
-    "viem": "^2.8.18"
+    "viem": "^2.18.2"
   },
   "devDependencies": {
     "@polkadot/api-contract": "^10.9.1",

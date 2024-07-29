@@ -30,7 +30,7 @@
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "lodash": "4.17.21",
-    "viem": "^2.8.18"
+    "viem": "^2.18.2"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
