@@ -75,7 +75,7 @@ const PortfolioSearch = () => {
     <SearchInput
       containerClassName={classNames(
         "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
-        IS_POPUP ? "max-w-[22rem]" : "max-w-[37.4rem]"
+        IS_POPUP ? "max-w-[17rem]" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
       onChange={setSearch}
