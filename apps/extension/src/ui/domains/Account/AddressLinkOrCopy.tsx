@@ -1,11 +1,12 @@
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import useChain from "@ui/hooks/useChain"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { copyAddress } from "@ui/util/copyAddress"
 import { ChainId, EvmNetworkId } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
+
+import useChain from "@ui/hooks/useChain"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { copyAddress } from "@ui/util/copyAddress"
 
 import { Address } from "./Address"
 

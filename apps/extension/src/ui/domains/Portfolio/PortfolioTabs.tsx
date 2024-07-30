@@ -1,6 +1,7 @@
-import { Tabs } from "@talisman/components/Tabs"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+
+import { Tabs } from "@talisman/components/Tabs"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 

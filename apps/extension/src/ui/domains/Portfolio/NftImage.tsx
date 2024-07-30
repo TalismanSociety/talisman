@@ -1,6 +1,7 @@
-import imgUnknownNft from "@talisman/theme/images/unknown-nft.svg?url"
 import { classNames } from "@talismn/util"
 import { useState } from "react"
+
+import imgUnknownNft from "@talisman/theme/images/unknown-nft.svg?url"
 
 export const NftImage = ({
   src,

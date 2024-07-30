@@ -1,12 +1,13 @@
 import { Combobox } from "@headlessui/react"
 import { ChevronDownIcon, SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { NetworkOption } from "@ui/atoms"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
+
+import { NetworkOption } from "@ui/atoms"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 
 type NullableKeys<T> = {
   [P in keyof T]: T[P] | null

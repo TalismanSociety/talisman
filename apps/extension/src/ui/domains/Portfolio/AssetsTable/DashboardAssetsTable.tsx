@@ -1,7 +1,8 @@
 import { classNames } from "@talismn/util"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"

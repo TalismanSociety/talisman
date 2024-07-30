@@ -1,4 +1,4 @@
-import { SetStateAction, atom } from "jotai"
+import { atom, SetStateAction } from "jotai"
 
 /**
  * Raw copy-paste from : https://jotai.org/docs/recipes/atom-with-debounce
