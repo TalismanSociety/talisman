@@ -6,7 +6,7 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
-type BalanceSummary = {
+export type BalanceSummary = {
   totalTokens: BigNumber
   totalFiat: number | null
   lockedTokens: BigNumber

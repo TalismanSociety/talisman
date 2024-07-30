@@ -1,10 +1,14 @@
+import { atom, useAtomValue } from "jotai"
+import { atomFamily } from "jotai/utils"
+import { useMemo } from "react"
+
 import { AccountJsonAny, Balance, Balances } from "@extension/core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
 } from "@extension/shared"
+import { portfolioAccountAtom, portfolioAtom } from "@ui/atoms"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Balances) => {
@@ -35,8 +39,32 @@ const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Bal
   }
 }
 
+export const portfolioDisplayBalancesAtomFamily = atomFamily(
+  (filter: "all" | "network" | "search") =>
+    atom((get) => {
+      const { networkBalances, allBalances, searchBalances } = get(portfolioAtom)
+      const account = get(portfolioAccountAtom)
+
+      switch (filter) {
+        case "all":
+          return networkBalances.find(shouldDisplayBalance(account, allBalances))
+        case "network":
+          return networkBalances.find(shouldDisplayBalance(account, networkBalances))
+        case "search":
+          return searchBalances.find(shouldDisplayBalance(account, searchBalances))
+      }
+    })
+)
+
+/**
+ * @deprecated use atoms
+ */
 export const useDisplayBalances = (balances: Balances) => {
   const { account } = useSelectedAccount()
 
   return useMemo(() => balances.find(shouldDisplayBalance(account, balances)), [account, balances])
+}
+
+export const usePortfolioDisplayBalances = (filter: "all" | "network") => {
+  return useAtomValue(portfolioDisplayBalancesAtomFamily(filter))
 }

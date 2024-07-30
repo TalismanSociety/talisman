@@ -1,9 +1,10 @@
 import { Token } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
+
+import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 
 import { currencyConfig } from "../Asset/currencyConfig"
 import { Fiat } from "../Asset/Fiat"

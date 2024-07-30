@@ -1,9 +1,11 @@
-import { BalanceTotal } from "@extension/core"
-import { balanceTotalsStore } from "@extension/core"
+import { BalanceTotal, balanceTotalsStore } from "@extension/core"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 
-export const balanceTotalsAtom = atomWithSubscription<BalanceTotal[]>((callback) => {
-  const { unsubscribe } = balanceTotalsStore.observable.subscribe((v) => callback(Object.values(v)))
-  return unsubscribe
-}, "balanceTotalsAtom")
+export const balanceTotalsAtom = atomWithSubscription<BalanceTotal[]>(
+  (callback) => {
+    const sub = balanceTotalsStore.observable.subscribe((v) => callback(Object.values(v)))
+    return () => sub.unsubscribe()
+  },
+  { debugLabel: "balanceTotalsAtom" }
+)

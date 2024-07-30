@@ -1,14 +1,14 @@
-import { FeatureFlag, RemoteConfigStoreData } from "@extension/core"
-import { remoteConfigStore } from "@extension/core"
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
+
+import { FeatureFlag, remoteConfigStore, RemoteConfigStoreData } from "@extension/core"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 
 export const remoteConfigAtom = atomWithSubscription<RemoteConfigStoreData>((callback) => {
-  const { unsubscribe } = remoteConfigStore.observable.subscribe(callback)
-  return unsubscribe
-}, "remoteConfigAtom")
+  const sub = remoteConfigStore.observable.subscribe(callback)
+  return () => sub.unsubscribe()
+})
 
 export const featureFlagAtomFamily = atomFamily((key: FeatureFlag) =>
   atom(async (get) => {

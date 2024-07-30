@@ -25,6 +25,7 @@ import {
   LoggedinType,
   MetadataUpdateStatus,
   ModalOpenRequest,
+  NftData,
   ProviderType,
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateOptions,
@@ -324,4 +325,9 @@ export default interface MessageTypes {
 
   assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>
   assetDiscoveryStopScan: () => Promise<boolean>
+
+  nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
+  nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
+  nftsSetFavorite: (id: string, isFavorite: boolean) => Promise<boolean>
+  nftsRefreshMetadata: (id: string) => Promise<boolean>
 }

@@ -1,6 +1,3 @@
-import { ActiveChains, activeChainsStore, isChainActive } from "@extension/core"
-import { ActiveEvmNetworks, activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
-import { ActiveTokens, activeTokensStore, isTokenActive } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import {
   Chain,
@@ -12,12 +9,24 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
-import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import isEqual from "lodash/isEqual"
 import { Observable } from "rxjs"
+
+import {
+  ActiveChains,
+  activeChainsStore,
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+  ActiveTokens,
+  activeTokensStore,
+  isChainActive,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
+import { api } from "@ui/api"
+import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 import { logObservableUpdate } from "./utils/logObservableUpdate"
@@ -26,14 +35,17 @@ const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
-export const evmNetworksActiveAtom = atomWithSubscription<ActiveEvmNetworks>((callback) => {
-  const sub = activeEvmNetworksStore.observable.subscribe(callback)
-  return () => sub.unsubscribe()
-}, "evmNetworksActiveAtom")
+export const evmNetworksActiveAtom = atomWithSubscription<ActiveEvmNetworks>(
+  (callback) => {
+    const sub = activeEvmNetworksStore.observable.subscribe(callback)
+    return () => sub.unsubscribe()
+  },
+  { debugLabel: "evmNetworksActiveAtom" }
+)
 
 const allEvmNetworksSubscriptionAtom = atomWithSubscription<void>(
   () => api.ethereumNetworks(NO_OP),
-  "allEvmNetworksSubscriptionAtom"
+  { debugLabel: "allEvmNetworksSubscriptionAtom" }
 )
 const allEvmNetworksObservableAtom = atomWithObservable(() =>
   chaindataProvider.evmNetworksObservable.pipe(logObservableUpdate("allEvmNetworksObservableAtom"))
@@ -125,15 +137,17 @@ export const evmNetworkAtomFamily = atomFamily((evmNetworkId: EvmNetworkId | nul
   })
 )
 
-export const chainsActiveAtom = atomWithSubscription<ActiveChains>((callback) => {
-  const sub = activeChainsStore.observable.subscribe(callback)
-  return () => sub.unsubscribe()
-}, "chainsActiveAtom")
-
-const allChainsSubscriptionAtom = atomWithSubscription<void>(
-  () => api.chains(NO_OP),
-  "allChainsSubscriptionAtom"
+export const chainsActiveAtom = atomWithSubscription<ActiveChains>(
+  (callback) => {
+    const sub = activeChainsStore.observable.subscribe(callback)
+    return () => sub.unsubscribe()
+  },
+  { debugLabel: "chainsActiveAtom" }
 )
+
+const allChainsSubscriptionAtom = atomWithSubscription<void>(() => api.chains(NO_OP), {
+  debugLabel: "allChainsSubscriptionAtom",
+})
 const allChainsObservableAtom = atomWithObservable(() =>
   chaindataProvider.chainsObservable.pipe(logObservableUpdate("allChainsObservableAtom"))
 )
@@ -243,15 +257,17 @@ export const chainByIdAtomFamily = atomFamily((chainId: ChainId | null | undefin
   })
 )
 
-export const tokensActiveAtom = atomWithSubscription<ActiveTokens>((callback) => {
-  const sub = activeTokensStore.observable.subscribe(callback)
-  return () => sub.unsubscribe()
-}, "tokensActiveAtom")
-
-const allTokensMapSubscriptionAtom = atomWithSubscription<void>(
-  () => api.tokens(NO_OP),
-  "allTokensMapSubscriptionAtom"
+export const tokensActiveAtom = atomWithSubscription<ActiveTokens>(
+  (callback) => {
+    const sub = activeTokensStore.observable.subscribe(callback)
+    return () => sub.unsubscribe()
+  },
+  { debugLabel: "tokensActiveAtom" }
 )
+
+const allTokensMapSubscriptionAtom = atomWithSubscription<void>(() => api.tokens(NO_OP), {
+  debugLabel: "allTokensMapSubscriptionAtom",
+})
 const allTokensMapObservableAtom = atomWithObservable<TokenList>(() =>
   (chaindataProvider.tokensByIdObservable as Observable<TokenList>).pipe(
     logObservableUpdate("allTokensMapObservableAtom")

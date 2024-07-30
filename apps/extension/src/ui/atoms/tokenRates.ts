@@ -1,12 +1,12 @@
-import { settingsStore } from "@extension/core"
-import { db } from "@extension/core"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { api } from "@ui/api"
 import { liveQuery } from "dexie"
-import { SetStateAction, atom } from "jotai"
+import { atom, SetStateAction } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import { from } from "rxjs"
+
+import { db, settingsStore } from "@extension/core"
+import { api } from "@ui/api"
 
 import { settingsAtomFamily } from "./settings"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -14,10 +14,10 @@ import { logObservableUpdate } from "./utils/logObservableUpdate"
 
 const NO_OP = () => {}
 
-const tokenRatesSubscriptionAtom = atomWithSubscription<void>(
-  () => api.tokenRates(NO_OP),
-  "tokenRatesAtom"
-)
+const tokenRatesSubscriptionAtom = atomWithSubscription<void>(() => api.tokenRates(NO_OP), {
+  debugLabel: "tokenRatesAtom",
+  refCount: true,
+})
 
 const tokenRatesObservableAtom = atomWithObservable(() =>
   from(liveQuery(() => db.tokenRates.toArray())).pipe(

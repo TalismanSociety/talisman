@@ -1,15 +1,14 @@
-import { AddressBookContact, addressBookStore } from "@extension/core"
-import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
 import { useAtomValue } from "jotai"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AddressBookContact, addressBookStore } from "@extension/core"
+import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
+
 export const addressBookAtom = atomWithSubscription<AddressBookContact[]>((callback) => {
-  const { unsubscribe } = addressBookStore.observable.subscribe((data) =>
-    callback(Object.values(data))
-  )
-  return unsubscribe
-}, "addressBookAtom")
+  const sub = addressBookStore.observable.subscribe((data) => callback(Object.values(data)))
+  return () => sub.unsubscribe()
+})
 
 export const useAddressBook = () => {
   const { t } = useTranslation()

@@ -21,7 +21,7 @@ const BG_CONFIG: MysticalPhysicsV3 = {
 
 export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
   const navigate = useNavigate()
-  const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
+  const handleClick = useCallback(() => navigate("/portfolio/tokens"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
   const disabled = useMemo(() => !accounts.length, [accounts.length])

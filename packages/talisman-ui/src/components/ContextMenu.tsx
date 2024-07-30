@@ -1,11 +1,12 @@
+import { CheckIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
   ButtonHTMLAttributes,
   FC,
+  forwardRef,
   HTMLAttributes,
   MouseEvent,
   ReactNode,
-  forwardRef,
   useCallback,
 } from "react"
 
@@ -64,3 +65,20 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
     />
   )
 }
+
+export const ContextMenuOptionItem: FC<{
+  label: string
+  selected: boolean
+  onClick: () => void
+}> = ({ label, selected, onClick }) => (
+  <ContextMenuItem
+    className={classNames(
+      "flex items-center justify-between gap-16",
+      selected ? "text-body" : "text-body-secondary"
+    )}
+    onClick={onClick}
+  >
+    <div>{label}</div>
+    <CheckIcon className={classNames(selected ? "visible" : "invisible")} />
+  </ContextMenuItem>
+)

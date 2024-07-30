@@ -1,3 +1,11 @@
+import type {
+  InjectedAccount,
+  InjectedMetadataKnown,
+  MetadataDef,
+  ProviderMeta,
+} from "@polkadot/extension-inject/types"
+import type { KeyringPair } from "@polkadot/keyring/types"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import {
@@ -7,19 +15,13 @@ import {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-import type {
-  InjectedAccount,
-  InjectedMetadataKnown,
-  MetadataDef,
-  ProviderMeta,
-} from "@polkadot/extension-inject/types"
-import type { KeyringPair } from "@polkadot/keyring/types"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert, isNumber } from "@polkadot/util"
 import { isTalismanUrl, log } from "extension-shared"
 
+import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
+import type { Port } from "../types/base"
 import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
@@ -47,8 +49,6 @@ import TalismanHandler from "../domains/talisman/handler"
 import { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
-import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
-import type { Port } from "../types/base"
 import { SubstrateSignResponse } from "../types/domains"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"

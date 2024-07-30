@@ -1,8 +1,9 @@
 import { Combobox } from "@headlessui/react"
 import { ChevronDownIcon, SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { NetworkOption } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
+import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
@@ -37,7 +38,7 @@ const ClearSearch: FC<{ open: boolean; setSearch: (val?: string) => void }> = ({
   return null
 }
 
-export const NetworkPicker = () => {
+export const NetworkPicker: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
 
@@ -47,6 +48,7 @@ export const NetworkPicker = () => {
       networks={networks}
       onChange={setNetworkFilter}
       value={networkFilter}
+      className={className}
     />
   )
 }
@@ -58,11 +60,13 @@ export const NetworkDropdown = <
   networks,
   onChange,
   value,
+  className,
 }: {
   placeholder?: string
   networks: T[]
   onChange: (network?: T) => void
   value?: T
+  className?: string
 }) => {
   const { t } = useTranslation()
 
@@ -85,7 +89,7 @@ export const NetworkDropdown = <
   const displayNetworks = useMemo(() => networks.filter(filterItems(search)), [networks, search])
 
   return (
-    <div className="text-body-secondary group inline-block">
+    <div className={classNames("text-body-secondary group inline-block", className)}>
       <Combobox nullable value={value} onChange={handleOnChange}>
         {({ open }) => {
           return (

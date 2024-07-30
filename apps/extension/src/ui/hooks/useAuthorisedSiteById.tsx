@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useMemo, useState } from "react"
+
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -6,7 +8,6 @@ import {
 } from "@extension/core"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl } from "@extension/shared"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAccountAddresses } from "./useAccountAddresses"
 import { useAuthorisedSites } from "./useAuthorisedSites"

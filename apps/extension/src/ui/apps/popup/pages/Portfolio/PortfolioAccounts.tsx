@@ -113,7 +113,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           : "all",
         from: "popup",
       })
-      return navigate(`/portfolio/assets?account=${option.address}`)
+      return navigate(`/portfolio/tokens?account=${option.address}`)
     }
 
     // navigate to list of accounts in folder (user clicked folder on main menu)
