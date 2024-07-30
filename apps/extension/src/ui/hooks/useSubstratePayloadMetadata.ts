@@ -55,14 +55,6 @@ export const useSubstratePayloadMetadata = (
             hasCheckMetadataHash,
           }
 
-        // console.log("specs", {
-        //   tokenSymbol: token.symbol,
-        //   decimals: token.decimals,
-        //   base58Prefix: registry.chainSS58 ?? 42,
-        //   specName: chain.specName,
-        //   specVersion,
-        // })
-
         const merkleizedMetadata = merkleizeMetadata(metadataRpc, {
           tokenSymbol: token.symbol,
           decimals: token.decimals,
@@ -85,14 +77,6 @@ export const useSubstratePayloadMetadata = (
         const hexPayload = u8aToHex(extPayload.toU8a(true))
 
         const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(hexPayload)
-
-        // console.log("txMetadata", {
-        //   txMetadata: u8aToHex(txMetadata),
-        //   metadataHash,
-        //   registry,
-        //   payloadWithMetadataHash,
-        //   hasCheckMetadataHash,
-        // })
 
         return {
           txMetadata: u8aToHex(txMetadata),
