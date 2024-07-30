@@ -23,7 +23,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add links to Sentry issues, Upvotey bug reports, or Discord messages.
 
 **Screenshots**
-If applicable, add screenshots/recordings to help explain your problem.
+If applicable, could you add screenshots/recordings to help explain your problem?
 
 **Environment (please complete the following information):**
 
