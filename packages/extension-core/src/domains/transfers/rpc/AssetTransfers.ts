@@ -1,9 +1,9 @@
+import type { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import type { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
 
@@ -19,8 +19,8 @@ import { validateHexString } from "../../../util/validateHexString"
 import { getUserExtensionsByChainId } from "../../metadata/userExtensions"
 import { SignerPayloadJSON } from "../../signing/types"
 import {
-  WalletTransactionTransferInfo,
   dismissTransaction,
+  WalletTransactionTransferInfo,
   watchSubstrateTransaction,
 } from "../../transactions"
 import { AssetTransferMethod, ResponseAssetTransferFeeQuery } from "../types"
@@ -205,11 +205,12 @@ export default class AssetTransfersRpc {
 
     if (
       !(
-        "substrate-native" === palletModule.type ||
         "substrate-assets" === palletModule.type ||
-        "substrate-tokens" === palletModule.type ||
+        "substrate-equilibrium" === palletModule.type ||
+        "substrate-foreignassets" === palletModule.type ||
+        "substrate-native" === palletModule.type ||
         "substrate-psp22" === palletModule.type ||
-        "substrate-equilibrium" === palletModule.type
+        "substrate-tokens" === palletModule.type
       )
     )
       throw new Error(
