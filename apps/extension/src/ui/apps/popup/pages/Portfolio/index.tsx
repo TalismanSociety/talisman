@@ -1,3 +1,6 @@
+import { Suspense, useMemo } from "react"
+import { Route, Routes, useLocation } from "react-router-dom"
+
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
@@ -9,8 +12,6 @@ import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import { Suspense, useMemo } from "react"
-import { Route, Routes, useLocation } from "react-router-dom"
 
 import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { NoAccounts } from "../NoAccounts"
@@ -18,6 +19,7 @@ import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
+import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
@@ -70,9 +72,11 @@ const HasAccountsPortfolioContent = () => (
       <Route path="whats-new" element={<PortfolioWhatsNew />} />
       <Route path="learn-more" element={<PortfolioLearnMore />} />
       <Route path="try-talisman" element={<PortfolioTryTalisman />} />
-      <Route path="assets" element={<PortfolioAssets />} />
-      <Route path=":symbol" element={<PortfolioAsset />} />
-      <Route path="" element={<PortfolioAccounts />} />
+      <Route path="tokens" element={<PortfolioAssets />} />
+      <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+      <Route path="nfts" element={<PortfolioAssets />} />
+      <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+      <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
     <Suspense fallback={null}>
       <BraveWarningPopupBanner />

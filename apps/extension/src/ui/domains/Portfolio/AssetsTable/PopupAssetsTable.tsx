@@ -1,26 +1,29 @@
+import { LockIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+
 import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { LockIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
+import { usePortfolioDisplayBalances } from "../useDisplayBalances"
+import { usePortfolio } from "../usePortfolio"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
-import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
+import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
 type AssetRowProps = {
   balances: Balances
@@ -67,7 +70,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     token.isTestnet && params.set("testnet", "true")
     account && params.set("account", account?.address)
 
-    navigate(`/portfolio/${encodeURIComponent(token.symbol)}?${params.toString()}`)
+    navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}?${params.toString()}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
   }, [account, genericEvent, navigate, token])
 
@@ -166,11 +169,6 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   )
 }
 
-type GroupedAssetsTableProps = {
-  balances: Balances
-  isInitialising: boolean
-}
-
 type GroupProps = {
   label: ReactNode
   fiatAmount: number
@@ -203,12 +201,16 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-export const PopupAssetsTable = ({ balances, isInitialising }: GroupedAssetsTableProps) => {
+export const PopupAssetsTable = () => {
   const { t } = useTranslation()
   const { account } = useSelectedAccount()
+
+  const { isInitialising } = usePortfolio()
+  const balances = usePortfolioDisplayBalances("network")
+
   // group by status by token (symbol)
   const { availableSymbolBalances: available, lockedSymbolBalances } =
-    usePortfolioSymbolBalances(balances)
+    usePortfolioSymbolBalancesByFilter("search")
 
   const currency = useSelectedCurrency()
 

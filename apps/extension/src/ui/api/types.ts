@@ -1,3 +1,12 @@
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { HexString } from "@polkadot/util/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
+import { Address, BalanceJson } from "@talismn/balances"
+import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { NsLookupType } from "@talismn/on-chain-id"
+import { MetadataDef } from "inject/substrate/types"
+import { TransactionRequest } from "viem"
+
 import {
   AccountAddressType,
   AccountJson,
@@ -10,11 +19,11 @@ import {
   AnyEthRequestChainId,
   AssetDiscoveryMode,
   AssetTransferMethod,
-  AuthRequestAddresses,
-  AuthRequestId,
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
+  AuthRequestAddresses,
+  AuthRequestId,
   BalanceSubscriptionResponse,
   ChangePasswordStatusUpdate,
   CustomEvmTokenCreate,
@@ -25,6 +34,7 @@ import {
   LoggedinType,
   MetadataUpdateStatus,
   ModalOpenRequest,
+  NftData,
   ProviderType,
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateOptions,
@@ -49,14 +59,6 @@ import {
   RequestAccountsCatalogAction,
   Trees,
 } from "@extension/core/domains/accounts/helpers.catalog"
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import { KeypairType } from "@polkadot/util-crypto/types"
-import type { HexString } from "@polkadot/util/types"
-import { Address, BalanceJson } from "@talismn/balances"
-import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
-import { NsLookupType } from "@talismn/on-chain-id"
-import { MetadataDef } from "inject/substrate/types"
-import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
   ping: () => Promise<boolean>
@@ -324,4 +326,9 @@ export default interface MessageTypes {
 
   assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>
   assetDiscoveryStopScan: () => Promise<boolean>
+
+  nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
+  nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
+  nftsSetFavorite: (id: string, isFavorite: boolean) => Promise<boolean>
+  nftsRefreshMetadata: (id: string) => Promise<boolean>
 }

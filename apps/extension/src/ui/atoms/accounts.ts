@@ -1,9 +1,10 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
-import { api } from "@ui/api"
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
+
+import { AccountJsonAny, AccountType } from "@extension/core"
+import { api } from "@ui/api"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 
@@ -15,7 +16,9 @@ const IS_EXTERNAL: Partial<Record<AccountType, true>> = {
   [AccountType.Signet]: true,
 }
 
-const accountsAtom = atomWithSubscription<AccountJsonAny[]>(api.accountsSubscribe, "accountsAtom")
+const accountsAtom = atomWithSubscription<AccountJsonAny[]>(api.accountsSubscribe, {
+  debugLabel: "accountsAtom",
+})
 
 export const accountsMapAtom = atom(async (get) => {
   const accounts = await get(accountsAtom)

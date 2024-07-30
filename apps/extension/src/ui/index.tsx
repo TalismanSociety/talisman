@@ -1,15 +1,16 @@
 import "@talisman/theme/styles.css"
 
-import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
-import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import React, { ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { FontFamily, preloadFonts } from "talisman-ui"
+
+import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
+import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
+import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 
 import { initSentryFrontend } from "../sentry"
 

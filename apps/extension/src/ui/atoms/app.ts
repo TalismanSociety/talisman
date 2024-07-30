@@ -1,14 +1,18 @@
-import { AppStoreData, appStore } from "@extension/core"
-import { SetStateAction, atom } from "jotai"
+import { atom, SetStateAction } from "jotai"
 import { atomFamily } from "jotai/utils"
+
+import { appStore, AppStoreData } from "@extension/core"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 import { KeyValueAtomFamily } from "./utils/types"
 
-export const appStateAtom = atomWithSubscription<AppStoreData>((callback) => {
-  const { unsubscribe } = appStore.observable.subscribe(callback)
-  return unsubscribe
-}, "appStateAtom")
+export const appStateAtom = atomWithSubscription<AppStoreData>(
+  (callback) => {
+    const sub = appStore.observable.subscribe(callback)
+    return () => sub.unsubscribe()
+  },
+  { debugLabel: "appStateAtom" }
+)
 
 export const appStateAtomFamily: KeyValueAtomFamily<AppStoreData> = atomFamily((key) =>
   atom(

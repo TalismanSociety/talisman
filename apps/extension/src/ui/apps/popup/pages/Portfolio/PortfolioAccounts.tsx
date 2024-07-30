@@ -1,9 +1,19 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
-import { AccountsCatalogTree, TreeFolder, TreeItem } from "@extension/core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { IconButton } from "talisman-ui"
+
+import {
+  AccountJsonAny,
+  AccountsCatalogTree,
+  AccountType,
+  TreeFolder,
+  TreeItem,
+} from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
@@ -23,10 +33,6 @@ import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -113,7 +119,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           : "all",
         from: "popup",
       })
-      return navigate(`/portfolio/assets?account=${option.address}`)
+      return navigate(`/portfolio/tokens?account=${option.address}`)
     }
 
     // navigate to list of accounts in folder (user clicked folder on main menu)

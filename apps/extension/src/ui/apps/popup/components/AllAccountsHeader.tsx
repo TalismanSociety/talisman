@@ -1,12 +1,13 @@
-import { AccountJsonAny } from "@extension/core"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
-import { useAccountColors } from "@ui/hooks/useAccountColors"
 import { FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
+import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { useAccountColors } from "@ui/hooks/useAccountColors"
 
 const BG_CONFIG: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
@@ -21,7 +22,7 @@ const BG_CONFIG: MysticalPhysicsV3 = {
 
 export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
   const navigate = useNavigate()
-  const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
+  const handleClick = useCallback(() => navigate("/portfolio/tokens"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
   const disabled = useMemo(() => !accounts.length, [accounts.length])

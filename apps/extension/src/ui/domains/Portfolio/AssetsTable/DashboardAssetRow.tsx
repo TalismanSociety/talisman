@@ -1,14 +1,15 @@
-import { Balances } from "@extension/core"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Suspense, useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+
+import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { Suspense, useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -82,7 +83,9 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const handleClick = useCallback(() => {
     if (!token) return
     navigate(
-      `/portfolio/${encodeURIComponent(token.symbol)}${token.isTestnet ? "?testnet=true" : ""}`
+      `/portfolio/tokens/${encodeURIComponent(token.symbol)}${
+        token.isTestnet ? "?testnet=true" : ""
+      }`
     )
     genericEvent("goto portfolio asset", { from: "dashboard", symbol: token.symbol })
   }, [genericEvent, navigate, token])

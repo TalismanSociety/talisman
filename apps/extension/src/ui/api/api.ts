@@ -340,4 +340,12 @@ export const api: MessageTypes = {
   assetDiscoveryStartScan: (mode, addresses) =>
     messageService.sendMessage("pri(assetDiscovery.scan.start)", { mode, addresses }),
   assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
+
+  // nfts
+  nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),
+  nftsSetHidden: (id, isHidden) =>
+    messageService.sendMessage("pri(nfts.collection.setHidden)", { id, isHidden }),
+  nftsSetFavorite: (id, isFavorite) =>
+    messageService.sendMessage("pri(nfts.setFavorite)", { id, isFavorite }),
+  nftsRefreshMetadata: (id) => messageService.sendMessage("pri(nfts.refreshMetadata)", { id }),
 }

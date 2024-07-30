@@ -19,6 +19,9 @@ export interface SettingsStoreData {
   selectedCurrency: TokenRateCurrency
   newFeaturesDismissed: string
   autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
+  nftsViewMode: "list" | "tiles"
+  nftsSortBy: "floor" | "name" | "date"
+  tokensSortBy: "name" | "total" | "locked" | "available"
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -36,6 +39,9 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   selectableCurrencies: ["usd", "dot", "eth"],
   selectedCurrency: "usd",
   newFeaturesDismissed: "0",
+  nftsViewMode: "tiles",
+  tokensSortBy: "total",
+  nftsSortBy: "date",
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

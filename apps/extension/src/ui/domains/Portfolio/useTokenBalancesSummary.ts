@@ -1,12 +1,13 @@
 import { Balances } from "@talismn/balances"
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { TokenRatesList } from "@talismn/token-rates"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
-type BalanceSummary = {
+import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+
+export type BalanceSummary = {
   totalTokens: BigNumber
   totalFiat: number | null
   lockedTokens: BigNumber

@@ -1,10 +1,11 @@
-import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
 import { Address, Balances, HydrateDb } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 import isEqual from "lodash/isEqual"
+
+import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
+import { api } from "@ui/api"
 
 import { AccountCategory, accountsByCategoryAtomFamily, accountsMapAtom } from "./accounts"
 import {
@@ -19,7 +20,7 @@ import { atomWithSubscription } from "./utils/atomWithSubscription"
 // Note : unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
 const rawBalancesSubscriptionAtom = atomWithSubscription<BalanceSubscriptionResponse>(
   api.balances,
-  "rawBalancesSubscriptionAtom"
+  { debugLabel: "rawBalancesSubscriptionAtom", refCount: true }
 )
 
 export const balancesInitialisingAtom = atom(async (get) => {
