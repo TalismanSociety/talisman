@@ -9,6 +9,8 @@ import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
 import { Balance, Balances } from "../domains/balances/types"
+import { getNftCollectionFloorUsd } from "../domains/nfts"
+import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { hasGhostsOfThePast } from "../util/hasGhostsOfThePast"
 import { roundToFirstInteger } from "../util/roundToFirstInteger"
@@ -106,6 +108,8 @@ class TalismanAnalytics {
       signet: 0,
     }
 
+    let ownedAddressesLower: string[] = []
+
     // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
     try {
       /* eslint-disable no-var */
@@ -129,6 +133,8 @@ class TalismanAnalytics {
       const ownedAddresses = accounts
         .filter((account) => account.meta.origin !== "WATCHED")
         .map((account) => account.address)
+
+      ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
       // balances + balances fiat sum estimate
       var balances = new Balances(
@@ -190,6 +196,28 @@ class TalismanAnalytics {
     const hasGhosts = await hasGhostsOfThePast()
     const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
 
+    const ownedNfts = nftsStore$.value.nfts.filter((nft) =>
+      nft.owners.some((o) => ownedAddressesLower.includes(o.address.toLowerCase()))
+    )
+    const ownedCollections = nftsStore$.value.collections.filter((c) =>
+      ownedNfts.some((n) => n.collectionId === c.id)
+    )
+
+    const nftsCount = ownedNfts.length
+    const floorByCollectionId = Object.fromEntries(
+      ownedCollections
+        .map((collection) => [collection.id, getNftCollectionFloorUsd(collection)] as const)
+        .filter(([, floor]) => !!floor)
+    )
+    const nftsTotalValue = ownedNfts.reduce(
+      (total, nft) => total + (floorByCollectionId[nft.collectionId] ?? 0),
+      0
+    )
+    const topNftCollections = Object.entries(floorByCollectionId)
+      .sort((c1, c2) => (c2[1] ?? 0) - (c1[1] ?? 0))
+      .slice(0, 20)
+      .map(([collectionId]) => ownedCollections.find((c) => c.id === collectionId)?.name)
+
     return {
       accountBreakdown,
       accountsCount: keyring.getAccounts().filter(({ meta }) => meta.origin !== AccountType.Watched)
@@ -204,6 +232,10 @@ class TalismanAnalytics {
         })),
       hasGhostsOfThePast: hasGhostsNft,
       topChainTokens,
+
+      nftsCount,
+      nftsTotalValue,
+      topNftCollections,
     }
   }
 }
