@@ -25,7 +25,7 @@ To contribute to the Talisman Wallet, follow these steps:
 
 If you have an idea for a new feature or encounter a bug in the code, please submit an issue in the [GitHub issue tracker](https://github.com/TalismanSociety/talisman/issues). Be sure to include a detailed description of the problem or feature request.
 
-If there's already an issue for something you'd like work on, please check with the team before you start - we might be working on it already.
+If there's already an issue for something you'd like to work on, please check with the team before you start - we might be working on it already.
 
 ### Pull Requests
 
