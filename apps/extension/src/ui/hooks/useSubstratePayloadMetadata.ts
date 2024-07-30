@@ -21,8 +21,6 @@ export const useSubstratePayloadMetadata = (
       if (!payload || !chain || !token) return null
 
       try {
-        if (!chain.specName) throw new Error("Missing chain specName")
-
         const specVersion = hexToNumber(payload.specVersion)
 
         // metadata v15 is required by the shortener
@@ -44,7 +42,11 @@ export const useSubstratePayloadMetadata = (
             (ext) => ext.identifier.toString() === "CheckMetadataHash"
           )
 
-        if (!hasCheckMetadataHash)
+        // it is not possible to generate a valid metadata hash for dev chains as they are missing symbol and decimals in their chain spec
+        // this should be check using a system_properties rpc call but checking token details achieves the same thing
+        const isDevChain = token.symbol === "Unit" && token.decimals === 0
+
+        if (!hasCheckMetadataHash || isDevChain || !chain.specName)
           return {
             txMetadata: undefined,
             metadataHash: undefined,
