@@ -1,11 +1,12 @@
+import { useAtom, useAtomValue } from "jotai"
+import { useMemo } from "react"
+
 import {
   nftsAtom,
   nftsNetworkFilterAtom,
   nftsNetworkOptionsAtom,
   nftsPortfolioSearchAtom,
 } from "@ui/atoms/nfts"
-import { useAtom, useAtomValue } from "jotai"
-import { useMemo } from "react"
 
 export const usePortfolioNftsSearch = () => {
   const [search, setSearch] = useAtom(nftsPortfolioSearchAtom)

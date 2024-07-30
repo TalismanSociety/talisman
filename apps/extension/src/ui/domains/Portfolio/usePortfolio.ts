@@ -1,3 +1,7 @@
+import { log } from "extension-shared"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useEffect } from "react"
+
 import {
   networkFilterAtom,
   portfolioAccountAtom,
@@ -6,9 +10,6 @@ import {
   portfolioGlobalDataAtom,
   portfolioSearchAtom,
 } from "@ui/atoms"
-import { log } from "extension-shared"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { useEffect } from "react"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 

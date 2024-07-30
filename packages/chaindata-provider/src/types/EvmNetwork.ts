@@ -20,6 +20,15 @@ export type EvmNetwork = {
   explorerUrl: string | null
   rpcs: Array<EthereumRpc> | null
   substrateChain: { id: ChainId } | null
+  feeType?: "legacy" | "eip-1559"
+  l2FeeType?:
+    | {
+        type: "op-stack"
+      }
+    | {
+        type: "scroll"
+        l1GasPriceOracle: `0x${string}`
+      }
 
   balancesConfig: Array<BalancesConfig>
   // TODO: Delete (has its own store now)

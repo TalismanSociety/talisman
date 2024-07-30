@@ -1,7 +1,7 @@
 import { log } from "extension-shared"
 import pako from "pako"
 
-import { DbBlobId, db } from "./db"
+import { db, DbBlobId } from "./db"
 
 export const updateDbBlob = async <Id extends DbBlobId, Data extends { id: Id }>(
   id: Id,

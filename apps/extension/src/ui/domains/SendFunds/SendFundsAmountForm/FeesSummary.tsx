@@ -1,7 +1,8 @@
 import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { isEvmToken } from "@ui/util/isEvmToken"
 import { useTranslation } from "react-i18next"
+
+import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../../Asset/ChainLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
