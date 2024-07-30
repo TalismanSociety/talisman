@@ -75,7 +75,7 @@ const PortfolioSearch = () => {
     <SearchInput
       containerClassName={classNames(
         "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
-        IS_POPUP ? "max-w-[17rem]" : "max-w-[37.4rem]"
+        IS_POPUP ? "w-full" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
       onChange={setSearch}
@@ -131,7 +131,7 @@ const TokensSortButton = () => {
 export const PortfolioToolbarTokens = () => {
   return (
     <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
-      <div className="flex grow items-center overflow-clip px-1">
+      <div className="flex grow items-center overflow-hidden px-1">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
