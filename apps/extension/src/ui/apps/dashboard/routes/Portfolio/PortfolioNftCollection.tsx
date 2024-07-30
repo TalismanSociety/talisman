@@ -8,7 +8,7 @@ export const PortfolioNftCollection = () => {
   const { pageOpenEvent } = useAnalytics()
 
   useEffect(() => {
-    pageOpenEvent("portfolio assets")
+    pageOpenEvent("portfolio NFT collection")
   }, [pageOpenEvent])
 
   return (

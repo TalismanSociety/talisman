@@ -12,7 +12,7 @@ export const PortfolioNftCollection = () => {
   const { popupOpenEvent } = useAnalytics()
 
   useEffect(() => {
-    popupOpenEvent("portfolio nft collection")
+    popupOpenEvent("portfolio NFT collection")
   }, [popupOpenEvent])
 
   return (

@@ -37,6 +37,16 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   )
 }
 
+const PopupAnalyticsEvent: FC<{ name: string }> = ({ name }) => {
+  const { popupOpenEvent } = useAnalytics()
+
+  useEffect(() => {
+    popupOpenEvent(name)
+  }, [name, popupOpenEvent])
+
+  return null
+}
+
 const MainContent: FC = () => {
   const { evmNetworks, chains } = usePortfolio()
   const { account } = useSelectedAccount()
@@ -54,13 +64,25 @@ const MainContent: FC = () => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  if (matchTokens) return <PopupAssetsTable />
-  if (matchNfts) return <PopupNfts />
+  if (matchTokens)
+    return (
+      <>
+        <PopupAssetsTable />
+        <PopupAnalyticsEvent name="portfolio assets" />
+      </>
+    )
+  if (matchNfts)
+    return (
+      <>
+        <PopupNfts />
+        <PopupAnalyticsEvent name="portfolio NFTs" />
+      </>
+    )
 
   return null
 }
 
-const PageContent = () => {
+export const PortfolioAssets = () => {
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
 
@@ -77,14 +99,4 @@ const PageContent = () => {
       </Suspense>
     </>
   )
-}
-
-export const PortfolioAssets = () => {
-  const { popupOpenEvent } = useAnalytics()
-
-  useEffect(() => {
-    popupOpenEvent("portfolio assets")
-  }, [popupOpenEvent])
-
-  return <PageContent />
 }
