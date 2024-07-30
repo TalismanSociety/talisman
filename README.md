@@ -163,7 +163,7 @@ When building UI features, please follow the following spec to ensure they're tr
 - `build`: builds the wallet in `packages/apps/extension/dist/chrome` folder, without sentry keys
 - `build:firefox`: builds the wallet in `packages/apps/extension/dist/firefox` folder, without sentry keys
 - `build:extension:prod` builds the Talisman browser extension (requires sentry settings, Talisman team only)
-- `build:extension:canary` : builds the Talisman browser extension test version, with different ID and icon than prod
+- `build:extension:canary` : builds the Talisman browser extension test version, with a different ID and icon than prod
 
 ### Build the wallet browser extension using Docker
 
