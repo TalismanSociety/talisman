@@ -8,12 +8,14 @@ import {
 } from "./types"
 
 export const NOM_POOL_SUPPORTED_CHAINS: NomPoolSupportedChain[] = [
+  "avail",
   "polkadot",
   "kusama",
   "aleph-zero",
   "vara",
 ]
 export const NOM_POOL_MIN_DEPOSIT: Record<NomPoolSupportedChain, string> = {
+  "avail": "100000000000000000000", // 100 AVAIL
   "polkadot": "10000000000",
   "kusama": "001667000000",
   "aleph-zero": "100000000000",
