@@ -1,5 +1,10 @@
-import { EvmLsdSupportedChain, NomPoolSupportedChain, StakingSupportedChain } from "@extension/core"
-import { EVM_LSD_SUPPORTED_CHAINS, NOM_POOL_SUPPORTED_CHAINS } from "@extension/core"
+import {
+  EVM_LSD_SUPPORTED_CHAINS,
+  EvmLsdSupportedChain,
+  NOM_POOL_SUPPORTED_CHAINS,
+  NomPoolSupportedChain,
+  StakingSupportedChain,
+} from "@extension/core"
 
 type Colours = {
   text: string
@@ -22,6 +27,10 @@ export const colours: Record<StakingSupportedChain, Colours> = {
   "vara": {
     text: "text-[#00a87a]",
     background: "bg-[#002905]",
+  },
+  "avail": {
+    text: "text-[#D0E5FF]",
+    background: "bg-[#4E6786]",
   },
   "1": {
     text: "text-[#8b93b4]",
