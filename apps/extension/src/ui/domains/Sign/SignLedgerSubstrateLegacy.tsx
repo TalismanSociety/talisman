@@ -1,14 +1,14 @@
-import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
-import { log } from "@extension/shared"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
+import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
-import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
+
+import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import { log } from "@extension/shared"
+import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
 import {
   LedgerConnectionStatus,
@@ -83,13 +83,24 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     setError(null)
 
     try {
-      let { signature } = await (isRaw
-        ? ledger.signRaw(unsigned, account.accountIndex, account.addressOffset)
-        : ledger.sign(unsigned, account.accountIndex, account.addressOffset))
+      const HARDENED = 0x80000000
 
-      if (isRaw)
-        // remove first byte which stores the signature type (0 here, as 0 = ed25519)
-        signature = u8aToHex(hexToU8a(signature).slice(1))
+      const { signature: signatureBuffer } = await (isRaw
+        ? ledger.signRaw(
+            HARDENED + (account.accountIndex ?? 0),
+            HARDENED + 0,
+            HARDENED + (account.addressOffset ?? 0),
+            Buffer.from(unsigned)
+          )
+        : ledger.sign(
+            HARDENED + (account.accountIndex ?? 0),
+            HARDENED + 0,
+            HARDENED + (account.addressOffset ?? 0),
+            Buffer.from(unsigned)
+          ))
+
+      // remove first byte which stores the signature type (0 here, as 0 = ed25519)
+      const signature = isRaw ? u8aToHex(signatureBuffer.slice(1)) : u8aToHex(signatureBuffer)
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })

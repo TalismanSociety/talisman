@@ -1,15 +1,16 @@
-import { SubstrateLedgerAppType, isChainActive } from "@extension/core"
+import { validateHexString } from "@talismn/util"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { isChainActive, SubstrateLedgerAppType } from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { validateHexString } from "@talismn/util"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
+import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useChain from "@ui/hooks/useChain"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 
 import {
   LedgerAccountDefSubstrate,
@@ -54,15 +55,24 @@ const useLedgerChainAccounts = (
 
       for (let i = 0; i < itemsPerPage; i++) {
         const accountIndex = skip + i
-        const { address } = await ledger.getAddress(false, accountIndex, 0)
+        const HARDENED = 0x80000000
+        const change = 0
+        const addressOffset = 0
+
+        const { address } = await ledger.getAddress(
+          HARDENED + accountIndex,
+          HARDENED + change,
+          HARDENED + addressOffset,
+          false
+        )
 
         newAccounts[i] = {
           genesisHash: chain.genesisHash as string,
           accountIndex,
-          addressOffset: 0,
+          addressOffset,
           address,
           name: t("Ledger {{appLabel}} {{accountIndex}}", {
-            appLabel: app.label,
+            appLabel: app.name,
             accountIndex: accountIndex + 1,
           }),
         } as LedgerSubstrateAccount

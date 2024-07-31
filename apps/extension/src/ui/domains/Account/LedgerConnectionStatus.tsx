@@ -1,7 +1,8 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { LedgerStatus } from "@ui/hooks/ledger/common"
 import { FC, ReactNode, useEffect, useState } from "react"
+
+import { LedgerStatus } from "@ui/hooks/ledger/common"
 
 export type LedgerConnectionStatusProps = {
   status: LedgerStatus
@@ -59,6 +60,7 @@ export const LedgerConnectionStatus = ({
   }, [status, hideOnSuccess])
 
   if (!status || status === "unknown") return null
+
   return (
     <Container
       className={classNames(
