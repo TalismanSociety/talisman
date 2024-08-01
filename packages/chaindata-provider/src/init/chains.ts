@@ -13,7 +13,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "1002006",
+    specVersion: "1002007",
     nativeToken: {
       id: "polkadot-substrate-native",
     },
@@ -30,9 +30,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://apps-rpc.polkadot.io",
-      },
-      {
         url: "wss://polkadot-rpc.dwellir.com",
       },
       {
@@ -46,6 +43,9 @@ export const chains = [
       },
       {
         url: "wss://1rpc.io/dot",
+      },
+      {
+        url: "wss://polkadot-rpc.publicnode.com",
       },
       {
         url: "wss://polkadot-public-rpc.blockops.network/ws",
@@ -176,6 +176,11 @@ export const chains = [
         name: "KILT Spiritnet",
       },
       {
+        id: "laos",
+        paraId: 3370,
+        name: "Laos",
+      },
+      {
         id: "litentry",
         paraId: 2013,
         name: "Litentry",
@@ -261,6 +266,11 @@ export const chains = [
         name: "Collectives",
       },
       {
+        id: "polkadot-people",
+        paraId: 1004,
+        name: "People",
+      },
+      {
         id: "sora-polkadot",
         paraId: 2025,
         name: "Sora",
@@ -342,9 +352,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://kusama-rpc.polkadot.io",
-      },
-      {
         url: "wss://kusama-rpc.dwellir.com",
       },
       {
@@ -358,6 +365,9 @@ export const chains = [
       },
       {
         url: "wss://1rpc.io/ksm",
+      },
+      {
+        url: "wss://kusama-rpc.publicnode.com",
       },
       {
         url: "wss://rpc-kusama.luckyfriday.io",
@@ -450,11 +460,6 @@ export const chains = [
         name: "DAO IPCI",
       },
       {
-        id: "k-laos",
-        paraId: 3336,
-        name: "K-Laos",
-      },
-      {
         id: "kabocha",
         paraId: 2113,
         name: "Kabocha",
@@ -500,14 +505,14 @@ export const chains = [
         name: "Kusama Bridge Hub",
       },
       {
-        id: "kusama-people",
-        paraId: 1004,
-        name: "Kusama People",
-      },
-      {
         id: "kusama-coretime",
         paraId: 1005,
-        name: "Kusama Coretime",
+        name: "Coretime",
+      },
+      {
+        id: "kusama-people",
+        paraId: 1004,
+        name: "People",
       },
       {
         id: "litmus",
@@ -598,7 +603,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 454,
+    sortIndex: 457,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -634,6 +639,12 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://asset-hub-kusama-rpc.dwellir.com",
+      },
+      {
+        url: "wss://statemine-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://sys.ibp.network/statemine",
       },
       {
@@ -650,12 +661,6 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io/assethub",
-      },
-      {
-        url: "wss://statemine-rpc.dwellir.com",
-      },
-      {
-        url: "wss://statemine-rpc-tn.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -704,7 +709,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 455,
+    sortIndex: 458,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -732,7 +737,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://kusama-bridge-hub-rpc.dwellir.com",
+        url: "wss://bridge-hub-kusama-rpc.dwellir.com",
       },
       {
         url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
@@ -770,7 +775,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 656,
+    sortIndex: 663,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -801,6 +806,33 @@ export const chains = [
         id: "polkadot-asset-hub-substrate-assets-17-wifd",
       },
       {
+        id: "polkadot-asset-hub-substrate-foreignassets-eq",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-weth",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-ksm",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-bnc",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-eqd",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-glmr",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-vdot",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-hdx",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-ajun",
+      },
+      {
         id: "polkadot-asset-hub-substrate-native",
       },
     ],
@@ -811,6 +843,12 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://asset-hub-polkadot-rpc.dwellir.com",
+      },
+      {
+        url: "wss://statemint-rpc-tn.dwellir.com",
+      },
       {
         url: "wss://sys.ibp.network/statemint",
       },
@@ -828,12 +866,6 @@ export const chains = [
       },
       {
         url: "wss://dot-rpc.stakeworld.io/assethub",
-      },
-      {
-        url: "wss://statemint-rpc.dwellir.com",
-      },
-      {
-        url: "wss://statemint-rpc-tn.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -890,58 +922,59 @@ export const chains = [
         moduleConfig: {
           tokens: [
             {
-              assetId: '{"parents":1,"interior":{"X1":{"Parachain":2011}}}',
+              onChainId: '{"parents":1,"interior":{"X1":{"Parachain":2011}}}',
               symbol: "EQ",
               coingeckoId: "equilibrium-token",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eq.svg",
             },
             {
-              assetId:
+              onChainId:
                 '{"parents":2,"interior":{"X2":[{"GlobalConsensus":{"Ethereum":{"chainId":1} }},{"AccountKey20":{"network":null,"key":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}}]}}',
               symbol: "WETH",
               coingeckoId: "weth",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/weth.webp",
             },
             {
-              assetId: '{"parents":2,"interior":{"X1":{"GlobalConsensus":"Kusama"}}}',
+              onChainId: '{"parents":2,"interior":{"X1":{"GlobalConsensus":"Kusama"}}}',
               symbol: "KSM",
               coingeckoId: "kusama",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/ksm.svg",
             },
             {
-              assetId:
+              onChainId:
                 '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
               symbol: "BNC",
               coingeckoId: "bifrost-native-coin",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bnc.svg",
             },
             {
-              assetId:
+              onChainId:
                 '{"parents":1,"interior":{"X2":[{"Parachain":2011},{"GeneralKey":{"length":3,"data":"0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
               symbol: "EQD",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eqd.svg",
             },
             {
-              assetId: '{"parents":1,"interior":{"X2":[{"Parachain":2004},{"PalletInstance":10}]}}',
+              onChainId:
+                '{"parents":1,"interior":{"X2":[{"Parachain":2004},{"PalletInstance":10}]}}',
               symbol: "GLMR",
               coingeckoId: "moonbeam",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/moonbeam.webp",
             },
             {
-              assetId:
+              onChainId:
                 '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
               symbol: "vDOT",
               coingeckoId: "voucher-dot",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/vdot.svg",
             },
             {
-              assetId: '{"parents":1,"interior":{"X2":[{"Parachain":2034},{"GeneralIndex":0}]}}',
+              onChainId: '{"parents":1,"interior":{"X2":[{"Parachain":2034},{"GeneralIndex":0}]}}',
               symbol: "HDX",
               coingeckoId: "hydradx",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/hydradx.webp",
             },
             {
-              assetId: '{"parents":1,"interior":{"X1":{"Parachain":2051}}}',
+              onChainId: '{"parents":1,"interior":{"X1":{"Parachain":2051}}}',
               symbol: "AJUN",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
             },
@@ -956,7 +989,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 657,
+    sortIndex: 664,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -984,7 +1017,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://polkadot-bridge-hub-rpc.dwellir.com",
+        url: "wss://bridge-hub-polkadot-rpc.dwellir.com",
       },
       {
         url: "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
