@@ -2,7 +2,7 @@ export const evmNetworks = [
   {
     id: "1",
     isTestnet: false,
-    sortIndex: 274,
+    sortIndex: 278,
     name: "Ethereum Mainnet",
     themeColor: "#62688f",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/1.svg",
@@ -24,6 +24,7 @@ export const evmNetworks = [
       },
     ],
     substrateChain: null,
+    feeType: "eip-1559",
     balancesConfig: [
       {
         moduleType: "evm-native",
