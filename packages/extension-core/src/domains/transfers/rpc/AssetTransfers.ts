@@ -16,7 +16,6 @@ import { getExtrinsicDispatchInfo } from "../../../util/getExtrinsicDispatchInfo
 import { getRuntimeVersion } from "../../../util/getRuntimeVersion"
 import { getTypeRegistry } from "../../../util/getTypeRegistry"
 import { validateHexString } from "../../../util/validateHexString"
-import { getUserExtensionsByChainId } from "../../metadata/userExtensions"
 import { SignerPayloadJSON } from "../../signing/types"
 import {
   dismissTransaction,
@@ -242,7 +241,7 @@ export default class AssetTransfersRpc {
       // has to be cast to any because typing of the balance modules doesn't allow different types per module
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       transferMethod: method as any,
-      userExtensions: getUserExtensionsByChainId(chainId),
+      userExtensions: chain.signedExtensions,
     })
 
     assert(transaction, `Failed to construct tx for token '${token.id}'`)

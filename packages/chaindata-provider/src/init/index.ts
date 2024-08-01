@@ -15,7 +15,8 @@ import { tokens as initSubstrateTokens } from "./tokens"
 // `pnpm chore:generate-init-data`
 
 export const fetchInitChains = async (): Promise<Chain[]> => initChains as Chain[]
-export const fetchInitEvmNetworks = async (): Promise<EvmNetwork[]> => initEvmNetworks
+export const fetchInitEvmNetworks = async (): Promise<EvmNetwork[]> =>
+  initEvmNetworks as EvmNetwork[]
 export const fetchInitSubstrateTokens = async (): Promise<Token[]> => initSubstrateTokens as Token[]
 
 // TODO: Move `fetchMiniMetadatas` into `@talismn/balances`,
