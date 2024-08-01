@@ -100,7 +100,7 @@ export const customTokensFilter = (tokens: Token[]) =>
   tokens.filter((token) => "isCustom" in token && token.isCustom)
 
 //
-// Utils to Observable methods with one-shot Promise methods
+// Utils to wrap Observable methods with one-shot Promise methods
 //
 
 type ObservableReturnType<O> = O extends Observable<infer T> ? T : O

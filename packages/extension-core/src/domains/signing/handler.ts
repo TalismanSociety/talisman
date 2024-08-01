@@ -81,7 +81,7 @@ export default class SigningHandler extends ExtensionHandler {
         })
 
         signature =
-          typeof chain.hasExtrinsicSignatureTypePrefix !== "boolean"
+          typeof chain?.hasExtrinsicSignatureTypePrefix !== "boolean"
             ? // use default value of `withType`
               // (auto-detected by whether `ExtrinsicSignature` is an `Enum` or not in the chain metadata)
               extrinsicPayload.sign(pair).signature
