@@ -1,17 +1,24 @@
 import { TypeRegistry } from "@polkadot/types"
+import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import keyring from "@polkadot/ui-keyring"
-import { assert } from "@polkadot/util"
+import { assert, u8aToHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { addTrailingSlash, encodeAnyAddress } from "@talismn/util"
 import { TEST } from "extension-shared"
 
+import type { MessageTypes, RequestType, ResponseType } from "../../types"
+import type {
+  KnownSigningRequestApprove,
+  KnownSigningRequestIdOnly,
+  RequestSigningApproveSignature,
+  SignerPayloadJSON,
+} from "./types"
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import type { MessageTypes, RequestType, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { isJsonPayload } from "../../util/isJsonPayload"
@@ -19,12 +26,6 @@ import { validateHexString } from "../../util/validateHexString"
 import { AccountType } from "../accounts/types"
 import { getHostName } from "../app/helpers"
 import { watchSubstrateTransaction } from "../transactions"
-import type {
-  KnownSigningRequestApprove,
-  KnownSigningRequestIdOnly,
-  RequestSigningApproveSignature,
-  SignerPayloadJSON,
-} from "./types"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({
@@ -72,14 +73,25 @@ export default class SigningHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
+        const chain = await chaindataProvider.chainByGenesisHash(payload.genesisHash)
+
         // create signable extrinsic payload
         const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
           version: payload.version,
         })
-        signature = extrinsicPayload.sign(pair).signature
 
-        const chains = Object.values(await chaindataProvider.chainsById())
-        const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
+        signature =
+          typeof chain.hasExtrinsicSignatureTypePrefix !== "boolean"
+            ? // use default value of `withType`
+              // (auto-detected by whether `ExtrinsicSignature` is an `Enum` or not in the chain metadata)
+              extrinsicPayload.sign(pair).signature
+            : // use override value of `withType` from chaindata
+              u8aToHex(
+                signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
+                  // use chaindata override value of `withType`
+                  withType: chain.hasExtrinsicSignatureTypePrefix,
+                })
+              )
 
         if (payload.withSignedTransaction) {
           const tx = registry.createType(
