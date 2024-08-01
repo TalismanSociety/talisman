@@ -40,7 +40,29 @@ export type Chain = {
   /** @deprecated has its own store now */
   balancesMetadata: Array<BalancesMetadata>
 
-  hasCheckMetadataHash?: boolean // Indicates if the chain has the CheckMetadataHash extension, enabling signing with ledger generic app
+  /** Indicates if the chain has the `CheckMetadataHash` extension, enabling signing with the ledger generic app */
+  hasCheckMetadataHash?: boolean
+  /**
+   * Some chains require a 1-byte prefix on transaction signatures to indicate the signing algo used:
+   *
+   * - Ed25519:  `0x00`
+   * - Sr25519:  `0x01`
+   * - Ecdsa:    `0x02`
+   * - Ethereum: `0x03`
+   *
+   * Polkadot.js tries to auto-detect whether to add this prefix or not,
+   * as part of the `GenericExtrinsicPayload.sign` method:
+   * - https://github.com/polkadot-js/api/blob/778d79a/packages/types/src/extrinsic/v4/ExtrinsicPayload.ts#L37-L39
+   * - https://github.com/polkadot-js/api/blob/778d79a/packages/types/src/extrinsic/v4/ExtrinsicPayload.ts#L122-L129
+   *
+   * However, on some chains this auto-detection results in either a false-positive or false-negative.
+   *
+   * By leveraging the generic extrinsic sign function from `@polkadot/types/extrinsic/util`:
+   * - https://github.com/polkadot-js/api/blob/778d79a/packages/types/src/extrinsic/util.ts#L9-L15
+   *
+   * We can specify whether or not to include the signature prefix, based on the value of this `hasExtrinsicSignatureTypePrefix` property.
+   */
+  hasExtrinsicSignatureTypePrefix?: boolean
 }
 export type CustomChain = Chain & {
   isCustom: true
