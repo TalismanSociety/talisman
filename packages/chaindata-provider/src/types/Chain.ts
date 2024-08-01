@@ -63,6 +63,14 @@ export type Chain = {
    * We can specify whether or not to include the signature prefix, based on the value of this `hasExtrinsicSignatureTypePrefix` property.
    */
   hasExtrinsicSignatureTypePrefix?: boolean
+
+  /** Custom types to be registered in the TypeRegistry */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  signedExtensions?: any
+
+  /** Custom signed extensions to be registered in the Metadata object */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  registryTypes?: any
 }
 export type CustomChain = Chain & {
   isCustom: true
