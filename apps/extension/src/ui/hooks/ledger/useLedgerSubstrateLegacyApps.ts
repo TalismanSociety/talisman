@@ -1,6 +1,3 @@
-// import { useMemo } from "react"
-// import { useTranslation } from "react-i18next"
-
 import { supportedApps } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Chain, ChainId } from "extension-core"
@@ -8,23 +5,6 @@ import { keyBy } from "lodash"
 import { useMemo } from "react"
 
 import { useAllChains } from "../useChains"
-
-// import { ledgerNetworks } from "./common"
-
-// export const useLedgerSubstrateLegacyApp = (genesisHash?: string | null) => {
-//   const { t } = useTranslation()
-//   return useMemo(
-//     () =>
-//       genesisHash
-//         ? ledgerNetworks.find((n) => n.genesisHash === genesisHash) ?? {
-//             name: "",
-//             genesisHash: "",
-//             label: t("Unknown app"),
-//           }
-//         : null,
-//     [genesisHash, t]
-//   )
-// }
 
 type LedgerSubstrateLegacyApp = SubstrateAppParams & {
   chain?: Chain | null

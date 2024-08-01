@@ -58,9 +58,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
 
       setUnsigned(tmpUnsigned)
       setIsRaw(true)
-    } else {
-      if (!registry) return setError(t("Missing registry"))
-
+    } else if (registry) {
       const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
         version: payload.version,
       })
