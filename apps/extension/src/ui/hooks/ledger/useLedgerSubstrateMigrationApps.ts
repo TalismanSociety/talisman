@@ -64,10 +64,7 @@ export const useLedgerSubstrateMigrationApps = () => {
         .filter((app) => app.slip0044 !== polkadot?.slip0044 && app.cla !== polkadot?.cla)
         .map<SubstrateMigrationApp>((app) => {
           const chain = chainsMap[LEDGER_MIRATION_APPS[app.name]] ?? null
-          return {
-            ...app,
-            chain,
-          }
+          return { ...app, chain }
         })
         .sort((a, b) => a.name.localeCompare(b.name))
     )

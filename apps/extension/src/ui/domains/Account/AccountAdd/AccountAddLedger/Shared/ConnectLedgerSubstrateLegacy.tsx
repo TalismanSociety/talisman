@@ -1,11 +1,12 @@
+import { FC, useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
+
 import { Spacer } from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
+import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
-import { FC, useEffect } from "react"
-import { Trans, useTranslation } from "react-i18next"
 
 type ConnectLedgerSubstrateLegacyProps = {
   chainId: string

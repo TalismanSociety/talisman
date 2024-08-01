@@ -73,8 +73,6 @@
       "@polkadot/types-known": "12.0.2",
       "@polkadot/types-support": "12.0.2",
       "@polkadot/types": "12.0.2",
-      "@polkadot/hw-ledger-transports": "12.6.2",
-      "@polkadot/hw-ledger": "12.6.2",
       "@polkadot/keyring": "12.6.2",
       "@polkadot/networks": "12.6.2",
       "@polkadot/util-crypto": "12.6.2",

@@ -1,7 +1,12 @@
-import { DEBUG } from "@extension/shared"
 import { supportedApps } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { t } from "i18next"
+
+import { DEBUG } from "@extension/shared"
+
+export const LEDGER_SUCCESS_CODE = 0x9000
+
+export const LEDGER_HARDENED_OFFSET = 0x80000000
 
 export class LedgerError extends Error {
   statusCode?: number
@@ -16,67 +21,6 @@ export class LedgerError extends Error {
 export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
   "This transaction cannot be signed via an Ethereum Ledger account."
 export const ERROR_LEDGER_NO_APP = "There is no Ledger app available for this network."
-
-// this should live in chaindata in the future
-export const ledgerNetworks = [
-  {
-    // name should be one of the keys of the knownLedger object :
-    // https://github.com/polkadot-js/common/blob/master/packages/networks/src/defaults/ledger.ts
-    name: "polkadot",
-    genesisHash: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    label: "Polkadot", // used both in "Please open Polkadot app" message and for naming accounts e.g. "Ledger Polkadot 1"
-  },
-  {
-    name: "kusama",
-    genesisHash: "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    label: "Kusama",
-  },
-  {
-    name: "astar",
-    genesisHash: "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
-    label: "Astar",
-  },
-  {
-    name: "acala",
-    genesisHash: "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
-    label: "Acala",
-  },
-  {
-    name: "karura",
-    genesisHash: "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
-    label: "Karura",
-  },
-  {
-    name: "nodle-para",
-    genesisHash: "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21",
-    label: "Nodle",
-  },
-  {
-    name: "statemine",
-    genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
-    label: "Statemine", // current name of the app in Ledger Live and on the device, hasn't been renamed to Kusama Asset Hub yet.
-  },
-  {
-    name: "statemint",
-    genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
-    label: "Statemint", // current name of the app in Ledger Live and on the device, hasn't been renamed to Polkadot Asset Hub yet.
-  },
-  {
-    name: "aleph-node",
-    genesisHash: "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
-    label: "Aleph Zero",
-  },
-  {
-    name: "pendulum",
-    genesisHash: "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
-    label: "Pendulum",
-  },
-  {
-    name: "xxnetwork",
-    genesisHash: "0x50dd5d206917bf10502c68fb4d18a59fc8aa31586f4e8856b493e43544aa82aa",
-    label: "xx network",
-  },
-]
 
 export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
 
@@ -226,8 +170,7 @@ export const getPolkadotLedgerDerivationPath = ({
 }) => {
   if (!app) app = supportedApps.find((a) => a.name === "Polkadot")!
 
-  const HARDENED = 0x80000000
-  const slip = app.slip0044 - HARDENED
+  const slip = app.slip0044 - LEDGER_HARDENED_OFFSET
 
   //354 for polkadot
   return `m/44'/${slip}'/${accountIndex}'/0'/${addressOffset}'`

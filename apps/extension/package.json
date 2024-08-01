@@ -19,7 +19,6 @@
     "@polkadot-api/merkleize-metadata": "^1.1.0",
     "@polkadot/extension-base": "*",
     "@polkadot/extension-inject": "*",
-    "@polkadot/hw-ledger": "*",
     "@polkadot/keyring": "*",
     "@polkadot/react-identicon": "*",
     "@polkadot/react-qr": "*",

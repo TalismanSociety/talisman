@@ -2,17 +2,16 @@ import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
-import { GenericeResponseAddress } from "@zondax/ledger-substrate/dist/common"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSetInterval } from "../useSetInterval"
 import {
-  LedgerError,
-  LedgerStatus,
   getLedgerErrorProps,
   getPolkadotLedgerDerivationPath,
+  LedgerError,
+  LedgerStatus,
 } from "./common"
 import { SubstrateMigrationApp } from "./useLedgerSubstrateMigrationApps"
 
@@ -54,7 +53,7 @@ const safelyGetAddress = async (
   bip44path: string,
   ss58prefix = 42,
   attempt = 1
-): Promise<GenericeResponseAddress> => {
+): Promise<{ address: string }> => {
   if (!ledger) throw new Error("Ledger not connected")
 
   if (attempt > 5) throw new Error("Unable to connect to Ledger")
@@ -114,6 +113,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
 
       setIsReady(false)
       setIsLoading(true)
+
       // when displaying an error and polling silently, on the UI we don't want the error to disappear
       // so error should be cleared explicitly
       if (resetError) setError(undefined)
@@ -141,7 +141,8 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
           if (
             refTransport.current &&
             "device" in refTransport.current &&
-            (refTransport.current.device as USBDevice).opened
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (refTransport.current.device as any).opened // TODO look into this
           )
             await refTransport.current?.close()
           refTransport.current = null

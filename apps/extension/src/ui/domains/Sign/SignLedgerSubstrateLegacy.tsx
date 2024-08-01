@@ -1,14 +1,14 @@
-import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
-import { log } from "@extension/shared"
-import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
+import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
-import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
+
+import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import { log } from "@extension/shared"
+import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE, LedgerError } from "@ui/hooks/ledger/common"
+import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
 import {
   LedgerConnectionStatus,
@@ -16,8 +16,6 @@ import {
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
-
-const registry = new TypeRegistry()
 
 function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
   return !!(payload as SignerPayloadRaw).data
@@ -30,6 +28,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   onCancel,
   payload,
   containerId,
+  registry,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const { t } = useTranslation("request")
@@ -59,15 +58,14 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
 
       setUnsigned(tmpUnsigned)
       setIsRaw(true)
-    } else {
-      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+    } else if (registry) {
       const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
         version: payload.version,
       })
       setUnsigned(extrinsicPayload.toU8a(true))
       setIsRaw(false)
     }
-  }, [payload, t])
+  }, [payload, registry, t])
 
   const onRefresh = useCallback(() => {
     refresh()
@@ -83,13 +81,29 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     setError(null)
 
     try {
-      let { signature } = await (isRaw
-        ? ledger.signRaw(unsigned, account.accountIndex, account.addressOffset)
-        : ledger.sign(unsigned, account.accountIndex, account.addressOffset))
+      const {
+        signature: signatureBuffer,
+        error_message,
+        return_code,
+      } = await (isRaw
+        ? ledger.signRaw(
+            LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+            LEDGER_HARDENED_OFFSET + 0,
+            LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
+            Buffer.from(unsigned)
+          )
+        : ledger.sign(
+            LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+            LEDGER_HARDENED_OFFSET + 0,
+            LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
+            Buffer.from(unsigned)
+          ))
 
-      if (isRaw)
-        // remove first byte which stores the signature type (0 here, as 0 = ed25519)
-        signature = u8aToHex(hexToU8a(signature).slice(1))
+      if (return_code !== LEDGER_SUCCESS_CODE)
+        throw new LedgerError(error_message, "SignError", return_code)
+
+      // remove first byte which stores the signature type (0 here, as 0 = ed25519)
+      const signature = isRaw ? u8aToHex(signatureBuffer.slice(1)) : u8aToHex(signatureBuffer)
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })

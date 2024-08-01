@@ -13,7 +13,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
+import { useLedgerSubstrateLegacyChains } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import {
   SubstrateMigrationApp,
   useLedgerSubstrateMigrationApp,
@@ -68,13 +68,8 @@ const SubstrateLegacyNetworkSelect: FC<{
   onChange: (chain: Chain | null) => void
 }> = ({ chain, onChange }) => {
   const { t } = useTranslation("admin")
-  const ledgerChains = useLedgerChains()
 
-  // ignore the ones that have the CheclMetadataHash extension, as those need the generic (or migration) Ledger app
-  const legacyLedgerChains = useMemo(
-    () => ledgerChains.filter((chain) => !chain.hasCheckMetadataHash),
-    [ledgerChains]
-  )
+  const items = useLedgerSubstrateLegacyChains()
 
   return (
     <>
@@ -83,7 +78,7 @@ const SubstrateLegacyNetworkSelect: FC<{
       </h2>
       <Dropdown
         propertyKey="id"
-        items={legacyLedgerChains}
+        items={items}
         value={chain}
         placeholder={t("Select a network")}
         renderItem={renderSubstrateLegacyOption}
@@ -179,7 +174,7 @@ export const AddLedgerSelectNetwork = () => {
   const enableMigrationApp = DEBUG || allChains.some((chain) => chain.hasCheckMetadataHash)
 
   const navigate = useNavigate()
-  const ledgerChains = useLedgerChains()
+  const ledgerChains = useLedgerSubstrateLegacyChains()
   const migrationApps = useLedgerSubstrateMigrationApps()
 
   const schema = useMemo(
