@@ -8,7 +8,7 @@ import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
-import { NotificationType, createNotification } from "../../notifications"
+import { createNotification, NotificationType } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { settingsStore } from "../app/store.settings"
 import { Chain, ChainId } from "../chains/types"

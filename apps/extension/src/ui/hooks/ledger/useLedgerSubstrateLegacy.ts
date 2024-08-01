@@ -15,6 +15,7 @@ import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
   ERROR_LEDGER_NO_APP,
   getLedgerErrorProps,
+  LEDGER_HARDENED_OFFSET,
   LedgerError,
   LedgerStatus,
 } from "./common"
@@ -50,21 +51,19 @@ const safelyGetAddress = async (
   ledger: SubstrateApp,
   accountIndex: number,
   addressIndex: number,
-  //ss58prefix = 42,
   attempt = 1
 ): Promise<{ address: string }> => {
   if (!ledger) throw new Error("Ledger not connected")
 
   if (attempt > 5) throw new Error("Unable to connect to Ledger")
   try {
-    const HARDENED = 0x80000000
     const change = 0
     const addressOffset = 0
 
     const { address, error_message, return_code } = await ledger.getAddress(
-      HARDENED + accountIndex,
-      HARDENED + change,
-      HARDENED + addressOffset,
+      LEDGER_HARDENED_OFFSET + accountIndex,
+      LEDGER_HARDENED_OFFSET + change,
+      LEDGER_HARDENED_OFFSET + addressOffset,
       false
     )
     if (!address) throw new LedgerError(error_message, "GetAddressError", return_code)

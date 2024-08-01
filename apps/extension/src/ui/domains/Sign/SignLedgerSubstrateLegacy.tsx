@@ -1,4 +1,3 @@
-import { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -7,6 +6,7 @@ import { Button, Drawer } from "talisman-ui"
 
 import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { log } from "@extension/shared"
+import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE, LedgerError } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
@@ -16,8 +16,6 @@ import {
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
-
-const registry = new TypeRegistry()
 
 function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
   return !!(payload as SignerPayloadRaw).data
@@ -30,6 +28,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   onCancel,
   payload,
   containerId,
+  registry,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const { t } = useTranslation("request")
@@ -60,14 +59,15 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
       setUnsigned(tmpUnsigned)
       setIsRaw(true)
     } else {
-      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+      if (!registry) return setError(t("Missing registry"))
+
       const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
         version: payload.version,
       })
       setUnsigned(extrinsicPayload.toU8a(true))
       setIsRaw(false)
     }
-  }, [payload, t])
+  }, [payload, registry, t])
 
   const onRefresh = useCallback(() => {
     refresh()
@@ -83,21 +83,26 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     setError(null)
 
     try {
-      const HARDENED = 0x80000000
-
-      const { signature: signatureBuffer } = await (isRaw
+      const {
+        signature: signatureBuffer,
+        error_message,
+        return_code,
+      } = await (isRaw
         ? ledger.signRaw(
-            HARDENED + (account.accountIndex ?? 0),
-            HARDENED + 0,
-            HARDENED + (account.addressOffset ?? 0),
+            LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+            LEDGER_HARDENED_OFFSET + 0,
+            LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
             Buffer.from(unsigned)
           )
         : ledger.sign(
-            HARDENED + (account.accountIndex ?? 0),
-            HARDENED + 0,
-            HARDENED + (account.addressOffset ?? 0),
+            LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+            LEDGER_HARDENED_OFFSET + 0,
+            LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
             Buffer.from(unsigned)
           ))
+
+      if (return_code !== LEDGER_SUCCESS_CODE)
+        throw new LedgerError(error_message, "SignError", return_code)
 
       // remove first byte which stores the signature type (0 here, as 0 = ed25519)
       const signature = isRaw ? u8aToHex(signatureBuffer.slice(1)) : u8aToHex(signatureBuffer)

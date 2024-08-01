@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { isChainActive, SubstrateLedgerAppType } from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
+import { LEDGER_HARDENED_OFFSET } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
@@ -55,14 +56,13 @@ const useLedgerChainAccounts = (
 
       for (let i = 0; i < itemsPerPage; i++) {
         const accountIndex = skip + i
-        const HARDENED = 0x80000000
         const change = 0
         const addressOffset = 0
 
         const { address } = await ledger.getAddress(
-          HARDENED + accountIndex,
-          HARDENED + change,
-          HARDENED + addressOffset,
+          LEDGER_HARDENED_OFFSET + accountIndex,
+          LEDGER_HARDENED_OFFSET + change,
+          LEDGER_HARDENED_OFFSET + addressOffset,
           false
         )
 
