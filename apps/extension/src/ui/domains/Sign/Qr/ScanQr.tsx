@@ -121,7 +121,7 @@ const Scanner = ({
     codeReader
       .decodeFromVideoDevice(selectedVideoInput, preview.current, (result, error, controls) => {
         if (!abortedSignalSet) {
-          aborted.signal.addEventListener("abort", () => controls.stop())
+          aborted.signal.addEventListener("abort", () => controls.stop(), { once: true })
           abortedSignalSet = true
         }
         if (aborted.signal.aborted) return
