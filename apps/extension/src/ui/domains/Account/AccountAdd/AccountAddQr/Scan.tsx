@@ -1,8 +1,9 @@
+import { ExternalLinkIcon } from "@talismn/icons"
+import { useTranslation } from "react-i18next"
+
 import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { ExternalLinkIcon } from "@talismn/icons"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useTranslation } from "react-i18next"
 
 import { useAccountAddQr } from "./context"
 
@@ -106,26 +107,29 @@ export const Scan = () => {
             enable={state.enable}
             error={!!state.cameraError}
             onScan={(scanned) => dispatch({ method: "onScan", scanned })}
-            onError={(error) =>
-              [
+            onError={(error) => {
+              const cameraErrors = [
                 "AbortError",
                 "NotAllowedError",
                 "NotFoundError",
                 "NotReadableError",
                 "OverconstrainedError",
                 "SecurityError",
-              ].includes(error.name)
-                ? dispatch({
-                    method: "setCameraError",
-                    error: error.name ?? error.message ?? "error",
-                  })
-                : dispatch({
-                    method: "setScanError",
-                    error: error.message.startsWith("Invalid prefix received")
-                      ? t("QR code is not valid")
-                      : error.message ?? "Unknown error",
-                  })
-            }
+              ]
+              if (cameraErrors.includes(error.name))
+                return dispatch({
+                  method: "setCameraError",
+                  error: error.name ?? error.message ?? "error",
+                })
+
+              dispatch({
+                method: "setScanError",
+                error: error.message.startsWith("Invalid prefix received")
+                  ? t("QR code is not valid")
+                  : error.message ?? "Unknown error",
+              })
+              console.error("QR code scanning error", error) // eslint-disable-line no-console
+            }}
           />
           {state.scanError && (
             <div className="text-alert-error bg-alert-error/10 mt-6 inline-block w-[260px] rounded p-4 text-center text-xs font-light">

@@ -1,16 +1,14 @@
-import { AssetDiscoveryMode } from "@extension/core"
-import { VerifierCertificateType } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
+import { decodeAnyAddress, sleep } from "@talismn/util"
+import { useCallback, useReducer } from "react"
+import { useTranslation } from "react-i18next"
+
+import { AssetDiscoveryMode, VerifierCertificateType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
-import { decodeAnyAddress } from "@talismn/util"
-import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
-import { useReducer } from "react"
-import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
 
 import { AccountAddPageProps } from "../types"
 
@@ -80,7 +78,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
       if (!scanned) return state
       if (!scanned.isAddress)
-        return { type: "SCAN", enable: true, scanError: "QR code is not valid" }
+        return { type: "SCAN", enable: true, scanError: "QR code does not contain an address" }
 
       const { content: address, genesisHash } = scanned
 

@@ -1,13 +1,14 @@
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { selectedVideoInputAtom, videoInputDevicesAtom } from "@ui/atoms"
-import { BrowserQRCodeReader } from "@zxing/browser"
+import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
 import { useAtom, useAtomValue } from "jotai"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { Toggle } from "talisman-ui"
+
+import { codeReaderAtom, selectedVideoInputAtom, videoInputDevicesAtom } from "@ui/atoms"
 
 type Types = "address" | "signature"
 type CommonProps<T extends Types> = {
@@ -109,19 +110,27 @@ const Scanner = ({
   const inputMenu = useRef(null)
   useClickAway(inputMenu, () => setShowInputMenu(false))
 
+  const codeReader = useAtomValue(codeReaderAtom)
+
   useEffect(() => {
+    if (!codeReader) return
     if (!preview.current) return
 
     const aborted = new AbortController()
-
-    const codeReader = new BrowserQRCodeReader()
-
+    let abortedSignalSet = false
     codeReader
       .decodeFromVideoDevice(selectedVideoInput, preview.current, (result, error, controls) => {
+        if (!abortedSignalSet) {
+          aborted.signal.addEventListener("abort", () => controls.stop())
+          abortedSignalSet = true
+        }
         if (aborted.signal.aborted) return
-        if (error?.name === "NotFoundException") return
 
-        if (error) onError?.(new Error(error.name, { cause: error }))
+        if (error instanceof NotFoundException) return
+        if (error instanceof ChecksumException) return
+        if (error instanceof FormatException) return
+
+        if (error) onError?.(error)
         if (!result) return
 
         const data = result.toString()
@@ -129,10 +138,10 @@ const Scanner = ({
 
         onScan(data)
       })
-      .then((controls) => (aborted.signal.onabort = () => controls.stop()))
+      .catch((error) => error && onError?.(error))
 
     return () => aborted.abort()
-  }, [onError, onScan, selectedVideoInput])
+  }, [codeReader, onError, onScan, selectedVideoInput])
 
   return (
     <div className="absolute h-full w-full">
