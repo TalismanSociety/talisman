@@ -1,12 +1,11 @@
-import { Chain } from "@extension/core"
-import { getUserExtensionsByChainId } from "@extension/core/domains/metadata/userExtensions"
-import { getMetadataFromDef, getMetadataRpcFromDef } from "@extension/shared"
-import { log } from "@extension/shared"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+
+import { Chain } from "@extension/core"
+import { getMetadataFromDef, getMetadataRpcFromDef, log } from "@extension/shared"
 import { api } from "@ui/api"
 import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
@@ -58,6 +57,8 @@ export const getFrontendTypeRegistry = async (
     }
   }
 
+  if (chain?.registryTypes) registry.register(chain.registryTypes)
+
   const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
 
   // metadata must be loaded by backend
@@ -75,13 +76,15 @@ export const getFrontendTypeRegistry = async (
       const metadata: Metadata = new Metadata(registry, metadataValue)
       registry.setMetadata(metadata)
     }
+
     registry.setSignedExtensions(signedExtensions, {
       ...metadataDef.userExtensions,
-      ...getUserExtensionsByChainId(chain?.id),
+      ...chain?.signedExtensions,
     })
+
     if (metadataDef.types) registry.register(metadataDef.types)
   } else {
-    registry.setSignedExtensions(signedExtensions, getUserExtensionsByChainId(chain?.id))
+    registry.setSignedExtensions(signedExtensions, chain?.signedExtensions)
   }
 
   return { registry, metadataRpc }

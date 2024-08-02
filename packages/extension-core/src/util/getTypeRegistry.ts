@@ -5,7 +5,6 @@ import { hexToNumber, isHex } from "@polkadot/util"
 import { Chain } from "@talismn/chaindata-provider"
 import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
 
-import { getUserExtensionsByChainId } from "../domains/metadata/userExtensions"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getMetadataDef } from "./getMetadataDef"
 
@@ -63,6 +62,8 @@ export const getTypeRegistry = async (
     }
   }
 
+  if (chain?.registryTypes) registry.register(chain.registryTypes)
+
   const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
   const metadataDef = await getMetadataDef(chainIdOrHash, numSpecVersion, blockHash)
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
@@ -76,12 +77,12 @@ export const getTypeRegistry = async (
 
     registry.setSignedExtensions(signedExtensions, {
       ...metadataDef.userExtensions,
-      ...getUserExtensionsByChainId(chain?.id),
+      ...chain?.signedExtensions,
     })
 
     if (!metadataDef.metadataRpc && metadataDef.types) registry.register(metadataDef.types)
   } else {
-    registry.setSignedExtensions(signedExtensions, getUserExtensionsByChainId(chain?.id))
+    registry.setSignedExtensions(signedExtensions, chain?.signedExtensions)
   }
 
   return { registry, metadataRpc }
