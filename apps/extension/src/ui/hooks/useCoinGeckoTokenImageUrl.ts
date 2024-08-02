@@ -1,12 +1,11 @@
-import { getCoingeckoToken } from "@extension/core"
-import { getCoingeckoTokensList } from "@extension/core"
+import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
+import { getCoingeckoTokensList } from "@extension/core"
+
 export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
-  // fetch exhaustive list first so we can query details only for valid ids
-  // otherwise we could trigger rate limit (429) to easily, it's very sensible without api key.
-  const qTokens = useQuery({
+  const { data: tokens } = useQuery({
     queryKey: ["useCoinGeckoTokensList"],
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -14,19 +13,11 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
     queryFn: () => getCoingeckoTokensList(),
   })
 
-  const qToken = useQuery({
-    queryKey: ["useCoingeckoTokenImageUrl", qTokens.dataUpdatedAt, coingeckoTokenId],
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    queryFn: () =>
-      coingeckoTokenId &&
-      qTokens.data &&
-      Array.isArray(qTokens.data) &&
-      !!qTokens.data.find((t) => t.id === coingeckoTokenId)
-        ? getCoingeckoToken(coingeckoTokenId)
-        : null,
-  })
+  return useMemo(() => {
+    const token = tokens?.find((t) => t.id === coingeckoTokenId)
 
-  return useMemo(() => qToken.data?.image?.large ?? null, [qToken.data?.image?.large])
+    return !tokens || token
+      ? `${githubChaindataBaseUrl}/assets/tokens/coingecko/${coingeckoTokenId}.webp`
+      : null
+  }, [coingeckoTokenId, tokens])
 }

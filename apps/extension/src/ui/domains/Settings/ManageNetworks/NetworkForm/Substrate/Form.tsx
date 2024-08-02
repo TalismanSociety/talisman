@@ -1,16 +1,17 @@
-import { RequestUpsertCustomChain } from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { ReactNode, useCallback, useMemo, useState } from "react"
+import { FormProvider, UseFormReturn } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+
+import { RequestUpsertCustomChain } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 import { useSetting } from "@ui/hooks/useSettings"
-import { ReactNode, useCallback, useMemo, useState } from "react"
-import { FormProvider, UseFormReturn } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
 import { EnableNetworkToggle } from "./EnableNetworkToggle"
@@ -43,8 +44,7 @@ export const SubNetworkForm = ({
 
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
-  // fetch token logo's url, but only if form has been edited to reduce 429 errors from coingecko
-  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(isDirty ? nativeTokenCoingeckoId : null)
+  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(nativeTokenCoingeckoId)
   const nativeTokenLogoUrl = useMemo(
     // existing icon has priority
     () =>
@@ -106,7 +106,13 @@ export const SubNetworkForm = ({
             >
               <AccountFormatDropdown
                 selectedFormat={accountFormat}
-                onChange={(value) => setValue("accountFormat", value ?? "*25519")}
+                onChange={(value) =>
+                  setValue("accountFormat", value ?? "*25519", {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  })
+                }
               />
             </FormFieldContainer>
           </div>

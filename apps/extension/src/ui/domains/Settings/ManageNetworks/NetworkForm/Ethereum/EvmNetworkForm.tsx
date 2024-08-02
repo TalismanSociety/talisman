@@ -1,6 +1,4 @@
-import { RequestUpsertCustomEvmNetwork } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { CustomSubNativeToken } from "@talismn/balances"
 import {
   CustomEvmNetwork,
@@ -11,19 +9,7 @@ import {
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
-import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
-import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
-import { useEvmChainIcon } from "@ui/hooks/useEvmChainIcon"
-import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
-import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
-import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -41,6 +27,21 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
+
+import { RequestUpsertCustomEvmNetwork } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { api } from "@ui/api"
+import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
+import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
+import { useEvmChainIcon } from "@ui/hooks/useEvmChainIcon"
+import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
+import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
+import { useSetting } from "@ui/hooks/useSettings"
+import useToken from "@ui/hooks/useToken"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -130,7 +131,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     formState: { errors, isValid, isSubmitting, isDirty, touchedFields },
   } = formProps
 
-  const { isTestnet, rpcs, id, tokenCoingeckoId } = watch()
+  const { rpcs, id, tokenCoingeckoId } = watch()
 
   // initialize form with existing values (edit mode), only once
   const initialized = useRef(false)
@@ -152,8 +153,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     }
   }, [evmNetworkId, id, rpcChainId.data, rpcChainId.isFetched, resetField, setValue])
 
-  // fetch token logo's url, but only if form has been edited to reduce 429 errors from coingecko
-  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(isDirty ? tokenCoingeckoId : null)
+  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(tokenCoingeckoId)
 
   const tokenLogoUrl = useMemo(
     // existing icon has priority
@@ -197,11 +197,6 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
       autoFill()
     }
   }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id, t])
-
-  const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
-    [setValue]
-  )
 
   const [showRemove, showReset] = useMemo(
     () =>
@@ -320,7 +315,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
             <FormFieldInputText placeholder="https://" {...register("blockExplorerUrl")} />
           </FormFieldContainer>
           <div>
-            <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
+            <Checkbox {...register("isTestnet")}>
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
