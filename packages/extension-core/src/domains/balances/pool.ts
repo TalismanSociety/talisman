@@ -3,11 +3,11 @@ import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import {
   AddressesByToken,
+  db as balancesDb,
+  configureStore,
   MiniMetadata,
   StoredBalanceJson,
-  db as balancesDb,
 } from "@talismn/balances"
-import { configureStore } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
@@ -18,14 +18,14 @@ import omit from "lodash/omit"
 import pick from "lodash/pick"
 import {
   BehaviorSubject,
+  combineLatest,
+  firstValueFrom,
   Observable,
   ReplaySubject,
   Subject,
   Subscription,
-  combineLatest,
-  firstValueFrom,
 } from "rxjs"
-import { debounceTime, map } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, map, tap } from "rxjs/operators"
 
 import { sentry } from "../../config/sentry"
 import { unsubscribe } from "../../handlers/subscriptions"
@@ -45,8 +45,8 @@ import {
   AddressesAndTokens,
   Balance,
   BalanceJson,
-  BalanceSubscriptionResponse,
   Balances,
+  BalanceSubscriptionResponse,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
 } from "./types"
@@ -118,7 +118,10 @@ abstract class BalancePool {
 
   #subscribers: Subject<void> = new Subject()
   #pool: BehaviorSubject<Record<string, BalanceJson>> = new BehaviorSubject({})
-  #initialising: Set<string> = new Set()
+  #initialising = new BehaviorSubject<string[]>([])
+  #isRestartPending = new BehaviorSubject(false)
+
+  #balances: Observable<{ status: "initialising" | "live"; data: BalanceJson[] }>
 
   /**
    * A map of accounts to query balances for, in the format:
@@ -152,6 +155,20 @@ abstract class BalancePool {
         )
       }
     })
+
+    this.#balances = combineLatest([
+      combineLatest([this.#initialising, this.#isRestartPending]).pipe(
+        map(([initialising, isRestartPending]) =>
+          initialising.length || isRestartPending ? "initialising" : "live"
+        ),
+        distinctUntilChanged()
+      ),
+      this.#pool.pipe(
+        firstThenDebounce(50),
+        distinctUntilChanged<Record<string, BalanceJson>>(isEqual),
+        map((balances) => Object.values(balances))
+      ),
+    ]).pipe(map(([status, data]) => ({ status, data })))
 
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
@@ -199,13 +216,15 @@ abstract class BalancePool {
     return this.#hasInitialised.promise
   }
 
-  protected setOnCleanup(onCleanup: () => Promise<Subscription>) {
-    this.#cleanupSubs.push(onCleanup())
+  /**
+   * Used to signal that a restart is pending from the KeyringBalancePool class
+   */
+  protected setIsRestartPending() {
+    this.#isRestartPending.next(true)
   }
 
-  get poolStatus() {
-    const isInitialising = this.#initialising.size > 0
-    return isInitialising ? "initialising" : "live"
+  protected setOnCleanup(onCleanup: () => Promise<Subscription>) {
+    this.#cleanupSubs.push(onCleanup())
   }
 
   /**
@@ -221,13 +240,9 @@ abstract class BalancePool {
     cb: (val: BalanceSubscriptionResponse) => void
   ) {
     this.hasInitialised.then(() => {
-      // fire a single initial balance update so front end knows we're initialising
-      cb({ status: "initialising", data: Object.values(this.#pool.getValue()) })
-
       // create subscription to pool
-      const poolSubscription = this.#pool.pipe(firstThenDebounce(500)).subscribe((balances) => {
-        return cb({ status: this.poolStatus, data: Object.values(balances) })
-      })
+      const poolSubscription = this.#balances.subscribe(cb)
+
       // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
       // decide when to close the rpc subscriptions.
       // Instead, create a generic subscription just so that we know the front end is subscribing
@@ -285,7 +300,8 @@ abstract class BalancePool {
     const existing = this.balances
     // update initialising set here - before filtering out zero balances
     // while this may include stale balances, the important thing is that the balance is no longer "initialising"
-    updates.forEach((b) => this.#initialising.delete(`${b.tokenId}:${b.address}`))
+    const updated = updates.map((b) => `${b.tokenId}:${b.address}`)
+    this.#initialising.next(this.#initialising.value.filter((id) => !updated.includes(id)))
 
     const newlyZeroBalances: string[] = []
     const changedBalances = Object.fromEntries(
@@ -380,16 +396,14 @@ abstract class BalancePool {
       activeEvmNetworksObservable,
       activeTokensObservable,
       liveQuery(() => balancesDb.miniMetadatas.toArray()),
-    ])
-      .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
-      .subscribe({
-        next: (args) => {
-          this.setChains(...args)
-          this.#hasInitialised.resolve(true)
-        },
-        error: (error) =>
-          error?.error?.name !== Dexie.errnames.DatabaseClosed && sentry.captureException(error),
-      })
+    ]).subscribe({
+      next: (args) => {
+        this.setChains(...args)
+        this.#hasInitialised.resolve(true)
+      },
+      error: (error) =>
+        error?.error?.name !== Dexie.errnames.DatabaseClosed && sentry.captureException(error),
+    })
   }
 
   /**
@@ -447,6 +461,8 @@ abstract class BalancePool {
 
     // Ignore this call if nothing has changed since the last call to this.setChains
     if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
+
+    this.#isRestartPending.next(true)
 
     // Update stored chains, evmNetworks, tokens and miniMetadataIds
     this.chains = newChains
@@ -544,32 +560,32 @@ abstract class BalancePool {
     const subscriptionParameters = await this.getSubscriptionParameters()
 
     const existingBalances = this.balances
-    const existingBalancesKeys = new Set(
-      Object.values(existingBalances).map((b) => `${b.tokenId}:${b.address}`)
+    const existingBalancesKeys = Object.values(existingBalances).map(
+      (b) => `${b.tokenId}:${b.address}`
     )
 
-    for (const balanceModule of balanceModules) {
-      // some modules returns their initialising status in the subscribeBalances callback
-      // so we don't need to check for it here
-      // Todo: upgrade all balance modules to this pattern and then remove this logic
-      if (NEW_BALANCE_MODULES.includes(balanceModule.type)) continue
+    const initializingKeys = balanceModules
+      .filter(({ type }) => {
+        // some modules returns their initialising status in the subscribeBalances callback
+        // so we don't need to check for it here
+        // Todo: upgrade all balance modules to this pattern and then remove this logic
+        return !NEW_BALANCE_MODULES.includes(type)
+      })
+      .flatMap((balanceModule) => {
+        const addressesByToken = subscriptionParameters[balanceModule.type] ?? {}
+        return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
+          addresses.map((address) => `${tokenId}:${address}`)
+        )
+      })
 
-      const addressesByToken = subscriptionParameters[balanceModule.type] ?? {}
-
-      for (const [tokenId, addresses] of Object.entries(addressesByToken))
-        for (const address of addresses) {
-          const id = `${tokenId}:${address}`
-          if (!existingBalancesKeys.has(id)) {
-            this.#initialising.add(id)
-          }
-        }
-    }
+    this.#initialising.next([...new Set(existingBalancesKeys.concat(initializingKeys))])
+    this.#isRestartPending.next(false)
 
     // after 30 seconds, set the initialising balances to initialised
     // TODO balance modules should manage this like evm-erc20 does
     setTimeout(() => {
       if (this.#subscriptionsGeneration !== generation) return
-      this.#initialising.clear()
+      this.#initialising.next([])
       // set all currently cached balances to stale
       const staleBalances = Object.values(this.balances)
         .filter(({ status }) => status === "cache")
@@ -624,8 +640,14 @@ abstract class BalancePool {
           if (result) {
             if ("status" in result) {
               // For modules using the new SubscriptionResultWithStatus pattern
-              if (result.status === "initialising") this.#initialising.add(balanceModule.type)
-              else this.#initialising.delete(balanceModule.type)
+              if (result.status === "initialising")
+                this.#initialising.next([
+                  ...new Set(this.#initialising.value.concat(balanceModule.type)),
+                ])
+              else
+                this.#initialising.next(
+                  this.#initialising.value.filter((key) => key !== balanceModule.type)
+                )
               this.updatePool(result.data)
             } else {
               // add good ones to initialisedBalances
@@ -703,10 +725,17 @@ class KeyringBalancePool extends BalancePool {
 
     // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
     // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
-    return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
-      next: (accounts) => this.setAccounts(accounts),
-      error: (error) => sentry.captureException(error),
-    })
+    return keyring.accounts.subject
+      .pipe(
+        tap(() => {
+          this.setIsRestartPending()
+        }),
+        firstThenDebounce(DEBOUNCE_TIMEOUT)
+      )
+      .subscribe({
+        next: (accounts) => this.setAccounts(accounts),
+        error: (error) => sentry.captureException(error),
+      })
   }
 
   async getSubscriptionParameters() {
