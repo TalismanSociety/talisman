@@ -1,12 +1,13 @@
+import { FC, useCallback, useEffect, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
+
 import { KnownRequestIdOnly } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import { FC, useCallback, useEffect, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -18,6 +19,10 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
   useEffect(() => {
     popupOpenEvent("metadata")
   }, [popupOpenEvent])
+
+  useEffect(() => {
+    if (!metadataRequest) window.close()
+  }, [metadataRequest])
 
   const approve = useCallback(async () => {
     if (!metadataRequest) return
