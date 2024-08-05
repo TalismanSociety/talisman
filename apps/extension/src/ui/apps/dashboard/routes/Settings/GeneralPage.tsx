@@ -1,6 +1,3 @@
-import { SPIRIT_KEYS_DOCS_URL } from "@extension/shared"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
 import {
   BellIcon,
   ChevronRightIcon,
@@ -10,15 +7,20 @@ import {
   FlagIcon,
   KeyIcon,
   RefreshCwIcon,
+  ToolIcon,
   UserIcon,
 } from "@talismn/icons"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { SPIRIT_KEYS_DOCS_URL } from "@extension/shared"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Setting } from "@talisman/components/Setting"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/hooks/useSettings"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
@@ -38,6 +40,7 @@ export const GeneralPage = () => {
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
+  const [developerMode, setDeveloperMode] = useSetting("developerMode")
 
   return (
     <DashboardLayout centered>
@@ -128,6 +131,13 @@ export const GeneralPage = () => {
           subtitle={t("Choose between the Talisman orbs or Polkadot.js identicons")}
         >
           <AvatarTypeSelect selectedType={identiconType} onChange={setIdenticonType} />
+        </Setting>
+        <Setting
+          iconLeft={ToolIcon}
+          title={t("Developer mode")}
+          subtitle={t("Allow connecting to dapps with watch-only accounts")}
+        >
+          <Toggle checked={developerMode} onChange={(e) => setDeveloperMode(e.target.checked)} />
         </Setting>
       </div>
     </DashboardLayout>
