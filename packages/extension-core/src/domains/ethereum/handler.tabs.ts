@@ -8,20 +8,20 @@ import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, log } from "extension-shared"
 import i18next from "i18next"
 import {
-  PublicClient,
-  RpcError,
   createClient,
   getAddress,
   http,
+  PublicClient,
   recoverMessageAddress,
+  RpcError,
   toHex,
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
 
+import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
 import { TabsHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
@@ -168,7 +168,8 @@ export class EthTabsHandler extends TabsHandler {
     return (
       getPublicAccounts(
         Object.values(accountsObservable.subject.getValue()),
-        filterAccountsByAddresses(site.ethAddresses)
+        filterAccountsByAddresses(site.ethAddresses),
+        { includeWatchedAccounts: await this.stores.settings.get("developerMode") }
       )
         .filter(({ type }) => type === "ethereum")
         // send as
@@ -197,6 +198,8 @@ export class EthTabsHandler extends TabsHandler {
         throw e
       }
     }
+
+    // TODO use same behavior as in the accountsList method above (observe keyring and settings too, to check accounts still exist, and filter watched accounts based on developerMode setting)
 
     const init = () =>
       this.stores.sites

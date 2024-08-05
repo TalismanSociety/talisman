@@ -1,14 +1,16 @@
-import { AccountJsonQr, AccountJsonSignet, AccountType } from "@extension/core"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
-import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
-import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
-import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountJsonQr, AccountJsonSignet, AccountType } from "@extension/core"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
+import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
+import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
+import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 
 const EstimatedFeesRow: FC = () => {
   const { t } = useTranslation("request")
@@ -71,6 +73,11 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
   if (!account || !request) return null
   return (
     <>
+      {account.origin === AccountType.Watched && (
+        <SignAlertMessage className="mb-6" type="error">
+          {t("Cannot sign with a watch-only account.")}
+        </SignAlertMessage>
+      )}
       {withFee && <EstimatedFeesRow />}
       {(() => {
         switch (account.origin) {
@@ -120,7 +127,12 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
                 <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
                 </Button>
-                <Button processing={processing} primary onClick={approve}>
+                <Button
+                  processing={processing}
+                  primary
+                  disabled={account.origin === AccountType.Watched}
+                  onClick={approve}
+                >
                   {t("Approve")}
                 </Button>
               </div>

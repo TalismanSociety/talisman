@@ -22,6 +22,7 @@ export interface SettingsStoreData {
   nftsViewMode: "list" | "tiles"
   nftsSortBy: "floor" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
+  developerMode: boolean
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -42,6 +43,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   nftsViewMode: "tiles",
   tokensSortBy: "total",
   nftsSortBy: "date",
+  developerMode: false,
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

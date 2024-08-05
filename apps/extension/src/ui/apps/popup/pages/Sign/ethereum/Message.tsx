@@ -1,4 +1,8 @@
-import { AccountJsonDcent } from "@extension/core"
+import { Suspense, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
+
+import { AccountJsonDcent, AccountType } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,
@@ -8,12 +12,10 @@ import {
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
-import { Suspense, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 
@@ -58,7 +60,16 @@ export const EthSignMessageRequest = () => {
         </PopupContent>
         <PopupFooter>
           <Suspense fallback={null}>
-            {errorMessage && <p className="error">{errorMessage}</p>}
+            {account.origin === AccountType.Watched && (
+              <SignAlertMessage className="mb-6" type="error">
+                {t("Cannot sign with a watch-only account.")}
+              </SignAlertMessage>
+            )}
+            {errorMessage && (
+              <SignAlertMessage className="mb-6" type="error">
+                {errorMessage}
+              </SignAlertMessage>
+            )}
             {account && request && (
               <>
                 {account.isHardware ? (
@@ -76,7 +87,7 @@ export const EthSignMessageRequest = () => {
                       {t("Cancel")}
                     </Button>
                     <SignApproveButton
-                      disabled={!isValid}
+                      disabled={!isValid || account.origin === AccountType.Watched}
                       processing={processing}
                       primary
                       onClick={approve}
