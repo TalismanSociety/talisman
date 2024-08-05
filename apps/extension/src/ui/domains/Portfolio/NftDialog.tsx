@@ -518,7 +518,7 @@ const NftDialogInner: FC<{
       onDismiss={handleDismiss}
       className={classNames(
         "@container h-[50rem] w-[40rem] overflow-hidden bg-black",
-        !IS_POPUP && "lg:w-[100rem] lg:rounded-lg"
+        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >
