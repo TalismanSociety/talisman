@@ -1,3 +1,6 @@
+import { Suspense, useEffect } from "react"
+import { useParams } from "react-router-dom"
+
 import { SigningRequestID } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
@@ -5,8 +8,6 @@ import {
   EthSignTransactionRequestProvider,
 } from "@ui/domains/Sign/SignRequestContext"
 import { useRequest } from "@ui/hooks/useRequest"
-import { Suspense } from "react"
-import { useParams } from "react-router-dom"
 
 import { SignPopupShimmer } from "../SignPopupShimmer"
 import { EthSignMessageRequest } from "./Message"
@@ -17,6 +18,11 @@ export const EthereumSignRequest = () => {
     id: SigningRequestID<"eth-send"> | SigningRequestID<"eth-sign">
   }
   const signingRequest = useRequest(id)
+
+  useEffect(() => {
+    if (!signingRequest) window.close()
+  }, [signingRequest])
+
   if (!signingRequest) return null
 
   switch (signingRequest.type) {

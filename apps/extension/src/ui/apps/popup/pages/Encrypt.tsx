@@ -1,5 +1,9 @@
-import { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@extension/core"
-import { AccountJson } from "@extension/core"
+import { useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
+
+import { AccountJson, DecryptRequestIdOnly, EncryptRequestIdOnly } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
@@ -7,10 +11,6 @@ import { Message } from "@ui/domains/Sign/Message"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 import { SignAccountAvatar } from "./Sign/SignAccountAvatar"
@@ -52,6 +52,10 @@ export const Encrypt = () => {
   const { id } = useParams() as EncryptRequestIdOnly | DecryptRequestIdOnly
   const req = useRequest(id)
   const { url, request, approve, reject, status, message, account, type } = useEncryptRequest(req)
+
+  useEffect(() => {
+    if (!req) window.close()
+  }, [req])
 
   useEffect(() => {
     popupOpenEvent("encrypt")

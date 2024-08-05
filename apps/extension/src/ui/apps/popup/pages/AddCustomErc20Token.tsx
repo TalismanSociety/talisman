@@ -1,3 +1,9 @@
+import { useAtomValue } from "jotai"
+import { FC, PropsWithChildren, useCallback, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
+
 import { WatchAssetRequestIdOnly } from "@extension/core"
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
@@ -8,11 +14,6 @@ import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useAtomValue } from "jotai"
-import { FC, PropsWithChildren, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -30,6 +31,10 @@ export const AddCustomErc20Token = () => {
   const [error, setError] = useState<string>()
   const { id } = useParams() as WatchAssetRequestIdOnly
   const request = useRequest(id)
+
+  useEffect(() => {
+    if (!request) window.close()
+  }, [request])
 
   const network = useEvmNetwork(request?.token?.evmNetwork?.id)
 

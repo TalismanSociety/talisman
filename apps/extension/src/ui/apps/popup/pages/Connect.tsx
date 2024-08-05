@@ -70,6 +70,10 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
 
   const ethereum = Boolean(authRequest?.request?.ethereum)
 
+  useEffect(() => {
+    if (!authRequest) window.close()
+  }, [authRequest])
+
   const authorise = useCallback(async () => {
     if (!authRequest) return
     try {

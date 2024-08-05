@@ -1,10 +1,10 @@
-import { isJsonPayload } from "@extension/core"
-import { KnownSigningRequestIdOnly } from "@extension/core"
+import { Suspense, useEffect, useMemo } from "react"
+import { useParams } from "react-router-dom"
+
+import { isJsonPayload, KnownSigningRequestIdOnly } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PolkadotSigningRequestProvider } from "@ui/domains/Sign/SignRequestContext"
 import { useRequest } from "@ui/hooks/useRequest"
-import { Suspense, useMemo } from "react"
-import { useParams } from "react-router-dom"
 
 import { SignPopupShimmer } from "../SignPopupShimmer"
 import { PolkadotSignMessageRequest } from "./Message"
@@ -13,6 +13,10 @@ import { PolkadotSignTransactionRequest } from "./Transaction"
 export const SubstrateSignRequest = () => {
   const { id } = useParams() as KnownSigningRequestIdOnly<"substrate-sign">
   const signingRequest = useRequest(id)
+
+  useEffect(() => {
+    if (!signingRequest) window.close()
+  }, [signingRequest])
 
   const payloadType = useMemo(() => {
     const payload = signingRequest?.request?.payload
