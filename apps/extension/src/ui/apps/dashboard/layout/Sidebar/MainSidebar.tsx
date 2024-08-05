@@ -1,14 +1,6 @@
 import {
-  QUEST_APP_URL,
-  TALISMAN_WEB_APP_NFTS_URL,
-  TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_SWAP_URL,
-} from "@extension/shared"
-import { Nav } from "@talisman/components/Nav"
-import {
   CreditCardIcon,
   DownloadAlertIcon,
-  ImageIcon,
   PieChartIcon,
   PlusIcon,
   QuestStarIcon,
@@ -16,13 +8,20 @@ import {
   SettingsIcon,
   ZapIcon,
 } from "@talismn/icons"
+import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+
+import {
+  QUEST_APP_URL,
+  TALISMAN_WEB_APP_STAKING_URL,
+  TALISMAN_WEB_APP_SWAP_URL,
+} from "@extension/shared"
+import { Nav } from "@talisman/components/Nav"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { SidebarNavItem } from "./SidebarNavItem"
 
@@ -45,12 +44,6 @@ export const MainSidebar = () => {
     genericEvent("goto add account", { from: "sidebar" })
     navigate("/accounts/add")
   }, [genericEvent, navigate])
-
-  const handleNftsClick = useCallback(() => {
-    genericEvent("open web app nfts", { from: "sidebar", target: "nfts" })
-    window.open(TALISMAN_WEB_APP_NFTS_URL, "_blank")
-    return false
-  }, [genericEvent])
 
   const handleStakingClick = useCallback(() => {
     genericEvent("open web app staking", { from: "sidebar", target: "staking" })
@@ -120,12 +113,6 @@ export const MainSidebar = () => {
         onClick={handleSwapClick}
         isExternalLink
         icon={<RepeatIcon />}
-      />
-      <SidebarNavItem
-        title={t("NFTs")}
-        onClick={handleNftsClick}
-        icon={<ImageIcon />}
-        isExternalLink
       />
       <SidebarNavItem
         navItemClassName="hover:bg-primary/10"
