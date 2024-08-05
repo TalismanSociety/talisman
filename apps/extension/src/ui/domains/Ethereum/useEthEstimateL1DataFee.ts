@@ -66,9 +66,9 @@ export const useEthEstimateL1DataFee = (
   return useQuery({
     queryKey: ["useEthEstimateL1DataFee", publicClient?.chain?.id, serialized, evmNetwork?.id],
     queryFn: () => {
-      if (!publicClient?.chain?.id || !serialized || !evmNetwork?.l2FeeType) return null
+      if (!publicClient?.chain?.id || !serialized || !evmNetwork) return null
 
-      switch (evmNetwork.l2FeeType.type) {
+      switch (evmNetwork.l2FeeType?.type) {
         case "op-stack":
           return getOpStackEthL1DataFee(publicClient, serialized)
         case "scroll":
@@ -77,6 +77,8 @@ export const useEthEstimateL1DataFee = (
             serialized,
             evmNetwork.l2FeeType.l1GasPriceOracle
           )
+        default:
+          return 0n
       }
     },
     keepPreviousData: true,
