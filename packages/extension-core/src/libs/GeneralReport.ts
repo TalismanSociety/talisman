@@ -188,5 +188,8 @@ async function getGeneralReport() {
     nftsTotalValue,
     topNftCollections,
     hasGhostsOfThePast: hasGhostsNft,
+
+    // util
+    lastGeneralReport: Math.trunc(Date.now() / 1000),
   }
 }
