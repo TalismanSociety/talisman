@@ -11,13 +11,15 @@ import { api } from "@ui/api"
 
 import { useAccountAddresses } from "./useAccountAddresses"
 import { useAuthorisedSites } from "./useAuthorisedSites"
+import { useSetting } from "./useSettings"
 
 const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()
   const isSiteTalismanUrl = isTalismanUrl(sites[id]?.url)
+  const [developerMode] = useSetting("developerMode")
   const availableOwnedOrAllAddresses = useAccountAddresses(
     type === "ethereum",
-    isSiteTalismanUrl ? "all" : "owned"
+    isSiteTalismanUrl || developerMode ? "all" : "owned"
   )
   const signetAddresses = useAccountAddresses(type === "ethereum", "signet")
 

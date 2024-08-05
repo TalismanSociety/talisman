@@ -19,6 +19,7 @@ import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert, isNumber } from "@polkadot/util"
 import { isTalismanUrl, log } from "extension-shared"
+import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
 import type { Port } from "../types/base"
@@ -27,6 +28,7 @@ import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import { RequestAccountList } from "../domains/accounts/types"
 import { protector } from "../domains/app/protector"
+import { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
 import {
   DecryptPayload,
@@ -97,11 +99,15 @@ export default class Tabs extends TabsHandler {
     return true
   }
 
-  #getFilteredAccounts(site: AuthorizedSite, { anyType }: RequestAccountList) {
+  #getFilteredAccounts(
+    site: AuthorizedSite,
+    { anyType }: RequestAccountList,
+    developerMode: boolean
+  ) {
     return getPublicAccounts(
       Object.values(accountsObservable.subject.getValue()),
       filterAccountsByAddresses(site.addresses, anyType),
-      { includeWatchedAccounts: isTalismanUrl(site.url) }
+      { includeWatchedAccounts: developerMode || isTalismanUrl(site.url) }
     )
   }
 
@@ -116,22 +122,24 @@ export default class Tabs extends TabsHandler {
     const { addresses } = site
     if (!addresses || addresses.length === 0) return []
 
-    return this.#getFilteredAccounts(site, request)
+    const developerMode = await this.stores.settings.get("developerMode")
+
+    return this.#getFilteredAccounts(site, request, developerMode)
   }
 
   private accountsSubscribe(url: string, id: string, port: Port) {
     return genericAsyncSubscription<"pub(accounts.subscribe)">(
       id,
       port,
-      this.stores.sites.observable,
-      async (sites: AuthorizedSites) => {
+      combineLatest([this.stores.sites.observable, this.stores.settings.observable]),
+      async ([sites, settings]: [AuthorizedSites, SettingsStoreData]) => {
         const { val: siteId, ok } = urlToDomain(url)
         if (!ok) return []
 
         const site = sites[siteId]
         if (!site || !site.addresses) return []
 
-        return this.#getFilteredAccounts(site, { anyType: true })
+        return this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
       }
     )
   }
