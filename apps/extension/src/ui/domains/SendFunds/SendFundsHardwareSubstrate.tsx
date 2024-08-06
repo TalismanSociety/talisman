@@ -1,12 +1,13 @@
-import { SignerPayloadJSON, roundToFirstInteger } from "@extension/core"
-import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
+import { useCallback, useState } from "react"
+
+import { privacyRoundCurrency, SignerPayloadJSON } from "@extension/core"
+import { log } from "@extension/shared"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
-import { useCallback, useState } from "react"
 
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 import { useSendFunds } from "./useSendFunds"
@@ -36,7 +37,7 @@ export const SendFundsHardwareSubstrate = () => {
           options: {
             toAddress: to,
             amount: token
-              ? roundToFirstInteger(Number(planckToTokens(amount, token.decimals)))
+              ? privacyRoundCurrency(Number(planckToTokens(amount, token.decimals)))
               : "unknown",
             tokenId,
             chainId: token?.chain?.id || "unknown",

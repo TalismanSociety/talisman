@@ -12,7 +12,7 @@ import {
   AccountType,
   AssetTransferMethod,
   getEthTransferTransactionBase,
-  roundToFirstInteger,
+  privacyRoundCurrency,
   serializeGasSettings,
   serializeTransactionRequest,
   SignerPayloadJSON,
@@ -593,7 +593,7 @@ const useSendFundsProvider = () => {
 
       api.analyticsCapture({
         eventName: "asset transfer fiat value",
-        options: { value: roundToFirstInteger(value.fiat("usd") ?? 0) ?? "0" },
+        options: { value: privacyRoundCurrency(value.fiat("usd") ?? 0) ?? "0" },
       })
 
       if (token.chain?.id && chain?.genesisHash) {

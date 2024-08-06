@@ -13,7 +13,7 @@ import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { hasGhostsOfThePast } from "../util/hasGhostsOfThePast"
-import { roundToFirstInteger } from "../util/roundToFirstInteger"
+import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -128,10 +128,10 @@ async function getGeneralReport() {
     }))
     .sort((a, b) => b.balance - a.balance)
 
-  const totalFiatValue = roundToFirstInteger(balances.sum.fiat("usd").total)
+  const totalFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").total)
   const tokensBreakdown = sortedFiatSumPerChainToken
     .filter((token, index) => token.balance > 1 || index < TOP_BALANCES_COUNT)
-    .map((token) => ({ ...token, balance: roundToFirstInteger(token.balance) }))
+    .map((token) => ({ ...token, balance: privacyRoundCurrency(token.balance) }))
 
   const topChainTokens = sortedFiatSumPerChainToken
     .filter(({ balance }) => balance > 0)
