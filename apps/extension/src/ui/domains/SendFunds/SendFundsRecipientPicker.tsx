@@ -5,6 +5,7 @@ import { AccountType, Chain } from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -41,10 +42,60 @@ const AddressFormatError = ({ chain }: { chain?: Chain }) => {
   )
 }
 
+const UnknownAddressDrawer = ({
+  close,
+  isOpen,
+  onProceed,
+  address,
+  chain,
+}: {
+  close: () => void
+  isOpen: boolean
+  onProceed: (address: string) => void
+  address: string
+  chain?: Chain
+}) => {
+  const { t } = useTranslation("send-funds")
+
+  const handleProceedClick = useCallback(() => {
+    onProceed(address)
+    close()
+  }, [close, onProceed, address])
+
+  return (
+    <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
+      <div className="bg-black-tertiary flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl p-12">
+        <div className="flex flex-col gap-4 text-center">
+          <p className="font-bold text-white">{t("Sending to external address")}</p>
+          <p className="text-body-secondary text-sm">
+            {t(
+              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network."
+            )}
+          </p>
+          <div className="flex items-center justify-between gap-8 text-xs">
+            <div className="text-body-secondary">{t("Selected Network")}</div>
+            <div className="text-body flex items-center gap-4">
+              <ChainLogo id={chain?.id} className="text-md" />
+              {chain?.name}
+            </div>
+          </div>
+        </div>
+        <div className="grid w-full grid-cols-2 gap-8">
+          <Button onClick={close}>{t("Cancel")}</Button>
+          <Button primary onClick={handleProceedClick}>
+            {t("Proceed")}
+          </Button>
+        </div>
+      </div>
+    </Drawer>
+  )
+}
+
 export const SendFundsRecipientPicker = () => {
   const { t } = useTranslation("send-funds")
   const { from, to, set, tokenId } = useSendFundsWizard()
   const { setRecipientWarning } = useSendFunds()
+  const { open, close, isOpen } = useOpenClose()
   const [search, setSearch] = useState("")
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
@@ -221,6 +272,13 @@ export const SendFundsRecipientPicker = () => {
     [chain?.id, nsLookup, set, setRecipientWarning]
   )
 
+  const handleSelectUnknownAddress = useCallback(
+    (address: string) => {
+      isEthereumAddress(address) ? handleSelect(address) : open()
+    },
+    [handleSelect, open]
+  )
+
   const handleSubmitSearch = useCallback(() => {
     if (isValidSubstrateNetworkAddressInput) set("to", search, true)
   }, [isValidSubstrateNetworkAddressInput, search, set])
@@ -248,13 +306,13 @@ export const SendFundsRecipientPicker = () => {
         {!isValidSubstrateNetworkAddressInput && <AddressFormatError chain={chain ?? undefined} />}
         {isValidSubstrateNetworkAddressInput && (
           <>
-            {newAddresses.length && (
+            {newAddresses.length > 0 && (
               <SendFundsAccountsList
                 allowZeroBalance
                 accounts={newAddresses}
                 noFormat // preserve user input chain format
                 selected={to}
-                onSelect={handleSelect}
+                onSelect={handleSelectUnknownAddress}
               />
             )}
             <SendFundsAccountsList
@@ -304,6 +362,13 @@ export const SendFundsRecipientPicker = () => {
           </>
         )}
       </ScrollContainer>
+      <UnknownAddressDrawer
+        isOpen={isOpen}
+        close={close}
+        onProceed={handleSelect}
+        address={search}
+        chain={chain ?? undefined}
+      />
     </div>
   )
 }
