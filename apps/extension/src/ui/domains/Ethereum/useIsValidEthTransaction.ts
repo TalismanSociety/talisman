@@ -1,13 +1,15 @@
+import { useQuery } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { PublicClient, TransactionRequest } from "viem"
+
 import {
   AccountType,
   EthPriorityOptionName,
   getMaxTransactionCost,
   serializeTransactionRequest,
 } from "@extension/core"
-import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useTranslation } from "react-i18next"
-import { PublicClient, TransactionRequest } from "viem"
 
 import { useEthBalance } from "./useEthBalance"
 
@@ -21,7 +23,11 @@ export const useIsValidEthTransaction = (
   const account = useAccountByAddress(tx?.from)
   const { balance } = useEthBalance(publicClient, tx?.from)
 
-  const { data, error, isLoading } = useQuery({
+  const {
+    data,
+    error: liveError,
+    isLoading,
+  } = useQuery({
     queryKey: [
       "useIsValidEthTransaction",
       publicClient?.chain?.id,
@@ -62,6 +68,12 @@ export const useIsValidEthTransaction = (
     keepPreviousData: true,
     enabled: !!publicClient && !!tx && !!account && balance !== undefined,
   })
+
+  // while loading, keep returning the previous error to prevent it from blinking on screen
+  const [error, setError] = useState(() => liveError)
+  useEffect(() => {
+    if (!isLoading) setError(liveError)
+  }, [isLoading, liveError])
 
   return { isValid: !!data, error, isLoading }
 }
