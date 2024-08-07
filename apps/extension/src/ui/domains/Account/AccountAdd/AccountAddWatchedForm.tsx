@@ -1,21 +1,21 @@
-import { AccountAddressType, AssetDiscoveryMode } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { sleep } from "@talismn/util"
-import { api } from "@ui/api"
-import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { classNames, sleep } from "@talismn/util"
 import { getAddressType } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
+
+import { AccountAddressType, AssetDiscoveryMode } from "@extension/core"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
+import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 
 type FormData = {
   name: string
@@ -79,16 +79,21 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
   const { type, searchAddress } = watch()
   const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
+
   useEffect(() => {
     if (!isNsLookup) {
       setValue("address", searchAddress, { shouldValidate: true })
       return
     }
 
-    setValue("address", nsLookup ?? (nsLookup === null ? "invalid" : ""), {
-      shouldValidate: true,
-    })
-  }, [nsLookup, isNsLookup, searchAddress, setValue])
+    if (isNsFetching) {
+      // while querying NS service the address should be empty so form is invalid without displaying an error
+      setValue("address", "", { shouldValidate: true })
+    } else
+      setValue("address", nsLookup ?? (nsLookup === null ? "invalid" : ""), {
+        shouldValidate: true,
+      })
+  }, [nsLookup, isNsLookup, searchAddress, setValue, isNsFetching])
 
   const submit = useCallback(
     async ({ name, address, isPortfolio }: FormData) => {
