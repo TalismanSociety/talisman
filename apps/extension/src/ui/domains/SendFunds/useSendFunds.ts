@@ -452,8 +452,16 @@ const useSendFundsProvider = () => {
       }
 
       // some EVM networks will break on estimate fee if balance is insufficient, this simple check will prevent unfriendly error message
-      if (token && balance && transfer && balance.transferable.planck < transfer.planck)
+      if (token && transfer && (balance?.transferable.planck ?? 0n) < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
+
+      if (
+        feeToken &&
+        transfer &&
+        estimatedFee?.planck &&
+        (feeTokenBalance?.transferable.planck ?? 0n) < estimatedFee.planck
+      )
+        return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: feeToken.symbol }) }
 
       if (
         !from ||
