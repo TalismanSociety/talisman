@@ -88,6 +88,20 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
   return { hasEip1559Support: data ?? undefined, ...rest }
 }
 
+const estimateGas = async (publicClient: PublicClient, tx: TransactionRequest) => {
+  try {
+    // estimate gas without any gas or nonce related setting to prevent rpc from validating these
+    const { from: account, to, value, data } = tx
+    return await publicClient.estimateGas({ account, to, value, data })
+  } catch (err) {
+    const error = err as Error
+    // error message here isn't appropriate. ex: "Cannot convert undefined to a BigInt"
+    if (error.name === "EstimateGasExecutionError")
+      throw new Error("Gas estimation failed. The transaction might be invalid.")
+    else throw error
+  }
+}
+
 const useBlockFeeData = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
@@ -103,9 +117,6 @@ const useBlockFeeData = (
     queryFn: async () => {
       if (!publicClient?.chain?.id || !tx) return null
 
-      // estimate gas without any gas or nonce setting to prevent rpc from validating these
-      const { from: account, to, value, data } = tx
-
       const [
         gasPrice,
         { gasLimit: blockGasLimit, baseFeePerGas, gasUsed },
@@ -116,7 +127,7 @@ const useBlockFeeData = (
         publicClient.getBlock(),
         withFeeOptions ? getFeeHistoryAnalysis(publicClient) : undefined,
         // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
-        publicClient.estimateGas({ account, to, value, data }),
+        estimateGas(publicClient, tx),
       ])
 
       if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
@@ -160,6 +171,12 @@ const useBlockFeeData = (
     retry: false,
   })
 
+  // while loading, keep returning the previous error to prevent it from blinking on screen
+  const [error, setError] = useState(() => rest.error)
+  useEffect(() => {
+    if (!rest.isLoading) setError(rest.error)
+  }, [rest.error, rest.isLoading])
+
   const allProps = data || {
     estimatedGas: undefined,
     gasPrice: undefined,
@@ -173,6 +190,7 @@ const useBlockFeeData = (
   return {
     ...allProps,
     ...rest,
+    error,
   }
 }
 
