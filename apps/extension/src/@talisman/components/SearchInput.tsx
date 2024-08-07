@@ -28,7 +28,7 @@ type SearchInputProps = {
   initialValue?: string
   after?: ReactNode
   onChange?: (search: string) => void
-  onValidate?: () => void
+  onSubmit?: () => void
 }
 
 export const SearchInput: FC<SearchInputProps> = ({
@@ -40,7 +40,7 @@ export const SearchInput: FC<SearchInputProps> = ({
   initialValue,
   after,
   onChange,
-  onValidate,
+  onSubmit,
 }) => {
   const ref = useRef<HTMLInputElement>(null)
   const [syncSearch, setSearch] = useState(initialValue ?? "")
@@ -56,10 +56,10 @@ export const SearchInput: FC<SearchInputProps> = ({
   const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (e.key === "Enter") {
-        onValidate?.()
+        onSubmit?.()
       }
     },
-    [onValidate]
+    [onSubmit]
   )
 
   useEffect(() => {

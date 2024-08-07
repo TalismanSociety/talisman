@@ -1,22 +1,45 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
+import { isValidSubstrateAddress } from "@talismn/util"
+import { AccountType, Chain } from "extension-core"
+import { isValidAddress } from "extension-shared"
+import { useCallback, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon } from "@talismn/icons"
-import { encodeAnyAddress, isValidSubstrateAddress } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import useToken from "@ui/hooks/useToken"
-import { AccountType } from "extension-core"
-import { isValidAddress } from "extension-shared"
-import { useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 
+import { ChainLogo } from "../Asset/ChainLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
 import { ToWarning, useSendFunds } from "./useSendFunds"
+
+const AddressFormatError = ({ chain }: { chain?: Chain }) => {
+  const { t } = useTranslation("send-funds")
+  return (
+    <div className="h-min-h-full align-center flex w-full flex-col items-center gap-4 px-12 py-7">
+      <XOctagonIcon className="text-brand-orange text-lg" />
+      <span className="text-body-secondary">{t("Address Format Mismatch")}</span>
+      <p className="text-body-disabled text-center">
+        <Trans
+          t={t}
+          defaults="The address you've entered is not compatible with the <Chain><ChainLogo />{{chainName}}</Chain> chain. Please enter a compatible address or select a different chain to send on."
+          components={{
+            Chain: <div className="text-body-secondary inline-flex items-baseline gap-1" />,
+            ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+          }}
+          values={{ chainName: chain?.name ?? t("Unknown") }}
+        />
+      </p>
+    </div>
+  )
+}
 
 export const SendFundsRecipientPicker = () => {
   const { t } = useTranslation("send-funds")
@@ -35,6 +58,19 @@ export const SendFundsRecipientPicker = () => {
     if (!from) return isValidAddress(search)
     return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
   }, [from, isFromEthereum, search])
+
+  /**
+   * Check if the search input is a valid Substrate address for the current chain.
+   * If not a substrate address (ie, any other string, or an ethereum address), it is also valid for the purpose of this check.
+   */
+  const isValidSubstrateNetworkAddressInput = useMemo(() => {
+    if (!chain) return true
+    if (!search || search.trim() === "" || !isValidAddressInput) return true
+    const isGenericFormat = convertAddress(search, null) === search
+    const isChainFormat = convertAddress(search, chain.prefix) === search
+    if (isValidSubstrateAddress(search)) return isChainFormat || isGenericFormat
+    return true
+  }, [chain, search, isValidAddressInput])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
     azns: !!chain,
@@ -95,6 +131,7 @@ export const SendFundsRecipientPicker = () => {
 
     if (
       isValidAddressInput &&
+      isValidSubstrateNetworkAddressInput &&
       (!to || normalizedSearch !== normalizedTo) &&
       allAccounts.every((account) => normalizedSearch !== normalize(account.address)) &&
       contacts.every((contact) => normalizedSearch !== normalize(contact.address))
@@ -116,6 +153,7 @@ export const SendFundsRecipientPicker = () => {
     allAccounts,
     contacts,
     isValidAddressInput,
+    isValidSubstrateNetworkAddressInput,
     normalizedSearch,
     normalizedTo,
     search,
@@ -171,32 +209,21 @@ export const SendFundsRecipientPicker = () => {
 
   const handleSelect = useCallback(
     (address: string) => {
-      const accountFormatDiffersFromChain = (() => {
-        if (!isValidAddressInput) return false
-        if (isEthereumAddress(search)) return false
-        if (search === encodeAnyAddress(search, chain?.prefix ?? 42)) return false
-        return true
-      })()
-
       // Azns is the only lookup we use for polkadot addresses. If this changes, we will need to use the NsLookupType here.
       const isAzeroDomainButNotAzero =
         !address.startsWith("0x") && typeof nsLookup === "string" && chain?.id !== "aleph-zero"
 
-      const toWarning: ToWarning = isAzeroDomainButNotAzero
-        ? "AZERO_ID"
-        : accountFormatDiffersFromChain
-        ? "DIFFERENT_ACCOUNT_FORMAT"
-        : undefined
+      const toWarning: ToWarning = isAzeroDomainButNotAzero ? "AZERO_ID" : undefined
 
       set("to", address, true)
       setRecipientWarning(toWarning)
     },
-    [chain?.id, chain?.prefix, isValidAddressInput, nsLookup, search, set, setRecipientWarning]
+    [chain?.id, nsLookup, set, setRecipientWarning]
   )
 
-  const handleValidate = useCallback(() => {
-    if (isValidAddressInput) set("to", search, true)
-  }, [isValidAddressInput, search, set])
+  const handleSubmitSearch = useCallback(() => {
+    if (isValidSubstrateNetworkAddressInput) set("to", search, true)
+  }, [isValidSubstrateNetworkAddressInput, search, set])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -204,7 +231,7 @@ export const SendFundsRecipientPicker = () => {
         <div className="font-bold">{t("To")}</div>
         <div className="mx-1 grow overflow-hidden px-1">
           <SearchInput
-            onValidate={handleValidate}
+            onSubmit={handleSubmitSearch}
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             onChange={setSearch}
@@ -218,59 +245,64 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        {!!newAddresses.length && (
-          <SendFundsAccountsList
-            allowZeroBalance
-            accounts={newAddresses}
-            noFormat // preserve user input chain format
-            selected={to}
-            onSelect={handleSelect}
-          />
+        {!isValidSubstrateNetworkAddressInput && <AddressFormatError chain={chain ?? undefined} />}
+        {isValidSubstrateNetworkAddressInput && (
+          <>
+            {newAddresses.length && (
+              <SendFundsAccountsList
+                allowZeroBalance
+                accounts={newAddresses}
+                noFormat // preserve user input chain format
+                selected={to}
+                onSelect={handleSelect}
+              />
+            )}
+            <SendFundsAccountsList
+              allowZeroBalance
+              accounts={contacts}
+              genesisHash={chain?.genesisHash}
+              selected={to}
+              onSelect={handleSelect}
+              header={
+                <>
+                  <UserIcon className="mr-2 inline align-text-top" />
+                  <span>{t("Contacts")}</span>
+                </>
+              }
+            />
+            <SendFundsAccountsList
+              allowZeroBalance
+              accounts={myAccounts}
+              genesisHash={chain?.genesisHash}
+              selected={to}
+              onSelect={handleSelect}
+              header={
+                <>
+                  <TalismanHandIcon className="mr-2 inline-block align-text-top" />
+                  {t("My Accounts")}
+                </>
+              }
+              showBalances
+              tokenId={tokenId}
+              showIfEmpty={!newAddresses.length}
+            />
+            <SendFundsAccountsList
+              allowZeroBalance
+              accounts={watchedAccounts}
+              genesisHash={chain?.genesisHash}
+              selected={to}
+              onSelect={handleSelect}
+              header={
+                <>
+                  <EyeIcon className="mr-2 inline-block align-text-top" />
+                  {t("Followed only")}
+                </>
+              }
+              showBalances
+              tokenId={tokenId}
+            />
+          </>
         )}
-        <SendFundsAccountsList
-          allowZeroBalance
-          accounts={contacts}
-          genesisHash={chain?.genesisHash}
-          selected={to}
-          onSelect={handleSelect}
-          header={
-            <>
-              <UserIcon className="mr-2 inline align-text-top" />
-              <span>{t("Contacts")}</span>
-            </>
-          }
-        />
-        <SendFundsAccountsList
-          allowZeroBalance
-          accounts={myAccounts}
-          genesisHash={chain?.genesisHash}
-          selected={to}
-          onSelect={handleSelect}
-          header={
-            <>
-              <TalismanHandIcon className="mr-2 inline-block align-text-top" />
-              {t("My Accounts")}
-            </>
-          }
-          showBalances
-          tokenId={tokenId}
-          showIfEmpty={!newAddresses.length}
-        />
-        <SendFundsAccountsList
-          allowZeroBalance
-          accounts={watchedAccounts}
-          genesisHash={chain?.genesisHash}
-          selected={to}
-          onSelect={handleSelect}
-          header={
-            <>
-              <EyeIcon className="mr-2 inline-block align-text-top" />
-              {t("Followed only")}
-            </>
-          }
-          showBalances
-          tokenId={tokenId}
-        />
       </ScrollContainer>
     </div>
   )

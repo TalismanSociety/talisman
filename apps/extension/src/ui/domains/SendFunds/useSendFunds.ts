@@ -211,7 +211,7 @@ const useSubTransaction = (
   ])
 }
 
-export type ToWarning = "DIFFERENT_ACCOUNT_FORMAT" | "AZERO_ID" | undefined
+export type ToWarning = "AZERO_ID" | undefined
 
 const useSendFundsProvider = () => {
   const { t } = useTranslation("send-funds")
