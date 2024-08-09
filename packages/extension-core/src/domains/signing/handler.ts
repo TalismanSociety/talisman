@@ -13,6 +13,7 @@ import type {
   RequestSigningApproveSignature,
   SignerPayloadJSON,
 } from "./types"
+import { sentry } from "../../config/sentry"
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -94,16 +95,22 @@ export default class SigningHandler extends ExtensionHandler {
               )
 
         if (payload.withSignedTransaction) {
-          const tx = registry.createType(
-            "Extrinsic",
-            { method: payload.method },
-            { version: payload.version }
-          )
+          try {
+            const tx = registry.createType(
+              "Extrinsic",
+              { method: payload.method },
+              { version: payload.version }
+            )
 
-          // apply signature to the modified payload
-          tx.addSignature(payload.address, signature, payload)
+            // apply signature to the modified payload
+            tx.addSignature(payload.address, signature, payload)
 
-          signedTransaction = tx.toHex()
+            signedTransaction = tx.toHex()
+          } catch (cause) {
+            const error = new Error(`Failed to create signedTransaction`, { cause })
+            console.warn(error) // eslint-disable-line no-console
+            sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+          }
         }
 
         if (chain) {
