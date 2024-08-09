@@ -272,9 +272,14 @@ export const SendFundsRecipientPicker = () => {
     [chain?.id, nsLookup, set, setRecipientWarning]
   )
 
+  const [unknownAddress, setUnknownAddress] = useState<string>()
   const handleSelectUnknownAddress = useCallback(
     (address: string) => {
-      isEthereumAddress(address) ? handleSelect(address) : open()
+      if (isEthereumAddress(address)) handleSelect(address)
+      else {
+        setUnknownAddress(address)
+        open()
+      }
     },
     [handleSelect, open]
   )
@@ -362,13 +367,15 @@ export const SendFundsRecipientPicker = () => {
           </>
         )}
       </ScrollContainer>
-      <UnknownAddressDrawer
-        isOpen={isOpen}
-        close={close}
-        onProceed={handleSelect}
-        address={search}
-        chain={chain ?? undefined}
-      />
+      {unknownAddress && (
+        <UnknownAddressDrawer
+          isOpen={isOpen}
+          close={close}
+          onProceed={handleSelect}
+          address={unknownAddress}
+          chain={chain ?? undefined}
+        />
+      )}
     </div>
   )
 }
