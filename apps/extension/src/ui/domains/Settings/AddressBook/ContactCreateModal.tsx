@@ -1,16 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { notify } from "@talisman/components/Notifications"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { AddressBookContact } from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -24,6 +14,17 @@ import {
   ModalDialog,
 } from "talisman-ui"
 import * as yup from "yup"
+
+import { notify } from "@talisman/components/Notifications"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 
 import { useAddressEffects, useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
@@ -151,12 +152,16 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
       return
     }
 
-    setValue("address", nsLookup ?? (nsLookup === null ? "invalid" : ""), {
-      shouldValidate: true,
-      shouldTouch: true,
-      shouldDirty: true,
-    })
-  }, [nsLookup, isNsLookup, searchAddress, setValue])
+    if (isNsFetching) {
+      // while querying NS service the address should be empty so form is invalid without displaying an error
+      setValue("address", "", { shouldValidate: true })
+    } else
+      setValue("address", nsLookup ?? (nsLookup === null ? "invalid" : ""), {
+        shouldValidate: true,
+        shouldTouch: true,
+        shouldDirty: true,
+      })
+  }, [nsLookup, isNsLookup, searchAddress, setValue, isNsFetching])
 
   const { address } = watch()
   const chains = useChainsFilteredByAddressPrefix(address)

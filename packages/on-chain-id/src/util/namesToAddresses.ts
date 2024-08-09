@@ -1,5 +1,6 @@
 import { resolveDomainToAddress } from "@azns/resolver-core"
 import { ApiPromise } from "@polkadot/api"
+import { throwAfter } from "@talismn/util"
 
 import log from "../log"
 import { isPotentialAzns } from "./isPotentialAzns"
@@ -41,6 +42,8 @@ export const resolveNames = async (config: Config, names: string[]): Promise<Res
 export const resolveAznsNames = async (config: Config, names: string[]): Promise<ResolvedNames> => {
   const resolvedNames: ResolvedNames = new Map(names.map((name) => [name, null]))
 
+  if (names.every((name) => !isPotentialAzns(name))) return resolvedNames
+
   if (!config.chainConnectors.substrate) {
     log.warn(`Could not find Substrate chainConnector in OnChainId::resolveAznsNames`)
     return resolvedNames
@@ -81,6 +84,8 @@ export const resolveAznsNames = async (config: Config, names: string[]): Promise
 export const resolveEnsNames = async (config: Config, names: string[]): Promise<ResolvedNames> => {
   const resolvedNames: ResolvedNames = new Map(names.map((name) => [name, null]))
 
+  if (names.every((name) => !isPotentialEns(name))) return resolvedNames
+
   const client = await config.chainConnectors.evm?.getPublicClientForEvmNetwork(
     config.networkIdEthereum
   )
@@ -94,13 +99,18 @@ export const resolveEnsNames = async (config: Config, names: string[]): Promise<
       if (!isPotentialEns(name)) return
 
       try {
-        const address = await client.getEnsAddress({ name })
+        const address = await Promise.race([
+          // this hangs forever in some cases (ex: try agyle.e first, then agyle.et => hangs) - couldn't explain it
+          client.getEnsAddress({ name }),
+          throwAfter(10_000, "Timeout"),
+        ])
         address !== null && resolvedNames.set(name, [address, "ens"])
       } catch (cause) {
         throw new Error(`Failed to resolve address for ens domain '${name}'`, { cause })
       }
     })
   )
+
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 
   return resolvedNames
