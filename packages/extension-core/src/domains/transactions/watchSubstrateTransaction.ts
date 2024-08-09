@@ -259,22 +259,25 @@ export const watchSubstrateTransaction = async (
 
   assert(chain.genesisHash === payload.genesisHash, "Genesis hash mismatch")
 
-  const hash = getExtrinsicHash(registry, payload, signature)
+  try {
+    const hash = getExtrinsicHash(registry, payload, signature)
 
-  await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
+    await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
 
-  await watchExtrinsicStatus(chain.id, registry, hash, async (result, blockNumber, extIndex) => {
-    const type: NotificationType = result === "included" ? "submitted" : result
-    const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
+    await watchExtrinsicStatus(chain.id, registry, hash, async (result, blockNumber, extIndex) => {
+      const type: NotificationType = result === "included" ? "submitted" : result
+      const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
-    if (withNotifications) createNotification(type, chain.name ?? "chain", url)
+      if (withNotifications) createNotification(type, chain.name ?? "chain", url)
 
-    if (result !== "included") await updateTransactionStatus(hash, result, blockNumber)
-  }).catch((err) => {
-    // eslint-disable-next-line no-console
-    console.warn("Failed to watch extrinsic", { err })
-    sentry.captureException(err, { extra: { chainId: chain.id, chainName: chain.name } })
-  })
+      if (result !== "included") await updateTransactionStatus(hash, result, blockNumber)
+    })
 
-  return hash
+    return hash
+  } catch (cause) {
+    const error = new Error("Failed to watch extrinsic", { cause })
+    console.warn(error) // eslint-disable-line no-console
+    sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+    return
+  }
 }

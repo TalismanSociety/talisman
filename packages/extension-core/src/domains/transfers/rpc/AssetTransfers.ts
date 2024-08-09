@@ -73,7 +73,7 @@ export default class AssetTransfersRpc {
     try {
       await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
     } catch (err) {
-      dismissTransaction(hash)
+      hash && dismissTransaction(hash)
       throw err
     }
 
