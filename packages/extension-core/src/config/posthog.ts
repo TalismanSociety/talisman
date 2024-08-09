@@ -1,6 +1,10 @@
 import type { Properties } from "posthog-js"
+import * as Sentry from "@sentry/browser"
 import { DEBUG } from "extension-shared"
 import posthog from "posthog-js"
+import { v4 as uuidV4 } from "uuid"
+
+import { appStore } from "../domains/app/store.app"
 
 const unsafeProperties = [
   "$os",
@@ -44,7 +48,8 @@ export const initPosthog = () => {
     autocapture: false,
     capture_pageview: false,
     disable_session_recording: true,
-    persistence: "localStorage",
+    // localStorage persistence doesn't work in background script (`localStorage` is not defined)
+    persistence: "memory",
     ip: false,
     sanitize_properties: (properties) => {
       // We can remove all the posthog user profiling properties except for those that are required for PostHog to work
@@ -58,6 +63,28 @@ export const initPosthog = () => {
       }
     },
   })
+
+  // Identify the posthog client
+  //
+  // We have to do this manually, because we don't have access to `localStorage` in the background script,
+  // and `localStorage` is the only built-in way for posthog to persist the distinct_id.
+  appStore
+    .get("posthogDistinctId")
+    .then(async (posthogDistinctId) => {
+      // if this Talisman instance doesn't already have a persisted distinct_id, randomly generate one
+      if (posthogDistinctId === undefined) {
+        posthogDistinctId = uuidV4()
+        await appStore.set({ posthogDistinctId })
+      }
+
+      // use the persisted distinct_id
+      posthog.identify(posthogDistinctId)
+    })
+    .catch((cause) => {
+      const error = new Error("Failed to identify posthog client", { cause })
+      console.error(error) // eslint-disable-line no-console
+      Sentry.captureException(error)
+    })
 }
 
 /**
