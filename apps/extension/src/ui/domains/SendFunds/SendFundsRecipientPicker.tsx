@@ -275,11 +275,10 @@ export const SendFundsRecipientPicker = () => {
   const [unknownAddress, setUnknownAddress] = useState<string>()
   const handleSelectUnknownAddress = useCallback(
     (address: string) => {
-      if (isEthereumAddress(address)) handleSelect(address)
-      else {
-        setUnknownAddress(address)
-        open()
-      }
+      if (isEthereumAddress(address)) return handleSelect(address)
+
+      setUnknownAddress(address)
+      open()
     },
     [handleSelect, open]
   )
