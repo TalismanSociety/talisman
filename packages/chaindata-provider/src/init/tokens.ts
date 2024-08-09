@@ -95,7 +95,7 @@ export const tokens = [
     symbol: "USDC",
     decimals: 6,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/usd-coin.webp",
-    existentialDeposit: "70000",
+    existentialDeposit: "10000",
     assetId: "1337",
     isFrozen: false,
     chain: {
@@ -126,7 +126,7 @@ export const tokens = [
     symbol: "USDT",
     decimals: 6,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/usdt.svg",
-    existentialDeposit: "70000",
+    existentialDeposit: "10000",
     assetId: "1984",
     isFrozen: false,
     chain: {
@@ -164,6 +164,21 @@ export const tokens = [
       id: "polkadot-asset-hub",
     },
     coingeckoId: "dot-is-ded",
+  },
+  {
+    id: "polkadot-asset-hub-substrate-assets-690-bork",
+    type: "substrate-assets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "BORK",
+    decimals: 10,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bork.svg",
+    existentialDeposit: "1",
+    assetId: "690",
+    isFrozen: false,
+    chain: {
+      id: "polkadot-asset-hub",
+    },
   },
   {
     id: "polkadot-asset-hub-substrate-foreignassets-ajun",

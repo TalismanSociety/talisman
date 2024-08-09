@@ -603,7 +603,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 457,
+    sortIndex: 464,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -709,7 +709,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 458,
+    sortIndex: 465,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -775,7 +775,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 663,
+    sortIndex: 673,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -804,6 +804,9 @@ export const chains = [
       },
       {
         id: "polkadot-asset-hub-substrate-assets-17-wifd",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-assets-690-bork",
       },
       {
         id: "polkadot-asset-hub-substrate-foreignassets-eq",
@@ -914,6 +917,11 @@ export const chains = [
               symbol: "WIFD",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/wifd.svg",
             },
+            {
+              assetId: 690,
+              symbol: "BORK",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bork.svg",
+            },
           ],
         },
       },
@@ -954,6 +962,12 @@ export const chains = [
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eqd.svg",
             },
             {
+              onChainId: '{"parents":1,"interior":{"X1":{"Parachain":3369}}}',
+              symbol: "MYTH",
+              coingeckoId: "mythos",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/mythos.svg",
+            },
+            {
               onChainId:
                 '{"parents":1,"interior":{"X2":[{"Parachain":2004},{"PalletInstance":10}]}}',
               symbol: "GLMR",
@@ -989,7 +1003,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 664,
+    sortIndex: 674,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -999,7 +1013,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-polkadot",
     specName: "bridge-hub-polkadot",
-    specVersion: "1002005",
+    specVersion: "1002008",
     nativeToken: {
       id: "polkadot-bridge-hub-substrate-native",
     },
