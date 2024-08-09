@@ -23,6 +23,7 @@ const LEDGER_LEGACY_APPS: Record<string, ChainId> = {
   Pendulum: "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
   XXNetwork: "0x50dd5d206917bf10502c68fb4d18a59fc8aa31586f4e8856b493e43544aa82aa",
   Avail: "0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a",
+  Polymesh: "0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063",
 }
 
 export const useLedgerSubstrateLegacyApps = () => {
