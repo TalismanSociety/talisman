@@ -33,9 +33,18 @@ export async function withGeneralReport(properties?: Properties) {
   if (Date.now() - analyticsReportSent < REPORTING_PERIOD) return properties
 
   // and when the diff is greater, make a report
-  const generalReport = await getGeneralReport()
-  await appStore.set({ analyticsReportSent: Date.now() })
-  return { ...properties, $set: { ...(properties?.$set ?? {}), ...generalReport } }
+  try {
+    const generalReport = await getGeneralReport()
+
+    // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
+    if (generalReport === undefined) return properties
+
+    await appStore.set({ analyticsReportSent: Date.now() })
+    return { ...properties, $set: { ...(properties?.$set ?? {}), ...generalReport } }
+  } catch (cause) {
+    console.warn("Failed to build general report", { cause }) // eslint-disable-line no-console
+    return properties
+  }
 }
 
 async function getGeneralReport() {
@@ -58,6 +67,31 @@ async function getGeneralReport() {
 
   const watchedAccounts = accounts.filter(({ meta }) => meta.origin === AccountType.Watched)
   const watchedAccountsCount = watchedAccounts.length
+
+  const poolStatus = await Promise.race([
+    balancePool.status,
+    new Promise<"initialising">((resolve) => setTimeout(() => resolve("initialising"), 2_000)),
+  ])
+  // NOTE: There are two not-ready states of the balances pool, which are both called `initialising`.
+  //   1. The pool is still getting chainata ready so that it can set up balances subscriptions.
+  //   2. The pool is ready and has subscriptions, but some balances are still being refreshed from the chains.
+  //
+  // if balancePool isn't initialised (chaindata loaded from db), balances stats may be incorrect (initialising state 1)
+  if (balancePool.hasInitialised.isPending()) return
+  // if balancePool isn't initialised (all balance queries set to `live`), balances stats may be incorrect (initialising state 2)
+  if (poolStatus === "initialising") return
+
+  // if the balancePool has cached balances, we probably have an incomplete state of the user's balances
+  // (i.e. we're still fetching them after a browser restart)
+  //
+  // 30 seconds after the pool is initialised, all of the cached balances are transformed into stale balances
+  //
+  // in the future, we should expose an observable on the pool which can indicate whether or not the pool is hydrated,
+  // until then, this is a good-enough workaround
+  const balanceJsons = Object.values(balancePool.balances).filter((balance) =>
+    ownedAddresses.includes(balance.address)
+  )
+  if (balanceJsons.some((b) => b.status === "cache")) return
 
   // account type breakdown
   const accountBreakdown: Record<Lowercase<AccountType>, number> = {
@@ -93,12 +127,7 @@ async function getGeneralReport() {
     ])
 
     /* eslint-disable-next-line no-var */
-    var balances = new Balances(
-      Object.values(balancePool.balances).filter((balance) =>
-        ownedAddresses.includes(balance.address)
-      ),
-      { chains, evmNetworks, tokens, tokenRates }
-    )
+    var balances = new Balances(balanceJsons, { chains, evmNetworks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })
     DEBUG && console.error(error) // eslint-disable-line no-console

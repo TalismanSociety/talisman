@@ -1,5 +1,6 @@
+import type { Properties } from "posthog-js"
 import { DEBUG } from "extension-shared"
-import posthog, { Properties } from "posthog-js"
+import posthog from "posthog-js"
 
 const unsafeProperties = [
   "$os",
