@@ -1,7 +1,8 @@
 import { liveQuery, Transaction, TransactionMode } from "dexie"
-import { map, ReplaySubject, SubscriptionLike } from "rxjs"
+import { from, map, ReplaySubject, SubscriptionLike } from "rxjs"
 
 import { githubTokenLogoUrl, githubUnknownTokenLogoUrl } from "./constants"
+import { chainDevOverrides } from "./devOverrides"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitSubstrateTokens } from "./init"
 import log from "./log"
 import {
@@ -49,7 +50,9 @@ export class ChaindataProvider implements IChaindataProvider {
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
 
     this.#liveQueries = [
-      liveQuery(() => this.#db.chains.toArray()).subscribe(this.chainsObservable),
+      from(liveQuery(() => this.#db.chains.toArray()))
+        .pipe(map(chainDevOverrides)) // TODO update chaindata instead
+        .subscribe(this.chainsObservable),
       liveQuery(() => this.#db.evmNetworks.toArray()).subscribe(this.evmNetworksObservable),
       liveQuery(() => this.#db.tokens.toArray()).subscribe(this.tokensObservable),
     ]
