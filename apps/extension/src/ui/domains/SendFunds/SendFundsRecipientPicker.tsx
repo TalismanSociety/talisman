@@ -1,7 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AccountType, Chain } from "extension-core"
+import { AccountType, Chain, SubstrateLedgerAppType } from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -226,19 +226,26 @@ export const SendFundsRecipientPicker = () => {
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address))
         )
-        .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
+        .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash)
+        .filter(
+          (account) =>
+            isFromEthereum ||
+            chain?.hasCheckMetadataHash ||
+            account.ledgerApp !== SubstrateLedgerAppType.Generic
+        ),
     [
       allAccounts,
-      chain?.genesisHash,
-      nsLookup,
-      isNsLookup,
-      isFromEthereum,
-      isValidAddressInput,
       normalize,
-      normalizedNsLookup,
       normalizedFrom,
-      normalizedSearch,
+      isFromEthereum,
       search,
+      isValidAddressInput,
+      normalizedSearch,
+      isNsLookup,
+      nsLookup,
+      normalizedNsLookup,
+      chain?.genesisHash,
+      chain?.hasCheckMetadataHash,
     ]
   )
 
