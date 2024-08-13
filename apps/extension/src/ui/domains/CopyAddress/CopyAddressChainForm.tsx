@@ -1,18 +1,20 @@
+import { ChainId } from "@talismn/chaindata-provider"
+import { CopyIcon, QrIcon } from "@talismn/icons"
+import { isEthereumAddress } from "@talismn/util"
+import { SubstrateLedgerAppType } from "extension-core"
+import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
+
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { ChainId } from "@talismn/chaindata-provider"
-import { CopyIcon, QrIcon } from "@talismn/icons"
-import { isEthereumAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -134,6 +136,10 @@ export const CopyAddressChainForm = () => {
 
     const sortedChains = chains
       .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
+      .filter(
+        // if ledger generic account, restrict to compatible chains
+        (c) => account?.ledgerApp !== SubstrateLedgerAppType.Generic || c.hasCheckMetadataHash
+      )
       .sort((a, b) => {
         if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
           return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
@@ -150,7 +156,7 @@ export const CopyAddressChainForm = () => {
         address: convertAddress(address, chain.prefix),
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, SUBSTRATE_FORMAT, balancesPerNetwork, accountChain])
+  }, [address, chains, SUBSTRATE_FORMAT, account?.ledgerApp, balancesPerNetwork, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
