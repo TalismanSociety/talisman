@@ -1,5 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { AccountJsonAny, SubstrateLedgerAppType } from "extension-core"
 import { log } from "extension-shared"
 import {
@@ -19,7 +20,6 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import { SubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
 
@@ -34,7 +34,7 @@ const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
   pageIndex: number,
   itemsPerPage: number,
-  app?: SubstrateMigrationApp | null
+  app?: SubstrateAppParams | null
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -72,7 +72,7 @@ const useLedgerSubstrateGenericAccounts = (
           addressOffset,
           address: genericAddress.address,
           name: t("Ledger {{appName}} {{accountIndex}}", {
-            appName: app?.chain?.name ?? "Polkadot",
+            appName: app?.name ?? "Polkadot",
             accountIndex: accountIndex + 1,
           }),
           migrationAppName: app?.name,
@@ -142,7 +142,7 @@ const useLedgerSubstrateGenericAccounts = (
 
 type LedgerSubstrateGenericAccountPickerProps = {
   onChange?: (accounts: LedgerAccountDefSubstrateGeneric[]) => void
-  app?: SubstrateMigrationApp | null
+  app?: SubstrateAppParams | null
 }
 
 type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstrateGeneric
@@ -225,7 +225,7 @@ type CustomAccountDetails = { accountIndex: number; addressOffset: number; name:
 
 const getNextAccountDetails = (
   accounts: AccountJsonAny[],
-  app: SubstrateMigrationApp | null | undefined
+  app: SubstrateAppParams | null | undefined
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
@@ -254,7 +254,7 @@ const getNextAccountDetails = (
 
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
-  app: SubstrateMigrationApp | null | undefined
+  app: SubstrateAppParams | null | undefined
 ) => {
   const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
 

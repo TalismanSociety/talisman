@@ -1,21 +1,23 @@
+import { supportedApps } from "@zondax/ledger-substrate"
+import { FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
 import { Spacer } from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import { SubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
-import { FC, useEffect } from "react"
-import { useTranslation } from "react-i18next"
 
 type ConnectLedgerSubstrateGenericProps = {
   onReadyChanged?: (ready: boolean) => void
   className?: string
-  app?: SubstrateMigrationApp | null
+  appName?: string | null
 }
 
 export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProps> = ({
   onReadyChanged,
   className,
-  app,
+  appName,
 }) => {
+  const app = useMemo(() => supportedApps.find((app) => app.name === appName), [appName])
   const ledger = useLedgerSubstrateGeneric({ persist: true, app })
   const { t } = useTranslation("admin")
 

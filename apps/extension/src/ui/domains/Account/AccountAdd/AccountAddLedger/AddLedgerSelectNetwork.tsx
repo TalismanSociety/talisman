@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { classNames } from "@talismn/util"
-import { DEBUG } from "extension-shared"
+import { t } from "i18next"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -13,14 +13,11 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useLedgerSubstrateLegacyChains } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import {
-  SubstrateMigrationApp,
-  useLedgerSubstrateMigrationApp,
-  useLedgerSubstrateMigrationApps,
-} from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
-import useChain from "@ui/hooks/useChain"
-import { useAllChains } from "@ui/hooks/useChains"
+  ChainWithLedgerApp,
+  useLedgerSubstrateChain,
+  useLedgerSubstrateChains,
+} from "@ui/hooks/ledger/useLedgerSubstrateChains"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
@@ -30,105 +27,7 @@ import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLeg
 type FormData = {
   chainId: string
   type: AccountAddressType
-  migrationAppName?: string
   substrateAppType: AddSubstrateLedgerAppType
-}
-
-const renderSubstrateLegacyOption = (chain: Chain) => {
-  const getChainLabel = (chain: Chain) => {
-    switch (chain.id) {
-      case "polkadot-asset-hub":
-        return "Polkadot Asset Hub (Statemint)"
-      case "kusama-asset-hub":
-        return "Kusama Asset Hub (Statemine)"
-      default:
-        return chain.name
-    }
-  }
-
-  return (
-    <div className="flex max-w-full items-center gap-5 overflow-hidden">
-      <ChainLogo id={chain.id} className="text-[1.25em]" />
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-        {getChainLabel(chain)}
-      </span>
-    </div>
-  )
-}
-
-const renderSubstrateMigrationOption = (app: SubstrateMigrationApp) => (
-  <div className="flex max-w-full items-center gap-5 overflow-hidden">
-    <ChainLogo id={app.chain?.id} className="text-[1.25em]" />
-    <span className="overflow-hidden text-ellipsis whitespace-nowrap">{app.name}</span>
-  </div>
-)
-
-const SubstrateLegacyNetworkSelect: FC<{
-  chain: Chain | null
-  onChange: (chain: Chain | null) => void
-}> = ({ chain, onChange }) => {
-  const { t } = useTranslation("admin")
-
-  const items = useLedgerSubstrateLegacyChains()
-
-  return (
-    <>
-      <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
-        {t("2. Choose Network")}
-      </h2>
-      <Dropdown
-        propertyKey="id"
-        items={items}
-        value={chain}
-        placeholder={t("Select a network")}
-        renderItem={renderSubstrateLegacyOption}
-        onChange={onChange}
-      />
-      <p className="text-body-disabled mt-6 text-sm">
-        {t("Please note: a legacy Ledger account can only be used on a single network.")}
-      </p>
-    </>
-  )
-}
-
-const SubstrateMigrationNetworkSelect: FC<{
-  app: SubstrateMigrationApp | null
-  onChange: (app: SubstrateMigrationApp | null) => void
-}> = ({ app, onChange }) => {
-  const { t } = useTranslation("admin")
-  const apps = useLedgerSubstrateMigrationApps()
-
-  // These apps are meant for funds recovery on derivation paths which may hold assets on other chains than the originally intended one.
-  // Therefore none of them should be filtered out.
-
-  return (
-    <>
-      <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
-        {t("2. Choose Network")}
-      </h2>
-      <Dropdown
-        propertyKey="name"
-        items={apps}
-        value={app}
-        placeholder={t("Select a network")}
-        renderItem={renderSubstrateMigrationOption}
-        onChange={onChange}
-      />
-      <div className="text-alert-warn mt-6 flex flex-col gap-4">
-        <h2 className="text-base">{t("Notes on Ledger Migration App accounts")}</h2>
-        <p className="text-sm">
-          {t(
-            "Please do not send any assets to a Ledger Migration app account. These accounts are only intended to help you recover and transfer your assets to Ledger Generic App accounts."
-          )}
-        </p>
-        <p className="text-sm">
-          {t(
-            "Before you can send funds from accounts created with this app, the network needs to perform a runtime upgrade. Please check with the network team before proceeding."
-          )}
-        </p>
-      </div>
-    </>
-  )
 }
 
 const AppVersionButton: FC<{
@@ -166,16 +65,38 @@ const AppVersionButton: FC<{
   )
 }
 
+const renderSubstratNetworkOption = (chain: Chain) => (
+  <div className="flex max-w-full items-center gap-5 overflow-hidden">
+    <ChainLogo id={chain?.id} className="text-[1.25em]" />
+    <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
+  </div>
+)
+
+const SubstrateNetworkSelect: FC<{
+  chain?: ChainWithLedgerApp | null
+  onSelect: (chain: ChainWithLedgerApp | null) => void
+}> = ({ chain, onSelect }) => {
+  const ledgerChains = useLedgerSubstrateChains()
+
+  return (
+    <Dropdown
+      propertyKey="id"
+      items={ledgerChains}
+      value={chain}
+      placeholder={t("Select a network")}
+      renderItem={renderSubstratNetworkOption}
+      onChange={onSelect}
+    />
+  )
+}
+
 export const AddLedgerSelectNetwork = () => {
   const { t } = useTranslation("admin")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
 
-  const allChains = useAllChains()
-  const enableMigrationApp = DEBUG || allChains.some((chain) => chain.hasCheckMetadataHash)
+  const chains = useLedgerSubstrateChains()
 
   const navigate = useNavigate()
-  const ledgerChains = useLedgerSubstrateLegacyChains()
-  const migrationApps = useLedgerSubstrateMigrationApps()
 
   const schema = useMemo(
     () =>
@@ -185,7 +106,7 @@ export const AddLedgerSelectNetwork = () => {
         })
         .required()
         .test("validateFormData", t("Invalid parameters"), async (val, ctx) => {
-          const { type, chainId, migrationAppName, substrateAppType } = val as FormData
+          const { type, chainId, substrateAppType } = val as FormData
           if (type === "sr25519") {
             if (!substrateAppType)
               return ctx.createError({
@@ -193,40 +114,28 @@ export const AddLedgerSelectNetwork = () => {
                 message: t("App type not set"),
                 type: "required",
               })
-            if (substrateAppType === AddSubstrateLedgerAppType.Legacy) {
-              if (!chainId)
-                return ctx.createError({
-                  path: "chainId",
-                  message: t("Network not set"),
-                })
-              if (!ledgerChains.find((chain) => chain.id === chainId))
-                return ctx.createError({
-                  path: "chainId",
-                  message: t("Network not supported"),
-                })
-            }
-            if (substrateAppType === AddSubstrateLedgerAppType.Migration) {
-              if (!migrationAppName)
-                return ctx.createError({
-                  path: "migrationAppName",
-                  message: t("Migration app not set"),
-                })
-              if (!migrationApps.find((app) => app.name === migrationAppName))
-                return ctx.createError({
-                  path: "migrationAppName",
-                  message: t("Migration app not supported"),
-                })
-            }
+            if (!chainId)
+              return ctx.createError({
+                path: "chainId",
+                message: t("Network not set"),
+              })
+            const chain = chains.find((c) => c.id === chainId)
+            if (!chain?.supportedLedgerApps.includes(substrateAppType))
+              return ctx.createError({
+                path: "chainId",
+                message: t("Network not supported"),
+              })
           }
           return true
         }),
-    [ledgerChains, migrationApps, t]
+    [chains, t]
   )
 
   const {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -234,16 +143,13 @@ export const AddLedgerSelectNetwork = () => {
     resolver: yupResolver(schema),
   })
 
-  const [accountType, chainId, migrationAppName, substrateAppType] = watch([
-    "type",
-    "chainId",
-    "migrationAppName",
-    "substrateAppType",
-  ])
+  const [accountType, chainId, substrateAppType] = watch(["type", "chainId", "substrateAppType"])
+
+  const chain = useLedgerSubstrateChain(chainId ?? (defaultValues.chainId as string))
 
   const submit = useCallback(
-    async ({ type, chainId, substrateAppType, migrationAppName }: FormData) => {
-      updateData({ type, chainId, substrateAppType, migrationAppName })
+    async ({ type, chainId, substrateAppType }: FormData) => {
+      updateData({ type, chainId, substrateAppType })
       navigate("account")
     },
     [navigate, updateData]
@@ -251,47 +157,33 @@ export const AddLedgerSelectNetwork = () => {
 
   const handleNetworkChange = useCallback(
     (chain: Chain | null) => {
-      setValue("chainId", chain?.id as string, { shouldValidate: true })
+      reset({
+        type: "sr25519",
+        chainId: chain?.id,
+      })
     },
-    [setValue]
-  )
-
-  const handleMigrationAppChange = useCallback(
-    (app: SubstrateMigrationApp | null) => {
-      setValue("migrationAppName", app?.name, { shouldValidate: true })
-    },
-    [setValue]
+    [reset]
   )
 
   const handleTypeChange = useCallback(
     (type: AccountAddressType) => {
-      if (type === "ethereum") setValue("chainId", "")
-      setValue("type", type, { shouldValidate: true })
+      reset({ type })
     },
-    [setValue]
+    [reset]
   )
 
   const handleSubstrateAppTypeClick = useCallback(
-    (type: AddSubstrateLedgerAppType) => () => {
-      setValue("substrateAppType", type, {
+    (appType: AddSubstrateLedgerAppType) => () => {
+      setValue("substrateAppType", appType, {
         shouldValidate: true,
       })
     },
     [setValue]
   )
 
-  const chain = useChain(chainId ?? (defaultValues.chainId as string))
-
-  const migrationApp = useLedgerSubstrateMigrationApp(migrationAppName)
-
   const [isLedgerReady, setIsLedgerReady] = useState(false)
 
-  const showConnect =
-    accountType === "ethereum" ||
-    (accountType === "sr25519" &&
-      (substrateAppType === AddSubstrateLedgerAppType.Generic ||
-        (substrateAppType === AddSubstrateLedgerAppType.Legacy && !!chainId) ||
-        (substrateAppType === AddSubstrateLedgerAppType.Migration && !!migrationApp)))
+  const showConnect = accountType === "ethereum" || (accountType === "sr25519" && substrateAppType)
 
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
@@ -303,47 +195,66 @@ export const AddLedgerSelectNetwork = () => {
         <Spacer small />
         <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
         {accountType === "sr25519" && (
-          <div className="bg-black-secondary mt-12 rounded p-12">
-            <h2 className="text-body-disabled leading-paragraph text-base">
-              {t("1. Choose Ledger App Version")}
-            </h2>
-            <div className="mt-6 grid grid-cols-3 gap-8">
-              <AppVersionButton
-                title={t("Polkadot App")}
-                description={t("Supports all substrate networks")}
-                extra={
-                  <span className="bg-green/10 text-green rounded-[1.2rem] px-4 py-1">
-                    {t("Recommended")}
-                  </span>
-                }
-                selected={substrateAppType === AddSubstrateLedgerAppType.Generic}
-                onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Generic)}
-              />
-              <AppVersionButton
-                title={t("Legacy Apps")}
-                description={t("Network-specific substrate apps")}
-                selected={substrateAppType === AddSubstrateLedgerAppType.Legacy}
-                onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Legacy)}
-              />
-              <AppVersionButton
-                title={t("Migration App")}
-                description={t("Recover your assets from deprecated Ledger apps.")}
-                selected={substrateAppType === AddSubstrateLedgerAppType.Migration}
-                onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Migration)}
-                disabled={!enableMigrationApp}
-              />
+          <>
+            <div className="bg-black-secondary mt-12 rounded p-12">
+              <h2 className="text-body-secondary leading-paragraph text-base">
+                {t("1. On which network do you intend to use your ledger account?")}
+              </h2>
+              <div className="mt-6">
+                <SubstrateNetworkSelect chain={chain} onSelect={handleNetworkChange} />
+              </div>
             </div>
-
-            {substrateAppType === AddSubstrateLedgerAppType.Legacy && (
-              <SubstrateLegacyNetworkSelect chain={chain} onChange={handleNetworkChange} />
-            )}
-            {substrateAppType === AddSubstrateLedgerAppType.Migration && (
-              <SubstrateMigrationNetworkSelect
-                app={migrationApp}
-                onChange={handleMigrationAppChange}
-              />
-            )}
-          </div>
+            <div className="bg-black-secondary mt-12 rounded p-12">
+              <h2 className="text-body-secondary leading-paragraph text-base">
+                {t("2. Choose Ledger App")}
+              </h2>
+              <div className="mt-6 grid grid-cols-3 gap-8">
+                <AppVersionButton
+                  title={t("Polkadot App")}
+                  description={t("Supports multiple substrate networks")}
+                  extra={
+                    <span
+                      className={classNames(
+                        "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
+                        chain?.hasCheckMetadataHash ? "visible" : "invisible"
+                      )}
+                    >
+                      {t("Recommended")}
+                    </span>
+                  }
+                  selected={substrateAppType === AddSubstrateLedgerAppType.Generic}
+                  onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Generic)}
+                  disabled={!chain?.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Generic)}
+                />
+                <AppVersionButton
+                  title={t("Dedicated App")}
+                  description={t("Network-specific app")}
+                  selected={substrateAppType === AddSubstrateLedgerAppType.Legacy}
+                  onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Legacy)}
+                  disabled={!chain?.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Legacy)}
+                  extra={
+                    <span
+                      className={classNames(
+                        "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
+                        chain && !chain?.hasCheckMetadataHash ? "visible" : "invisible"
+                      )}
+                    >
+                      {t("Recommended")}
+                    </span>
+                  }
+                />
+                <AppVersionButton
+                  title={t("Migration App")}
+                  description={t("Recover your assets from the dedicated app.")}
+                  selected={substrateAppType === AddSubstrateLedgerAppType.Migration}
+                  onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Migration)}
+                  disabled={
+                    !chain?.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Migration)
+                  }
+                />
+              </div>
+            </div>
+          </>
         )}
         <div className={classNames("mt-16 h-[20rem]", showConnect ? "visible" : "invisible")}>
           {showConnect && accountType === "sr25519" && (
@@ -362,11 +273,11 @@ export const AddLedgerSelectNetwork = () => {
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
-              {substrateAppType === AddSubstrateLedgerAppType.Migration && !!migrationApp && (
+              {substrateAppType === AddSubstrateLedgerAppType.Migration && (
                 <ConnectLedgerSubstrateGeneric
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
-                  app={migrationApp}
+                  appName={chain?.ledgerAppName}
                 />
               )}
             </>

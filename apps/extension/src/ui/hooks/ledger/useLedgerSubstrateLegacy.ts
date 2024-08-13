@@ -19,7 +19,7 @@ import {
   LedgerError,
   LedgerStatus,
 } from "./common"
-import { useLedgerSubstrateLegacyApp } from "./useLedgerSubstrateLegacyApps"
+import { useLedgerSubstrateAppByChain } from "./useLedgerSubstrateApp"
 
 const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
 
@@ -82,7 +82,7 @@ const safelyGetAddress = async (
 export const useLedgerSubstrateLegacy = (genesis?: string | null, persist = false) => {
   const { t } = useTranslation()
   const chain = useChainByGenesisHash(genesis)
-  const app = useLedgerSubstrateLegacyApp(genesis)
+  const app = useLedgerSubstrateAppByChain(chain)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
