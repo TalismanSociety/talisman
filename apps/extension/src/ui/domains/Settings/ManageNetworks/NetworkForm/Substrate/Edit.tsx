@@ -1,12 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CustomSubNativeToken, SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, CustomChain, isCustomChain } from "@talismn/chaindata-provider"
-import useChain from "@ui/hooks/useChain"
-import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
-import useToken from "@ui/hooks/useToken"
 import { useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+
+import useChain from "@ui/hooks/useChain"
+import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
+import useToken from "@ui/hooks/useToken"
 
 import { SubNetworkForm } from "./Form"
 import { RemoveSubNetworkButton } from "./RemoveSubNetworkButton"
@@ -98,5 +99,6 @@ const chainToFormData = (
     rpcs:
       chain?.rpcs?.map((rpc) => ({ url: rpc.url, genesisHash: chain.genesisHash ?? undefined })) ??
       [],
+    hasCheckMetadataHash: chain.hasCheckMetadataHash ?? false,
   }
 }
