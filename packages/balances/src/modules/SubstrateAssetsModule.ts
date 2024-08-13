@@ -107,6 +107,8 @@ export const SubAssetsModule: NewBalanceModule<
       if (metadata === undefined) return {}
 
       const scaleBuilder = getDynamicBuilder(metadata)
+      const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
+      const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")
 
       const tokens: Record<string, SubAssetsToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
@@ -115,9 +117,6 @@ export const SubAssetsModule: NewBalanceModule<
             typeof tokenConfig.assetId === "number"
               ? tokenConfig.assetId.toString()
               : tokenConfig.assetId
-
-          const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
-          const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")
 
           const assetStateKey =
             tryEncode(assetCoder, BigInt(assetId)) ?? tryEncode(assetCoder, assetId)
@@ -178,7 +177,10 @@ export const SubAssetsModule: NewBalanceModule<
             chain: { id: chainId },
           }
 
-          if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+          if (tokenConfig?.symbol) {
+            token.symbol = tokenConfig?.symbol
+            token.id = subAssetTokenId(chainId, assetId, token.symbol)
+          }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
