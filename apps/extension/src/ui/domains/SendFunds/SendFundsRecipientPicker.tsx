@@ -230,6 +230,7 @@ export const SendFundsRecipientPicker = () => {
         .filter(
           (account) =>
             isFromEthereum ||
+            // do not send funds to ledger generic accounts on incompatible chains
             chain?.hasCheckMetadataHash ||
             account.ledgerApp !== SubstrateLedgerAppType.Generic
         ),
