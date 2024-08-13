@@ -26,3 +26,11 @@ global.chrome.windows = {
 global.browser.windows = global.chrome.windows
 
 process.env.VERSION = process.env.npm_package_version
+
+// hides this annoying warning which shows up for every test, as a result of us using pjs via an esm import:
+// https://github.com/polkadot-js/api/issues/5636
+//
+// the warning isn't helpful in this context, and it also makes it a PITA to find the result of any failed tests
+//
+// we can remove this when we completely switch away from the @polkadot/api family of packages
+process.env.POLKADOTJS_DISABLE_ESM_CJS_WARNING = "1"
