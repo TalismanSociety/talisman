@@ -35,15 +35,17 @@ export const ConnectLedgerSubstrateLegacy: FC<ConnectLedgerSubstrateLegacyProps>
 
   if (!app) return null
 
-  const appName = app.name + (token?.symbol ? ` (${token.symbol})` : "")
-
   return (
     <div className={className}>
       <div className="text-body-secondary m-0">
         <Trans
           t={t}
           components={{
-            AppName: <span className="text-body">{appName}</span>,
+            AppName: (
+              <span className="text-body">
+                {app.name + (token?.symbol ? ` (${token.symbol})` : "")}
+              </span>
+            ),
           }}
           defaults="Connect and unlock your Ledger, then open the <AppName /> app on your Ledger."
         />
