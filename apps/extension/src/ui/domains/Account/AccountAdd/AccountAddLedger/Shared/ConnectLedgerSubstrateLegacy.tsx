@@ -3,8 +3,8 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { Spacer } from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
+import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 
@@ -22,7 +22,7 @@ export const ConnectLedgerSubstrateLegacy: FC<ConnectLedgerSubstrateLegacyProps>
   const chain = useChain(chainId)
   const token = useToken(chain?.nativeToken?.id)
   const ledger = useLedgerSubstrateLegacy(chain?.genesisHash, true)
-  const app = useLedgerSubstrateLegacyApp(chain?.genesisHash)
+  const app = useLedgerSubstrateAppByChain(chain)
   const { t } = useTranslation("admin")
 
   useEffect(() => {
@@ -35,15 +35,17 @@ export const ConnectLedgerSubstrateLegacy: FC<ConnectLedgerSubstrateLegacyProps>
 
   if (!app) return null
 
-  const appName = app.label + (token?.symbol ? ` (${token.symbol})` : "")
-
   return (
     <div className={className}>
       <div className="text-body-secondary m-0">
         <Trans
           t={t}
           components={{
-            AppName: <span className="text-body">{appName}</span>,
+            AppName: (
+              <span className="text-body">
+                {app.name + (token?.symbol ? ` (${token.symbol})` : "")}
+              </span>
+            ),
           }}
           defaults="Connect and unlock your Ledger, then open the <AppName /> app on your Ledger."
         />

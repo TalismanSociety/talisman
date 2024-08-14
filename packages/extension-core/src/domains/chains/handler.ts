@@ -77,6 +77,7 @@ export class ChainsHandler extends ExtensionHandler {
 
         balancesConfig: existingChain?.balancesConfig ?? [],
         balancesMetadata: [],
+        hasCheckMetadataHash: chain.hasCheckMetadataHash,
 
         // CustomChain
         isCustom: true,

@@ -35,6 +35,7 @@ export type RequestUpsertCustomChain = {
   accountFormat: string | null
   subscanUrl: string | null
   rpcs: { url: string }[]
+  hasCheckMetadataHash: boolean
 }
 
 export interface ChainsMessages {

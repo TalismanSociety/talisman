@@ -59,6 +59,10 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
       setUnsigned(tmpUnsigned)
       setIsRaw(true)
     } else if (registry) {
+      // Legacy dapps don't support the CheckMetadataHash signed extension
+      if (payload.signedExtensions.includes("CheckMetadataHash"))
+        return setError("GENERIC_APP_REQUIRED") // this error message is handled in the rendering component because of a link to docs
+
       const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
         version: payload.version,
       })
@@ -164,7 +168,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
       {error && (
         <Drawer anchor="bottom" isOpen={true} containerId={containerId}>
           <LedgerSigningStatus
-            message={error ? error : ""}
+            message={error ?? ""}
             status={error ? "error" : isSigning ? "signing" : undefined}
             confirm={handleCloseDrawer}
           />

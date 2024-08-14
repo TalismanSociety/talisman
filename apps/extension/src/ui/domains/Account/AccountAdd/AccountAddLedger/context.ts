@@ -43,7 +43,6 @@ type LedgerCreationInputs = {
   substrateAppType: AddSubstrateLedgerAppType
   accounts: LedgerAccountDef[]
   chainId?: string
-  migrationAppName?: string
 }
 
 const createAccount = (account: LedgerAccountDef, substrateAppType?: SubstrateLedgerAppType) => {
