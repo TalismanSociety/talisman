@@ -339,8 +339,7 @@ async function buildQueries(
 
       const stateKey = encodeStateKey(
         scaleCoder,
-        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}\n` +
-          `onChainId parsed as: '${JSON.stringify(onChainId)}'`,
+        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
         address,
         onChainId
       )

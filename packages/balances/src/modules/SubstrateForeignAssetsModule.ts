@@ -111,8 +111,8 @@ export const SubForeignAssetsModule: NewBalanceModule<
       if (metadata === undefined) return {}
 
       const scaleBuilder = getDynamicBuilder(metadata)
-      const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
-      const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")
+      const assetCoder = scaleBuilder.buildStorage("ForeignAssets", "Asset")
+      const metadataCoder = scaleBuilder.buildStorage("ForeignAssets", "Metadata")
 
       const tokens: Record<string, SubForeignAssetsToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
@@ -356,8 +356,7 @@ async function buildQueries(
 
       const stateKey = encodeStateKey(
         scaleCoder,
-        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}\n` +
-          `onChainId parsed as: '${JSON.stringify(onChainId)}'`,
+        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
         address,
         onChainId
       )
