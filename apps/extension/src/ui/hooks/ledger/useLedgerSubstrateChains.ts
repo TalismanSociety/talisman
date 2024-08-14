@@ -12,7 +12,7 @@ export type ChainWithLedgerApp = Chain & {
 }
 
 export const useLedgerSubstrateChains = () => {
-  const { chains } = useChains({ includeTestnets: false, activeOnly: true })
+  const { chains } = useChains({ includeTestnets: false, activeOnly: false })
 
   // to be used with a ledger, a chain must either have CheckMetadataHash or a ledgerApp
   return useMemo<ChainWithLedgerApp[]>(() => {
