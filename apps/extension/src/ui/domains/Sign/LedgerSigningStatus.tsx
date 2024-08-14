@@ -36,7 +36,7 @@ export const LedgerSigningStatus = ({
             {message === "GENERIC_APP_REQUIRED" ? (
               <Trans
                 t={t}
-                defaults="This network requires a new Ledger app. <br />Use the <DocsLink>Polkadot Migration Ledger app to migrate your existing accounts</DocsLink>"
+                defaults="This network requires a new Ledger app. <br />Use the Polkadot Migration Ledger app to migrate your existing accounts. <DocsLink>Learn more.</DocsLink>"
                 components={{
                   DocsLink: (
                     // eslint-disable-next-line jsx-a11y/anchor-has-content
