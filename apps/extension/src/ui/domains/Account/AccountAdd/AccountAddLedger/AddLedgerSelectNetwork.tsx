@@ -43,7 +43,7 @@ const AppVersionButton: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "bg-field text-body-secondary group flex flex-col gap-5 rounded border p-8 text-left",
+        "bg-field text-body-secondary group flex min-h-60 flex-col gap-5 rounded border p-8 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected
           ? "border-body bg-grey-800"
