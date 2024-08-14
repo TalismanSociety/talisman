@@ -25,5 +25,5 @@ export const detectTransferMethod = (metadataRpc: `0x${string}`) => {
       variant.name.eq("transfer")
     ) !== undefined
 
-  return hasDeprecatedTransferCall ? "transfer" : "transferAllowDeath"
+  return hasDeprecatedTransferCall ? "transfer" : "transfer_allow_death"
 }

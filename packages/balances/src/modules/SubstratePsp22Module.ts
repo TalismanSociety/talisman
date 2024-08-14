@@ -59,7 +59,7 @@ export type SubPsp22TransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 

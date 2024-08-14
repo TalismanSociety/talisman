@@ -139,8 +139,8 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
-export type BalancesCommonTransferMethods = "transferKeepAlive" | "transferAll"
-export type BalancesTransferMethods = "transferAllowDeath" | BalancesCommonTransferMethods
+export type BalancesCommonTransferMethods = "transfer_keep_alive" | "transfer_all"
+export type BalancesTransferMethods = "transfer_allow_death" | BalancesCommonTransferMethods
 export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
 export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
 
@@ -563,10 +563,10 @@ export const SubNativeModule: NewBalanceModule<
 
       const { genesisHash } = chain
 
-      const sendAll = transferMethod === "transferAll"
+      const sendAll = transferMethod === "transfer_all"
 
       let method: BalancesAllTransferMethods = transferMethod
-      if (transferMethod === "transferAllowDeath") {
+      if (transferMethod === "transfer_allow_death") {
         try {
           method = detectTransferMethod(metadataRpc)
         } catch (cause) {

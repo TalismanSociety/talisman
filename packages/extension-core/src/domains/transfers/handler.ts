@@ -38,7 +38,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     toAddress,
     amount = "0",
     tip = "0",
-    method = "transferKeepAlive",
+    method = "transfer_keep_alive",
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await chaindataProvider.tokenById(tokenId)
@@ -107,7 +107,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     toAddress,
     amount = "0",
     tip = "0",
-    method = "transferKeepAlive",
+    method = "transfer_keep_alive",
   }: RequestAssetTransfer) {
     const token = await chaindataProvider.tokenById(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)

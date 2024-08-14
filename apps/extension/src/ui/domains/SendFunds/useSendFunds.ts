@@ -256,10 +256,10 @@ const useSendFundsProvider = () => {
   )
 
   const method: AssetTransferMethod = sendMax
-    ? "transferAll"
+    ? "transfer_all"
     : allowReap
-    ? "transferAllowDeath"
-    : "transferKeepAlive"
+    ? "transfer_allow_death"
+    : "transfer_keep_alive"
 
   const { evmTransaction, evmInvalidTxError } = useEvmTransaction(
     tokenId,

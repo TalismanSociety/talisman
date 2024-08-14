@@ -66,7 +66,7 @@ export type SubEquilibriumTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -242,13 +242,13 @@ export const SubEquilibriumModule: NewBalanceModule<
 
       const { assetId } = token
 
-      const pallet = "eqBalances"
+      const pallet = "EqBalances"
       const method =
-        transferMethod === "transferAll"
-          ? // the eqBalances pallet has no transferAll method
+        transferMethod === "transfer_all"
+          ? // the eqBalances pallet has no transfer_all method
             "transfer"
-          : transferMethod === "transferKeepAlive"
-          ? // the eqBalances pallet has no transferKeepAlive method
+          : transferMethod === "transfer_keep_alive"
+          ? // the eqBalances pallet has no transfer_keep_alive method
             "transfer"
           : "transfer"
       const args = { asset: assetId, to, value: amount }

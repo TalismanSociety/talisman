@@ -1609,6 +1609,9 @@ importers:
       anylogger:
         specifier: ^1.0.11
         version: 1.0.11
+      polkadot-api:
+        specifier: ^0.6.0
+        version: 0.6.0(@swc/core@1.3.14)(bufferutil@4.0.8)(jiti@1.21.0)(postcss@8.4.33)(rxjs@7.8.1)(smoldot@2.0.25(bufferutil@4.0.8)(utf-8-validate@6.0.3))(utf-8-validate@6.0.3)
       scale-ts:
         specifier: ^1.6.0
         version: 1.6.0

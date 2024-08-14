@@ -16,8 +16,9 @@ import {
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
+  papiParse,
 } from "@talismn/scale"
-import { Binary, Enum } from "polkadot-api"
+import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -64,7 +65,7 @@ export type SubForeignAssetsTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -118,7 +119,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
         try {
           const onChainId = (() => {
             try {
-              return JSON.parse(tokenConfig.onChainId)
+              return papiParse(tokenConfig.onChainId)
             } catch (error) {
               return tokenConfig.onChainId
             }
@@ -126,15 +127,8 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
           if (onChainId === undefined) continue
 
-          const parsedOnChainId = parseOnChainId(chainId, onChainId)
-
-          const assetStateKey = tryEncode(assetCoder, parsedOnChainId)
-          const metadataStateKey = tryEncode(metadataCoder, parsedOnChainId)
-
-          if (assetStateKey === null || metadataStateKey === null)
-            throw new Error(
-              `Failed to encode stateKey for foreign token ${onChainId} on chain ${chainId}`
-            )
+          const assetStateKey = assetCoder.enc(onChainId)
+          const metadataStateKey = metadataCoder.enc(onChainId)
 
           type AssetResult = {
             accounts?: number
@@ -199,7 +193,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
         } catch (error) {
           log.error(
             `Failed to build substrate-foreignassets token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
-            error
+            (error as Error)?.message ?? error
           )
           continue
         }
@@ -260,19 +254,25 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
       const { genesisHash } = chain
 
-      const id = (() => {
+      const onChainId = (() => {
         try {
-          return JSON.parse(token.onChainId)
+          return papiParse(token.onChainId)
         } catch (error) {
           return token.onChainId
         }
       })()
 
-      const pallet = "foreignAssets"
+      const pallet = "ForeignAssets"
       const method =
-        // the foreignAssets pallet has no transferAll method
-        transferMethod === "transferAll" ? "transfer" : transferMethod
-      const args = { id, target: { Id: to }, amount }
+        // the ForeignAssets pallet has no transfer_all method
+        transferMethod === "transfer_all" ? "transfer" : transferMethod
+      const args = { id: onChainId, target: { Id: to }, amount }
+
+      const { metadata } = decodeMetadata(metadataRpc)
+      if (metadata === undefined) throw new Error("Unable to decode metadata")
+
+      const scaleBuilder = getDynamicBuilder(metadata)
+      scaleBuilder.buildCall(pallet, method)
 
       const unsigned = defineMethod(
         {
@@ -348,18 +348,16 @@ async function buildQueries(
       const scaleCoder = chainStorageCoders.get(chainId)?.storage
       const onChainId = (() => {
         try {
-          // `as string` doesn't matter here because we catch it if it throws
-          return JSON.parse(token.onChainId as string)
+          return papiParse(token.onChainId)
         } catch (error) {
           return token.onChainId
         }
       })()
-      const parsedOnChainId = parseOnChainId(chainId, onChainId)
 
       const stateKey = encodeStateKey(
         scaleCoder,
         `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}\n` +
-          `onChainId parsed as: '${JSON.stringify(parsedOnChainId)}'`,
+          `onChainId parsed as: '${JSON.stringify(onChainId)}'`,
         address,
         onChainId
       )
@@ -424,133 +422,4 @@ async function buildQueries(
       return { chainId, stateKey, decodeResult }
     })
   })
-}
-
-// TODO: Dedupe with SubstrateTokensModule parseOnChainId
-// TODO: See if this can be upstreamed / is actually necessary.
-// There might be a better way to construct enums with polkadot-api.
-//
-/**
- * For the substrate-tokens module, we configure the `onChainId` field in chaindata to tell the module how to query each token.
- * These queries are made to the tokens pallet.
- * E.g. api.query.Tokens.Account(accountAddress, parseOnChainId(JSON.parse(onChainId)))
- *
- * The `onChainId` field on chaindata must be a JSON-parseable string, but for some SCALE types (especially the Enum type) we must
- * use specific `polkadot-api` classes to handle SCALE-encoding the statekey.
- *
- * Some examples:
- * Input: `5`
- * Output: `5`
- *
- * Input: `{ DexShare: [{ Token: "ACA" }, { Token: "AUSD" }] }`
- * Output: `Enum("DexShare", [Enum("Token", Enum("ACA")), Enum("Token", Enum("AUSD"))])`
- *
- * Input: `{ LiquidCrowdloan: 13 }`
- * Output: `Enum("LiquidCrowdloan", 13)`
- *
- * Input: `{ Erc20: "0x07df96d1341a7d16ba1ad431e2c847d978bc2bce" }`
- * Output: `Enum("Erc20", Binary.fromHex("0x07df96d1341a7d16ba1ad431e2c847d978bc2bce"))`
- */
-const parseOnChainId = (chainId: string, onChainId: unknown, recurse = false): unknown => {
-  // haven't seen this used by any chains before,
-  // but it's technically possible for `null` to slip through the following `typeof onChainId === 'object'` checks,
-  // so we handle it explicitly here: return is as-is
-  if (onChainId === null) return onChainId
-
-  // numbers should not be modified
-  // TODO: Handle int/bigint differentiation
-  if (typeof onChainId === "number") return onChainId
-
-  // arrays, objects (enums) and strings (binary strings, as well as enums with an undefined value) need to be handled
-  // everything else should not be modified
-  if (typeof onChainId !== "object" && typeof onChainId !== "string") {
-    console.log(chainId, "OTHER!", onChainId)
-    return onChainId
-  }
-
-  // for arrays, pass each array item through this function
-  if (Array.isArray(onChainId)) {
-    console.log(chainId, "ARRAY!", onChainId)
-    const res = onChainId.map((item) => parseOnChainId(chainId, item, true))
-    console.log(chainId, "RESULT!ARRAY!", res)
-    return res
-  }
-
-  // for hexadecimal strings, parse as hex into the Binary type
-  if (typeof onChainId === "string" && onChainId.startsWith("0x")) {
-    console.log(chainId, "HEX!", onChainId)
-    return Binary.fromHex(onChainId)
-  }
-
-  // For any values which haven't already been handled by the previous if statements,
-  // we are now going to consider them as an Enum.
-  //
-  // There are two forms of enums; ones *with* a value and ones *without* a value.
-  //
-  // Some examples of enums *without* a value:
-  // { AUSD: undefined }
-  // "AUSD"
-  // { ACA: undefined }
-  // "ACA"
-  //
-  // Some examples of enums *with* a value:
-  // { Erc20: "0x00......" } // an enum containing a binary string
-  // { ForeignAsset: 2 } // an enum containing a number
-  // { DexShare: [{ Token: "ACA" }, { Erc20: "0x00......" }] } // an enum containing an array of enums
-  //
-  // Some examples of enums with a value, where the value is another enum:
-  // { Token: "AUSD" }
-  // { Token: { AUSD: undefined } }
-  // { Token: "ACA" }
-  // { Token: { ACA: undefined } }
-  //
-  // NOTE: In the last example,
-  //   `{ Token: { AUSD: undefined } }`
-  // is the preferred, unambiguous form of specifing an enum within an enum.
-  // However,
-  //   `{ Token: "AUSD" }`
-  // is also supported, in order to maintain backwards compatibility with the PJS codebase
-  // (which is what we had prior to migrating to scale-ts for statekey encoding).
-  //
-  // In the future, we might need to drop support for the ambiguous `{ Token: "AUSD" }` form of expressing an enum within an enum,
-  // as well as the ambiguous `"AUSD"` form,
-  // because it may prevent us from defining a hypothetical enum which contains a non-hexadecimal string.
-  // For example, if we needed to support:
-  //   `{ Token: "This is just a string" }`
-  // to be parsed as
-  //   `Enum("Token", "a string, not an enum")` // an arbitrary string within an enum
-  // instead of how we currently parse it, which is
-  //   `Enum("Token", Enum("a string, not an enum"))` // an enum within an enum
-  //
-  const keys = typeof onChainId === "object" ? Object.keys(onChainId) : [onChainId]
-  if (keys.length !== 1) {
-    console.log(chainId, "TOO MANY KEYS!", onChainId)
-    const res = Object.fromEntries(
-      Object.entries(onChainId).map(([key, value]) => [key, parseOnChainId(chainId, value, true)])
-    )
-    console.log(chainId, "TOO MANY KEYS!RESULT!", res)
-    return res
-  }
-
-  console.log(chainId, "OBJECT!", onChainId)
-  const key: string = keys[0]
-  const value =
-    typeof onChainId === "object"
-      ? parseOnChainId(chainId, onChainId[key as keyof typeof onChainId], true)
-      : undefined
-  const ret = Enum(key, value)
-  console.log(chainId, "OBJECT!RESULT!", ret)
-  // if (!recurse)
-  //   memoLog(chainId, "OBJECT ASSETID", "in:", onChainId, "out:", JSON.stringify(ret), ret)
-  return ret
-}
-
-type ScaleStorageCoder = ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tryEncode = (scaleCoder: ScaleStorageCoder | undefined, ...args: any[]) => {
-  try {
-    return scaleCoder?.enc?.(...args)
-  } catch {
-    return null
-  }
 }

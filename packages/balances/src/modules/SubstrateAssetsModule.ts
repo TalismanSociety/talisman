@@ -63,7 +63,7 @@ export type SubAssetsTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -252,10 +252,10 @@ export const SubAssetsModule: NewBalanceModule<
 
       const id = token.assetId
 
-      const pallet = "assets"
+      const pallet = "Assets"
       const method =
-        // the assets pallet has no transferAll method
-        transferMethod === "transferAll" ? "transfer" : transferMethod
+        // the assets pallet has no transfer_all method
+        transferMethod === "transfer_all" ? "transfer" : transferMethod
       const args = { id, target: { Id: to }, amount }
 
       const unsigned = defineMethod(
