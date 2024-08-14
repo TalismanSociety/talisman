@@ -61,6 +61,7 @@ export const TERMS_OF_USE_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/terms-of-use`
 export const BRAVE_BALANCES_URL = `${TALISMAN_DOCS_URL_PREFIX}/help-and-support/troubleshooting/balances-on-brave-not-showing`
 export const TOKEN_APPROVALS_URL = `${TALISMAN_DOCS_URL_PREFIX}/navigate/using-talisman-with-a-website-dapp/token-approvals`
 export const SPIRIT_KEYS_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/introduction/talisman-portal/spirit-keys-and-commendations#sprit-keys`
+export const CONNECT_LEDGER_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/importing-external-wallets/import-from-ledger`
 
 // Images
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
