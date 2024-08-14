@@ -23,7 +23,9 @@ export const useLedgerSubstrateChains = () => {
         ledgerAppName: CHAIN_ID_TO_LEDGER_APP_NAME[chain.id],
         supportedLedgerApps: [
           chain.hasCheckMetadataHash ? AddSubstrateLedgerAppType.Generic : null,
-          CHAIN_ID_TO_LEDGER_APP_NAME[chain.id] ? AddSubstrateLedgerAppType.Legacy : null,
+          !chain.hasCheckMetadataHash && CHAIN_ID_TO_LEDGER_APP_NAME[chain.id]
+            ? AddSubstrateLedgerAppType.Legacy
+            : null,
           chain.hasCheckMetadataHash && CHAIN_ID_TO_LEDGER_APP_NAME[chain.id]
             ? AddSubstrateLedgerAppType.Migration
             : null,

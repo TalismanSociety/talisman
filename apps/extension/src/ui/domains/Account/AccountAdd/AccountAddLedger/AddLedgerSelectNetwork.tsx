@@ -198,62 +198,57 @@ export const AddLedgerSelectNetwork = () => {
           <>
             <div className="bg-black-secondary mt-12 rounded p-12">
               <h2 className="text-body-secondary leading-paragraph text-base">
-                {t("1. On which network do you intend to use your ledger account?")}
+                {t("1. Choose Network")}
               </h2>
               <div className="mt-6">
                 <SubstrateNetworkSelect chain={chain} onSelect={handleNetworkChange} />
               </div>
             </div>
-            <div className="bg-black-secondary mt-12 rounded p-12">
-              <h2 className="text-body-secondary leading-paragraph text-base">
-                {t("2. Choose Ledger App")}
-              </h2>
-              <div className="mt-6 grid grid-cols-3 gap-8">
-                <AppVersionButton
-                  title={t("Polkadot App")}
-                  description={t("Supports multiple substrate networks")}
-                  extra={
-                    <span
-                      className={classNames(
-                        "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
-                        chain?.hasCheckMetadataHash ? "visible" : "invisible"
-                      )}
-                    >
-                      {t("Recommended")}
-                    </span>
-                  }
-                  selected={substrateAppType === AddSubstrateLedgerAppType.Generic}
-                  onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Generic)}
-                  disabled={!chain?.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Generic)}
-                />
-                <AppVersionButton
-                  title={t("Dedicated App")}
-                  description={t("Network-specific app")}
-                  selected={substrateAppType === AddSubstrateLedgerAppType.Legacy}
-                  onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Legacy)}
-                  disabled={!chain?.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Legacy)}
-                  extra={
-                    <span
-                      className={classNames(
-                        "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
-                        chain && !chain?.hasCheckMetadataHash ? "visible" : "invisible"
-                      )}
-                    >
-                      {t("Recommended")}
-                    </span>
-                  }
-                />
-                <AppVersionButton
-                  title={t("Migration App")}
-                  description={t("Recover your assets from the dedicated app.")}
-                  selected={substrateAppType === AddSubstrateLedgerAppType.Migration}
-                  onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Migration)}
-                  disabled={
-                    !chain?.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Migration)
-                  }
-                />
+            {!!chain && (
+              <div className="bg-black-secondary mt-12 rounded p-12">
+                <h2 className="text-body-secondary leading-paragraph text-base">
+                  {t("2. Choose Ledger App")}
+                </h2>
+                <div className="mt-6 grid grid-cols-3 gap-8">
+                  {chain.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Generic) && (
+                    <AppVersionButton
+                      title={t("Polkadot App")}
+                      description={t("Supports multiple substrate networks")}
+                      extra={
+                        <span
+                          className={classNames(
+                            "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
+                            chain?.hasCheckMetadataHash ? "visible" : "invisible"
+                          )}
+                        >
+                          {t("Recommended")}
+                        </span>
+                      }
+                      selected={substrateAppType === AddSubstrateLedgerAppType.Generic}
+                      onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Generic)}
+                    />
+                  )}
+                  {chain.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Legacy) && (
+                    <AppVersionButton
+                      title={`${chain.ledgerAppName} App`}
+                      description={t("Network-specific app")}
+                      selected={substrateAppType === AddSubstrateLedgerAppType.Legacy}
+                      onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Legacy)}
+                    />
+                  )}
+                  {chain.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Migration) && (
+                    <AppVersionButton
+                      title={t("Migration App")}
+                      description={t("Recover your assets from the deprecated {{appName}} app.", {
+                        appName: chain.ledgerAppName,
+                      })}
+                      selected={substrateAppType === AddSubstrateLedgerAppType.Migration}
+                      onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Migration)}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
         <div className={classNames("mt-16 h-[20rem]", showConnect ? "visible" : "invisible")}>
