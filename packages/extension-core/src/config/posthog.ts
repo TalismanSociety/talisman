@@ -1,5 +1,10 @@
+import type { Properties } from "posthog-js"
+import * as Sentry from "@sentry/browser"
 import { DEBUG } from "extension-shared"
-import posthog, { Properties } from "posthog-js"
+import posthog from "posthog-js"
+import { v4 as uuidV4 } from "uuid"
+
+import { appStore } from "../domains/app/store.app"
 
 const unsafeProperties = [
   "$os",
@@ -30,26 +35,76 @@ const talismanProperties = {
   testBuild: DEBUG || ["dev", "qa", "ci"].includes(process.env.BUILD as string),
 }
 
+/**
+ * Initializes the posthog client.
+ *
+ * It is recommended to call `setPosthogOptInPreference` with the user's opt-in preference before calling this.
+ */
 export const initPosthog = () => {
-  if (process.env.POSTHOG_AUTH_TOKEN) {
-    posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
-      api_host: "https://app.posthog.com",
-      autocapture: false,
-      capture_pageview: false,
-      disable_session_recording: true,
-      persistence: "localStorage",
-      ip: false,
-      sanitize_properties: (properties) => {
-        // We can remove all the posthog user profiling properties except for those that are required for PostHog to work
-        const requiredProperties = Object.keys(properties).reduce((result, key) => {
-          if (!unsafeProperties.includes(key)) result[key] = properties[key]
-          return result
-        }, {} as Properties)
-        return {
-          ...requiredProperties,
-          ...talismanProperties,
-        }
-      },
+  if (!process.env.POSTHOG_AUTH_TOKEN) return
+
+  posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
+    api_host: "https://app.posthog.com",
+    autocapture: false,
+    capture_pageview: false,
+    disable_session_recording: true,
+    // localStorage persistence doesn't work in background script (`localStorage` is not defined)
+    persistence: "memory",
+    ip: false,
+    sanitize_properties: (properties) => {
+      // We can remove all the posthog user profiling properties except for those that are required for PostHog to work
+      const requiredProperties = Object.keys(properties).reduce((result, key) => {
+        if (!unsafeProperties.includes(key)) result[key] = properties[key]
+        return result
+      }, {} as Properties)
+      return {
+        ...requiredProperties,
+        ...talismanProperties,
+      }
+    },
+  })
+
+  // Identify the posthog client
+  //
+  // We have to do this manually, because we don't have access to `localStorage` in the background script,
+  // and `localStorage` is the only built-in way for posthog to persist the distinct_id.
+  appStore
+    .get("posthogDistinctId")
+    .then(async (posthogDistinctId) => {
+      // if this Talisman instance doesn't already have a persisted distinct_id, randomly generate one
+      if (posthogDistinctId === undefined) {
+        posthogDistinctId = uuidV4()
+        await appStore.set({ posthogDistinctId })
+      }
+
+      // use the persisted distinct_id
+      posthog.identify(posthogDistinctId)
     })
+    .catch((cause) => {
+      const error = new Error("Failed to identify posthog client", { cause })
+      console.error(error) // eslint-disable-line no-console
+      Sentry.captureException(error)
+    })
+}
+
+/**
+ * Configures the user's opt-in preference on the posthog client.
+ *
+ * @param optInPreference `true` if the user has explicitly opted in, `false` if the user has explicitly opted out, otherwise `undefined`.
+ */
+export const setPosthogOptInPreference = (optInPreference: boolean | undefined) => {
+  const posthogOptedIn = posthog.has_opted_in_capturing()
+  const posthogOptedOut = posthog.has_opted_out_capturing()
+
+  switch (optInPreference) {
+    case true:
+      if (!posthogOptedIn || posthogOptedOut) posthog.opt_in_capturing()
+      break
+    case false:
+      if (posthogOptedIn || !posthogOptedOut) posthog.opt_out_capturing()
+      break
+    case undefined:
+      if (posthogOptedIn || posthogOptedOut) posthog.clear_opt_in_out_capturing()
+      break
   }
 }

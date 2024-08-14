@@ -2,7 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import BigNumber from "bignumber.js"
 
 import { talismanAnalytics } from "../../libs/Analytics"
-import { roundToFirstInteger } from "../../util/roundToFirstInteger"
+import { privacyRoundCurrency } from "../../util/privacyRoundCurrency"
 import { addressBookStore } from "../app/store.addressBook"
 
 type TransferAnalyticsBaseArgs = {
@@ -36,7 +36,7 @@ export const transferAnalytics = async ({
     ...network,
     hardware,
     tokenId,
-    amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+    amount: privacyRoundCurrency(new BigNumber(amount).toNumber()),
     internal: isOwnAccount || isContact,
     recipientType: isOwnAccount ? "ownAccount" : isContact ? "contact" : "external",
   })

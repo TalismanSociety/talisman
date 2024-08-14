@@ -174,7 +174,7 @@ abstract class BalancePool {
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
 
     // if we already have subscriptions - start polling (after chaindata init)
-    if (this.#subscribers.observed) this.hasInitialised.then(() => this.openSubscriptions())
+    if (this.#subscribers.observed) this.hasInitialised.promise.then(() => this.openSubscriptions())
 
     // Hydrate pool from indexedDB if persist = true
     const retrieveFn = persist
@@ -213,7 +213,7 @@ abstract class BalancePool {
   }
 
   get hasInitialised() {
-    return this.#hasInitialised.promise
+    return this.#hasInitialised
   }
 
   /**
@@ -239,7 +239,7 @@ abstract class BalancePool {
     onDisconnected: Promise<void>,
     cb: (val: BalanceSubscriptionResponse) => void
   ) {
-    this.hasInitialised.then(() => {
+    this.hasInitialised.promise.then(() => {
       // create subscription to pool
       const poolSubscription = this.#balances.subscribe(cb)
 
@@ -289,6 +289,17 @@ abstract class BalancePool {
 
   get balances() {
     return this.#pool.getValue()
+  }
+  /**
+   * Exposes the `'initialising' | 'live'` status of the balances pool.
+   *
+   * We need it in order to wait until the pool has stopped initialising before we build a `GeneralReport` to send to Posthog.
+   *
+   * @deprecated Don't use this, it's a workaround built into the pool just for `GeneralReport` analytics.
+   * If we find that we need this status elsewhere in the codebase, that is a really good sign that we should refactor the pool to expose the `#balances` observable directly.
+   */
+  get status() {
+    return firstValueFrom(this.#balances).then(({ status }) => status)
   }
 
   get observable() {
@@ -399,7 +410,7 @@ abstract class BalancePool {
     ]).subscribe({
       next: (args) => {
         this.setChains(...args)
-        this.#hasInitialised.resolve(true)
+        this.hasInitialised.resolve(true)
       },
       error: (error) =>
         error?.error?.name !== Dexie.errnames.DatabaseClosed && sentry.captureException(error),
@@ -787,7 +798,7 @@ export class ExternalBalancePool extends BalancePool {
   }: RequestBalancesByParamsSubscribe) {
     // must wait until initialised because some of the parameters to getSubscriptionParams
     // will be set during initialisation
-    await this.hasInitialised
+    await this.hasInitialised.promise
     const subscriptionParameters = getSubscriptionParams(
       addressesByChain,
       addressesAndEvmNetworks,

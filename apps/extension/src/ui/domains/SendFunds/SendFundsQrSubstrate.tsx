@@ -1,6 +1,10 @@
-import { AccountJsonQr, roundToFirstInteger } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
+import { useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
+
+import { AccountJsonQr, privacyRoundCurrency } from "@extension/core"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -8,9 +12,6 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
-import { useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { useSendFunds } from "./useSendFunds"
 
@@ -44,7 +45,7 @@ const SendFundsQrSubstrate = () => {
           options: {
             toAddress: to,
             amount: token
-              ? roundToFirstInteger(Number(planckToTokens(amount, token.decimals)))
+              ? privacyRoundCurrency(Number(planckToTokens(amount, token.decimals)))
               : "unknown",
             tokenId,
             chainId: token?.chain?.id || "unknown",
