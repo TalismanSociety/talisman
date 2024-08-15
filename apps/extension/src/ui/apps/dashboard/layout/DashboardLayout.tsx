@@ -1,6 +1,9 @@
+import { classNames } from "@talismn/util"
+import { FC, Suspense, useEffect, useRef, useState } from "react"
+import { useLocation } from "react-router-dom"
+
 import { BackButton } from "@talisman/components/BackButton"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -9,9 +12,8 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
+import { InlineStakingModal } from "@ui/domains/Staking/InlineStakingModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
-import { FC, Suspense, useEffect, useRef, useState } from "react"
-import { useLocation } from "react-router-dom"
 
 import DashboardNotifications from "./DashboardNotifications"
 import { BackupWarningModal } from "./DashboardNotifications/BackupWarningModal"
@@ -58,6 +60,7 @@ const DashboardNotificationsAndModals = () => {
       <ExplorerNetworkPickerModal />
       <MigratePasswordModal />
       <OnboardingToast />
+      <InlineStakingModal />
     </Suspense>
   )
 }

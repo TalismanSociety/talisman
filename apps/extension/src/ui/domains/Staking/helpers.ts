@@ -1,3 +1,5 @@
+import { TokenId } from "@talismn/chaindata-provider"
+
 import {
   EVM_LSD_SUPPORTED_CHAINS,
   EvmLsdSupportedChain,
@@ -46,3 +48,7 @@ export const isEvmLsdChain = (networkId: string): networkId is EvmLsdSupportedCh
 
 export const isStakingSupportedChain = (chainId: string): chainId is StakingSupportedChain =>
   isNomPoolChain(chainId) || isEvmLsdChain(chainId)
+
+// TODO derive from chaindata
+export const isStakableToken = (tokenId: TokenId) =>
+  ["polkadot-substrate-native", "polkadot-substrate-native"].includes(tokenId)

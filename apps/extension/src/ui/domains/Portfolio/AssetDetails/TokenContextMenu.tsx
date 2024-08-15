@@ -2,10 +2,7 @@ import { EvmErc20Token } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import React, { FC, Suspense, forwardRef, useCallback, useMemo } from "react"
+import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -15,6 +12,12 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 import urlJoin from "url-join"
+
+import { isStakableToken } from "@ui/domains/Staking/helpers"
+import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStaking"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useToken from "@ui/hooks/useToken"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -44,6 +47,20 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
   if (!coingeckoId) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("View on Coingecko")}</ContextMenuItem>
+}
+
+const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
+  const { t } = useTranslation()
+  const { open } = useInlineStakingModal()
+
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    open({ tokenId })
+    genericEvent("open inline staking modal", { from: "token menu" })
+  }, [genericEvent, open, tokenId])
+
+  return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }
 
 type Props = {
@@ -85,6 +102,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           {/* view on explorer can suspense */}
           {token?.type === "evm-erc20" && <ViewOnExplorerMenuItem token={token} />}
           {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
+          {isStakableToken(tokenId) && <StakeMenuItem tokenId={tokenId} />}
         </Suspense>
       </ContextMenuContent>
     </ContextMenu>
