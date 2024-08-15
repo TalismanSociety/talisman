@@ -103,6 +103,8 @@ const config = (env) => {
       minimize: true,
       minimizer: [
         new TerserPlugin({
+          minify: TerserPlugin.swcMinify,
+          parallel: false,
           terserOptions: {
             compress: {
               defaults: true,
