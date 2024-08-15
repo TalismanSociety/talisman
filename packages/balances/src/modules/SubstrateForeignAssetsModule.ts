@@ -357,8 +357,8 @@ async function buildQueries(
       const stateKey = encodeStateKey(
         scaleCoder,
         `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
-        address,
-        onChainId
+        onChainId,
+        address
       )
       if (!stateKey) return []
 
