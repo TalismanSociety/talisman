@@ -12,7 +12,23 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
+import { InlineStakingPoolPicker } from "./InlineStakingPoolPicker"
 import { useInlineStakingForm } from "./useInlineStaking"
+
+const PoolPill: FC<{ name: string | null | undefined; onClick: () => void }> = ({
+  name,
+  onClick,
+}) => {
+  //const { t } = useTranslation()
+
+  if (!name) return null
+
+  return (
+    <PillButton className="h-12 rounded px-4" onClick={onClick}>
+      {name}
+    </PillButton>
+  )
+}
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
@@ -50,7 +66,7 @@ const AvailableBalance: FC<{ token: Token; account: AccountJsonAny }> = ({ token
 
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token } = useInlineStakingForm()
+  const { account, accountPicker, token, pool, poolPicker } = useInlineStakingForm()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -80,19 +96,30 @@ export const InlineStakingForm = () => {
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
         <div className="flex h-12 items-center justify-between ">
           <div>{t("Pool")}</div>
-          <div></div>
+          <div>
+            <PoolPill name={pool?.name} onClick={poolPicker.open} />
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("APY")}</div>
-          <div></div>
+          <div className="text-alert-success font-bold">17.8% APY</div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("Unbonding Period")}</div>
-          <div></div>
+          <div className="text-body">{t("{{days}} Days", { days: 28 })}</div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("Estimated Fee")}</div>
-          <div></div>
+          <div>
+            <TokensAndFiat
+              isBalance
+              tokenId={token?.id}
+              planck={100000000n}
+              // className={classNames(balance.status !== "live" && "animate-pulse")}
+              tokensClassName="text-body"
+              fiatClassName="text-body-secondary"
+            />
+          </div>
         </div>
       </div>
       <div></div>
@@ -101,6 +128,7 @@ export const InlineStakingForm = () => {
       </Button>
 
       <InlineStakingAccountPicker />
+      <InlineStakingPoolPicker />
     </div>
   )
 }
