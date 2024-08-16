@@ -1,30 +1,23 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { Address } from "extension-core"
-import { atom, useAtomValue, useSetAtom } from "jotai"
+import { atom, useAtom, useSetAtom } from "jotai"
 import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { accountsByAddressAtomFamily, tokenByIdAtomFamily } from "@ui/atoms"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import useToken from "@ui/hooks/useToken"
 
 import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 
 const inlineStakingAddressState = atom<Address | null>(null)
 const inlineStakingTokenIdState = atom<TokenId | null>(null)
 
-const inlineStakingState = atom(async (get) => {
-  const [account, token] = await Promise.all([
-    get(accountsByAddressAtomFamily(get(inlineStakingAddressState))),
-    get(tokenByIdAtomFamily(get(inlineStakingTokenIdState))),
-  ])
-
-  return { account, token }
-})
-
 export const useInlineStakingForm = () => {
-  const { account, token } = useAtomValue(inlineStakingState)
+  const [address, setAddress] = useAtom(inlineStakingAddressState)
+  const [tokenId, setTokenId] = useAtom(inlineStakingTokenIdState)
 
-  const setAddress = useSetAtom(inlineStakingAddressState)
-  const setTokenId = useSetAtom(inlineStakingTokenIdState)
+  const account = useAccountByAddress(address)
+  const token = useToken(tokenId)
 
   const accountPicker = useGlobalOpenClose("inlineStakingAccountPicker")
 
@@ -41,9 +34,12 @@ export const useInlineStakingModal = () => {
 
   const open = useCallback(
     ({ address, tokenId }: { address?: Address; tokenId?: TokenId }) => {
+      // reset all child states
       accountPicker.close()
       setAddress(address ?? selectedAccount?.address ?? null)
       setTokenId(tokenId ?? null)
+
+      // then open the modal
       innerOpen()
     },
     [accountPicker, innerOpen, selectedAccount?.address, setAddress, setTokenId]

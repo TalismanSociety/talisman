@@ -1,5 +1,8 @@
+import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
@@ -19,7 +22,9 @@ export const InlineStakingForm = () => {
         <div className="flex h-16 items-center justify-between">
           <div>{t("Account")}</div>
           <div>
-            <AccountPillButton address={account?.address} onClick={accountPicker.open} />
+            <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
+              <AccountPillButton address={account?.address} onClick={accountPicker.open} />
+            </Suspense>
           </div>
         </div>
       </div>

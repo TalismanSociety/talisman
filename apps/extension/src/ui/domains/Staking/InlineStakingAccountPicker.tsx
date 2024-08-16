@@ -1,7 +1,8 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { useMemo, useState } from "react"
+import { ChevronLeftIcon, XIcon } from "@talismn/icons"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal } from "talisman-ui"
+import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -10,15 +11,14 @@ import useChain from "@ui/hooks/useChain"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { InlineStakingAccountsList } from "./InlineStakingAccountsList"
-import { useInlineStakingForm } from "./useInlineStaking"
+import { useInlineStakingForm, useInlineStakingModal } from "./useInlineStaking"
 
 export const InlineStakingAccountPicker = () => {
   const { t } = useTranslation()
-  //const { from, to, tokenId, set, remove } = useSendFundsWizard()
+  const { close } = useInlineStakingModal()
   const { account, token, setAddress, accountPicker } = useInlineStakingForm()
   const [search, setSearch] = useState("")
 
-  // const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
 
   const allAccounts = useAccounts("owned")
@@ -38,39 +38,50 @@ export const InlineStakingAccountPicker = () => {
     [allAccounts, chain, search, token]
   )
 
-  //   const handleSelect = useCallback(
-  //     (address: string) => {
-  //       if (to && encodeAnyAddress(to) === encodeAnyAddress(address)) remove("to")
-  //       set("from", address, true)
-  //     },
-  //     [remove, set, to]
-  //   )
+  const handleSelect = useCallback(
+    (address: string) => {
+      setAddress(address)
+      accountPicker.close()
+    },
+    [accountPicker, setAddress]
+  )
 
   return (
     <Modal
       containerId="inlineStakingModalDialog"
       isOpen={accountPicker.isOpen}
       onDismiss={accountPicker.close}
-      className="size-full"
+      className="relative z-50 size-full"
     >
-      <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
-        <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-          <div className="font-bold">{"From"}</div>
-          <div className="mx-1 grow overflow-hidden px-1">
-            <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
+      <div className="flex size-full flex-grow flex-col bg-black">
+        <header className="flex items-center justify-between p-10">
+          <IconButton onClick={accountPicker.close}>
+            <ChevronLeftIcon />
+          </IconButton>
+          <div>{"Select account"}</div>
+          <IconButton onClick={close}>
+            <XIcon />
+          </IconButton>
+        </header>
+        <div className="flex grow flex-col">
+          <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+            <div className="font-bold">{"Account"}</div>
+            <div className="mx-1 grow overflow-hidden px-1">
+              <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
+            </div>
           </div>
+          <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+            <InlineStakingAccountsList
+              accounts={accounts}
+              genesisHash={chain?.genesisHash}
+              selected={account?.address}
+              onSelect={handleSelect}
+              showBalances
+              tokenId={token?.id}
+              showIfEmpty
+            />
+          </ScrollContainer>
         </div>
-        <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          <InlineStakingAccountsList
-            accounts={accounts}
-            genesisHash={chain?.genesisHash}
-            selected={account?.address}
-            onSelect={setAddress}
-            showBalances
-            tokenId={token?.id}
-            showIfEmpty
-          />
-        </ScrollContainer>
       </div>
     </Modal>
   )
