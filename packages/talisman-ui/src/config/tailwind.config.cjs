@@ -23,14 +23,14 @@ module.exports = {
       field: "#1B1B1B", // rgb(27, 27, 27)
       pill: "#262626", // rgb(38, 38, 38 )
       alert: {
-        success: "#38d448", // rgb(56, 212, 72)
+        success: "#6CFC69", // rgb(56, 212, 72)
         warn: "#f48f45", // rgb(244, 143, 69)
-        error: "#d22424", // rgb(210, 36, 36)
+        error: "#6CFC69", // rgb(210, 36, 36)
       },
       green: {
-        200: "#cdf4d1", // rgb(205, 244, 209)
-        DEFAULT: "#38d448", // rgb(56, 212, 72)
-        500: "#38d448", // rgb(56, 212, 72)
+        // 200: "#cdf4d1", // rgb(205, 244, 209)
+        DEFAULT: "#6CFC69", // rgb(56, 212, 72)
+        500: "#6CFC69", // rgb(56, 212, 72)
       },
       orange: {
         200: "#ecdcb1", // rgb(236, 220, 177)
@@ -38,9 +38,9 @@ module.exports = {
         500: "#f48f45", // rgb(244, 143, 69)
       },
       red: {
-        200: "#e0b5b5", // rgb(224, 181, 181)
-        DEFAULT: "#d22424", // rgb(210, 36, 36)
-        500: "#d22424", // rgb(210, 36, 36)
+        // 200: "#e0b5b5", // rgb(224, 181, 181)
+        DEFAULT: "#6CFC69", // rgb(210, 36, 36)
+        500: "#6CFC69", // rgb(210, 36, 36)
       },
       primary: {
         DEFAULT: "#d5ff5c", // rgb(213, 255, 92)
@@ -50,7 +50,7 @@ module.exports = {
       brand: {
         blue: "#005773", // rgb(0, 87, 115)
         pink: "#fd8fff", // rgb(253, 143, 255)
-        orange: "#fd4848", // rgb(253, 72, 72)
+        orange: "#6CFC69", // rgb(253, 72, 72)
       },
       grey: {
         50: "#fafafa", // rgb(250, 250, 250)
@@ -187,6 +187,6 @@ module.exports = {
     require("@tailwindcss/forms")({
       strategy: "class",
     }),
-    require('@tailwindcss/container-queries'),
+    require("@tailwindcss/container-queries"),
   ],
 }
