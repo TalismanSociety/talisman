@@ -25,7 +25,7 @@ module.exports = {
       alert: {
         success: "#6CFC69", // rgb(56, 212, 72)
         warn: "#f48f45", // rgb(244, 143, 69)
-        error: "#6CFC69", // rgb(210, 36, 36)
+        error: "#fd4848", // rgb(210, 36, 36)
       },
       green: {
         // 200: "#cdf4d1", // rgb(205, 244, 209)
@@ -39,8 +39,8 @@ module.exports = {
       },
       red: {
         // 200: "#e0b5b5", // rgb(224, 181, 181)
-        DEFAULT: "#6CFC69", // rgb(210, 36, 36)
-        500: "#6CFC69", // rgb(210, 36, 36)
+        DEFAULT: "#fd4848", // rgb(210, 36, 36)
+        500: "#fd4848", // rgb(210, 36, 36)
       },
       primary: {
         DEFAULT: "#d5ff5c", // rgb(213, 255, 92)
@@ -50,7 +50,7 @@ module.exports = {
       brand: {
         blue: "#005773", // rgb(0, 87, 115)
         pink: "#fd8fff", // rgb(253, 143, 255)
-        orange: "#6CFC69", // rgb(253, 72, 72)
+        orange: "#fd4848", // rgb(253, 72, 72)
       },
       grey: {
         50: "#fafafa", // rgb(250, 250, 250)
