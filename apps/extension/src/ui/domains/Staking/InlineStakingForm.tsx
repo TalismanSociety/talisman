@@ -218,7 +218,7 @@ const FiatInput = () => {
       if (token && tokenRates?.[currency] && e.target.value) {
         try {
           const fiat = parseFloat(e.target.value)
-          const tokens = (fiat / tokenRates[currency]).toFixed(Math.ceil(token.decimals / 3))
+          const tokens = (fiat / tokenRates[currency]!).toFixed(Math.ceil(token.decimals / 3))
           const plancks = tokensToPlanck(tokens, token.decimals)
           return setPlancks(BigInt(plancks))
         } catch (err) {
