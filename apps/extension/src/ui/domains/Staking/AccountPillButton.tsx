@@ -43,7 +43,7 @@ export const AccountPillButton: FC<AccountPillButtonProps> = ({
   //   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 max-w-full rounded px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         {address ? (
           <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />

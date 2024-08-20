@@ -6,10 +6,10 @@ import { range } from "lodash"
 import { useMemo } from "react"
 
 const poolsAtomFamily = atomFamily((chainId: ChainId | null | undefined) =>
-  atom(async (_get) => {
+  atom(async () => {
     if (!chainId) return []
 
-    await sleep(1500)
+    await sleep(10)
     const getName = (i: number) => {
       switch (i) {
         case 12:

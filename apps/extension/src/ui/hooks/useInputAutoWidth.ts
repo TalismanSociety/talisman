@@ -29,20 +29,26 @@ export const useInputAutoWidth = (ref?: RefObject<HTMLInputElement>) => {
     const input = ref?.current
     if (!input || !input?.placeholder) return
 
+    const resize = () => checkSize(input)
+
     input.addEventListener("input", resize)
+    input.addEventListener("keyup", resize)
+    const observer = new MutationObserver(resize)
+
+    observer.observe(input, { attributes: true, childList: false, subtree: false })
 
     // size will change once our font will be loaded
     document.fonts.ready.then(resize)
-
     resize()
 
     return () => {
+      observer.disconnect()
       input.removeEventListener("input", resize)
+      input.removeEventListener("keyup", resize)
     }
-
     // if ref?.current can toggle between defined and not, it's important to resubscribe each time
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref?.current, resize])
+  }, [ref?.current])
 
   return resize
 }

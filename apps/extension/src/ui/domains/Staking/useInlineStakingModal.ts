@@ -12,17 +12,15 @@ export const useInlineStakingModal = () => {
   const { reset } = useInlineStakingWizard()
 
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("inlineStakingModal")
-  const accountPicker = useGlobalOpenClose("inlineStakingAccountPicker")
 
   const open = useCallback(
     ({ address, tokenId }: { address?: Address; tokenId?: TokenId }) => {
       reset({ address: address ?? selectedAccount?.address ?? null, tokenId: tokenId ?? null })
-      accountPicker.close()
 
       // then open the modal
       innerOpen()
     },
-    [accountPicker, innerOpen, reset, selectedAccount?.address]
+    [innerOpen, reset, selectedAccount?.address]
   )
 
   return { isOpen, open, close }

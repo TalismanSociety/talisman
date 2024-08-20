@@ -143,6 +143,8 @@ const TokenInput = () => {
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
+
+  // auto focus if empty
   const refInitialized = useRef(false)
   useEffect(() => {
     if (refInitialized.current) return
@@ -150,6 +152,7 @@ const TokenInput = () => {
     if (!formatter) refTokensInput.current?.focus()
   }, [formatter, refTokensInput])
 
+  // resize input width to fit content
   const resizeTokensInput = useInputAutoWidth(refTokensInput)
   useEffect(() => {
     resizeTokensInput()
@@ -190,7 +193,10 @@ const FiatInput = () => {
   const { token, tokenRates, formatter, setPlancks } = useInlineStakingWizard()
   const currency = useSelectedCurrency()
   //const currencyConfig = useCurren
-  const defaultValue = useMemo(() => formatter?.fiat(currency) ?? "", [currency, formatter])
+  const defaultValue = useMemo(() => {
+    const val = formatter?.fiat(currency) ?? ""
+    return val ? String(Number(val.toFixed(2))) : val
+  }, [currency, formatter])
   // const {
   //   token,
   //   transfer,
@@ -245,6 +251,16 @@ const FiatInput = () => {
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
+
+  // auto focus if empty
+  const refInitialized = useRef(false)
+  useEffect(() => {
+    if (refInitialized.current) return
+    refInitialized.current = true
+    if (!formatter) refFiatInput.current?.focus()
+  }, [formatter, refFiatInput])
+
+  // resize input width to fit content
   const resizeFiatInput = useInputAutoWidth(refFiatInput)
   useEffect(() => {
     resizeFiatInput()
@@ -344,20 +360,21 @@ export const AmountEdit = () => {
 }
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, pool, poolPicker } = useInlineStakingWizard()
+  const { account, accountPicker, token, pool, poolPicker, isFormValid, setStep } =
+    useInlineStakingWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between gap-4">
           <div>{t("Asset")}</div>
-          <div>
+          <div className="overflow-hidden">
             <AssetPill token={token} />
           </div>
         </div>
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between gap-4">
           <div>{t("Account")}</div>
-          <div>
+          <div className="overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
               <AccountPillButton address={account?.address} onClick={accountPicker.open} />
             </Suspense>
@@ -374,21 +391,21 @@ export const InlineStakingForm = () => {
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
         <div className="flex h-12 items-center justify-between">
           <div>{t("Pool")}</div>
-          <div>
+          <div className="overflow-hidden">
             <PoolPill name={pool?.name} onClick={poolPicker.open} />
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("APY")}</div>
-          <div className="text-alert-success font-bold">17.8% APY</div>
+          <div className="text-alert-success overflow-hidden font-bold">17.8% APY</div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("Unbonding Period")}</div>
-          <div className="text-body">{t("{{days}} Days", { days: 28 })}</div>
+          <div className="text-body overflow-hidden">{t("{{days}} Days", { days: 28 })}</div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("Estimated Fee")}</div>
-          <div>
+          <div className="overflow-hidden">
             <TokensAndFiat
               isBalance
               tokenId={token?.id}
@@ -401,7 +418,7 @@ export const InlineStakingForm = () => {
         </div>
       </div>
       <div></div>
-      <Button primary fullWidth>
+      <Button primary fullWidth disabled={!isFormValid} onClick={() => setStep("review")}>
         {t("Review")}
       </Button>
 
