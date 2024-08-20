@@ -1,7 +1,7 @@
+import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
-import { defineMethod } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
@@ -58,14 +58,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubForeignAssetsTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -225,23 +223,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       return new Balances(balances)
     },
 
-    async transferToken({
-      tokenId,
-      from,
-      to,
-      amount,
-
-      registry,
-      metadataRpc,
-      blockHash,
-      blockNumber,
-      nonce,
-      specVersion,
-      transactionVersion,
-      tip,
-      transferMethod,
-      userExtensions,
-    }) {
+    async transferToken({ tokenId, to, amount, transferMethod, metadataRpc }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
@@ -252,8 +234,6 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-      const { genesisHash } = chain
-
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -263,39 +243,26 @@ export const SubForeignAssetsModule: NewBalanceModule<
       })()
 
       const pallet = "ForeignAssets"
-      const method =
-        // the ForeignAssets pallet has no transfer_all method
-        transferMethod === "transfer_all" ? "transfer" : transferMethod
-      const args = { id: onChainId, target: { Id: to }, amount }
+      // the ForeignAssets pallet has no transfer_all method
+      const method = transferMethod === "transfer_all" ? "transfer" : transferMethod
+      const args = {
+        id: onChainId,
+        target: { type: "Id", value: to },
+        amount: BigInt(amount),
+      }
 
       const { metadata } = decodeMetadata(metadataRpc)
       if (metadata === undefined) throw new Error("Unable to decode metadata")
 
       const scaleBuilder = getDynamicBuilder(metadata)
-      scaleBuilder.buildCall(pallet, method)
+      try {
+        const { location, codec } = scaleBuilder.buildCall(pallet, method)
+        const callData = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
 
-      const unsigned = defineMethod(
-        {
-          method: {
-            pallet,
-            name: method,
-            args,
-          },
-          address: from,
-          blockHash,
-          blockNumber,
-          eraPeriod: 64,
-          genesisHash,
-          metadataRpc,
-          nonce,
-          specVersion,
-          tip: tip ? Number(tip) : 0,
-          transactionVersion,
-        },
-        { metadataRpc, registry, userExtensions }
-      )
-
-      return { type: "substrate", tx: unsigned }
+        return { type: "substrate", callData: toHex(callData.asBytes()) }
+      } catch (cause) {
+        throw new Error(`Failed to build ${moduleType} transfer tx`, { cause })
+      }
     },
   }
 }

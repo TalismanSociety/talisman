@@ -11,6 +11,7 @@ import {
   Token,
   TokenList,
 } from "@talismn/chaindata-provider"
+import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -52,14 +53,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubPsp22TransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -281,8 +280,8 @@ export const SubPsp22Module: NewBalanceModule<
       const unsigned = defineMethod(
         {
           method: {
-            pallet,
-            name: method,
+            pallet: camelCase(pallet),
+            name: camelCase(method),
             args,
           },
           address: from,
@@ -299,7 +298,7 @@ export const SubPsp22Module: NewBalanceModule<
         { metadataRpc, registry, userExtensions }
       )
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: unsigned.method }
     },
   }
 }

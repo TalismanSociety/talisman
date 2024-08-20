@@ -17,6 +17,7 @@ import {
   encodeMetadata,
   getDynamicBuilder,
 } from "@talismn/scale"
+import camelCase from "lodash/camelCase"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -56,14 +57,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubAssetsTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -261,8 +260,8 @@ export const SubAssetsModule: NewBalanceModule<
       const unsigned = defineMethod(
         {
           method: {
-            pallet,
-            name: method,
+            pallet: camelCase(pallet),
+            name: camelCase(method),
             args,
           },
           address: from,
@@ -279,7 +278,7 @@ export const SubAssetsModule: NewBalanceModule<
         { metadataRpc, registry, userExtensions }
       )
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: unsigned.method }
     },
   }
 }

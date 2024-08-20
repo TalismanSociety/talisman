@@ -19,6 +19,7 @@ import {
   getDynamicBuilder,
 } from "@talismn/scale"
 import { isBigInt } from "@talismn/util"
+import camelCase from "lodash/camelCase"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -59,14 +60,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubEquilibriumTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -256,8 +255,8 @@ export const SubEquilibriumModule: NewBalanceModule<
       const unsigned = defineMethod(
         {
           method: {
-            pallet,
-            name: method,
+            pallet: camelCase(pallet),
+            name: camelCase(method),
             args,
           },
           address: from,
@@ -274,7 +273,7 @@ export const SubEquilibriumModule: NewBalanceModule<
         { metadataRpc, registry, userExtensions }
       )
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: unsigned.method }
     },
   }
 }

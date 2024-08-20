@@ -1,7 +1,7 @@
+import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
-import { defineMethod, UnsignedTransaction } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
@@ -15,8 +15,10 @@ import {
   decodeScale,
   encodeMetadata,
   encodeStateKey,
+  getDynamicBuilder,
   papiParse,
 } from "@talismn/scale"
+import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -58,16 +60,13 @@ declare module "@talismn/balances/plugins" {
 }
 
 export type SubTokensTransferParams = NewTransferParamsType<{
-  /** @depreacted replace with papi tx encoder */
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transfer_keep_alive" | "transfer_all"
   userExtensions?: ExtDef
 }>
 
@@ -171,23 +170,7 @@ export const SubTokensModule: NewBalanceModule<
       return new Balances(balances)
     },
 
-    async transferToken({
-      tokenId,
-      from,
-      to,
-      amount,
-
-      registry,
-      metadataRpc,
-      blockHash,
-      blockNumber,
-      nonce,
-      specVersion,
-      transactionVersion,
-      tip,
-      transferMethod,
-      userExtensions,
-    }) {
+    async transferToken({ tokenId, to, amount, transferMethod, metadataRpc }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
@@ -198,8 +181,6 @@ export const SubTokensModule: NewBalanceModule<
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-      const { genesisHash } = chain
-
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -208,77 +189,100 @@ export const SubTokensModule: NewBalanceModule<
         }
       })()
 
-      // different chains use different orml transfer methods
-      // we'll try each one in sequence until we get one that doesn't throw an error
-      let unsigned: UnsignedTransaction | undefined = undefined
-      const errors: Error[] = []
+      const { metadata } = decodeMetadata(metadataRpc)
+      if (metadata === undefined) throw new Error("Unable to decode metadata")
 
-      const currenciesPallet = "currencies"
-      const currenciesMethod = "transfer"
-      const currenciesArgs = { dest: to, currencyId: onChainId, amount }
+      const scaleBuilder = getDynamicBuilder(metadata)
 
-      const sendAll = transferMethod === "transfer_all"
-
-      const tokensPallet = "tokens"
-      const tokensMethod = transferMethod
-      const tokensArgs = sendAll
-        ? { dest: to, currencyId: onChainId, keepAlive: false }
-        : { dest: to, currencyId: onChainId, amount }
-
-      const commonDefineMethodFields = {
-        address: from,
-        blockHash,
-        blockNumber,
-        eraPeriod: 64,
-        genesisHash,
-        metadataRpc,
-        nonce,
-        specVersion,
-        tip: tip ? Number(tip) : 0,
-        transactionVersion,
-      }
-
-      const unsignedMethods = [
-        () =>
-          defineMethod(
-            {
-              method: {
-                pallet: currenciesPallet,
-                name: currenciesMethod,
-                args: currenciesArgs,
-              },
-              ...commonDefineMethodFields,
-            },
-            { metadataRpc, registry, userExtensions }
-          ),
-        () =>
-          defineMethod(
-            {
-              method: {
-                pallet: tokensPallet,
-                name: tokensMethod,
-                args: tokensArgs,
-              },
-              ...commonDefineMethodFields,
-            },
-            { metadataRpc, registry, userExtensions }
-          ),
-      ]
-
-      for (const method of unsignedMethods) {
+      const tryBuildCallData = (
+        pallet: string,
+        method: string,
+        args: unknown
+      ): [Binary, undefined] | [undefined, Error] => {
         try {
-          unsigned = method()
-        } catch (error: unknown) {
-          errors.push(error as Error)
+          const { location, codec } = scaleBuilder.buildCall(pallet, method)
+          return [
+            Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args))),
+            undefined,
+          ]
+        } catch (cause) {
+          return [undefined, new Error("Failed to build call", { cause })]
         }
       }
 
-      if (unsigned === undefined) {
+      const sendAll = transferMethod === "transfer_all"
+
+      // different chains use different transfer types
+      // we'll try each one in sequence until we get one that doesn't throw an error
+      const attempts = [
+        {
+          pallet: "Currencies",
+          method: "transfer",
+          args: {
+            dest: { type: "Id", value: to },
+            currency_id: onChainId,
+            amount: BigInt(amount),
+          },
+        },
+        {
+          pallet: "Currencies",
+          method: "transfer",
+          args: {
+            dest: to,
+            currency_id: onChainId,
+            amount: BigInt(amount),
+          },
+        },
+        {
+          pallet: "Tokens",
+          method: transferMethod,
+          args: sendAll
+            ? {
+                dest: { type: "Id", value: to },
+                currency_id: onChainId,
+                keepAlive: false,
+              }
+            : {
+                dest: { type: "Id", value: to },
+                currency_id: onChainId,
+                amount: BigInt(amount),
+              },
+        },
+        {
+          pallet: "Tokens",
+          method: transferMethod,
+          args: sendAll
+            ? {
+                dest: to,
+                currency_id: onChainId,
+                keepAlive: false,
+              }
+            : {
+                dest: to,
+                currency_id: onChainId,
+                amount: BigInt(amount),
+              },
+        },
+      ]
+
+      const errors: Error[] = []
+      let callData: Binary | undefined = undefined
+      for (const attempt of attempts) {
+        const [_callData, error] = tryBuildCallData(attempt.pallet, attempt.method, attempt.args)
+        if (error) {
+          errors.push(error)
+          continue
+        }
+        callData = _callData
+        break
+      }
+
+      if (callData === undefined) {
         errors.forEach((error) => log.error(error))
         throw new Error(`${token.symbol} transfers are not supported at this time.`)
       }
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: toHex(callData.asBytes()) }
     },
   }
 }

@@ -27,9 +27,9 @@
     "clean": "rm -rf dist plugins/dist .turbo node_modules"
   },
   "dependencies": {
+    "@polkadot-api/utils": "^0.1.0",
     "@supercharge/promise-pool": "^3.1.0",
     "@talismn/chain-connector": "workspace:*",
-    "polkadot-api": "^0.6.0",
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/scale": "workspace:*",
@@ -40,6 +40,7 @@
     "dexie": "^3.2.4",
     "lodash": "4.17.21",
     "pako": "^2.1.0",
+    "polkadot-api": "^0.6.0",
     "rxjs": "^7.8.1",
     "scale-ts": "^1.6.0",
     "viem": "^2.18.2"

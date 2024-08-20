@@ -878,6 +878,9 @@ importers:
 
   packages/balances:
     dependencies:
+      '@polkadot-api/utils':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@supercharge/promise-pool':
         specifier: ^3.1.0
         version: 3.1.0
@@ -1271,6 +1274,9 @@ importers:
       '@sentry/browser':
         specifier: 8.8.0
         version: 8.8.0
+      '@substrate/txwrapper-core':
+        specifier: 7.2.0
+        version: 7.2.0(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@supercharge/promise-pool':
         specifier: ^3.1.0
         version: 3.1.0

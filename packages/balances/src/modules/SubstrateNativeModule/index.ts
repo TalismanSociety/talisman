@@ -43,7 +43,12 @@ import {
 } from "rxjs"
 import { u128 } from "scale-ts"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../../BalanceModule"
+import {
+  BalancesAllTransferMethods,
+  DefaultBalanceModule,
+  NewBalanceModule,
+  NewTransferParamsType,
+} from "../../BalanceModule"
 import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import {
@@ -139,21 +144,14 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
-export type BalancesCommonTransferMethods = "transfer_keep_alive" | "transfer_all"
-export type BalancesTransferMethods = "transfer_allow_death" | BalancesCommonTransferMethods
-export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
-export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
-
 export type SubNativeTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: BalancesAllTransferMethods
   userExtensions?: ExtDef
 }>
 
@@ -603,7 +601,7 @@ export const SubNativeModule: NewBalanceModule<
         { metadataRpc, registry, userExtensions }
       )
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: unsigned.method }
     },
   }
 }
