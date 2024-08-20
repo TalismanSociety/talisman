@@ -40,8 +40,6 @@ export const AccountPillButton: FC<AccountPillButtonProps> = ({
     [account, address, formattedAddress]
   )
 
-  //   if (!address) return null
-
   return (
     <PillButton className={classNames("h-16 max-w-full rounded px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">

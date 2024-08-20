@@ -1,7 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { sleep } from "@talismn/util"
 import { Address, BalanceFormatter } from "extension-core"
+import { log } from "extension-shared"
 import { atom, useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
+import { Hex } from "viem"
 
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useToken from "@ui/hooks/useToken"
@@ -20,6 +23,9 @@ type InlineStakingWizardState = {
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
   isPoolPickerOpen: boolean
+  isSubmitting: boolean
+  submitErrorMessage: string | null
+  hash: Hex | null
 }
 
 const DEFAULT_STATE: InlineStakingWizardState = {
@@ -31,6 +37,9 @@ const DEFAULT_STATE: InlineStakingWizardState = {
   displayMode: "token",
   isAccountPickerOpen: false,
   isPoolPickerOpen: false,
+  isSubmitting: false,
+  submitErrorMessage: null,
+  hash: null,
 }
 
 const inlineStakingWizardAtom = atom(DEFAULT_STATE)
@@ -58,7 +67,7 @@ const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
 export const useInlineStakingWizard = () => {
   const [state, setState] = useAtom(inlineStakingWizardAtom)
 
-  const { step, displayMode } = state
+  const { step, displayMode, hash, isSubmitting, submitErrorMessage } = state
 
   const account = useAccountByAddress(state.address)
   const token = useToken(state.tokenId)
@@ -121,6 +130,23 @@ export const useInlineStakingWizard = () => {
     [setState]
   )
 
+  const submit = useCallback(async () => {
+    setState((prev) => ({ ...prev, isSubmitting: true, submitErrorMessage: null }))
+
+    try {
+      await sleep(1000)
+      // throw new Error("Failed to submit")
+      setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash: "0xdeadbeef" }))
+    } catch (err) {
+      log.error("Failed to submit", { state, err })
+      setState((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        submitErrorMessage: "Something went wrong",
+      }))
+    }
+  }, [setState, state])
+
   return {
     account,
     token,
@@ -132,6 +158,9 @@ export const useInlineStakingWizard = () => {
     poolPicker,
     isFormValid,
     step,
+    hash,
+    isSubmitting,
+    submitErrorMessage,
     setAddress,
     setTokenId,
     setPoolId,
@@ -139,5 +168,6 @@ export const useInlineStakingWizard = () => {
     setStep,
     toggleDisplayMode,
     reset,
+    submit,
   }
 }

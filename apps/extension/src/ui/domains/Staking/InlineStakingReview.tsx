@@ -1,4 +1,4 @@
-import { TalismanEyeIcon } from "@talismn/icons"
+import { AlertCircleIcon, TalismanEyeIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
@@ -9,7 +9,8 @@ import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingReview = () => {
   const { t } = useTranslation()
-  const { pool, token, formatter, account } = useInlineStakingWizard()
+  const { pool, token, formatter, account, isFormValid, isSubmitting, submitErrorMessage, submit } =
+    useInlineStakingWizard()
 
   if (!account) return null
 
@@ -64,7 +65,15 @@ export const InlineStakingReview = () => {
         </div>
       </div>
       <div className="grow"></div>
-      <Button primary>{t("Confirm")}</Button>
+      {submitErrorMessage && (
+        <div className="text-alert-warn bg-grey-900 my-8 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
+          <AlertCircleIcon className="text-lg" />
+          <div>{submitErrorMessage}</div>
+        </div>
+      )}
+      <Button disabled={!isFormValid} onClick={submit} processing={isSubmitting} primary>
+        {t("Confirm")}
+      </Button>
     </div>
   )
 }
