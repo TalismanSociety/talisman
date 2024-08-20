@@ -14,7 +14,7 @@ import {
 import urlJoin from "url-join"
 
 import { isStakableToken } from "@ui/domains/Staking/helpers"
-import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStaking"
+import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"

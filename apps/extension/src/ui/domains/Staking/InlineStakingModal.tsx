@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Modal, ModalDialog } from "talisman-ui"
 
 import { InlineStakingForm } from "./InlineStakingForm"
-import { useInlineStakingModal } from "./useInlineStaking"
+import { useInlineStakingModal } from "./useInlineStakingModal"
 
 export const InlineStakingModal = () => {
   const { t } = useTranslation()

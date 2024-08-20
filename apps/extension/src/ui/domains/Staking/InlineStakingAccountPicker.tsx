@@ -11,12 +11,13 @@ import useChain from "@ui/hooks/useChain"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { InlineStakingAccountsList } from "./InlineStakingAccountsList"
-import { useInlineStakingForm, useInlineStakingModal } from "./useInlineStaking"
+import { useInlineStakingModal } from "./useInlineStakingModal"
+import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingAccountPicker = () => {
   const { t } = useTranslation()
   const { close } = useInlineStakingModal()
-  const { account, token, setAddress, accountPicker } = useInlineStakingForm()
+  const { account, token, setAddress, accountPicker } = useInlineStakingWizard()
   const [search, setSearch] = useState("")
 
   const chain = useChain(token?.chain?.id)

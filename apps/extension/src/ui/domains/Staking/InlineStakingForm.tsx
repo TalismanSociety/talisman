@@ -28,7 +28,7 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
 import { InlineStakingPoolPicker } from "./InlineStakingPoolPicker"
-import { useInlineStakingForm } from "./useInlineStaking"
+import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 const PoolPill: FC<{ name: string | null | undefined; onClick: () => void }> = ({
   name,
@@ -88,7 +88,7 @@ const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
 
 const FiatDisplay = () => {
   const currency = useSelectedCurrency()
-  const { tokenRates, formatter } = useInlineStakingForm()
+  const { tokenRates, formatter } = useInlineStakingWizard()
 
   // const value = sendMax ? maxAmount : transfer
 
@@ -102,7 +102,7 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, formatter } = useInlineStakingForm()
+  const { token, formatter } = useInlineStakingWizard()
 
   // const value = sendMax ? maxAmount : transfer
 
@@ -121,7 +121,7 @@ const TokenDisplay = () => {
 }
 
 const TokenInput = () => {
-  const { token, formatter, setPlancks } = useInlineStakingForm()
+  const { token, formatter, setPlancks } = useInlineStakingWizard()
 
   const defaultValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
@@ -187,7 +187,7 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, formatter, setPlancks } = useInlineStakingForm()
+  const { token, tokenRates, formatter, setPlancks } = useInlineStakingWizard()
   const currency = useSelectedCurrency()
   //const currencyConfig = useCurren
   const defaultValue = useMemo(() => formatter?.fiat(currency) ?? "", [currency, formatter])
@@ -289,13 +289,9 @@ const FiatInput = () => {
 
 export const AmountEdit = () => {
   const { t } = useTranslation()
-  const { token, tokenRates, displayMode, setDisplayMode } = useInlineStakingForm()
+  const { token, tokenRates, displayMode, toggleDisplayMode } = useInlineStakingWizard()
   //const [isTokenEdit, setIsTokenEdit] = useState(true)
   // const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } = useSendFunds()
-
-  const toggleIsTokenEdit = useCallback(() => {
-    setDisplayMode((prev) => (prev === "token" ? "fiat" : "token"))
-  }, [setDisplayMode])
 
   const onSetMaxClick = useCallback(() => {}, [])
 
@@ -318,7 +314,7 @@ export const AmountEdit = () => {
               <>
                 {displayMode !== "token" ? <TokenDisplay /> : <FiatDisplay />}
                 <PillButton
-                  onClick={toggleIsTokenEdit}
+                  onClick={toggleDisplayMode}
                   size="xs"
                   className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
                 >
@@ -348,7 +344,7 @@ export const AmountEdit = () => {
 }
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, pool, poolPicker } = useInlineStakingForm()
+  const { account, accountPicker, token, pool, poolPicker } = useInlineStakingWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">

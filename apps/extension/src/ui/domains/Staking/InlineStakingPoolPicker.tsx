@@ -9,13 +9,14 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
 import Tokens from "../Asset/Tokens"
-import { useInlineStakingForm, useInlineStakingModal } from "./useInlineStaking"
+import { useInlineStakingModal } from "./useInlineStakingModal"
+import { useInlineStakingWizard } from "./useInlineStakingWizard"
 import { useNominationPools } from "./useNominationPools"
 
 export const InlineStakingPoolPicker = () => {
   const { t } = useTranslation()
   const { close } = useInlineStakingModal()
-  const { token, poolPicker, setPoolId, pool } = useInlineStakingForm()
+  const { token, poolPicker, setPoolId, pool } = useInlineStakingWizard()
   const [_search, setSearch] = useState("")
 
   const pools = useNominationPools(token?.chain?.id)
