@@ -22,6 +22,7 @@ import {
   getDynamicBuilder,
 } from "@talismn/scale"
 import { decodeAnyAddress, Deferred, isEthereumAddress } from "@talismn/util"
+import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
 import {
   BehaviorSubject,
@@ -583,8 +584,8 @@ export const SubNativeModule: NewBalanceModule<
       const unsigned = defineMethod(
         {
           method: {
-            pallet,
-            name: method,
+            pallet: camelCase(pallet),
+            name: camelCase(method),
             args,
           },
           address: from,
