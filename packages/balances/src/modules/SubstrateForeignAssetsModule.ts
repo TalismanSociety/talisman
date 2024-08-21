@@ -16,6 +16,7 @@ import {
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
+  getLookupFn,
   papiParse,
 } from "@talismn/scale"
 import { Binary } from "polkadot-api"
@@ -108,7 +109,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const { metadata } = decodeMetadata(miniMetadata)
       if (metadata === undefined) return {}
 
-      const scaleBuilder = getDynamicBuilder(metadata)
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       const assetCoder = scaleBuilder.buildStorage("ForeignAssets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("ForeignAssets", "Metadata")
 
@@ -254,7 +255,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const { metadata } = decodeMetadata(metadataRpc)
       if (metadata === undefined) throw new Error("Unable to decode metadata")
 
-      const scaleBuilder = getDynamicBuilder(metadata)
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       try {
         const { location, codec } = scaleBuilder.buildCall(pallet, method)
         const callData = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))

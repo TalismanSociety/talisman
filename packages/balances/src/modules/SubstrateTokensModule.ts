@@ -16,6 +16,7 @@ import {
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
+  getLookupFn,
   papiParse,
 } from "@talismn/scale"
 import { Binary } from "polkadot-api"
@@ -192,7 +193,7 @@ export const SubTokensModule: NewBalanceModule<
       const { metadata } = decodeMetadata(metadataRpc)
       if (metadata === undefined) throw new Error("Unable to decode metadata")
 
-      const scaleBuilder = getDynamicBuilder(metadata)
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
 
       const tryBuildCallData = (
         pallet: string,

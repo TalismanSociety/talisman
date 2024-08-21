@@ -16,6 +16,7 @@ import {
   decodeScale,
   encodeMetadata,
   getDynamicBuilder,
+  getLookupFn,
 } from "@talismn/scale"
 import camelCase from "lodash/camelCase"
 
@@ -105,7 +106,7 @@ export const SubAssetsModule: NewBalanceModule<
       const { metadata } = decodeMetadata(miniMetadata)
       if (metadata === undefined) return {}
 
-      const scaleBuilder = getDynamicBuilder(metadata)
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")
 

@@ -20,6 +20,7 @@ import {
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
+  getLookupFn,
 } from "@talismn/scale"
 import { decodeAnyAddress, Deferred, isEthereumAddress } from "@talismn/util"
 import camelCase from "lodash/camelCase"
@@ -218,7 +219,7 @@ export const SubNativeModule: NewBalanceModule<
       // get runtime constants
       //
 
-      const scaleBuilder = getDynamicBuilder(metadata)
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       const getConstantValue = (palletName: string, constantName: string) => {
         const encodedValue = metadata.pallets
           .find(({ name }) => name === palletName)

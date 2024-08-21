@@ -1,5 +1,5 @@
 import { ChainId, ChainList } from "@talismn/chaindata-provider"
-import { decodeMetadata, getDynamicBuilder } from "@talismn/scale"
+import { decodeMetadata, getDynamicBuilder, getLookupFn } from "@talismn/scale"
 
 import log from "../../log"
 import { MiniMetadata } from "../../types"
@@ -44,7 +44,7 @@ export const buildStorageCoders = <
       if (!metadata || !tag) return []
 
       try {
-        const scaleBuilder = getDynamicBuilder(metadata)
+        const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
         const builtCoders = Object.fromEntries(
           Object.entries(coders).flatMap(
             ([key, [module, method]]: [keyof TCoders, [string, string]]) => {

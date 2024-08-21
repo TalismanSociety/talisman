@@ -17,6 +17,7 @@ import {
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
+  getLookupFn,
 } from "@talismn/scale"
 import { isBigInt } from "@talismn/util"
 import camelCase from "lodash/camelCase"
@@ -113,7 +114,7 @@ export const SubEquilibriumModule: NewBalanceModule<
       if (metadata === undefined) return {}
 
       try {
-        const scaleBuilder = getDynamicBuilder(metadata)
+        const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
         const assetsCoder = scaleBuilder.buildStorage("EqAssets", "Assets")
         const stateKey = assetsCoder.enc()
 

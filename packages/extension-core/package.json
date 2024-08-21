@@ -21,7 +21,7 @@
   "dependencies": {
     "@metamask/browser-passworder": "4.3.0",
     "@metamask/eth-sig-util": "7.0.1",
-    "@polkadot-api/merkleize-metadata": "^1.1.0",
+    "@polkadot-api/merkleize-metadata": "^1.1.2",
     "@polkadot/apps-config": "0.132.1",
     "@polkadot/extension-base": "0.46.6",
     "@polkadot/extension-inject": "0.46.6",
