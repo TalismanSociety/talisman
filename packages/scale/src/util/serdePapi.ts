@@ -1,4 +1,4 @@
-import { Binary } from "polkadot-api"
+import { Binary } from "@polkadot-api/substrate-bindings"
 
 /**
  * For the substrate-tokens (and other) modules, we configure the `onChainId` field in chaindata to tell the module how to query each token.

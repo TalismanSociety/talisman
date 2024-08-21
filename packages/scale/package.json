@@ -30,7 +30,6 @@
     "@polkadot-api/substrate-bindings": "^0.6.3",
     "@polkadot-api/utils": "^0.1.1",
     "anylogger": "^1.0.11",
-    "polkadot-api": "^1.0.1",
     "scale-ts": "^1.6.0"
   },
   "devDependencies": {
