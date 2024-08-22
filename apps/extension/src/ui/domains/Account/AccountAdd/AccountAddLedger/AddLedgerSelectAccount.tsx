@@ -11,7 +11,8 @@ import { LedgerEthDerivationPathType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
 import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
-import { useLedgerSubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
+import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
+import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 
 import { LedgerSubstrateGenericAccountPicker } from "../../LedgerSubstrateGenericAccountPicker"
 import { AddSubstrateLedgerAppType, LedgerAccountDef, useAddLedgerAccount } from "./context"
@@ -70,7 +71,7 @@ export const AddLedgerSelectAccount = () => {
   const { t } = useTranslation("admin")
   const { data, connectAccounts: importAccounts, onSuccess } = useAddLedgerAccount()
 
-  const app = useLedgerSubstrateMigrationApp(data.migrationAppName)
+  const app = useLedgerSubstrateAppByName(CHAIN_ID_TO_LEDGER_APP_NAME[data.chainId as string])
 
   const schema = useMemo(
     () =>

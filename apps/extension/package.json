@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.30.1",
+  "version": "1.30.2",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -16,7 +16,7 @@
     "@ledgerhq/hw-transport": "6.30.1",
     "@ledgerhq/hw-transport-webusb": "6.28.1",
     "@metamask/eth-sig-util": "7.0.1",
-    "@polkadot-api/merkleize-metadata": "^1.1.0",
+    "@polkadot-api/merkleize-metadata": "^1.1.2",
     "@polkadot/extension-base": "*",
     "@polkadot/extension-inject": "*",
     "@polkadot/keyring": "*",

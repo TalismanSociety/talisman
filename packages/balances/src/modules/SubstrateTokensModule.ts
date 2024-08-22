@@ -1,7 +1,7 @@
+import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
-import { defineMethod, UnsignedTransaction } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
@@ -10,42 +10,35 @@ import {
   Token,
 } from "@talismn/chaindata-provider"
 import {
-  $metadataV14,
-  filterMetadataPalletsAndItems,
-  getMetadataVersion,
-  PalletMV14,
-  StorageEntryMV14,
+  compactMetadata,
+  decodeMetadata,
+  decodeScale,
+  encodeMetadata,
+  encodeStateKey,
+  getDynamicBuilder,
+  getLookupFn,
+  papiParse,
 } from "@talismn/scale"
-import * as $ from "@talismn/subshape-fork"
-import { decodeAnyAddress } from "@talismn/util"
+import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
-import {
-  buildStorageDecoders,
-  createTypeRegistryCache,
-  findChainMeta,
-  GetOrCreateTypeRegistry,
-  getUniqueChainIds,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-  StorageHelper,
-} from "./util"
+import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelper } from "./util"
 
 type ModuleType = "substrate-tokens"
 const moduleType: ModuleType = "substrate-tokens"
 
 export type SubTokensToken = Extract<Token, { type: ModuleType }>
 
-const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-tokens-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubTokensChainMeta = {
   isTestnet: boolean
-  miniMetadata: `0x${string}` | null
-  metadataVersion: number
+  miniMetadata?: string
+  metadataVersion?: number
 }
 
 export type SubTokensModuleConfig = {
@@ -69,14 +62,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubTokensTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
   userExtensions?: ExtDef
 }>
 
@@ -91,37 +82,22 @@ export const SubTokensModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
-
   return {
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet, miniMetadata: null, metadataVersion: 0 }
+      if (metadataRpc === undefined) return { isTestnet }
+      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
-      if ((moduleConfig?.tokens ?? []).length < 1)
-        return { isTestnet, miniMetadata: null, metadataVersion }
+      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
+      if (!metadata) return { isTestnet }
 
-      if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
+      compactMetadata(metadata, [{ pallet: "Tokens", items: ["Accounts"] }])
 
-      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
+      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
-      const isTokensPallet = (pallet: PalletMV14) => pallet.name === "Tokens"
-      const isAccountsItem = (item: StorageEntryMV14) => item.name === "Accounts"
-
-      // TODO: Handle metadata v15
-      filterMetadataPalletsAndItems(metadata, [{ pallet: isTokensPallet, items: [isAccountsItem] }])
-      metadata.extrinsic.signedExtensions = []
-
-      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
-
-      return {
-        isTestnet,
-        miniMetadata,
-        metadataVersion,
-      }
+      return { isTestnet, miniMetadata, metadataVersion }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
@@ -174,14 +150,10 @@ export const SubTokensModule: NewBalanceModule<
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances({ addressesByToken }, callback) {
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
         (error, result) => {
-          if (error) callback(error)
+          if (error) return callback(error)
           const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
           if (balances.length > 0) callback(null, new Balances(balances))
         }
@@ -193,33 +165,13 @@ export const SubTokensModule: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
       const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
       return new Balances(balances)
     },
 
-    async transferToken({
-      tokenId,
-      from,
-      to,
-      amount,
-
-      registry,
-      metadataRpc,
-      blockHash,
-      blockNumber,
-      nonce,
-      specVersion,
-      transactionVersion,
-      tip,
-      transferMethod,
-      userExtensions,
-    }) {
+    async transferToken({ tokenId, to, amount, transferMethod, metadataRpc }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
@@ -230,95 +182,114 @@ export const SubTokensModule: NewBalanceModule<
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-      const { genesisHash } = chain
-
-      const currencyId = (() => {
+      const onChainId = (() => {
         try {
-          // `as string` doesn't matter here because we catch it if it throws
-          return JSON.parse(token.onChainId as string)
+          return papiParse(token.onChainId)
         } catch (error) {
           return token.onChainId
         }
       })()
 
-      // different chains use different orml transfer methods
-      // we'll try each one in sequence until we get one that doesn't throw an error
-      let unsigned: UnsignedTransaction | undefined = undefined
-      const errors: Error[] = []
+      const { metadata } = decodeMetadata(metadataRpc)
+      if (metadata === undefined) throw new Error("Unable to decode metadata")
 
-      const currenciesPallet = "currencies"
-      const currenciesMethod = "transfer"
-      const currenciesArgs = { dest: to, currencyId, amount }
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
 
-      const sendAll = transferMethod === "transferAll"
-
-      const tokensPallet = "tokens"
-      const tokensMethod = transferMethod
-      const tokensArgs = sendAll
-        ? { dest: to, currencyId, keepAlive: false }
-        : { dest: to, currencyId, amount }
-
-      const commonDefineMethodFields = {
-        address: from,
-        blockHash,
-        blockNumber,
-        eraPeriod: 64,
-        genesisHash,
-        metadataRpc,
-        nonce,
-        specVersion,
-        tip: tip ? Number(tip) : 0,
-        transactionVersion,
-      }
-
-      const unsignedMethods = [
-        () =>
-          defineMethod(
-            {
-              method: {
-                pallet: currenciesPallet,
-                name: currenciesMethod,
-                args: currenciesArgs,
-              },
-              ...commonDefineMethodFields,
-            },
-            { metadataRpc, registry, userExtensions }
-          ),
-        () =>
-          defineMethod(
-            {
-              method: {
-                pallet: tokensPallet,
-                name: tokensMethod,
-                args: tokensArgs,
-              },
-              ...commonDefineMethodFields,
-            },
-            { metadataRpc, registry, userExtensions }
-          ),
-      ]
-
-      for (const method of unsignedMethods) {
+      const tryBuildCallData = (
+        pallet: string,
+        method: string,
+        args: unknown
+      ): [Binary, undefined] | [undefined, Error] => {
         try {
-          unsigned = method()
-        } catch (error: unknown) {
-          errors.push(error as Error)
+          const { location, codec } = scaleBuilder.buildCall(pallet, method)
+          return [
+            Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args))),
+            undefined,
+          ]
+        } catch (cause) {
+          return [undefined, new Error("Failed to build call", { cause })]
         }
       }
 
-      if (unsigned === undefined) {
+      const sendAll = transferMethod === "transfer_all"
+
+      // different chains use different transfer types
+      // we'll try each one in sequence until we get one that doesn't throw an error
+      const attempts = [
+        {
+          pallet: "Currencies",
+          method: "transfer",
+          args: {
+            dest: { type: "Id", value: to },
+            currency_id: onChainId,
+            amount: BigInt(amount),
+          },
+        },
+        {
+          pallet: "Currencies",
+          method: "transfer",
+          args: {
+            dest: to,
+            currency_id: onChainId,
+            amount: BigInt(amount),
+          },
+        },
+        {
+          pallet: "Tokens",
+          method: transferMethod,
+          args: sendAll
+            ? {
+                dest: { type: "Id", value: to },
+                currency_id: onChainId,
+                keepAlive: false,
+              }
+            : {
+                dest: { type: "Id", value: to },
+                currency_id: onChainId,
+                amount: BigInt(amount),
+              },
+        },
+        {
+          pallet: "Tokens",
+          method: transferMethod,
+          args: sendAll
+            ? {
+                dest: to,
+                currency_id: onChainId,
+                keepAlive: false,
+              }
+            : {
+                dest: to,
+                currency_id: onChainId,
+                amount: BigInt(amount),
+              },
+        },
+      ]
+
+      const errors: Error[] = []
+      let callData: Binary | undefined = undefined
+      for (const attempt of attempts) {
+        const [_callData, error] = tryBuildCallData(attempt.pallet, attempt.method, attempt.args)
+        if (error) {
+          errors.push(error)
+          continue
+        }
+        callData = _callData
+        break
+      }
+
+      if (callData === undefined) {
         errors.forEach((error) => log.error(error))
         throw new Error(`${token.symbol} transfers are not supported at this time.`)
       }
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: toHex(callData.asBytes()) }
     },
   }
 }
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubTokensToken>
 ): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
   const allChains = await chaindataProvider.chainsById()
@@ -332,11 +303,12 @@ async function buildQueries(
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
   const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
+    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-tokens",
-    decoders: { storageDecoder: ["tokens", "accounts"] },
+    coders: { storage: ["Tokens", "Accounts"] },
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -345,76 +317,56 @@ async function buildQueries(
       log.warn(`Token ${tokenId} not found`)
       return []
     }
-
     if (token.type !== "substrate-tokens") {
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-
     const chainId = token.chain?.id
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-
     const chain = chains[chainId]
     if (!chain) {
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       return []
     }
 
-    const [chainMeta] = findChainMeta<typeof SubTokensModule>(
-      miniMetadatas,
-      "substrate-tokens",
-      chain
-    )
-    const registry =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
-        : new TypeRegistry()
-
     return addresses.flatMap((address): RpcStateQuery<SubTokensBalance | null> | [] => {
-      const storageHelper = new StorageHelper(
-        registry,
-        "tokens",
-        "accounts",
-        decodeAnyAddress(address),
-        (() => {
-          try {
-            // `as string` doesn't matter here because we catch it if it throws
-            return JSON.parse(token.onChainId as string)
-          } catch (error) {
-            return token.onChainId
-          }
-        })()
-      )
-      const storageDecoder = chainStorageDecoders.get(chainId)?.storageDecoder
-      const stateKey = storageHelper.stateKey
-      if (!stateKey) return []
-      const decodeResult = (change: string | null) => {
-        // e.g.
-        // {
-        //   free: 33,765,103,752,560n
-        //   reserved: 0n
-        //   frozen: 0n
-        // }
-        const balance =
-          storageDecoder && change !== null
-            ? (storageDecoder.decode($.decodeHex(change)) as Record<
-                "free" | "reserved" | "frozen",
-                bigint
-              >)
-            : {
-                free: 0n,
-                reserved: 0n,
-                frozen: 0n,
-              }
+      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const onChainId = (() => {
+        try {
+          return papiParse(token.onChainId)
+        } catch (error) {
+          return token.onChainId
+        }
+      })()
 
-        const free = (balance?.free ?? 0n).toString()
-        const reserved = (balance?.reserved ?? 0n).toString()
-        const frozen = (balance?.frozen ?? 0n).toString()
+      const stateKey = encodeStateKey(
+        scaleCoder,
+        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
+        address,
+        onChainId
+      )
+      if (!stateKey) return []
+
+      const decodeResult = (change: string | null) => {
+        /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+        type DecodedType = {
+          free?: bigint
+          reserved?: bigint
+          frozen?: bigint
+        }
+
+        const decoded = decodeScale<DecodedType>(
+          scaleCoder,
+          change,
+          `Failed to decode substrate-tokens balance on chain ${chainId}`
+        ) ?? { free: 0n, reserved: 0n, frozen: 0n }
+
+        const free = (decoded?.free ?? 0n).toString()
+        const reserved = (decoded?.reserved ?? 0n).toString()
+        const frozen = (decoded?.frozen ?? 0n).toString()
 
         const balanceValues: Array<AmountWithLabel<string>> = [
           { type: "free", label: "free", amount: free.toString() },

@@ -1,21 +1,23 @@
-import { Spacer } from "@talisman/components/Spacer"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import { SubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import { FC, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+
+import { Spacer } from "@talisman/components/Spacer"
+import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
+import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 
 type ConnectLedgerSubstrateGenericProps = {
   onReadyChanged?: (ready: boolean) => void
   className?: string
-  app?: SubstrateMigrationApp | null
+  appName?: string | null
 }
 
 export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProps> = ({
   onReadyChanged,
   className,
-  app,
+  appName,
 }) => {
+  const app = useLedgerSubstrateAppByName(appName)
   const ledger = useLedgerSubstrateGeneric({ persist: true, app })
   const { t } = useTranslation("admin")
 

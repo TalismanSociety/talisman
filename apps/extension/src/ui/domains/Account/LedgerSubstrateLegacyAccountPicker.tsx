@@ -6,8 +6,8 @@ import { isChainActive, SubstrateLedgerAppType } from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LEDGER_HARDENED_OFFSET } from "@ui/hooks/ledger/common"
+import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApps"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
@@ -28,7 +28,7 @@ const useLedgerChainAccounts = (
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
   const chain = useChain(chainId)
-  const app = useLedgerSubstrateLegacyApp(chain?.genesisHash)
+  const app = useLedgerSubstrateAppByChain(chain)
   const activeChains = useActiveChainsState()
   const withBalances = useMemo(
     () => !!chain && isChainActive(chain, activeChains),

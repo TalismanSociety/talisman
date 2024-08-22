@@ -1,25 +1,23 @@
-import {
-  AccountJsonHardwareSubstrate,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-  isJsonPayload,
-} from "@extension/core"
-import { log } from "@extension/shared"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
-import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import {
-  SubstrateMigrationApp,
-  useLedgerSubstrateMigrationApp,
-} from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
+
+import {
+  AccountJsonHardwareSubstrate,
+  isJsonPayload,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "@extension/core"
+import { log } from "@extension/shared"
+import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
+import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
 import {
   LedgerConnectionStatus,
@@ -38,7 +36,7 @@ const sign = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
   account: AccountJsonHardwareSubstrate,
-  app?: SubstrateMigrationApp | null,
+  app?: SubstrateAppParams | null,
   registry?: TypeRegistry | null,
   txMetadata?: string | null
 ) => {
@@ -77,7 +75,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   registry,
 }) => {
   const account = useAccountByAddress(payload?.address)
-  const app = useLedgerSubstrateMigrationApp(account?.migrationAppName as string)
+  const app = useLedgerSubstrateAppByName(account?.migrationAppName as string)
 
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)

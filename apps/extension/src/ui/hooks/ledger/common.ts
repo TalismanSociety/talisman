@@ -1,8 +1,50 @@
 import { supportedApps } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import { ChainId } from "extension-core"
 import { t } from "i18next"
 
 import { DEBUG } from "@extension/shared"
+
+export const CHAIN_ID_TO_LEDGER_APP_NAME: Partial<Record<ChainId, string>> = {
+  "kusama": "Kusama",
+  "astar": "Astar",
+  "acala": "Acala",
+  "karura": "Karura",
+  "nodle-polkadot": "Nodle",
+  "aleph-zero": "AlephZero",
+  "pendulum": "Pendulum",
+  "polymesh": "Polymesh",
+  "dock-pos-mainnet": "Dock",
+  "centrifuge-polkadot": "Centrifuge",
+  "edgeware": "Edgeware",
+  "equilibrium-polkadot": "Equilibrium",
+  "sora-kusama": "Sora",
+  "genshiro-kusama": "Genshiro",
+  "polkadex-polkadot": "Polkadex",
+  "vtb": "VTB",
+  "bifrost-polkadot": "Bifrost",
+  "xxnetwork": "XXNetwork",
+  "interlay": "Interlay",
+  "parallel": "Parallel",
+  "picasso": "Picasso",
+  "composable": "Composable",
+  "hydradx": "HydraDX",
+  "stafi": "Stafi",
+  "unique": "Unique",
+  "bifrost-kusama": "BifrostKusama",
+  "phala": "Phala",
+  "khala": "Khala",
+  "darwinia": "Darwinia",
+  "ajuna": "Ajuna",
+  "bittensor": "Bittensor",
+  "zeitgeist": "Zeitgeist",
+  "joystream": "Joystream",
+  "enjin-relay": "Enjin",
+  "enjin-matrixchain": "Matrixchain",
+  "quartz": "Quartz",
+  "avail": "Avail",
+  "kusama-asset-hub": "Statemine",
+}
 
 export const LEDGER_SUCCESS_CODE = 0x9000
 

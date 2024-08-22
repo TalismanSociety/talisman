@@ -9,7 +9,16 @@ export const Balances = () => {
   const balances = useBalances()
 
   return (
-    <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-4">
+    <div className="grid grid-cols-[repeat(7,_auto)] items-center gap-4">
+      <>
+        <div className="text-tiny justify-self-center font-bold">Logo</div>
+        <div className="text-tiny font-bold">Colour</div>
+        <div className="text-tiny justify-self-center font-bold">Status</div>
+        <div className="text-tiny font-bold">Chain</div>
+        <div className="text-tiny font-bold">Total</div>
+        <div className="text-tiny font-bold">Available</div>
+        <div className="text-tiny font-bold">Account</div>
+      </>
       {balances?.sorted.map((balance) => (
         <Fragment key={balance.id}>
           <div
@@ -39,7 +48,8 @@ export const Balances = () => {
             <span
               className={classNames([
                 "rounded-sm bg-[#1a1a1a] px-4 py-2 text-center font-bold",
-                balance.status === "initializing" && "text-brand-pink",
+                // TODO: Get initializing status from pool, it's no longer available on individual balances
+                // balance.status === "initializing" && "text-brand-pink",
                 balance.status === "cache" && "text-orange",
                 balance.status === "stale" && "text-brand-orange",
               ])}
@@ -64,6 +74,21 @@ export const Balances = () => {
                 Testnet
               </span>
             ) : null}
+          </span>
+
+          <span className="flex flex-col whitespace-nowrap">
+            <span className="whitespace-nowrap">
+              {formatDecimals(balance.total.tokens)} {balance.token?.symbol}
+            </span>
+            <span className="text-xs opacity-60">
+              {typeof balance.total.fiat("usd") === "number"
+                ? new Intl.NumberFormat(undefined, {
+                    style: "currency",
+                    currency: "usd",
+                    currencyDisplay: "narrowSymbol",
+                  }).format(balance.total.fiat("usd") || 0)
+                : " -"}
+            </span>
           </span>
 
           <span className="flex flex-col whitespace-nowrap">

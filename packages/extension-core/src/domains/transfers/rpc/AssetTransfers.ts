@@ -1,9 +1,11 @@
 import type { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { KeyringPair } from "@polkadot/keyring/types"
-import { TypeRegistry } from "@polkadot/types"
+import { Metadata, TypeRegistry } from "@polkadot/types"
+import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import { createEra } from "@substrate/txwrapper-core/lib/core/method"
 import { SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
 
@@ -199,6 +201,8 @@ export default class AssetTransfersRpc {
     const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)
     assert(metadataRpc, "Could not fetch metadata")
 
+    registry.setMetadata(new Metadata(registry, metadataRpc), undefined, chain.signedExtensions)
+
     const palletModule = balanceModules.find((m) => m.type === token.type)
     assert(palletModule, `Failed to construct tx for token of type '${token.type}'`)
 
@@ -217,8 +221,8 @@ export default class AssetTransfersRpc {
       )
 
     const checkMetadataHash = getCheckMetadataHashPayloadProps(
+      chain,
       metadataRpc,
-      chain.prefix,
       runtimeVersion.specName,
       runtimeVersion.specVersion,
       nativeToken
@@ -229,19 +233,19 @@ export default class AssetTransfersRpc {
       from: from.address,
       to,
       amount,
-
-      registry,
+      // has to be cast to any because typing of the balance modules doesn't allow different types per module
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transferMethod: method as any,
       metadataRpc,
+
+      userExtensions: chain.signedExtensions,
+      registry,
       blockHash,
       blockNumber: block.header.number,
       nonce,
       specVersion,
       transactionVersion,
       tip,
-      // has to be cast to any because typing of the balance modules doesn't allow different types per module
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      transferMethod: method as any,
-      userExtensions: chain.signedExtensions,
     })
 
     assert(transaction, `Failed to construct tx for token '${token.id}'`)
@@ -250,29 +254,32 @@ export default class AssetTransfersRpc {
       `Failed to handle tx type ${transaction.type} for token '${token.id}'`
     )
 
-    const unsignedTx = transaction.tx
+    const callData = transaction.callData
 
-    // If the following line of code is not added, the extrinsic (referred to as "unsigned" here)
-    // will fail when submitted to the Picasso chain, resulting in a wasm runtime panic.
-    // It's possible that other chains will also experience this issue, but Picasso is the first
-    // one where we've encountered it.
+    // We used to use a library called txwrapper-core to build both the calldata and the SignerPayloadJSON out of the tx method and args.
+    // Now, we use PAPI to build the calldata, and then put together the SignerPayloadJSON ourselves.
     //
-    // In the defineMethod function of @substrate/txwrapper-core, the assetId is set to 0.
-    // You can find the code for this function here:
-    // https://github.com/paritytech/txwrapper-core/blob/90a231e07e69de96602f92d37897493ac2e7b7f7/packages/txwrapper-core/src/core/method/defineMethod.ts#LL160C3-L160C10
-    //
-    // As far as we can tell, on most chains, the assetId is ignored, so the encoding of 0 is
-    // nothing, represented as an empty string in the hex-encoded extrinsic.
-    // However, on the Picasso chain, the assetId is not ignored, and the 0 set by defineMethod is
-    // encoded as 01 00000000.
-    // This causes a wasm runtime panic when the extrinsic is submitted to the chain.
-    //
-    // Extrinsics constructed using polkadot.js apps for the Picasso chain encode the assetId as 00,
-    // and these extrinsics don't cause a runtime panic when submitted.
-    //
-    // If we override the default assetId value from @substrate/txwrapper-core (which sets assetId to 0)
-    // and instead set assetId back to undefined, our extrinsics also encode the assetId field as 00.
-    if (unsignedTx.assetId === 0) unsignedTx.assetId = undefined
+    // The structure here is based on the txwrapper-core internals:
+    // https://github.com/paritytech/txwrapper-core/blob/4a3b301f12427f100e8548eda29db90bae6bf23b/packages/txwrapper-core/src/core/method/defineMethod.ts#L162-L186
+    const unsignedTx: SignerPayloadJSON = {
+      address: from.address,
+      assetId: undefined,
+      blockHash,
+      blockNumber: registry.createType("BlockNumber", block.header.number).toHex(),
+      era: createEra(registry, {
+        kind: "mortal",
+        blockNumber: block.header.number,
+        period: 64,
+      }).toHex(),
+      genesisHash,
+      method: callData,
+      nonce: registry.createType("Compact<Index>", nonce).toHex(),
+      signedExtensions: registry.signedExtensions,
+      specVersion: registry.createType("u32", specVersion).toHex(),
+      tip: registry.createType("Compact<Balance>", tip ? Number(tip) : 0).toHex(),
+      transactionVersion: registry.createType("u32", transactionVersion).toHex(),
+      version: EXTRINSIC_VERSION,
+    }
 
     // create the unsigned extrinsic
     const tx = registry.createType(
@@ -281,11 +288,12 @@ export default class AssetTransfersRpc {
       { version: unsignedTx.version }
     )
 
-    const unsigned = {
+    const unsigned: UnsignedTransaction = {
+      metadataRpc,
       ...unsignedTx,
       ...checkMetadataHash,
       withSignedTransaction: true,
-    } as UnsignedTransaction
+    }
 
     if (sign) {
       // create signable extrinsic payload

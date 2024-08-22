@@ -180,6 +180,13 @@ export const SubNetworkForm = ({
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
+          <div>
+            <Checkbox {...register("hasCheckMetadataHash")}>
+              <span className="text-body-secondary">
+                {t("This network supports CheckMetadataHash sign extension")}
+              </span>
+            </Checkbox>
+          </div>
           <EnableNetworkToggle chainId={id} />
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">

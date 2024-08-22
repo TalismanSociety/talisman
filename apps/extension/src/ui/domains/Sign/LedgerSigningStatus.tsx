@@ -1,6 +1,7 @@
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useTranslation } from "react-i18next"
+import { CONNECT_LEDGER_DOCS_URL } from "extension-shared"
+import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 interface LedgerSigningStatusProps {
@@ -31,7 +32,27 @@ export const LedgerSigningStatus = ({
           <AlertCircleIcon
             className={classNames("text-[3rem]", status === "error" && "text-alert-error")}
           />
-          <span>{message}</span>
+          <p>
+            {message === "GENERIC_APP_REQUIRED" ? (
+              <Trans
+                t={t}
+                defaults="This network requires a new Ledger app. <br />Use the Polkadot Migration Ledger app to migrate your existing accounts. <DocsLink>Learn more.</DocsLink>"
+                components={{
+                  DocsLink: (
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                    <a
+                      href={CONNECT_LEDGER_DOCS_URL}
+                      target="_blank"
+                      className="text-body cursor-pointer"
+                      rel="noreferrer noopener"
+                    ></a>
+                  ),
+                }}
+              />
+            ) : (
+              message
+            )}
+          </p>
         </>
       )}
       {status === "signing" && (

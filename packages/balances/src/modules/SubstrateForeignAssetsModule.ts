@@ -1,7 +1,7 @@
-import { Metadata, TypeRegistry } from "@polkadot/types"
+import { mergeUint8, toHex } from "@polkadot-api/utils"
+import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
-import { defineMethod } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
@@ -10,42 +10,35 @@ import {
   Token,
 } from "@talismn/chaindata-provider"
 import {
-  $metadataV14,
-  filterMetadataPalletsAndItems,
-  getMetadataVersion,
-  PalletMV14,
-  StorageEntryMV14,
+  compactMetadata,
+  decodeMetadata,
+  decodeScale,
+  encodeMetadata,
+  encodeStateKey,
+  getDynamicBuilder,
+  getLookupFn,
+  papiParse,
 } from "@talismn/scale"
-import * as $ from "@talismn/subshape-fork"
-import { decodeAnyAddress } from "@talismn/util"
+import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
-import {
-  buildStorageDecoders,
-  createTypeRegistryCache,
-  findChainMeta,
-  GetOrCreateTypeRegistry,
-  getUniqueChainIds,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-  StorageHelper,
-} from "./util"
+import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelper } from "./util"
 
 type ModuleType = "substrate-foreignassets"
 const moduleType: ModuleType = "substrate-foreignassets"
 
 export type SubForeignAssetsToken = Extract<Token, { type: ModuleType }>
 
-const subForeignAssetTokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subForeignAssetTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-foreignassets-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubForeignAssetsChainMeta = {
   isTestnet: boolean
-  miniMetadata: `0x${string}` | null
-  metadataVersion: number
+  miniMetadata?: string
+  metadataVersion?: number
 }
 
 export type SubForeignAssetsModuleConfig = {
@@ -66,14 +59,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubForeignAssetsTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
   userExtensions?: ExtDef
 }>
 
@@ -88,58 +79,46 @@ export const SubForeignAssetsModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
-
   return {
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet, miniMetadata: null, metadataVersion: 0 }
+      if (metadataRpc === undefined) return { isTestnet }
+      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
-      if ((moduleConfig?.tokens ?? []).length < 1)
-        return { isTestnet, miniMetadata: null, metadataVersion }
+      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
+      if (!metadata) return { isTestnet }
 
-      if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
-
-      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
-
-      const isForeignAssetsPallet = (pallet: PalletMV14) => pallet.name === "ForeignAssets"
-      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
-      const isAssetItem = (item: StorageEntryMV14) => item.name === "Asset"
-      const isMetadataItem = (item: StorageEntryMV14) => item.name === "Metadata"
-
-      // TODO: Handle metadata v15
-      filterMetadataPalletsAndItems(metadata, [
-        { pallet: isForeignAssetsPallet, items: [isAccountItem, isAssetItem, isMetadataItem] },
+      compactMetadata(metadata, [
+        { pallet: "ForeignAssets", items: ["Account", "Asset", "Metadata"] },
       ])
-      metadata.extrinsic.signedExtensions = []
 
-      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
+      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
-      return {
-        isTestnet,
-        miniMetadata,
-        metadataVersion,
-      }
+      return { isTestnet, miniMetadata, metadataVersion }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet, miniMetadata: metadataRpc, metadataVersion } = chainMeta
-
       if ((moduleConfig?.tokens ?? []).length < 1) return {}
 
-      const registry = new TypeRegistry()
-      if (metadataRpc !== null && metadataVersion >= 14)
-        registry.setMetadata(new Metadata(registry, metadataRpc))
+      const { isTestnet, miniMetadata, metadataVersion } = chainMeta
+      if (miniMetadata === undefined || metadataVersion === undefined) return {}
+      if (metadataVersion < 14) return {}
+
+      const { metadata } = decodeMetadata(miniMetadata)
+      if (metadata === undefined) return {}
+
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+      const assetCoder = scaleBuilder.buildStorage("ForeignAssets", "Asset")
+      const metadataCoder = scaleBuilder.buildStorage("ForeignAssets", "Metadata")
 
       const tokens: Record<string, SubForeignAssetsToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
           const onChainId = (() => {
             try {
-              return JSON.parse(tokenConfig.onChainId)
+              return papiParse(tokenConfig.onChainId)
             } catch (error) {
               return tokenConfig.onChainId
             }
@@ -147,55 +126,44 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
           if (onChainId === undefined) continue
 
-          const assetQuery = new StorageHelper(registry, "foreignAssets", "asset", onChainId)
-          const metadataQuery = new StorageHelper(registry, "foreignAssets", "metadata", onChainId)
+          const assetStateKey = assetCoder.enc(onChainId)
+          const metadataStateKey = metadataCoder.enc(onChainId)
 
-          const [
-            // e.g.
-            // Option<{
-            //   owner: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-            //   issuer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-            //   admin: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-            //   freezer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-            //   supply: 99,996,117,733,044,042
-            //   deposit: 1,000,000,000,000
-            //   minBalance: 100,000
-            //   isSufficient: true
-            //   accounts: 6,032
-            //   sufficients: 1,542
-            //   approvals: 1
-            //   status: Live
-            // }>
-            assetsAsset,
+          type AssetResult = {
+            accounts?: number
+            admin?: string
+            approvals?: number
+            deposit?: bigint
+            freezer?: string
+            is_sufficient?: boolean
+            issuer?: string
+            min_balance?: bigint
+            owner?: string
+            status?: unknown
+            sufficients?: number
+            supply?: bigint
+          }
+          type MetadataResult = {
+            decimals?: number
+            deposit?: bigint
+            is_frozen?: boolean
+            name?: Binary
+            symbol?: Binary
+          }
 
-            // e.g.
-            // {
-            //   deposit: 6,693,333,000
-            //   name: RMRK.app
-            //   symbol: RMRK
-            //   decimals: 10
-            //   isFrozen: false
-            // }
-            assetsMetadata,
-          ] = await Promise.all([
+          const [assetsAsset, assetsMetadata] = await Promise.all([
             chainConnector
-              .send(chainId, "state_getStorage", [assetQuery.stateKey])
-              .then((result) => assetQuery.decode(result)),
+              .send(chainId, "state_getStorage", [assetStateKey])
+              .then((result) => (assetCoder.dec(result) as AssetResult | undefined) ?? null),
             chainConnector
-              .send(chainId, "state_getStorage", [metadataQuery.stateKey])
-              .then((result) => metadataQuery.decode(result)),
+              .send(chainId, "state_getStorage", [metadataStateKey])
+              .then((result) => (metadataCoder.dec(result) as MetadataResult | undefined) ?? null),
           ])
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const unsafeAssetsMetadata = assetsMetadata as any | undefined
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const unsafeAssetsAsset = assetsAsset as any | undefined
-
-          const existentialDeposit =
-            unsafeAssetsAsset?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
-          const symbol = unsafeAssetsMetadata?.symbol?.toHuman?.() ?? "Unit"
-          const decimals = unsafeAssetsMetadata?.decimals?.toNumber?.() ?? 0
-          const isFrozen = unsafeAssetsMetadata?.isFrozen?.toHuman?.() ?? false
+          const existentialDeposit = assetsAsset?.min_balance?.toString?.() ?? "0"
+          const symbol = assetsMetadata?.symbol?.asText?.() ?? "Unit"
+          const decimals = assetsMetadata?.decimals ?? 0
+          const isFrozen = assetsMetadata?.is_frozen ?? false
 
           const id = subForeignAssetTokenId(chainId, symbol)
           const token: SubForeignAssetsToken = {
@@ -224,7 +192,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
         } catch (error) {
           log.error(
             `Failed to build substrate-foreignassets token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
-            error
+            (error as Error)?.message ?? error
           )
           continue
         }
@@ -235,20 +203,12 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances({ addressesByToken }, callback) {
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
         (error, result) => {
-          if (error) callback(error)
-          if (result) {
-            const balances = result.filter(
-              (balance): balance is SubForeignAssetsBalance => balance !== null
-            )
-            if (balances.length > 0) callback(null, new Balances(balances))
-          }
+          if (error) return callback(error)
+          const balances = result?.filter((b): b is SubForeignAssetsBalance => b !== null) ?? []
+          if (balances.length > 0) callback(null, new Balances(balances))
         }
       )
 
@@ -258,35 +218,13 @@ export const SubForeignAssetsModule: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
-      const balances = result.filter(
-        (balance): balance is SubForeignAssetsBalance => balance !== null
-      )
+      const balances = result?.filter((b): b is SubForeignAssetsBalance => b !== null) ?? []
       return new Balances(balances)
     },
 
-    async transferToken({
-      tokenId,
-      from,
-      to,
-      amount,
-
-      registry,
-      metadataRpc,
-      blockHash,
-      blockNumber,
-      nonce,
-      specVersion,
-      transactionVersion,
-      tip,
-      transferMethod,
-      userExtensions,
-    }) {
+    async transferToken({ tokenId, to, amount, transferMethod, metadataRpc }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
@@ -297,51 +235,41 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-      const { genesisHash } = chain
-
-      const id = (() => {
+      const onChainId = (() => {
         try {
-          return JSON.parse(token.onChainId)
+          return papiParse(token.onChainId)
         } catch (error) {
           return token.onChainId
         }
       })()
 
-      const pallet = "foreignAssets"
-      const method =
-        // the foreignAssets pallet has no transferAll method
-        transferMethod === "transferAll" ? "transfer" : transferMethod
-      const args = { id, target: { Id: to }, amount }
+      const pallet = "ForeignAssets"
+      // the ForeignAssets pallet has no transfer_all method
+      const method = transferMethod === "transfer_all" ? "transfer" : transferMethod
+      const args = {
+        id: onChainId,
+        target: { type: "Id", value: to },
+        amount: BigInt(amount),
+      }
 
-      const unsigned = defineMethod(
-        {
-          method: {
-            pallet,
-            name: method,
-            args,
-          },
-          address: from,
-          blockHash,
-          blockNumber,
-          eraPeriod: 64,
-          genesisHash,
-          metadataRpc,
-          nonce,
-          specVersion,
-          tip: tip ? Number(tip) : 0,
-          transactionVersion,
-        },
-        { metadataRpc, registry, userExtensions }
-      )
+      const { metadata } = decodeMetadata(metadataRpc)
+      if (metadata === undefined) throw new Error("Unable to decode metadata")
 
-      return { type: "substrate", tx: unsigned }
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+      try {
+        const { location, codec } = scaleBuilder.buildCall(pallet, method)
+        const callData = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
+
+        return { type: "substrate", callData: toHex(callData.asBytes()) }
+      } catch (cause) {
+        throw new Error(`Failed to build ${moduleType} transfer tx`, { cause })
+      }
     },
   }
 }
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubForeignAssetsToken>
 ): Promise<Array<RpcStateQuery<SubForeignAssetsBalance | null>>> {
   const allChains = await chaindataProvider.chainsById()
@@ -355,11 +283,12 @@ async function buildQueries(
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
   const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
+    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-foreignassets",
-    decoders: { storageDecoder: ["foreignAssets", "account"] },
+    coders: { storage: ["ForeignAssets", "Account"] },
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -368,69 +297,63 @@ async function buildQueries(
       log.warn(`Token ${tokenId} not found`)
       return []
     }
-
     if (token.type !== "substrate-foreignassets") {
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-
     const chainId = token.chain?.id
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-
     const chain = chains[chainId]
     if (!chain) {
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       return []
     }
 
-    const [chainMeta] = findChainMeta<typeof SubForeignAssetsModule>(
-      miniMetadatas,
-      "substrate-foreignassets",
-      chain
-    )
-    const registry =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
-        : new TypeRegistry()
-
     return addresses.flatMap((address): RpcStateQuery<SubForeignAssetsBalance | null> | [] => {
-      const storageHelper = new StorageHelper(
-        registry,
-        "foreignAssets",
-        "account",
-        (() => {
-          try {
-            return JSON.parse(token.onChainId)
-          } catch (error) {
-            return token.onChainId
-          }
-        })(),
-        decodeAnyAddress(address)
-      )
-      const storageDecoder = chainStorageDecoders.get(chainId)?.storageDecoder
-      const stateKey = storageHelper.stateKey
-      if (!stateKey) return []
-      const decodeResult = (change: string | null) => {
-        // e.g.
-        // Option<{
-        //   balance: 2,000,000,000
-        //   isFrozen: false
-        //   reason: Sufficient
-        //   extra: null
-        // }>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const balance: any = ((storageDecoder && change !== null
-          ? storageDecoder.decode($.decodeHex(change))
-          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            null) as any) ?? { balance: 0n, status: "Liquid" }
+      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const onChainId = (() => {
+        try {
+          return papiParse(token.onChainId)
+        } catch (error) {
+          return token.onChainId
+        }
+      })()
 
-        const isFrozen = balance?.status === "Frozen"
-        const amount = (balance?.balance ?? 0n).toString()
+      const stateKey = encodeStateKey(
+        scaleCoder,
+        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
+        onChainId,
+        address
+      )
+      if (!stateKey) return []
+
+      const decodeResult = (change: string | null) => {
+        /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+        type DecodedType = {
+          balance?: bigint
+          is_frozen?: boolean
+          reason?: { type?: "Sufficient" }
+          status?: { type?: "Liquid" } | { type?: "Frozen" }
+          extra?: undefined
+        }
+
+        const decoded = decodeScale<DecodedType>(
+          scaleCoder,
+          change,
+          `Failed to decode substrate-foreignassets balance on chain ${chainId}`
+        ) ?? {
+          balance: 0n,
+          is_frozen: false,
+          reason: { type: "Sufficient" },
+          status: { type: "Liquid" },
+          extra: undefined,
+        }
+
+        const isFrozen = decoded?.status?.type === "Frozen"
+        const amount = (decoded?.balance ?? 0n).toString()
 
         // due to the following balance calculations, which are made in the `Balance` type:
         //

@@ -2,6 +2,7 @@ import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,11 +14,10 @@ import {
   LedgerError,
   LedgerStatus,
 } from "./common"
-import { SubstrateMigrationApp } from "./useLedgerSubstrateMigrationApps"
 
 type UseLedgerSubstrateGenericProps = {
   persist?: boolean
-  app?: SubstrateMigrationApp | null
+  app?: SubstrateAppParams | null
 }
 
 const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}

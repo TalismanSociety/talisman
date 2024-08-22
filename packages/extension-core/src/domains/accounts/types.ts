@@ -9,8 +9,8 @@ import { KeypairType } from "@polkadot/util-crypto/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { NsLookupType } from "@talismn/on-chain-id"
 
-import { Address } from "../../types/base"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
+import { Address } from "../../types/base"
 
 export type { ResponseAccountExport, AccountJson }
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"

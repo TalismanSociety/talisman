@@ -8,18 +8,15 @@ const CHAINDATA_BRANCH = "main"
 //
 
 export const githubApi = "https://api.github.com"
+export const githubCdn = "https://raw.githubusercontent.com"
 
 export const githubChaindataOrg = "TalismanSociety"
 export const githubChaindataRepo = "chaindata"
 export const githubChaindataBranch = CHAINDATA_BRANCH
-export const githubChaindataDistDir = "pub/v1"
+export const githubChaindataDistDir = "pub/v2"
 
-export const githubChaindataBaseUrl = `https://raw.githubusercontent.com/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
+export const githubChaindataBaseUrl = `${githubCdn}/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
 export const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`
-
-export const githubChainsUrl = `${githubChaindataBaseUrl}/data/chaindata.json`
-export const githubTestnetChainsUrl = `${githubChaindataBaseUrl}/data/testnets-chaindata.json`
-export const githubEvmNetworksUrl = `${githubChaindataBaseUrl}/data/evm-networks.json`
 
 export const githubChaindataChainsAssetsDir = "assets/chains"
 export const githubChaindataTokensAssetsDir = "assets/tokens"

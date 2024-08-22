@@ -37,6 +37,7 @@ export const useSubstratePayloadMetadata = (
 
         // check if runtime supports CheckMetadataHash
         const hasCheckMetadataHash =
+          chain.hasCheckMetadataHash && // this can be toggled off from chaindata
           metadata.version >= 15 &&
           metadata.asLatest.extrinsic.signedExtensions.some(
             (ext) => ext.identifier.toString() === "CheckMetadataHash"

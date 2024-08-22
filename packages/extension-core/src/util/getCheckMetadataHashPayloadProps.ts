@@ -2,10 +2,11 @@ import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { TypeRegistry } from "@polkadot/types"
 import { u8aToHex } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances"
+import { Chain } from "@talismn/chaindata-provider"
 
 export const getCheckMetadataHashPayloadProps = (
+  chain: Chain,
   metadataRpc: string,
-  chainPrefix: number | null,
   specName: string,
   specVersion: number,
   token: SubNativeToken
@@ -15,6 +16,7 @@ export const getCheckMetadataHashPayloadProps = (
   registry.setMetadata(metadata)
 
   const hasCheckMetadataHash =
+    chain.hasCheckMetadataHash && // can be toggled off from chaindata
     metadata.version >= 15 &&
     metadata.asLatest.extrinsic.signedExtensions.some(
       (ext) => ext.identifier.toString() === "CheckMetadataHash"
