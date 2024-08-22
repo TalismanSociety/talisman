@@ -189,7 +189,10 @@ export class ChainConnector {
       // eslint-disable-next-line no-var
       var response = await ws.send(method, params, isCacheable)
     } catch (error) {
-      log.error(`Failed to send ${method} on chain ${chainId}`, error)
+      log.error(
+        `Failed to send ${method} on chain ${chainId}\nparams: ${JSON.stringify(params)}`,
+        error
+      )
       await this.disconnectChainSocket(chainId, socketUserId)
       throw error
     }

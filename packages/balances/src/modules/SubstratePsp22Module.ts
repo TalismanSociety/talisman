@@ -11,20 +11,21 @@ import {
   Token,
   TokenList,
 } from "@talismn/chaindata-provider"
+import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
-import { makeContractCaller } from "./util/makeContractCaller"
+import { makeContractCaller } from "./util"
 
 type ModuleType = "substrate-psp22"
 const moduleType: ModuleType = "substrate-psp22"
 
 export type SubPsp22Token = Extract<Token, { type: ModuleType }>
 
-const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubPsp22ChainMeta = {
@@ -52,14 +53,12 @@ declare module "@talismn/balances/plugins" {
 
 export type SubPsp22TransferParams = NewTransferParamsType<{
   registry: TypeRegistry
-  metadataRpc: `0x${string}`
   blockHash: string
   blockNumber: number
   nonce: number
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
   userExtensions?: ExtDef
 }>
 
@@ -79,7 +78,6 @@ export const SubPsp22Module: NewBalanceModule<
 
     async fetchSubstrateChainMeta(chainId) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-
       return { isTestnet }
     },
 
@@ -282,8 +280,8 @@ export const SubPsp22Module: NewBalanceModule<
       const unsigned = defineMethod(
         {
           method: {
-            pallet,
-            name: method,
+            pallet: camelCase(pallet),
+            name: camelCase(method),
             args,
           },
           address: from,
@@ -300,7 +298,7 @@ export const SubPsp22Module: NewBalanceModule<
         { metadataRpc, registry, userExtensions }
       )
 
-      return { type: "substrate", tx: unsigned }
+      return { type: "substrate", callData: unsigned.method }
     },
   }
 }

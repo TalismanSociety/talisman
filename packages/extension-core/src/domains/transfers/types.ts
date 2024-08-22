@@ -9,7 +9,7 @@ import { SignerPayloadJSON } from "../signing/types"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 // Asset Transfer Messages
-export type AssetTransferMethod = "transferKeepAlive" | "transferAllowDeath" | "transferAll"
+export type AssetTransferMethod = "transfer_keep_alive" | "transfer_allow_death" | "transfer_all"
 export interface RequestAssetTransfer {
   chainId: ChainId
   tokenId: TokenId

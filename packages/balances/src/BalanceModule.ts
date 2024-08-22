@@ -1,4 +1,3 @@
-import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider, ChainId, Token } from "@talismn/chaindata-provider"
@@ -11,18 +10,30 @@ import {
   UnsubscribeFn,
 } from "./types"
 
+export type BalancesCommonTransferMethods = "transfer_keep_alive" | "transfer_all"
+export type BalancesTransferMethods = "transfer_allow_death" | BalancesCommonTransferMethods
+export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
+export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
+
 export type SelectableTokenType = Token
 export type ExtendableChainMeta = Record<string, unknown> | undefined
 export type DefaultChainMeta = undefined
 export type ExtendableModuleConfig = Record<string, unknown> | undefined
 export type DefaultModuleConfig = undefined
-export type BaseTransferParams = { tokenId: string; from: string; to: string; amount: string }
+export type BaseTransferParams = {
+  tokenId: string
+  from: string
+  to: string
+  amount: string
+  transferMethod: BalancesAllTransferMethods
+  metadataRpc: `0x${string}`
+}
 export type ExtendableTransferParams = BaseTransferParams | undefined
 export type DefaultTransferParams = undefined
 
 export type NewTransferParamsType<T extends Record<string, unknown>> = BaseTransferParams & T
 
-export type TransferTokenTx = { type: "substrate"; tx: UnsignedTransaction }
+export type TransferTokenTx = { type: "substrate"; callData: string }
 
 export type ChainConnectors = { substrate?: ChainConnector; evm?: ChainConnectorEvm }
 export type Hydrate = {
@@ -113,7 +124,8 @@ interface BalanceModuleSubstrate<
   fetchSubstrateChainMeta(
     chainId: ChainId,
     moduleConfig?: TModuleConfig,
-    metadataRpc?: `0x${string}`
+    metadataRpc?: `0x${string}`,
+    systemProperties?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */

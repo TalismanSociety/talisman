@@ -26,14 +26,13 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@talismn/subshape-fork": "^0.0.2",
-    "@talismn/util": "workspace:*",
+    "@polkadot-api/metadata-builders": "^0.5.0",
+    "@polkadot-api/substrate-bindings": "^0.6.3",
+    "@polkadot-api/utils": "^0.1.1",
     "anylogger": "^1.0.11",
-    "wasm-feature-detect": "^1.6.1",
-    "wat-the-crypto": "^0.0.3"
+    "scale-ts": "^1.6.0"
   },
   "devDependencies": {
-    "@polkadot/util-crypto": "^12.3.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -41,9 +40,6 @@
     "jest": "^29.7",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "@polkadot/util-crypto": "12.x"
   },
   "eslintConfig": {
     "root": true,

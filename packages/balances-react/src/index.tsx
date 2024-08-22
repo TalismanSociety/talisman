@@ -1,3 +1,26 @@
+import { AnyBalanceModule, Hydrate } from "@talismn/balances"
+import { useSetAtom } from "jotai"
+import { ReactNode, useEffect } from "react"
+
+import {
+  balanceModuleCreatorsAtom,
+  coingeckoConfigAtom,
+  enabledChainsAtom,
+  enabledTokensAtom,
+  enableTestnetsAtom,
+  onfinalityApiKeyAtom,
+} from "./atoms/config"
+
+export {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  subNativeTokenId,
+  subEquilibriumTokenId,
+  subAssetTokenId,
+  subPsp22TokenId,
+  subTokensTokenId,
+} from "@talismn/balances"
+
 export * from "./hooks/useBalances"
 export * from "./hooks/useChainConnectors"
 export * from "./hooks/useChaindata"
@@ -12,19 +35,6 @@ export * from "./atoms/chaindataProvider"
 export * from "./atoms/config"
 export * from "./atoms/cryptoWaitReady"
 export * from "./atoms/tokenRates"
-
-import { AnyBalanceModule, Hydrate } from "@talismn/balances"
-import { useSetAtom } from "jotai"
-import { ReactNode, useEffect } from "react"
-
-import {
-  balanceModuleCreatorsAtom,
-  coingeckoConfigAtom,
-  enableTestnetsAtom,
-  enabledChainsAtom,
-  enabledTokensAtom,
-  onfinalityApiKeyAtom,
-} from "./atoms/config"
 
 export type BalancesConfig = {
   /**
