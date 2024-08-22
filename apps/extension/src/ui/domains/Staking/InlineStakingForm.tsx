@@ -1,5 +1,5 @@
 import { Token } from "@talismn/chaindata-provider"
-import { SwapIcon, TalismanEyeIcon } from "@talismn/icons"
+import { InfoIcon, SwapIcon, TalismanEyeIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { AccountJsonAny } from "extension-core"
 import {
@@ -13,7 +13,7 @@ import {
   useRef,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, PillButton } from "talisman-ui"
+import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useBalance } from "@ui/hooks/useBalance"
@@ -29,6 +29,7 @@ import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
 import { InlineStakingPoolPicker } from "./InlineStakingPoolPicker"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
+import { useNominationPoolsAPR } from "./useNominationPoolsApr"
 
 const PoolPill: FC<{ name: string | null | undefined; onClick: () => void }> = ({
   name,
@@ -363,6 +364,10 @@ export const InlineStakingForm = () => {
   const { account, accountPicker, token, pool, poolPicker, isFormValid, setStep } =
     useInlineStakingWizard()
 
+  const { data: apr, isLoading: aprIsLoading } = useNominationPoolsAPR("polkadot")
+
+  const displayApr = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
+
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
@@ -396,8 +401,28 @@ export const InlineStakingForm = () => {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>{t("APY")}</div>
-          <div className="text-alert-success overflow-hidden font-bold">17.8% APY</div>
+          <div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="whitespace-nowrap">
+                  {t("APY")} <InfoIcon className="inline-block" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t("Estimated rewards per year")}</TooltipContent>
+            </Tooltip>
+          </div>
+          <div
+            className={classNames(
+              apr ? "text-alert-success" : "text-body-secondary",
+              " overflow-hidden font-bold"
+            )}
+          >
+            {aprIsLoading ? (
+              <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+            ) : (
+              displayApr
+            )}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>{t("Unbonding Period")}</div>
