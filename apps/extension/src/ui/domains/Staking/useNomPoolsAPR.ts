@@ -10,11 +10,11 @@ export const useNomPoolsAPR = (chainId: ChainId | null | undefined) => {
   const { data: sapi } = useScaleApi(chainId)
 
   return useQuery({
-    queryKey: ["useNomPoolsAPR", chainId, sapi?.id],
+    queryKey: ["useNomPoolsAPR", sapi?.id],
     queryFn: async () => {
-      if (!sapi || !chainId) return null
+      if (!sapi) return null
 
-      const stop = log.timer(`useNomPoolsAPR(${chainId})`)
+      const stop = log.timer(`getNomPoolsAPR(${sapi.chainId})`)
 
       const apr = await getNomPoolsAPR(sapi)
 
