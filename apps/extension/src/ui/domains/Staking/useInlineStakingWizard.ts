@@ -7,6 +7,7 @@ import { useCallback, useMemo } from "react"
 import { Hex } from "viem"
 
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useScaleApi } from "@ui/hooks/useScaleApi"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
@@ -130,13 +131,30 @@ export const useInlineStakingWizard = () => {
     [setState]
   )
 
+  const { data: sapi } = useScaleApi(token?.chain?.id)
+
   const submit = useCallback(async () => {
+    if (!sapi || !state.address || !state.tokenId || !state.poolId || !state.plancks) return
+
     setState((prev) => ({ ...prev, isSubmitting: true, submitErrorMessage: null }))
 
     try {
+      const { hash } = await sapi.signAndSend(
+        "NominationPools",
+        "join",
+        {
+          amount: state.plancks,
+          pool_id: state.poolId,
+        },
+        state.address
+      )
+
+      // tokenId: state.tokenId,
+      // poolId: state.poolId,
+      // plancks: state.plancks,
       await sleep(1000)
       // throw new Error("Failed to submit")
-      setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash: "0xdeadbeef" }))
+      setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash }))
     } catch (err) {
       log.error("Failed to submit", { state, err })
       setState((prev) => ({
@@ -145,7 +163,7 @@ export const useInlineStakingWizard = () => {
         submitErrorMessage: "Something went wrong",
       }))
     }
-  }, [setState, state])
+  }, [sapi, setState, state])
 
   return {
     account,

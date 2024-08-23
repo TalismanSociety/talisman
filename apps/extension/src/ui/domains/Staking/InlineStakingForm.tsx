@@ -108,8 +108,6 @@ const FiatDisplay = () => {
 const TokenDisplay = () => {
   const { token, formatter } = useInlineStakingWizard()
 
-  // const value = sendMax ? maxAmount : transfer
-
   if (!token) return null
 
   return (
