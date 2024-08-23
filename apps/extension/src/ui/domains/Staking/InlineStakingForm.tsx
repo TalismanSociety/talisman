@@ -1,6 +1,7 @@
 import { Token } from "@talismn/chaindata-provider"
 import { InfoIcon, SwapIcon, TalismanEyeIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
+import { formatDuration } from "date-fns"
 import { AccountJsonAny } from "extension-core"
 import {
   ChangeEventHandler,
@@ -18,6 +19,7 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 
 import { currencyConfig } from "../Asset/currencyConfig"
@@ -28,8 +30,9 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
 import { InlineStakingPoolPicker } from "./InlineStakingPoolPicker"
+import { useNomPoolsBondingDuration } from "./useBondingDuration"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
-import { useNominationPoolsAPR } from "./useNominationPoolsApr"
+import { useNomPoolsAPR } from "./useNomPoolsAPR"
 
 const PoolPill: FC<{ name: string | null | undefined; onClick: () => void }> = ({
   name,
@@ -359,26 +362,79 @@ export const AmountEdit = () => {
     </div>
   )
 }
+
+const NomPoolsApr = () => {
+  const { token } = useInlineStakingWizard()
+  const { data: apr, isLoading } = useNomPoolsAPR(token?.chain?.id)
+  const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
+
+  if (isLoading)
+    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+
+  return (
+    <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>
+      {display}
+    </span>
+  )
+}
+
+const NomPoolsUnbondingPeriod = () => {
+  const { t } = useTranslation()
+  const { token } = useInlineStakingWizard()
+  const { data: duration, isLoading } = useNomPoolsBondingDuration(token?.chain?.id)
+  const locale = useDateFnsLocale()
+
+  const display = useMemo(
+    () =>
+      duration
+        ? formatDuration(durationFromMs(Number(duration)), {
+            locale,
+          })
+        : t("N/A"),
+    [duration, locale, t]
+  )
+
+  if (isLoading)
+    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">28 Days</div>
+
+  return <>{display}</>
+}
+
+const durationFromMs = (ms: number): Duration => {
+  // returns the best possible looking duration object from ms
+  const seconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  const result = {
+    seconds: seconds % 60,
+    minutes: minutes % 60,
+    hours: hours % 24,
+    days: days,
+  }
+
+  //console.log("durationFromMs", { ms, seconds, minutes, hours, days, weeks, months, years, result })
+
+  return result
+}
+
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
   const { account, accountPicker, token, pool, poolPicker, isFormValid, setStep } =
     useInlineStakingWizard()
 
-  const { data: apr, isLoading: aprIsLoading } = useNominationPoolsAPR("polkadot")
-
-  const displayApr = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
-
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
         <div className="flex h-16 items-center justify-between gap-4">
-          <div>{t("Asset")}</div>
+          <div className="whitespace-nowrap">{t("Asset")}</div>
           <div className="overflow-hidden">
             <AssetPill token={token} />
           </div>
         </div>
         <div className="flex h-16 items-center justify-between gap-4">
-          <div>{t("Account")}</div>
+          <div className="whitespace-nowrap">{t("Account")}</div>
           <div className="overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
               <AccountPillButton address={account?.address} onClick={accountPicker.open} />
@@ -389,13 +445,13 @@ export const InlineStakingForm = () => {
       <AmountEdit />
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
         <div className="flex items-center justify-between">
-          <div>{t("Available Balance")}</div>
+          <div className="whitespace-nowrap">{t("Available Balance")}</div>
           <div>{!!token && !!account && <AvailableBalance token={token} account={account} />}</div>
         </div>
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
         <div className="flex h-12 items-center justify-between">
-          <div>{t("Pool")}</div>
+          <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="overflow-hidden">
             <PoolPill name={pool?.name} onClick={poolPicker.open} />
           </div>
@@ -411,25 +467,18 @@ export const InlineStakingForm = () => {
               <TooltipContent>{t("Estimated rewards per year")}</TooltipContent>
             </Tooltip>
           </div>
-          <div
-            className={classNames(
-              apr ? "text-alert-success" : "text-body-secondary",
-              " overflow-hidden font-bold"
-            )}
-          >
-            {aprIsLoading ? (
-              <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
-            ) : (
-              displayApr
-            )}
+          <div className={"overflow-hidden font-bold"}>
+            <NomPoolsApr />
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>{t("Unbonding Period")}</div>
-          <div className="text-body overflow-hidden">{t("{{days}} Days", { days: 28 })}</div>
+          <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
+          <div className="text-body overflow-hidden">
+            <NomPoolsUnbondingPeriod />
+          </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>{t("Estimated Fee")}</div>
+          <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
           <div className="overflow-hidden">
             <TokensAndFiat
               isBalance

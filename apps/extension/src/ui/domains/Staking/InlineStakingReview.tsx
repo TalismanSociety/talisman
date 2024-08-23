@@ -19,7 +19,7 @@ export const InlineStakingReview = () => {
       <h2 className="mb-24 mt-8 text-center">{t("You are staking")}</h2>
       <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
         <div className="flex items-center justify-between gap-8 pb-2">
-          <div>{t("Amount")} </div>
+          <div className="whitespace-nowrap">{t("Amount")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
             <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
             <TokensAndFiat
@@ -33,7 +33,7 @@ export const InlineStakingReview = () => {
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2">
-          <div>{t("Account")} </div>
+          <div className="whitespace-nowrap">{t("Account")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
             <InlineStakingAccount address={account.address} chainId={token?.chain?.id} />
           </div>
@@ -42,7 +42,7 @@ export const InlineStakingReview = () => {
           <hr className="text-grey-800" />
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-          <div>{t("Pool")} </div>
+          <div className="whitespace-nowrap">{t("Pool")} </div>
           <div>
             <div className="text-body-secondary bg-grey-800 flex h-12 items-center gap-2 rounded px-4">
               <TalismanEyeIcon />
@@ -51,7 +51,7 @@ export const InlineStakingReview = () => {
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-          <div>{t("Estimated Fee")} </div>
+          <div className="whitespace-nowrap">{t("Estimated fee")} </div>
           <div>
             <TokensAndFiat
               isBalance
