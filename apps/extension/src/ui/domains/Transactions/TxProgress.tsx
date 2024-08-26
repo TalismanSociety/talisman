@@ -163,7 +163,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
 
   return (
     <div className="flex h-full w-full flex-col items-center">
-      <div className="text-body mt-32 text-lg font-bold">{title}</div>
+      <div className="text-body mt-8 text-lg font-bold">{title}</div>
       <div className="text-body-secondary mt-12 text-center text-base font-light">{subtitle}</div>
       <ProcessAnimation status={animStatus} className="mt-[7.5rem] h-[14.5rem]" />
       <div className="text-body-secondary flex w-full grow flex-col justify-center px-10 text-center ">

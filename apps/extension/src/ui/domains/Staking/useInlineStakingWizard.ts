@@ -1,5 +1,4 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { sleep } from "@talismn/util"
 import { Address, BalanceFormatter } from "extension-core"
 import { log } from "extension-shared"
 import { atom, useAtom } from "jotai"
@@ -134,7 +133,8 @@ export const useInlineStakingWizard = () => {
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
   const submit = useCallback(async () => {
-    if (!sapi || !state.address || !state.tokenId || !state.poolId || !state.plancks) return
+    const { address, tokenId, poolId, plancks } = state
+    if (!sapi || !address || !tokenId || !poolId || !plancks) return
 
     setState((prev) => ({ ...prev, isSubmitting: true, submitErrorMessage: null }))
 
@@ -143,17 +143,12 @@ export const useInlineStakingWizard = () => {
         "NominationPools",
         "join",
         {
-          amount: state.plancks,
-          pool_id: state.poolId,
+          amount: plancks,
+          pool_id: poolId,
         },
-        state.address
+        { address: address }
       )
 
-      // tokenId: state.tokenId,
-      // poolId: state.poolId,
-      // plancks: state.plancks,
-      await sleep(1000)
-      // throw new Error("Failed to submit")
       setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash }))
     } catch (err) {
       log.error("Failed to submit", { state, err })

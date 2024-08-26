@@ -2,6 +2,7 @@ import { Bytes, enhanceEncoder, u16 } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { getDynamicBuilder, getLookupFn, V14, V15 } from "@talismn/scale"
 import { ChainId, SignerPayloadJSON } from "extension-core"
+import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
 import { Hex } from "viem"
 
@@ -32,8 +33,13 @@ export const getScaleApi = (chainId: ChainId, metadata: ScaleMetadata) => {
     getStorage: <T>(pallet: string, method: string, keys: unknown[]) =>
       fetchStorageValue<T>(chainId, builder, pallet, method, keys),
 
-    signAndSend: async (pallet: string, method: string, args: unknown, signer: string) => {
-      const payload = await getCallPayload(chainId, metadata, builder, pallet, method, args, signer)
+    signAndSend: async (
+      pallet: string,
+      method: string,
+      args: unknown,
+      config: PayloadSignerConfig
+    ) => {
+      const payload = await getCallPayload(chainId, metadata, builder, pallet, method, args, config)
       return api.subSubmit(payload)
     },
   }
@@ -55,6 +61,11 @@ const mortal = enhanceEncoder(Bytes(2).enc, (value: { period: number; phase: num
   return u16.enc(left | right)
 })
 
+export type PayloadSignerConfig = {
+  address: string
+  tip?: bigint
+}
+
 const getCallPayload = async (
   chainId: ChainId,
   metadata: ScaleMetadata,
@@ -62,9 +73,8 @@ const getCallPayload = async (
   pallet: string,
   method: string,
   args: unknown,
-  signer: string
+  config: PayloadSignerConfig
 ): Promise<SignerPayloadJSON> => {
-  // console.log("getCallPayload", { chainId, pallet, method, args, metadata, builder, signer })
   const { codec, location } = builder.buildCall(pallet, method)
   const callData = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
 
@@ -76,25 +86,16 @@ const getCallPayload = async (
   const blockNumber = await fetchStorageValue<number>(chainId, builder, "System", "Number", [])
   if (blockNumber === null) throw new Error("Block number not found")
 
-  const [genesisHash, blockHash, nonce] = await Promise.all([
+  const [account, genesisHash, blockHash] = await Promise.all([
+    fetchStorageValue<{ nonce: number }>(chainId, builder, "System", "Account", [config.address]), // TODO if V15 available, use a runtime call isntead : AccountNonceApi/account_nonce
     fetchStorageValue<Binary>(chainId, builder, "System", "BlockHash", [0]),
-    fetchStorageValue<Binary>(chainId, builder, "System", "ParentHash", []), // TODO not sure if this matches blockNumber
-    api.subSend<number>(chainId, "system_accountNextIndex", [signer]), // TODO migrate to runtime api call AccountNonceApi/account_nonce
+    api.subSend<Hex>(chainId, "chain_getBlockHash", [blockNumber], false), // TODO find the right way to fetch this with new RPC api, the following returns undefined: fetchStorageValue<Binary>(chainId, builder, "System", "BlockHash", [blockNumber])
   ])
 
-  // console.log({
-  //   codec,
-  //   location,
-  //   callData,
-  //   transactionVersion,
-  //   specVersion,
-  //   blockNumber,
-  //   genesisHash,
-  //   blockHash,
-  //   nonce,
-  // })
   if (!genesisHash) throw new Error("Genesis hash not found")
   if (!blockHash) throw new Error("Block hash not found")
+
+  const nonce = account ? account.nonce : 0
 
   // from papi
   const toPjsHex = (value: number | bigint, minByteLen?: number) => {
@@ -110,10 +111,11 @@ const getCallPayload = async (
 
   const era = toHex(mortal({ period: 16, phase: blockNumber % 16 })) as Hex
 
-  return {
-    address: signer,
+  const payload: SignerPayloadJSON = {
+    address: config.address,
     genesisHash: genesisHash.asHex() as Hex,
-    blockHash: blockHash.asHex() as Hex,
+    blockHash,
+    // method: "0x0500006cf965cfdd16d81eed9bf10c09a9d0da0141ab7a2419d1ca3045002fd115631100", // (send 0 DOT)
     method: callData.asHex(),
     signedExtensions,
     nonce: toPjsHex(nonce, 4),
@@ -121,12 +123,17 @@ const getCallPayload = async (
     transactionVersion: toPjsHex(transactionVersion, 4),
     blockNumber: toPjsHex(blockNumber, 4),
     era,
-    tip: toPjsHex(blockNumber, 16), // TODO
+    tip: toPjsHex(0, 16), // TODO
     assetId: undefined,
     mode: 0, // TODO
     metadataHash: undefined, // TODO
     version: 4,
+    withSignedTransaction: false,
   }
+
+  log.log("[sapi] payload", payload)
+
+  return payload
 }
 
 const getConstantValue = <T>(
