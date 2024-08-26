@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 
-import { useScaleApi } from "@ui/hooks/useScaleApi"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { getNomPoolsBondingDurationMs } from "./helpers"
 

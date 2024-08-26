@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 import { log } from "extension-shared"
 
-import { useScaleApi } from "@ui/hooks/useScaleApi"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { getNomPoolsAPR } from "./helpers"
 

@@ -1,12 +1,13 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { papiStringify } from "@talismn/scale"
+import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
-import { log } from "extension-shared"
 import { atom, useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { Hex } from "viem"
 
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useScaleApi } from "@ui/hooks/useScaleApi"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
@@ -132,33 +133,61 @@ export const useInlineStakingWizard = () => {
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
-  const submit = useCallback(async () => {
-    const { address, tokenId, poolId, plancks } = state
-    if (!sapi || !address || !tokenId || !poolId || !plancks) return
-
-    setState((prev) => ({ ...prev, isSubmitting: true, submitErrorMessage: null }))
-
-    try {
-      const { hash } = await sapi.signAndSend(
+  const {
+    data: payloadAndMetadata,
+    isLoading: isLoadingPayload,
+    error: errorPayload,
+  } = useQuery({
+    queryKey: ["getExtrinsicPayload", "NominationPools.join", papiStringify(state)], // safe stringify because contains bigint
+    queryFn: async () => {
+      const { address, tokenId, poolId, plancks } = state
+      if (!sapi || !address || !tokenId || !poolId || !plancks) return null
+      return sapi.getExtrinsicPayload(
         "NominationPools",
         "join",
         {
           amount: plancks,
           pool_id: poolId,
         },
-        { address: address }
+        { address }
       )
+    },
+  })
 
-      setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash }))
-    } catch (err) {
-      log.error("Failed to submit", { state, err })
-      setState((prev) => ({
-        ...prev,
-        isSubmitting: false,
-        submitErrorMessage: "Something went wrong",
-      }))
-    }
-  }, [sapi, setState, state])
+  const onSubmitted = useCallback(
+    (hash: Hex) => {
+      if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
+    },
+    [setState]
+  )
+
+  // const submit = useCallback(async () => {
+  //   const { address, tokenId, poolId, plancks } = state
+  //   if (!sapi || !address || !tokenId || !poolId || !plancks) return
+
+  //   setState((prev) => ({ ...prev, isSubmitting: true, submitErrorMessage: null }))
+
+  //   try {
+  //     const { hash } = await sapi.signAndSubmit(
+  //       "NominationPools",
+  //       "join",
+  //       {
+  //         amount: plancks,
+  //         pool_id: poolId,
+  //       },
+  //       { address: address }
+  //     )
+
+  //     setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash }))
+  //   } catch (err) {
+  //     log.error("Failed to submit", { state, err })
+  //     setState((prev) => ({
+  //       ...prev,
+  //       isSubmitting: false,
+  //       submitErrorMessage: "Something went wrong",
+  //     }))
+  //   }
+  // }, [sapi, setState, state])
 
   return {
     account,
@@ -181,6 +210,10 @@ export const useInlineStakingWizard = () => {
     setStep,
     toggleDisplayMode,
     reset,
-    submit,
+
+    ...payloadAndMetadata,
+    isLoadingPayload,
+    errorPayload,
+    onSubmitted,
   }
 }

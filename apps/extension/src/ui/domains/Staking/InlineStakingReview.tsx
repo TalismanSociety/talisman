@@ -1,16 +1,27 @@
 import { AlertCircleIcon, TalismanEyeIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { SapiSendButton } from "../Transactions/SapiSendButton"
 import { InlineStakingAccount } from "./InlineStakingAccount"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingReview = () => {
   const { t } = useTranslation()
-  const { pool, token, formatter, account, isFormValid, isSubmitting, submitErrorMessage, submit } =
-    useInlineStakingWizard()
+  const {
+    pool,
+    token,
+    formatter,
+    account,
+    // isFormValid,
+    // isSubmitting,
+    submitErrorMessage,
+    onSubmitted,
+    payload,
+    // isLoadingPayload,
+    txMetadata,
+  } = useInlineStakingWizard()
 
   if (!account) return null
 
@@ -71,9 +82,17 @@ export const InlineStakingReview = () => {
           <div>{submitErrorMessage}</div>
         </div>
       )}
-      <Button disabled={!isFormValid} onClick={submit} processing={isSubmitting} primary>
+      {payload && (
+        <SapiSendButton
+          label={t("Stake")}
+          payload={payload}
+          onSubmitted={onSubmitted}
+          txMetadata={txMetadata}
+        />
+      )}
+      {/* <Button disabled={!isFormValid} onClick={submit} processing={isSubmitting} primary>
         {t("Confirm")}
-      </Button>
+      </Button> */}
     </div>
   )
 }
