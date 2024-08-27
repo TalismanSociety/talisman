@@ -5,6 +5,7 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { SapiSendButton } from "../Transactions/SapiSendButton"
 import { InlineStakingAccount } from "./InlineStakingAccount"
+import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingReview = () => {
@@ -64,14 +65,7 @@ export const InlineStakingReview = () => {
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
           <div className="whitespace-nowrap">{t("Estimated fee")} </div>
           <div>
-            <TokensAndFiat
-              isBalance
-              tokenId={token?.id}
-              planck={100000000n}
-              noCountUp
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
-            />
+            <InlineStakingFeeEstimate noCountUp />
           </div>
         </div>
       </div>
@@ -90,9 +84,6 @@ export const InlineStakingReview = () => {
           txMetadata={txMetadata}
         />
       )}
-      {/* <Button disabled={!isFormValid} onClick={submit} processing={isSubmitting} primary>
-        {t("Confirm")}
-      </Button> */}
     </div>
   )
 }

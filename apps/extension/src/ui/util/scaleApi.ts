@@ -7,7 +7,9 @@ import {
 } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { fromHex, getDynamicBuilder, getLookupFn, V14, V15 } from "@talismn/scale"
+import { IRuntimeVersionBase } from "@polkadot/types/types"
+import { getDynamicBuilder, getLookupFn, V14, V15 } from "@talismn/scale"
+import { sleep } from "@talismn/util"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { DEBUG, log } from "extension-shared"
 import { Binary } from "polkadot-api"
@@ -15,7 +17,7 @@ import { Hex } from "viem"
 
 import { api } from "@ui/api"
 
-import { getSignedExtensionValues } from "./signedExtensions"
+import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 
 type ScaleMetadata = V14 | V15
 type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
@@ -75,6 +77,9 @@ export const getScaleApi = (
       config: PayloadSignerConfig
     ) => getSignerPayloadJSON(chainId, metadata, builder, pallet, method, args, config, chainInfo),
 
+    getFeeEstimate: async (payload: SignerPayloadJSON) =>
+      getFeeEstimate(chainId, metadata, builder, payload, chainInfo),
+
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),
   }
 }
@@ -132,9 +137,9 @@ const getPayloadWithMetadataHash = (
     const metadataHash = toHex(merkleizedMetadata.digest()) as Hex
 
     // TODO do this without PJS / registry
-    const { extra, additionalSigned } = getSignedExtensionValues(payload, metadata)
-    const badExtPayload = mergeUint8(fromHex(payload.method), ...extra, ...additionalSigned)
-    log.debug("[sapi] bad ExtPayload", { badExtPayload })
+    // const { extra, additionalSigned } = getSignedExtensionValues(payload, metadata)
+    // const badExtPayload = mergeUint8(fromHex(payload.method), ...extra, ...additionalSigned)
+    // log.debug("[sapi] bad ExtPayload", { badExtPayload })
 
     const stop2 = log.timer("get ExtrinsicPayload using PJS")
     const registry = new TypeRegistry()
@@ -142,7 +147,7 @@ const getPayloadWithMetadataHash = (
     const extPayload = registry.createType("ExtrinsicPayload", payload)
     const barePayload = extPayload.toU8a(true)
     stop2()
-    log.debug("[sapi] good ExtPayload", { badExtPayload })
+    log.debug("[sapi] good ExtPayload", { barePayload })
 
     const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)
 
@@ -217,6 +222,44 @@ const getSignerPayloadJSON = async (
   log.log("[sapi] payload", { newPayload: payload, txMetadata })
 
   return { payload, txMetadata }
+}
+
+const getFeeEstimate = async (
+  chainId: ChainId,
+  metadata: ScaleMetadata,
+  builder: ScaleBuilder,
+  payload: SignerPayloadJSON,
+  chainInfo: ChainInfo
+) => {
+  const fullMetadata = {
+    magicNumber: 1635018093, // magic number for metadata
+    metadata: { tag: "v15" as const, value: metadata as V15 },
+  }
+  const metadataBytes = metadataCodec.enc(fullMetadata)
+
+  const stop = log.timer("[sapi] getFeeEstimate => create Extrinsic")
+  const registry = new TypeRegistry()
+  registry.setMetadata(new Metadata(registry, metadataBytes), payload.signedExtensions)
+  const extrinsic = registry.createType("Extrinsic", payload)
+  stop()
+
+  extrinsic.signFake(payload.address, {
+    nonce: payload.nonce,
+    blockHash: payload.blockHash,
+    genesisHash: payload.genesisHash,
+    //payload,
+    runtimeVersion: {
+      specVersion: chainInfo.specVersion,
+      transactionVersion: chainInfo.transactionVersion,
+      // other fields aren't necessary for signing
+    } as IRuntimeVersionBase,
+  })
+
+  await sleep(2000)
+
+  const { partialFee } = await getExtrinsicDispatchInfo(chainId, extrinsic)
+
+  return BigInt(partialFee)
 }
 
 const getConstantValue = <T>(

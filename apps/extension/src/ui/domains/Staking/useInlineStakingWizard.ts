@@ -11,6 +11,7 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
+import { useFeeToken } from "../SendFunds/useFeeToken"
 import { useNominationPool } from "./useNominationPools"
 
 type InlineStakingWizardStep = "form" | "review" | "follow-up"
@@ -72,6 +73,7 @@ export const useInlineStakingWizard = () => {
 
   const account = useAccountByAddress(state.address)
   const token = useToken(state.tokenId)
+  const feeToken = useFeeToken(token?.id)
   const pool = useNominationPool(token?.chain?.id, state.poolId)
   const tokenRates = useTokenRates(state.tokenId)
   const formatter = useMemo(
@@ -154,6 +156,18 @@ export const useInlineStakingWizard = () => {
     },
   })
 
+  const {
+    data: feeEstimate,
+    isLoading: isLoadingFeeEstimate,
+    error: errorFeeEstimate,
+  } = useQuery({
+    queryKey: ["feeEstimate", payloadAndMetadata?.payload], // safe stringify because contains bigint
+    queryFn: () => {
+      if (!sapi || !payloadAndMetadata?.payload) return null
+      return sapi.getFeeEstimate(payloadAndMetadata.payload)
+    },
+  })
+
   const onSubmitted = useCallback(
     (hash: Hex) => {
       if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
@@ -189,6 +203,24 @@ export const useInlineStakingWizard = () => {
   //   }
   // }, [sapi, setState, state])
 
+  // useEffect(() => {
+  //   console.log("[sapi] useInlineStakingWizard", {
+  //     payload: payloadAndMetadata?.payload,
+  //     feeEstimate,
+  //     isLoadingFeeEstimate,
+  //     isLoadingPayload,
+  //     errorPayload,
+  //     errorFeeEstimate,
+  //   })
+  // }, [
+  //   errorFeeEstimate,
+  //   errorPayload,
+  //   feeEstimate,
+  //   isLoadingFeeEstimate,
+  //   isLoadingPayload,
+  //   payloadAndMetadata?.payload,
+  // ])
+
   return {
     account,
     token,
@@ -203,6 +235,8 @@ export const useInlineStakingWizard = () => {
     hash,
     isSubmitting,
     submitErrorMessage,
+    feeToken,
+
     setAddress,
     setTokenId,
     setPoolId,
@@ -214,6 +248,11 @@ export const useInlineStakingWizard = () => {
     ...payloadAndMetadata,
     isLoadingPayload,
     errorPayload,
+
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+
     onSubmitted,
   }
 }

@@ -29,6 +29,7 @@ import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
+import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
 import { InlineStakingPoolPicker } from "./InlineStakingPoolPicker"
 import { useNomPoolsBondingDuration } from "./useBondingDuration"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
@@ -419,8 +420,16 @@ const durationFromMs = (ms: number): Duration => {
 
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, pool, poolPicker, isFormValid, setStep } =
-    useInlineStakingWizard()
+  const {
+    account,
+    accountPicker,
+    token,
+    pool,
+    poolPicker,
+    isFormValid,
+
+    setStep,
+  } = useInlineStakingWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -478,14 +487,22 @@ export const InlineStakingForm = () => {
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
           <div className="overflow-hidden">
-            <TokensAndFiat
-              isBalance
-              tokenId={token?.id}
-              planck={100000000n}
-              // className={classNames(balance.status !== "live" && "animate-pulse")}
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
-            />
+            <InlineStakingFeeEstimate />
+            {/* {errorFeeEstimate ? (
+              <div className="text-alert-error truncate">Failed to estimate fee</div>
+            ) : !!feeEstimate && !!feeToken ? (
+              <TokensAndFiat
+                tokenId={feeToken?.id}
+                planck={feeEstimate}
+                tokensClassName="text-body"
+                fiatClassName="text-body-secondary"
+                className={classNames(isLoadingFeeEstimate && "animate-pulse")}
+              />
+            ) : isLoadingFeeEstimate ? (
+              <div className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">
+                0.0000 TKN ($0.00)
+              </div>
+            ) : null} */}
           </div>
         </div>
       </div>
