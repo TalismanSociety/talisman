@@ -4,12 +4,14 @@ import {
   enhanceEncoder,
   metadata as metadataCodec,
   u16,
+  V14,
+  V15,
 } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { Metadata, TypeRegistry } from "@polkadot/types"
+import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { IRuntimeVersionBase } from "@polkadot/types/types"
-import { getDynamicBuilder, getLookupFn, V14, V15 } from "@talismn/scale"
-import { sleep } from "@talismn/util"
+import { getDynamicBuilder, getLookupFn } from "@talismn/scale"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { DEBUG, log } from "extension-shared"
 import { Binary } from "polkadot-api"
@@ -23,12 +25,18 @@ type ScaleMetadata = V14 | V15
 type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
 export type ScaleApi = ReturnType<typeof getScaleApi>
 
+export type PayloadSignerConfig = {
+  address: string
+  tip?: bigint
+}
+
 export const getScaleApi = (
   chainId: ChainId,
   metadata: ScaleMetadata,
   token: { symbol: string; decimals: number },
   hasCheckMetadataHash?: boolean,
-  hexMetadata?: Hex
+  signedExtensions?: ExtDef,
+  registryTypes?: unknown
 ) => {
   const lookup = getLookupFn(metadata)
   const builder = getDynamicBuilder(lookup)
@@ -52,7 +60,8 @@ export const getScaleApi = (
     specVersion,
     transactionVersion,
     base58Prefix,
-    hexMetadata,
+    signedExtensions,
+    registryTypes,
   }
 
   return {
@@ -77,16 +86,13 @@ export const getScaleApi = (
       config: PayloadSignerConfig
     ) => getSignerPayloadJSON(chainId, metadata, builder, pallet, method, args, config, chainInfo),
 
-    getFeeEstimate: async (payload: SignerPayloadJSON) =>
+    getFeeEstimate: (payload: SignerPayloadJSON) =>
       getFeeEstimate(chainId, metadata, builder, payload, chainInfo),
+
+    getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(metadata, payload, chainInfo),
 
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),
   }
-}
-
-export type PayloadSignerConfig = {
-  address: string
-  tip?: bigint
 }
 
 type ChainInfo = {
@@ -96,7 +102,35 @@ type ChainInfo = {
   base58Prefix: number
   token: { symbol: string; decimals: number }
   hasCheckMetadataHash?: boolean
-  hexMetadata?: Hex // TODO REMOVE
+  signedExtensions?: ExtDef
+  registryTypes?: unknown
+}
+
+const getTypeRegistry = (
+  metadata: ScaleMetadata,
+  payload: SignerPayloadJSON,
+  chainInfo: ChainInfo
+) => {
+  const stop = log.timer("[sapi] getTypeRegistry")
+  const fullMetadata = {
+    magicNumber: 1635018093, // magic number for metadata
+    metadata: { tag: "v15" as const, value: metadata as V15 },
+  }
+  const metadataBytes = metadataCodec.enc(fullMetadata) // ~30ms
+
+  const registry = new TypeRegistry()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (chainInfo.registryTypes) registry.register(chainInfo.registryTypes as any)
+
+  registry.setMetadata(
+    new Metadata(registry, metadataBytes),
+    payload.signedExtensions,
+    chainInfo.signedExtensions
+  ) // ~30ms
+
+  stop()
+  return registry
 }
 
 const getPayloadWithMetadataHash = (
@@ -104,9 +138,12 @@ const getPayloadWithMetadataHash = (
   builder: ScaleBuilder,
   chainInfo: ChainInfo,
   payload: SignerPayloadJSON
-) => {
+): { payload: SignerPayloadJSON; txMetadata?: Uint8Array } => {
   if (!chainInfo.hasCheckMetadataHash)
-    return { payload: { ...payload, mode: 0, metadataHash: undefined }, txMetadata: undefined }
+    return {
+      payload: { ...payload, mode: 0, metadataHash: undefined, withSignedTransaction: true },
+      txMetadata: undefined,
+    }
 
   try {
     // merkleizeMetadata method expects versioned metadata so we need to reencode our V15 object back to a versioned one (~30ms)
@@ -136,25 +173,34 @@ const getPayloadWithMetadataHash = (
 
     const metadataHash = toHex(merkleizedMetadata.digest()) as Hex
 
+    const payloadWithMetadataHash = {
+      ...payload,
+      mode: 1,
+      metadataHash,
+      withSignedTransaction: true,
+    }
+
     // TODO do this without PJS / registry
     // const { extra, additionalSigned } = getSignedExtensionValues(payload, metadata)
     // const badExtPayload = mergeUint8(fromHex(payload.method), ...extra, ...additionalSigned)
     // log.debug("[sapi] bad ExtPayload", { badExtPayload })
 
-    const stop2 = log.timer("get ExtrinsicPayload using PJS")
-    const registry = new TypeRegistry()
-    registry.setMetadata(new Metadata(registry, metadataBytes), payload.signedExtensions)
-    const extPayload = registry.createType("ExtrinsicPayload", payload)
+    const registry = getTypeRegistry(metadata, payload, chainInfo)
+    const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)
     const barePayload = extPayload.toU8a(true)
-    stop2()
-    log.debug("[sapi] good ExtPayload", { barePayload })
 
     const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)
 
-    return { payload: { ...payload, mode: 1, metadataHash }, txMetadata }
+    return {
+      payload: payloadWithMetadataHash,
+      txMetadata,
+    }
   } catch (err) {
     log.error("Failed to get shortened metadata", { error: err })
-    return { payload: { ...payload, mode: 0, metadataHash: undefined }, txMetadata: undefined }
+    return {
+      payload: { ...payload, mode: 0, metadataHash: undefined, withSignedTransaction: true },
+      txMetadata: undefined,
+    }
   }
 }
 
@@ -231,23 +277,13 @@ const getFeeEstimate = async (
   payload: SignerPayloadJSON,
   chainInfo: ChainInfo
 ) => {
-  const fullMetadata = {
-    magicNumber: 1635018093, // magic number for metadata
-    metadata: { tag: "v15" as const, value: metadata as V15 },
-  }
-  const metadataBytes = metadataCodec.enc(fullMetadata)
-
-  const stop = log.timer("[sapi] getFeeEstimate => create Extrinsic")
-  const registry = new TypeRegistry()
-  registry.setMetadata(new Metadata(registry, metadataBytes), payload.signedExtensions)
+  const registry = getTypeRegistry(metadata, payload, chainInfo)
   const extrinsic = registry.createType("Extrinsic", payload)
-  stop()
 
   extrinsic.signFake(payload.address, {
     nonce: payload.nonce,
     blockHash: payload.blockHash,
     genesisHash: payload.genesisHash,
-    //payload,
     runtimeVersion: {
       specVersion: chainInfo.specVersion,
       transactionVersion: chainInfo.transactionVersion,
@@ -255,11 +291,47 @@ const getFeeEstimate = async (
     } as IRuntimeVersionBase,
   })
 
-  await sleep(2000)
+  const bytes = extrinsic.toU8a(true)
+  const binary = Binary.fromBytes(bytes)
 
+  try {
+    const { partialFee } = await getRuntimeCallValue<{ partialFee: bigint }>(
+      chainId,
+      builder,
+      "TransactionPaymentApi",
+      "query_info",
+      [binary, bytes.length]
+    )
+    return partialFee
+  } catch (err) {
+    log.error("Failed to get fee estimate using getRuntimeCallValue", { error: err })
+  }
+
+  // fallback to pjs encoded state call, in case the above fails (extracting runtime calls codecs might require metadata V15)
   const { partialFee } = await getExtrinsicDispatchInfo(chainId, extrinsic)
 
   return BigInt(partialFee)
+}
+
+const getRuntimeCallValue = async <T>(
+  chainId: ChainId,
+  scaleBuilder: ScaleBuilder,
+  apiName: string,
+  method: string,
+  args: unknown[]
+) => {
+  const stop = log.timer("[sapi] getRuntimeCallValue")
+  const call = scaleBuilder.buildRuntimeCall(apiName, method)
+
+  const hex = await api.subSend<string>(chainId, "state_call", [
+    `${apiName}_${method}`,
+    toHex(call.args.enc(args)),
+  ])
+
+  const res = call.value.dec(hex) as T
+  stop()
+
+  return res
 }
 
 const getConstantValue = <T>(

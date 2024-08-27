@@ -1,6 +1,7 @@
 import { GenericExtrinsic } from "@polkadot/types"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import { log } from "extension-shared"
 
 import { stateCall } from "./stateCall"
 
@@ -15,6 +16,7 @@ export const getExtrinsicDispatchInfo = async (
   blockHash?: HexString
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
+  const stop = log.timer("[sapi] getExtrinsicDispatchInfo")
 
   const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
 
@@ -26,7 +28,7 @@ export const getExtrinsicDispatchInfo = async (
     blockHash,
     true
   )
-
+  stop()
   return {
     partialFee: dispatchInfo.partialFee.toString(),
   }

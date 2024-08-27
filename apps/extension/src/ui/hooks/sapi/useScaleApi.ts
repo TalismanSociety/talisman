@@ -4,7 +4,6 @@ import { decodeMetadata } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 import { useMemo } from "react"
-import { Hex } from "viem"
 
 import { api } from "@ui/api"
 import { getScaleApi, ScaleApi } from "@ui/util/scaleApi"
@@ -40,7 +39,8 @@ export const useScaleApi = (
         metadata.metadata,
         token,
         chain.hasCheckMetadataHash,
-        hexMetadata as Hex
+        chain.signedExtensions,
+        chain.registryTypes
       ) as ScaleApi
     },
     refetchInterval: false,

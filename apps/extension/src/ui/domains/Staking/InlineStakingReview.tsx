@@ -78,6 +78,7 @@ export const InlineStakingReview = () => {
       )}
       {payload && (
         <SapiSendButton
+          containerId="inlineStakingModalDialog"
           label={t("Stake")}
           payload={payload}
           onSubmitted={onSubmitted}
