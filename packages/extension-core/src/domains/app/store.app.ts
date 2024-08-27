@@ -1,6 +1,7 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { gt } from "semver"
 
+import { GeneralReport } from "../../libs/GeneralReport"
 import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
 import { StakingSupportedChain } from "../staking/types"
@@ -20,7 +21,8 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  analyticsReportSent?: number
+  analyticsReportCreatedAt?: number
+  analyticsReport?: GeneralReport
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   hideStakingBanner: StakingSupportedChain[]
