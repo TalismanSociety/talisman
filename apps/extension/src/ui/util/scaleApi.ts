@@ -295,14 +295,18 @@ const getFeeEstimate = async (
   const binary = Binary.fromBytes(bytes)
 
   try {
-    const { partialFee } = await getRuntimeCallValue<{ partialFee: bigint }>(
+    const result = await getRuntimeCallValue<{ partial_fee: bigint }>(
       chainId,
       builder,
       "TransactionPaymentApi",
       "query_info",
       [binary, bytes.length]
     )
-    return partialFee
+    if (!result?.partial_fee) {
+      // console.warn("partialFee is not found", { result })
+      throw new Error("partialFee is not found")
+    }
+    return result.partial_fee
   } catch (err) {
     log.error("Failed to get fee estimate using getRuntimeCallValue", { error: err })
   }

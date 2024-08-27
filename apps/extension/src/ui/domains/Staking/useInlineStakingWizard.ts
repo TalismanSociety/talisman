@@ -175,52 +175,6 @@ export const useInlineStakingWizard = () => {
     [setState]
   )
 
-  // const submit = useCallback(async () => {
-  //   const { address, tokenId, poolId, plancks } = state
-  //   if (!sapi || !address || !tokenId || !poolId || !plancks) return
-
-  //   setState((prev) => ({ ...prev, isSubmitting: true, submitErrorMessage: null }))
-
-  //   try {
-  //     const { hash } = await sapi.signAndSubmit(
-  //       "NominationPools",
-  //       "join",
-  //       {
-  //         amount: plancks,
-  //         pool_id: poolId,
-  //       },
-  //       { address: address }
-  //     )
-
-  //     setState((prev) => ({ ...prev, isSubmitting: false, step: "follow-up", hash }))
-  //   } catch (err) {
-  //     log.error("Failed to submit", { state, err })
-  //     setState((prev) => ({
-  //       ...prev,
-  //       isSubmitting: false,
-  //       submitErrorMessage: "Something went wrong",
-  //     }))
-  //   }
-  // }, [sapi, setState, state])
-
-  // useEffect(() => {
-  //   console.log("[sapi] useInlineStakingWizard", {
-  //     payload: payloadAndMetadata?.payload,
-  //     feeEstimate,
-  //     isLoadingFeeEstimate,
-  //     isLoadingPayload,
-  //     errorPayload,
-  //     errorFeeEstimate,
-  //   })
-  // }, [
-  //   errorFeeEstimate,
-  //   errorPayload,
-  //   feeEstimate,
-  //   isLoadingFeeEstimate,
-  //   isLoadingPayload,
-  //   payloadAndMetadata?.payload,
-  // ])
-
   return {
     account,
     token,

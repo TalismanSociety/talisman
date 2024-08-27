@@ -1,6 +1,6 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { toHex } from "@talismn/scale"
-import { AccountType, SignerPayloadJSON } from "extension-core"
+import { AccountJsonQr, AccountType, SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
 import { FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -10,6 +10,7 @@ import { Hex } from "viem"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
+import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 
 type SapiSendButtonProps = {
@@ -72,9 +73,47 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 }
 
-const QrAccountSendButton: FC<SapiSendButtonProps> = () => {
-  // TODO
-  return null
+const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, onSubmitted }) => {
+  const account = useAccountByAddress(payload?.address)
+  const [error, setError] = useState<string>()
+  const { data: sapi } = useScaleApi(payload?.genesisHash)
+
+  const handleSigned = useCallback(
+    async ({ signature }: { signature: Hex }) => {
+      if (!payload || !signature || !sapi) return
+
+      setError(undefined)
+      try {
+        const { hash } = await sapi.submit(payload, signature)
+        onSubmitted(hash)
+      } catch (err) {
+        log.error("Failed to submit", { payload, err })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setError((err as any)?.message ?? "Failed to submit")
+      }
+    },
+    [onSubmitted, payload, sapi]
+  )
+
+  if (!account) return null
+
+  return (
+    <div className="flex w-full flex-col gap-6">
+      {error && (
+        <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
+          <AlertCircleIcon className="text-lg" />
+          <div>{error}</div>
+        </div>
+      )}
+      <QrSubstrate
+        containerId={containerId ?? "main"}
+        genesisHash={payload.genesisHash}
+        payload={payload}
+        account={account as AccountJsonQr}
+        onSignature={handleSigned}
+      />
+    </div>
+  )
 }
 
 const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
