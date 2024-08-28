@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
     - name: Build wallet
-      run:  pnpm run dev
+      run:  pnpm run build:extension
     - name: Install Playwright Browsers
       run: pnpm exec playwright install chromium
     - name: Run Playwright tests
