@@ -1,0 +1,30 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [ dev, e2e/install ]
+  pull_request:
+    branches: [ dev, e2e/install ]
+jobs:
+  test:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+    - name: Install dependencies
+      run: pnpm i
+    - name: Build wallet
+      run:  pnpm run dev
+    - name: Install Playwright Browsers
+      run: pnpm exec playwright install chromium
+    - name: Run Playwright tests
+      run: pnpm exec playwright test
+      working-directory: ./config/playwright
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
