@@ -308,11 +308,20 @@ const FiatInput = () => {
 
 export const AmountEdit = () => {
   const { t } = useTranslation()
-  const { token, tokenRates, displayMode, toggleDisplayMode } = useInlineStakingWizard()
-  //const [isTokenEdit, setIsTokenEdit] = useState(true)
-  // const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } = useSendFunds()
+  const {
+    token,
+    tokenRates,
+    displayMode,
+    toggleDisplayMode,
+    inputErrorMessage,
+    maxPlancks,
+    setPlancks,
+  } = useInlineStakingWizard()
 
-  const onSetMaxClick = useCallback(() => {}, [])
+  const onSetMaxClick = useCallback(() => {
+    if (!maxPlancks) return
+    setPlancks(maxPlancks)
+  }, [maxPlancks, setPlancks])
 
   return (
     <div className="flex w-full grow flex-col justify-center gap-4">
@@ -321,14 +330,8 @@ export const AmountEdit = () => {
           <div className="h-16">{/* mirrors the height of error message reserved space */}</div>
           <div className="flex flex-col text-xl font-bold">
             {displayMode === "token" ? <TokenInput /> : <FiatInput />}
-            {/* {isTokenEdit ? <TokenInput onTokenClick={onTokenClick} /> : <FiatInput />} */}
           </div>
-          <div
-            className={classNames(
-              "flex max-w-full items-center justify-center gap-4"
-              // TODO isEstimatingMaxAmount && "invisible"
-            )}
-          >
+          <div className={classNames("flex max-w-full items-center justify-center gap-4")}>
             {tokenRates && (
               <>
                 {displayMode !== "token" ? <TokenDisplay /> : <FiatDisplay />}
@@ -343,7 +346,7 @@ export const AmountEdit = () => {
             )}
             <PillButton
               onClick={onSetMaxClick}
-              disabled // TODO ={!maxAmount}
+              disabled={!maxPlancks} // TODO ={!maxAmount}
               size="xs"
               className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
             >
@@ -352,8 +355,7 @@ export const AmountEdit = () => {
           </div>
           <div className="h-16">
             <div className="text-brand-orange line-clamp-2 text-center text-xs">
-              This is an error message
-              {/* TODO <ErrorMessage /> */}
+              {inputErrorMessage}
             </div>
           </div>
         </>
@@ -420,16 +422,8 @@ const durationFromMs = (ms: number): Duration => {
 
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const {
-    account,
-    accountPicker,
-    token,
-    pool,
-    poolPicker,
-    isFormValid,
-
-    setStep,
-  } = useInlineStakingWizard()
+  const { account, accountPicker, token, pool, poolPicker, payload, setStep } =
+    useInlineStakingWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -468,10 +462,10 @@ export const InlineStakingForm = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="whitespace-nowrap">
-                  {t("APY")} <InfoIcon className="inline-block" />
+                  {t("APR")} <InfoIcon className="inline-block" />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>{t("Estimated rewards per year")}</TooltipContent>
+              <TooltipContent>{t("Estimated Annual Percentage Rate (APR)")}</TooltipContent>
             </Tooltip>
           </div>
           <div className={"overflow-hidden font-bold"}>
@@ -488,26 +482,11 @@ export const InlineStakingForm = () => {
           <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
           <div className="overflow-hidden">
             <InlineStakingFeeEstimate />
-            {/* {errorFeeEstimate ? (
-              <div className="text-alert-error truncate">Failed to estimate fee</div>
-            ) : !!feeEstimate && !!feeToken ? (
-              <TokensAndFiat
-                tokenId={feeToken?.id}
-                planck={feeEstimate}
-                tokensClassName="text-body"
-                fiatClassName="text-body-secondary"
-                className={classNames(isLoadingFeeEstimate && "animate-pulse")}
-              />
-            ) : isLoadingFeeEstimate ? (
-              <div className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">
-                0.0000 TKN ($0.00)
-              </div>
-            ) : null} */}
           </div>
         </div>
       </div>
       <div></div>
-      <Button primary fullWidth disabled={!isFormValid} onClick={() => setStep("review")}>
+      <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
         {t("Review")}
       </Button>
 

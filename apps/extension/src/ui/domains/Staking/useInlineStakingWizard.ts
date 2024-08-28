@@ -4,15 +4,22 @@ import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
 import { atom, useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Hex } from "viem"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
 import { useFeeToken } from "../SendFunds/useFeeToken"
+import { useExistentialDeposit } from "./useExistentialDeposit"
+import { useIsSoloStaking } from "./useIsSoloStaking"
 import { useNominationPool } from "./useNominationPools"
+import { useNomPoolIdByMember } from "./useNomPoolIdByMember"
+import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
+import { useNomPoolState } from "./useNomPoolState"
 
 type InlineStakingWizardStep = "form" | "review" | "follow-up"
 
@@ -67,6 +74,7 @@ const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
 }
 
 export const useInlineStakingWizard = () => {
+  const { t } = useTranslation()
   const [state, setState] = useAtom(inlineStakingWizardAtom)
 
   const { step, displayMode, hash, isSubmitting, submitErrorMessage } = state
@@ -83,6 +91,8 @@ export const useInlineStakingWizard = () => {
         : null,
     [state.plancks, token?.decimals, tokenRates]
   )
+  const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
+  const balance = useBalance(state.address!, state.tokenId!)
 
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
   const poolPicker = useInnerOpenClose("isPoolPickerOpen")
@@ -112,8 +122,14 @@ export const useInlineStakingWizard = () => {
   }, [setState])
 
   const isFormValid = useMemo(
-    () => !!account && !!token && !!pool && !!formatter,
-    [account, formatter, pool, token]
+    () =>
+      !!account &&
+      !!token &&
+      !!pool &&
+      !!formatter &&
+      !!minJoinBond &&
+      formatter.planck >= minJoinBond,
+    [account, formatter, minJoinBond, pool, token]
   )
 
   const setStep = useCallback(
@@ -142,8 +158,10 @@ export const useInlineStakingWizard = () => {
   } = useQuery({
     queryKey: ["getExtrinsicPayload", "NominationPools.join", papiStringify(state)], // safe stringify because contains bigint
     queryFn: async () => {
-      const { address, tokenId, poolId, plancks } = state
-      if (!sapi || !address || !tokenId || !poolId || !plancks) return null
+      const { address, poolId, plancks } = state
+      if (!sapi || !address || !poolId || !plancks) return null
+      if (!isFormValid) return null
+
       return sapi.getExtrinsicPayload(
         "NominationPools",
         "join",
@@ -153,6 +171,29 @@ export const useInlineStakingWizard = () => {
         },
         { address }
       )
+    },
+  })
+
+  const { payload, txMetadata } = payloadAndMetadata || {}
+
+  const {
+    // used to get an estimate before amount is known
+    data: fakeFeeEstimate,
+  } = useQuery({
+    queryKey: ["feeEstimate", state.poolId, state.address, minJoinBond?.toString()],
+    queryFn: async () => {
+      const { address, poolId } = state
+      if (!sapi || !address || !poolId || !minJoinBond) return null
+      const { payload } = await sapi.getExtrinsicPayload(
+        "NominationPools",
+        "join",
+        {
+          amount: minJoinBond,
+          pool_id: poolId,
+        },
+        { address }
+      )
+      return sapi.getFeeEstimate(payload)
     },
   })
 
@@ -175,6 +216,86 @@ export const useInlineStakingWizard = () => {
     [setState]
   )
 
+  const existentialDeposit = useExistentialDeposit(token?.id)
+
+  const maxPlancks = useMemo(() => {
+    if (!balance || !existentialDeposit || !fakeFeeEstimate) return null
+    // use 11x fake fee estimate as we block form based on 10x the real fee estimate
+    if (existentialDeposit.planck + fakeFeeEstimate * 11n > balance.transferable.planck) return null
+    return balance.transferable.planck - existentialDeposit.planck - fakeFeeEstimate * 11n
+  }, [balance, existentialDeposit, fakeFeeEstimate])
+
+  const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, state.address)
+  const { data: currentlyStakingNomPoolId } = useNomPoolIdByMember(token?.chain?.id, state.address)
+  const { data: poolState } = useNomPoolState(token?.chain?.id, state.poolId)
+
+  const inputErrorMessage = useMemo(() => {
+    if (isSoloStaking)
+      return t("An account cannot do both regular staking and nomination pool staking")
+    if (typeof currentlyStakingNomPoolId === "number" && currentlyStakingNomPoolId !== state.poolId)
+      return t("You are already staking in another nomination pool ({{poolId}})", {
+        poolId: currentlyStakingNomPoolId,
+      })
+    if (poolState?.isFull) return t("This nomination pool is full")
+    if (poolState && !poolState.isOpen) return t("This nomination pool is not open")
+
+    if (!formatter || !minJoinBond) return null
+
+    // TODO : account is already staking in another pool
+    if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
+      return t("Insufficient balance")
+
+    if (
+      !!balance &&
+      !!feeEstimate &&
+      !!formatter.planck &&
+      formatter.planck + feeEstimate > balance.transferable.planck
+    )
+      return t("Insufficient balance to cover fee")
+
+    if (
+      !!balance &&
+      !!feeEstimate &&
+      !!existentialDeposit?.planck &&
+      !!formatter.planck &&
+      existentialDeposit.planck + formatter.planck + feeEstimate > balance.transferable.planck
+    )
+      return t("Insufficient balance to cover fee and keep account alive")
+
+    if (
+      !!balance &&
+      !!feeEstimate &&
+      !!existentialDeposit?.planck &&
+      !!formatter.planck &&
+      existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unstaking, as max button accounts for 11x with a fake fee estimate
+    )
+      return t(
+        "Insufficient balance to cover staking, the existential deposit, and the future unstaking fee"
+      )
+
+    // TODO : pool is full
+    if (formatter.planck < minJoinBond)
+      return t("Minimum bond is {{amount}} {{symbol}}", {
+        anount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
+        symbol: token?.symbol,
+      })
+
+    return null
+  }, [
+    balance,
+    currentlyStakingNomPoolId,
+    existentialDeposit?.planck,
+    feeEstimate,
+    formatter,
+    isSoloStaking,
+    minJoinBond,
+    poolState,
+    state.poolId,
+    t,
+    token?.decimals,
+    token?.symbol,
+  ])
+
   return {
     account,
     token,
@@ -188,8 +309,10 @@ export const useInlineStakingWizard = () => {
     step,
     hash,
     isSubmitting,
+    inputErrorMessage,
     submitErrorMessage,
     feeToken,
+    maxPlancks,
 
     setAddress,
     setTokenId,
@@ -199,7 +322,8 @@ export const useInlineStakingWizard = () => {
     toggleDisplayMode,
     reset,
 
-    ...payloadAndMetadata,
+    payload: !inputErrorMessage ? payload : null,
+    txMetadata,
     isLoadingPayload,
     errorPayload,
 

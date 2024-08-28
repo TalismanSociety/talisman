@@ -123,10 +123,8 @@ export const getNomPoolsAPR = async (sapi: ScaleApi) => {
   const [eraRewards, eraTotalStakes] = await Promise.all([
     Promise.all(
       eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasValidatorReward", [era]))
-    ) as Promise<bigint[]>,
-    Promise.all(
-      eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasTotalStake", [era]))
-    ) as Promise<bigint[]>,
+    ),
+    Promise.all(eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasTotalStake", [era]))),
   ])
 
   const erasPerYear = getStakingErasPerYear(sapi)

@@ -13,7 +13,7 @@ import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { IRuntimeVersionBase } from "@polkadot/types/types"
 import { getDynamicBuilder, getLookupFn } from "@talismn/scale"
 import { ChainId, SignerPayloadJSON } from "extension-core"
-import { DEBUG, log } from "extension-shared"
+import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
 import { Hex } from "viem"
 
@@ -76,8 +76,8 @@ export const getScaleApi = (
     getConstant: <T>(pallet: string, constant: string) =>
       getConstantValue<T>(metadata, builder, pallet, constant),
 
-    getStorage: <T>(pallet: string, method: string, keys: unknown[]) =>
-      getStorageValue<T>(chainId, builder, pallet, method, keys),
+    getStorage: <T>(pallet: string, entry: string, keys: unknown[]) =>
+      getStorageValue<T>(chainId, builder, pallet, entry, keys),
 
     getExtrinsicPayload: (
       pallet: string,
@@ -215,13 +215,13 @@ const getSignerPayloadJSON = async (
   chainInfo: ChainInfo
 ): Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array }> => {
   const { codec, location } = builder.buildCall(palletName, methodName)
-  let method = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
+  const method = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
 
   // TODO remove
-  if (DEBUG && Date.now())
-    method = Binary.fromHex(
-      "0x0500006cf965cfdd16d81eed9bf10c09a9d0da0141ab7a2419d1ca3045002fd115631100"
-    ) // send 0 DOT to guardians
+  // if (DEBUG && Date.now())
+  //   method = Binary.fromHex(
+  //     "0x0500006cf965cfdd16d81eed9bf10c09a9d0da0141ab7a2419d1ca3045002fd115631100"
+  //   ) // send 0 DOT to guardians
 
   const blockNumber = await getStorageValue<number>(chainId, builder, "System", "Number", [])
   if (blockNumber === null) throw new Error("Block number not found")
@@ -359,14 +359,14 @@ const getStorageValue = async <T>(
   chainId: ChainId,
   scaleBuilder: ScaleBuilder,
   pallet: string,
-  method: string,
+  entry: string,
   keys: unknown[]
 ) => {
-  const storageCodec = scaleBuilder.buildStorage(pallet, method)
+  const storageCodec = scaleBuilder.buildStorage(pallet, entry)
   const stateKey = storageCodec.enc(...keys)
 
   const hexValue = await api.subSend<string | null>(chainId, "state_getStorage", [stateKey])
-  if (!hexValue) return null
+  if (!hexValue) return null as T // caller will need to expect this case when applicable
 
   return storageCodec.dec(hexValue) as T
 }
