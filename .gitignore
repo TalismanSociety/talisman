@@ -34,3 +34,11 @@ yarn-error.log*
 # extension
 dist
 apps/extension/public/locales/*
+
+#playwright
+
+/config/playwright/node_modules/
+/config/playwright/test-results/
+/config/playwright/playwright-report/
+/config/playwright/blob-report/
+/config/playwright/.cache/
