@@ -1,4 +1,5 @@
 import keyring from "@polkadot/ui-keyring"
+import { sleep } from "@talismn/util"
 import { DEBUG } from "extension-shared"
 import groupBy from "lodash/groupBy"
 import { type Properties } from "posthog-js"
@@ -9,7 +10,7 @@ import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
 import { Balances } from "../domains/balances/types"
-import { getNftCollectionFloorUsd } from "../domains/nfts"
+import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { hasGhostsOfThePast } from "../util/hasGhostsOfThePast"
@@ -17,34 +18,65 @@ import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
+export type GeneralReport = Awaited<ReturnType<typeof getGeneralReport>>
+
+/**
+ * This global variable makes sure that we only build one report at a time.
+ * If the background script is restarted, this flag will be reset to `false`.
+ */
+let isBuildingReport = false
+
 //
 // This should get sent at most once per 24 hours, whenever any other events get sent
 //
 export async function withGeneralReport(properties?: Properties) {
-  const analyticsReportSent = await appStore.get("analyticsReportSent")
+  // If a report has been created but not yet submitted,
+  // this function will attach it to the pending event's properties
+  const includeExistingReportInProperties = async () => {
+    const analyticsReport = await appStore.get("analyticsReport")
+    if (!analyticsReport) return
 
-  // on first run, note down the timestamp but don't make a report
-  if (typeof analyticsReportSent !== "number") {
-    await appStore.set({ analyticsReportSent: Date.now() })
-    return properties
+    await appStore.set({ analyticsReport: undefined })
+    properties = { ...properties, $set: { ...(properties?.$set ?? {}), ...analyticsReport } }
   }
 
-  // on subsequent runs, do nothing if the diff between the recorded timestamp and now is less than REPORTING_PERIOD
-  if (Date.now() - analyticsReportSent < REPORTING_PERIOD) return properties
+  // If we've not created a report before, or if it has been REPORTING_PERIOD ms since we last created a report,
+  // this function will spawn an async task to create a new report in the background.
+  const spawnTaskToCreateNewReport = async () => {
+    const analyticsReportCreatedAt = await appStore.get("analyticsReportCreatedAt")
 
-  // and when the diff is greater, make a report
-  try {
-    const generalReport = await getGeneralReport()
+    // if the wallet has already created a report, do nothing when the time since the last report is less than REPORTING_PERIOD
+    const hasCreatedReport = typeof analyticsReportCreatedAt === "number"
+    const timeSinceReportCreated = hasCreatedReport ? Date.now() - analyticsReportCreatedAt : 0
+    if (hasCreatedReport && timeSinceReportCreated < REPORTING_PERIOD) return
 
-    // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
-    if (generalReport === undefined) return properties
+    // if we're already creating a report (in response to an event which happened before this one)
+    // then don't try to build another one at the same time
+    if (isBuildingReport) return
+    isBuildingReport = true
 
-    await appStore.set({ analyticsReportSent: Date.now() })
-    return { ...properties, $set: { ...(properties?.$set ?? {}), ...generalReport } }
-  } catch (cause) {
-    console.warn("Failed to build general report", { cause }) // eslint-disable-line no-console
-    return properties
+    // spawn async task (don't wait for it to complete before continuing)
+    ;(async () => {
+      try {
+        const analyticsReport = await getGeneralReport()
+
+        // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
+        if (analyticsReport === undefined) return
+
+        await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
+      } catch (cause) {
+        console.warn("Failed to build general report", { cause }) // eslint-disable-line no-console
+      } finally {
+        // set this flag back to false so we don't block the next report
+        isBuildingReport = false
+      }
+    })()
   }
+
+  await includeExistingReportInProperties()
+  await spawnTaskToCreateNewReport()
+
+  return properties
 }
 
 async function getGeneralReport() {
@@ -68,30 +100,47 @@ async function getGeneralReport() {
   const watchedAccounts = accounts.filter(({ meta }) => meta.origin === AccountType.Watched)
   const watchedAccountsCount = watchedAccounts.length
 
-  const poolStatus = await Promise.race([
-    balancePool.status,
-    new Promise<"initialising">((resolve) => setTimeout(() => resolve("initialising"), 2_000)),
-  ])
-  // NOTE: There are two not-ready states of the balances pool, which are both called `initialising`.
-  //   1. The pool is still getting chainata ready so that it can set up balances subscriptions.
-  //   2. The pool is ready and has subscriptions, but some balances are still being refreshed from the chains.
-  //
-  // if balancePool isn't initialised (chaindata loaded from db), balances stats may be incorrect (initialising state 1)
-  if (balancePool.hasInitialised.isPending()) return
-  // if balancePool isn't initialised (all balance queries set to `live`), balances stats may be incorrect (initialising state 2)
-  if (poolStatus === "initialising") return
+  let disconnect!: () => void
+  try {
+    // create token balances / nft subscriptions, and wait for the pool to settle
+    // this ensures that we have up-to-date information for the report
+    const onDisconnected = new Promise<void>((resolve) => {
+      let hasDisconnected = false
+      disconnect = () => {
+        if (hasDisconnected) return
+        hasDisconnected = true
+        resolve()
+      }
+    })
 
-  // if the balancePool has cached balances, we probably have an incomplete state of the user's balances
-  // (i.e. we're still fetching them after a browser restart)
-  //
-  // 30 seconds after the pool is initialised, all of the cached balances are transformed into stale balances
-  //
-  // in the future, we should expose an observable on the pool which can indicate whether or not the pool is hydrated,
-  // until then, this is a good-enough workaround
-  const balanceJsons = Object.values(balancePool.balances).filter((balance) =>
-    ownedAddresses.includes(balance.address)
-  )
-  if (balanceJsons.some((b) => b.status === "cache")) return
+    let balancesLive = false
+    let nftsLive = false
+
+    // token balances
+    const subscriptionId = "ANALYTICS-GENERAL-REPORT"
+    balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
+      if (response.status !== "live") return
+      balancesLive = true
+      if (!nftsLive) return
+      disconnect()
+    })
+    // nfts
+    const unsubNfts = subscribeNfts((data) => {
+      if (data.status !== "loaded") return
+      nftsLive = true
+      if (!balancesLive) return
+      disconnect()
+    })
+    onDisconnected.then(() => unsubNfts())
+    // timeout (don't wait forever for all token balances and nfts to be live)
+    await sleep(30_000).then(disconnect)
+
+    // wait for live token balances & nfts, or timeout to complete
+    await onDisconnected
+  } finally {
+    // if anything throws, make sure we shut down all the subscriptions we opened
+    disconnect()
+  }
 
   // account type breakdown
   const accountBreakdown: Record<Lowercase<AccountType>, number> = {
@@ -126,6 +175,9 @@ async function getGeneralReport() {
         ),
     ])
 
+    const balanceJsons = Object.values(balancePool.balances).filter((balance) =>
+      ownedAddresses.includes(balance.address)
+    )
     /* eslint-disable-next-line no-var */
     var balances = new Balances(balanceJsons, { chains, evmNetworks, tokens, tokenRates })
   } catch (cause) {
