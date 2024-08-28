@@ -1,7 +1,8 @@
-import { MNEMONIC_BACKUP_DOCS_URL } from "@extension/shared"
 import { LockIcon, ShieldIcon, XIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { MNEMONIC_BACKUP_DOCS_URL } from "@extension/shared"
 
 export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => void }) => {
   const { t } = useTranslation("admin")
@@ -35,7 +36,7 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
             </span>
           </div>
         </div>
-        <Button primary onClick={onContinueClick}>
+        <Button primary onClick={onContinueClick} data-testid="onboarding-acknowledge-button">
           {t("Acknowledge and Continue")}
         </Button>
       </div>

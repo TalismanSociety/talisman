@@ -1,13 +1,14 @@
+import { useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Button } from "talisman-ui"
+
 import { PRIVACY_POLICY_URL } from "@extension/shared"
 import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
-import { useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
@@ -79,7 +80,12 @@ export const PrivacyPage = () => {
           </div>
         </Trans>
         <div className="mt-40 flex w-full gap-8">
-          <Button className="bg-transparent" fullWidth onClick={handleClick(false)}>
+          <Button
+            className="bg-transparent"
+            fullWidth
+            onClick={handleClick(false)}
+            data-testid="onboarding-no-thanks-button"
+          >
             {t("No thanks")}
           </Button>
           <Button onClick={handleClick(true)} fullWidth primary>

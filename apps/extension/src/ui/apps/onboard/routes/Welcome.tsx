@@ -1,12 +1,13 @@
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { ArrowRightIcon } from "@talismn/icons"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
+
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
@@ -72,7 +73,12 @@ export const WelcomePage = () => {
           </div>
         </div>
         <div className="welcome-button flex w-[44rem] flex-col gap-8">
-          <Button primary icon={ArrowRightIcon} onClick={handleNextClick()}>
+          <Button
+            primary
+            icon={ArrowRightIcon}
+            onClick={handleNextClick()}
+            data-testid="onboarding-get-started-button"
+          >
             {t("Get Started")}
           </Button>
           <div className="text-body-secondary text-center text-sm leading-[2rem]">
