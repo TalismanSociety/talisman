@@ -1,4 +1,3 @@
-import { TokenId } from "@talismn/chaindata-provider"
 import { range } from "lodash"
 
 import {
@@ -9,8 +8,6 @@ import {
   StakingSupportedChain,
 } from "@extension/core"
 import { ScaleApi } from "@ui/util/scaleApi"
-
-// import { fetchStorageValue, getConstantValue } from "@ui/util/scale"
 
 type Colours = {
   text: string
@@ -52,10 +49,6 @@ export const isEvmLsdChain = (networkId: string): networkId is EvmLsdSupportedCh
 
 export const isStakingSupportedChain = (chainId: string): chainId is StakingSupportedChain =>
   isNomPoolChain(chainId) || isEvmLsdChain(chainId)
-
-// TODO derive from chaindata
-export const isStakableToken = (tokenId: TokenId) =>
-  ["polkadot-substrate-native", "polkadot-substrate-native"].includes(tokenId)
 
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n

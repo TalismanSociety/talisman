@@ -13,8 +13,8 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { isStakableToken } from "@ui/domains/Staking/helpers"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
+import { useNomPoolStakingElligibility } from "@ui/domains/Staking/useNomPoolStakingElligibility"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
@@ -52,13 +52,18 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { open } = useInlineStakingModal()
+  const { data: addressAndPool } = useNomPoolStakingElligibility(tokenId)
 
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    open({ tokenId })
-    genericEvent("open inline staking modal", { from: "token menu" })
-  }, [genericEvent, open, tokenId])
+    if (!addressAndPool) return
+    const { address, poolId } = addressAndPool
+    open({ tokenId, address, poolId })
+    genericEvent("open inline staking modal", { from: "token menu", tokenId })
+  }, [addressAndPool, genericEvent, open, tokenId])
+
+  if (!addressAndPool) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }
@@ -98,11 +103,14 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+        {token?.type === "evm-erc20" && (
+          <Suspense>
+            <ViewOnExplorerMenuItem token={token} />
+          </Suspense>
+        )}
+        {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
         <Suspense>
-          {/* view on explorer can suspense */}
-          {token?.type === "evm-erc20" && <ViewOnExplorerMenuItem token={token} />}
-          {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
-          {isStakableToken(tokenId) && <StakeMenuItem tokenId={tokenId} />}
+          <StakeMenuItem tokenId={tokenId} />
         </Suspense>
       </ContextMenuContent>
     </ContextMenu>

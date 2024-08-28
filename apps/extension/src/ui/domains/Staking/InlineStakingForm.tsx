@@ -1,5 +1,5 @@
 import { Token } from "@talismn/chaindata-provider"
-import { InfoIcon, SwapIcon, TalismanEyeIcon } from "@talismn/icons"
+import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { formatDuration } from "date-fns"
 import { AccountJsonAny } from "extension-core"
@@ -30,28 +30,10 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
 import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
-import { InlineStakingPoolPicker } from "./InlineStakingPoolPicker"
+import { InlineStakingPoolName } from "./InlineStakingPoolName"
 import { useNomPoolsBondingDuration } from "./useBondingDuration"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 import { useNomPoolsAPR } from "./useNomPoolsAPR"
-
-const PoolPill: FC<{ name: string | null | undefined; onClick: () => void }> = ({
-  name,
-  onClick,
-}) => {
-  //const { t } = useTranslation()
-
-  if (!name) return null
-
-  return (
-    <PillButton className="h-12 rounded px-4" onClick={onClick}>
-      <div className="flex items-center gap-2">
-        <TalismanEyeIcon />
-        <div>{name}</div>
-      </div>
-    </PillButton>
-  )
-}
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
@@ -422,8 +404,7 @@ const durationFromMs = (ms: number): Duration => {
 
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, pool, poolPicker, payload, setStep } =
-    useInlineStakingWizard()
+  const { account, accountPicker, token, payload, setStep } = useInlineStakingWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -451,10 +432,10 @@ export const InlineStakingForm = () => {
         </div>
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
-        <div className="flex h-12 items-center justify-between">
+        <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Pool")}</div>
-          <div className="overflow-hidden">
-            <PoolPill name={pool?.name} onClick={poolPicker.open} />
+          <div className="text-body truncate">
+            <InlineStakingPoolName />
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -491,7 +472,6 @@ export const InlineStakingForm = () => {
       </Button>
 
       <InlineStakingAccountPicker />
-      <InlineStakingPoolPicker />
     </div>
   )
 }

@@ -4,23 +4,21 @@ import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const useInlineStakingModal = () => {
-  const { account: selectedAccount } = useSelectedAccount()
   const { reset } = useInlineStakingWizard()
 
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("inlineStakingModal")
 
   const open = useCallback(
-    ({ address, tokenId }: { address?: Address; tokenId?: TokenId }) => {
-      reset({ address: address ?? selectedAccount?.address ?? null, tokenId: tokenId ?? null })
+    ({ address, tokenId, poolId }: { address: Address; tokenId: TokenId; poolId: number }) => {
+      reset({ address, tokenId, poolId })
 
       // then open the modal
       innerOpen()
     },
-    [innerOpen, reset, selectedAccount?.address]
+    [innerOpen, reset]
   )
 
   return { isOpen, open, close }

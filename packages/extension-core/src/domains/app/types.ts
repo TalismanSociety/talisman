@@ -1,4 +1,4 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import { ChainId, TokenId } from "@talismn/chaindata-provider"
 import { Properties } from "posthog-js"
 
 import { ValidRequests } from "../../libs/requests/types"
@@ -14,6 +14,7 @@ export type RemoteConfigStoreData = {
     apiKeyName?: string
     apiKeyValue?: string
   }
+  nominationPools: Record<ChainId, number[]>
 }
 
 export interface RequestOnboardCreatePassword {

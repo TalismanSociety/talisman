@@ -1,4 +1,3 @@
-import { AlertCircleIcon, TalismanEyeIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -6,23 +5,12 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { SapiSendButton } from "../Transactions/SapiSendButton"
 import { InlineStakingAccount } from "./InlineStakingAccount"
 import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
+import { InlineStakingPoolName } from "./InlineStakingPoolName"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingReview = () => {
   const { t } = useTranslation()
-  const {
-    pool,
-    token,
-    formatter,
-    account,
-    // isFormValid,
-    // isSubmitting,
-    submitErrorMessage,
-    onSubmitted,
-    payload,
-    // isLoadingPayload,
-    txMetadata,
-  } = useInlineStakingWizard()
+  const { token, formatter, account, onSubmitted, payload, txMetadata } = useInlineStakingWizard()
 
   if (!account) return null
 
@@ -55,11 +43,8 @@ export const InlineStakingReview = () => {
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
-          <div>
-            <div className="text-body-secondary bg-grey-800 flex h-12 items-center gap-2 rounded px-4">
-              <TalismanEyeIcon />
-              <div>{pool?.name}</div>
-            </div>
+          <div className="text-body truncate">
+            <InlineStakingPoolName />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
@@ -70,12 +55,6 @@ export const InlineStakingReview = () => {
         </div>
       </div>
       <div className="grow"></div>
-      {submitErrorMessage && (
-        <div className="text-alert-warn bg-grey-900 my-8 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-          <AlertCircleIcon className="text-lg" />
-          <div>{submitErrorMessage}</div>
-        </div>
-      )}
       {payload && (
         <SapiSendButton
           containerId="inlineStakingModalDialog"

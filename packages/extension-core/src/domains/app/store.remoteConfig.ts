@@ -1,5 +1,4 @@
-import { DEBUG, TEST } from "extension-shared"
-import { log } from "extension-shared"
+import { DEBUG, log, TEST } from "extension-shared"
 import merge from "lodash/merge"
 
 import { StorageProvider } from "../../libs/Store"
@@ -14,6 +13,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   coingecko: {
     apiUrl: "https://api.coingecko.com",
   },
+  nominationPools: {},
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes

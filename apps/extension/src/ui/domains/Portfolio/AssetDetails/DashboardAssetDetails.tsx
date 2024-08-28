@@ -36,15 +36,11 @@ const AssetState = ({
 }) => {
   if (!render) return null
   return (
-    <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
-      <div className="flex items-baseline gap-4">
-        <div className="whitespace-nowrap font-bold text-white">{title}</div>
+    <div className="flex  flex-col justify-center gap-2 overflow-hidden p-8">
+      <div className="flex w-full items-baseline gap-4 overflow-hidden">
+        <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
         {/* show description next to title when address is set */}
-        {description && address && (
-          <div className="max-w-sm flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-            {description}
-          </div>
-        )}
+        {description && address && <div className="grow truncate text-sm">{description}</div>}
       </div>
       {address && (
         <div className="text-sm">
@@ -53,9 +49,7 @@ const AssetState = ({
       )}
       {/* show description below title when address is not set */}
       {description && !address && (
-        <div className="flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-          {description}
-        </div>
+        <div className="flex-shrink-0 truncate text-sm">{description}</div>
       )}
     </div>
   )

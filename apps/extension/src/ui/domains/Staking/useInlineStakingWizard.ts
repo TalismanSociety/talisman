@@ -16,7 +16,6 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { useFeeToken } from "../SendFunds/useFeeToken"
 import { useExistentialDeposit } from "./useExistentialDeposit"
 import { useIsSoloStaking } from "./useIsSoloStaking"
-import { useNominationPool } from "./useNominationPools"
 import { useNomPoolIdByMember } from "./useNomPoolIdByMember"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 import { useNomPoolState } from "./useNomPoolState"
@@ -76,14 +75,18 @@ const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
 export const useInlineStakingWizard = () => {
   const { t } = useTranslation()
   const [state, setState] = useAtom(inlineStakingWizardAtom)
-
-  const { step, displayMode, hash, isSubmitting, submitErrorMessage } = state
+  const { poolId, step, displayMode, hash } = state
 
   const account = useAccountByAddress(state.address)
   const token = useToken(state.tokenId)
   const feeToken = useFeeToken(token?.id)
-  const pool = useNominationPool(token?.chain?.id, state.poolId)
   const tokenRates = useTokenRates(state.tokenId)
+
+  const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
+  const balance = useBalance(state.address!, state.tokenId!)
+
+  const accountPicker = useInnerOpenClose("isAccountPickerOpen")
+
   const formatter = useMemo(
     () =>
       typeof state.plancks === "bigint"
@@ -91,11 +94,6 @@ export const useInlineStakingWizard = () => {
         : null,
     [state.plancks, token?.decimals, tokenRates]
   )
-  const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
-  const balance = useBalance(state.address!, state.tokenId!)
-
-  const accountPicker = useInnerOpenClose("isAccountPickerOpen")
-  const poolPicker = useInnerOpenClose("isPoolPickerOpen")
 
   const setAddress = useCallback(
     (address: Address) => setState((prev) => ({ ...prev, address })),
@@ -125,11 +123,11 @@ export const useInlineStakingWizard = () => {
     () =>
       !!account &&
       !!token &&
-      !!pool &&
+      !!state.poolId &&
       !!formatter &&
       !!minJoinBond &&
       formatter.planck >= minJoinBond,
-    [account, formatter, minJoinBond, pool, token]
+    [account, formatter, minJoinBond, state.poolId, token]
   )
 
   const setStep = useCallback(
@@ -144,7 +142,7 @@ export const useInlineStakingWizard = () => {
   )
 
   const reset = useCallback(
-    (init: Pick<InlineStakingWizardState, "address" | "tokenId">) =>
+    (init: Pick<InlineStakingWizardState, "address" | "tokenId" | "poolId">) =>
       setState({ ...DEFAULT_STATE, ...init }),
     [setState]
   )
@@ -276,7 +274,7 @@ export const useInlineStakingWizard = () => {
     // TODO : pool is full
     if (formatter.planck < minJoinBond)
       return t("Minimum bond is {{amount}} {{symbol}}", {
-        anount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
+        amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
         symbol: token?.symbol,
       })
 
@@ -300,27 +298,16 @@ export const useInlineStakingWizard = () => {
     account,
     token,
     tokenRates,
-    pool,
+    poolId,
     formatter,
     displayMode,
     accountPicker,
-    poolPicker,
     isFormValid,
     step,
     hash,
-    isSubmitting,
-    inputErrorMessage,
-    submitErrorMessage,
     feeToken,
     maxPlancks,
-
-    setAddress,
-    setTokenId,
-    setPoolId,
-    setPlancks,
-    setStep,
-    toggleDisplayMode,
-    reset,
+    inputErrorMessage,
 
     payload: !inputErrorMessage ? payload : null,
     txMetadata,
@@ -330,6 +317,14 @@ export const useInlineStakingWizard = () => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
+
+    setAddress,
+    setTokenId,
+    setPoolId,
+    setPlancks,
+    setStep,
+    toggleDisplayMode,
+    reset,
 
     onSubmitted,
   }
