@@ -2,8 +2,6 @@ name: Playwright Tests
 on:
   push:
     branches: [ dev, e2e/install ]
-  pull_request:
-    branches: [ dev, e2e/install ]
 jobs:
   test:
     timeout-minutes: 5
