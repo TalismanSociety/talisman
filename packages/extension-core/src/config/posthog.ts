@@ -1,3 +1,5 @@
+import assert from "assert"
+
 import type { Properties } from "posthog-js"
 import * as Sentry from "@sentry/browser"
 import { DEBUG } from "extension-shared"
@@ -40,10 +42,32 @@ const talismanProperties = {
  *
  * It is recommended to call `setPosthogOptInPreference` with the user's opt-in preference before calling this.
  */
-export const initPosthog = () => {
+export const initPosthog = async () => {
   if (!process.env.POSTHOG_AUTH_TOKEN) return
 
+  let posthogDistinctId: string | undefined = undefined
+  try {
+    // Identify the posthog client
+    //
+    // We have to do this manually, because we don't have access to `localStorage` in the background script,
+    // and `localStorage` is the only built-in way for posthog to persist the distinct_id.
+    posthogDistinctId = await appStore.get("posthogDistinctId")
+
+    // if this Talisman instance doesn't already have a persisted distinct_id, randomly generate one
+    if (posthogDistinctId === undefined) {
+      posthogDistinctId = uuidV4()
+      await appStore.set({ posthogDistinctId })
+    }
+  } catch (cause) {
+    const error = new Error("Failed to identify posthog client", { cause })
+    console.error(error) // eslint-disable-line no-console
+    Sentry.captureException(error)
+  }
+  assert(typeof posthogDistinctId === "string", "posthogDistinctId must be defined")
+
   posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
+    // use the persisted distinct_id
+    bootstrap: { distinctID: posthogDistinctId },
     api_host: "https://app.posthog.com",
     autocapture: false,
     capture_pageview: false,
@@ -63,28 +87,6 @@ export const initPosthog = () => {
       }
     },
   })
-
-  // Identify the posthog client
-  //
-  // We have to do this manually, because we don't have access to `localStorage` in the background script,
-  // and `localStorage` is the only built-in way for posthog to persist the distinct_id.
-  appStore
-    .get("posthogDistinctId")
-    .then(async (posthogDistinctId) => {
-      // if this Talisman instance doesn't already have a persisted distinct_id, randomly generate one
-      if (posthogDistinctId === undefined) {
-        posthogDistinctId = uuidV4()
-        await appStore.set({ posthogDistinctId })
-      }
-
-      // use the persisted distinct_id
-      posthog.identify(posthogDistinctId)
-    })
-    .catch((cause) => {
-      const error = new Error("Failed to identify posthog client", { cause })
-      console.error(error) // eslint-disable-line no-console
-      Sentry.captureException(error)
-    })
 }
 
 /**
