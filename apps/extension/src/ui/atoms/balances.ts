@@ -67,7 +67,7 @@ export const balancesHydrateAtom = atom(async (get) => {
   return { chains, evmNetworks, tokens, tokenRates } as HydrateDb
 })
 
-const allBalancesAtom = atom(async (get) => {
+export const allBalancesAtom = atom(async (get) => {
   const [rawBalances, hydrate] = await Promise.all([
     get(filteredRawBalancesAtom),
     get(balancesHydrateAtom),
@@ -77,6 +77,7 @@ const allBalancesAtom = atom(async (get) => {
 
 type BalanceQueryParams = { address?: Address; tokenId?: TokenId }
 
+/** @deprecated this suspenses all the time */
 export const balancesAtomFamily = atomFamily(
   ({ address, tokenId }: BalanceQueryParams) =>
     atom(async (get) => {

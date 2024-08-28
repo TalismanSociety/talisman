@@ -2,7 +2,7 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
-import { atom, useAtom } from "jotai"
+import { atom, useAtom, useSetAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Hex } from "viem"
@@ -72,18 +72,30 @@ const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
   return { isOpen, setIsOpen, open, close, toggle }
 }
 
+export const useResetInlineStakingWizard = () => {
+  const setState = useSetAtom(inlineStakingWizardAtom)
+
+  const reset = useCallback(
+    (init: Pick<InlineStakingWizardState, "address" | "tokenId" | "poolId">) =>
+      setState({ ...DEFAULT_STATE, ...init }),
+    [setState]
+  )
+
+  return reset
+}
+
 export const useInlineStakingWizard = () => {
   const { t } = useTranslation()
   const [state, setState] = useAtom(inlineStakingWizardAtom)
   const { poolId, step, displayMode, hash } = state
 
+  const balance = useBalance(state.address, state.tokenId)
   const account = useAccountByAddress(state.address)
   const token = useToken(state.tokenId)
   const feeToken = useFeeToken(token?.id)
   const tokenRates = useTokenRates(state.tokenId)
 
   const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
-  const balance = useBalance(state.address!, state.tokenId!)
 
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 

@@ -13,6 +13,7 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingElligibility } from "@ui/domains/Staking/useNomPoolStakingElligibility"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -109,7 +110,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           </Suspense>
         )}
         {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="StakeMenuItem" />}>
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
       </ContextMenuContent>

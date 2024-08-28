@@ -18,7 +18,7 @@ export const useNomPoolIdByMember = (
         "PoolMembers",
         [address]
       )
-      return result?.pool_id
+      return result?.pool_id ?? null
     },
   })
 }

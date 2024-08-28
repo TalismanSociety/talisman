@@ -4,10 +4,10 @@ import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
+import { useResetInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const useInlineStakingModal = () => {
-  const { reset } = useInlineStakingWizard()
+  const reset = useResetInlineStakingWizard()
 
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("inlineStakingModal")
 

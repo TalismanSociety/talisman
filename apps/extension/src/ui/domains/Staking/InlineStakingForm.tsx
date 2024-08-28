@@ -57,6 +57,8 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
 const AvailableBalance: FC<{ token: Token; account: AccountJsonAny }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
 
+  if (!balance) return null
+
   return (
     <TokensAndFiat
       isBalance

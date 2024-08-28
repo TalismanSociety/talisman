@@ -12,10 +12,12 @@ import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 
 export const useNomPoolStakingElligibility = (tokenId: TokenId) => {
   const token = useToken(tokenId)
-  const { data: sapi } = useScaleApi(token?.chain?.id)
   const poolId = useDetaultNomPoolId(token?.chain?.id)
   const ownedBalances = useBalances("owned")
-  const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
+
+  // dont get sapi if we dont have a poolId, it would fetch metadata for nothing
+  const { data: sapi } = useScaleApi(poolId ? token?.chain?.id : null)
+  const { data: minJoinBond } = useNomPoolsMinJoinBond(poolId ? token?.chain?.id : null)
   const { account } = useSelectedAccount()
 
   const [balances, balancesKey] = useMemo(() => {
