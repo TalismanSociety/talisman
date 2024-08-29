@@ -1,3 +1,4 @@
+import { Enum } from "@polkadot-api/substrate-bindings"
 import { range } from "lodash"
 
 import {
@@ -129,4 +130,37 @@ export const getNomPoolsAPR = async (sapi: ScaleApi) => {
   const apr = Number(bigapr) / Number(RATIO_DIGITS)
 
   return apr
+}
+
+export const getNomPoolStakingPayload = async (
+  sapi: ScaleApi,
+  address: string,
+  poolId: number,
+  amount: bigint,
+  withSetClaimPermission?: boolean
+) => {
+  if (withSetClaimPermission)
+    return sapi.getExtrinsicPayload(
+      "Utility",
+      "batch_all",
+      {
+        calls: [
+          sapi.getDecodedCall("NominationPools", "join", { amount, pool_id: poolId }),
+          sapi.getDecodedCall("NominationPools", "set_claim_permission", {
+            permission: Enum("PermissionlessCompound"),
+          }),
+        ],
+      },
+      { address }
+    )
+
+  return sapi.getExtrinsicPayload(
+    "NominationPools",
+    "join",
+    {
+      amount,
+      pool_id: poolId,
+    },
+    { address }
+  )
 }

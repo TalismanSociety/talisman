@@ -14,9 +14,11 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
 import { useFeeToken } from "../SendFunds/useFeeToken"
+import { getNomPoolStakingPayload } from "./helpers"
 import { useExistentialDeposit } from "./useExistentialDeposit"
 import { useIsSoloStaking } from "./useIsSoloStaking"
 import { useNomPoolIdByMember } from "./useNomPoolIdByMember"
+import { useNomPoolsClaimPermission } from "./useNomPoolsClaimPermission"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 import { useNomPoolState } from "./useNomPoolState"
 
@@ -96,6 +98,7 @@ export const useInlineStakingWizard = () => {
   const tokenRates = useTokenRates(state.tokenId)
 
   const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
+  const { data: claimPermission } = useNomPoolsClaimPermission(token?.chain?.id, state.address)
 
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 
@@ -159,6 +162,16 @@ export const useInlineStakingWizard = () => {
     [setState]
   )
 
+  const withSetClaimPermission = useMemo(() => {
+    switch (claimPermission) {
+      case "PermissionlessCompound":
+      case "PermissionlessAll":
+        return false
+      default:
+        return true
+    }
+  }, [claimPermission])
+
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
   const {
@@ -172,36 +185,27 @@ export const useInlineStakingWizard = () => {
       if (!sapi || !address || !poolId || !plancks) return null
       if (!isFormValid) return null
 
-      return sapi.getExtrinsicPayload(
-        "NominationPools",
-        "join",
-        {
-          amount: plancks,
-          pool_id: poolId,
-        },
-        { address }
-      )
+      return getNomPoolStakingPayload(sapi, address, poolId, plancks, withSetClaimPermission)
     },
   })
 
   const { payload, txMetadata } = payloadAndMetadata || {}
 
   const {
-    // used to get an estimate before amount is known
+    // used to get an estimate before amount is known, for estimating maxPlancks
     data: fakeFeeEstimate,
   } = useQuery({
     queryKey: ["feeEstimate", state.poolId, state.address, minJoinBond?.toString()],
     queryFn: async () => {
       const { address, poolId } = state
       if (!sapi || !address || !poolId || !minJoinBond) return null
-      const { payload } = await sapi.getExtrinsicPayload(
-        "NominationPools",
-        "join",
-        {
-          amount: minJoinBond,
-          pool_id: poolId,
-        },
-        { address }
+
+      const { payload } = await getNomPoolStakingPayload(
+        sapi,
+        address,
+        poolId,
+        minJoinBond,
+        withSetClaimPermission
       )
       return sapi.getFeeEstimate(payload)
     },
@@ -336,7 +340,7 @@ export const useInlineStakingWizard = () => {
     setPlancks,
     setStep,
     toggleDisplayMode,
-    reset,
+    reset, // TODO yeet ?
 
     onSubmitted,
   }

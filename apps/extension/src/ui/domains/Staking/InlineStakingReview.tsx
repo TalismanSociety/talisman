@@ -55,7 +55,7 @@ export const InlineStakingReview = () => {
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-          <div className="whitespace-nowrap">{t("Estimated fee")} </div>
+          <div className="whitespace-nowrap">{t("Estimated Fee")} </div>
           <div>
             <InlineStakingFeeEstimate noCountUp />
           </div>

@@ -79,6 +79,9 @@ export const getScaleApi = (
     getStorage: <T>(pallet: string, entry: string, keys: unknown[]) =>
       getStorageValue<T>(chainId, builder, pallet, entry, keys),
 
+    getDecodedCall: (pallet: string, method: string, args: unknown) =>
+      getDecodedCall(pallet, method, args),
+
     getExtrinsicPayload: (
       pallet: string,
       method: string,
@@ -203,6 +206,11 @@ const getPayloadWithMetadataHash = (
     }
   }
 }
+
+const getDecodedCall = (palletName: string, methodName: string, args: unknown) => ({
+  type: palletName,
+  value: { type: methodName, value: args },
+})
 
 const getSignerPayloadJSON = async (
   chainId: ChainId,
