@@ -92,6 +92,9 @@ export const getScaleApi = (
     getFeeEstimate: (payload: SignerPayloadJSON) =>
       getFeeEstimate(chainId, metadata, builder, payload, chainInfo),
 
+    getRuntimeCallValue: (apiName: string, method: string, args: unknown[]) =>
+      getRuntimeCallValue(chainId, builder, apiName, method, args),
+
     getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(metadata, payload, chainInfo),
 
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),

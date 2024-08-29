@@ -14,8 +14,9 @@ import {
 import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useUnstakeModal } from "@ui/domains/Staking/Unstake/useUnstakeModal"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
-import { useNomPoolStakingElligibility } from "@ui/domains/Staking/useNomPoolStakingElligibility"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
@@ -53,20 +54,43 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { open } = useInlineStakingModal()
-  const { data: addressAndPool } = useNomPoolStakingElligibility(tokenId)
+  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    if (!addressAndPool) return
-    const { address, poolId } = addressAndPool
+    if (!stakingStatus) return
+    const { accounts, poolId } = stakingStatus
+    const address = accounts?.find((s) => s.canJoinNomPool)?.address
+    if (!address) return
     open({ tokenId, address, poolId })
     genericEvent("open inline staking modal", { from: "token menu", tokenId })
-  }, [addressAndPool, genericEvent, open, tokenId])
+  }, [genericEvent, open, stakingStatus, tokenId])
 
-  if (!addressAndPool) return null
+  if (!stakingStatus) return null // no nompool staking on this network
 
   return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
+}
+
+const UnstakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
+  const { t } = useTranslation()
+  const { open } = useUnstakeModal()
+  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
+
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    if (!stakingStatus) return
+    const { accounts } = stakingStatus
+    const address = accounts?.find((s) => s.canUnstake)?.address
+    if (!address) return
+    open({ tokenId, address })
+    genericEvent("open inline unstaking modal", { from: "token menu", tokenId })
+  }, [genericEvent, open, stakingStatus, tokenId])
+
+  if (!stakingStatus) return null // no nompool staking on this network
+
+  return <ContextMenuItem onClick={handleClick}>{t("Unstake")}</ContextMenuItem>
 }
 
 type Props = {
@@ -112,6 +136,9 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
         <Suspense fallback={<SuspenseTracker name="StakeMenuItem" />}>
           <StakeMenuItem tokenId={tokenId} />
+        </Suspense>
+        <Suspense fallback={<SuspenseTracker name="UnstakeMenuItem" />}>
+          <UnstakeMenuItem tokenId={tokenId} />
         </Suspense>
       </ContextMenuContent>
     </ContextMenu>

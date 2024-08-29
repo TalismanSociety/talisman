@@ -15,7 +15,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
-import { useNomPoolStakingElligibility } from "@ui/domains/Staking/useNomPoolStakingElligibility"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
@@ -34,18 +34,20 @@ import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 const StakeButton: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { open } = useInlineStakingModal()
-  const { data: addressAndPool } = useNomPoolStakingElligibility(tokenId)
+  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    if (!addressAndPool) return
-    const { address, poolId } = addressAndPool
+    if (!stakingStatus) return
+    const { accounts, poolId } = stakingStatus
+    const address = accounts?.find((s) => s.canJoinNomPool)?.address
+    if (!address) return
     open({ tokenId, address, poolId })
-    genericEvent("open inline staking modal", { from: "token menu", tokenId })
-  }, [addressAndPool, genericEvent, open, tokenId])
+    genericEvent("open inline staking modal", { from: "asset details", tokenId })
+  }, [genericEvent, open, stakingStatus, tokenId])
 
-  if (!addressAndPool) return null
+  if (!stakingStatus) return null
 
   return (
     <Tooltip>

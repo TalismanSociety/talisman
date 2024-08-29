@@ -13,6 +13,7 @@ import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { InlineStakingModal } from "@ui/domains/Staking/InlineStakingModal"
+import { UnstakeModal } from "@ui/domains/Staking/Unstake/UnstakeModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 
 import DashboardNotifications from "./DashboardNotifications"
@@ -61,6 +62,7 @@ const DashboardNotificationsAndModals = () => {
       <MigratePasswordModal />
       <OnboardingToast />
       <InlineStakingModal />
+      <UnstakeModal />
     </Suspense>
   )
 }

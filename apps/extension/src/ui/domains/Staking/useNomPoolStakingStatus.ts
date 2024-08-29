@@ -10,7 +10,7 @@ import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 
-export const useNomPoolStakingElligibility = (tokenId: TokenId) => {
+export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   const token = useToken(tokenId)
   const poolId = useDetaultNomPoolId(token?.chain?.id)
   const ownedBalances = useBalances("owned")
@@ -25,7 +25,7 @@ export const useNomPoolStakingElligibility = (tokenId: TokenId) => {
     const elligibleBalances = ownedBalances
       .find({ tokenId: token.id })
       .each.filter((b) => !account || account.address === b.address)
-      .filter((b) => b.transferable.planck >= minJoinBond)
+      .filter((b) => !!b.transferable.planck)
     return [
       elligibleBalances,
       elligibleBalances.map((b) => `${b.address}-${b.transferable.planck}`),
@@ -59,24 +59,27 @@ export const useNomPoolStakingElligibility = (tokenId: TokenId) => {
           await Promise.all(
             addresses.map(async (address) => [
               address,
-              (
-                await sapi.getStorage<{ pool_id: number } | null>(
-                  "NominationPools",
-                  "PoolMembers",
-                  [address]
-                )
-              )?.pool_id,
+              await sapi.getStorage<{ pool_id: number; points: bigint } | null>(
+                "NominationPools",
+                "PoolMembers",
+                [address]
+              ),
             ])
           )
-        ) as Record<string, number | undefined>,
+        ) as Record<string, { pool_id: number; points: bigint } | undefined>,
       ])
 
-      // returns the first address that can join the pool
-      const address = addresses.find(
-        (address) => !soloStakingByAddress[address] && !nomPoolStakingByAddress[address]
-      )
+      const accounts = balances.map(({ address }) => ({
+        address,
+        poolId: nomPoolStakingByAddress[address]?.pool_id,
+        isSoloStaking: !!soloStakingByAddress[address],
+        isNomPoolsStaking: !!nomPoolStakingByAddress[address],
+        canJoinNomPool: !soloStakingByAddress[address] && !nomPoolStakingByAddress[address],
+        canRebondNomPool: !!nomPoolStakingByAddress[address],
+        canUnstake: nomPoolStakingByAddress[address]?.points,
+      }))
 
-      return address ? { address, poolId } : null
+      return { accounts, poolId }
     },
     enabled: !!sapi,
   })

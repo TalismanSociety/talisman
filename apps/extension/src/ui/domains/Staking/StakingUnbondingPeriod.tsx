@@ -1,16 +1,17 @@
 import { formatDuration } from "date-fns"
-import { useMemo } from "react"
+import { ChainId } from "extension-core"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
 import { useNomPoolsBondingDuration } from "./useBondingDuration"
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
-export const InlineStakingUnbondingPeriod = () => {
+export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }> = ({
+  chainId,
+}) => {
   const { t } = useTranslation()
-  const { token } = useInlineStakingWizard()
-  const { data: duration, isLoading } = useNomPoolsBondingDuration(token?.chain?.id)
+  const { data: duration, isLoading } = useNomPoolsBondingDuration(chainId)
   const locale = useDateFnsLocale()
 
   const display = useMemo(

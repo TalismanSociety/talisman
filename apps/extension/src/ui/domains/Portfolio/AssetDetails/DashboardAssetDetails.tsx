@@ -1,7 +1,7 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Suspense, useCallback } from "react"
+import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -12,8 +12,9 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { useUnstakeModal } from "@ui/domains/Staking/Unstake/useUnstakeModal"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
-import { useNomPoolStakingElligibility } from "@ui/domains/Staking/useNomPoolStakingElligibility"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
@@ -28,21 +29,53 @@ import { useAssetDetails } from "./useAssetDetails"
 import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 
+const UnstakeButton: FC<{ tokenId: TokenId; address: string }> = ({ tokenId, address }) => {
+  const { t } = useTranslation()
+  const { open } = useUnstakeModal()
+  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
+
+  const { genericEvent } = useAnalytics()
+
+  const canUnstake = useMemo(
+    () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
+    [address, stakingStatus]
+  )
+
+  const handleClick = useCallback(() => {
+    open({ tokenId, address })
+    genericEvent("open inline unstaking modal", { from: "asset details", tokenId })
+  }, [address, genericEvent, open, tokenId])
+
+  if (!canUnstake) return null // no nompool staking on this network
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="bg-body/10 hover:bg-body/20 hover:text-body rounded-xs px-4 py-1"
+    >
+      {t("Unbond")}
+    </button>
+  )
+}
+
 const StakeButton: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { open } = useInlineStakingModal()
-  const { data: addressAndPool } = useNomPoolStakingElligibility(tokenId)
+  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    if (!addressAndPool) return
-    const { address, poolId } = addressAndPool
+    if (!stakingStatus) return
+    const { accounts, poolId } = stakingStatus
+    const address = accounts?.find((s) => s.canJoinNomPool)?.address
+    if (!address) return
     open({ tokenId, address, poolId })
-    genericEvent("open inline staking modal", { from: "token menu", tokenId })
-  }, [addressAndPool, genericEvent, open, tokenId])
+    genericEvent("open inline staking modal", { from: "asset details", tokenId })
+  }, [genericEvent, open, stakingStatus, tokenId])
 
-  if (!addressAndPool) return null
+  if (!stakingStatus) return null // no nompool staking on this network
 
   return (
     <Tooltip>
@@ -188,6 +221,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               isLastRow={rows.length === i + 1}
               symbol={symbol}
               status={status}
+              tokenId={tokenId}
             />
           ))}
     </div>
@@ -268,11 +302,13 @@ const ChainTokenBalancesDetailRow = ({
   isLastRow,
   status,
   symbol,
+  tokenId,
 }: {
   row: DetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
+  tokenId?: TokenId // unsafe, there could be multiple aggregated here
 }) => {
   const { t } = useTranslation()
 
@@ -297,20 +333,24 @@ const ChainTokenBalancesDetailRow = ({
         />
       </div>
       {!!row.locked && (
-        <div>
+        <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
+          {
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !!(row.meta as any)?.poolId && !!row.address && !!tokenId && (
+              <UnstakeButton tokenId={tokenId} address={row.address} />
+            )
+          }
           {
             // Show `Unbonding` next to nompool staked balances which are unbonding
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             !!(row.meta as any)?.unbonding && (
               <div
                 className={classNames(
-                  "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
+                  "text-body-disabled",
                   status.status === "fetching" && "animate-pulse transition-opacity"
                 )}
               >
-                <div className="text-body flex items-center justify-end gap-2">
-                  <div>{t("Unbonding")}</div>
-                </div>
+                {t("Unbonding")}
                 {/* TODO: Show time until funds are unbonded */}
                 {/* <div>4d 14hr 11min</div> */}
               </div>

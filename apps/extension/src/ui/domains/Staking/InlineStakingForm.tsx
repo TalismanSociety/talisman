@@ -28,8 +28,8 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
 import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
-import { InlineStakingPoolName } from "./InlineStakingPoolName"
-import { InlineStakingUnbondingPeriod } from "./InlineStakingUnbondingPeriod"
+import { NomPoolName } from "./NomPoolName"
+import { StakingUnbondingPeriod } from "./StakingUnbondingPeriod"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 import { useNomPoolsAPR } from "./useNomPoolsAPR"
 
@@ -300,7 +300,7 @@ const NomPoolsApr = () => {
 
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, setStep } = useInlineStakingWizard()
+  const { account, poolId, accountPicker, token, payload, setStep } = useInlineStakingWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -331,7 +331,7 @@ export const InlineStakingForm = () => {
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="text-body truncate">
-            <InlineStakingPoolName />
+            <NomPoolName chainId={token?.chain?.id} poolId={poolId} />
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -352,7 +352,7 @@ export const InlineStakingForm = () => {
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
           <div className="text-body overflow-hidden">
-            <InlineStakingUnbondingPeriod />
+            <StakingUnbondingPeriod chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between">

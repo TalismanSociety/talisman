@@ -17,7 +17,7 @@ import { useFeeToken } from "../SendFunds/useFeeToken"
 import { getNomPoolStakingPayload } from "./helpers"
 import { useExistentialDeposit } from "./useExistentialDeposit"
 import { useIsSoloStaking } from "./useIsSoloStaking"
-import { useNomPoolIdByMember } from "./useNomPoolIdByMember"
+import { useNomPoolByMember } from "./useNomPoolByMember"
 import { useNomPoolsClaimPermission } from "./useNomPoolsClaimPermission"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 import { useNomPoolState } from "./useNomPoolState"
@@ -102,6 +102,7 @@ export const useInlineStakingWizard = () => {
 
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 
+  // TODO rename to amountToStake
   const formatter = useMemo(
     () =>
       typeof state.plancks === "bigint"
@@ -216,10 +217,10 @@ export const useInlineStakingWizard = () => {
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useQuery({
-    queryKey: ["feeEstimate", payloadAndMetadata?.payload], // safe stringify because contains bigint
+    queryKey: ["feeEstimate", payload], // safe stringify because contains bigint
     queryFn: () => {
-      if (!sapi || !payloadAndMetadata?.payload) return null
-      return sapi.getFeeEstimate(payloadAndMetadata.payload)
+      if (!sapi || !payload) return null
+      return sapi.getFeeEstimate(payload)
     },
   })
 
@@ -240,16 +241,14 @@ export const useInlineStakingWizard = () => {
   }, [balance, existentialDeposit, fakeFeeEstimate])
 
   const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, state.address)
-  const { data: currentlyStakingNomPoolId } = useNomPoolIdByMember(token?.chain?.id, state.address)
+  const { data: pool } = useNomPoolByMember(token?.chain?.id, state.address)
   const { data: poolState } = useNomPoolState(token?.chain?.id, state.poolId)
 
   const inputErrorMessage = useMemo(() => {
     if (isSoloStaking)
       return t("An account cannot do both regular staking and nomination pool staking")
-    if (typeof currentlyStakingNomPoolId === "number" && currentlyStakingNomPoolId !== state.poolId)
-      return t("You are already staking in another nomination pool ({{poolId}})", {
-        poolId: currentlyStakingNomPoolId,
-      })
+    if (pool && pool.poolId !== state.poolId)
+      return t("You are already staking in another nomination pool ({{poolId}})", pool)
     if (poolState?.isFull) return t("This nomination pool is full")
     if (poolState && !poolState.isOpen) return t("This nomination pool is not open")
 
@@ -296,16 +295,16 @@ export const useInlineStakingWizard = () => {
 
     return null
   }, [
+    t,
     balance,
-    currentlyStakingNomPoolId,
     existentialDeposit?.planck,
     feeEstimate,
     formatter,
     isSoloStaking,
     minJoinBond,
+    pool,
     poolState,
     state.poolId,
-    t,
     token?.decimals,
     token?.symbol,
   ])
