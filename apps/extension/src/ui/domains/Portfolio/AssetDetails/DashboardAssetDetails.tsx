@@ -1,7 +1,9 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Suspense } from "react"
+import { FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Address, Balance, Balances } from "@extension/core"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -10,6 +12,9 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
+import { useNomPoolStakingElligibility } from "@ui/domains/Staking/useNomPoolStakingElligibility"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 
@@ -22,6 +27,38 @@ import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
 import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
+
+const StakeButton: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
+  const { t } = useTranslation()
+  const { open } = useInlineStakingModal()
+  const { data: addressAndPool } = useNomPoolStakingElligibility(tokenId)
+
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    if (!addressAndPool) return
+    const { address, poolId } = addressAndPool
+    open({ tokenId, address, poolId })
+    genericEvent("open inline staking modal", { from: "token menu", tokenId })
+  }, [addressAndPool, genericEvent, open, tokenId])
+
+  if (!addressAndPool) return null
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={handleClick}
+          className="text-primary bg-primary/10 hover:bg-primary/20 flex size-[3.8rem] shrink-0 items-center justify-center rounded-full text-[2rem]"
+        >
+          <ZapIcon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{t("Stake")}</TooltipContent>
+    </Tooltip>
+  )
+}
 
 const AssetState = ({
   title,
@@ -36,7 +73,7 @@ const AssetState = ({
 }) => {
   if (!render) return null
   return (
-    <div className="flex  flex-col justify-center gap-2 overflow-hidden p-8">
+    <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
         <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
         {/* show description next to title when address is set */}
@@ -115,7 +152,8 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             )}
           />
         </div>
-        <div>
+        <div className="flex items-center justify-end gap-2">
+          {tokenId && <StakeButton tokenId={tokenId} />}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
