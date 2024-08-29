@@ -6,6 +6,7 @@ import { SapiSendButton } from "../Transactions/SapiSendButton"
 import { InlineStakingAccount } from "./InlineStakingAccount"
 import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
 import { InlineStakingPoolName } from "./InlineStakingPoolName"
+import { InlineStakingUnbondingPeriod } from "./InlineStakingUnbondingPeriod"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingReview = () => {
@@ -45,6 +46,12 @@ export const InlineStakingReview = () => {
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
             <InlineStakingPoolName />
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-8 py-2 text-xs">
+          <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
+          <div className="text-body truncate">
+            <InlineStakingUnbondingPeriod />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">

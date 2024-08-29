@@ -1,7 +1,6 @@
 import { Token } from "@talismn/chaindata-provider"
 import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
-import { formatDuration } from "date-fns"
 import { AccountJsonAny } from "extension-core"
 import {
   ChangeEventHandler,
@@ -19,7 +18,6 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 
 import { currencyConfig } from "../Asset/currencyConfig"
@@ -31,7 +29,7 @@ import { AccountPillButton } from "./AccountPillButton"
 import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
 import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
 import { InlineStakingPoolName } from "./InlineStakingPoolName"
-import { useNomPoolsBondingDuration } from "./useBondingDuration"
+import { InlineStakingUnbondingPeriod } from "./InlineStakingUnbondingPeriod"
 import { useInlineStakingWizard } from "./useInlineStakingWizard"
 import { useNomPoolsAPR } from "./useNomPoolsAPR"
 
@@ -300,45 +298,6 @@ const NomPoolsApr = () => {
   )
 }
 
-const NomPoolsUnbondingPeriod = () => {
-  const { t } = useTranslation()
-  const { token } = useInlineStakingWizard()
-  const { data: duration, isLoading } = useNomPoolsBondingDuration(token?.chain?.id)
-  const locale = useDateFnsLocale()
-
-  const display = useMemo(
-    () =>
-      duration
-        ? formatDuration(durationFromMs(Number(duration)), {
-            locale,
-          })
-        : t("N/A"),
-    [duration, locale, t]
-  )
-
-  if (isLoading)
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">28 Days</div>
-
-  return <>{display}</>
-}
-
-const durationFromMs = (ms: number): Duration => {
-  // returns the best possible looking duration object from ms
-  const seconds = Math.floor(ms / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-
-  const result = {
-    seconds: seconds % 60,
-    minutes: minutes % 60,
-    hours: hours % 24,
-    days: days,
-  }
-
-  return result
-}
-
 export const InlineStakingForm = () => {
   const { t } = useTranslation()
   const { account, accountPicker, token, payload, setStep } = useInlineStakingWizard()
@@ -393,7 +352,7 @@ export const InlineStakingForm = () => {
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
           <div className="text-body overflow-hidden">
-            <NomPoolsUnbondingPeriod />
+            <InlineStakingUnbondingPeriod />
           </div>
         </div>
         <div className="flex items-center justify-between">
