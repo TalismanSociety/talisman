@@ -107,8 +107,6 @@ export const useUnstakeWizard = () => {
     queryFn: async () => {
       if (!sapi || !address || !pool) return null
 
-      // TODO balance check ?
-
       return sapi.getExtrinsicPayload(
         "NominationPools",
         "unbond",
@@ -138,6 +136,8 @@ export const useUnstakeWizard = () => {
   const existentialDeposit = useExistentialDeposit(token?.id)
 
   const errorMessage = useMemo(() => {
+    if (!!pool && !pool.points) return t("There is no balance to unbond")
+
     if (!!balance && !!feeEstimate && feeEstimate > balance.transferable.planck)
       return t("Insufficient balance to cover fee")
 
@@ -150,7 +150,7 @@ export const useUnstakeWizard = () => {
       return t("Insufficient balance to cover fee and keep account alive")
 
     return null
-  }, [balance, feeEstimate, t, existentialDeposit?.planck])
+  }, [pool, t, balance, feeEstimate, existentialDeposit?.planck])
 
   return {
     token,
