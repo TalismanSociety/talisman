@@ -9,9 +9,9 @@ import { InlineStakingAccount } from "../InlineStakingAccount"
 import { NomPoolName } from "../NomPoolName"
 import { StakingFeeEstimate } from "../StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../StakingUnbondingPeriod"
-import { useUnstakeWizard } from "./useUnstakeWizard"
+import { useNomPoolUnbondWizard } from "./useNomPoolUnbondWizard"
 
-export const UnstakeReview = () => {
+export const NomPoolUnbondReview = () => {
   const { t } = useTranslation()
   const {
     token,
@@ -26,7 +26,7 @@ export const UnstakeReview = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     errorMessage,
-  } = useUnstakeWizard()
+  } = useNomPoolUnbondWizard()
 
   if (!account) return null
 

@@ -18,16 +18,16 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { useExistentialDeposit } from "../useExistentialDeposit"
 import { useNomPoolByMember } from "../useNomPoolByMember"
 
-type UnstakeWizardStep = "review" | "follow-up"
+type WizardStep = "review" | "follow-up"
 
-type UnstakeWizardState = {
-  step: UnstakeWizardStep
+type WizardState = {
+  step: WizardStep
   address: Address | null
   tokenId: TokenId | null
   hash: Hex | null
 }
 
-const DEFAULT_STATE: UnstakeWizardState = {
+const DEFAULT_STATE: WizardState = {
   step: "review",
   address: null,
   tokenId: null,
@@ -36,19 +36,18 @@ const DEFAULT_STATE: UnstakeWizardState = {
 
 const unstakeWizardAtom = atom(DEFAULT_STATE)
 
-export const useResetUnstakeWizard = () => {
+export const useResetNomPoolUnbondWizard = () => {
   const setState = useSetAtom(unstakeWizardAtom)
 
   const reset = useCallback(
-    (init: Pick<UnstakeWizardState, "address" | "tokenId">) =>
-      setState({ ...DEFAULT_STATE, ...init }),
+    (init: Pick<WizardState, "address" | "tokenId">) => setState({ ...DEFAULT_STATE, ...init }),
     [setState]
   )
 
   return reset
 }
 
-export const useUnstakeWizard = () => {
+export const useNomPoolUnbondWizard = () => {
   const { t } = useTranslation()
   const [state, setState] = useAtom(unstakeWizardAtom)
   const { address, step, hash } = state

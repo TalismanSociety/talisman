@@ -7,15 +7,15 @@ import { IconButton, Modal } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { UnstakeFollowUp } from "./UnstakeFollowUp"
-import { UnstakeReview } from "./UnstakeReview"
-import { useUnstakeModal } from "./useUnstakeModal"
-import { useUnstakeWizard } from "./useUnstakeWizard"
+import { NomPoolUnbondFollowUp } from "./NomPoolUnbondFollowUp"
+import { NomPoolUnbondReview } from "./NomPoolUnbondReview"
+import { useNomPoolUnbondModal } from "./useNomPoolUnbondModal"
+import { useNomPoolUnbondWizard } from "./useNomPoolUnbondWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()
-  const { step } = useUnstakeWizard()
-  const { close } = useUnstakeModal()
+  const { step } = useNomPoolUnbondWizard()
+  const { close } = useNomPoolUnbondModal()
 
   return (
     <div
@@ -33,13 +33,13 @@ const ModalHeader = () => {
 }
 
 const ModalContent = () => {
-  const { step } = useUnstakeWizard()
+  const { step } = useNomPoolUnbondWizard()
 
   switch (step) {
     case "review":
-      return <UnstakeReview />
+      return <NomPoolUnbondReview />
     case "follow-up":
-      return <UnstakeFollowUp />
+      return <NomPoolUnbondFollowUp />
   }
 }
 
@@ -58,8 +58,8 @@ const Content = () => (
   </div>
 )
 
-export const UnstakeModal = () => {
-  const { isOpen, close } = useUnstakeModal()
+export const NomPoolUnbondModal = () => {
+  const { isOpen, close } = useNomPoolUnbondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
