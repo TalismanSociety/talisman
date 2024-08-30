@@ -12,9 +12,9 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { useNomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondModal"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbondButton"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdrawButton"
-import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -33,7 +33,7 @@ import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 // TODO move this to staking domain as single file
 const StakeButton: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { t } = useTranslation()
-  const { open } = useInlineStakingModal()
+  const { open } = useNomPoolBondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()

@@ -12,7 +12,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { InlineStakingModal } from "@ui/domains/Staking/InlineStakingModal"
+import { NomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/NomPoolBondModal"
 import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
@@ -62,7 +62,7 @@ const DashboardNotificationsAndModals = () => {
       <ExplorerNetworkPickerModal />
       <MigratePasswordModal />
       <OnboardingToast />
-      <InlineStakingModal />
+      <NomPoolBondModal />
       <NomPoolUnbondModal />
       <NomPoolWithdrawModal />
     </Suspense>

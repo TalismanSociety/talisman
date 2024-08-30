@@ -45,7 +45,7 @@ const ModalContent = () => {
 
 const Content = () => (
   <div
-    id="inlineStakingModalDialog" // acts as containerId for sub modals
+    id="StakingModalDialog" // acts as containerId for sub modals
     className={classNames(
       "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
       !IS_POPUP && "border-grey-850 rounded border"

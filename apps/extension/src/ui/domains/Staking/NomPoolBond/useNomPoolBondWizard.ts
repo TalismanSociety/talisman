@@ -13,19 +13,19 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
-import { useFeeToken } from "../SendFunds/useFeeToken"
-import { getNomPoolStakingPayload } from "./helpers"
-import { useExistentialDeposit } from "./useExistentialDeposit"
-import { useIsSoloStaking } from "./useIsSoloStaking"
-import { useNomPoolByMember } from "./useNomPoolByMember"
-import { useNomPoolsClaimPermission } from "./useNomPoolsClaimPermission"
-import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
-import { useNomPoolState } from "./useNomPoolState"
+import { useFeeToken } from "../../SendFunds/useFeeToken"
+import { getNomPoolStakingPayload } from "../helpers"
+import { useExistentialDeposit } from "../useExistentialDeposit"
+import { useIsSoloStaking } from "../useIsSoloStaking"
+import { useNomPoolByMember } from "../useNomPoolByMember"
+import { useNomPoolsClaimPermission } from "../useNomPoolsClaimPermission"
+import { useNomPoolsMinJoinBond } from "../useNomPoolsMinJoinBond"
+import { useNomPoolState } from "../useNomPoolState"
 
-type InlineStakingWizardStep = "form" | "review" | "follow-up"
+type WizardStep = "form" | "review" | "follow-up"
 
-type InlineStakingWizardState = {
-  step: InlineStakingWizardStep
+type WizardState = {
+  step: WizardStep
   address: Address | null
   tokenId: TokenId | null
   poolId: number | null
@@ -38,7 +38,7 @@ type InlineStakingWizardState = {
   hash: Hex | null
 }
 
-const DEFAULT_STATE: InlineStakingWizardState = {
+const DEFAULT_STATE: WizardState = {
   step: "form",
   address: null,
   tokenId: null,
@@ -52,10 +52,10 @@ const DEFAULT_STATE: InlineStakingWizardState = {
   hash: null,
 }
 
-const inlineStakingWizardAtom = atom(DEFAULT_STATE)
+const wizardAtom = atom(DEFAULT_STATE)
 
 const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
-  const [state, setState] = useAtom(inlineStakingWizardAtom)
+  const [state, setState] = useAtom(wizardAtom)
   const isOpen = state[key]
 
   const setIsOpen = useCallback(
@@ -74,11 +74,11 @@ const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
   return { isOpen, setIsOpen, open, close, toggle }
 }
 
-export const useResetInlineStakingWizard = () => {
-  const setState = useSetAtom(inlineStakingWizardAtom)
+export const useResetNomPoolBondWizard = () => {
+  const setState = useSetAtom(wizardAtom)
 
   const reset = useCallback(
-    (init: Pick<InlineStakingWizardState, "address" | "tokenId" | "poolId">) =>
+    (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
       setState({ ...DEFAULT_STATE, ...init }),
     [setState]
   )
@@ -86,9 +86,9 @@ export const useResetInlineStakingWizard = () => {
   return reset
 }
 
-export const useInlineStakingWizard = () => {
+export const useNomPoolBondWizard = () => {
   const { t } = useTranslation()
-  const [state, setState] = useAtom(inlineStakingWizardAtom)
+  const [state, setState] = useAtom(wizardAtom)
   const { poolId, step, displayMode, hash } = state
 
   const balance = useBalance(state.address, state.tokenId)
@@ -147,7 +147,7 @@ export const useInlineStakingWizard = () => {
   )
 
   const setStep = useCallback(
-    (step: InlineStakingWizardStep) => {
+    (step: WizardStep) => {
       setState((prev) => {
         if (prev.step === "form" && step === "review" && !isFormValid) return prev
 
@@ -158,7 +158,7 @@ export const useInlineStakingWizard = () => {
   )
 
   const reset = useCallback(
-    (init: Pick<InlineStakingWizardState, "address" | "tokenId" | "poolId">) =>
+    (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
       setState({ ...DEFAULT_STATE, ...init }),
     [setState]
   )

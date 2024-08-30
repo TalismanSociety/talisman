@@ -19,7 +19,7 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
-import { InlineStakingModal } from "@ui/domains/Staking/InlineStakingModal"
+import { NomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/NomPoolBondModal"
 import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
@@ -81,7 +81,7 @@ const Popup = () => {
         <ExplorerNetworkPickerModal />
         <BackupWarningDrawer />
         <LedgerPolkadotUpgradeAlertDrawer />
-        <InlineStakingModal />
+        <NomPoolBondModal />
         <NomPoolUnbondModal />
         <NomPoolWithdrawModal />
       </Suspense>

@@ -14,7 +14,7 @@ import {
 import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
+import { useNomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -52,7 +52,7 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
 
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
-  const { open } = useInlineStakingModal()
+  const { open } = useNomPoolBondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()

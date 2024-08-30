@@ -1,18 +1,18 @@
 import { useTranslation } from "react-i18next"
 
-import { TokenLogo } from "../Asset/TokenLogo"
-import { TokensAndFiat } from "../Asset/TokensAndFiat"
-import { SapiSendButton } from "../Transactions/SapiSendButton"
-import { InlineStakingAccount } from "./InlineStakingAccount"
-import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
-import { NomPoolName } from "./NomPoolName"
-import { StakingUnbondingPeriod } from "./StakingUnbondingPeriod"
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
+import { TokenLogo } from "../../Asset/TokenLogo"
+import { TokensAndFiat } from "../../Asset/TokensAndFiat"
+import { SapiSendButton } from "../../Transactions/SapiSendButton"
+import { InlineStakingAccount } from "../InlineStakingAccount"
+import { InlineStakingFeeEstimate } from "../InlineStakingFeeEstimate"
+import { NomPoolName } from "../NomPoolName"
+import { StakingUnbondingPeriod } from "../StakingUnbondingPeriod"
+import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
-export const InlineStakingReview = () => {
+export const NomPoolBondReview = () => {
   const { t } = useTranslation()
   const { token, poolId, formatter, account, onSubmitted, payload, txMetadata } =
-    useInlineStakingWizard()
+    useNomPoolBondWizard()
 
   if (!account) return null
 
@@ -65,7 +65,7 @@ export const InlineStakingReview = () => {
       <div className="grow"></div>
       {payload && (
         <SapiSendButton
-          containerId="inlineStakingModalDialog"
+          containerId="StakingModalDialog"
           label={t("Stake")}
           payload={payload}
           onSubmitted={onSubmitted}

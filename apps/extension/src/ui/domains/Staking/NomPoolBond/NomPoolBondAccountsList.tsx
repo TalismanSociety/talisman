@@ -11,13 +11,13 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { Address } from "../Account/Address"
-import { Fiat } from "../Asset/Fiat"
-import Tokens from "../Asset/Tokens"
+import { AccountIcon } from "../../Account/AccountIcon"
+import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
+import { Address } from "../../Account/Address"
+import { Fiat } from "../../Asset/Fiat"
+import Tokens from "../../Asset/Tokens"
 
-export type InlineStakingAccount = {
+export type NomPoolBondAccount = {
   address: string
   origin?: AccountType
   name?: string
@@ -26,7 +26,7 @@ export type InlineStakingAccount = {
 }
 
 type AccountRowProps = {
-  account: InlineStakingAccount
+  account: NomPoolBondAccount
   genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
@@ -120,8 +120,8 @@ const AccountRow: FC<AccountRowProps> = ({
   )
 }
 
-type InlineStakingAccountsListProps = {
-  accounts: InlineStakingAccount[]
+type NomPoolBondAccountsListProps = {
+  accounts: NomPoolBondAccount[]
   genesisHash?: string | null
   noFormat?: boolean
   selected?: string | null
@@ -133,7 +133,7 @@ type InlineStakingAccountsListProps = {
   tokenId?: string
 }
 
-export const InlineStakingAccountsList: FC<InlineStakingAccountsListProps> = ({
+export const NomPoolBondAccountsList: FC<NomPoolBondAccountsListProps> = ({
   selected,
   accounts,
   noFormat,

@@ -20,18 +20,18 @@ import { useBalance } from "@ui/hooks/useBalance"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 
-import { currencyConfig } from "../Asset/currencyConfig"
-import { Fiat } from "../Asset/Fiat"
-import { TokenLogo } from "../Asset/TokenLogo"
-import Tokens from "../Asset/Tokens"
-import { TokensAndFiat } from "../Asset/TokensAndFiat"
-import { AccountPillButton } from "./AccountPillButton"
-import { InlineStakingAccountPicker } from "./InlineStakingAccountPicker"
-import { InlineStakingFeeEstimate } from "./InlineStakingFeeEstimate"
-import { NomPoolName } from "./NomPoolName"
-import { StakingUnbondingPeriod } from "./StakingUnbondingPeriod"
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
-import { useNomPoolsAPR } from "./useNomPoolsAPR"
+import { currencyConfig } from "../../Asset/currencyConfig"
+import { Fiat } from "../../Asset/Fiat"
+import { TokenLogo } from "../../Asset/TokenLogo"
+import Tokens from "../../Asset/Tokens"
+import { TokensAndFiat } from "../../Asset/TokensAndFiat"
+import { AccountPillButton } from "../AccountPillButton"
+import { InlineStakingFeeEstimate } from "../InlineStakingFeeEstimate"
+import { NomPoolName } from "../NomPoolName"
+import { StakingUnbondingPeriod } from "../StakingUnbondingPeriod"
+import { useNomPoolsAPR } from "../useNomPoolsAPR"
+import { NomPoolBondAccountPicker } from "./NomPoolBondAccountPicker"
+import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
@@ -73,7 +73,7 @@ const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
 
 const FiatDisplay = () => {
   const currency = useSelectedCurrency()
-  const { tokenRates, formatter } = useInlineStakingWizard()
+  const { tokenRates, formatter } = useNomPoolBondWizard()
 
   if (!tokenRates) return null
 
@@ -85,7 +85,7 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, formatter } = useInlineStakingWizard()
+  const { token, formatter } = useNomPoolBondWizard()
 
   if (!token) return null
 
@@ -102,7 +102,7 @@ const TokenDisplay = () => {
 }
 
 const TokenInput = () => {
-  const { token, formatter, setPlancks } = useInlineStakingWizard()
+  const { token, formatter, setPlancks } = useNomPoolBondWizard()
 
   const defaultValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
@@ -160,7 +160,7 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, formatter, setPlancks } = useInlineStakingWizard()
+  const { token, tokenRates, formatter, setPlancks } = useNomPoolBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
@@ -235,7 +235,7 @@ export const AmountEdit = () => {
     inputErrorMessage,
     maxPlancks,
     setPlancks,
-  } = useInlineStakingWizard()
+  } = useNomPoolBondWizard()
 
   const onSetMaxClick = useCallback(() => {
     if (!maxPlancks) return
@@ -284,7 +284,7 @@ export const AmountEdit = () => {
 }
 
 const NomPoolsApr = () => {
-  const { token } = useInlineStakingWizard()
+  const { token } = useNomPoolBondWizard()
   const { data: apr, isLoading } = useNomPoolsAPR(token?.chain?.id)
   const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
 
@@ -298,9 +298,9 @@ const NomPoolsApr = () => {
   )
 }
 
-export const InlineStakingForm = () => {
+export const NomPoolBondForm = () => {
   const { t } = useTranslation()
-  const { account, poolId, accountPicker, token, payload, setStep } = useInlineStakingWizard()
+  const { account, poolId, accountPicker, token, payload, setStep } = useNomPoolBondWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -367,7 +367,7 @@ export const InlineStakingForm = () => {
         {t("Review")}
       </Button>
 
-      <InlineStakingAccountPicker />
+      <NomPoolBondAccountPicker />
     </div>
   )
 }

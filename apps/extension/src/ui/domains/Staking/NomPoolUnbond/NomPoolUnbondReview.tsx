@@ -91,7 +91,7 @@ export const NomPoolUnbondReview = () => {
       )}
       {payload ? (
         <SapiSendButton
-          containerId="inlineStakingModalDialog"
+          containerId="StakingModalDialog"
           label={t("Unbond")}
           payload={payload}
           onSubmitted={onSubmitted}

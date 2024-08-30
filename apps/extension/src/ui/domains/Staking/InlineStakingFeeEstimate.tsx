@@ -1,10 +1,10 @@
 import { FC } from "react"
 
+import { useNomPoolBondWizard } from "./NomPoolBond/useNomPoolBondWizard"
 import { StakingFeeEstimate } from "./StakingFeeEstimate"
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
 
 export const InlineStakingFeeEstimate: FC<{ noCountUp?: boolean }> = ({ noCountUp }) => {
-  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useInlineStakingWizard()
+  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useNomPoolBondWizard()
 
   return (
     <StakingFeeEstimate

@@ -10,14 +10,14 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
-import { InlineStakingAccountsList } from "./InlineStakingAccountsList"
-import { useInlineStakingModal } from "./useInlineStakingModal"
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
+import { NomPoolBondAccountsList } from "./NomPoolBondAccountsList"
+import { useNomPoolBondModal } from "./useNomPoolBondModal"
+import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
-export const InlineStakingAccountPicker = () => {
+export const NomPoolBondAccountPicker = () => {
   const { t } = useTranslation()
-  const { close } = useInlineStakingModal()
-  const { account, token, setAddress, accountPicker } = useInlineStakingWizard()
+  const { close } = useNomPoolBondModal()
+  const { account, token, setAddress, accountPicker } = useNomPoolBondWizard()
   const [search, setSearch] = useState("")
 
   const chain = useChain(token?.chain?.id)
@@ -49,7 +49,7 @@ export const InlineStakingAccountPicker = () => {
 
   return (
     <Modal
-      containerId="inlineStakingModalDialog"
+      containerId="StakingModalDialog"
       isOpen={accountPicker.isOpen}
       onDismiss={accountPicker.close}
       className="relative z-50 size-full"
@@ -72,7 +72,7 @@ export const InlineStakingAccountPicker = () => {
             </div>
           </div>
           <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-            <InlineStakingAccountsList
+            <NomPoolBondAccountsList
               accounts={accounts}
               genesisHash={chain?.genesisHash}
               selected={account?.address}

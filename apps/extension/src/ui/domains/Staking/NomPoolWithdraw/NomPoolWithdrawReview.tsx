@@ -84,7 +84,7 @@ export const NomPoolWithdrawReview = () => {
       )}
       {payload ? (
         <SapiSendButton
-          containerId="inlineStakingModalDialog"
+          containerId="StakingModalDialog"
           label={t("Withdraw")}
           payload={payload}
           onSubmitted={onSubmitted}

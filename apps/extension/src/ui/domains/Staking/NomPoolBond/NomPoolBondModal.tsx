@@ -1,20 +1,22 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Suspense, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { InlineStakingFollowUp } from "./InlineStakingFollowUp"
-import { InlineStakingForm } from "./InlineStakingForm"
-import { InlineStakingReview } from "./InlineStakingReview"
-import { useInlineStakingModal } from "./useInlineStakingModal"
-import { useInlineStakingWizard } from "./useInlineStakingWizard"
+import { NomPoolBondFollowUp } from "./NomPoolBondFollowUp"
+import { NomPoolBondForm } from "./NomPoolBondForm"
+import { NomPoolBondReview } from "./NomPoolBondReview"
+import { useNomPoolBondModal } from "./useNomPoolBondModal"
+import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
 const ModalHeader = () => {
-  const { step, setStep } = useInlineStakingWizard()
-  const { close } = useInlineStakingModal()
+  const { t } = useTranslation()
+  const { step, setStep } = useNomPoolBondWizard()
+  const { close } = useNomPoolBondModal()
 
   const handleBackClick = useCallback(() => setStep("form"), [setStep])
 
@@ -32,8 +34,8 @@ const ModalHeader = () => {
         <ChevronLeftIcon />
       </IconButton>
       <div>
-        {step === "form" && <span className="text-body font-bold">Staking</span>}
-        {step === "review" && "Confirm"}
+        {step === "form" && <span className="text-body font-bold">{t("Staking")}</span>}
+        {step === "review" && t("Confirm")}
       </div>
       <IconButton onClick={close}>
         <XIcon />
@@ -43,21 +45,21 @@ const ModalHeader = () => {
 }
 
 const ModalContent = () => {
-  const { step } = useInlineStakingWizard()
+  const { step } = useNomPoolBondWizard()
 
   switch (step) {
     case "form":
-      return <InlineStakingForm />
+      return <NomPoolBondForm />
     case "review":
-      return <InlineStakingReview />
+      return <NomPoolBondReview />
     case "follow-up":
-      return <InlineStakingFollowUp />
+      return <NomPoolBondFollowUp />
   }
 }
 
 const Content = () => (
   <div
-    id="inlineStakingModalDialog" // acts as containerId for sub modals
+    id="StakingModalDialog" // acts as containerId for sub modals
     className={classNames(
       "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
       !IS_POPUP && "border-grey-850 rounded border"
@@ -70,8 +72,8 @@ const Content = () => (
   </div>
 )
 
-export const InlineStakingModal = () => {
-  const { isOpen, close } = useInlineStakingModal()
+export const NomPoolBondModal = () => {
+  const { isOpen, close } = useNomPoolBondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
