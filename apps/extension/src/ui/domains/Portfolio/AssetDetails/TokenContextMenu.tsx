@@ -14,7 +14,6 @@ import {
 import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useUnstakeModal } from "@ui/domains/Staking/Unstake/useUnstakeModal"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -72,27 +71,6 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }
 
-const UnstakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
-  const { t } = useTranslation()
-  const { open } = useUnstakeModal()
-  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
-
-  const { genericEvent } = useAnalytics()
-
-  const handleClick = useCallback(() => {
-    if (!stakingStatus) return
-    const { accounts } = stakingStatus
-    const address = accounts?.find((s) => s.canUnstake)?.address
-    if (!address) return
-    open({ tokenId, address })
-    genericEvent("open inline unbonding modal", { from: "token menu", tokenId })
-  }, [genericEvent, open, stakingStatus, tokenId])
-
-  if (!stakingStatus) return null // no nompool staking on this network
-
-  return <ContextMenuItem onClick={handleClick}>{t("Unstake")}</ContextMenuItem>
-}
-
 type Props = {
   tokenId: TokenId
   placement?: PopoverOptions["placement"]
@@ -136,9 +114,6 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
         <Suspense fallback={<SuspenseTracker name="StakeMenuItem" />}>
           <StakeMenuItem tokenId={tokenId} />
-        </Suspense>
-        <Suspense fallback={<SuspenseTracker name="UnstakeMenuItem" />}>
-          <UnstakeMenuItem tokenId={tokenId} />
         </Suspense>
       </ContextMenuContent>
     </ContextMenu>
