@@ -17,7 +17,12 @@ export const useNomPoolName = (
 
       const metadata = await sapi.getStorage<Binary>("NominationPools", "Metadata", [poolId])
 
-      return metadata?.asText().replace(/:\s?app\.talisman\.xyz\/staking/gi, "") ?? null
+      return (
+        metadata
+          ?.asText()
+          .replace(": app.talisman.xyz/staking", "")
+          .replace(" | Auto-Compound > $2USD", "") ?? null
+      )
     },
     enabled: !!sapi,
     refetchInterval: false,

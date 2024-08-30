@@ -244,22 +244,23 @@ const ChainTokenBalancesDetailRow = ({
           {row.title}{" "}
           {
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.poolId && !!row.address && !!tokenId && (
-              <UnbondButton tokenId={tokenId} address={row.address} className="text-xs" />
-            )
-          }
-          {
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.unbonding && (
+            (row.meta as any)?.unbonding ? (
               <span
                 className={classNames(
-                  "text-body-disabled inline text-xs",
+                  "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
                   status.status === "fetching" && "animate-pulse transition-opacity"
                 )}
               >
                 {t("Unbonding")}
               </span>
-            )
+            ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !!(row.meta as any)?.poolId && !!row.address && !!tokenId ? (
+              <UnbondButton
+                tokenId={tokenId}
+                address={row.address}
+                className="px-2 py-0.5 text-xs"
+              />
+            ) : null
           }
         </div>
         {!!row.address && (

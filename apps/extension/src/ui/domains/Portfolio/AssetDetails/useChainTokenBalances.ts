@@ -99,8 +99,9 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
         description:
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (nomPool.meta as any)?.description?.replace(/:\s?app\.talisman\.xyz\/staking/gi, "") ??
-          undefined,
+          (nomPool.meta as any)?.description
+            ?.replace(": app.talisman.xyz/staking", "")
+            .replace(" | Auto-Compound > $2USD", "") ?? undefined,
         tokens: BigNumber(nomPool.amount.tokens),
         fiat: nomPool.amount.fiat(currency),
         locked: true,

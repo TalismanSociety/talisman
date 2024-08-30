@@ -306,18 +306,12 @@ const ChainTokenBalancesDetailRow = ({
       {!!row.locked && (
         <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
           {
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.poolId && !!row.address && !!tokenId && (
-              <UnbondButton tokenId={tokenId} address={row.address} />
-            )
-          }
-          {
             // Show `Unbonding` next to nompool staked balances which are unbonding
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.unbonding && (
+            (row.meta as any)?.unbonding ? (
               <div
                 className={classNames(
-                  "text-body-disabled",
+                  "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
                   status.status === "fetching" && "animate-pulse transition-opacity"
                 )}
               >
@@ -325,7 +319,10 @@ const ChainTokenBalancesDetailRow = ({
                 {/* TODO: Show time until funds are unbonded */}
                 {/* <div>4d 14hr 11min</div> */}
               </div>
-            )
+            ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !!(row.meta as any)?.poolId && !!row.address && !!tokenId ? (
+              <UnbondButton tokenId={tokenId} address={row.address} />
+            ) : null
           }
         </div>
       )}
