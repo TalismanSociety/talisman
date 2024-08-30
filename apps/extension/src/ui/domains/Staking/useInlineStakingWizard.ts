@@ -280,10 +280,10 @@ export const useInlineStakingWizard = () => {
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
       !!formatter.planck &&
-      existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unstaking, as max button accounts for 11x with a fake fee estimate
+      existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
-        "Insufficient balance to cover staking, the existential deposit, and the future unstaking fee"
+        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
       )
 
     // TODO : pool is full

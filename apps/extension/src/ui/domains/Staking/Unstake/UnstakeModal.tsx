@@ -24,7 +24,7 @@ const ModalHeader = () => {
         step === "follow-up" ? "invisible" : "visible"
       )}
     >
-      <div>{step === "review" && t("Unstaking")}</div>
+      <div>{step === "review" && t("Unbond")}</div>
       <IconButton onClick={close}>
         <XIcon />
       </IconButton>

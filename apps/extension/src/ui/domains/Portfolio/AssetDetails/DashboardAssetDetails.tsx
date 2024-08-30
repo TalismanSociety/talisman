@@ -1,7 +1,7 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Suspense, useCallback, useMemo } from "react"
+import { FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -12,7 +12,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
-import { useUnstakeModal } from "@ui/domains/Staking/Unstake/useUnstakeModal"
+import { UnbondButton } from "@ui/domains/Staking/UnbondButton"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -29,36 +29,7 @@ import { useAssetDetails } from "./useAssetDetails"
 import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 
-const UnstakeButton: FC<{ tokenId: TokenId; address: string }> = ({ tokenId, address }) => {
-  const { t } = useTranslation()
-  const { open } = useUnstakeModal()
-  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
-
-  const { genericEvent } = useAnalytics()
-
-  const canUnstake = useMemo(
-    () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
-    [address, stakingStatus]
-  )
-
-  const handleClick = useCallback(() => {
-    open({ tokenId, address })
-    genericEvent("open inline unstaking modal", { from: "asset details", tokenId })
-  }, [address, genericEvent, open, tokenId])
-
-  if (!canUnstake) return null // no nompool staking on this network
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="bg-body/10 hover:bg-body/20 hover:text-body rounded-xs px-4 py-1"
-    >
-      {t("Unbond")}
-    </button>
-  )
-}
-
+// TODO move this to staking domain as single file
 const StakeButton: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { open } = useInlineStakingModal()
@@ -337,7 +308,7 @@ const ChainTokenBalancesDetailRow = ({
           {
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
             !!(row.meta as any)?.poolId && !!row.address && !!tokenId && (
-              <UnstakeButton tokenId={tokenId} address={row.address} />
+              <UnbondButton tokenId={tokenId} address={row.address} />
             )
           }
           {

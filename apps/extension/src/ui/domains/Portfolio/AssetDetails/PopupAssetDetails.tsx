@@ -14,6 +14,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { UnbondButton } from "@ui/domains/Staking/UnbondButton"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -140,6 +141,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               isLastRow={rows.length === i + 1}
               symbol={symbol}
               status={status}
+              tokenId={tokenId}
             />
           ))}
     </div>
@@ -220,58 +222,88 @@ const ChainTokenBalancesDetailRow = ({
   isLastRow,
   status,
   symbol,
+  tokenId,
 }: {
   row: DetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-}) => (
-  <div
-    className={classNames(
-      "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-      isLastRow && "rounded-b-sm"
-    )}
-  >
-    <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-      <div className="font-bold text-white">{row.title}</div>
-      {!!row.address && (
-        <div className="text-xs">
-          <PortfolioAccount address={row.address} />
-        </div>
-      )}
-      {!row.address && row.description && (
-        <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-          {row.description}
-        </div>
-      )}
-    </div>
+  tokenId?: TokenId // unsafe, there could be multiple aggregated here
+}) => {
+  const { t } = useTranslation()
+
+  return (
     <div
       className={classNames(
-        "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-        status.status === "fetching" && "animate-pulse transition-opacity"
+        "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
+        isLastRow && "rounded-b-sm"
       )}
     >
-      <div className={classNames("font-bold", row.locked ? "text-body-secondary" : "text-white")}>
-        <Tokens amount={row.tokens} symbol={symbol} isBalance />
-        {row.locked ? (
-          <>
-            {" "}
-            <LockIcon className="lock inline align-baseline" />
-          </>
-        ) : null}
-        {status.status === "stale" ? (
-          <>
-            {" "}
-            <StaleBalancesIcon className="inline align-baseline" staleChains={status.staleChains} />
-          </>
-        ) : null}
+      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+        <div className="font-bold text-white">
+          {row.title}{" "}
+          {
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !!(row.meta as any)?.poolId && !!row.address && !!tokenId && (
+              <UnbondButton tokenId={tokenId} address={row.address} className="text-xs" />
+            )
+          }
+          {
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !!(row.meta as any)?.unbonding && (
+              <span
+                className={classNames(
+                  "text-body-disabled inline text-xs",
+                  status.status === "fetching" && "animate-pulse transition-opacity"
+                )}
+              >
+                {t("Unbonding")}
+              </span>
+            )
+          }
+        </div>
+        {!!row.address && (
+          <div className="text-xs">
+            <PortfolioAccount address={row.address} />
+          </div>
+        )}
+        {!row.address && row.description && (
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+            {row.description}
+          </div>
+        )}
       </div>
-      <div className="text-xs">
-        {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+      <div
+        className={classNames(
+          "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
+          status.status === "fetching" && "animate-pulse transition-opacity"
+        )}
+      >
+        <div className={classNames("font-bold", row.locked ? "text-body-secondary" : "text-white")}>
+          <Tokens amount={row.tokens} symbol={symbol} isBalance />
+          {row.locked ? (
+            <>
+              {" "}
+              <LockIcon className="lock inline align-baseline" />
+            </>
+          ) : null}
+          {status.status === "stale" ? (
+            <>
+              {" "}
+              <StaleBalancesIcon
+                className="inline align-baseline"
+                staleChains={status.staleChains}
+              />
+            </>
+          ) : null}
+        </div>
+        <div className="text-xs">
+          {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 type AssetsTableProps = {
   balances: Balances

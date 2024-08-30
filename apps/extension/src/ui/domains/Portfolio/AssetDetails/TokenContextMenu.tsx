@@ -85,7 +85,7 @@ const UnstakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
     const address = accounts?.find((s) => s.canUnstake)?.address
     if (!address) return
     open({ tokenId, address })
-    genericEvent("open inline unstaking modal", { from: "token menu", tokenId })
+    genericEvent("open inline unbonding modal", { from: "token menu", tokenId })
   }, [genericEvent, open, stakingStatus, tokenId])
 
   if (!stakingStatus) return null // no nompool staking on this network
