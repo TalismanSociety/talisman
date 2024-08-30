@@ -5,31 +5,31 @@ import { useTranslation } from "react-i18next"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-import { useUnstakeModal } from "./Unstake/useUnstakeModal"
+import { useNomPoolWithdrawModal } from "./NomPoolWithdraw/useNomPoolWithdrawModal"
 import { useNomPoolStakingStatus } from "./useNomPoolStakingStatus"
 
-export const UnbondButton: FC<{ tokenId: TokenId; address: string; className?: string }> = ({
-  tokenId,
-  address,
-  className,
-}) => {
+export const NomPoolWithdrawButton: FC<{
+  tokenId: TokenId
+  address: string
+  className?: string
+}> = ({ tokenId, address, className }) => {
   const { t } = useTranslation()
-  const { open } = useUnstakeModal()
+  const { open } = useNomPoolWithdrawModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()
 
-  const canUnstake = useMemo(
-    () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
+  const canWithdraw = useMemo(
+    () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canWithdraw),
     [address, stakingStatus]
   )
 
   const handleClick = useCallback(() => {
     open({ tokenId, address })
-    genericEvent("open inline unbonding modal", { from: "asset details", tokenId })
+    genericEvent("open inline staking withdraw modal", { from: "asset details", tokenId })
   }, [address, genericEvent, open, tokenId])
 
-  if (!canUnstake) return null // no nompool staking on this network
+  if (!canWithdraw) return null // no nompool staking on this network
 
   return (
     <button
@@ -40,7 +40,7 @@ export const UnbondButton: FC<{ tokenId: TokenId; address: string; className?: s
         className
       )}
     >
-      {t("Unbond")}
+      {t("Withdraw")}
     </button>
   )
 }

@@ -1,7 +1,7 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Suspense, useCallback } from "react"
+import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -12,7 +12,8 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
-import { UnbondButton } from "@ui/domains/Staking/UnbondButton"
+import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbondButton"
+import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdrawButton"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -280,52 +281,74 @@ const ChainTokenBalancesDetailRow = ({
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
-}) => {
+}) => (
+  <div
+    key={row.key}
+    className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+  >
+    <div>
+      <AssetState title={row.title} description={row.description} render address={row.address} />
+    </div>
+    {!row.locked && <div></div>}
+    <div>
+      <AssetBalanceCellValue
+        render={row.tokens.gt(0)}
+        tokens={row.tokens}
+        fiat={row.fiat}
+        symbol={symbol}
+        locked={row.locked}
+        balancesStatus={status}
+        className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
+      />
+    </div>
+    {!!row.locked && row.meta && row.address && tokenId && (
+      <LockedExtra
+        tokenId={tokenId}
+        address={row.address}
+        isLoading={status.status === "fetching"}
+        rowMeta={row.meta}
+      />
+    )}
+  </div>
+)
+
+const LockedExtra: FC<{
+  tokenId: TokenId
+  address: string
+  isLoading: boolean
+  rowMeta: { poolId?: number; unbonding?: boolean }
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
+  const { data } = useNomPoolStakingStatus(tokenId)
+
+  const accountStatus = useMemo(
+    () => data?.accounts?.find((s) => s.address === address),
+    [address, data?.accounts]
+  )
+
+  if (!accountStatus) return null
 
   return (
-    <div
-      key={row.key}
-      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
-    >
-      <div>
-        <AssetState title={row.title} description={row.description} render address={row.address} />
-      </div>
-      {!row.locked && <div></div>}
-      <div>
-        <AssetBalanceCellValue
-          render={row.tokens.gt(0)}
-          tokens={row.tokens}
-          fiat={row.fiat}
-          symbol={symbol}
-          locked={row.locked}
-          balancesStatus={status}
-          className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
-        />
-      </div>
-      {!!row.locked && (
-        <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
-          {
-            // Show `Unbonding` next to nompool staked balances which are unbonding
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (row.meta as any)?.unbonding ? (
-              <div
-                className={classNames(
-                  "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
-                  status.status === "fetching" && "animate-pulse transition-opacity"
-                )}
-              >
-                {t("Unbonding")}
-                {/* TODO: Show time until funds are unbonded */}
-                {/* <div>4d 14hr 11min</div> */}
-              </div>
-            ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.poolId && !!row.address && !!tokenId ? (
-              <UnbondButton tokenId={tokenId} address={row.address} />
-            ) : null
-          }
-        </div>
-      )}
+    <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
+      {rowMeta.unbonding ? (
+        accountStatus.canWithdraw ? (
+          <NomPoolWithdrawButton tokenId={tokenId} address={address} />
+        ) : (
+          <div
+            className={classNames(
+              "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
+              isLoading && "animate-pulse transition-opacity"
+            )}
+          >
+            {t("Unbonding")}
+            {/* TODO: Show time until funds are unbonded */}
+            {/* <div>4d 14hr 11min</div> */}
+          </div>
+        )
+      ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      accountStatus.canUnstake ? (
+        <NomPoolUnbondButton tokenId={tokenId} address={address} />
+      ) : null}
     </div>
   )
 }

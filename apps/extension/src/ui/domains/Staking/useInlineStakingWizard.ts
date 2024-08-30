@@ -247,7 +247,7 @@ export const useInlineStakingWizard = () => {
   const inputErrorMessage = useMemo(() => {
     if (isSoloStaking)
       return t("An account cannot do both regular staking and nomination pool staking")
-    if (pool && pool.poolId !== state.poolId)
+    if (pool && pool.pool_id !== state.poolId)
       return t("You are already staking in another nomination pool ({{poolId}})", pool)
     if (poolState?.isFull) return t("This nomination pool is full")
     if (poolState && !poolState.isOpen) return t("This nomination pool is not open")

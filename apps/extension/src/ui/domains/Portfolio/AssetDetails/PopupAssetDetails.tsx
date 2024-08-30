@@ -14,7 +14,8 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { UnbondButton } from "@ui/domains/Staking/UnbondButton"
+import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbondButton"
+import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdrawButton"
 import { useInlineStakingModal } from "@ui/domains/Staking/useInlineStakingModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -229,80 +230,106 @@ const ChainTokenBalancesDetailRow = ({
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
-}) => {
-  const { t } = useTranslation()
-
-  return (
+}) => (
+  <div
+    className={classNames(
+      "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
+      isLastRow && "rounded-b-sm"
+    )}
+  >
+    <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+      <div className="font-bold text-white">
+        {row.title}{" "}
+        {tokenId && row.address && row.meta && (
+          <LockedExtra
+            tokenId={tokenId}
+            address={row.address}
+            rowMeta={row.meta}
+            isLoading={status.status === "fetching"}
+          />
+        )}
+      </div>
+      {!!row.address && (
+        <div className="text-xs">
+          <PortfolioAccount address={row.address} />
+        </div>
+      )}
+      {!row.address && row.description && (
+        <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+          {row.description}
+        </div>
+      )}
+    </div>
     <div
       className={classNames(
-        "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-        isLastRow && "rounded-b-sm"
+        "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
+        status.status === "fetching" && "animate-pulse transition-opacity"
       )}
     >
-      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-        <div className="font-bold text-white">
-          {row.title}{" "}
-          {
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (row.meta as any)?.unbonding ? (
-              <span
-                className={classNames(
-                  "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
-                  status.status === "fetching" && "animate-pulse transition-opacity"
-                )}
-              >
-                {t("Unbonding")}
-              </span>
-            ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.poolId && !!row.address && !!tokenId ? (
-              <UnbondButton
-                tokenId={tokenId}
-                address={row.address}
-                className="px-2 py-0.5 text-xs"
-              />
-            ) : null
-          }
-        </div>
-        {!!row.address && (
-          <div className="text-xs">
-            <PortfolioAccount address={row.address} />
-          </div>
-        )}
-        {!row.address && row.description && (
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-            {row.description}
-          </div>
-        )}
+      <div className={classNames("font-bold", row.locked ? "text-body-secondary" : "text-white")}>
+        <Tokens amount={row.tokens} symbol={symbol} isBalance />
+        {row.locked ? (
+          <>
+            {" "}
+            <LockIcon className="lock inline align-baseline" />
+          </>
+        ) : null}
+        {status.status === "stale" ? (
+          <>
+            {" "}
+            <StaleBalancesIcon className="inline align-baseline" staleChains={status.staleChains} />
+          </>
+        ) : null}
       </div>
-      <div
-        className={classNames(
-          "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-          status.status === "fetching" && "animate-pulse transition-opacity"
-        )}
-      >
-        <div className={classNames("font-bold", row.locked ? "text-body-secondary" : "text-white")}>
-          <Tokens amount={row.tokens} symbol={symbol} isBalance />
-          {row.locked ? (
-            <>
-              {" "}
-              <LockIcon className="lock inline align-baseline" />
-            </>
-          ) : null}
-          {status.status === "stale" ? (
-            <>
-              {" "}
-              <StaleBalancesIcon
-                className="inline align-baseline"
-                staleChains={status.staleChains}
-              />
-            </>
-          ) : null}
-        </div>
-        <div className="text-xs">
-          {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
-        </div>
+      <div className="text-xs">
+        {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
       </div>
     </div>
+  </div>
+)
+
+const LockedExtra: FC<{
+  tokenId: TokenId
+  address: string
+  isLoading: boolean
+  rowMeta: { poolId?: number; unbonding?: boolean }
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
+  const { t } = useTranslation()
+  const { data } = useNomPoolStakingStatus(tokenId)
+
+  const accountStatus = useMemo(
+    () => data?.accounts?.find((s) => s.address === address),
+    [address, data?.accounts]
+  )
+
+  if (!accountStatus) return null
+
+  return (
+    <>
+      {rowMeta.unbonding ? (
+        accountStatus.canWithdraw ? (
+          <NomPoolWithdrawButton
+            tokenId={tokenId}
+            address={address}
+            className="px-2 py-0.5 text-xs"
+          />
+        ) : (
+          <span
+            className={classNames(
+              "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
+              isLoading && "animate-pulse transition-opacity"
+            )}
+          >
+            {t("Unbonding")}
+            {/* TODO: Show time until funds are unbonded */}
+            {/* <div>4d 14hr 11min</div> */}
+          </span>
+        )
+      ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      accountStatus.canUnstake ? (
+        <NomPoolUnbondButton tokenId={tokenId} address={address} className="px-2 py-0.5 text-xs" />
+      ) : null}
+    </>
   )
 }
 

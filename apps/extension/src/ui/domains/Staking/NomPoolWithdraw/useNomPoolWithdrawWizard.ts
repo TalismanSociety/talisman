@@ -1,6 +1,5 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { TokenId } from "@talismn/chaindata-provider"
-import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
 import { atom, useAtom, useSetAtom } from "jotai"
@@ -15,42 +14,42 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
+import { useCurrentStakingEra } from "../useCurrentStakingEra"
 import { useExistentialDeposit } from "../useExistentialDeposit"
 import { useNomPoolByMember } from "../useNomPoolByMember"
 
-type UnstakeWizardStep = "review" | "follow-up"
+type WizardStep = "review" | "follow-up"
 
-type UnstakeWizardState = {
-  step: UnstakeWizardStep
+type WizardState = {
+  step: WizardStep
   address: Address | null
   tokenId: TokenId | null
   hash: Hex | null
 }
 
-const DEFAULT_STATE: UnstakeWizardState = {
+const DEFAULT_STATE: WizardState = {
   step: "review",
   address: null,
   tokenId: null,
   hash: null,
 }
 
-const unstakeWizardAtom = atom(DEFAULT_STATE)
+const wizardAtom = atom(DEFAULT_STATE)
 
-export const useResetUnstakeWizard = () => {
-  const setState = useSetAtom(unstakeWizardAtom)
+export const useResetNomPoolWithdrawWizard = () => {
+  const setState = useSetAtom(wizardAtom)
 
   const reset = useCallback(
-    (init: Pick<UnstakeWizardState, "address" | "tokenId">) =>
-      setState({ ...DEFAULT_STATE, ...init }),
+    (init: Pick<WizardState, "address" | "tokenId">) => setState({ ...DEFAULT_STATE, ...init }),
     [setState]
   )
 
   return reset
 }
 
-export const useUnstakeWizard = () => {
+export const useNomPoolWithdrawWizard = () => {
   const { t } = useTranslation()
-  const [state, setState] = useAtom(unstakeWizardAtom)
+  const [state, setState] = useAtom(wizardAtom)
   const { address, step, hash } = state
 
   const balance = useBalance(state.address, state.tokenId)
@@ -69,23 +68,32 @@ export const useUnstakeWizard = () => {
     [setState]
   )
 
-  const { data: plancksToUnbond } = useQuery({
-    queryKey: ["pointsToBalance", sapi?.id, papiStringify(pool)],
+  const { data: currentEra } = useCurrentStakingEra(token?.chain?.id)
+
+  const pointsToWithdraw = useMemo(() => {
+    if (!currentEra || !pool) return null
+    return pool.unbonding_eras
+      .filter(([era]) => era < currentEra)
+      .reduce((acc, [, points]) => acc + points, 0n)
+  }, [currentEra, pool])
+
+  const { data: plancksToWithdraw } = useQuery({
+    queryKey: ["pointsToBalance", sapi?.id, pool?.pool_id, pointsToWithdraw?.toString()],
     queryFn: async () => {
       if (!sapi || !pool) return null
       return sapi.getRuntimeCallValue("NominationPoolsApi", "points_to_balance", [
         pool.pool_id,
-        pool.points,
+        pointsToWithdraw,
       ])
     },
   })
 
-  const amountToUnbond = useMemo(
+  const amountToWithdraw = useMemo(
     () =>
-      typeof plancksToUnbond === "bigint"
-        ? new BalanceFormatter(plancksToUnbond, token?.decimals, tokenRates)
+      typeof plancksToWithdraw === "bigint"
+        ? new BalanceFormatter(plancksToWithdraw, token?.decimals, tokenRates)
         : null,
-    [plancksToUnbond, token?.decimals, tokenRates]
+    [plancksToWithdraw, token?.decimals, tokenRates]
   )
 
   const {
@@ -93,22 +101,16 @@ export const useUnstakeWizard = () => {
     isLoading: isLoadingPayload,
     error: errorPayload,
   } = useQuery({
-    queryKey: [
-      "getExtrinsicPayload",
-      "NominationPools.unbond",
-      sapi?.id,
-      address,
-      papiStringify(pool),
-    ],
+    queryKey: ["getExtrinsicPayload", "NominationPools.withdraw_unbonded", sapi?.id, address],
     queryFn: async () => {
-      if (!sapi || !address || !pool) return null
+      if (!sapi || !address) return null
 
       return sapi.getExtrinsicPayload(
         "NominationPools",
-        "unbond",
+        "withdraw_unbonded",
         {
           member_account: Enum("Id", address),
-          unbonding_points: pool.points,
+          num_slashing_spans: 0, // :jean:
         },
         { address }
       )
@@ -132,7 +134,7 @@ export const useUnstakeWizard = () => {
   const existentialDeposit = useExistentialDeposit(token?.id)
 
   const errorMessage = useMemo(() => {
-    if (!!pool && !pool.points) return t("There is no balance to unbond")
+    if (amountToWithdraw?.planck === 0n) return t("There is no balance to withdraw")
 
     if (!!balance && !!feeEstimate && feeEstimate > balance.transferable.planck)
       return t("Insufficient balance to cover fee")
@@ -146,7 +148,7 @@ export const useUnstakeWizard = () => {
       return t("Insufficient balance to cover fee and keep account alive")
 
     return null
-  }, [pool, t, balance, feeEstimate, existentialDeposit?.planck])
+  }, [amountToWithdraw?.planck, t, balance, feeEstimate, existentialDeposit?.planck])
 
   return {
     token,
@@ -157,7 +159,7 @@ export const useUnstakeWizard = () => {
     tokenRates,
     step,
     hash,
-    amountToUnbond,
+    amountToWithdraw,
 
     payload: !errorMessage ? payload : null,
     txMetadata,

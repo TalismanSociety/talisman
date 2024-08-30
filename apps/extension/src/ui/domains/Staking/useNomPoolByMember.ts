@@ -3,6 +3,8 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
+import { NomPoolMember } from "./types"
+
 export const useNomPoolByMember = (
   chainId: ChainId | null | undefined,
   address: string | null | undefined
@@ -13,12 +15,11 @@ export const useNomPoolByMember = (
     queryKey: ["useNomPoolByMember", sapi?.id, address],
     queryFn: async () => {
       if (!sapi || !address) return null
-      const result = await sapi.getStorage<{ pool_id: number; points: bigint } | null>(
-        "NominationPools",
-        "PoolMembers",
-        [address]
+      return (
+        (await sapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
+          address,
+        ])) ?? null
       )
-      return result ? { poolId: result.pool_id, points: result.points } : null
     },
   })
 }

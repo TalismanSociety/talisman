@@ -6,3 +6,9 @@ export type NomPoolsClaimPermission = Enum<{
   PermissionlessWithdraw: undefined
   PermissionlessAll: undefined
 }>
+
+export type NomPoolMember = {
+  pool_id: number
+  points: bigint
+  unbonding_eras: [number, bigint][]
+}

@@ -7,6 +7,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useToken from "@ui/hooks/useToken"
 
 import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
+import { NomPoolMember } from "./types"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 
@@ -33,7 +34,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   }, [account, minJoinBond, ownedBalances, token])
 
   return useQuery({
-    queryKey: ["useNomPoolStakingElligibility", sapi?.id, token?.id, poolId, balancesKey],
+    queryKey: ["useNomPoolStakingStatus", sapi?.id, token?.id, poolId, balancesKey],
     queryFn: async () => {
       if (!sapi || !token || !poolId || !minJoinBond || !balances.length) return null
 
@@ -45,7 +46,9 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         })
         .map((b) => b.address)
 
-      const [soloStakingByAddress, nomPoolStakingByAddress] = await Promise.all([
+      const [currentEra, soloStakingByAddress, nomPoolStakingByAddress] = await Promise.all([
+        sapi.getStorage<number>("Staking", "CurrentEra", []),
+
         Object.fromEntries(
           await Promise.all(
             addresses.map(async (address) => [
@@ -59,14 +62,12 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
           await Promise.all(
             addresses.map(async (address) => [
               address,
-              await sapi.getStorage<{ pool_id: number; points: bigint } | null>(
-                "NominationPools",
-                "PoolMembers",
-                [address]
-              ),
+              await sapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
+                address,
+              ]),
             ])
           )
-        ) as Record<string, { pool_id: number; points: bigint } | undefined>,
+        ) as Record<string, NomPoolMember | null>,
       ])
 
       const accounts = balances.map(({ address }) => ({
@@ -77,6 +78,9 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         canJoinNomPool: !soloStakingByAddress[address] && !nomPoolStakingByAddress[address],
         canRebondNomPool: !!nomPoolStakingByAddress[address],
         canUnstake: nomPoolStakingByAddress[address]?.points,
+        canWithdraw: nomPoolStakingByAddress[address]?.unbonding_eras?.some(
+          ([era]) => era < currentEra // TODO check if equal is good
+        ),
       }))
 
       return { accounts, poolId }
