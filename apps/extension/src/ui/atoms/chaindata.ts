@@ -199,7 +199,7 @@ const activeChainsWithoutTestnetsMapAtom = atom(async (get) => {
   return Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
 })
 
-/** @deprecated this suspenses all the time */
+/** @deprecated this suspenses for every new key, try to use another approach */
 export const chainByGenesisHashAtomFamily = atomFamily(
   (genesisHash: HexString | null | undefined) =>
     atom(async (get) => {

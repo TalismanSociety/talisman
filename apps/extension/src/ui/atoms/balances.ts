@@ -77,7 +77,7 @@ export const allBalancesAtom = atom(async (get) => {
 
 type BalanceQueryParams = { address?: Address; tokenId?: TokenId }
 
-/** @deprecated this suspenses all the time */
+/** @deprecated this suspenses for every new key, try to use another approach */
 export const balancesAtomFamily = atomFamily(
   ({ address, tokenId }: BalanceQueryParams) =>
     atom(async (get) => {
