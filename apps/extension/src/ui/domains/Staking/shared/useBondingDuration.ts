@@ -3,7 +3,7 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { getNomPoolsBondingDurationMs } from "./helpers"
+import { getNomPoolsBondingDurationMs } from "../helpers"
 
 export const useNomPoolsBondingDuration = (chainId: ChainId | null | undefined) => {
   const { data: sapi } = useScaleApi(chainId)

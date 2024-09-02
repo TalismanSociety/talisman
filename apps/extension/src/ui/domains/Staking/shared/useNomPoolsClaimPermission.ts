@@ -3,23 +3,25 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { NomPoolMember } from "./types"
+import { NomPoolsClaimPermission } from "../types"
 
-export const useNomPoolByMember = (
+export const useNomPoolsClaimPermission = (
   chainId: ChainId | null | undefined,
   address: string | null | undefined
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 
   return useQuery({
-    queryKey: ["useNomPoolByMember", sapi?.id, address],
+    queryKey: ["useNomPoolsClaimPermission", sapi?.id, address],
     queryFn: async () => {
       if (!sapi || !address) return null
-      return (
-        (await sapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
-          address,
-        ])) ?? null
+      const result = await sapi.getStorage<NomPoolsClaimPermission>(
+        "NominationPools",
+        "ClaimPermissions",
+        [address]
       )
+
+      return result.type
     },
   })
 }

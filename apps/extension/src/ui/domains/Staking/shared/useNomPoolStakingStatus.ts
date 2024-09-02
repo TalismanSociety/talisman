@@ -6,8 +6,8 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import useBalances from "@ui/hooks/useBalances"
 import useToken from "@ui/hooks/useToken"
 
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
-import { NomPoolMember } from "./types"
+import { useSelectedAccount } from "../../Portfolio/useSelectedAccount"
+import { NomPoolMember } from "../types"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 

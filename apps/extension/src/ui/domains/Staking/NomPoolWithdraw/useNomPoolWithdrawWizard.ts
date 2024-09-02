@@ -14,9 +14,9 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 
-import { useCurrentStakingEra } from "../useCurrentStakingEra"
-import { useExistentialDeposit } from "../useExistentialDeposit"
-import { useNomPoolByMember } from "../useNomPoolByMember"
+import { useCurrentStakingEra } from "../shared/useCurrentStakingEra"
+import { useExistentialDeposit } from "../shared/useExistentialDeposit"
+import { useNomPoolByMember } from "../shared/useNomPoolByMember"
 
 type WizardStep = "review" | "follow-up"
 

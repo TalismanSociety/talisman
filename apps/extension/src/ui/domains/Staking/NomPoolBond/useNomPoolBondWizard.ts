@@ -14,12 +14,12 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 
 import { useFeeToken } from "../../SendFunds/useFeeToken"
 import { getNomPoolStakingPayload } from "../helpers"
-import { useExistentialDeposit } from "../useExistentialDeposit"
-import { useIsSoloStaking } from "../useIsSoloStaking"
-import { useNomPoolByMember } from "../useNomPoolByMember"
-import { useNomPoolsClaimPermission } from "../useNomPoolsClaimPermission"
-import { useNomPoolsMinJoinBond } from "../useNomPoolsMinJoinBond"
-import { useNomPoolState } from "../useNomPoolState"
+import { useExistentialDeposit } from "../shared/useExistentialDeposit"
+import { useIsSoloStaking } from "../shared/useIsSoloStaking"
+import { useNomPoolByMember } from "../shared/useNomPoolByMember"
+import { useNomPoolsClaimPermission } from "../shared/useNomPoolsClaimPermission"
+import { useNomPoolsMinJoinBond } from "../shared/useNomPoolsMinJoinBond"
+import { useNomPoolState } from "../shared/useNomPoolState"
 
 type WizardStep = "form" | "review" | "follow-up"
 

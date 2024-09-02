@@ -2,7 +2,7 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 
-import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 
 export const StakingFeeEstimate: FC<{
   isLoading?: boolean

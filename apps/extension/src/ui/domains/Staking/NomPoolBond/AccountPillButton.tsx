@@ -7,9 +7,9 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { Address } from "../Account/Address"
+import { AccountIcon } from "../../Account/AccountIcon"
+import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
+import { Address } from "../../Account/Address"
 
 type AccountPillButtonProps = {
   address?: string | null

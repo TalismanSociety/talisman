@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-import { useNomPoolWithdrawModal } from "./NomPoolWithdraw/useNomPoolWithdrawModal"
-import { useNomPoolStakingStatus } from "./useNomPoolStakingStatus"
+import { useNomPoolStakingStatus } from "../shared/useNomPoolStakingStatus"
+import { useNomPoolWithdrawModal } from "./useNomPoolWithdrawModal"
 
 export const NomPoolWithdrawButton: FC<{
   tokenId: TokenId

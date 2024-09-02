@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
-import { InlineStakingAccount } from "../InlineStakingAccount"
-import { InlineStakingFeeEstimate } from "../InlineStakingFeeEstimate"
-import { NomPoolName } from "../NomPoolName"
-import { StakingUnbondingPeriod } from "../StakingUnbondingPeriod"
+import { NomPoolName } from "../shared/NomPoolName"
+import { InlineStakingAccount } from "../shared/StakingAccountDisplay"
+import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
+import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
 export const NomPoolBondReview = () => {
@@ -58,7 +58,7 @@ export const NomPoolBondReview = () => {
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
           <div className="whitespace-nowrap">{t("Estimated Fee")} </div>
           <div>
-            <InlineStakingFeeEstimate noCountUp />
+            <FeeEstimate />
           </div>
         </div>
       </div>
@@ -73,5 +73,19 @@ export const NomPoolBondReview = () => {
         />
       )}
     </div>
+  )
+}
+
+const FeeEstimate = () => {
+  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useNomPoolBondWizard()
+
+  return (
+    <StakingFeeEstimate
+      plancks={feeEstimate}
+      tokenId={feeToken?.id}
+      isLoading={isLoadingFeeEstimate}
+      error={errorFeeEstimate}
+      noCountUp
+    />
   )
 }

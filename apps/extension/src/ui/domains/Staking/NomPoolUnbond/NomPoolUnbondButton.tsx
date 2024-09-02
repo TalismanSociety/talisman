@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-import { useNomPoolUnbondModal } from "./NomPoolUnbond/useNomPoolUnbondModal"
-import { useNomPoolStakingStatus } from "./useNomPoolStakingStatus"
+import { useNomPoolStakingStatus } from "../shared/useNomPoolStakingStatus"
+import { useNomPoolUnbondModal } from "./useNomPoolUnbondModal"
 
 export const NomPoolUnbondButton: FC<{ tokenId: TokenId; address: string; className?: string }> = ({
   tokenId,

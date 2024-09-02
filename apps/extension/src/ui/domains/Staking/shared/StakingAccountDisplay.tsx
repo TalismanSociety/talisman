@@ -11,8 +11,8 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { AccountIcon } from "../../Account/AccountIcon"
+import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
 
 const AddressTooltip: FC<{
   address: string

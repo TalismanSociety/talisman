@@ -5,9 +5,9 @@ import { Button } from "talisman-ui"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
-import { InlineStakingAccount } from "../InlineStakingAccount"
-import { NomPoolName } from "../NomPoolName"
-import { StakingFeeEstimate } from "../StakingFeeEstimate"
+import { NomPoolName } from "../shared/NomPoolName"
+import { InlineStakingAccount } from "../shared/StakingAccountDisplay"
+import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { useNomPoolWithdrawWizard } from "./useNomPoolWithdrawWizard"
 
 export const NomPoolWithdrawReview = () => {

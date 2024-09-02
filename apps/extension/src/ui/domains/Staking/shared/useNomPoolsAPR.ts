@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { getNomPoolsAPR } from "./helpers"
+import { getNomPoolsAPR } from "../helpers"
 
 export const useNomPoolsAPR = (chainId: ChainId | null | undefined) => {
   const { data: sapi } = useScaleApi(chainId)

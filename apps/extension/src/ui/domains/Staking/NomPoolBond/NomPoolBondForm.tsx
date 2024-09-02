@@ -25,11 +25,11 @@ import { Fiat } from "../../Asset/Fiat"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import Tokens from "../../Asset/Tokens"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
-import { AccountPillButton } from "../AccountPillButton"
-import { InlineStakingFeeEstimate } from "../InlineStakingFeeEstimate"
-import { NomPoolName } from "../NomPoolName"
-import { StakingUnbondingPeriod } from "../StakingUnbondingPeriod"
-import { useNomPoolsAPR } from "../useNomPoolsAPR"
+import { NomPoolName } from "../shared/NomPoolName"
+import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
+import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
+import { useNomPoolsAPR } from "../shared/useNomPoolsAPR"
+import { AccountPillButton } from "./AccountPillButton"
 import { NomPoolBondAccountPicker } from "./NomPoolBondAccountPicker"
 import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
@@ -298,6 +298,19 @@ const NomPoolsApr = () => {
   )
 }
 
+const FeeEstimate = () => {
+  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useNomPoolBondWizard()
+
+  return (
+    <StakingFeeEstimate
+      plancks={feeEstimate}
+      tokenId={feeToken?.id}
+      isLoading={isLoadingFeeEstimate}
+      error={errorFeeEstimate}
+    />
+  )
+}
+
 export const NomPoolBondForm = () => {
   const { t } = useTranslation()
   const { account, poolId, accountPicker, token, payload, setStep } = useNomPoolBondWizard()
@@ -358,7 +371,7 @@ export const NomPoolBondForm = () => {
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
           <div className="overflow-hidden">
-            <InlineStakingFeeEstimate />
+            <FeeEstimate />
           </div>
         </div>
       </div>
