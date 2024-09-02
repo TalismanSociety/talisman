@@ -18,7 +18,7 @@ type SapiSendButtonProps = {
   label?: string
   payload: SignerPayloadJSON
   txMetadata?: Uint8Array
-  disabled?: boolean // true while estimating fee
+  disabled?: boolean
   onSubmitted: (hash: Hex) => void
 }
 
@@ -166,8 +166,6 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
 }
 
 export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
-  //const { t } = useTranslation()
-  // const chain = useChainByGenesisHash(payload?.genesisHash)
   const account = useAccountByAddress(props.payload?.address)
 
   const signMethod = useMemo(() => {

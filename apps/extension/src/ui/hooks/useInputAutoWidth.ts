@@ -33,8 +33,8 @@ export const useInputAutoWidth = (ref?: RefObject<HTMLInputElement>) => {
 
     input.addEventListener("input", resize)
     input.addEventListener("keyup", resize)
-    const observer = new MutationObserver(resize)
 
+    const observer = new MutationObserver(resize)
     observer.observe(input, { attributes: true, childList: false, subtree: false })
 
     // size will change once our font will be loaded

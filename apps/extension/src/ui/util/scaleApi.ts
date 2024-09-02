@@ -228,21 +228,15 @@ const getSignerPayloadJSON = async (
   const { codec, location } = builder.buildCall(palletName, methodName)
   const method = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
 
-  // TODO remove
-  // if (DEBUG && Date.now())
-  //   method = Binary.fromHex(
-  //     "0x0500006cf965cfdd16d81eed9bf10c09a9d0da0141ab7a2419d1ca3045002fd115631100"
-  //   ) // send 0 DOT to guardians
-
   const blockNumber = await getStorageValue<number>(chainId, builder, "System", "Number", [])
   if (blockNumber === null) throw new Error("Block number not found")
 
   const [account, genesisHash, blockHash] = await Promise.all([
     getStorageValue<{ nonce: number }>(chainId, builder, "System", "Account", [
       signerConfig.address,
-    ]), // TODO if V15 available, use a runtime call isntead : AccountNonceApi/account_nonce
+    ]), // TODO if V15 available, use a runtime call instead : AccountNonceApi/account_nonce
     getStorageValue<Binary>(chainId, builder, "System", "BlockHash", [0]),
-    api.subSend<Hex>(chainId, "chain_getBlockHash", [blockNumber], false), // TODO find the right way to fetch this with new RPC api, the following returns undefined: fetchStorageValue<Binary>(chainId, builder, "System", "BlockHash", [blockNumber])
+    getStorageValue<Binary>(chainId, builder, "System", "BlockHash", [blockNumber - 1]), // current blockNumber hash can't be known yet
   ])
   if (!genesisHash) throw new Error("Genesis hash not found")
   if (!blockHash) throw new Error("Block hash not found")
@@ -256,7 +250,7 @@ const getSignerPayloadJSON = async (
   const basePayload: SignerPayloadJSON = {
     address: signerConfig.address,
     genesisHash: genesisHash.asHex() as Hex,
-    blockHash,
+    blockHash: genesisHash.asHex() as Hex,
     method: method.asHex(),
     signedExtensions,
     nonce: toPjsHex(nonce, 4),
@@ -264,7 +258,7 @@ const getSignerPayloadJSON = async (
     transactionVersion: toPjsHex(chainInfo.transactionVersion, 4),
     blockNumber: toPjsHex(blockNumber, 4),
     era: toHex(era) as Hex,
-    tip: toPjsHex(0, 16), // TODO
+    tip: toPjsHex(0, 16), // TODO gas station (required for Astar)
     assetId: undefined,
     version: 4,
   }
@@ -314,7 +308,6 @@ const getFeeEstimate = async (
       [binary, bytes.length]
     )
     if (!result?.partial_fee) {
-      // console.warn("partialFee is not found", { result })
       throw new Error("partialFee is not found")
     }
     return result.partial_fee
@@ -323,6 +316,7 @@ const getFeeEstimate = async (
   }
 
   // fallback to pjs encoded state call, in case the above fails (extracting runtime calls codecs might require metadata V15)
+  // Note: PAPI will consider TransactionPaymentApi as first class api so it should work even without V15, but this is not the case yet.
   const { partialFee } = await getExtrinsicDispatchInfo(chainId, extrinsic)
 
   return BigInt(partialFee)
@@ -377,7 +371,7 @@ const getStorageValue = async <T>(
   const stateKey = storageCodec.enc(...keys)
 
   const hexValue = await api.subSend<string | null>(chainId, "state_getStorage", [stateKey])
-  if (!hexValue) return null as T // caller will need to expect this case when applicable
+  if (!hexValue) return null as T // caller will need to expect null when applicable
 
   return storageCodec.dec(hexValue) as T
 }
@@ -394,7 +388,6 @@ function trailingZeroes(n: number) {
   return i
 }
 
-// from papi
 const toPjsHex = (value: number | bigint, minByteLen?: number) => {
   let inner = value.toString(16)
   inner = (inner.length % 2 ? "0" : "") + inner
