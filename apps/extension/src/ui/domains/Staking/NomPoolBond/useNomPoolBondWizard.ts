@@ -1,9 +1,8 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
 import { atom, useAtom, useSetAtom } from "jotai"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Hex } from "viem"
 
@@ -96,11 +95,14 @@ export const useNomPoolBondWizard = () => {
   const token = useToken(state.tokenId)
   const feeToken = useFeeToken(token?.id)
   const tokenRates = useTokenRates(state.tokenId)
+  const existentialDeposit = useExistentialDeposit(token?.id)
+  const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 
   const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
   const { data: claimPermission } = useNomPoolsClaimPermission(token?.chain?.id, state.address)
-
-  const accountPicker = useInnerOpenClose("isAccountPickerOpen")
+  const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, state.address)
+  const { data: currentPool } = useNomPoolByMember(token?.chain?.id, state.address)
+  const { data: poolState } = useNomPoolState(token?.chain?.id, state.poolId)
 
   // TODO rename to amountToStake
   const formatter = useMemo(
@@ -135,6 +137,12 @@ export const useNomPoolBondWizard = () => {
     setState((prev) => ({ ...prev, displayMode: prev.displayMode === "token" ? "fiat" : "token" }))
   }, [setState])
 
+  useEffect(() => {
+    // if user is already staking in pool, set poolId to that pool
+    if (currentPool && currentPool.pool_id !== state.poolId)
+      setState((prev) => ({ ...prev, poolId: currentPool.pool_id }))
+  }, [currentPool, setState, state.poolId])
+
   const isFormValid = useMemo(
     () =>
       !!account &&
@@ -157,12 +165,6 @@ export const useNomPoolBondWizard = () => {
     [isFormValid, setState]
   )
 
-  const reset = useCallback(
-    (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
-      setState({ ...DEFAULT_STATE, ...init }),
-    [setState]
-  )
-
   const withSetClaimPermission = useMemo(() => {
     switch (claimPermission) {
       case "PermissionlessCompound":
@@ -173,6 +175,9 @@ export const useNomPoolBondWizard = () => {
     }
   }, [claimPermission])
 
+  // we must craft a different extrinsic if the user is already staking in a pool
+  const hasJoinedNomPool = useMemo(() => !!currentPool, [currentPool])
+
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
   const {
@@ -180,14 +185,31 @@ export const useNomPoolBondWizard = () => {
     isLoading: isLoadingPayload,
     error: errorPayload,
   } = useQuery({
-    queryKey: ["getExtrinsicPayload", "NominationPools.join", papiStringify(state)], // safe stringify because contains bigint
+    queryKey: [
+      "getNomPoolStakingPayload",
+      sapi?.id,
+      state.address,
+      state.poolId,
+      state.plancks?.toString(),
+      isFormValid,
+      hasJoinedNomPool,
+      withSetClaimPermission,
+    ],
     queryFn: async () => {
       const { address, poolId, plancks } = state
       if (!sapi || !address || !poolId || !plancks) return null
       if (!isFormValid) return null
 
-      return getNomPoolStakingPayload(sapi, address, poolId, plancks, withSetClaimPermission)
+      return getNomPoolStakingPayload(
+        sapi,
+        address,
+        poolId,
+        plancks,
+        hasJoinedNomPool,
+        withSetClaimPermission
+      )
     },
+    enabled: !!sapi,
   })
 
   const { payload, txMetadata } = payloadAndMetadata || {}
@@ -196,7 +218,15 @@ export const useNomPoolBondWizard = () => {
     // used to get an estimate before amount is known, for estimating maxPlancks
     data: fakeFeeEstimate,
   } = useQuery({
-    queryKey: ["feeEstimate", state.poolId, state.address, minJoinBond?.toString()],
+    queryKey: [
+      "getNomPoolStakingPayload/estimateFee",
+      sapi?.id,
+      state.poolId,
+      state.address,
+      minJoinBond?.toString(),
+      hasJoinedNomPool,
+      withSetClaimPermission,
+    ],
     queryFn: async () => {
       const { address, poolId } = state
       if (!sapi || !address || !poolId || !minJoinBond) return null
@@ -206,10 +236,12 @@ export const useNomPoolBondWizard = () => {
         address,
         poolId,
         minJoinBond,
+        hasJoinedNomPool,
         withSetClaimPermission
       )
       return sapi.getFeeEstimate(payload)
     },
+    enabled: !!sapi,
   })
 
   const {
@@ -217,7 +249,7 @@ export const useNomPoolBondWizard = () => {
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useQuery({
-    queryKey: ["feeEstimate", payload], // safe stringify because contains bigint
+    queryKey: ["feeEstimate", sapi?.id, payload], // safe stringify because contains bigint
     queryFn: () => {
       if (!sapi || !payload) return null
       return sapi.getFeeEstimate(payload)
@@ -231,8 +263,6 @@ export const useNomPoolBondWizard = () => {
     [setState]
   )
 
-  const existentialDeposit = useExistentialDeposit(token?.id)
-
   const maxPlancks = useMemo(() => {
     if (!balance || !existentialDeposit || !fakeFeeEstimate) return null
     // use 11x fake fee estimate as we block form based on 10x the real fee estimate
@@ -240,21 +270,15 @@ export const useNomPoolBondWizard = () => {
     return balance.transferable.planck - existentialDeposit.planck - fakeFeeEstimate * 11n
   }, [balance, existentialDeposit, fakeFeeEstimate])
 
-  const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, state.address)
-  const { data: pool } = useNomPoolByMember(token?.chain?.id, state.address)
-  const { data: poolState } = useNomPoolState(token?.chain?.id, state.poolId)
-
   const inputErrorMessage = useMemo(() => {
     if (isSoloStaking)
       return t("An account cannot do both regular staking and nomination pool staking")
-    if (pool && pool.pool_id !== state.poolId)
-      return t("You are already staking in another nomination pool ({{poolId}})", pool)
-    if (poolState?.isFull) return t("This nomination pool is full")
-    if (poolState && !poolState.isOpen) return t("This nomination pool is not open")
+
+    if (!currentPool && poolState?.isFull) return t("This nomination pool is full") // TODO : picking another ?
+    if (!currentPool && poolState && !poolState.isOpen) return t("This nomination pool is not open") // TODO : allow picking another ?
 
     if (!formatter || !minJoinBond) return null
 
-    // TODO : account is already staking in another pool
     if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
       return t("Insufficient balance")
 
@@ -295,16 +319,15 @@ export const useNomPoolBondWizard = () => {
 
     return null
   }, [
-    t,
-    balance,
-    existentialDeposit?.planck,
-    feeEstimate,
-    formatter,
     isSoloStaking,
-    minJoinBond,
-    pool,
+    t,
+    currentPool,
     poolState,
-    state.poolId,
+    formatter,
+    minJoinBond,
+    balance,
+    feeEstimate,
+    existentialDeposit?.planck,
     token?.decimals,
     token?.symbol,
   ])
@@ -339,7 +362,6 @@ export const useNomPoolBondWizard = () => {
     setPlancks,
     setStep,
     toggleDisplayMode,
-    reset, // TODO yeet ?
 
     onSubmitted,
   }

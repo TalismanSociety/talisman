@@ -137,7 +137,8 @@ export const getNomPoolStakingPayload = async (
   address: string,
   poolId: number,
   amount: bigint,
-  withSetClaimPermission?: boolean
+  isBondExtra: boolean,
+  withSetClaimPermission: boolean
 ) => {
   if (withSetClaimPermission)
     return sapi.getExtrinsicPayload(
@@ -145,7 +146,11 @@ export const getNomPoolStakingPayload = async (
       "batch_all",
       {
         calls: [
-          sapi.getDecodedCall("NominationPools", "join", { amount, pool_id: poolId }),
+          isBondExtra
+            ? sapi.getDecodedCall("NominationPools", "bond_extra", {
+                extra: Enum("FreeBalance", amount),
+              })
+            : sapi.getDecodedCall("NominationPools", "join", { amount, pool_id: poolId }),
           sapi.getDecodedCall("NominationPools", "set_claim_permission", {
             permission: Enum("PermissionlessCompound"),
           }),
@@ -154,13 +159,22 @@ export const getNomPoolStakingPayload = async (
       { address }
     )
 
-  return sapi.getExtrinsicPayload(
-    "NominationPools",
-    "join",
-    {
-      amount,
-      pool_id: poolId,
-    },
-    { address }
-  )
+  return isBondExtra
+    ? sapi.getExtrinsicPayload(
+        "NominationPools",
+        "bond_extra",
+        {
+          extra: Enum("FreeBalance", amount),
+        },
+        { address }
+      )
+    : sapi.getExtrinsicPayload(
+        "NominationPools",
+        "join",
+        {
+          amount,
+          pool_id: poolId,
+        },
+        { address }
+      )
 }
