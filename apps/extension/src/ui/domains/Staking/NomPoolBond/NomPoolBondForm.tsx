@@ -28,7 +28,7 @@ import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { NomPoolName } from "../shared/NomPoolName"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
-import { useNomPoolsAPR } from "../shared/useNomPoolsAPR"
+import { useStakingAPR } from "../shared/useStakingAPR"
 import { NomPoolBondAccountPicker } from "./NomPoolBondAccountPicker"
 import { NomPoolBondAccountPillButton } from "./NomPoolBondAccountPillButton"
 import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
@@ -285,7 +285,7 @@ export const AmountEdit = () => {
 
 const NomPoolsApr = () => {
   const { token } = useNomPoolBondWizard()
-  const { data: apr, isLoading } = useNomPoolsAPR(token?.chain?.id)
+  const { data: apr, isLoading } = useStakingAPR(token?.chain?.id)
   const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
 
   if (isLoading)

@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next"
 
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
-import { useNomPoolsBondingDuration } from "./useBondingDuration"
+import { useStakingBondingDuration } from "./useStakingBondingDuration"
 
 export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }> = ({
   chainId,
 }) => {
   const { t } = useTranslation()
-  const { data: duration, isLoading } = useNomPoolsBondingDuration(chainId)
+  const { data: duration, isLoading } = useStakingBondingDuration(chainId)
   const locale = useDateFnsLocale()
 
   const display = useMemo(
