@@ -71,8 +71,6 @@ export type Chain = {
   /** Custom signed extensions to be registered in the Metadata object */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registryTypes?: any
-
-  staking?: Array<StakingConfig>
 }
 export type CustomChain = Chain & {
   isCustom: true
@@ -84,11 +82,3 @@ export type SubstrateRpc = {
 
 export type BalancesConfig = { moduleType: string; moduleConfig: unknown }
 export type BalancesMetadata = { moduleType: string; metadata: unknown }
-
-export type NomPoolStakingConfig = {
-  type: "nominationPools"
-  minJoinBond: string
-  recommendedPoolIds: number[]
-  // era info ?
-}
-export type StakingConfig = NomPoolStakingConfig // TODO: | DappStaking | ValidatorStaking
