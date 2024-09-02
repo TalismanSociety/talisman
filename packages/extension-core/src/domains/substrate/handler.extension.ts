@@ -1,5 +1,6 @@
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { u8aToHex } from "@polkadot/util"
+import { log } from "extension-shared"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -56,6 +57,14 @@ export class SubHandler extends ExtensionHandler {
 
     // apply signature to the modified payload
     tx.addSignature(payload.address, signature, payload)
+
+    log.log("submitting extrinsic", {
+      chainId: chain.id,
+      hash: tx.hash.toHex(),
+      txHex: tx.toHex(),
+      txHuman: tx.toHuman(),
+      payload,
+    })
 
     await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
 
