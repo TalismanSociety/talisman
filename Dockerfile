@@ -1,10 +1,13 @@
-FROM node:18 AS build-stage
+FROM node:18 AS build
+ARG command
+ENV USE_ONE_DIST_DIR=true
+RUN corepack enable
 
-WORKDIR /app
+WORKDIR /talisman
 COPY . ./
 
 RUN pnpm install
-RUN pnpm build:extension:prod
+RUN pnpm $command
 
-FROM scratch AS export-stage
-COPY --from=build-stage /app/apps/extension/dist /
+FROM scratch AS export
+COPY --from=build /talisman/apps/extension/dist/*.zip /
