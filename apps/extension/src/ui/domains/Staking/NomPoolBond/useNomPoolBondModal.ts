@@ -9,7 +9,7 @@ import { useResetNomPoolBondWizard } from "./useNomPoolBondWizard"
 export const useNomPoolBondModal = () => {
   const reset = useResetNomPoolBondWizard()
 
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("inlineStakingModal")
+  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("NomPoolBondModal")
 
   const open = useCallback(
     ({ address, tokenId, poolId }: { address: Address; tokenId: TokenId; poolId: number }) => {

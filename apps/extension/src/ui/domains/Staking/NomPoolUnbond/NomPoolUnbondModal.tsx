@@ -63,7 +63,7 @@ export const NomPoolUnbondModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <Suspense fallback={<SuspenseTracker name="InlineStakingModal" />}>
+      <Suspense fallback={<SuspenseTracker name="NomPoolUnbondModal" />}>
         <Content />
       </Suspense>
     </Modal>

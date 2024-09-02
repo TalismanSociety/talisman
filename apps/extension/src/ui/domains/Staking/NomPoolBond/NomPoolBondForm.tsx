@@ -29,8 +29,8 @@ import { NomPoolName } from "../shared/NomPoolName"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { useNomPoolsAPR } from "../shared/useNomPoolsAPR"
-import { AccountPillButton } from "./AccountPillButton"
 import { NomPoolBondAccountPicker } from "./NomPoolBondAccountPicker"
+import { NomPoolBondAccountPillButton } from "./NomPoolBondAccountPillButton"
 import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
@@ -328,7 +328,10 @@ export const NomPoolBondForm = () => {
           <div className="whitespace-nowrap">{t("Account")}</div>
           <div className="overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
-              <AccountPillButton address={account?.address} onClick={accountPicker.open} />
+              <NomPoolBondAccountPillButton
+                address={account?.address}
+                onClick={accountPicker.open}
+              />
             </Suspense>
           </div>
         </div>

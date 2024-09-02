@@ -18,7 +18,7 @@ type AccountPillButtonProps = {
   onClick?: () => void
 }
 
-export const AccountPillButton: FC<AccountPillButtonProps> = ({
+export const NomPoolBondAccountPillButton: FC<AccountPillButtonProps> = ({
   address,
   genesisHash: tokenGenesisHash,
   className,

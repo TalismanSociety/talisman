@@ -6,7 +6,7 @@ import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
 import { NomPoolName } from "../shared/NomPoolName"
-import { InlineStakingAccount } from "../shared/StakingAccountDisplay"
+import { StakingAccountDisplay } from "../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { useNomPoolUnbondWizard } from "./useNomPoolUnbondWizard"
@@ -51,7 +51,7 @@ export const NomPoolUnbondReview = () => {
         <div className="flex items-center justify-between gap-8 pt-2">
           <div className="whitespace-nowrap">{t("Account")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
-            <InlineStakingAccount address={account.address} chainId={token?.chain?.id} />
+            <StakingAccountDisplay address={account.address} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="py-8">

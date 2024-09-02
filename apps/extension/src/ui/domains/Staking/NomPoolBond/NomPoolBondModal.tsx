@@ -77,7 +77,7 @@ export const NomPoolBondModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <Suspense fallback={<SuspenseTracker name="InlineStakingModal" />}>
+      <Suspense fallback={<SuspenseTracker name="NomPoolBondModal" />}>
         <Content />
       </Suspense>
     </Modal>

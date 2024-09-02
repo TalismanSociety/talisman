@@ -63,7 +63,7 @@ export const NomPoolWithdrawModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <Suspense fallback={<SuspenseTracker name="InlineStakingModal" />}>
+      <Suspense fallback={<SuspenseTracker name="NomPoolWithdrawModal" />}>
         <Content />
       </Suspense>
     </Modal>

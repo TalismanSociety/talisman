@@ -55,7 +55,7 @@ type AddressDisplayProps = {
   className?: string
 }
 
-export const InlineStakingAccount: FC<AddressDisplayProps> = ({ address, chainId, className }) => {
+export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainId, className }) => {
   const chain = useChain(chainId as string)
   const account = useAccountByAddress(address)
 

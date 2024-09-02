@@ -345,8 +345,7 @@ const LockedExtra: FC<{
             {/* <div>4d 14hr 11min</div> */}
           </div>
         )
-      ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      accountStatus.canUnstake ? (
+      ) : accountStatus.canUnstake ? (
         <NomPoolUnbondButton tokenId={tokenId} address={address} />
       ) : null}
     </div>

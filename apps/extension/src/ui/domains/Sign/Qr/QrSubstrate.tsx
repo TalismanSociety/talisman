@@ -47,7 +47,7 @@ interface Props {
   className?: string
   genesisHash?: HexString
   onSignature?: (result: { signature: `0x${string}` }) => void
-  onReject?: () => void
+  onReject?: () => void // will display a cancel button only if this is provided
   payload: SignerPayloadJSON | SignerPayloadRaw
   containerId: string
   skipInit?: boolean
