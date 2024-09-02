@@ -1,5 +1,6 @@
 FROM node:18 AS build
 ARG command
+ENV USE_ONE_DIST_DIR=true
 RUN corepack enable
 
 WORKDIR /talisman
