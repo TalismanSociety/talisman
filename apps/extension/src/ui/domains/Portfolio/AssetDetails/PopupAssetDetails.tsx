@@ -1,9 +1,9 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { ArrowDownIcon, CreditCardIcon, LockIcon, ZapIcon } from "@talismn/icons"
+import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { PillButton } from "talisman-ui"
 
 import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -14,7 +14,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useNomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondModal"
+import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
@@ -32,40 +32,6 @@ import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
 import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
-
-const StakeButton: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
-  const { t } = useTranslation()
-  const { open } = useNomPoolBondModal()
-  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
-
-  const { genericEvent } = useAnalytics()
-
-  const handleClick = useCallback(() => {
-    if (!stakingStatus) return
-    const { accounts, poolId } = stakingStatus
-    const address = accounts?.find((s) => s.canJoinNomPool)?.address
-    if (!address) return
-    open({ tokenId, address, poolId })
-    genericEvent("open inline staking modal", { from: "asset details", tokenId })
-  }, [genericEvent, open, stakingStatus, tokenId])
-
-  if (!stakingStatus) return null
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={handleClick}
-          className="text-primary bg-primary/10 hover:bg-primary/20 flex size-[3.8rem] items-center justify-center rounded-full text-[2rem]"
-        >
-          <ZapIcon />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>{t("Stake")}</TooltipContent>
-    </Tooltip>
-  )
-}
 
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
@@ -110,7 +76,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         {tokenId && (
           <div className="size-[3.8rem] shrink-0">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <StakeButton tokenId={tokenId} />
+              <NomPoolBondButton tokenId={tokenId} />
             </Suspense>
           </div>
         )}

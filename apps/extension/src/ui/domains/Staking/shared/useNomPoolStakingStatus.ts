@@ -23,14 +23,11 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
 
   const [balances, balancesKey] = useMemo(() => {
     if (!minJoinBond || !token) return [[], ""]
-    const elligibleBalances = ownedBalances
+    const balances = ownedBalances
       .find({ tokenId: token.id })
       .each.filter((b) => !account || account.address === b.address)
       .filter((b) => !!b.transferable.planck)
-    return [
-      elligibleBalances,
-      elligibleBalances.map((b) => `${b.address}-${b.transferable.planck}`),
-    ]
+    return [balances, balances.map((b) => `${b.address}-${b.transferable.planck}`)]
   }, [account, minJoinBond, ownedBalances, token])
 
   return useQuery({
@@ -70,16 +67,19 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         ) as Record<string, NomPoolMember | null>,
       ])
 
+      const transferableByAddress = Object.fromEntries(
+        balances.map(({ address, transferable }) => [address, transferable.planck])
+      )
+
       const accounts = balances.map(({ address }) => ({
         address,
         poolId: nomPoolStakingByAddress[address]?.pool_id,
         isSoloStaking: !!soloStakingByAddress[address],
         isNomPoolsStaking: !!nomPoolStakingByAddress[address],
-        canJoinNomPool: !soloStakingByAddress[address] && !nomPoolStakingByAddress[address],
-        canRebondNomPool: !!nomPoolStakingByAddress[address],
+        canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
         canUnstake: nomPoolStakingByAddress[address]?.points,
         canWithdraw: nomPoolStakingByAddress[address]?.unbonding_eras?.some(
-          ([era]) => era < currentEra // TODO check if equal is good
+          ([era]) => era < currentEra // TODO maybe equal is good?
         ),
       }))
 

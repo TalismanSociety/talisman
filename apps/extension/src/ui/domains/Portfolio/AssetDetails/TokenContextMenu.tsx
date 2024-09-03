@@ -52,21 +52,30 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
 
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+
   const { open } = useNomPoolBondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
-  const { genericEvent } = useAnalytics()
-
-  const handleClick = useCallback(() => {
+  const openArgs = useMemo<Parameters<typeof open>[0] | undefined>(() => {
     if (!stakingStatus) return
     const { accounts, poolId } = stakingStatus
-    const address = accounts?.find((s) => s.canJoinNomPool)?.address
-    if (!address) return
-    open({ tokenId, address, poolId })
-    genericEvent("open inline staking modal", { from: "token menu", tokenId })
-  }, [genericEvent, open, stakingStatus, tokenId])
+    const acc = accounts?.find((s) => s.canBondNomPool)
+    if (!acc) return
+    return {
+      tokenId,
+      address: acc.address,
+      poolId: acc.poolId ?? poolId,
+    }
+  }, [stakingStatus, tokenId])
 
-  if (!stakingStatus) return null // no nompool staking on this network
+  const handleClick = useCallback(() => {
+    if (!openArgs) return
+    open(openArgs)
+    genericEvent("open inline staking modal", { tokenId: openArgs.tokenId })
+  }, [genericEvent, open, openArgs])
+
+  if (!openArgs) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }

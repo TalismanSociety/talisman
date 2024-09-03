@@ -49,9 +49,9 @@ export const getScaleApi = (
     spec_name: string
     spec_version: number
     transaction_version: number
-  }>(metadata, builder, "System", "Version")
+  }>(chainId, metadata, builder, "System", "Version")
 
-  const base58Prefix = getConstantValue<number>(metadata, builder, "System", "SS58Prefix")
+  const base58Prefix = getConstantValue<number>(chainId, metadata, builder, "System", "SS58Prefix")
 
   const chainInfo = {
     token,
@@ -74,7 +74,7 @@ export const getScaleApi = (
     token,
 
     getConstant: <T>(pallet: string, constant: string) =>
-      getConstantValue<T>(metadata, builder, pallet, constant),
+      getConstantValue<T>(chainId, metadata, builder, pallet, constant),
 
     getStorage: <T>(pallet: string, entry: string, keys: unknown[]) =>
       getStorageValue<T>(chainId, builder, pallet, entry, keys),
@@ -112,6 +112,7 @@ type ChainInfo = {
   registryTypes?: unknown
 }
 
+// TODO remove this => waiting for @polkadot-api/tx-utils
 const getTypeRegistry = (
   metadata: ScaleMetadata,
   payload: SignerPayloadJSON,
@@ -186,7 +187,7 @@ const getPayloadWithMetadataHash = (
       withSignedTransaction: true,
     }
 
-    // TODO do this without PJS / registry
+    // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
     // const { extra, additionalSigned } = getSignedExtensionValues(payload, metadata)
     // const badExtPayload = mergeUint8(fromHex(payload.method), ...extra, ...additionalSigned)
     // log.debug("[sapi] bad ExtPayload", { badExtPayload })
@@ -282,6 +283,7 @@ const getFeeEstimate = async (
   payload: SignerPayloadJSON,
   chainInfo: ChainInfo
 ) => {
+  // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
   const registry = getTypeRegistry(metadata, payload, chainInfo)
   const extrinsic = registry.createType("Extrinsic", payload)
 
@@ -344,20 +346,26 @@ const getRuntimeCallValue = async <T>(
 }
 
 const getConstantValue = <T>(
+  chainId: ChainId,
   metadata: ScaleMetadata,
   scaleBuilder: ScaleBuilder,
   pallet: string,
   constant: string
 ) => {
-  const storageCodec = scaleBuilder.buildConstant(pallet, constant)
+  try {
+    const storageCodec = scaleBuilder.buildConstant(pallet, constant)
 
-  const encodedValue = metadata.pallets
-    .find(({ name }) => name === pallet)
-    ?.constants.find(({ name }) => name === constant)?.value
+    const encodedValue = metadata.pallets
+      .find(({ name }) => name === pallet)
+      ?.constants.find(({ name }) => name === constant)?.value
 
-  if (!encodedValue) throw new Error(`Constant ${pallet}.${constant} not found`)
+    if (!encodedValue) throw new Error(`Constant ${pallet}.${constant} not found`)
 
-  return storageCodec.dec(encodedValue) as T
+    return storageCodec.dec(encodedValue) as T
+  } catch (err) {
+    log.error("Failed to get constant value", { err, chainId, pallet, constant })
+    throw err
+  }
 }
 
 const getStorageValue = async <T>(
