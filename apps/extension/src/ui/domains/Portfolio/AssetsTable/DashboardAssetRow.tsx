@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom"
 
 import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
+import { useCanStakeInNomPool } from "@ui/domains/Staking/shared/useCanStakeInNomPool"
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -93,6 +95,8 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
+  const showStakingButton = useCanStakeInNomPool(token?.id)
+
   if (!token || !summary) return null
 
   return (
@@ -104,7 +108,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800  grid w-full grid-cols-[40%_30%_30%] text-left text-base"
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 grid w-full grid-cols-[40%_30%_30%] text-left text-base"
         )}
         onClick={handleClick}
       >
@@ -126,6 +130,9 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
                 <div>
                   <NetworksLogoStack networkIds={networkIds} max={3} />
                 </div>
+              )}
+              {showStakingButton && (
+                <NomPoolBondPillButton tokenId={token.id} balances={balances} />
               )}
             </div>
             {isUniswapV2LpToken && typeof tvl === "number" && (

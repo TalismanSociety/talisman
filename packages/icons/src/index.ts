@@ -46,6 +46,7 @@ export { ReactComponent as TryItIcon } from "./icons/try-it.svg"
 export { ReactComponent as UsbIcon } from "./icons/usb.svg"
 export { ReactComponent as UserRightIcon } from "./icons/user-right.svg"
 export { ReactComponent as VoteIcon } from "./icons/vote.svg"
+export { ReactComponent as ZapFastIcon } from "./icons/zap-fast.svg"
 export { ReactComponent as ZapPlusIcon } from "./icons/zap-plus.svg"
 
 export {
