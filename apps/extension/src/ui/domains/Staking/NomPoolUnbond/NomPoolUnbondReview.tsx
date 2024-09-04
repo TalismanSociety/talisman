@@ -85,7 +85,7 @@ export const NomPoolUnbondReview = () => {
       <div className="grow"></div>
       {!!errorMessage && (
         <div className="text-alert-warn bg-grey-900 my-8 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-          <AlertCircleIcon className="text-lg" />
+          <AlertCircleIcon className="shrink-0 text-lg" />
           <div>{errorMessage}</div>
         </div>
       )}

@@ -1,13 +1,14 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { lazy, Suspense, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
+
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { isEvmToken } from "@ui/util/isEvmToken"
-import { Suspense, lazy, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
@@ -147,7 +148,7 @@ const SendButton = () => {
       <div className="flex w-full flex-col gap-6">
         {sendErrorMessage ? (
           <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-            <AlertCircleIcon className="text-lg" />
+            <AlertCircleIcon className="shrink-0 text-lg" />
             <div>{sendErrorMessage}</div>
           </div>
         ) : (

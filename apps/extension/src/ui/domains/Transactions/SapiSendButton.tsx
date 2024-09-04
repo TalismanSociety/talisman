@@ -56,12 +56,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      {error && (
-        <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-          <AlertCircleIcon className="text-lg" />
-          <div>{error}</div>
-        </div>
-      )}
+      <SubmitErrorDisplay error={error} />
       <SignHardwareSubstrate
         containerId={containerId}
         payload={payload}
@@ -99,12 +94,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, on
 
   return (
     <div className="flex w-full flex-col gap-6">
-      {error && (
-        <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-          <AlertCircleIcon className="text-lg" />
-          <div>{error}</div>
-        </div>
-      )}
+      <SubmitErrorDisplay error={error} />
       <QrSubstrate
         containerId={containerId ?? "main"}
         genesisHash={payload.genesisHash}
@@ -146,12 +136,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      {error && (
-        <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-          <AlertCircleIcon className="text-lg" />
-          <div>{error}</div>
-        </div>
-      )}
+      <SubmitErrorDisplay error={error} />
       <Button
         className="w-full"
         primary
@@ -191,3 +176,11 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     </Suspense>
   )
 }
+
+const SubmitErrorDisplay: FC<{ error: string | null | undefined }> = ({ error }) =>
+  error ? (
+    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 pr-0 text-xs">
+      <AlertCircleIcon className="shrink-0 text-lg" />
+      <div className="scrollable scrollable-800 max-h-40 overflow-y-auto pr-5">{error}</div>
+    </div>
+  ) : null
