@@ -34,8 +34,8 @@
     "build:extension:canary:firefox": "turbo run build:extension:canary:firefox",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:prod:firefox": "turbo run build:extension:prod:firefox",
-    "build:review": "docker build . --build-arg command=build:extension:prod --target export --output review",
-    "build:review:firefox": "docker build . --build-arg command=build:extension:prod:firefox --target export --output review",
+    "build:review": "rm -rf review && mkdir review && docker build . --tag talisman-builder && docker run --rm --volume ./review:/review talisman-builder bash -c 'pnpm build:extension:prod && cp /talisman/apps/extension/dist/*.zip /review/'",
+    "build:review:firefox": "rm -rf review && mkdir review && docker build . --tag talisman-builder && docker run --rm --volume ./review:/review talisman-builder bash -c 'pnpm build:extension:prod:firefox && cp /talisman/apps/extension/dist/*.zip /review/'",
     "lint": "pnpm run -r --parallel lint",
     "test": "pnpm run -r --parallel test",
     "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
