@@ -120,7 +120,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           />
         </div>
         <div className="flex items-center justify-end gap-2">
-          {tokenId && <NomPoolBondButton tokenId={tokenId} />}
+          {tokenId && <NomPoolBondButton tokenId={tokenId} balances={balances} />}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}

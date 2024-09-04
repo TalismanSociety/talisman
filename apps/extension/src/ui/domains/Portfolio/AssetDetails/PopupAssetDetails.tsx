@@ -76,7 +76,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         {tokenId && (
           <div className="size-[3.8rem] shrink-0">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <NomPoolBondButton tokenId={tokenId} />
+              <NomPoolBondButton tokenId={tokenId} balances={balances} />
             </Suspense>
           </div>
         )}
