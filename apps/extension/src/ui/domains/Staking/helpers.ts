@@ -59,15 +59,15 @@ export const getStakingErasPerYear = (sapi: ScaleApi) => {
 }
 
 export const getStakingEraDurationMs = (sapi: ScaleApi) => {
+  const isAlephZero = ["aleph-zero", "aleph-zero-testnet"].includes(sapi.chainId)
+
   // on Polkadot, 6000n (6000ms=6s)
-  const blockTime =
-    sapi.chainId === "aleph-zero" ? 1000n : sapi.getConstant<bigint>("Babe", "ExpectedBlockTime")
+  const blockTime = isAlephZero ? 1000n : sapi.getConstant<bigint>("Babe", "ExpectedBlockTime")
 
   // on Polkadot, 2400n
-  const epochDuration =
-    sapi.chainId === "aleph-zero"
-      ? 60n * 15n // 15 minutes
-      : sapi.getConstant<bigint>("Babe", "EpochDuration")
+  const epochDuration = isAlephZero
+    ? 60n * 15n // 15 minutes
+    : sapi.getConstant<bigint>("Babe", "EpochDuration")
 
   // on Polkadot, 6
   const sessionsPerEra = sapi.getConstant<number>("Staking", "SessionsPerEra")

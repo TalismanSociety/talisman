@@ -130,11 +130,8 @@ const getTypeRegistry = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (chainInfo.registryTypes) registry.register(chainInfo.registryTypes as any)
 
-  registry.setMetadata(
-    new Metadata(registry, metadataBytes),
-    payload.signedExtensions,
-    chainInfo.signedExtensions
-  ) // ~30ms
+  const meta = new Metadata(registry, metadataBytes)
+  registry.setMetadata(meta, payload.signedExtensions, chainInfo.signedExtensions) // ~30ms
 
   stop()
   return registry
@@ -146,21 +143,19 @@ const getPayloadWithMetadataHash = (
   chainInfo: ChainInfo,
   payload: SignerPayloadJSON
 ): { payload: SignerPayloadJSON; txMetadata?: Uint8Array } => {
-  if (!chainInfo.hasCheckMetadataHash)
+  if (!chainInfo.hasCheckMetadataHash || !payload.signedExtensions.includes("CheckMetadataHash"))
     return {
-      payload: { ...payload, mode: 0, metadataHash: undefined, withSignedTransaction: true },
+      payload,
       txMetadata: undefined,
     }
 
   try {
     // merkleizeMetadata method expects versioned metadata so we need to reencode our V15 object back to a versioned one (~30ms)
-    const stop1 = log.timer("v15.enc(metadata)")
     const fullMetadata = {
       magicNumber: 1635018093, // magic number for metadata
       metadata: { tag: "v15" as const, value: metadata as V15 },
     }
     const metadataBytes = metadataCodec.enc(fullMetadata)
-    stop1()
 
     const {
       token: { decimals, symbol: tokenSymbol },
@@ -205,7 +200,7 @@ const getPayloadWithMetadataHash = (
   } catch (err) {
     log.error("Failed to get shortened metadata", { error: err })
     return {
-      payload: { ...payload, mode: 0, metadataHash: undefined, withSignedTransaction: true },
+      payload,
       txMetadata: undefined,
     }
   }
@@ -237,7 +232,7 @@ const getSignerPayloadJSON = async (
       signerConfig.address,
     ]), // TODO if V15 available, use a runtime call instead : AccountNonceApi/account_nonce
     getStorageValue<Binary>(chainId, builder, "System", "BlockHash", [0]),
-    getStorageValue<Binary>(chainId, builder, "System", "BlockHash", [blockNumber - 1]), // current blockNumber hash can't be known yet
+    api.subSend<Hex>(chainId, "chain_getBlockHash", [blockNumber], false), // TODO find the right way to fetch this with new RPC api, this is not available in storage yet
   ])
   if (!genesisHash) throw new Error("Genesis hash not found")
   if (!blockHash) throw new Error("Block hash not found")
@@ -251,7 +246,7 @@ const getSignerPayloadJSON = async (
   const basePayload: SignerPayloadJSON = {
     address: signerConfig.address,
     genesisHash: genesisHash.asHex() as Hex,
-    blockHash: genesisHash.asHex() as Hex,
+    blockHash,
     method: method.asHex(),
     signedExtensions,
     nonce: toPjsHex(nonce, 4),
@@ -271,6 +266,10 @@ const getSignerPayloadJSON = async (
     basePayload
   )
 
+  // Avail support
+  if (payload.signedExtensions.includes("CheckAppId"))
+    (payload as SignerPayloadJSON & { appId: number }).appId = 0
+
   log.log("[sapi] payload", { newPayload: payload, txMetadata })
 
   return { payload, txMetadata }
@@ -288,6 +287,7 @@ const getFeeEstimate = async (
   const extrinsic = registry.createType("Extrinsic", payload)
 
   extrinsic.signFake(payload.address, {
+    appId: 0,
     nonce: payload.nonce,
     blockHash: payload.blockHash,
     genesisHash: payload.genesisHash,
@@ -296,7 +296,8 @@ const getFeeEstimate = async (
       transactionVersion: chainInfo.transactionVersion,
       // other fields aren't necessary for signing
     } as IRuntimeVersionBase,
-  })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any)
 
   const bytes = extrinsic.toU8a(true)
   const binary = Binary.fromBytes(bytes)
@@ -314,7 +315,7 @@ const getFeeEstimate = async (
     }
     return result.partial_fee
   } catch (err) {
-    log.error("Failed to get fee estimate using getRuntimeCallValue", { error: err })
+    log.error("Failed to get fee estimate using getRuntimeCallValue", { err })
   }
 
   // fallback to pjs encoded state call, in case the above fails (extracting runtime calls codecs might require metadata V15)

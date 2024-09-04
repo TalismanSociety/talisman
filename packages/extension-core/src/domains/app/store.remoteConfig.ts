@@ -13,7 +13,12 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   coingecko: {
     apiUrl: "https://api.coingecko.com",
   },
-  nominationPools: {},
+  nominationPools: {
+    // uncomment for testing on testnets
+    // "avail-turing-testnet": [1],
+    // "vara-testnet": [1],
+    // "aleph-zero-testnet": [1],
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes

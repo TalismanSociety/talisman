@@ -21,7 +21,7 @@ export const useNomPoolsClaimPermission = (
         [address]
       )
 
-      return result.type
+      return result?.type ?? "Permissioned"
     },
   })
 }

@@ -344,13 +344,13 @@ export const NomPoolBondForm = () => {
         </div>
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="text-body truncate">
             <NomPoolName chainId={token?.chain?.id} poolId={poolId} />
           </div>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-8">
           <div>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -365,13 +365,13 @@ export const NomPoolBondForm = () => {
             <NomPoolsApr />
           </div>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
           <div className="text-body overflow-hidden">
             <StakingUnbondingPeriod chainId={token?.chain?.id} />
           </div>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
           <div className="overflow-hidden">
             <FeeEstimate />

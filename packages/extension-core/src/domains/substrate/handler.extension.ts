@@ -1,6 +1,5 @@
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { u8aToHex } from "@polkadot/util"
-import { log } from "extension-shared"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -10,7 +9,7 @@ import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../
 import { Port } from "../../types/base"
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
-import { watchSubstrateTransaction } from "../transactions"
+import { dismissTransaction, watchSubstrateTransaction } from "../transactions"
 
 export class SubHandler extends ExtensionHandler {
   private submit: MessageHandler<"pri(substrate.rpc.submit)"> = async ({ payload, signature }) => {
@@ -58,17 +57,16 @@ export class SubHandler extends ExtensionHandler {
     // apply signature to the modified payload
     tx.addSignature(payload.address, signature, payload)
 
-    log.log("submitting extrinsic", {
-      chainId: chain.id,
-      hash: tx.hash.toHex(),
-      txHex: tx.toHex(),
-      txHuman: tx.toHuman(),
-      payload,
-    })
+    const hash = tx.hash.toHex()
 
-    await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+    try {
+      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+    } catch (err) {
+      if (hash) dismissTransaction(hash)
+      throw err
+    }
 
-    return { hash: tx.hash.toHex() }
+    return { hash }
   }
 
   private send: MessageHandler<"pri(substrate.rpc.send)"> = ({

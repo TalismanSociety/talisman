@@ -10,7 +10,7 @@ export const useNomPoolsMinJoinBond = (chainId: ChainId | null | undefined) => {
     queryKey: ["useNomPoolsMinJoinBond", sapi?.id],
     queryFn: async () => {
       if (!sapi) return null
-      return sapi.getStorage<bigint>("NominationPools", "MinJoinBond", [])
+      return (await sapi.getStorage<bigint>("NominationPools", "MinJoinBond", [])) ?? 0n
     },
   })
 }

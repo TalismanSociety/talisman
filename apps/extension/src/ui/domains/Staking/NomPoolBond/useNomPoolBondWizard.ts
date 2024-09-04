@@ -31,9 +31,6 @@ type WizardState = {
   plancks: bigint | null
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
-  isPoolPickerOpen: boolean
-  isSubmitting: boolean
-  submitErrorMessage: string | null
   hash: Hex | null
 }
 
@@ -45,15 +42,13 @@ const DEFAULT_STATE: WizardState = {
   plancks: null,
   displayMode: "token",
   isAccountPickerOpen: false,
-  isPoolPickerOpen: false,
-  isSubmitting: false,
-  submitErrorMessage: null,
   hash: null,
 }
 
 const wizardAtom = atom(DEFAULT_STATE)
 
-const useInnerOpenClose = (key: "isAccountPickerOpen" | "isPoolPickerOpen") => {
+// TODO: this is meant to handle a pool picker too
+const useInnerOpenClose = (key: "isAccountPickerOpen") => {
   const [state, setState] = useAtom(wizardAtom)
   const isOpen = state[key]
 
@@ -144,13 +139,7 @@ export const useNomPoolBondWizard = () => {
   }, [currentPool, setState, state.poolId])
 
   const isFormValid = useMemo(
-    () =>
-      !!account &&
-      !!token &&
-      !!state.poolId &&
-      !!formatter &&
-      !!minJoinBond &&
-      formatter.planck >= minJoinBond,
+    () => !!account && !!token && !!state.poolId && !!formatter && typeof minJoinBond === "bigint",
     [account, formatter, minJoinBond, state.poolId, token]
   )
 
@@ -229,7 +218,7 @@ export const useNomPoolBondWizard = () => {
     ],
     queryFn: async () => {
       const { address, poolId } = state
-      if (!sapi || !address || !poolId || !minJoinBond) return null
+      if (!sapi || !address || !poolId || typeof minJoinBond !== "bigint") return null
 
       const { payload } = await getNomPoolStakingPayload(
         sapi,
@@ -274,10 +263,10 @@ export const useNomPoolBondWizard = () => {
     if (isSoloStaking)
       return t("An account cannot do both regular staking and nomination pool staking")
 
-    if (!currentPool && poolState?.isFull) return t("This nomination pool is full") // TODO : picking another ?
-    if (!currentPool && poolState && !poolState.isOpen) return t("This nomination pool is not open") // TODO : allow picking another ?
+    if (!currentPool && poolState?.isFull) return t("This nomination pool is full")
+    if (!currentPool && poolState && !poolState.isOpen) return t("This nomination pool is not open")
 
-    if (!formatter || !minJoinBond) return null
+    if (!formatter || typeof minJoinBond !== "bigint") return null
 
     if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
       return t("Insufficient balance")
@@ -310,8 +299,7 @@ export const useNomPoolBondWizard = () => {
         "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
       )
 
-    // TODO : pool is full
-    if (formatter.planck < minJoinBond)
+    if (!hasJoinedNomPool && formatter.planck < minJoinBond)
       return t("Minimum bond is {{amount}} {{symbol}}", {
         amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
         symbol: token?.symbol,
@@ -328,6 +316,7 @@ export const useNomPoolBondWizard = () => {
     balance,
     feeEstimate,
     existentialDeposit?.planck,
+    hasJoinedNomPool,
     token?.decimals,
     token?.symbol,
   ])
