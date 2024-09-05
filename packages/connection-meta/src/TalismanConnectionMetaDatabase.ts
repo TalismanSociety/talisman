@@ -1,9 +1,9 @@
 import { ChainId } from "@talismn/chaindata-provider"
 import { Dexie } from "dexie"
 
-type ChainPriorityRpc = {
+type ChainPriorityRpcs = {
   id: ChainId
-  url: string
+  urls: string[]
 }
 type ChainBackoffInterval = {
   id: ChainId
@@ -11,21 +11,21 @@ type ChainBackoffInterval = {
 }
 
 export class TalismanConnectionMetaDatabase extends Dexie {
-  chainPriorityRpc!: Dexie.Table<ChainPriorityRpc, ChainId>
+  chainPriorityRpcs!: Dexie.Table<ChainPriorityRpcs, ChainId>
   chainBackoffInterval!: Dexie.Table<ChainBackoffInterval, ChainId>
 
   constructor() {
     super("TalismanConnectionMeta")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(1).stores({
+    this.version(2).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
       // https://dexie.org/docs/API-Reference#declare-database
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
-      chainPriorityRpc: "id",
+      chainPriorityRpcs: "id",
       chainBackoffInterval: "id",
     })
   }
