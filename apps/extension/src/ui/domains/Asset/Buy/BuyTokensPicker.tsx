@@ -15,7 +15,6 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
-import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { useFormatNetworkName } from "../../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "../ChainLogo"
@@ -139,7 +138,6 @@ const TokensList: FC<TokensListProps> = ({
     return allTokens
       .filter(tokenFilter)
       .filter(filterAccountCompatibleTokens)
-      .filter(isTransferableToken)
       .map((token) => {
         const chain = token.chain && chainsMap[token.chain.id]
         const evmNetwork = token.evmNetwork && evmNetworksMap[token.evmNetwork.id]
