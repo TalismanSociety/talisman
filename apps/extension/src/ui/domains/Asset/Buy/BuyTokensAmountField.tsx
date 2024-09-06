@@ -1,14 +1,15 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Token } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import useToken from "@ui/hooks/useToken"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal } from "talisman-ui"
 
-import { TokenLogo } from "./TokenLogo"
-import { TokenPicker } from "./TokenPicker"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import useToken from "@ui/hooks/useToken"
+
+import { TokenLogo } from "../TokenLogo"
+import { BuyTokensPicker } from "./BuyTokensPicker"
 
 type TokenAmountFieldProps = {
   fieldProps: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
@@ -25,7 +26,7 @@ type TokenAmountFieldProps = {
   amount is uncontrolled
   tokenId is controlled so it can be changed by parent
 **/
-export const TokenAmountField = ({
+export const BuyTokensAmountField = ({
   prefix,
   tokenId,
   address,
@@ -101,12 +102,10 @@ export const TokenAmountField = ({
               <XIcon />
             </button>
           </div>
-          <TokenPicker
+          <BuyTokensPicker
             className="[&>section]:bg-grey-800 flex-grow"
             address={address}
             onSelect={handleTokenSelect}
-            ownedOnly
-            showEmptyBalances
             tokenFilter={tokensFilter}
           />
         </div>

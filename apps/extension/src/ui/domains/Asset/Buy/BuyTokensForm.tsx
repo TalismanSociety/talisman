@@ -1,16 +1,7 @@
-import { AccountJsonAny } from "@extension/core"
-import { BANXA_URL } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
-import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import useChains from "@ui/hooks/useChains"
-import useTokens from "@ui/hooks/useTokens"
 import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
@@ -18,7 +9,23 @@ import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
-import { TokenAmountField } from "../TokenAmountField"
+import {
+  AccountJsonAny,
+  activeChainsStore,
+  activeEvmNetworksStore,
+  activeTokensStore,
+} from "@extension/core"
+import { BANXA_URL } from "@extension/shared"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
+import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import useTokens from "@ui/hooks/useTokens"
+
+import { BuyTokensAmountField } from "./BuyTokensAmountField"
 import { useBuyTokensModal } from "./useBuyTokensModal"
 
 type FormData = {
@@ -104,8 +111,9 @@ export const BuyTokensForm = () => {
   })
 
   const [address, tokenId] = watch(["address", "tokenId"])
-  const { tokens, tokensMap } = useTokens({ activeOnly: true, includeTestnets: false })
-  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets: false })
+  const { tokens, tokensMap } = useTokens({ activeOnly: false, includeTestnets: false })
+  const { chains, chainsMap } = useChains({ activeOnly: false, includeTestnets: false })
+  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: false })
 
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,
@@ -116,11 +124,6 @@ export const BuyTokensForm = () => {
   const autoSelectFirstAccountInit = useRef(false)
   useEffect(() => {
     if (autoSelectFirstAccountInit.current) return
-    // TODO: This check can be removed once https://github.com/TalismanSociety/talisman/pull/1101 is merged,
-    // that PR adds react suspense to the useAccounts hook, so checking for the scenario that the list hasn't
-    // loaded yet will no longer be necessary.
-    if (accounts?.length === 0) return
-
     if (address !== undefined) {
       // disable auto-select if an address has already been picked
       autoSelectFirstAccountInit.current = true
@@ -151,10 +154,15 @@ export const BuyTokensForm = () => {
 
       const token = tokensMap[formData.tokenId]
       if (!token) throw new Error(t("Token not found"))
+      activeTokensStore.setActive(token.id, true)
 
-      const chain = token.chain?.id ? chainsMap[token.chain?.id] : undefined
+      const chain = token.chain?.id ? chainsMap[token.chain.id] : undefined
+      if (chain) activeChainsStore.setActive(chain.id, true)
+
       const isEthereum = isEthereumAddress(account.address)
       if (!isEthereum && !chain) throw new Error(t("Chain not found"))
+      const evmNetwork = token.evmNetwork?.id ? evmNetworksMap[token.evmNetwork.id] : undefined
+      if (evmNetwork) activeEvmNetworksStore.setActive(evmNetwork.id, true)
 
       const walletAddress = isEthereum
         ? account.address
@@ -179,7 +187,7 @@ export const BuyTokensForm = () => {
       const redirectUrl = `${BANXA_URL}?${qs}`
       window.open(redirectUrl, "_blank")
     },
-    [accounts, chainsMap, close, tokensMap, t]
+    [t, accounts, tokensMap, chainsMap, evmNetworksMap, close]
   )
 
   const handleAccountChange = useCallback(
@@ -255,7 +263,7 @@ export const BuyTokensForm = () => {
         buttonClassName="h-28"
         optionClassName="h-24 py-0"
       />
-      <TokenAmountField
+      <BuyTokensAmountField
         fieldProps={register("amountUSD")}
         prefix="$"
         onTokenChanged={handleTokenChanged}
