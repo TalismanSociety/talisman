@@ -8,6 +8,7 @@ import { Hex } from "viem"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
@@ -82,30 +83,32 @@ export const useResetNomPoolBondWizard = () => {
 
 export const useNomPoolBondWizard = () => {
   const { t } = useTranslation()
-  const [state, setState] = useAtom(wizardAtom)
-  const { poolId, step, displayMode, hash } = state
+  const { genericEvent } = useAnalytics()
 
-  const balance = useBalance(state.address, state.tokenId)
-  const account = useAccountByAddress(state.address)
-  const token = useToken(state.tokenId)
+  const [{ poolId, step, displayMode, hash, tokenId, address, plancks }, setState] =
+    useAtom(wizardAtom)
+
+  const balance = useBalance(address, tokenId)
+  const account = useAccountByAddress(address)
+  const token = useToken(tokenId)
   const feeToken = useFeeToken(token?.id)
-  const tokenRates = useTokenRates(state.tokenId)
+  const tokenRates = useTokenRates(tokenId)
   const existentialDeposit = useExistentialDeposit(token?.id)
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 
   const { data: minJoinBond } = useNomPoolsMinJoinBond(token?.chain?.id)
-  const { data: claimPermission } = useNomPoolsClaimPermission(token?.chain?.id, state.address)
-  const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, state.address)
-  const { data: currentPool } = useNomPoolByMember(token?.chain?.id, state.address)
-  const { data: poolState } = useNomPoolState(token?.chain?.id, state.poolId)
+  const { data: claimPermission } = useNomPoolsClaimPermission(token?.chain?.id, address)
+  const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, address)
+  const { data: currentPool } = useNomPoolByMember(token?.chain?.id, address)
+  const { data: poolState } = useNomPoolState(token?.chain?.id, poolId)
 
   // TODO rename to amountToStake
   const formatter = useMemo(
     () =>
-      typeof state.plancks === "bigint"
-        ? new BalanceFormatter(state.plancks, token?.decimals, tokenRates)
+      typeof plancks === "bigint"
+        ? new BalanceFormatter(plancks, token?.decimals, tokenRates)
         : null,
-    [state.plancks, token?.decimals, tokenRates]
+    [plancks, token?.decimals, tokenRates]
   )
 
   const setAddress = useCallback(
@@ -134,13 +137,13 @@ export const useNomPoolBondWizard = () => {
 
   useEffect(() => {
     // if user is already staking in pool, set poolId to that pool
-    if (currentPool && currentPool.pool_id !== state.poolId)
+    if (currentPool && currentPool.pool_id !== poolId)
       setState((prev) => ({ ...prev, poolId: currentPool.pool_id }))
-  }, [currentPool, setState, state.poolId])
+  }, [currentPool, setState, poolId])
 
   const isFormValid = useMemo(
-    () => !!account && !!token && !!state.poolId && !!formatter && typeof minJoinBond === "bigint",
-    [account, formatter, minJoinBond, state.poolId, token]
+    () => !!account && !!token && !!poolId && !!formatter && typeof minJoinBond === "bigint",
+    [account, formatter, minJoinBond, poolId, token]
   )
 
   const setStep = useCallback(
@@ -177,15 +180,14 @@ export const useNomPoolBondWizard = () => {
     queryKey: [
       "getNomPoolStakingPayload",
       sapi?.id,
-      state.address,
-      state.poolId,
-      state.plancks?.toString(),
+      address,
+      poolId,
+      plancks?.toString(),
       isFormValid,
       hasJoinedNomPool,
       withSetClaimPermission,
     ],
     queryFn: async () => {
-      const { address, poolId, plancks } = state
       if (!sapi || !address || !poolId || !plancks) return null
       if (!isFormValid) return null
 
@@ -210,14 +212,13 @@ export const useNomPoolBondWizard = () => {
     queryKey: [
       "getNomPoolStakingPayload/estimateFee",
       sapi?.id,
-      state.poolId,
-      state.address,
+      poolId,
+      address,
       minJoinBond?.toString(),
       hasJoinedNomPool,
       withSetClaimPermission,
     ],
     queryFn: async () => {
-      const { address, poolId } = state
       if (!sapi || !address || !poolId || typeof minJoinBond !== "bigint") return null
 
       const { payload } = await getNomPoolStakingPayload(
@@ -247,9 +248,10 @@ export const useNomPoolBondWizard = () => {
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
+      genericEvent("NomPool Bond", { tokenId, isRebond: hasJoinedNomPool })
       if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [setState]
+    [genericEvent, hasJoinedNomPool, setState, tokenId]
   )
 
   const maxPlancks = useMemo(() => {

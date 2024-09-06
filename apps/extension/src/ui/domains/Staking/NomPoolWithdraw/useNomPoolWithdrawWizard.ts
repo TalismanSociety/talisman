@@ -10,6 +10,7 @@ import { Hex } from "viem"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
@@ -49,23 +50,25 @@ export const useResetNomPoolWithdrawWizard = () => {
 
 export const useNomPoolWithdrawWizard = () => {
   const { t } = useTranslation()
-  const [state, setState] = useAtom(wizardAtom)
-  const { address, step, hash } = state
+  const { genericEvent } = useAnalytics()
 
-  const balance = useBalance(state.address, state.tokenId)
-  const account = useAccountByAddress(state.address)
-  const token = useToken(state.tokenId)
+  const [{ address, step, hash, tokenId }, setState] = useAtom(wizardAtom)
+
+  const balance = useBalance(address, tokenId)
+  const account = useAccountByAddress(address)
+  const token = useToken(tokenId)
   const feeToken = useFeeToken(token?.id)
-  const tokenRates = useTokenRates(state.tokenId)
+  const tokenRates = useTokenRates(tokenId)
 
   const { data: pool } = useNomPoolByMember(token?.chain?.id, account?.address)
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
+      genericEvent("NomPool Withdraw", { tokenId })
       if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [setState]
+    [genericEvent, setState, tokenId]
   )
 
   const { data: currentEra } = useCurrentStakingEra(token?.chain?.id)
