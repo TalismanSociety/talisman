@@ -248,7 +248,7 @@ export const useNomPoolBondWizard = () => {
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
-      genericEvent("NomPool Bond", { tokenId, isRebond: hasJoinedNomPool })
+      genericEvent("NomPool Bond", { tokenId, isBondExtra: hasJoinedNomPool })
       if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
     [genericEvent, hasJoinedNomPool, setState, tokenId]
