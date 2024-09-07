@@ -2,7 +2,6 @@ import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc
 import { ChainId, IChaindataChainProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, sleep, throwAfter } from "@talismn/util"
-import isEqual from "lodash/isEqual"
 
 import log from "./log"
 import { Websocket } from "./Websocket"
@@ -635,3 +634,5 @@ export class ChainConnector {
     return rpcs
   }
 }
+
+const isEqual = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i])
