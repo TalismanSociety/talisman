@@ -1,18 +1,19 @@
-import { ChangePasswordStatusUpdateStatus, ChangePasswordStatusUpdateType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { ChangePasswordStatusUpdateStatus, ChangePasswordStatusUpdateType } from "@extension/core"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"
 
@@ -37,7 +38,7 @@ export const ChangePasswordPage = () => {
           newPwConfirm: yup
             .string()
             .required("")
-            .oneOf([yup.ref("newPw")], t("Passwords must match!")),
+            .oneOf([yup.ref("newPw"), null], t("Passwords must match!")),
         })
         .required(),
     [t]
@@ -49,10 +50,24 @@ export const ChangePasswordPage = () => {
     formState: { errors, isValid, isSubmitting },
     setError,
     setValue,
+    clearErrors,
+    watch,
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
   })
+
+  useEffect(() => {
+    const subscription = watch(({ newPw, newPwConfirm }) => {
+      if (newPw && newPwConfirm && newPw !== newPwConfirm) {
+        setError("newPwConfirm", { message: t("Passwords must match!") })
+      } else {
+        clearErrors("newPwConfirm")
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [watch, setError, clearErrors, t])
 
   useEffect(() => {
     if (progress === ChangePasswordStatusUpdateStatus.DONE) {
