@@ -83,7 +83,7 @@ export const useStakingBanner = () => {
 
       if (lsdTokenBases.includes(token.id))
         result = evmLsdStakingTokenEligible({ token, addresses })
-      else result = false
+
       return (
         result &&
         !hideBannerSetting.includes(

@@ -262,8 +262,7 @@ export const useNomPoolBondWizard = () => {
   }, [balance, existentialDeposit, fakeFeeEstimate])
 
   const inputErrorMessage = useMemo(() => {
-    if (isSoloStaking)
-      return t("An account cannot do both regular staking and nomination pool staking")
+    if (isSoloStaking) return t("Account is already staking")
 
     if (!currentPool && poolState?.isFull) return t("This nomination pool is full")
     if (!currentPool && poolState && !poolState.isOpen) return t("This nomination pool is not open")
