@@ -374,7 +374,7 @@ export const PortfolioAccounts = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-12 pb-12">
+      <div className="flex flex-col gap-12 py-8">
         <Accounts
           accounts={accounts}
           folder={folder}

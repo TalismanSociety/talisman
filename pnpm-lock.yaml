@@ -1255,7 +1255,7 @@ importers:
         version: 12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@polkadot/phishing':
         specifier: latest
-        version: 0.22.10
+        version: 0.23.4
       '@polkadot/types':
         specifier: 12.0.2
         version: 12.0.2
@@ -4370,12 +4370,12 @@ packages:
     resolution: {integrity: sha512-1oWtZm1IvPWqvMrldVH6NI2gBoCndl5GEwx7lAuQWGr7eNL+6Bdc5K3Z9T0MzFvDGoi2/CBqjX9dRKo39pDC/w==}
     engines: {node: '>=18'}
 
-  '@polkadot/phishing@0.22.1':
-    resolution: {integrity: sha512-IDII8jSdfoAHyABGlgTg6O8xpUYaSDc+NSnJ8U/V8XCjVYAEe3j/w/H3LnXKMVKWHexbpLzO4MMbu5ldNw7AjQ==}
-    engines: {node: '>=18'}
-
   '@polkadot/phishing@0.22.10':
     resolution: {integrity: sha512-Nyi1gzSGvIYy2uioJ4C+FJhaqts6Npr8HT7SVTw1Lp+0zr+4tD1+heW4sfuiWcggtlkiar6kYmgiwT+5wtMA3Q==}
+    engines: {node: '>=18'}
+
+  '@polkadot/phishing@0.23.4':
+    resolution: {integrity: sha512-ume//AmN/+QDdgm6PhGUg3YMlrGY/qL/nBN27WdGtdRwjgrUV+IjpZt4mE31CCDO9jUPdzGJRylTrp8bNcr9jQ==}
     engines: {node: '>=18'}
 
   '@polkadot/react-identicon@3.6.4':
@@ -17099,7 +17099,7 @@ snapshots:
       '@polkadot/extension-inject': 0.46.6(@polkadot/api@12.0.2(bufferutil@4.0.8))(@polkadot/util@12.6.2)(bufferutil@4.0.8)
       '@polkadot/keyring': 12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@polkadot/networks': 12.6.2
-      '@polkadot/phishing': 0.22.1
+      '@polkadot/phishing': 0.22.10
       '@polkadot/rpc-provider': 12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@polkadot/types': 12.0.2
       '@polkadot/ui-keyring': 3.6.4(@polkadot/keyring@12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2))(@polkadot/ui-settings@3.6.4(@polkadot/networks@12.6.2)(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
@@ -17122,7 +17122,7 @@ snapshots:
       '@polkadot/extension-inject': 0.46.6(@polkadot/api@12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@polkadot/keyring': 12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@polkadot/networks': 12.6.2
-      '@polkadot/phishing': 0.22.1
+      '@polkadot/phishing': 0.22.10
       '@polkadot/rpc-provider': 12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@polkadot/types': 12.0.2
       '@polkadot/ui-keyring': 3.6.4(@polkadot/keyring@12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2))(@polkadot/ui-settings@3.6.4(@polkadot/networks@12.6.2)(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
@@ -17255,14 +17255,14 @@ snapshots:
       '@substrate/ss58-registry': 1.44.0
       tslib: 2.6.2
 
-  '@polkadot/phishing@0.22.1':
+  '@polkadot/phishing@0.22.10':
     dependencies:
       '@polkadot/util': 12.6.2
       '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)
       '@polkadot/x-fetch': 12.6.2
       tslib: 2.6.2
 
-  '@polkadot/phishing@0.22.10':
+  '@polkadot/phishing@0.23.4':
     dependencies:
       '@polkadot/util': 12.6.2
       '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)

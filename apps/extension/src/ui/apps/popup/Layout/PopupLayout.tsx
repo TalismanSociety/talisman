@@ -1,8 +1,4 @@
-import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { HandMonoLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
 import {
   DetailedHTMLProps,
   FC,
@@ -13,6 +9,11 @@ import {
   useRef,
 } from "react"
 import { useLocation } from "react-router-dom"
+
+import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { HandMonoLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
 
 import { BottomNav } from "../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
@@ -59,7 +60,7 @@ export const PopupContent: FC<ContainerProps> = ({ className, ...props }) => {
     <ScrollContainer
       {...props}
       ref={scrollableRef}
-      className={classNames("w-full flex-grow overflow-hidden px-12", className)}
+      className={classNames("w-full flex-grow overflow-hidden px-8", className)}
     />
   )
 }

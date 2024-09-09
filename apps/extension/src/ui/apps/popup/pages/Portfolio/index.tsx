@@ -1,8 +1,7 @@
 import { Suspense, useMemo } from "react"
-import { Route, Routes, useLocation } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
@@ -13,7 +12,7 @@ import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
-import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
+import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
@@ -22,19 +21,6 @@ import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMo
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
-
-const AccountAvatar = () => {
-  const location = useLocation()
-
-  // do now show it on portfolio's home
-  if (location.pathname === "/portfolio") return null
-
-  return (
-    <div className="text-xl">
-      <CurrentAccountAvatar withTooltip />
-    </div>
-  )
-}
 
 export const PortfolioHeader = () => {
   const currentSite = useCurrentSite()
@@ -52,13 +38,11 @@ export const PortfolioHeader = () => {
       <Route
         path="*"
         element={
-          isAuthorised ? (
+          isAuthorised && (
             <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
               <ConnectedAccountsPill />
               <EvmNetworkSelectPill />
             </header>
-          ) : (
-            <PopupHeader right={<AccountAvatar />} />
           )
         }
       />
