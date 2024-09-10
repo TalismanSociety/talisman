@@ -30,12 +30,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://polkadot-rpc.dwellir.com",
-      },
-      {
-        url: "wss://polkadot-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://rpc.ibp.network/polkadot",
       },
       {
@@ -43,6 +37,12 @@ export const chains = [
       },
       {
         url: "wss://1rpc.io/dot",
+      },
+      {
+        url: "wss://polkadot-rpc.dwellir.com",
+      },
+      {
+        url: "wss://polkadot-rpc-tn.dwellir.com",
       },
       {
         url: "wss://polkadot-rpc.publicnode.com",
@@ -121,11 +121,6 @@ export const chains = [
         name: "Darwinia",
       },
       {
-        id: "equilibrium-polkadot",
-        paraId: 2011,
-        name: "Equilibrium",
-      },
-      {
         id: "ewx",
         paraId: 3345,
         name: "Energy Web X",
@@ -134,11 +129,6 @@ export const chains = [
         id: "frequency",
         paraId: 2091,
         name: "Frequency",
-      },
-      {
-        id: "geminis",
-        paraId: 2038,
-        name: "Geminis",
       },
       {
         id: "hashed",
@@ -216,16 +206,6 @@ export const chains = [
         name: "Nodle",
       },
       {
-        id: "oak",
-        paraId: 2090,
-        name: "Oak",
-      },
-      {
-        id: "omnibtc",
-        paraId: 2053,
-        name: "OmniBTC",
-      },
-      {
         id: "parallel",
         paraId: 2012,
         name: "Parallel",
@@ -263,22 +243,17 @@ export const chains = [
       {
         id: "polkadot-collectives",
         paraId: 1001,
-        name: "Collectives",
+        name: "Polkadot Collectives",
       },
       {
         id: "polkadot-people",
         paraId: 1004,
-        name: "People",
+        name: "Polkadot People",
       },
       {
         id: "sora-polkadot",
         paraId: 2025,
         name: "Sora",
-      },
-      {
-        id: "subdao",
-        paraId: 2018,
-        name: "SubDAO",
       },
       {
         id: "subsocial-polkadot",
@@ -335,7 +310,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-kusama",
     specName: "kusama",
-    specVersion: "1002006",
+    specVersion: "1003000",
     nativeToken: {
       id: "kusama-substrate-native",
     },
@@ -352,12 +327,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://kusama-rpc.dwellir.com",
-      },
-      {
-        url: "wss://kusama-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://rpc.ibp.network/kusama",
       },
       {
@@ -365,6 +334,12 @@ export const chains = [
       },
       {
         url: "wss://1rpc.io/ksm",
+      },
+      {
+        url: "wss://kusama-rpc.dwellir.com",
+      },
+      {
+        url: "wss://kusama-rpc-tn.dwellir.com",
       },
       {
         url: "wss://kusama-rpc.publicnode.com",
@@ -440,11 +415,6 @@ export const chains = [
         name: "Encointer",
       },
       {
-        id: "gm",
-        paraId: 2123,
-        name: "GM",
-      },
-      {
         id: "imbue",
         paraId: 2121,
         name: "Imbue",
@@ -512,7 +482,7 @@ export const chains = [
       {
         id: "kusama-people",
         paraId: 1004,
-        name: "People",
+        name: "Kusama People",
       },
       {
         id: "litmus",
@@ -543,11 +513,6 @@ export const chains = [
         id: "robonomics-kusama",
         paraId: 2048,
         name: "Robonomics",
-      },
-      {
-        id: "sakura",
-        paraId: 2016,
-        name: "Sakura",
       },
       {
         id: "shadow-kusama",
@@ -603,7 +568,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 464,
+    sortIndex: 482,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -613,7 +578,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1002006",
+    specVersion: "1003000",
     nativeToken: {
       id: "kusama-asset-hub-substrate-native",
     },
@@ -639,16 +604,16 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://asset-hub-kusama-rpc.dwellir.com",
-      },
-      {
-        url: "wss://statemine-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://sys.ibp.network/statemine",
       },
       {
         url: "wss://sys.dotters.network/statemine",
+      },
+      {
+        url: "wss://asset-hub-kusama-rpc.dwellir.com",
+      },
+      {
+        url: "wss://statemine-rpc-tn.dwellir.com",
       },
       {
         url: "wss://rpc-asset-hub-kusama.luckyfriday.io",
@@ -709,7 +674,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 465,
+    sortIndex: 483,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -719,7 +684,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-kusama",
     specName: "bridge-hub-kusama",
-    specVersion: "1002005",
+    specVersion: "1003000",
     nativeToken: {
       id: "kusama-bridge-hub-substrate-native",
     },
@@ -737,16 +702,16 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://bridge-hub-kusama-rpc.dwellir.com",
-      },
-      {
-        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://sys.ibp.network/bridgehub-kusama",
       },
       {
         url: "wss://sys.dotters.network/bridgehub-kusama",
+      },
+      {
+        url: "wss://bridge-hub-kusama-rpc.dwellir.com",
+      },
+      {
+        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
       },
       {
         url: "wss://rpc-bridge-hub-kusama.luckyfriday.io",
@@ -767,7 +732,15 @@ export const chains = [
     relay: {
       id: "kusama",
     },
-    balancesConfig: [],
+    balancesConfig: [
+      {
+        moduleType: "substrate-native",
+        moduleConfig: {
+          coingeckoId: "kusama",
+          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/kusama-bridge-hub.svg",
+        },
+      },
+    ],
     balancesMetadata: [],
     hasCheckMetadataHash: true,
   },
@@ -775,7 +748,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 673,
+    sortIndex: 692,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -809,10 +782,13 @@ export const chains = [
         id: "polkadot-asset-hub-substrate-assets-690-bork",
       },
       {
+        id: "polkadot-asset-hub-substrate-assets-31337-wud",
+      },
+      {
         id: "polkadot-asset-hub-substrate-foreignassets-eq",
       },
       {
-        id: "polkadot-asset-hub-substrate-foreignassets-weth",
+        id: "polkadot-asset-hub-substrate-foreignassets-weth.e",
       },
       {
         id: "polkadot-asset-hub-substrate-foreignassets-ksm",
@@ -825,6 +801,9 @@ export const chains = [
       },
       {
         id: "polkadot-asset-hub-substrate-foreignassets-glmr",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-myth",
       },
       {
         id: "polkadot-asset-hub-substrate-foreignassets-vdot",
@@ -847,16 +826,22 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://asset-hub-polkadot-rpc.dwellir.com",
-      },
-      {
-        url: "wss://statemint-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://sys.ibp.network/statemint",
       },
       {
         url: "wss://sys.dotters.network/statemint",
+      },
+      {
+        url: "wss://sys.ibp.network/asset-hub-polkadot",
+      },
+      {
+        url: "wss://sys.dotters.network/asset-hub-polkadot",
+      },
+      {
+        url: "wss://asset-hub-polkadot-rpc.dwellir.com",
+      },
+      {
+        url: "wss://statemint-rpc-tn.dwellir.com",
       },
       {
         url: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
@@ -922,6 +907,11 @@ export const chains = [
               symbol: "BORK",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bork.svg",
             },
+            {
+              assetId: 31337,
+              symbol: "WUD",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/wud.webp",
+            },
           ],
         },
       },
@@ -930,65 +920,146 @@ export const chains = [
         moduleConfig: {
           tokens: [
             {
-              onChainId: '{"parents":1,"interior":{"X1":{"Parachain":2011}}}',
+              onChainId:
+                '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":2011}}}',
               symbol: "EQ",
               coingeckoId: "equilibrium-token",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eq.svg",
             },
             {
               onChainId:
-                '{"parents":2,"interior":{"X2":[{"GlobalConsensus":{"Ethereum":{"chainId":1} }},{"AccountKey20":{"network":null,"key":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}}]}}',
-              symbol: "WETH",
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}}]}}',
+              symbol: "WETH.e",
               coingeckoId: "weth",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/weth.webp",
             },
             {
-              onChainId: '{"parents":2,"interior":{"X1":{"GlobalConsensus":"Kusama"}}}',
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x6982508145454ce325ddbe47a25d4ec3d2311933"}}]}}',
+              symbol: "PEPE.e",
+              coingeckoId: "pepe",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/pepe.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X1","value":{"type":"GlobalConsensus","value":{"type":"Kusama"}}}}',
               symbol: "KSM",
               coingeckoId: "kusama",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/ksm.svg",
             },
             {
               onChainId:
-                '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
+                '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2030},{"type":"GeneralKey","value":{"length":2,"data":"hex:0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
               symbol: "BNC",
               coingeckoId: "bifrost-native-coin",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bnc.svg",
             },
             {
               onChainId:
-                '{"parents":1,"interior":{"X2":[{"Parachain":2011},{"GeneralKey":{"length":3,"data":"0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}}]}}',
+              symbol: "USDC.e",
+              coingeckoId: "usd-coin",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/usd-coin.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xba41ddf06b7ffd89d1267b5a93bfef2424eb2003"}}]}}',
+              symbol: "MYTH.e",
+              coingeckoId: "mythos",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/mythos.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x18084fba666a33d37592fa2633fd49a74dd93a88"}}]}}',
+              symbol: "tBTC.e",
+              coingeckoId: "tbtc",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/tbtc.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"}}]}}',
+              symbol: "wstETH.e",
+              coingeckoId: "wrapped-steth",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/wrapped-steth.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x582d872a1b094fc48f5de31d3b73f2d9be47def1"}}]}}',
+              symbol: "TONCOIN.e",
+              coingeckoId: "the-open-network",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/the-open-network.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x6b175474e89094c44da98b954eedeac495271d0f"}}]}}',
+              symbol: "DAI.e",
+              coingeckoId: "dai",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/dai.webp",
+            },
+            {
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce"}}]}}',
+              symbol: "SHIB.e",
+              coingeckoId: "shiba-inu",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/shiba-inu.webp",
+            },
+            {
+              onChainId:
+                '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2011},{"type":"GeneralKey","value":{"length":3,"data":"hex:0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
               symbol: "EQD",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eqd.svg",
             },
             {
-              onChainId: '{"parents":1,"interior":{"X1":{"Parachain":3369}}}',
-              symbol: "MYTH",
-              coingeckoId: "mythos",
-              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/mythos.svg",
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"}}]}}',
+              symbol: "WBTC.e",
+              coingeckoId: "wrapped-bitcoin",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/wrapped-bitcoin.webp",
             },
             {
               onChainId:
-                '{"parents":1,"interior":{"X2":[{"Parachain":2004},{"PalletInstance":10}]}}',
+                '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2004},{"type":"PalletInstance","value":10}]}}',
               symbol: "GLMR",
               coingeckoId: "moonbeam",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/moonbeam.webp",
             },
             {
               onChainId:
-                '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
+                '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":3369}}}',
+              symbol: "MYTH",
+              coingeckoId: "mythos",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/mythos.svg",
+            },
+            {
+              onChainId:
+                '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2030},{"type":"GeneralKey","value":{"length":2,"data":"hex:0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
               symbol: "vDOT",
               coingeckoId: "voucher-dot",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/vdot.svg",
             },
             {
-              onChainId: '{"parents":1,"interior":{"X2":[{"Parachain":2034},{"GeneralIndex":0}]}}',
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0x8daebade922df735c38c80c7ebd708af50815faa"}}]}}',
+              symbol: "tBTC.e",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              onChainId:
+                '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2034},{"type":"GeneralIndex","value":"bigint:0"}]}}',
               symbol: "HDX",
               coingeckoId: "hydradx",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/hydradx.webp",
             },
             {
-              onChainId: '{"parents":1,"interior":{"X1":{"Parachain":2051}}}',
+              onChainId:
+                '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xdac17f958d2ee523a2206206994597c13d831ec7"}}]}}',
+              symbol: "USDT.e",
+              coingeckoId: "tether",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/tether.webp",
+            },
+            {
+              onChainId:
+                '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":2051}}}',
               symbol: "AJUN",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
             },
@@ -1003,7 +1074,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 674,
+    sortIndex: 693,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -1031,16 +1102,16 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://bridge-hub-polkadot-rpc.dwellir.com",
-      },
-      {
-        url: "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://sys.ibp.network/bridgehub-polkadot",
       },
       {
         url: "wss://sys.dotters.network/bridgehub-polkadot",
+      },
+      {
+        url: "wss://bridge-hub-polkadot-rpc.dwellir.com",
+      },
+      {
+        url: "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
       },
       {
         url: "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
@@ -1061,7 +1132,15 @@ export const chains = [
     relay: {
       id: "polkadot",
     },
-    balancesConfig: [],
+    balancesConfig: [
+      {
+        moduleType: "substrate-native",
+        moduleConfig: {
+          coingeckoId: "polkadot",
+          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/polkadot-bridge-hub.svg",
+        },
+      },
+    ],
     balancesMetadata: [],
     hasCheckMetadataHash: true,
   },
