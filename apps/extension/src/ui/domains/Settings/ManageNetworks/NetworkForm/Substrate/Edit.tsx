@@ -95,7 +95,7 @@ const chainToFormData = (
     nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? "",
     nativeTokenLogoUrl: nativeToken?.logo ?? null,
     accountFormat: chain.account,
-    subscanUrl: chain.subscanUrl,
+    subscanUrl: chain.subscanUrl ?? "",
     rpcs:
       chain?.rpcs?.map((rpc) => ({ url: rpc.url, genesisHash: chain.genesisHash ?? undefined })) ??
       [],
