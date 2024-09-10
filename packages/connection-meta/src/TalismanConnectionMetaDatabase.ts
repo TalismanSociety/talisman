@@ -25,6 +25,7 @@ export class TalismanConnectionMetaDatabase extends Dexie {
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
+      chainPriorityRpc: null, // delete legacy table
       chainPriorityRpcs: "id",
       chainBackoffInterval: "id",
     })
