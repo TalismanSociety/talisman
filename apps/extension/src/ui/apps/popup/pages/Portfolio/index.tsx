@@ -84,9 +84,9 @@ const PortfolioContent = () => {
 
 export const Portfolio = () => (
   <PortfolioContainer renderWhileLoading>
-    <PopupLayout withBottomNav>
+    <PopupLayout>
       <PortfolioHeader />
-      <PopupContent>
+      <PopupContent withBottomNav>
         <PortfolioContent />
       </PopupContent>
       <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
