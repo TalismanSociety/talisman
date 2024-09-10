@@ -204,7 +204,7 @@ export class ChainConnector {
 
       if (error?.message === "TIMEOUT") {
         log.error(`ChainConnector timeout`, { chainId, endpoint: ws.endpoint, error })
-        await this.setWorstRpc(chainId, ws.endpoint)
+        await this.updateRpcPriority(chainId, ws.endpoint, "last")
         await this.reset(chainId)
         throw new Error("Timeout")
       }
@@ -212,7 +212,7 @@ export class ChainConnector {
       const badRpcError = BAD_RPC_ERRORS[error?.code?.toString() ?? ""]
       if (badRpcError) {
         log.error(`ChainConnector ${badRpcError}`, { error, chainId, endpoint: ws.endpoint })
-        await this.setWorstRpc(chainId, ws.endpoint)
+        await this.updateRpcPriority(chainId, ws.endpoint, "last")
         await this.reset(chainId)
         throw new Error(badRpcError)
       }
@@ -466,7 +466,9 @@ export class ChainConnector {
         const url = this.#socketConnections[chainId]?.endpoint
         if (!url) return
 
-        this.setBestRpc(id, url).catch((err) => log.warn(`setBestRpc failed`, err))
+        this.updateRpcPriority(id, url, "first").catch((err) =>
+          log.warn(`updateRpcPriority failed`, err)
+        )
       })
     }
 
@@ -585,31 +587,19 @@ export class ChainConnector {
     }
   }
 
-  private async setBestRpc(chainId: ChainId, rpc: string) {
+  private async updateRpcPriority(chainId: ChainId, rpc: string, priority: "first" | "last") {
     if (!this.#connectionMetaDb) return
 
     const rpcs = await this.getEndpoints(chainId)
     if (!rpcs.includes(rpc)) throw new Error(`Unknown rpc for chain ${chainId} : ${rpc}`)
 
-    const urls = [rpc, ...rpcs.filter((r) => r !== rpc)]
+    const urls = rpcs.filter((r) => r !== rpc)
+
+    if (priority === "first") urls.unshift(rpc)
+    if (priority === "last") urls.push(rpc)
 
     if (!isEqual(urls, rpcs)) {
       // order may not change, especially if there is only one
-      await this.#connectionMetaDb.chainPriorityRpcs.put({ id: chainId, urls }, chainId)
-    }
-  }
-
-  private async setWorstRpc(chainId: ChainId, rpc: string) {
-    if (!this.#connectionMetaDb) return
-
-    const rpcs = await this.getEndpoints(chainId)
-    if (!rpcs.includes(rpc)) throw new Error(`Unknown rpc for chain ${chainId} : ${rpc}`)
-
-    const urls = [...rpcs.filter((r) => r !== rpc), rpc]
-
-    if (!isEqual(urls, rpcs)) {
-      // order may not change, especially if there is only one
-      log.debug(`Setting worst rpc for chain ${chainId} : ${rpc}`, { urls })
       await this.#connectionMetaDb.chainPriorityRpcs.put({ id: chainId, urls }, chainId)
     }
   }
