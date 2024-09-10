@@ -206,7 +206,7 @@ const ChainTokenBalancesDetailRow = ({
     <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
       <div className="font-bold text-white">
         {row.title}{" "}
-        {tokenId && row.address && row.meta && (
+        {!!row.locked && tokenId && row.meta && (
           <LockedExtra
             tokenId={tokenId}
             address={row.address}
@@ -256,19 +256,22 @@ const ChainTokenBalancesDetailRow = ({
 
 const LockedExtra: FC<{
   tokenId: TokenId
-  address: string
+  address?: string // this is only set when browsing all accounts
   isLoading: boolean
   rowMeta: { poolId?: number; unbonding?: boolean }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
+  const { account } = useSelectedAccount()
+
+  const rowAddress = useMemo(() => address ?? account?.address ?? null, [account?.address, address])
 
   const accountStatus = useMemo(
-    () => data?.accounts?.find((s) => s.address === address),
-    [address, data?.accounts]
+    () => data?.accounts?.find((s) => s.address === rowAddress),
+    [rowAddress, data?.accounts]
   )
 
-  if (!accountStatus) return null
+  if (!rowAddress || !accountStatus) return null
 
   return (
     <>
@@ -276,7 +279,7 @@ const LockedExtra: FC<{
         accountStatus.canWithdraw ? (
           <NomPoolWithdrawButton
             tokenId={tokenId}
-            address={address}
+            address={rowAddress}
             className="px-2 py-0.5 text-xs"
           />
         ) : (
@@ -293,7 +296,11 @@ const LockedExtra: FC<{
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
       accountStatus.canUnstake ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={address} className="px-2 py-0.5 text-xs" />
+        <NomPoolUnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          className="px-2 py-0.5 text-xs"
+        />
       ) : null}
     </>
   )
