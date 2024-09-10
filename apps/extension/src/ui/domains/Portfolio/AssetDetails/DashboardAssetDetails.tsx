@@ -1,23 +1,28 @@
-import { Address, Balance, Balances } from "@extension/core"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
+import { FC, Suspense, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Address, Balance, Balances } from "@extension/core"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
+import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
+import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { Suspense } from "react"
-import { useTranslation } from "react-i18next"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
+import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
 import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
@@ -35,15 +40,11 @@ const AssetState = ({
 }) => {
   if (!render) return null
   return (
-    <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
-      <div className="flex items-baseline gap-4">
-        <div className="whitespace-nowrap font-bold text-white">{title}</div>
+    <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
+      <div className="flex w-full items-baseline gap-4 overflow-hidden">
+        <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
         {/* show description next to title when address is set */}
-        {description && address && (
-          <div className="max-w-sm flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-            {description}
-          </div>
-        )}
+        {description && address && <div className="grow truncate text-sm">{description}</div>}
       </div>
       {address && (
         <div className="text-sm">
@@ -52,9 +53,7 @@ const AssetState = ({
       )}
       {/* show description below title when address is not set */}
       {description && !address && (
-        <div className="flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-          {description}
-        </div>
+        <div className="flex-shrink-0 truncate text-sm">{description}</div>
       )}
     </div>
   )
@@ -120,7 +119,8 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             )}
           />
         </div>
-        <div>
+        <div className="flex items-center justify-end gap-2">
+          {tokenId && <NomPoolBondButton tokenId={tokenId} balances={balances} />}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -155,6 +155,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               isLastRow={rows.length === i + 1}
               symbol={symbol}
               status={status}
+              tokenId={tokenId}
             />
           ))}
     </div>
@@ -235,56 +236,80 @@ const ChainTokenBalancesDetailRow = ({
   isLastRow,
   status,
   symbol,
+  tokenId,
 }: {
   row: DetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-}) => {
+  tokenId?: TokenId // unsafe, there could be multiple aggregated here
+}) => (
+  <div
+    key={row.key}
+    className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+  >
+    <div>
+      <AssetState title={row.title} description={row.description} render address={row.address} />
+    </div>
+    {!row.locked && <div></div>}
+    <div>
+      <AssetBalanceCellValue
+        render={row.tokens.gt(0)}
+        tokens={row.tokens}
+        fiat={row.fiat}
+        symbol={symbol}
+        locked={row.locked}
+        balancesStatus={status}
+        className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
+      />
+    </div>
+    {!!row.locked && row.meta && row.address && tokenId && (
+      <LockedExtra
+        tokenId={tokenId}
+        address={row.address}
+        isLoading={status.status === "fetching"}
+        rowMeta={row.meta}
+      />
+    )}
+  </div>
+)
+
+const LockedExtra: FC<{
+  tokenId: TokenId
+  address: string
+  isLoading: boolean
+  rowMeta: { poolId?: number; unbonding?: boolean }
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
+  const { data } = useNomPoolStakingStatus(tokenId)
+
+  const accountStatus = useMemo(
+    () => data?.accounts?.find((s) => s.address === address),
+    [address, data?.accounts]
+  )
+
+  if (!accountStatus) return null
 
   return (
-    <div
-      key={row.key}
-      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
-    >
-      <div>
-        <AssetState title={row.title} description={row.description} render address={row.address} />
-      </div>
-      {!row.locked && <div></div>}
-      <div>
-        <AssetBalanceCellValue
-          render={row.tokens.gt(0)}
-          tokens={row.tokens}
-          fiat={row.fiat}
-          symbol={symbol}
-          locked={row.locked}
-          balancesStatus={status}
-          className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
-        />
-      </div>
-      {!!row.locked && (
-        <div>
-          {
-            // Show `Unbonding` next to nompool staked balances which are unbonding
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.unbonding && (
-              <div
-                className={classNames(
-                  "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
-                  status.status === "fetching" && "animate-pulse transition-opacity"
-                )}
-              >
-                <div className="text-body flex items-center justify-end gap-2">
-                  <div>{t("Unbonding")}</div>
-                </div>
-                {/* TODO: Show time until funds are unbonded */}
-                {/* <div>4d 14hr 11min</div> */}
-              </div>
-            )
-          }
-        </div>
-      )}
+    <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
+      {rowMeta.unbonding ? (
+        accountStatus.canWithdraw ? (
+          <NomPoolWithdrawButton tokenId={tokenId} address={address} />
+        ) : (
+          <div
+            className={classNames(
+              "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
+              isLoading && "animate-pulse transition-opacity"
+            )}
+          >
+            {t("Unbonding")}
+            {/* TODO: Show time until funds are unbonded */}
+            {/* <div>4d 14hr 11min</div> */}
+          </div>
+        )
+      ) : accountStatus.canUnstake ? (
+        <NomPoolUnbondButton tokenId={tokenId} address={address} />
+      ) : null}
     </div>
   )
 }

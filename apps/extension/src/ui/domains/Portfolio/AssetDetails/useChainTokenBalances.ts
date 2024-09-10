@@ -1,14 +1,15 @@
-import { Address, Balances } from "@extension/core"
-import { sortBigBy } from "@talisman/util/bigHelper"
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import BigNumber from "bignumber.js"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Address, Balances } from "@extension/core"
+import { sortBigBy } from "@talisman/util/bigHelper"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
-import BigNumber from "bignumber.js"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 import { useSelectedAccount } from "../useSelectedAccount"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -95,8 +96,12 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       b.nompools.map((nomPool, index) => ({
         key: `${b.id}-nomPool-${index}`,
         title: getLockTitle(nomPool, { balance: b }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        description: (nomPool.meta as any)?.description ?? undefined,
+
+        description:
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (nomPool.meta as any)?.description
+            ?.replace(": app.talisman.xyz/staking", "")
+            .replace(" | Auto-Compound > $2USD", "") ?? undefined,
         tokens: BigNumber(nomPool.amount.tokens),
         fiat: nomPool.amount.fiat(currency),
         locked: true,

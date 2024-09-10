@@ -1,27 +1,34 @@
-import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
-import { FadeIn } from "@talisman/components/FadeIn"
+import { TokenId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FC, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
+
+import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
+import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
+import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
-import { Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
+import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
 import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
@@ -67,6 +74,13 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           </div>
         </div>
         {tokenId && (
+          <div className="size-[3.8rem] shrink-0">
+            <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
+              <NomPoolBondButton tokenId={tokenId} balances={balances} />
+            </Suspense>
+          </div>
+        )}
+        {tokenId && (
           <TokenContextMenu
             tokenId={tokenId}
             className="hover:bg-grey-700 focus-visible:bg-grey-700 rounded-full"
@@ -94,6 +108,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               isLastRow={rows.length === i + 1}
               symbol={symbol}
               status={status}
+              tokenId={tokenId}
             />
           ))}
     </div>
@@ -174,11 +189,13 @@ const ChainTokenBalancesDetailRow = ({
   isLastRow,
   status,
   symbol,
+  tokenId,
 }: {
   row: DetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
+  tokenId?: TokenId // unsafe, there could be multiple aggregated here
 }) => (
   <div
     className={classNames(
@@ -187,7 +204,17 @@ const ChainTokenBalancesDetailRow = ({
     )}
   >
     <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-      <div className="font-bold text-white">{row.title}</div>
+      <div className="font-bold text-white">
+        {row.title}{" "}
+        {tokenId && row.address && row.meta && (
+          <LockedExtra
+            tokenId={tokenId}
+            address={row.address}
+            rowMeta={row.meta}
+            isLoading={status.status === "fetching"}
+          />
+        )}
+      </div>
       {!!row.address && (
         <div className="text-xs">
           <PortfolioAccount address={row.address} />
@@ -226,6 +253,51 @@ const ChainTokenBalancesDetailRow = ({
     </div>
   </div>
 )
+
+const LockedExtra: FC<{
+  tokenId: TokenId
+  address: string
+  isLoading: boolean
+  rowMeta: { poolId?: number; unbonding?: boolean }
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
+  const { t } = useTranslation()
+  const { data } = useNomPoolStakingStatus(tokenId)
+
+  const accountStatus = useMemo(
+    () => data?.accounts?.find((s) => s.address === address),
+    [address, data?.accounts]
+  )
+
+  if (!accountStatus) return null
+
+  return (
+    <>
+      {rowMeta.unbonding ? (
+        accountStatus.canWithdraw ? (
+          <NomPoolWithdrawButton
+            tokenId={tokenId}
+            address={address}
+            className="px-2 py-0.5 text-xs"
+          />
+        ) : (
+          <span
+            className={classNames(
+              "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
+              isLoading && "animate-pulse transition-opacity"
+            )}
+          >
+            {t("Unbonding")}
+            {/* TODO: Show time until funds are unbonded */}
+            {/* <div>4d 14hr 11min</div> */}
+          </span>
+        )
+      ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      accountStatus.canUnstake ? (
+        <NomPoolUnbondButton tokenId={tokenId} address={address} className="px-2 py-0.5 text-xs" />
+      ) : null}
+    </>
+  )
+}
 
 type AssetsTableProps = {
   balances: Balances

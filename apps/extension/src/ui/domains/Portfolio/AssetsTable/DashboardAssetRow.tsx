@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
+import { ExternalLinkIcon, XIcon, ZapFastIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Suspense, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom"
 
 import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
+import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondButton"
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -93,10 +95,12 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
+  const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
+
   if (!token || !summary) return null
 
   return (
-    <div className="mb-4 overflow-hidden rounded">
+    <div className="relative mb-4">
       <Suspense>
         <AssetRowStakingReminder balances={balances} />
       </Suspense>
@@ -104,11 +108,11 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800  grid w-full grid-cols-[40%_30%_30%] text-left text-base"
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base"
         )}
         onClick={handleClick}
       >
-        <div className="flex">
+        <div className="flex h-[6.6rem]">
           <div className="shrink-0 p-8 text-xl">
             <TokenLogo tokenId={token.id} />
           </div>
@@ -138,7 +142,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             )}
           </div>
         </div>
-        <div className="text-right">
+        <div className="h-[6.6rem] text-right">
           <AssetBalanceCellValue
             locked
             render={summary.lockedTokens.gt(0)}
@@ -152,7 +156,21 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             )}
           />
         </div>
-        <div className="text-right">
+        <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 text-right">
+          {canBondNomPool && (
+            <>
+              <NomPoolBondPillButton
+                tokenId={token.id}
+                balances={balances}
+                className="[>svg]:text-[2rem] mr-8 hidden text-base group-hover:block"
+              />
+              <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
+                <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+                  <ZapFastIcon className="size-6" />
+                </div>
+              </div>
+            </>
+          )}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -160,6 +178,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
             className={classNames(
+              canBondNomPool && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />

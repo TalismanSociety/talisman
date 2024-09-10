@@ -1,5 +1,4 @@
-import { TALISMAN_CONFIG_URL } from "extension-shared"
-import { log } from "extension-shared"
+import { log, TALISMAN_CONFIG_URL } from "extension-shared"
 import toml from "toml"
 
 import { RemoteConfigStoreData } from "../domains/app/types"
@@ -12,6 +11,7 @@ export const fetchRemoteConfig = async () => {
     throw new Error(`Unable to fetch config.toml: ${response.status} ${response.statusText}`)
 
   const text = await response.text()
+
   try {
     return toml.parse(text) as RemoteConfigStoreData
   } catch (e) {

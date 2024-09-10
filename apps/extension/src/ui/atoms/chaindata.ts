@@ -1,9 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import {
-  Chain,
   ChainId,
   ChainList,
-  CustomChain,
   EvmNetworkId,
   EvmNetworkList,
   TokenId,
@@ -201,19 +199,12 @@ const activeChainsWithoutTestnetsMapAtom = atom(async (get) => {
   return Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
 })
 
-const chainsByGenesisHashMapAtom = atom(async (get) => {
-  const chains = await get(allChainsAtom)
-  return Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Record<
-    HexString,
-    Chain | CustomChain
-  >
-})
-
+/** @deprecated this suspenses for every new key, try to use another approach */
 export const chainByGenesisHashAtomFamily = atomFamily(
   (genesisHash: HexString | null | undefined) =>
     atom(async (get) => {
       if (!genesisHash) return null
-      const chains = await get(chainsByGenesisHashMapAtom)
+      const chains = await get(allChainsMapByGenesisHashAtom)
       return chains[genesisHash] || null
     })
 )

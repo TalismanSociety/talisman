@@ -10,9 +10,11 @@ type ModalDialogProps = {
   centerTitle?: boolean
   onClose?: () => void
   children?: ReactNode
+  id?: string
 }
 
 export const ModalDialog: FC<ModalDialogProps> = ({
+  id,
   className,
   title,
   centerTitle,
@@ -21,6 +23,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
 }) => {
   return (
     <div
+      id={id}
       className={classNames(
         "border-grey-850 flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border bg-black",
         className
