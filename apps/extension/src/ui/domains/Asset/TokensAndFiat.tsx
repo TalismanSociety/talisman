@@ -1,8 +1,9 @@
 import { BalanceFormatter } from "@talismn/balances"
+import { FC, Suspense, useMemo } from "react"
+
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { FC, Suspense, useMemo } from "react"
 
 import { Fiat } from "./Fiat"
 import Tokens from "./Tokens"
@@ -16,6 +17,8 @@ type TokensAndFiatProps = {
   noCountUp?: boolean
   isBalance?: boolean
   noFiat?: boolean
+  tokensClassName?: string
+  fiatClassName?: string
 }
 
 const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
@@ -26,6 +29,8 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
   noCountUp,
   isBalance,
   noFiat,
+  tokensClassName,
+  fiatClassName,
 }) => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -50,13 +55,20 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
         noCountUp={noCountUp}
         noTooltip={noTooltip}
         isBalance={isBalance}
+        className={tokensClassName}
       />
       {/* warning : some tokens (ex: EQ) have a fiatRates object, but with null values for all fiat currencies */}
       {balance.fiat(currency) !== null && !noFiat ? (
         <>
           {" "}
           (
-          <Fiat amount={balance} isBalance={isBalance} noCountUp={noCountUp} />)
+          <Fiat
+            amount={balance}
+            isBalance={isBalance}
+            noCountUp={noCountUp}
+            className={fiatClassName}
+          />
+          )
         </>
       ) : null}
     </span>

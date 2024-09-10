@@ -1,5 +1,4 @@
-import { DEBUG, TEST } from "extension-shared"
-import { log } from "extension-shared"
+import { DEBUG, log, TEST } from "extension-shared"
 import merge from "lodash/merge"
 
 import { StorageProvider } from "../../libs/Store"
@@ -13,6 +12,12 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   },
   coingecko: {
     apiUrl: "https://api.coingecko.com",
+  },
+  nominationPools: {
+    // uncomment for testing on testnets
+    // "avail-turing-testnet": [1],
+    // "vara-testnet": [1],
+    // "aleph-zero-testnet": [1],
   },
 }
 

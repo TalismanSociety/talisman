@@ -2,10 +2,7 @@ import { EvmErc20Token } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import React, { FC, Suspense, forwardRef, useCallback, useMemo } from "react"
+import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -15,6 +12,13 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 import urlJoin from "url-join"
+
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useNomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondModal"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useToken from "@ui/hooks/useToken"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -44,6 +48,36 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
   if (!coingeckoId) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("View on Coingecko")}</ContextMenuItem>
+}
+
+const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+
+  const { open } = useNomPoolBondModal()
+  const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
+
+  const openArgs = useMemo<Parameters<typeof open>[0] | undefined>(() => {
+    if (!stakingStatus) return
+    const { accounts, poolId } = stakingStatus
+    const acc = accounts?.find((s) => s.canBondNomPool)
+    if (!acc) return
+    return {
+      tokenId,
+      address: acc.address,
+      poolId: acc.poolId ?? poolId,
+    }
+  }, [stakingStatus, tokenId])
+
+  const handleClick = useCallback(() => {
+    if (!openArgs) return
+    open(openArgs)
+    genericEvent("open inline staking modal", { tokenId: openArgs.tokenId })
+  }, [genericEvent, open, openArgs])
+
+  if (!openArgs) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }
 
 type Props = {
@@ -81,10 +115,14 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-        <Suspense>
-          {/* view on explorer can suspense */}
-          {token?.type === "evm-erc20" && <ViewOnExplorerMenuItem token={token} />}
-          {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
+        {token?.type === "evm-erc20" && (
+          <Suspense>
+            <ViewOnExplorerMenuItem token={token} />
+          </Suspense>
+        )}
+        {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
+        <Suspense fallback={<SuspenseTracker name="StakeMenuItem" />}>
+          <StakeMenuItem tokenId={tokenId} />
         </Suspense>
       </ContextMenuContent>
     </ContextMenu>

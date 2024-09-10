@@ -1,3 +1,6 @@
+import { HexString } from "@polkadot/util/types"
+import { SignerPayloadJSON } from "extension-core"
+
 import PortMessageService from "@common/PortMessageService"
 
 import MessageTypes from "./types"
@@ -329,6 +332,11 @@ export const api: MessageTypes = {
       params,
       isCacheable,
     }) as Promise<T>,
+  subSubmit: (payload: SignerPayloadJSON, signature?: HexString) =>
+    messageService.sendMessage("pri(substrate.rpc.submit)", {
+      payload,
+      signature,
+    }),
   subChainMetadata: (genesisHash, specVersion, blockHash) =>
     messageService.sendMessage("pri(substrate.metadata.get)", {
       genesisHash,

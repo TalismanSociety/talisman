@@ -1,10 +1,11 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
+import { FC, useMemo } from "react"
+import { PillButton } from "talisman-ui"
+
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { FC, useMemo } from "react"
-import { PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"

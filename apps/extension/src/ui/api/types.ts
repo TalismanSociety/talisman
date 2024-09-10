@@ -316,6 +316,7 @@ export default interface MessageTypes {
     params: unknown[],
     isCacheable?: boolean
   ) => Promise<T>
+  subSubmit: (payload: SignerPayloadJSON, signature?: HexString) => Promise<{ hash: HexString }>
 
   // substrate chain metadata
   subChainMetadata: (

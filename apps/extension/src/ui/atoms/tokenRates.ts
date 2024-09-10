@@ -35,6 +35,7 @@ export const tokenRatesMapAtom = atom(async (get) => {
   return Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
 })
 
+/** @deprecated this suspenses for every new key, try to use another approach */
 export const tokenRatesByIdFamily = atomFamily((tokenId: TokenId | null | undefined) =>
   atom(async (get) => {
     if (!tokenId) return null

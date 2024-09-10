@@ -1,17 +1,16 @@
-import { isJsonPayload } from "@extension/core"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
-import { AccountJsonQr } from "@extension/core"
-import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountJsonQr, isJsonPayload, SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
@@ -48,7 +47,7 @@ interface Props {
   className?: string
   genesisHash?: HexString
   onSignature?: (result: { signature: `0x${string}` }) => void
-  onReject: () => void
+  onReject?: () => void // will display a cancel button only if this is provided
   payload: SignerPayloadJSON | SignerPayloadRaw
   containerId: string
   skipInit?: boolean
@@ -84,9 +83,11 @@ export const QrSubstrate = ({
     return (
       <div className={classNames("flex w-full flex-col items-center", className)}>
         <div className="flex w-full items-center gap-12">
-          <Button className="w-full" onClick={onReject}>
-            {t("Cancel")}
-          </Button>
+          {!!onReject && (
+            <Button className="w-full" onClick={onReject}>
+              {t("Cancel")}
+            </Button>
+          )}
           <Button className="w-full" primary onClick={() => setScanState({ page: "SEND" })}>
             {t("Sign with QR")}
           </Button>
@@ -111,8 +112,8 @@ export const QrSubstrate = ({
               setScanState((scanState) => {
                 // if back is clicked and we're on the first page, reject the signing attempt
                 // (which is INIT when skipInit is false, or SEND when it's true)
-                if (scanState.page === "INIT") onReject()
-                if (skipInit && scanState.page === "SEND") onReject()
+                if (scanState.page === "INIT") onReject?.()
+                if (skipInit && scanState.page === "SEND") onReject?.()
 
                 // if we're on the SEND page, go back to the INIT page
                 if (!skipInit && scanState.page === "SEND") return { page: "INIT" }
@@ -207,7 +208,12 @@ export const QrSubstrate = ({
       >
         {scanState.page === "SEND" && (
           <>
-            <Button className="w-full" onClick={onReject}>
+            <Button
+              className="w-full"
+              onClick={() => {
+                onReject ? onReject() : setScanState({ page: "INIT" })
+              }}
+            >
               {t("Cancel")}
             </Button>
             <Button className="w-full" primary onClick={() => setScanState({ page: "RECEIVE" })}>
@@ -221,7 +227,12 @@ export const QrSubstrate = ({
           </Button>
         )}
         {scanState.page === "RECEIVE" && onSignature && (
-          <Button className="w-full" onClick={onReject}>
+          <Button
+            className="w-full"
+            onClick={() => {
+              onReject ? onReject() : setScanState({ page: "INIT" })
+            }}
+          >
             {t("Cancel")}
           </Button>
         )}
@@ -245,7 +256,7 @@ const SendPage = ({
   account: AccountJsonQr
   genesisHash: HexString | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
-  reject: () => void
+  reject?: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
   scanState: SendScanState
   qrCodeSource: QrCodeSource | undefined

@@ -10,6 +10,8 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
+import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
@@ -92,51 +94,51 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
+  const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
+  const showStakingButton = canBondNomPool && !locked
+
   if (!token || !summary) return null
 
   return (
     <>
       <button
         type="button"
-        className="bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center rounded-sm"
+        className="bg-grey-850 hover:bg-grey-800 group flex h-28 w-full items-center rounded-sm"
         onClick={handleClick}
       >
         <div className="p-6 text-xl">
           <TokenLogo tokenId={token.id} />
         </div>
-        <div className="relative flex grow gap-4 pr-6">
-          <div className="relative grow">
-            {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
-            <div className="absolute left-0 top-0 flex w-full flex-col gap-2 overflow-hidden text-left">
-              <div className="flex items-center gap-3">
-                <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                  {token.symbol}
-                  {!!token.isTestnet && (
-                    <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                      {t("Testnet")}
-                    </span>
-                  )}
-                </div>
-                {!!networkIds.length && (
-                  <div className="text-base">
-                    <NetworksLogoStack networkIds={networkIds} max={3} />
-                  </div>
+        <div className="relative flex grow items-center gap-4 pr-6">
+          <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
+            <div className="flex items-center gap-3">
+              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
+                {token.symbol}
+                {!!token.isTestnet && (
+                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                    {t("Testnet")}
+                  </span>
                 )}
               </div>
-
-              {isUniswapV2LpToken && typeof tvl === "number" && (
-                <div className="text-body-secondary whitespace-nowrap text-xs">
-                  <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
+              {!!networkIds.length && (
+                <div className="text-base">
+                  <NetworksLogoStack networkIds={networkIds} max={3} />
                 </div>
               )}
-              {!isUniswapV2LpToken && typeof rate === "number" && (
-                <Fiat amount={rate} className="text-body-secondary text-xs" />
-              )}
             </div>
+
+            {isUniswapV2LpToken && typeof tvl === "number" && (
+              <div className="text-body-secondary whitespace-nowrap text-xs">
+                <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
+              </div>
+            )}
+            {!isUniswapV2LpToken && typeof rate === "number" && (
+              <Fiat amount={rate} className="text-body-secondary text-xs" />
+            )}
           </div>
           <div
             className={classNames(
-              "flex flex-col items-end gap-2 text-right",
+              "flex shrink-0 flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
@@ -144,7 +146,8 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               <div
                 className={classNames(
                   "whitespace-nowrap text-sm font-bold",
-                  locked ? "text-body-secondary" : "text-white"
+                  locked ? "text-body-secondary" : "text-white",
+                  showStakingButton && "group-hover:hidden"
                 )}
               >
                 <Tokens
@@ -158,9 +161,21 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                   staleChains={status.status === "stale" ? status.staleChains : []}
                 />
               </div>
-              <div className="text-body-secondary leading-base text-xs">
+              <div
+                className={classNames(
+                  "text-body-secondary leading-base text-xs",
+                  showStakingButton && "group-hover:hidden"
+                )}
+              >
                 {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
               </div>
+              {showStakingButton && (
+                <NomPoolBondPillButton
+                  tokenId={token.id}
+                  balances={balances}
+                  className="hidden group-hover:block"
+                />
+              )}
             </>
           </div>
         </div>

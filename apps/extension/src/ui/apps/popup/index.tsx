@@ -1,8 +1,15 @@
-import { AUTH_PREFIX } from "@extension/core"
-import { SIGNING_TYPES } from "@extension/core"
-import { METADATA_PREFIX } from "@extension/core"
-import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@extension/core"
-import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "@extension/core"
+import { Suspense, useEffect } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
+
+import {
+  AUTH_PREFIX,
+  ENCRYPT_DECRYPT_PREFIX,
+  ENCRYPT_ENCRYPT_PREFIX,
+  ETH_NETWORK_ADD_PREFIX,
+  METADATA_PREFIX,
+  SIGNING_TYPES,
+  WATCH_ASSET_PREFIX,
+} from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
@@ -12,10 +19,11 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
+import { NomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/NomPoolBondModal"
+import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
+import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
-import { Suspense, useEffect } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
@@ -73,6 +81,9 @@ const Popup = () => {
         <ExplorerNetworkPickerModal />
         <BackupWarningDrawer />
         <LedgerPolkadotUpgradeAlertDrawer />
+        <NomPoolBondModal />
+        <NomPoolUnbondModal />
+        <NomPoolWithdrawModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

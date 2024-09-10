@@ -28,6 +28,7 @@ import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
@@ -42,7 +43,6 @@ import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
-import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
@@ -238,11 +238,11 @@ const useSendFundsProvider = () => {
 
   const refTokensInput = useRef<HTMLInputElement>(null)
   useSendFundsInputNumber(refTokensInput, token?.decimals)
-  const resizeTokensInput = useSendFundsInputSize(refTokensInput)
+  const resizeTokensInput = useInputAutoWidth(refTokensInput)
 
   const refFiatInput = useRef<HTMLInputElement>(null)
   useSendFundsInputNumber(refFiatInput, 2)
-  const resizeFiatInput = useSendFundsInputSize(refFiatInput)
+  const resizeFiatInput = useInputAutoWidth(refFiatInput)
 
   const transfer = useMemo(
     () => (token && amount ? new BalanceFormatter(amount, token.decimals, tokenRates) : null),
