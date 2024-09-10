@@ -62,7 +62,7 @@ const isValidAmount =
     }
   }
 
-const useErc20Balance = (account: EvmAddress, token: Erc20TokenInfo) => {
+const useFetchErc20Balance = (account: EvmAddress, token: Erc20TokenInfo) => {
   const client = usePublicClient(token.evmNetworkId)
 
   return useQuery({
@@ -142,7 +142,7 @@ const EditAllowanceForm: FC<{
     [handleSubmit, submit]
   )
 
-  const { data: balance } = useErc20Balance(account, token)
+  const { data: balance } = useFetchErc20Balance(account, token)
   const max = useMemo(
     () => (balance ? formatUnits(balance, token.decimals) : ""),
     [balance, token.decimals]
