@@ -263,7 +263,7 @@ const ChainTokenBalancesDetailRow = ({
         className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
       />
     </div>
-    {!!row.locked && row.meta && row.address && tokenId && (
+    {!!row.locked && row.meta && tokenId && (
       <LockedExtra
         tokenId={tokenId}
         address={row.address}
@@ -276,25 +276,28 @@ const ChainTokenBalancesDetailRow = ({
 
 const LockedExtra: FC<{
   tokenId: TokenId
-  address: string
+  address?: string // this is only set when browsing all accounts
   isLoading: boolean
   rowMeta: { poolId?: number; unbonding?: boolean }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
+  const { account } = useSelectedAccount()
+
+  const rowAddress = useMemo(() => address ?? account?.address ?? null, [account?.address, address])
 
   const accountStatus = useMemo(
-    () => data?.accounts?.find((s) => s.address === address),
-    [address, data?.accounts]
+    () => data?.accounts?.find((s) => s.address === rowAddress),
+    [data?.accounts, rowAddress]
   )
 
-  if (!accountStatus) return null
+  if (!rowAddress || !accountStatus) return null
 
   return (
     <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
       {rowMeta.unbonding ? (
         accountStatus.canWithdraw ? (
-          <NomPoolWithdrawButton tokenId={tokenId} address={address} />
+          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} />
         ) : (
           <div
             className={classNames(
@@ -308,7 +311,7 @@ const LockedExtra: FC<{
           </div>
         )
       ) : accountStatus.canUnstake ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={address} />
+        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} />
       ) : null}
     </div>
   )

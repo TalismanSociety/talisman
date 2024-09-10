@@ -48,7 +48,7 @@ export const useNomPoolBondButton = ({
       // lookup existing poolId for that account
       for (const balance of sorted.filter((b) => b.address === address)) {
         type Meta = { poolId?: number }
-        const pool = balance.nompools.find((np) => (np.meta as Meta).poolId === poolId)
+        const pool = balance.nompools.find((np) => !!(np.meta as Meta).poolId)
         const meta = pool?.meta as Meta | undefined
         if (meta?.poolId) {
           poolId = meta.poolId
