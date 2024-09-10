@@ -1,8 +1,9 @@
-import { EvmAddress } from "@extension/core"
-import { TOKEN_APPROVALS_URL, log } from "@extension/shared"
-import { notify } from "@talisman/components/Notifications"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+
+import { EvmAddress } from "@extension/core"
+import { log, TOKEN_APPROVALS_URL } from "@extension/shared"
+import { notify } from "@talisman/components/Notifications"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
@@ -98,6 +99,7 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>{isRevoke ? t("from spending") : t("to spend")}</div>
         {!isRevoke && (
           <SignParamAllowanceButton
+            account={account.address as EvmAddress}
             allowance={allowance}
             token={erc20Token}
             spender={spender}

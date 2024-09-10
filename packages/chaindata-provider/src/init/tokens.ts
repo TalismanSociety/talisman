@@ -72,6 +72,7 @@ export const tokens = [
     chain: {
       id: "kusama-bridge-hub",
     },
+    coingeckoId: "kusama",
   },
   {
     id: "kusama-substrate-native",
@@ -166,6 +167,21 @@ export const tokens = [
     coingeckoId: "dot-is-ded",
   },
   {
+    id: "polkadot-asset-hub-substrate-assets-31337-wud",
+    type: "substrate-assets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "WUD",
+    decimals: 10,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/wud.webp",
+    existentialDeposit: "10000000",
+    assetId: "31337",
+    isFrozen: false,
+    chain: {
+      id: "polkadot-asset-hub",
+    },
+  },
+  {
     id: "polkadot-asset-hub-substrate-assets-690-bork",
     type: "substrate-assets",
     isTestnet: false,
@@ -188,7 +204,7 @@ export const tokens = [
     symbol: "AJUN",
     decimals: 12,
     existentialDeposit: "1000000000",
-    onChainId: '{"parents":1,"interior":{"X1":{"Parachain":2051}}}',
+    onChainId: '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":2051}}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -205,7 +221,7 @@ export const tokens = [
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/bnc.svg",
     existentialDeposit: "1",
     onChainId:
-      '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
+      '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2030},{"type":"GeneralKey","value":{"length":2,"data":"hex:0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -221,7 +237,7 @@ export const tokens = [
     decimals: 9,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eq.svg",
     existentialDeposit: "100000000000",
-    onChainId: '{"parents":1,"interior":{"X1":{"Parachain":2011}}}',
+    onChainId: '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":2011}}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -238,7 +254,7 @@ export const tokens = [
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eqd.svg",
     existentialDeposit: "1000000000",
     onChainId:
-      '{"parents":1,"interior":{"X2":[{"Parachain":2011},{"GeneralKey":{"length":3,"data":"0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
+      '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2011},{"type":"GeneralKey","value":{"length":3,"data":"hex:0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -253,7 +269,8 @@ export const tokens = [
     decimals: 18,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/moonbeam.webp",
     existentialDeposit: "1",
-    onChainId: '{"parents":1,"interior":{"X2":[{"Parachain":2004},{"PalletInstance":10}]}}',
+    onChainId:
+      '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2004},{"type":"PalletInstance","value":10}]}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -269,7 +286,8 @@ export const tokens = [
     decimals: 12,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/hydradx.webp",
     existentialDeposit: "1",
-    onChainId: '{"parents":1,"interior":{"X2":[{"Parachain":2034},{"GeneralIndex":0}]}}',
+    onChainId:
+      '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2034},{"type":"GeneralIndex","value":"bigint:0"}]}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -285,12 +303,29 @@ export const tokens = [
     decimals: 12,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/ksm.svg",
     existentialDeposit: "1000000000",
-    onChainId: '{"parents":2,"interior":{"X1":{"GlobalConsensus":"Kusama"}}}',
+    onChainId:
+      '{"parents":2,"interior":{"type":"X1","value":{"type":"GlobalConsensus","value":{"type":"Kusama"}}}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
     },
     coingeckoId: "kusama",
+  },
+  {
+    id: "polkadot-asset-hub-substrate-foreignassets-myth",
+    type: "substrate-foreignassets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "MYTH",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/mythos.svg",
+    existentialDeposit: "10000000000000000",
+    onChainId: '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":3369}}}',
+    isFrozen: false,
+    chain: {
+      id: "polkadot-asset-hub",
+    },
+    coingeckoId: "mythos",
   },
   {
     id: "polkadot-asset-hub-substrate-foreignassets-vdot",
@@ -302,7 +337,7 @@ export const tokens = [
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/vdot.svg",
     existentialDeposit: "1",
     onChainId:
-      '{"parents":1,"interior":{"X2":[{"Parachain":2030},{"GeneralKey":{"length":2,"data":"0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
+      '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2030},{"type":"GeneralKey","value":{"length":2,"data":"hex:0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -310,16 +345,16 @@ export const tokens = [
     coingeckoId: "voucher-dot",
   },
   {
-    id: "polkadot-asset-hub-substrate-foreignassets-weth",
+    id: "polkadot-asset-hub-substrate-foreignassets-weth.e",
     type: "substrate-foreignassets",
     isTestnet: false,
     isDefault: true,
-    symbol: "WETH",
+    symbol: "WETH.e",
     decimals: 18,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/weth.webp",
     existentialDeposit: "15000000000000",
     onChainId:
-      '{"parents":2,"interior":{"X2":[{"GlobalConsensus":{"Ethereum":{"chainId":1} }},{"AccountKey20":{"network":null,"key":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}}]}}',
+      '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}}]}}',
     isFrozen: false,
     chain: {
       id: "polkadot-asset-hub",
@@ -352,6 +387,7 @@ export const tokens = [
     chain: {
       id: "polkadot-bridge-hub",
     },
+    coingeckoId: "polkadot",
   },
   {
     id: "polkadot-substrate-native",
