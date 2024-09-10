@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -13,6 +14,15 @@ export const NomPoolBondReview = () => {
   const { t } = useTranslation()
   const { token, poolId, formatter, account, onSubmitted, payload, txMetadata } =
     useNomPoolBondWizard()
+
+  const [isDisabled, setIsDisabled] = useState(true)
+
+  useEffect(() => {
+    // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
+    setTimeout(() => {
+      setIsDisabled(false)
+    }, 500)
+  }, [])
 
   if (!account) return null
 
@@ -70,6 +80,7 @@ export const NomPoolBondReview = () => {
           payload={payload}
           onSubmitted={onSubmitted}
           txMetadata={txMetadata}
+          disabled={isDisabled}
         />
       )}
     </div>
