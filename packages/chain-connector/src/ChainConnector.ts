@@ -1,10 +1,17 @@
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { ChainId, IChaindataChainProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
-import { Deferred, sleep } from "@talismn/util"
+import { Deferred, sleep, throwAfter } from "@talismn/util"
 
 import log from "./log"
 import { Websocket } from "./Websocket"
+
+// errors that require an rpc fallback
+// https://docs.blastapi.io/blast-documentation/things-you-need-to-know/error-reference
+const BAD_RPC_ERRORS: Record<string, string> = {
+  "-32097": "Rate limit exceeded",
+  "-32098": "Capacity exceeded",
+}
 
 export class ChainConnectionError extends Error {
   type: "CHAIN_CONNECTION_ERROR"
@@ -88,7 +95,7 @@ export class ChainConnector {
     if (this.#connectionMetaDb) {
       this.#chaindataChainProvider.chainIds().then((chainIds) => {
         // tidy up connectionMeta for chains which no longer exist
-        this.#connectionMetaDb?.chainPriorityRpc.where("id").noneOf(chainIds).delete()
+        this.#connectionMetaDb?.chainPriorityRpcs.where("id").noneOf(chainIds).delete()
         this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
       })
     }
@@ -186,13 +193,35 @@ export class ChainConnector {
     }
 
     try {
+      const timeout = 30_000 // throw after 30 seconds if no response
       // eslint-disable-next-line no-var
-      var response = await ws.send(method, params, isCacheable)
-    } catch (error) {
-      log.error(
-        `Failed to send ${method} on chain ${chainId}\nparams: ${JSON.stringify(params)}`,
-        error
-      )
+      var response = await Promise.race([
+        ws.send(method, params, isCacheable),
+        throwAfter(timeout, "TIMEOUT"),
+      ])
+    } catch (err) {
+      const error = err as (Error & { code?: number; data?: unknown }) | null
+
+      if (error?.message === "TIMEOUT") {
+        log.error(`ChainConnector timeout`, { chainId, endpoint: ws.endpoint, error })
+        await this.updateRpcPriority(chainId, ws.endpoint, "last")
+        await this.reset(chainId)
+        throw new Error("Timeout")
+      }
+
+      const badRpcError = BAD_RPC_ERRORS[error?.code?.toString() ?? ""]
+      if (badRpcError) {
+        log.error(`ChainConnector ${badRpcError}`, { error, chainId, endpoint: ws.endpoint })
+        await this.updateRpcPriority(chainId, ws.endpoint, "last")
+        await this.reset(chainId)
+        throw new Error(badRpcError)
+      }
+
+      log.error(`Failed to send ${method} on chain ${chainId}\nparams: ${JSON.stringify(params)}`, {
+        error,
+        endpoint: ws.endpoint,
+      })
+
       await this.disconnectChainSocket(chainId, socketUserId)
       throw error
     }
@@ -359,6 +388,25 @@ export class ChainConnector {
   }
 
   /**
+   * Kills current websocket if any
+   * Useful after changing rpc order to make sure it's applied for futher requests
+   */
+  async reset(chainId: ChainId) {
+    log.info("ChainConnector reset", chainId)
+    const ws = this.#socketConnections[chainId]
+    if (!ws) return
+
+    try {
+      clearTimeout(this.#socketKeepAliveIntervals[chainId])
+      delete this.#socketConnections[chainId]
+      delete this.#socketUsers[chainId]
+      await ws.disconnect()
+    } catch (error) {
+      log.warn(`Error occurred reseting socket ${chainId}`, error)
+    }
+  }
+
+  /**
    * Wait for websocket to be ready, but don't wait forever
    */
   private async waitForWs(
@@ -380,19 +428,8 @@ export class ChainConnector {
    * The caller must call disconnectChainSocket with the returned SocketUserId once they are finished with it
    */
   private async connectChainSocket(chainId: ChainId): Promise<[SocketUserId, Websocket]> {
-    const chain = await this.#chaindataChainProvider.chainById(chainId)
-    if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+    const rpcs = await this.getEndpoints(chainId)
     const socketUserId = this.addSocketUser(chainId)
-
-    const rpcs = (chain.rpcs ?? []).map(({ url }) => url)
-
-    // sort most recently connected rpc to the top of the list (if one exists)
-    if (this.#connectionMetaDb) {
-      const priorityRpc = await this.#connectionMetaDb.chainPriorityRpc.get(chainId)
-      if (priorityRpc) {
-        rpcs.sort((a, b) => (a === priorityRpc.url ? -1 : b === priorityRpc.url ? 1 : 0))
-      }
-    }
 
     // retrieve next rpc backoff interval from connection meta db (if one exists)
     let nextBackoffInterval: number | undefined = undefined
@@ -429,7 +466,9 @@ export class ChainConnector {
         const url = this.#socketConnections[chainId]?.endpoint
         if (!url) return
 
-        this.#connectionMetaDb.chainPriorityRpc.put({ id, url }, id)
+        this.updateRpcPriority(id, url, "first").catch((err) =>
+          log.warn(`updateRpcPriority failed`, err)
+        )
       })
     }
 
@@ -547,4 +586,43 @@ export class ChainConnector {
         rpcByGenesisHashUnsubscribe(subscriptionId, unsubscribeMethod),
     }
   }
+
+  private async updateRpcPriority(chainId: ChainId, rpc: string, priority: "first" | "last") {
+    if (!this.#connectionMetaDb) return
+
+    const rpcs = await this.getEndpoints(chainId)
+    if (!rpcs.includes(rpc)) throw new Error(`Unknown rpc for chain ${chainId} : ${rpc}`)
+
+    const urls = rpcs.filter((r) => r !== rpc)
+
+    if (priority === "first") urls.unshift(rpc)
+    if (priority === "last") urls.push(rpc)
+
+    if (!isEqual(urls, rpcs)) {
+      // order may not change, especially if there is only one
+      await this.#connectionMetaDb.chainPriorityRpcs.put({ id: chainId, urls }, chainId)
+    }
+  }
+
+  private async getEndpoints(chainId: ChainId): Promise<string[]> {
+    const chain = await this.#chaindataChainProvider.chainById(chainId)
+    if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+
+    let rpcs = (chain.rpcs ?? []).map(({ url }) => url)
+    const priorityRpcs = this.#connectionMetaDb
+      ? await this.#connectionMetaDb.chainPriorityRpcs.get(chainId)
+      : undefined
+
+    if (priorityRpcs) {
+      // use existing priority list of rpcs that still exist, and include missing ones
+      rpcs = [
+        ...priorityRpcs.urls.filter((rpc) => rpcs.includes(rpc)),
+        ...rpcs.filter((rpc) => !priorityRpcs.urls.includes(rpc)),
+      ]
+    }
+
+    return rpcs
+  }
 }
+
+const isEqual = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i])
