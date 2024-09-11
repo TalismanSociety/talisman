@@ -1,7 +1,8 @@
-import { TypeRegistry } from "@polkadot/types"
-import { BN, bnToU8a, stringToU8a, u8aConcat, u8aToHex } from "@polkadot/util"
+import { mergeUint8 } from "@polkadot-api/utils"
+import { u8aConcat, u8aToHex } from "@polkadot/util"
 import { blake2AsU8a } from "@polkadot/util-crypto"
 import upperFirst from "lodash/upperFirst"
+import { AccountId, SS58String } from "polkadot-api"
 import { Observable } from "rxjs"
 import { u32 } from "scale-ts"
 
@@ -36,28 +37,27 @@ export const asObservable =
  * Each nominationPool in the nominationPools pallet has access to some accountIds which have no
  * associated private key. Instead, they are derived from this function.
  */
-const nompoolAccountId = (palletId: string, poolId: string, index: number) => {
-  const EMPTY_H256 = new Uint8Array(32)
-  const MOD_PREFIX = stringToU8a("modl")
-  const U32_OPTS = { bitLength: 32, isLe: true }
-  return new TypeRegistry()
-    .createType(
-      "AccountId32",
-      u8aConcat(
-        MOD_PREFIX,
-        stringToU8a(palletId),
-        new Uint8Array([index]),
-        bnToU8a(new BN(poolId), U32_OPTS),
-        EMPTY_H256
-      )
-    )
-    .toString()
+const nompoolAccountId = (palletId: string, poolId: string | number, index: number): SS58String => {
+  const utf8Encoder = new TextEncoder()
+  const encModPrefix = utf8Encoder.encode("modl")
+  const encPalletId = utf8Encoder.encode(palletId)
+
+  const encIndex = new Uint8Array([index])
+  const encPoolId = u32.enc(typeof poolId === "string" ? parseInt(poolId, 10) : poolId)
+
+  const length = encModPrefix.length + encPalletId.length + encIndex.length + encPoolId.length
+  const remainingBytes = 32 - length
+  const encEmptyH256 = new Uint8Array(remainingBytes)
+
+  const bytes = mergeUint8(encModPrefix, encPalletId, encIndex, encPoolId, encEmptyH256)
+
+  return AccountId().dec(bytes)
 }
 /** The stash account for the nomination pool */
-export const nompoolStashAccountId = (palletId: string, poolId: string) =>
+export const nompoolStashAccountId = (palletId: string, poolId: string | number) =>
   nompoolAccountId(palletId, poolId, 0)
 /** The rewards account for the nomination pool */
-export const nompoolRewardAccountId = (palletId: string, poolId: string) =>
+export const nompoolRewardAccountId = (palletId: string, poolId: string | number) =>
   nompoolAccountId(palletId, poolId, 1)
 
 /**
