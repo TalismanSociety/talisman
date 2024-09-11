@@ -23,6 +23,8 @@ import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 
+import { useQuickSettingsOpenClose } from "./Navigation/QuickSettings"
+
 type Props = {
   className?: string
   mouseOver: boolean
@@ -160,6 +162,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+  const { open: openQuickSettings } = useQuickSettingsOpenClose()
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -208,10 +211,10 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           label: t("Settings"),
           tooltip: t("Quick settings"),
           icon: SettingsIcon,
-          onClick: () => openCopyAddressModal(), // TODO
+          onClick: () => openQuickSettings(),
         },
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, openCopyAddressModal, t]
+    [canBuy, disableActions, disabledReason, openCopyAddressModal, openQuickSettings, t]
   )
 
   return (

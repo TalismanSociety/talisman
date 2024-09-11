@@ -1,8 +1,9 @@
 import { DiamondIcon, XIcon } from "@talismn/icons"
-import { api } from "@ui/api"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
+
+import { api } from "@ui/api"
 
 import { useAssetDiscoveryAlert } from "./useAssetDiscoveryAlert"
 

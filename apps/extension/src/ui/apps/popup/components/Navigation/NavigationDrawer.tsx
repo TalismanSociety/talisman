@@ -1,12 +1,4 @@
 import {
-  QUEST_APP_URL,
-  TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_SWAP_URL,
-} from "@extension/shared"
-import { Nav, NavItem } from "@talisman/components/Nav"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { FullColorSmallLogo } from "@talisman/theme/logos"
-import {
   AlertCircleIcon,
   ExternalLinkIcon,
   KeyIcon,
@@ -20,15 +12,24 @@ import {
   XIcon,
   ZapIcon,
 } from "@talismn/icons"
+import { FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { Drawer, IconButton } from "talisman-ui"
+
+import {
+  QUEST_APP_URL,
+  TALISMAN_WEB_APP_STAKING_URL,
+  TALISMAN_WEB_APP_SWAP_URL,
+} from "@extension/shared"
+import { Nav, NavItem } from "@talisman/components/Nav"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { FullColorSmallLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
