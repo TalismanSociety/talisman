@@ -1,11 +1,13 @@
 import { assert, u8aToHex } from "@polkadot/util"
 import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
 import { CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { connectionMetaDb } from "@talismn/connection-meta"
 import Dexie from "dexie"
 
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"
+import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
@@ -97,6 +99,10 @@ export class ChainsHandler extends ExtensionHandler {
       })
     })
 
+    await connectionMetaDb.chainPriorityRpcs.delete(chain.id)
+    await connectionMetaDb.chainBackoffInterval.delete(chain.id)
+    chainConnector.reset(chain.id)
+
     // ensure miniMetadatas are immediately updated, but don't wait for them to update before returning
     updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
 
@@ -113,6 +119,10 @@ export class ChainsHandler extends ExtensionHandler {
 
   private chainReset: MessageHandler<"pri(chains.reset)"> = async (request) => {
     await chaindataProvider.resetChain(request.id)
+
+    await connectionMetaDb.chainPriorityRpcs.delete(request.id)
+    await connectionMetaDb.chainBackoffInterval.delete(request.id)
+    chainConnector.reset(request.id)
 
     talismanAnalytics.capture("reset chain", { chain: request.id })
 
