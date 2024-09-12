@@ -1,5 +1,6 @@
-import { ChainId } from "@extension/core"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
+import { ChainId } from "@extension/core"
 
 export type TipOptionName = "low" | "medium" | "high"
 export type TipOptions = Record<TipOptionName, string>
@@ -23,15 +24,15 @@ const getAstarTipOptions: TipOptionsResolver = async (response) => {
 // each gas station has a different response shape
 const gasStations: Record<ChainId, GasStationInfo> = {
   astar: {
-    url: "https://astar-gas-station.herokuapp.com/api/astar/gasnow",
+    url: "https://gas.astar.network/api/gasnow?network=astar",
     resolver: getAstarTipOptions,
   },
   shiden: {
-    url: "https://astar-gas-station.herokuapp.com/api/shiden/gasnow",
+    url: "https://gas.astar.network/api/gasnow?network=shiden",
     resolver: getAstarTipOptions,
   },
   shibuya: {
-    url: "https://astar-gas-station.herokuapp.com/api/shibuya/gasnow",
+    url: "https://gas.astar.network/api/gasnow?network=shibuya",
     resolver: getAstarTipOptions,
   },
 }
