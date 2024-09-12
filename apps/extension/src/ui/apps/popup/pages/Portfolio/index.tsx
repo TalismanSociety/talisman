@@ -15,11 +15,11 @@ import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
-import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
+import { NoAccounts } from "./shared/NoAccounts"
 
 const AuthorisedSiteToolbar = () => {
   const currentSite = useCurrentSite()
@@ -37,7 +37,7 @@ const AuthorisedSiteToolbar = () => {
         <ConnectedAccountsPill />
         <EvmNetworkSelectPill />
       </div>
-      <div className="h-[3.6rem] w-full"></div>
+      <div className="h-[3.6rem] w-full shrink-0"></div>
     </>
   )
 }
@@ -84,7 +84,7 @@ export const Portfolio = () => (
     <div id="main" className="relative size-full overflow-hidden">
       <ErrorBoundary>
         <Content>
-          <div className="flex w-full flex-col gap-4 py-8">
+          <div className="flex size-full flex-col gap-4 py-8">
             <AuthorisedSiteToolbar />
             <PortfolioContent />
             <BottomNav />

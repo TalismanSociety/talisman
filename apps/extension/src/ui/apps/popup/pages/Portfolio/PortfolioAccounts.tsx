@@ -29,7 +29,7 @@ import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/A
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
-import { NoAccountsPopup } from "@ui/apps/popup/pages/NoAccounts"
+import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -273,15 +273,8 @@ const AccountsToolbar = () => {
 }
 
 const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
-  const addresses = useMemo(
-    () => options.filter(accountTypeGuard).map(({ address }) => address),
-    [options]
-  )
-
   return (
     <div className={classNames("flex w-full flex-col gap-4", className)}>
-      <StakingBanner addresses={addresses} />
-      <AccountsToolbar />
       {options.map((option) => (
         <AccountButton
           key={option.type === "account" ? `account-${option.address}` : option.id}
@@ -310,10 +303,17 @@ const Accounts = ({
   const hasPortfolioOptions = portfolioOptions.length > 0
   const hasWatchedOptions = watchedOptions.length > 0
 
+  const addresses = useMemo(
+    () => portfolioOptions.filter(accountTypeGuard).map(({ address }) => address),
+    [portfolioOptions]
+  )
+
   return (
     <div className="flex w-full flex-col gap-4">
       {!folder && <AllAccountsHeader accounts={accounts} />}
       {!folder && <NewFeaturesButton />}
+      <StakingBanner addresses={addresses} />
+      <AccountsToolbar />
       {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
 
       {hasPortfolioOptions && (
