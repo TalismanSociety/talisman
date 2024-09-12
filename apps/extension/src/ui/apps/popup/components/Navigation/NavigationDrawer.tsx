@@ -1,21 +1,23 @@
 import {
   AlertCircleIcon,
   ExternalLinkIcon,
+  GlobeIcon,
   KeyIcon,
   LockIcon,
   PlusIcon,
   RepeatIcon,
   SendIcon,
   SettingsIcon,
+  StarsIcon,
   UsersIcon,
   XIcon,
-  ZapIcon,
 } from "@talismn/icons"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import { Drawer, IconButton } from "talisman-ui"
 
-import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
+import { TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
@@ -88,16 +90,6 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleStakingClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Staking button",
-    })
-    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
-    window.close()
-  }, [])
-
   const { allBackedUp } = useMnemonicBackup()
   const handleBackupClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -118,6 +110,27 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/settings/general")
     window.close()
   }, [])
+
+  const handleManageNetworksClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Manage Networks button",
+    })
+    api.dashboardOpen("/settings/networks-tokens/networks/ethereum")
+    window.close()
+  }, [])
+
+  const navigate = useNavigate()
+  const handleLatestFeaturesClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Latest Features button",
+    })
+    navigate("/portfolio/whats-new")
+    close()
+  }, [close, navigate])
 
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
@@ -140,30 +153,31 @@ export const NavigationDrawer: FC = () => {
                 {t("Send Funds")}
               </NavItem>
             )}
-            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
-              {t("Address Book")}
-            </NavItem>
-            <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
-              <span className="flex items-center gap-2">
-                {t("Staking")}
-                <ExternalLinkIcon />
-              </span>
-            </NavItem>
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
               <span className="flex items-center gap-2">
                 {t("Swap")}
                 <ExternalLinkIcon />
               </span>
             </NavItem>
+            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
+              {t("Address Book")}
+            </NavItem>
+            <NavItem icon={<GlobeIcon />} onClick={handleManageNetworksClick}>
+              {t("Manage Networks")}
+            </NavItem>
+
             <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
                 {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
               </span>
             </NavItem>
+            <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
+              {t("Latest Features")}
+            </NavItem>
 
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
-              {t("Settings")}
+              {t("All Settings")}
             </NavItem>
           </Nav>
         </ScrollContainer>
