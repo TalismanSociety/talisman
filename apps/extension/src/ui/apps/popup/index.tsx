@@ -31,12 +31,15 @@ import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
 import { Encrypt } from "./pages/Encrypt"
+import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
+import { TryTalismanPage } from "./pages/TryTalisman"
+import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded } = useLoginCheck()
@@ -68,6 +71,9 @@ const Popup = () => {
           <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />} />
           <Route path={`${ETH_NETWORK_ADD_PREFIX}/:id`} element={<AddEthereumNetwork />} />
           <Route path={`${WATCH_ASSET_PREFIX}/:id`} element={<AddCustomErc20Token />} />
+          <Route path="try-talisman" element={<TryTalismanPage />} />
+          <Route path="whats-new" element={<WhatsNewPage />} />
+          <Route path="learn-more" element={<LearnMorePage />} />
           <Route path="send/*" element={<SendFundsPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>

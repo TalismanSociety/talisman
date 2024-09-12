@@ -5,7 +5,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { getWhatsNewVersions } from "@ui/apps/popup/pages/Portfolio/PortfolioWhatsNew"
+import { getWhatsNewVersions } from "@ui/apps/popup/pages/WhatsNew/WhatsNew"
 import { useSetting } from "@ui/hooks/useSettings"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -27,7 +27,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
 
   const handleClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "What's New" })
-    return navigate("/portfolio/whats-new")
+    return navigate("/whats-new")
   }, [navigate])
 
   const handleDismissClick: MouseEventHandler<HTMLButtonElement> = useCallback(

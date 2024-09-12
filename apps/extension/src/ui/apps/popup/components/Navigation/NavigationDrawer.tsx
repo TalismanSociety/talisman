@@ -128,7 +128,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Latest Features button",
     })
-    navigate("/portfolio/whats-new")
+    navigate("/whats-new")
     close()
   }, [close, navigate])
 

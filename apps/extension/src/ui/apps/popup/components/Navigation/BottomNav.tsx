@@ -161,7 +161,7 @@ export const BottomNav = () => {
       <div className="h-28 shrink-0">{/* Placeholder for nav height */}</div>
       <QuickSettingsOverlay />
 
-      <div className="absolute bottom-0 left-0 z-10 flex w-full flex-col justify-center gap-6 px-8 pb-6">
+      <div className="absolute bottom-0 left-0 z-20 flex w-full flex-col justify-center gap-6 px-8 pb-6">
         <QuickSettingsModal />
         <div
           className={classNames(

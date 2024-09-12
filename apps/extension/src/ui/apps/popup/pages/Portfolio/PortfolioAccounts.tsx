@@ -1,10 +1,18 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  EyeIcon,
+  FolderPlusIcon,
+  PlusIcon,
+  SettingsIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import {
   AccountJsonAny,
@@ -13,7 +21,9 @@ import {
   TreeFolder,
   TreeItem,
 } from "@extension/core"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
@@ -27,12 +37,15 @@ import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/hooks/useBalances"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
+
+import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -192,6 +205,73 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
 const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
   option.type === "account"
 
+const AccountsToolbar = () => {
+  const { t } = useTranslation()
+  const [search, setSearch] = useState("")
+
+  const handleAddAccountClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Add account button",
+    })
+    api.dashboardOpen("/accounts/add")
+    window.close()
+  }, [])
+
+  const { open: openSettings } = useQuickSettingsOpenClose()
+
+  return (
+    <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
+      <div className="flex grow items-center overflow-hidden">
+        <SearchInput
+          containerClassName={classNames(
+            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-xs !px-4",
+            "[&>input]:text-xs [&>svg]:size-8 [&>button>svg]:size-10"
+          )}
+          placeholder={t("Search account or folder")}
+          onChange={setSearch}
+          initialValue={search}
+        />
+      </div>
+      <Tooltip placement="bottom">
+        <TooltipTrigger>
+          <PortfolioToolbarButton
+            onClick={handleAddAccountClick}
+            className="border-grey-700 size-16 ring-transparent focus-visible:border"
+          >
+            <PlusIcon />
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>{t("Add account")}</TooltipContent>
+      </Tooltip>
+      <Tooltip placement="bottom-end">
+        <TooltipTrigger asChild>
+          <PortfolioToolbarButton className="border-grey-700 size-16 ring-transparent focus-visible:border">
+            <FolderPlusIcon />
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>{t("Manage accounts & folders")}</TooltipContent>
+      </Tooltip>
+      <Tooltip placement="bottom-end">
+        <TooltipTrigger asChild>
+          <PortfolioToolbarButton
+            onClick={openSettings}
+            className="border-grey-700 size-16 ring-transparent focus-visible:border"
+          >
+            <SettingsIcon />
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>{t("Settings")}</TooltipContent>
+      </Tooltip>
+      {/* <div className="flex shrink-0 gap-4">
+        {!IS_POPUP && <TokensSortButton />}
+        <NetworkFilterButton />
+      </div> */}
+    </div>
+  )
+}
+
 const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
   const addresses = useMemo(
     () => options.filter(accountTypeGuard).map(({ address }) => address),
@@ -201,6 +281,7 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   return (
     <div className={classNames("flex w-full flex-col gap-4", className)}>
       <StakingBanner addresses={addresses} />
+      <AccountsToolbar />
       {options.map((option) => (
         <AccountButton
           key={option.type === "account" ? `account-${option.address}` : option.id}
@@ -374,7 +455,7 @@ export const PortfolioAccounts = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-12 py-8">
+      <div className="flex flex-col gap-12">
         <Accounts
           accounts={accounts}
           folder={folder}

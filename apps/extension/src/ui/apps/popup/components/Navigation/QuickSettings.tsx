@@ -32,7 +32,7 @@ export const QuickSettingsOverlay: FC = () => {
   // TODO proper animation in + out
   return (
     <div
-      className="animate-fade-in-fast absolute left-0 top-0 z-10 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
+      className="animate-fade-in-fast absolute left-0 top-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
       role="presentation"
       onClick={close}
     ></div>

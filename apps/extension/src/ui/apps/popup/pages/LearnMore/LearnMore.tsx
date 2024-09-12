@@ -1,11 +1,14 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import { ArrowUpRightIcon, ChevronLeftIcon, ExternalLinkIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { MouseEventHandler, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 
+import { FadeIn } from "@talisman/components/FadeIn"
+import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+
+import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 import AdvancedAccountManagementUrl from "./assets/Learn More - Advanced Account Management.png"
 import MakeItYoursUrl from "./assets/Learn More - Make it Yours.png"
 import SafeguardYourAssetsUrl from "./assets/Learn More - Safeguard Your Assets.png"
@@ -31,7 +34,7 @@ const goToAddHardwareAccounts = newGoToFn(
 )
 const goToSettingsMnemonics = newGoToFn("Manage mnemonics", "/settings/mnemonics")
 
-export const PortfolioLearnMore = () => {
+const Content = () => {
   const { t } = useTranslation()
 
   return (
@@ -167,7 +170,7 @@ const LearnMoreButton = ({
   )
 }
 
-export const PortfolioLearnMoreHeader = () => {
+const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -177,11 +180,11 @@ export const PortfolioLearnMoreHeader = () => {
   }, [navigate])
 
   return (
-    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-8">
       <div className="flex-1">
-        <button type="button" className="p-6" onClick={goToPortfolio}>
+        <IconButton onClick={goToPortfolio}>
           <ChevronLeftIcon />
-        </button>
+        </IconButton>
       </div>
       <div className="font-bold">{t("Learn More")}</div>
       <div className="flex-1 text-right">
@@ -190,3 +193,12 @@ export const PortfolioLearnMoreHeader = () => {
     </header>
   )
 }
+
+export const LearnMorePage = () => (
+  <PopupLayout>
+    <Header />
+    <PopupContent>
+      <Content />
+    </PopupContent>
+  </PopupLayout>
+)

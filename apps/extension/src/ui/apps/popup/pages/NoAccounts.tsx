@@ -33,12 +33,12 @@ export const NoAccountsPopup = ({ accounts }: { accounts: AccountJsonAny[] }) =>
 
   const onTryTalisman = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "try talisman" })
-    navigate("/portfolio/try-talisman")
+    navigate("/try-talisman")
   }, [navigate])
 
   const onLearnMore = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
-    navigate("/portfolio/learn-more")
+    navigate("/learn-more")
   }, [navigate])
 
   return (
@@ -56,7 +56,7 @@ export const NoAccounts = () => {
   const { accounts } = usePortfolioAccounts()
 
   return (
-    <div className="flex flex-col items-center gap-16 py-8">
+    <div className="flex flex-col items-center gap-16">
       <AllAccountsHeader accounts={accounts} />
       <NoAccountsPopup accounts={accounts} />
     </div>

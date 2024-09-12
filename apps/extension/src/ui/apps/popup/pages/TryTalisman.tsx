@@ -1,14 +1,5 @@
-import { AssetDiscoveryMode } from "@extension/core"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowUpLeftIcon, CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import {
   ChangeEventHandler,
   FormEventHandler,
@@ -19,6 +10,19 @@ import {
 } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { IconButton } from "talisman-ui"
+
+import { AssetDiscoveryMode } from "@extension/core"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+
+import { PopupContent, PopupLayout } from "../Layout/PopupLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -36,7 +40,7 @@ const POPULAR_ACCOUNTS: Array<{ name?: string; address: string; description?: st
   { name: "Gavin Wood", address: "5F7LiCA6T4DWUDRQyFAWsRqVwxrJEznUtcw4WNnb5fe6snCH" },
 ]
 
-export const PortfolioTryTalisman = () => {
+const Content = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -261,7 +265,7 @@ const FollowAccountButton = ({
   )
 }
 
-export const PortfolioTryTalismanHeader = () => {
+const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -271,11 +275,11 @@ export const PortfolioTryTalismanHeader = () => {
   }, [navigate])
 
   return (
-    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-8">
       <div className="flex-1">
-        <button type="button" className="p-6" onClick={goToPortfolio}>
+        <IconButton onClick={goToPortfolio}>
           <ChevronLeftIcon />
-        </button>
+        </IconButton>
       </div>
       <div className="font-bold">
         <Trans t={t}>
@@ -288,3 +292,12 @@ export const PortfolioTryTalismanHeader = () => {
     </header>
   )
 }
+
+export const TryTalismanPage = () => (
+  <PopupLayout>
+    <Header />
+    <PopupContent>
+      <Content />
+    </PopupContent>
+  </PopupLayout>
+)

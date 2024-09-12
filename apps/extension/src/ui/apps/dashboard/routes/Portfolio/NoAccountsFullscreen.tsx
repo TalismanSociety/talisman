@@ -1,11 +1,12 @@
+import { useCallback } from "react"
+import { useNavigate } from "react-router-dom"
+
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { NoAccounts } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useCallback } from "react"
-import { useNavigate } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -43,7 +44,7 @@ export const NoAccountsFullscreen = () => {
       name: "Goto",
       action: "try talisman",
     })
-    api.popupOpen("#/portfolio/try-talisman")
+    api.popupOpen("#/try-talisman")
   }, [])
 
   const onLearnMore = useCallback(() => {
@@ -52,7 +53,7 @@ export const NoAccountsFullscreen = () => {
       name: "Goto",
       action: "learn more",
     })
-    api.popupOpen("#/portfolio/learn-more")
+    api.popupOpen("#/learn-more")
   }, [])
 
   const { accounts } = usePortfolioAccounts()

@@ -8,12 +8,14 @@ import { createRoot } from "react-dom/client"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { rcompare } from "semver"
+import { IconButton } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { latestUpdates } from "./assets/whats-new"
+import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
+import { latestUpdates } from "./assets"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -33,7 +35,7 @@ export const getWhatsNewVersions = () => {
   return Object.keys(latestUpdates).sort(rcompare)
 }
 
-export const PortfolioWhatsNewSection = ({
+const PortfolioWhatsNewSection = ({
   content,
   heroUrl,
   date,
@@ -101,7 +103,7 @@ export const PortfolioWhatsNewSection = ({
   )
 }
 
-export const PortfolioWhatsNew = () => {
+const Content = () => {
   const versions = getWhatsNewVersions()
 
   return (
@@ -122,7 +124,7 @@ export const PortfolioWhatsNew = () => {
   )
 }
 
-export const PortfolioWhatsNewHeader = () => {
+const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [dismissedVersion, setDismissedVersion] = useSetting("newFeaturesDismissed")
@@ -141,11 +143,11 @@ export const PortfolioWhatsNewHeader = () => {
   }, [goToPortfolio, setDismissedVersion, versions])
 
   return (
-    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-8">
       <div className="flex-1">
-        <button type="button" className="p-6" onClick={goToPortfolio}>
+        <IconButton type="button" onClick={goToPortfolio}>
           <ChevronLeftIcon />
-        </button>
+        </IconButton>
       </div>
       <div className="font-bold">
         <Trans t={t}>
@@ -246,3 +248,12 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
 
   return whatsNewHtmlRef
 }
+
+export const WhatsNewPage = () => (
+  <PopupLayout>
+    <Header />
+    <PopupContent>
+      <Content />
+    </PopupContent>
+  </PopupLayout>
+)

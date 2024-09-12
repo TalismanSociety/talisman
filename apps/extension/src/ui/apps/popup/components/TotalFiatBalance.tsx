@@ -3,10 +3,11 @@ import {
   CreditCardIcon,
   EyeIcon,
   EyeOffIcon,
+  RepeatIcon,
   SendIcon,
-  SettingsIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -22,8 +23,6 @@ import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
-
-import { useQuickSettingsOpenClose } from "./Navigation/QuickSettings"
 
 type Props = {
   className?: string
@@ -162,7 +161,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
-  const { open: openQuickSettings } = useQuickSettingsOpenClose()
+
+  const handleSwapClick = useCallback(() => {
+    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
+    window.close()
+  }, [])
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -177,7 +180,6 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsName: "Goto",
           analyticsAction: "Send Funds button",
           label: t("Send"),
-          tooltip: t("Send tokens"),
           icon: SendIcon,
           onClick: () => api.sendFundsOpen().then(() => window.close()),
           disabled: disableActions,
@@ -187,34 +189,31 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsName: "Goto",
           analyticsAction: "open receive",
           label: t("Receive"),
-          tooltip: t("Copy address"),
           icon: ArrowDownIcon,
           onClick: () => openCopyAddressModal(),
           disabled: disableActions,
           disabledReason,
+        },
+        {
+          analyticsName: "Goto",
+          analyticsAction: "open swap",
+          label: t("Swap"),
+          icon: RepeatIcon,
+          onClick: () => handleSwapClick(),
         },
         canBuy
           ? {
               analyticsName: "Goto",
               analyticsAction: "Buy Crypto button",
               label: t("Buy"),
-              tooltip: t("Buy tokens"),
               icon: CreditCardIcon,
               onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
               disabled: disableActions,
               disabledReason,
             }
           : null,
-        {
-          analyticsName: "Goto",
-          analyticsAction: "open quick settings",
-          label: t("Settings"),
-          tooltip: t("Quick settings"),
-          icon: SettingsIcon,
-          onClick: () => openQuickSettings(),
-        },
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, openCopyAddressModal, openQuickSettings, t]
+    [canBuy, disableActions, disabledReason, handleSwapClick, openCopyAddressModal, t]
   )
 
   return (
