@@ -130,7 +130,7 @@ const TokensSortButton = () => {
 
 export const PortfolioToolbarTokens = () => {
   return (
-    <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
+    <div className="flex w-full shrink-0 items-center justify-between gap-8 overflow-hidden">
       <div className="flex grow items-center overflow-hidden px-1">
         <PortfolioSearch />
       </div>
