@@ -1,11 +1,7 @@
 import * as Icons from "@talismn/icons"
 import { ChevronLeftIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSetting } from "@ui/hooks/useSettings"
 import DOMPurify from "dompurify"
-import { QUEST_APP_URL } from "extension-shared"
 import { marked } from "marked"
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react"
 import { createRoot } from "react-dom/client"
@@ -13,8 +9,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { rcompare } from "semver"
 
+import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useSetting } from "@ui/hooks/useSettings"
+
 import { latestUpdates } from "./assets/whats-new"
-import { QuestsBanner } from "./QuestsBanner"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -105,15 +104,8 @@ export const PortfolioWhatsNewSection = ({
 export const PortfolioWhatsNew = () => {
   const versions = getWhatsNewVersions()
 
-  const openQuests = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
-    window.open(QUEST_APP_URL, "_blank")
-    window.close()
-  }, [])
-
   return (
     <div className="flex flex-col gap-16">
-      <QuestsBanner onClick={openQuests} />
       {versions.slice(0, WHATS_NEW_LENGTH).map((version) => {
         const { content, HeroUrl, date } = latestUpdates[version as keyof typeof latestUpdates]
         return (

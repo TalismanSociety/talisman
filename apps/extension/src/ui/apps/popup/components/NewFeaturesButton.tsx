@@ -1,11 +1,12 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { getWhatsNewVersions } from "@ui/apps/popup/pages/Portfolio/PortfolioWhatsNew"
-import { useSetting } from "@ui/hooks/useSettings"
 import { MouseEventHandler, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { getWhatsNewVersions } from "@ui/apps/popup/pages/Portfolio/PortfolioWhatsNew"
+import { useSetting } from "@ui/hooks/useSettings"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

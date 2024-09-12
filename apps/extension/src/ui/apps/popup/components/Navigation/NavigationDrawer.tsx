@@ -4,7 +4,6 @@ import {
   KeyIcon,
   LockIcon,
   PlusIcon,
-  QuestStarIcon,
   RepeatIcon,
   SendIcon,
   SettingsIcon,
@@ -16,11 +15,7 @@ import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, IconButton } from "talisman-ui"
 
-import {
-  QUEST_APP_URL,
-  TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_SWAP_URL,
-} from "@extension/shared"
+import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
@@ -124,12 +119,6 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleQuestsClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
-    window.open(QUEST_APP_URL, "_blank")
-    window.close()
-  }, [])
-
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
@@ -172,17 +161,7 @@ export const NavigationDrawer: FC = () => {
                 {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
               </span>
             </NavItem>
-            <NavItem
-              className="hover:bg-primary/10"
-              icon={
-                <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
-                  <QuestStarIcon className="text-xs text-black" />
-                </div>
-              }
-              onClick={handleQuestsClick}
-            >
-              <span className="text-primary font-bold">{t("Quests")}</span>
-            </NavItem>
+
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("Settings")}
             </NavItem>

@@ -3,7 +3,6 @@ import {
   DownloadAlertIcon,
   PieChartIcon,
   PlusIcon,
-  QuestStarIcon,
   RepeatIcon,
   SettingsIcon,
   ZapIcon,
@@ -12,11 +11,7 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import {
-  QUEST_APP_URL,
-  TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_SWAP_URL,
-} from "@extension/shared"
+import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
 import { Nav } from "@talisman/components/Nav"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -73,12 +68,6 @@ export const MainSidebar = () => {
     navigate("/settings/mnemonics?showBackupModal")
   }, [genericEvent, navigate])
 
-  const handleQuestsClick = useCallback(() => {
-    genericEvent("open quests link", { from: "sidebar", target: "quests" })
-    window.open(QUEST_APP_URL, "_blank")
-    return false
-  }, [genericEvent])
-
   return (
     <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
       <SidebarNavItem
@@ -114,18 +103,7 @@ export const MainSidebar = () => {
         isExternalLink
         icon={<RepeatIcon />}
       />
-      <SidebarNavItem
-        navItemClassName="hover:bg-primary/10"
-        contentClassName="text-primary"
-        title={<span className="font-bold">{t("Quests")}</span>}
-        onClick={handleQuestsClick}
-        icon={
-          <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
-            <QuestStarIcon className="text-xs text-black" />
-          </div>
-        }
-        isExternalLink
-      />
+
       <SidebarNavItem
         title={t("Settings")}
         to="/settings/general"
