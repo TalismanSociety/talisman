@@ -1,6 +1,11 @@
+import { FolderPlusIcon, UserPlusIcon } from "@talismn/icons"
+import { atom, useAtomValue } from "jotai"
+import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talismn/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import {
@@ -9,19 +14,11 @@ import {
   balanceTotalsAtom,
   chainsMapAtomFamily,
 } from "@ui/atoms"
+import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
+import { ManageAccountsList } from "@ui/domains/Account/ManageAccounts/ManageAccountsList"
+import { NewFolderModal, useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
+import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { atom, useAtomValue } from "jotai"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-
-import { AccountsList } from "./AccountsList"
-import { DeleteFolderModal } from "./DeleteFolderModal"
-import { NewFolderModal, useNewFolderModal } from "./NewFolderModal"
-import { RenameFolderModal } from "./RenameFolderModal"
-import { UiTree } from "./types"
-import { withIds } from "./util"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -44,12 +41,6 @@ export const AccountsPage = () => {
   useAtomValue(preloadAtom)
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()
-
-  const [portfolioUiTree, watchedUiTree] = useMemo(
-    (): [UiTree, UiTree] => [withIds(catalog.portfolio), withIds(catalog.watched)],
-    [catalog]
-  )
   const newFolderModal = useNewFolderModal()
   const navigate = useNavigate()
   const addNewAccount = useCallback(() => navigate("/accounts/add"), [navigate])
@@ -77,30 +68,7 @@ export const AccountsPage = () => {
         </button>
       </div>
       <Spacer />
-      {watchedUiTree.length > 0 && (
-        <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
-          <TalismanHandIcon className="inline" />
-          <div>{t("My portfolio")}</div>
-        </div>
-      )}
-      <AccountsList
-        accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
-        treeName="portfolio"
-        tree={portfolioUiTree}
-      />
-      {watchedUiTree.length > 0 && (
-        <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
-          <EyeIcon className="inline" />
-          <div>{t("Followed only")}</div>
-        </div>
-      )}
-      <AccountsList
-        accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
-        treeName="watched"
-        tree={watchedUiTree}
-      />
+      <ManageAccountsList />
       <NewFolderModal />
       <RenameFolderModal />
       <DeleteFolderModal />

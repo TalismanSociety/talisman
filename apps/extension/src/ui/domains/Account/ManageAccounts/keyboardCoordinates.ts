@@ -1,9 +1,9 @@
 import {
+  closestCorners,
   DroppableContainer,
+  getFirstCollision,
   KeyboardCode,
   KeyboardCoordinateGetter,
-  closestCorners,
-  getFirstCollision,
 } from "@dnd-kit/core"
 
 import type { SensorContext } from "./types"

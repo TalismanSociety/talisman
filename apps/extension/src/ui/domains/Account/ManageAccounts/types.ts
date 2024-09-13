@@ -1,6 +1,7 @@
 import type { UniqueIdentifier } from "@dnd-kit/core"
-import type { TreeAccount, TreeFolder } from "@extension/core"
 import type { MutableRefObject } from "react"
+
+import type { TreeAccount, TreeFolder } from "@extension/core"
 
 export type UiTree = UiTreeItem[]
 export type UiTreeItem = UiTreeAccount | UiTreeFolder

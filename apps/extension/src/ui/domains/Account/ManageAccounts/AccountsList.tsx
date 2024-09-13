@@ -1,4 +1,6 @@
 import {
+  closestCenter,
+  defaultDropAnimation,
   DndContext,
   DragEndEvent,
   DragMoveEvent,
@@ -10,26 +12,25 @@ import {
   MeasuringStrategy,
   PointerSensor,
   UniqueIdentifier,
-  closestCenter,
-  defaultDropAnimation,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
+
 import {
+  AccountJsonAny,
   AccountsCatalogTree,
   RequestAccountsCatalogAction,
   runActionOnTrees,
 } from "@extension/core"
-import { AccountJsonAny } from "@extension/core"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { createPortal } from "react-dom"
 
+import type { FlattenedItem, SensorContext, UiTree } from "./types"
 import { sortableTreeKeyboardCoordinates } from "./keyboardCoordinates"
 import { SortableTreeItem } from "./SortableTreeItem"
-import type { FlattenedItem, SensorContext, UiTree } from "./types"
 import { flattenTree, getChildCount, getProjection, removeChildrenOf } from "./util"
 
 type Props = {

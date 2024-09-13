@@ -1,9 +1,10 @@
+import { classNames } from "@talismn/util"
+import { useMemo } from "react"
+
 import { AccountJsonAny } from "@extension/core"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useMemo } from "react"
 
 type Props = { addresses?: string[]; className?: string; max?: number }
 

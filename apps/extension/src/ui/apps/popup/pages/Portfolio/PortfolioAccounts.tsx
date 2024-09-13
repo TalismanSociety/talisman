@@ -4,9 +4,9 @@ import {
   ChevronRightIcon,
   CopyIcon,
   EyeIcon,
-  FolderPlusIcon,
   PlusIcon,
   SettingsIcon,
+  UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { atom, useAtom, useAtomValue } from "jotai"
@@ -26,13 +26,13 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
 import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
@@ -46,8 +46,8 @@ import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 
+import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
-import { AuthorisedSiteToolbar } from "./shared/AuthorisedSiteToolbar"
 
 const portfolioAccountsSearchAtom = atom("")
 
@@ -213,6 +213,7 @@ const accountTypeGuard = (option: AccountOption): option is AccountAccountOption
 
 const AccountsToolbar = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [search, setSearch] = useAtom(portfolioAccountsSearchAtom)
 
   const handleAddAccountClick = useCallback(() => {
@@ -224,6 +225,15 @@ const AccountsToolbar = () => {
     api.dashboardOpen("/accounts/add")
     window.close()
   }, [])
+
+  const handleManageAccountsClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Manage Accounts button",
+    })
+    navigate("/manage-accounts")
+  }, [navigate])
 
   useEffect(() => {
     // clear on unmount
@@ -260,11 +270,14 @@ const AccountsToolbar = () => {
       </Tooltip>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton className="border-grey-700 size-16 ring-transparent focus-visible:border">
-            <FolderPlusIcon />
+          <PortfolioToolbarButton
+            onClick={handleManageAccountsClick}
+            className="border-grey-700 size-16 ring-transparent focus-visible:border"
+          >
+            <UsersIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
-        <TooltipContent>{t("Organise accounts")}</TooltipContent>
+        <TooltipContent>{t("Manage accounts")}</TooltipContent>
       </Tooltip>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
@@ -277,10 +290,6 @@ const AccountsToolbar = () => {
         </TooltipTrigger>
         <TooltipContent>{t("Settings")}</TooltipContent>
       </Tooltip>
-      {/* <div className="flex shrink-0 gap-4">
-        {!IS_POPUP && <TokensSortButton />}
-        <NetworkFilterButton />
-      </div> */}
     </div>
   )
 }
@@ -504,7 +513,7 @@ export const PortfolioAccounts = () => {
   return (
     <>
       {!folder && <AuthorisedSiteToolbar />}
-      <div className="flex flex-col gap-12">
+      <div className="flex w-full flex-col gap-12">
         <Accounts
           accounts={accounts}
           folder={folder}

@@ -1,15 +1,3 @@
-import {
-  AccountJsonAny,
-  AssetDiscoveryMode,
-  DiscoveredBalance,
-  activeEvmNetworksStore,
-  activeTokensStore,
-  isEvmNetworkActive,
-  isTokenActive,
-} from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
@@ -22,6 +10,36 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { atom, useAtomValue } from "jotai"
+import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { useIntersection } from "react-use"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
+import urlJoin from "url-join"
+
+import {
+  AccountJsonAny,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  AssetDiscoveryMode,
+  DiscoveredBalance,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import {
@@ -49,26 +67,9 @@ import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { atom, useAtomValue } from "jotai"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
-import urlJoin from "url-join"
 
+import { AccountsStack } from "../../../../../domains/Account/AccountIconsStack"
 import { DashboardLayout } from "../../../layout/DashboardLayout"
-import { AccountsStack } from "../Accounts/AccountIconsStack"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,

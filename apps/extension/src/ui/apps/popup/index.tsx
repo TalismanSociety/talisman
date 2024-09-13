@@ -33,6 +33,7 @@ import { Connect } from "./pages/Connect"
 import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
+import { ManageAccountsPage } from "./pages/ManageAccounts"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
 import { SendFundsPage } from "./pages/SendFunds"
@@ -74,6 +75,7 @@ const Popup = () => {
           <Route path="try-talisman" element={<TryTalismanPage />} />
           <Route path="whats-new" element={<WhatsNewPage />} />
           <Route path="learn-more" element={<LearnMorePage />} />
+          <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>

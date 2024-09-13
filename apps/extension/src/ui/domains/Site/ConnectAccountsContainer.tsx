@@ -1,12 +1,13 @@
-import { AccountJsonAny } from "@extension/core"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountsStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountIconsStack"
-import useAccounts from "@ui/hooks/useAccounts"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import useAccounts from "@ui/hooks/useAccounts"
 
 import { FormattedAddress } from "../Account/FormattedAddress"
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"

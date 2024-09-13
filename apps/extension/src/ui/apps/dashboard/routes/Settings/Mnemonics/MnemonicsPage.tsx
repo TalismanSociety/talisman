@@ -1,8 +1,3 @@
-import { AccountJsonAny } from "@extension/core"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -12,18 +7,24 @@ import {
   SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
 import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
-import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { AccountsStack } from "../Accounts/AccountIconsStack"
+import { AccountsStack } from "../../../../../domains/Account/AccountIconsStack"
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {
   MnemonicDeleteModal,
