@@ -1,16 +1,12 @@
 import { ErrorBoundary } from "@sentry/react"
 import { classNames } from "@talismn/util"
-import { FC, PropsWithChildren, Suspense, useEffect, useMemo, useRef } from "react"
+import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
-import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
@@ -20,27 +16,6 @@ import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { NoAccounts } from "./shared/NoAccounts"
-
-const AuthorisedSiteToolbar = () => {
-  const currentSite = useCurrentSite()
-  const authorisedSites = useAuthorisedSites()
-  const isAuthorised = useMemo(
-    () => Boolean(currentSite?.id && authorisedSites[currentSite?.id]),
-    [authorisedSites, currentSite?.id]
-  )
-
-  if (!isAuthorised) return null
-
-  return (
-    <>
-      <div className="absolute left-0 top-0 z-20 flex w-full shrink-0 items-center justify-between gap-4 px-8 pt-8">
-        <ConnectedAccountsPill />
-        <EvmNetworkSelectPill />
-      </div>
-      <div className="h-[3.6rem] w-full shrink-0"></div>
-    </>
-  )
-}
 
 const HasAccountsPortfolioContent = () => (
   <>
@@ -85,7 +60,7 @@ export const Portfolio = () => (
       <ErrorBoundary>
         <Content>
           <div className="flex size-full flex-col gap-4 py-8">
-            <AuthorisedSiteToolbar />
+            {/* <AuthorisedSiteToolbar /> */}
             <PortfolioContent />
             <BottomNav />
           </div>

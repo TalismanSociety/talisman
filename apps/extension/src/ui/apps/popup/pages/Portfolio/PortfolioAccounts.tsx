@@ -47,6 +47,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
+import { AuthorisedSiteToolbar } from "./shared/AuthorisedSiteToolbar"
 
 const portfolioAccountsSearchAtom = atom("")
 
@@ -263,7 +264,7 @@ const AccountsToolbar = () => {
             <FolderPlusIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
-        <TooltipContent>{t("Manage accounts & folders")}</TooltipContent>
+        <TooltipContent>{t("Organise accounts")}</TooltipContent>
       </Tooltip>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
@@ -502,6 +503,7 @@ export const PortfolioAccounts = () => {
 
   return (
     <>
+      {!folder && <AuthorisedSiteToolbar />}
       <div className="flex flex-col gap-12">
         <Accounts
           accounts={accounts}
