@@ -90,7 +90,6 @@
     "loglevel": "^1.8.1",
     "lottie-react": "2.4.0",
     "marked": "^11.1.0",
-    "posthog-js": "^1.139.0",
     "raptorq": "1.7.24",
     "react": "18.2.0",
     "react-app-polyfill": "3.0.0",
