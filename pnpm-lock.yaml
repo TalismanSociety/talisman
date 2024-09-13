@@ -1252,7 +1252,7 @@ importers:
         version: 12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@polkadot/phishing':
         specifier: latest
-        version: 0.23.4
+        version: 0.22.10
       '@polkadot/types':
         specifier: 12.0.2
         version: 12.0.2
@@ -4365,8 +4365,8 @@ packages:
     resolution: {integrity: sha512-IDII8jSdfoAHyABGlgTg6O8xpUYaSDc+NSnJ8U/V8XCjVYAEe3j/w/H3LnXKMVKWHexbpLzO4MMbu5ldNw7AjQ==}
     engines: {node: '>=18'}
 
-  '@polkadot/phishing@0.23.4':
-    resolution: {integrity: sha512-ume//AmN/+QDdgm6PhGUg3YMlrGY/qL/nBN27WdGtdRwjgrUV+IjpZt4mE31CCDO9jUPdzGJRylTrp8bNcr9jQ==}
+  '@polkadot/phishing@0.22.10':
+    resolution: {integrity: sha512-Nyi1gzSGvIYy2uioJ4C+FJhaqts6Npr8HT7SVTw1Lp+0zr+4tD1+heW4sfuiWcggtlkiar6kYmgiwT+5wtMA3Q==}
     engines: {node: '>=18'}
 
   '@polkadot/react-identicon@3.6.4':
@@ -17247,7 +17247,7 @@ snapshots:
       '@polkadot/x-fetch': 12.6.2
       tslib: 2.6.2
 
-  '@polkadot/phishing@0.23.4':
+  '@polkadot/phishing@0.22.10':
     dependencies:
       '@polkadot/util': 12.6.2
       '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)
