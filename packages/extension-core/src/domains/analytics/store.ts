@@ -7,26 +7,34 @@ import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
 import { PostHogCaptureProperties } from "./types"
 
+type PostHogSendProperties = PostHogCaptureProperties & { distinct_id: string }
+
 export type AnalyticsEvent = {
-  eventName: string
-  properties?: PostHogCaptureProperties
+  event: string
+  properties: PostHogSendProperties
   timestamp: number
 }
 
-type AnalyticsData = { data: AnalyticsEvent[]; distinctId: string }
+export type AnalyticsSendEvent = {
+  event: string
+  properties: PostHogSendProperties
+  timestamp: string
+}
+
+type AnalyticsData = { data: AnalyticsEvent[]; distinctId?: string }
 
 const TALISMAN_PROPERTIES = {
   appVersion: process.env.VERSION,
   appBuild: process.env.BUILD,
   testBuild: DEBUG || ["dev", "qa", "ci"].includes(process.env.BUILD as string),
 }
-
+const DEFAULT_ANALYTICS_STATE = { data: [] }
 class AnalyticsStore extends StorageProvider<AnalyticsData> {
   // the isReady promise prevents events being added to the queue while the analytics are being sent
-  isReady: Promise<boolean> = new Promise(() => true)
+  isReady: Promise<boolean> = new Promise((resolve) => resolve(true))
 
   constructor(name: string) {
-    super(name)
+    super(name, DEFAULT_ANALYTICS_STATE)
     setInterval(async () => await this.send(), 60_000)
   }
 
@@ -43,11 +51,13 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
         posthogDistinctId = v4()
         await this.mutate((data) => ({ ...data, distinctId: posthogDistinctId }))
       }
+      return posthogDistinctId
     } catch (cause) {
       const error = new Error("Failed to identify posthog client", { cause })
       console.error(error) // eslint-disable-line no-console
       Sentry.captureException(error)
     }
+    return
   }
 
   async capture(
@@ -57,16 +67,19 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
   ) {
     log.debug("AnalyticsStore.capture", { eventName, rawProperties, eventTimestamp })
     const timestamp = eventTimestamp ?? Date.now()
+    const distinct_id = await this.getDistinctId()
+    if (!distinct_id) return
+
     const properties = {
       ...rawProperties,
       ...TALISMAN_PROPERTIES,
-      distinct_id: await this.getDistinctId(),
+      distinct_id,
     }
 
     await this.isReady
     await this.mutate(({ data, distinctId }) => ({
       distinctId,
-      data: [...data, { eventName, properties, timestamp }],
+      data: [...data, { event: eventName, properties, timestamp }],
     }))
   }
 
@@ -93,17 +106,17 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
       const currentTime = Date.now()
       // split the data into two arrays, one for the current time, and to be kept for the future
       const { toKeep, toSend } = data.reduce<{
-        toSend: AnalyticsEvent[]
+        toSend: AnalyticsSendEvent[]
         toKeep: AnalyticsEvent[]
       }>(
         (result, item) => {
-          if (item.timestamp < currentTime) result.toSend.push(item)
+          if (item.timestamp < currentTime)
+            result.toSend.push({ ...item, timestamp: new Date(item.timestamp).toISOString() })
           else result.toKeep.push(item)
           return result
         },
         { toSend: [], toKeep: [] }
       )
-
       if (toSend.length === 0) return true
 
       const url = await remoteConfigStore.get("postHogUrl")
