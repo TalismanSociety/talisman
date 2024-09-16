@@ -13,6 +13,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   coingecko: {
     apiUrl: "https://api.coingecko.com",
   },
+  postHogUrl: "https://us.i.posthog.com/batch/",
   nominationPools: {
     // uncomment for testing on testnets
     // "avail-turing-testnet": [1],
