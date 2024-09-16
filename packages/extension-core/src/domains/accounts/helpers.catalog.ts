@@ -30,6 +30,7 @@ export type RequestAccountsCatalogAction =
   | { type: "renameFolder"; tree: AccountsCatalogTree; id: string; newName: string }
   | { type: "moveFolder"; tree: AccountsCatalogTree; id: string; beforeItem?: MoveBeforeTarget }
   | { type: "removeFolder"; tree: AccountsCatalogTree; id: string }
+  | { type: "reorder"; tree: AccountsCatalogTree; items: Tree }
 
 /**
  * The target item of a `moveAccount` or `moveFolder` action.
@@ -56,13 +57,20 @@ export const runActionOnTrees =
     const tree = trees[treeName]
     if (!tree) return
 
+    if (type === "reorder") {
+      // TODO check no added and no removed
+      trees[treeName] = structuredClone(action.items)
+      return true
+    }
+
+    // TODO REMOVE
     // account actions
     if (type === "moveAccount") return moveAccount(tree, action)
 
     // folder actions
     if (type === "addFolder") return addFolder(tree, action)
     if (type === "renameFolder") return renameFolder(tree, action)
-    if (type === "moveFolder") return moveFolder(tree, action)
+    if (type === "moveFolder") return moveFolder(tree, action) // TODO REMOVE
     if (type === "removeFolder") return removeFolder(tree, action)
 
     // force compilation error if any action types don't have a case

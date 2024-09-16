@@ -1,148 +1,8 @@
-import type { UniqueIdentifier } from "@dnd-kit/core"
-import { arrayMove } from "@dnd-kit/sortable"
+import { log } from "extension-shared"
 
-import { AccountJsonAny, TreeAccount, TreeFolder, TreeItem } from "@extension/core"
+import { Tree, TreeAccount, TreeFolder } from "@extension/core"
 
-import type { FlattenedItem, UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem } from "./types"
-
-export const iOS = /iPad|iPhone|iPod/.test(navigator.platform)
-
-const getDragDepth = (offset: number, indentationWidth: number) =>
-  Math.round(offset / indentationWidth)
-
-export function getProjection(
-  items: FlattenedItem[],
-  activeId: UniqueIdentifier,
-  overId: UniqueIdentifier,
-  dragOffset: number,
-  indentationWidth: number
-) {
-  const overItemIndex = items.findIndex(({ id }) => id === overId)
-  const activeItemIndex = items.findIndex(({ id }) => id === activeId)
-  const activeItem = items[activeItemIndex]
-
-  // special case: an account is dropped onto an empty folder's EmptyFolderDropzone
-  if (
-    activeItem.type === "account" &&
-    typeof overId === "string" &&
-    overId.startsWith("empty-folder-")
-  ) {
-    const depth = 1
-    const maxDepth = 1
-    const minDepth = 1
-    const parentId = overId.slice("empty-folder-".length)
-
-    const itemsWithoutActive = items.filter((item) => item.id !== activeId)
-    const nextItem =
-      itemsWithoutActive[itemsWithoutActive.findIndex((item) => item.id === parentId) + 1]
-
-    return { depth, maxDepth, minDepth, parentId, nextItem }
-  }
-
-  const newItems = arrayMove(items, activeItemIndex, overItemIndex)
-  const previousItem = newItems[overItemIndex - 1]
-  const nextItem = newItems[overItemIndex + 1]
-  const dragDepth = getDragDepth(dragOffset, indentationWidth)
-  const projectedDepth = activeItem.depth + dragDepth
-  const maxDepth = getMaxDepth({ activeItem, previousItem })
-  const minDepth = getMinDepth({ nextItem })
-  let depth = projectedDepth
-
-  if (projectedDepth >= maxDepth) {
-    depth = maxDepth
-  } else if (projectedDepth < minDepth) {
-    depth = minDepth
-  }
-
-  const parentId = (() => {
-    if (depth === 0 || !previousItem) return null
-    if (depth === previousItem.depth) return previousItem.parentId
-    if (depth > previousItem.depth) return previousItem.id
-
-    const newParent = newItems
-      .slice(0, overItemIndex)
-      .reverse()
-      .find((item) => item.depth === depth)?.parentId
-
-    return newParent ?? null
-  })()
-
-  return { depth, maxDepth, minDepth, parentId, nextItem }
-}
-
-const getMaxDepth = ({
-  activeItem,
-  previousItem,
-}: {
-  activeItem: FlattenedItem
-  previousItem: FlattenedItem
-}) => {
-  if (activeItem.type === "folder") return 0
-  if (previousItem && previousItem.type === "folder") return previousItem.depth + 1
-  if (previousItem) return previousItem.depth
-  return 0
-}
-const getMinDepth = ({ nextItem }: { nextItem: FlattenedItem }) => (nextItem ? nextItem.depth : 0)
-
-const flatten = (
-  items: UiTree,
-  parentId: UniqueIdentifier | null = null,
-  depth = 0
-): FlattenedItem[] =>
-  items.flatMap((item, index): FlattenedItem[] =>
-    item.type === "account"
-      ? [{ ...item, parentId, depth, index }]
-      : [{ ...item, parentId, depth, index }, ...flatten(item.tree, item.id, depth + 1)]
-  )
-
-export const flattenTree = (items: UiTree): FlattenedItem[] => flatten(items)
-
-export const findItem = (items: UiTreeItem[], itemId: UniqueIdentifier) =>
-  items.find(({ id }) => id === itemId)
-
-export const findItemDeep = (items: UiTree, itemId: UniqueIdentifier): UiTreeItem | undefined => {
-  for (const item of items) {
-    const { id } = item
-
-    if (id === itemId) return item
-
-    if (item.type === "folder" && item.tree.length) {
-      const child = findItemDeep(item.tree, itemId)
-
-      if (child) return child
-    }
-  }
-
-  return undefined
-}
-
-const countChildren = (items: UiTreeItem[], count = 0): number =>
-  items.reduce((acc, item) => {
-    if (item.type === "folder" && item.tree.length) return countChildren(item.tree, acc + 1)
-
-    return acc + 1
-  }, count)
-
-export const getChildCount = (items: UiTree, id: UniqueIdentifier) => {
-  const item = findItemDeep(items, id)
-
-  return item && item.type === "folder" ? countChildren(item.tree) : 0
-}
-
-export const removeChildrenOf = (items: FlattenedItem[], ids: UniqueIdentifier[]) => {
-  const excludeParentIds = [...ids]
-
-  return items.filter((item) => {
-    if (item.parentId && excludeParentIds.includes(item.parentId)) {
-      if (item.type === "folder" && item.tree.length) {
-        excludeParentIds.push(item.id)
-      }
-      return false
-    }
-
-    return true
-  })
-}
+import type { UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem, UiTreePosition } from "./types"
 
 // Add an id to a TreeAccount
 export const accountWithId = (item: TreeAccount): UiTreeAccount => ({
@@ -157,9 +17,78 @@ export const folderWithId = (item: TreeFolder): UiTreeFolder => ({
 })
 
 // Add an id to each item in a list of TreeItems
-export const withIds = (items: TreeItem[]): UiTreeItem[] =>
+export const dataTreeToUiTree = (items: Tree): UiTree =>
   items.map((item) => (item.type === "account" ? accountWithId(item) : folderWithId(item)))
 
-// Find an account in a list of accounts by address
-export const accountByAddress = (accounts: AccountJsonAny[], address: string) =>
-  accounts.find((account) => account.address === address)
+export const getTreeItemsMap = (items: UiTreeItem[]) => {
+  return items.reduce((acc, item) => {
+    acc[item.id] = item
+    if (item.type === "folder") for (const child of item.tree) acc[child.id] = child
+    return acc
+  }, {} as Record<string, UiTreeItem>)
+}
+
+export const moveTreeItem = (items: UiTreeItem[], itemId: string, target: UiTreePosition) => {
+  try {
+    const newItems = structuredClone(items)
+
+    // locate current parent & position
+    let currentParentId = "root"
+    let currentCollection: UiTreeItem[] = newItems
+    let currentIndex = currentCollection.findIndex((item) => item.id === itemId)
+    if (currentIndex === -1)
+      for (const item of newItems.filter((item) => item.type === "folder"))
+        if (item.type === "folder") {
+          // console.log("item", item)
+          currentIndex = item.tree.findIndex((child) => child.id === itemId)
+          if (currentIndex !== -1) {
+            currentParentId = item.id as string
+            currentCollection = item.tree
+            break
+          }
+        }
+    if (currentIndex === -1) throw new Error(`Item with id ${itemId} not found`)
+
+    // Adjust index to account for the removed item
+    const targetIndex =
+      currentParentId === target.parentId && currentIndex < target.index
+        ? target.index - 1
+        : target.index
+
+    // locate target parent
+    const targetCollection =
+      target.parentId === "root"
+        ? newItems
+        : (newItems.find((item) => item.id === target.parentId) as UiTreeFolder)?.tree
+    if (!targetCollection) throw new Error(`Parent with id ${target.parentId} not found`)
+
+    // move item
+    const item = currentCollection[currentIndex]
+    currentCollection.splice(currentIndex, 1)
+    targetCollection.splice(targetIndex, 0, item)
+
+    return newItems
+  } catch (err) {
+    log.error("Failed to move item", { err, items, itemId, target })
+    return items
+  }
+}
+
+export const uiTreeToDataTree = (items: UiTree): Tree => {
+  return items.map((item) => {
+    switch (item.type) {
+      case "account": {
+        return { type: "account", address: item.address }
+      }
+      case "folder": {
+        const { id, name, tree } = item
+        return {
+          id,
+          type: "folder",
+          name,
+          tree: uiTreeToDataTree(tree.filter(({ type }) => type === "account")) as TreeAccount[],
+        }
+      }
+    }
+  })
+}

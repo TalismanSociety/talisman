@@ -6,14 +6,17 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 import { AccountsList } from "./AccountsList"
 import { UiTree } from "./types"
-import { withIds } from "./util"
+import { dataTreeToUiTree } from "./util"
 
 export const ManageAccountsList = () => {
   const { t } = useTranslation("admin")
   const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()
 
   const [portfolioUiTree, watchedUiTree] = useMemo(
-    (): [UiTree, UiTree] => [withIds(catalog.portfolio), withIds(catalog.watched)],
+    (): [UiTree, UiTree] => [
+      dataTreeToUiTree(catalog.portfolio),
+      dataTreeToUiTree(catalog.watched),
+    ],
     [catalog]
   )
 
