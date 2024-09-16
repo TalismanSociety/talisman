@@ -15,6 +15,7 @@ import {
   chainsMapAtomFamily,
 } from "@ui/atoms"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
+import { ManageAccountsToolbar } from "@ui/domains/Account/ManageAccounts/AccountsToolbar"
 import { ManageAccountsList } from "@ui/domains/Account/ManageAccounts/ManageAccountsList"
 import { NewFolderModal, useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
@@ -49,6 +50,7 @@ export const AccountsPage = () => {
     <DashboardLayout analytics={ANALYTICS_PAGE} centered>
       <HeaderBlock title={t("Accounts")} text={t("Organise and sort your accounts")} />
       <Spacer large />
+      <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
       <div className="flex gap-4">
         <button
           type="button"
