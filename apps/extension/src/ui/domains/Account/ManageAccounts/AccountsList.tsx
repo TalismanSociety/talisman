@@ -7,8 +7,9 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
+import { useTranslation } from "react-i18next"
 
 import { AccountJsonAny, AccountsCatalogTree } from "@extension/core"
 import { api } from "@ui/api"
@@ -24,6 +25,7 @@ export const AccountsList: FC<{
   tree: UiTree
   allowReorder: boolean
 }> = ({ accounts, balanceTotalPerAccount, treeName, tree, allowReorder }) => {
+  const { t } = useTranslation()
   const [items, setItems] = useState(() => tree ?? [])
   useEffect(() => {
     setItems(tree ?? [])
@@ -69,10 +71,8 @@ export const AccountsList: FC<{
     [treeName]
   )
 
-  const refBoundary = useRef<HTMLDivElement>(null)
-
   return (
-    <div ref={refBoundary}>
+    <div>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <TreeItems
           treeName={treeName}
@@ -101,6 +101,11 @@ export const AccountsList: FC<{
             )
           : null}
       </DndContext>
+      {!items.length && (
+        <div className="bg-grey-850 text-body-disabled flex h-40 items-center justify-center rounded text-sm">
+          {t("No accounts found")}
+        </div>
+      )}
     </div>
   )
 }
