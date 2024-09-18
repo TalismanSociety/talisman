@@ -1,8 +1,5 @@
-import { FolderPlusIcon, UserPlusIcon } from "@talismn/icons"
 import { atom, useAtomValue } from "jotai"
-import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -16,8 +13,9 @@ import {
 } from "@ui/atoms"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { ManageAccountsToolbar } from "@ui/domains/Account/ManageAccounts/AccountsToolbar"
+import { ManageAccountsProvider } from "@ui/domains/Account/ManageAccounts/context"
 import { ManageAccountsList } from "@ui/domains/Account/ManageAccounts/ManageAccountsList"
-import { NewFolderModal, useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
+import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
@@ -42,35 +40,15 @@ export const AccountsPage = () => {
   useAtomValue(preloadAtom)
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const newFolderModal = useNewFolderModal()
-  const navigate = useNavigate()
-  const addNewAccount = useCallback(() => navigate("/accounts/add"), [navigate])
-
   return (
     <DashboardLayout analytics={ANALYTICS_PAGE} centered>
       <HeaderBlock title={t("Accounts")} text={t("Organise and sort your accounts")} />
       <Spacer large />
-      <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
-      <div className="flex gap-4">
-        <button
-          type="button"
-          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded p-4 text-xs"
-          onClick={newFolderModal.open}
-        >
-          <FolderPlusIcon />
-          {t("Add new folder")}
-        </button>
-        <button
-          type="button"
-          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded p-4 text-xs"
-          onClick={addNewAccount}
-        >
-          <UserPlusIcon />
-          {t("Add new account")}
-        </button>
-      </div>
-      <Spacer />
-      <ManageAccountsList />
+      <ManageAccountsProvider>
+        <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
+        <Spacer />
+        <ManageAccountsList />
+      </ManageAccountsProvider>
       <NewFolderModal />
       <RenameFolderModal />
       <DeleteFolderModal />

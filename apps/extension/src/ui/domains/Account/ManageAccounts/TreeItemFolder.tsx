@@ -21,8 +21,8 @@ export const TreeItemFolder: FC<{
   treeName: AccountsCatalogTree
   accounts: AccountJsonAny[]
   disableFolderDrop?: boolean
-  //isDragged?: boolean
-}> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop }) => {
+  allowReorder: boolean
+}> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop, allowReorder }) => {
   const { t } = useTranslation()
   const addresses = useMemo(() => folder.tree.map((item) => item.address), [folder])
   const balanceTotal = useMemo(
@@ -41,38 +41,26 @@ export const TreeItemFolder: FC<{
   const { open: deleteFolder } = useDeleteFolderModal()
 
   return (
-    <div
-      className={classNames("bg-black-secondary relative flex flex-col rounded-sm pt-2 ")}
-
-      //   role="button"
-      //   tabIndex={0}
-      // onClick={onCollapse}
-      // onKeyDown={(e) => ["Enter", " "].includes(e.key) && onCollapse?.()}
-    >
+    <div className={classNames("@container bg-grey-800 relative flex flex-col rounded-sm pt-2 ")}>
       <div
         className={classNames(
           " flex h-[5.3rem] items-center gap-8 overflow-hidden border-[1px] border-transparent px-8 pb-0"
         )}
       >
-        {/* <ChevronDownIcon
-        className={classNames(
-          "text-body-disabled shrink-0 text-base transition-transform",
-          (clone || collapsed) && "-rotate-90"
-        )}
-      /> */}
         <AccountFolderIcon className="shrink-0 text-xl" />
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="overflow-hidden text-ellipsis whitespace-nowrap">{folder.name}</div>
           {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
         </div>
-        <div className="flex flex-col">
+        <div className="@2xl:flex hidden flex-col">
           <Fiat amount={balanceTotal} isBalance noCountUp />
         </div>
 
         <ContextMenu placement="bottom-end">
           <ContextMenuTrigger
-            className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6"
+            className="enabled:hover:bg-grey-750 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]"
             onClick={stopPropagation()}
+            disabled={allowReorder}
           >
             <MoreHorizontalIcon className="shrink-0" />
           </ContextMenuTrigger>
@@ -100,6 +88,7 @@ export const TreeItemFolder: FC<{
             accounts={accounts}
             disableFolderDrop={disableFolderDrop}
             balanceTotalPerAccount={balanceTotalPerAccount}
+            allowReorder={allowReorder}
           />
         </div>
       )}
@@ -110,8 +99,6 @@ export const TreeItemFolder: FC<{
     </div>
   )
 }
-
-// TODO move empty folder dropzone here
 
 const EmptyFolderDropZone: FC<{
   folderId: string

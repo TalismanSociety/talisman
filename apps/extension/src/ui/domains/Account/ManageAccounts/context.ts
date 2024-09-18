@@ -13,7 +13,7 @@ const useManageAccountsProvider = () => {
   }, [])
 
   const onToggleReorder = useCallback(() => {
-    setState((state) => ({ ...state, isReordering: !state.isReordering }))
+    setState((state) => ({ isReordering: !state.isReordering, search: "" }))
   }, [])
 
   return { search, isReordering, onSearchChange, onToggleReorder }

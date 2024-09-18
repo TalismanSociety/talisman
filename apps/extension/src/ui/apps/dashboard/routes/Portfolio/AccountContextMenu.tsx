@@ -1,5 +1,16 @@
-import { AccountJsonAny } from "@extension/core"
 import { MoreHorizontalIcon } from "@talismn/icons"
+import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  PopoverOptions,
+} from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -11,16 +22,6 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import React, { FC, Suspense, forwardRef, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  PopoverOptions,
-} from "talisman-ui"
 
 const ViewOnExplorerMenuItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
   const { t } = useTranslation()
@@ -43,6 +44,7 @@ type Props = {
   placement?: PopoverOptions["placement"]
   trigger?: React.ReactNode
   hideManageAccounts?: boolean
+  disabled?: boolean
 }
 
 /**
@@ -51,7 +53,7 @@ type Props = {
  * If the `address` prop is null, this component will ignore `selectedAccount`
  */
 export const AccountContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
-  { analyticsFrom, address, placement, trigger, hideManageAccounts },
+  { analyticsFrom, address, placement, trigger, hideManageAccounts, disabled },
   ref
 ) {
   const { t } = useTranslation()
@@ -126,8 +128,9 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
         ref={ref}
-        className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6"
+        className="enabled:hover:bg-grey-800 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]"
         asChild={!!trigger}
+        disabled={disabled}
       >
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>

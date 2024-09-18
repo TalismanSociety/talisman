@@ -16,7 +16,8 @@ import { useManageAccounts } from "./context"
 
 export const ManageAccountsToolbar: FC<{
   analytics: AnalyticsPage
-}> = () => {
+  className?: string
+}> = ({ className }) => {
   const { t } = useTranslation()
   const { search, isReordering, onSearchChange, onToggleReorder } = useManageAccounts()
 
@@ -33,23 +34,33 @@ export const ManageAccountsToolbar: FC<{
   }, [navigate])
 
   return (
-    <div className="flex w-full shrink-0 items-center justify-between gap-4 overflow-hidden px-8">
+    <div
+      className={classNames(
+        "@container flex w-full shrink-0 items-center justify-between gap-4 overflow-hidden",
+        className
+      )}
+    >
       <div className="flex grow items-center overflow-hidden">
+        {/* SearchInput needs to remain uncontrolled, so as workaround we empty/disable it when reordering by changing it s key */}
         <SearchInput
+          key={isReordering ? "reordering" : "search"}
           containerClassName={classNames(
             "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-xs !px-4",
-            "[&>input]:text-xs [&>svg]:size-8 [&>button>svg]:size-10"
+            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+            isReordering && "opacity-70 cursor-not-allowed"
           )}
           placeholder={t("Search account or folder")}
           onChange={onSearchChange}
           initialValue={search}
+          disabled={isReordering}
         />
       </div>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
           <PortfolioToolbarButton
             onClick={addNewAccountClick}
-            className="border-grey-700 size-16 ring-transparent focus-visible:border"
+            className="border-grey-700 @2xl:size-[4.4rem] size-16 ring-transparent focus-visible:border"
           >
             <PlusIcon />
           </PortfolioToolbarButton>
@@ -60,7 +71,7 @@ export const ManageAccountsToolbar: FC<{
         <TooltipTrigger asChild>
           <PortfolioToolbarButton
             onClick={openNewFolderModal}
-            className="border-grey-700 size-16 ring-transparent focus-visible:border"
+            className="border-grey-700 @2xl:size-[4.4rem] size-16 ring-transparent focus-visible:border"
           >
             <FolderPlusIcon />
           </PortfolioToolbarButton>
@@ -72,7 +83,7 @@ export const ManageAccountsToolbar: FC<{
           <PortfolioToolbarButton
             onClick={onToggleReorder}
             className={classNames(
-              "border-grey-700 size-16 ring-transparent focus-visible:border",
+              "border-grey-700 @2xl:size-[4.4rem] size-16 ring-transparent focus-visible:border",
               isReordering && "text-primary"
             )}
           >

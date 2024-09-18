@@ -11,11 +11,19 @@ export const TreeItems: FC<{
   treeName: AccountsCatalogTree
   items: UiTreeItem[]
   parentId: string
-  // disabled?:boolean
+  allowReorder: boolean
   disableFolderDrop?: boolean
   accounts: AccountJsonAny[]
   balanceTotalPerAccount: Record<string, number>
-}> = ({ treeName, items, parentId, disableFolderDrop, accounts, balanceTotalPerAccount }) => {
+}> = ({
+  treeName,
+  items,
+  parentId,
+  disableFolderDrop,
+  allowReorder,
+  accounts,
+  balanceTotalPerAccount,
+}) => {
   const disableDrop = useMemo(
     () => !!disableFolderDrop && parentId !== "root",
     [disableFolderDrop, parentId]
@@ -26,7 +34,13 @@ export const TreeItems: FC<{
       {items.map((item, i) => (
         <Fragment key={item.id}>
           <SeparatorDropZone parentId={parentId} index={i} disabled={disableDrop} />
-          <TreeDraggable key={item.id} parentId={parentId} index={i} id={item.id}>
+          <TreeDraggable
+            key={item.id}
+            parentId={parentId}
+            index={i}
+            id={item.id}
+            disabled={!allowReorder}
+          >
             <TreeItem
               treeName={treeName}
               item={item}
@@ -35,6 +49,7 @@ export const TreeItems: FC<{
               accounts={accounts}
               balanceTotalPerAccount={balanceTotalPerAccount}
               isInFolder={parentId !== "root"}
+              allowReorder={allowReorder}
             />
           </TreeDraggable>
         </Fragment>
@@ -54,6 +69,7 @@ export const TreeItem: FC<{
   accounts: AccountJsonAny[]
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
+  allowReorder: boolean
 }> = ({
   item,
   isDragged,
@@ -62,15 +78,22 @@ export const TreeItem: FC<{
   balanceTotalPerAccount,
   treeName,
   isInFolder,
+  allowReorder,
 }) => {
   return (
-    <div className={classNames(isDragged ? "cursor-grabbing" : "cursor-grab")}>
+    <div
+      className={classNames(
+        allowReorder ? (isDragged ? "cursor-grabbing" : "cursor-grab") : "cursor-default"
+      )}
+    >
       {item.type === "account" && (
         <TreeItemAccount
           address={item.address}
           accounts={accounts}
           balanceTotalPerAccount={balanceTotalPerAccount}
           isInFolder={isInFolder}
+          noTooltip={isDragged}
+          allowReorder={allowReorder}
         />
       )}
       {item.type === "folder" && (
@@ -80,6 +103,7 @@ export const TreeItem: FC<{
           accounts={accounts}
           balanceTotalPerAccount={balanceTotalPerAccount}
           disableFolderDrop={disableFolderDrop}
+          allowReorder={allowReorder}
         />
       )}
     </div>

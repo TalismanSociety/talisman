@@ -27,6 +27,7 @@ type SearchInputProps = {
   placeholder?: string
   initialValue?: string
   after?: ReactNode
+  disabled?: boolean
   onChange?: (search: string) => void
   onSubmit?: () => void
 }
@@ -39,6 +40,7 @@ export const SearchInput: FC<SearchInputProps> = ({
   placeholder,
   initialValue,
   after,
+  disabled,
   onChange,
   onSubmit,
 }) => {
@@ -104,6 +106,7 @@ export const SearchInput: FC<SearchInputProps> = ({
       }
       defaultValue={initialValue}
       placeholder={placeholder}
+      disabled={disabled}
       onChange={handleSearchChange}
       onKeyUp={handleKeyUp}
     />

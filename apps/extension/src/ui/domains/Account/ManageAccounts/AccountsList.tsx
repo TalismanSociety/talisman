@@ -7,7 +7,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
 import { AccountJsonAny, AccountsCatalogTree } from "@extension/core"
 import { api } from "@ui/api"
@@ -16,14 +17,13 @@ import type { UiTree, UiTreePosition } from "./types"
 import { TreeItem, TreeItems } from "./TreeItems"
 import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
 
-type Props = {
+export const AccountsList: FC<{
   accounts: AccountJsonAny[]
   balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree
   tree: UiTree
-}
-
-export const AccountsList = ({ accounts, balanceTotalPerAccount, treeName, tree }: Props) => {
+  allowReorder: boolean
+}> = ({ accounts, balanceTotalPerAccount, treeName, tree, allowReorder }) => {
   const [items, setItems] = useState(() => tree ?? [])
   useEffect(() => {
     setItems(tree ?? [])
@@ -69,28 +69,38 @@ export const AccountsList = ({ accounts, balanceTotalPerAccount, treeName, tree 
     [treeName]
   )
 
+  const refBoundary = useRef<HTMLDivElement>(null)
+
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <TreeItems
-        treeName={treeName}
-        parentId="root"
-        items={items}
-        disableFolderDrop={isDraggingFolder}
-        accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
-      />
-      <DragOverlay>
-        {draggedItem ? (
-          <TreeItem
-            treeName={treeName}
-            item={draggedItem}
-            isDragged
-            disableFolderDrop={true}
-            accounts={accounts}
-            balanceTotalPerAccount={balanceTotalPerAccount}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    <div ref={refBoundary}>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <TreeItems
+          treeName={treeName}
+          parentId="root"
+          items={items}
+          disableFolderDrop={isDraggingFolder}
+          accounts={accounts}
+          balanceTotalPerAccount={balanceTotalPerAccount}
+          allowReorder={allowReorder}
+        />
+
+        {draggedItem
+          ? createPortal(
+              <DragOverlay>
+                <TreeItem
+                  treeName={treeName}
+                  item={draggedItem}
+                  isDragged
+                  disableFolderDrop={true}
+                  accounts={accounts}
+                  balanceTotalPerAccount={balanceTotalPerAccount}
+                  allowReorder={allowReorder}
+                />
+              </DragOverlay>,
+              document.getElementById("main") ?? document.body
+            )
+          : null}
+      </DndContext>
+    </div>
   )
 }
