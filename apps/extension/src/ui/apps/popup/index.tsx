@@ -40,6 +40,7 @@ import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
+import { TxHistoryPage } from "./pages/TxHistory"
 import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
 
 const Popup = () => {
@@ -76,6 +77,7 @@ const Popup = () => {
           <Route path="whats-new" element={<WhatsNewPage />} />
           <Route path="learn-more" element={<LearnMorePage />} />
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
+          <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
