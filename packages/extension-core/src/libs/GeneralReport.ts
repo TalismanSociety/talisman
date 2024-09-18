@@ -2,10 +2,10 @@ import keyring from "@polkadot/ui-keyring"
 import { sleep } from "@talismn/util"
 import { DEBUG } from "extension-shared"
 import groupBy from "lodash/groupBy"
-import { type Properties } from "posthog-js"
 
 import { db } from "../db"
 import { AccountType } from "../domains/accounts/types"
+import { PostHogCaptureProperties } from "../domains/analytics/types"
 import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
@@ -29,7 +29,7 @@ let isBuildingReport = false
 //
 // This should get sent at most once per 24 hours, whenever any other events get sent
 //
-export async function withGeneralReport(properties?: Properties) {
+export async function withGeneralReport(properties?: PostHogCaptureProperties) {
   // If a report has been created but not yet submitted,
   // this function will attach it to the pending event's properties
   const includeExistingReportInProperties = async () => {

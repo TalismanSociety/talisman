@@ -33,7 +33,6 @@ export type AppStoreData = {
   dismissedAssetDiscoveryAlertScanId?: string
   isAssetDiscoveryScanPending?: boolean
   showLedgerPolkadotGenericMigrationAlert?: boolean
-  posthogDistinctId?: string
 }
 
 const ANALYTICS_VERSION = "1.5.0"

@@ -1,32 +1,14 @@
-import type { Properties } from "posthog-js"
 import { DEBUG } from "extension-shared"
-import posthog from "posthog-js"
 
-import { initPosthog, setPosthogOptInPreference } from "../config/posthog"
+import { analyticsStore } from "../domains/analytics/store"
+import { PostHogCaptureProperties } from "../domains/analytics/types"
 import { settingsStore } from "../domains/app/store.settings"
 import { withGeneralReport } from "./GeneralReport"
 
 class TalismanAnalytics {
   #enabled = Boolean(process.env.POSTHOG_AUTH_TOKEN)
 
-  constructor() {
-    if (!this.#enabled) return
-
-    // subscribe posthog opt-in preferences to settingsStore.useAnalyticsTracking changes
-    settingsStore.observable.subscribe(({ useAnalyticsTracking }) =>
-      setPosthogOptInPreference(useAnalyticsTracking)
-    )
-
-    // set posthog opt-in preferences to current value of settingsStore.useAnalyticsTracking
-    settingsStore.get("useAnalyticsTracking").then((useAnalyticsTracking) => {
-      setPosthogOptInPreference(useAnalyticsTracking)
-
-      // init posthog (*after* opt-in preferences have been set)
-      initPosthog()
-    })
-  }
-
-  async capture(eventName: string, properties?: Properties) {
+  async capture(eventName: string, properties?: PostHogCaptureProperties) {
     if (!this.#enabled) return
 
     try {
@@ -39,15 +21,19 @@ class TalismanAnalytics {
       if (allowTracking === false) return
 
       const captureProperties = await withGeneralReport(properties)
-      posthog.capture(eventName, captureProperties)
+      await analyticsStore.capture(eventName, captureProperties)
     } catch (cause) {
       const error = new Error("Failed to capture posthog event", { cause })
       DEBUG && console.error(error) // eslint-disable-line no-console
     }
   }
 
-  async captureDelayed(eventName: string, properties?: Properties, delaySeconds = 900) {
-    setTimeout(() => this.capture(eventName, properties), delaySeconds * 1000 * Math.random())
+  async captureDelayed(
+    eventName: string,
+    properties?: PostHogCaptureProperties,
+    delaySeconds = 900
+  ) {
+    analyticsStore.captureDelayed(eventName, properties, delaySeconds)
   }
 }
 

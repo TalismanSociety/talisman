@@ -1,8 +1,8 @@
 import { ChainId, TokenId } from "@talismn/chaindata-provider"
-import { Properties } from "posthog-js"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
+import { PostHogCaptureProperties } from "../analytics/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
@@ -15,6 +15,7 @@ export type RemoteConfigStoreData = {
     apiKeyValue?: string
   }
   nominationPools: Record<ChainId, number[]>
+  postHogUrl: string
 }
 
 export interface RequestOnboardCreatePassword {
@@ -43,7 +44,7 @@ export type SendFundsOpenRequest = {
 
 export interface AnalyticsCaptureRequest {
   eventName: string
-  options?: Properties
+  options?: PostHogCaptureProperties
 }
 
 // values must match the flags defined in config repository
