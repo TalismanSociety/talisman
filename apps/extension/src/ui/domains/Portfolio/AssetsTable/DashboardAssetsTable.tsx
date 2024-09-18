@@ -60,17 +60,20 @@ const HeaderRow = () => {
           title={t("Total Value")}
           fiat={portfolio}
           showCurrencyToggle
+          align="left"
         />
         <Statistics
           className="h-auto w-auto items-end p-0 pr-8"
           title={t("Locked")}
           fiat={locked}
           locked
+          align="right"
         />
         <Statistics
           className="h-auto w-auto items-end p-0"
           title={t("Available")}
           fiat={available}
+          align="right"
         />
       </div>
     </div>

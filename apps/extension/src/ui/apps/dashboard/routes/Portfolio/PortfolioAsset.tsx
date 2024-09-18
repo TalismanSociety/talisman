@@ -41,6 +41,7 @@ const HeaderRow: FC<{
           fiat={summary.totalFiat}
           token={token}
           showTokens
+          align="left"
         />
         {canHaveLockedState ? (
           <>
@@ -52,6 +53,7 @@ const HeaderRow: FC<{
               token={token}
               locked
               showTokens
+              align="right"
             />
             <Statistics
               className="h-auto w-auto items-end p-0"
@@ -60,6 +62,7 @@ const HeaderRow: FC<{
               fiat={summary.availableFiat}
               token={token}
               showTokens
+              align="right"
             />
           </>
         ) : (
