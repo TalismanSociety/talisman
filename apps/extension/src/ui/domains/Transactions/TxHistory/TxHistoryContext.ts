@@ -97,6 +97,7 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
   const account = useAccountByAddress(address)
 
   return {
+    isLoading: !allTransactions,
     network,
     networks,
     account,

@@ -52,7 +52,7 @@ import { TxReplaceType } from "../types"
 import { useTxHistory } from "./TxHistoryContext"
 
 export const TxHistoryList = () => {
-  const { transactions } = useTxHistory()
+  const { isLoading, transactions } = useTxHistory()
   const { t } = useTranslation()
 
   // if context menu is open on a row, we need to disable others
@@ -86,11 +86,12 @@ export const TxHistoryList = () => {
           onContextMenuClose={handleContextMenuClose(tx.hash)}
         />
       ))}
-      {!transactions.length && (
+      {!isLoading && !transactions.length && (
         <div className="text-body-disabled bg-grey-900 flex h-40 w-full flex-col items-center justify-center rounded-sm text-xs">
           {t("No transactions found")}
         </div>
       )}
+      {isLoading && <TransactionRowShimmer />}
     </div>
   )
 }
@@ -699,4 +700,27 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
     default:
       return null
   }
+}
+
+const TransactionRowShimmer = () => {
+  return (
+    <TransactionRowBase
+      isCtxMenuOpen={false}
+      enabled={false}
+      logo={<div className="bg-grey-800 h-16 w-16 shrink-0 animate-pulse rounded-full" />}
+      status={
+        <div className="bg-grey-800 text-grey-800 rounded-xs mb-1 animate-pulse text-sm">
+          Dunno yet
+        </div>
+      }
+      wen={
+        <div className="bg-grey-800 text-grey-800 rounded-xs mt-1 animate-pulse text-xs">
+          Very long time ago
+        </div>
+      }
+      actions={null}
+      tokens={null}
+      fiat={null}
+    />
+  )
 }
