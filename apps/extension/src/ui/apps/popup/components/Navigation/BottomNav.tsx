@@ -2,14 +2,12 @@ import { HistoryIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
-import { useOpenClose } from "talisman-ui"
+import { useLocation, useMatch, useNavigate } from "react-router-dom"
 
 import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 
@@ -20,87 +18,11 @@ import {
   useQuickSettingsOpenClose,
 } from "./QuickSettings"
 
-const NavButton: FC<{
-  label: ReactNode
-  icon: FC<{ className?: string }>
-  className?: string
-  withBadge?: boolean
-  onClick: () => void
-}> = ({ label, icon: Icon, withBadge, className, onClick }) => {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "group",
-        "text-body-disabled h-20 w-20",
-        "enabled:hover:text-body-secondary",
-        "enabled:focus-visible:border",
-        className
-      )}
-      onClick={onClick}
-    >
-      <div
-        className={classNames(
-          "flex size-full flex-col items-center justify-center gap-[0.15rem]",
-          "translate-y-4 transition-transform group-hover:translate-y-0"
-        )}
-      >
-        {withBadge ? (
-          <div className="relative size-10">
-            <Icon className="size-10" />
-            <div className="bg-primary absolute -right-1 -top-1 size-3 rounded-full"></div>
-          </div>
-        ) : (
-          <Icon className="size-10" />
-        )}
-        <div
-          className={classNames(
-            "leading-paragraph text-[1rem]",
-            "opacity-0 transition-opacity group-hover:opacity-100"
-          )}
-        >
-          {label}
-        </div>
-      </div>
-    </button>
-  )
-}
-
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
   feature: "Navigation",
   featureVersion: 3,
   page: "Portfolio",
-}
-
-const RecentActivityButton = () => {
-  const { t } = useTranslation()
-  const { isOpen, open, close } = useOpenClose()
-
-  // const hasPendingTransactions = useLiveQuery(
-  //   async () => !!(await db.transactions.where("status").equals("pending").count()),
-  //   []
-  // )
-
-  const handleClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Interact",
-      action: "Recent activity button",
-    })
-    open()
-  }, [open])
-
-  return (
-    <>
-      <NavButton
-        label={t("History")}
-        icon={HistoryIcon} // hasPendingTransactions ? NavIconActivityPending : HistoryIcon
-        onClick={handleClick}
-      />
-      <PendingTransactionsDrawer isOpen={isOpen} onClose={close} />
-    </>
-  )
 }
 
 export const BottomNav = () => {
@@ -117,6 +39,16 @@ export const BottomNav = () => {
       action: "Home button",
     })
     navigate("/portfolio")
+    closeQuickSettings()
+  }, [closeQuickSettings, navigate])
+
+  const handleTxHistoryClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Recent activity button",
+    })
+    navigate("/tx-history")
     closeQuickSettings()
   }, [closeQuickSettings, navigate])
 
@@ -170,12 +102,18 @@ export const BottomNav = () => {
         >
           <NavButton
             label={t("Portfolio")}
-            className="!text-white"
+            // className="!text-white"
             icon={NavIconLogo}
             onClick={handleHomeClick}
+            route="/portfolio/*"
           />
           <NavButton label={t("Staking")} icon={ZapIcon} onClick={handleStakingClick} />
-          <RecentActivityButton />
+          <NavButton
+            label={t("History")}
+            icon={HistoryIcon} // hasPendingTransactions ? NavIconActivityPending : HistoryIcon
+            onClick={handleTxHistoryClick}
+            route="/tx-history"
+          />
           <NavButton label={t("Fullscreen")} icon={NavIconExpand} onClick={handleExpandClick} />
           {isQuickSettingsOpen ? (
             <NavButton
@@ -195,5 +133,55 @@ export const BottomNav = () => {
         </div>
       </div>
     </>
+  )
+}
+
+const NavButton: FC<{
+  label: ReactNode
+  icon: FC<{ className?: string }>
+  className?: string
+  withBadge?: boolean
+  route?: string
+  onClick: () => void
+}> = ({ label, icon: Icon, withBadge, route, className, onClick }) => {
+  const routeMatch = useMatch(route ?? "")
+
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "group",
+        "text-body-disabled h-20 w-20",
+        "enabled:hover:text-body-secondary",
+        "enabled:focus-visible:border",
+        routeMatch && "!text-body",
+        className
+      )}
+      onClick={onClick}
+    >
+      <div
+        className={classNames(
+          "flex size-full flex-col items-center justify-center gap-[0.15rem]",
+          "translate-y-4 transition-transform group-hover:translate-y-0"
+        )}
+      >
+        {withBadge ? (
+          <div className="relative size-10">
+            <Icon className="size-10" />
+            <div className="bg-primary absolute -right-1 -top-1 size-3 rounded-full"></div>
+          </div>
+        ) : (
+          <Icon className="size-10" />
+        )}
+        <div
+          className={classNames(
+            "leading-paragraph text-[1rem]",
+            "opacity-0 transition-opacity group-hover:opacity-100"
+          )}
+        >
+          {label}
+        </div>
+      </div>
+    </button>
   )
 }

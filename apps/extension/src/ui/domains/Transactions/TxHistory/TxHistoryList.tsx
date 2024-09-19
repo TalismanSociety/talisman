@@ -1,58 +1,98 @@
-import i18next from "@common/i18nConfig"
+import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { formatDistanceToNowStrict } from "date-fns"
 import {
+  BalanceFormatter,
+  ChainId,
+  db,
+  EvmNetworkId,
   EvmWalletTransaction,
+  isAcalaEvmPlus,
   SubWalletTransaction,
   TransactionStatus,
   WalletTransaction,
-} from "@extension/core"
-import { isAcalaEvmPlus } from "@extension/core"
-import { db } from "@extension/core"
-import { IS_FIREFOX } from "@extension/shared"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { BalanceFormatter } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
-import { useLiveQuery } from "dexie-react-hooks"
-import sortBy from "lodash/sortBy"
-import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+} from "extension-core"
+import { IS_FIREFOX } from "extension-shared"
+import i18next from "i18next"
+import {
+  FC,
+  forwardRef,
+  PropsWithChildren,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import {
-  Button,
-  Drawer,
   Popover,
   PopoverContent,
   PopoverTrigger,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenCloseWithData,
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { ChainLogo } from "../Asset/ChainLogo"
-import { Fiat } from "../Asset/Fiat"
-import { TokenLogo } from "../Asset/TokenLogo"
-import Tokens from "../Asset/Tokens"
-import { NetworkLogo } from "../Ethereum/NetworkLogo"
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
-import { TxReplaceDrawer } from "./TxReplaceDrawer"
-import { TxReplaceType } from "./types"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import Tokens from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
+import useToken from "@ui/hooks/useToken"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Transactions",
-  featureVersion: 1,
-  page: "Recent history drawer",
+import { TxReplaceDrawer } from "../TxReplaceDrawer"
+import { TxReplaceType } from "../types"
+import { useTxHistory } from "./TxHistoryContext"
+
+export const TxHistoryList = () => {
+  const { transactions } = useTxHistory()
+  const { t } = useTranslation()
+
+  // if context menu is open on a row, we need to disable others
+  // because of this we need to control at list level which row shows buttons
+  const [activeTxHash, setActiveTxHash] = useState<string>()
+
+  const handleContextMenuOpen = useCallback(
+    (hash: string) => () => {
+      if (activeTxHash) return
+      setActiveTxHash(hash)
+    },
+    [activeTxHash]
+  )
+
+  const handleContextMenuClose = useCallback(
+    (hash: string) => () => {
+      if (hash !== activeTxHash) return
+      setActiveTxHash(undefined)
+    },
+    [activeTxHash]
+  )
+
+  return (
+    <div className="flex w-full flex-col gap-4 pb-4">
+      {transactions.map((tx) => (
+        <TransactionRow
+          key={tx.hash}
+          tx={tx}
+          enabled={!activeTxHash || activeTxHash === tx.hash}
+          onContextMenuOpen={handleContextMenuOpen(tx.hash)}
+          onContextMenuClose={handleContextMenuClose(tx.hash)}
+        />
+      ))}
+      {!transactions.length && (
+        <div className="text-body-disabled bg-grey-900 flex h-40 w-full flex-col items-center justify-center rounded-sm text-xs">
+          {t("No transactions found")}
+        </div>
+      )}
+    </div>
+  )
 }
 
 type TransactionRowProps = {
@@ -319,6 +359,48 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
   }
 }
 
+const TransactionRowBase: FC<{
+  isCtxMenuOpen: boolean
+  enabled: boolean
+  logo: ReactNode
+  status: ReactNode
+  wen: ReactNode
+  tokens: ReactNode
+  fiat: ReactNode
+  actions: ReactNode
+}> = ({ isCtxMenuOpen, enabled, logo, status, wen, tokens, fiat, actions }) => {
+  return (
+    <div
+      className={classNames(
+        "bg-grey-850 group z-0 flex h-[5.2rem] w-full grow items-center gap-6 rounded-sm px-6",
+        isCtxMenuOpen && "bg-grey-800",
+        enabled && "hover:bg-grey-800"
+      )}
+    >
+      {logo}
+      <div className="leading-paragraph relative flex w-full grow justify-between">
+        <div className="text-left">
+          <div className="text-body flex h-10 items-center gap-2 text-sm font-bold">{status}</div>
+          <div className="text-body-disabled text-xs">{wen}</div>
+        </div>
+        <div className="relative grow text-right">
+          <div
+            className={classNames(
+              isCtxMenuOpen ? "opacity-0" : "opacity-100",
+              enabled && "group-hover:opacity-0"
+            )}
+          >
+            <div className="text-body text-sm">{tokens}</div>
+            <div className="text-body-disabled text-xs">{fiat}</div>
+          </div>
+
+          {actions}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
   tx,
   enabled,
@@ -361,87 +443,63 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     onContextMenuClose?.()
   }, [onContextMenuClose])
 
-  // can't render context menu on first mount or it breaks the slide up animation
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-    return () => setIsMounted(false)
-  }, [])
-
   const { t } = useTranslation("request")
 
   return (
-    <div
-      className={classNames(
-        " group z-0 flex h-[45px] w-full grow items-center gap-4 rounded-sm px-4",
-        isCtxMenuOpen && "bg-grey-750",
-        enabled && "hover:bg-grey-750"
-      )}
-    >
-      {tx.siteUrl ? (
-        <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
-          <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
-        </TxIconContainer>
-      ) : isTransfer && token ? (
-        <TxIconContainer
-          tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
-          networkId={evmNetwork?.id}
-        >
-          <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
-        </TxIconContainer>
-      ) : (
-        <TxIconContainer tooltip={evmNetwork?.name}>
-          <ChainLogo id={evmNetwork?.id} className="!h-16 !w-16" />
-        </TxIconContainer>
-      )}
-
-      <div className="leading-paragraph relative flex w-full grow justify-between">
-        <div className="text-left">
-          <div className="flex h-10 items-center gap-2 text-sm font-bold">
-            <TransactionStatusLabel status={tx.status} />
-            {tx.isReplacement && (
-              <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
-                {t("Replacement")}
-              </span>
-            )}
-          </div>
-          <div className="text-body-secondary h-[17px] text-xs">
-            <DistanceToNow timestamp={tx.timestamp} />
-          </div>
-        </div>
-        <div className="relative grow text-right">
-          {amount && token && (
-            <div
-              className={classNames(
-                isCtxMenuOpen ? "opacity-0" : "opacity-100",
-                enabled && "group-hover:opacity-0"
-              )}
-            >
-              <div className="text-sm">
-                <Tokens
-                  amount={amount.tokens}
-                  decimals={token.decimals}
-                  noCountUp
-                  symbol={token.symbol}
-                />
-              </div>
-              <div className="text-body-secondary text-xs">
-                {amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
-              </div>
-            </div>
+    <TransactionRowBase
+      isCtxMenuOpen={isCtxMenuOpen}
+      enabled={enabled}
+      logo={
+        tx.siteUrl ? (
+          <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
+            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : isTransfer && token ? (
+          <TxIconContainer
+            tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
+            networkId={evmNetwork?.id}
+          >
+            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : (
+          <TxIconContainer tooltip={evmNetwork?.name}>
+            <ChainLogo id={evmNetwork?.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        )
+      }
+      status={
+        <>
+          <TransactionStatusLabel status={tx.status} />
+          {tx.isReplacement && (
+            <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
+              {t("Replacement")}
+            </span>
           )}
-          {isMounted && (
-            <EvmTxActions
-              tx={tx}
-              enabled={enabled}
-              isOpen={isCtxMenuOpen}
-              onContextMenuOpen={handleOpenCtxMenu}
-              onContextMenuClose={handleCloseCtxMenu}
-            />
-          )}
-        </div>
-      </div>
-    </div>
+        </>
+      }
+      wen={<DistanceToNow timestamp={tx.timestamp} />}
+      tokens={
+        !!amount &&
+        !!token && (
+          <Tokens
+            amount={amount.tokens}
+            decimals={token.decimals}
+            noCountUp
+            symbol={token.symbol}
+          />
+        )
+      }
+      fiat={!!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
+      actions={
+        <EvmTxActions
+          tx={tx}
+          enabled={enabled}
+          isOpen={isCtxMenuOpen}
+          onContextMenuOpen={handleOpenCtxMenu}
+          onContextMenuClose={handleCloseCtxMenu}
+        />
+      }
+    />
   )
 }
 
@@ -575,83 +633,60 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     onContextMenuClose?.()
   }, [onContextMenuClose])
 
-  // can't render context menu on first mount or it breaks the slide up animation
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-    return () => setIsMounted(false)
-  }, [])
-
   const { t } = useTranslation("request")
 
   return (
-    <div
-      className={classNames(
-        " group z-0 flex h-[45px] w-full grow items-center gap-4 rounded-sm px-4",
-        isCtxMenuOpen && "bg-grey-750",
-        enabled && "hover:bg-grey-750"
-      )}
-    >
-      {tx.siteUrl ? (
-        <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
-          <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
-        </TxIconContainer>
-      ) : isTransfer && token ? (
-        <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
-          <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
-        </TxIconContainer>
-      ) : (
-        <TxIconContainer tooltip={chain?.name}>
-          <ChainLogo id={chain?.id} className="!h-16 !w-16" />
-        </TxIconContainer>
-      )}
-      <div className="leading-paragraph relative flex w-full grow justify-between">
-        <div className="text-left">
-          <div className="flex h-10 items-center gap-2 text-sm font-bold">
-            <TransactionStatusLabel status={tx.status} />
-            {tx.isReplacement && (
-              <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
-                {t("Replacement")}
-              </span>
-            )}
-          </div>
-          <div className="text-body-secondary h-[17px] text-xs">
-            <DistanceToNow timestamp={tx.timestamp} />
-          </div>
-        </div>
-        <div className="relative grow text-right">
-          {amount && token && (
-            <div
-              className={classNames(
-                isCtxMenuOpen ? "opacity-0" : "opacity-100",
-                enabled && "group-hover:opacity-0"
-              )}
-            >
-              <div className="text-sm">
-                <Tokens
-                  amount={amount.tokens}
-                  decimals={token.decimals}
-                  noCountUp
-                  symbol={token.symbol}
-                />
-              </div>
-              <div className="text-body-secondary text-xs">
-                {amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
-              </div>
-            </div>
+    <TransactionRowBase
+      isCtxMenuOpen={isCtxMenuOpen}
+      enabled={enabled}
+      logo={
+        tx.siteUrl ? (
+          <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
+            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : isTransfer && token ? (
+          <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
+            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : (
+          <TxIconContainer tooltip={chain?.name}>
+            <ChainLogo id={chain?.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        )
+      }
+      status={
+        <>
+          <TransactionStatusLabel status={tx.status} />
+          {tx.isReplacement && (
+            <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
+              {t("Replacement")}
+            </span>
           )}
-          {isMounted && (
-            <SubTxActions
-              tx={tx}
-              enabled={enabled}
-              isOpen={isCtxMenuOpen}
-              onContextMenuOpen={handleOpenCtxMenu}
-              onContextMenuClose={handleCloseCtxMenu}
-            />
-          )}
-        </div>
-      </div>
-    </div>
+        </>
+      }
+      wen={<DistanceToNow timestamp={tx.timestamp} />}
+      tokens={
+        !!amount &&
+        !!token && (
+          <Tokens
+            amount={amount.tokens}
+            decimals={token.decimals}
+            noCountUp
+            symbol={token.symbol}
+          />
+        )
+      }
+      fiat={!!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
+      actions={
+        <SubTxActions
+          tx={tx}
+          enabled={enabled}
+          isOpen={isCtxMenuOpen}
+          onContextMenuOpen={handleOpenCtxMenu}
+          onContextMenuClose={handleCloseCtxMenu}
+        />
+      }
+    />
   )
 }
 
@@ -664,113 +699,4 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
     default:
       return null
   }
-}
-
-const TransactionsList: FC<{
-  transactions: WalletTransaction[]
-}> = ({ transactions }) => {
-  const { t } = useTranslation("request")
-  const sortedTxs: WalletTransaction[] = useMemo(
-    // results should already be sorted by the caller, this is just in case
-    () => sortBy(transactions, ["timestamp"]).reverse(),
-    [transactions]
-  )
-
-  // if context menu is open on a row, we need to disable others
-  // because of this we need to control at list level which row shows buttons
-  const [activeTxHash, setActiveTxHash] = useState<string>()
-
-  const handleContextMenuOpen = useCallback(
-    (hash: string) => () => {
-      if (activeTxHash) return
-      setActiveTxHash(hash)
-    },
-    [activeTxHash]
-  )
-
-  const handleContextMenuClose = useCallback(
-    (hash: string) => () => {
-      if (hash !== activeTxHash) return
-      setActiveTxHash(undefined)
-    },
-    [activeTxHash]
-  )
-
-  return (
-    <div className="scrollable scrollable-700 space-y-8 overflow-y-auto px-12">
-      {sortedTxs?.map((tx) => (
-        <TransactionRow
-          key={tx.hash}
-          tx={tx}
-          enabled={!activeTxHash || activeTxHash === tx.hash}
-          onContextMenuOpen={handleContextMenuOpen(tx.hash)}
-          onContextMenuClose={handleContextMenuClose(tx.hash)}
-        />
-      ))}
-      {!sortedTxs.length && (
-        <div className="text-body-secondary text-center text-sm">
-          {t("No transactions available")}
-        </div>
-      )}
-    </div>
-  )
-}
-
-const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => void }> = ({
-  transactions,
-  onClose,
-}) => {
-  useAnalyticsPageView(ANALYTICS_PAGE)
-  const { t } = useTranslation("request")
-
-  return (
-    <>
-      <h3 className="text-md mt-12 text-center font-bold">{t("Recent Activity")}</h3>
-      <p className="text-body-secondary leading-paragraph my-8 w-full px-24 text-center text-sm">
-        {t("View recent and pending transactions for the past week.")}
-      </p>
-      <TransactionsList transactions={transactions} />
-      <div className="p-12">
-        <Button className="w-full shrink-0" onClick={onClose}>
-          {t("Close")}
-        </Button>
-      </div>
-    </>
-  )
-}
-
-export const PendingTransactionsDrawer: FC<{
-  isOpen?: boolean
-  onClose?: () => void
-}> = ({ isOpen, onClose }) => {
-  const { account } = useSelectedAccount()
-  // load transactions only if we need to open the drawer
-  const transactions = useLiveQuery<WalletTransaction[] | undefined>(
-    () =>
-      isOpen
-        ? db.transactions
-            .filter(
-              (tx) =>
-                !account ||
-                convertAddress(account.address, null) === convertAddress(tx.account, null)
-            )
-            .reverse()
-            .sortBy("timestamp")
-        : undefined,
-    [isOpen]
-  )
-
-  const { isOpenReady, data } = useOpenCloseWithData(isOpen, transactions)
-
-  return (
-    <Drawer
-      anchor="bottom"
-      isOpen={isOpenReady}
-      onDismiss={onClose}
-      containerId="main"
-      className="bg-grey-800 flex w-full flex-col rounded-t-xl"
-    >
-      {data ? <DrawerContent transactions={data} onClose={onClose} /> : null}
-    </Drawer>
-  )
 }

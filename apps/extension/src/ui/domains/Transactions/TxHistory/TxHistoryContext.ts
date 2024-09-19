@@ -1,6 +1,8 @@
 import { HexString } from "@polkadot/util/types"
+import { encodeAnyAddress } from "@talismn/util"
 import { useLiveQuery } from "dexie-react-hooks"
-import { db, EvmNetworkId, WalletTransaction } from "extension-core"
+import { Chain, db, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
+import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
@@ -18,10 +20,13 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
   const [includeTestnets] = useSetting("useTestnets")
 
   const accounts = useAccounts("owned")
-  const { evmNetworks, evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const { chains } = useChains({ activeOnly: true, includeTestnets })
   const chainsByGenesisHash = useMemo(
-    () => Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])),
+    () =>
+      Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Partial<
+        Record<HexString, Chain>
+      >,
     [chains]
   )
 
@@ -38,18 +43,33 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
     address: initialAddress ?? null,
   })
 
-  //   const [genesisHash, evmNetworkId] = useMemo(
-  //     () => [
-  //       networkId && chainsByGenesisHash[networkId] ? networkId : null,
-  //       networkId && evmNetworksMap[networkId] ? networkId : null,
-  //     ],
-  //     [networkId, chainsByGenesisHash, evmNetworksMap]
-  //   )
+  const networks = useMemo(() => {
+    const accountTransactions = allTransactions?.filter(
+      (tx) => !address || encodeAnyAddress(tx.account) === encodeAnyAddress(address)
+    )
 
-  const account = useAccountByAddress(address)
+    const evmNetworks = uniq(
+      accountTransactions?.map((tx) => (tx.networkType === "evm" ? tx.evmNetworkId : null))
+    )
+      .filter((evmNetworkId): evmNetworkId is string => !!evmNetworkId)
+      .map((evmNetworkId) => evmNetworksMap[evmNetworkId])
+      .filter<EvmNetwork>((n): n is EvmNetwork => !!n)
 
-  const network = useMemo(
-    () => chainsByGenesisHash[networkId ?? ""] ?? evmNetworksMap[networkId ?? ""] ?? null,
+    const chains = uniq(
+      accountTransactions?.map((tx) => (tx.networkType === "substrate" ? tx.genesisHash : null))
+    )
+      .filter((genesisHash): genesisHash is HexString => !!genesisHash)
+      .map((genesisHash) => chainsByGenesisHash[genesisHash])
+      .filter<Chain>((n): n is Chain => !!n)
+
+    return [...evmNetworks, ...chains].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+  }, [address, allTransactions, chainsByGenesisHash, evmNetworksMap])
+
+  const network = useMemo<Chain | EvmNetwork | null>(
+    () =>
+      chainsByGenesisHash[(networkId ?? "") as HexString] ??
+      evmNetworksMap[networkId ?? ""] ??
+      null,
     [chainsByGenesisHash, evmNetworksMap, networkId]
   )
 
@@ -59,7 +79,7 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
   )
 
   const setAddress = useCallback(
-    (address: string) => {
+    (address: string | null) => {
       setState((state) => {
         // reset network if no txs found for this address
         const txs = getTransactions(address, state.networkId, allTransactions)
@@ -70,16 +90,17 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
   )
 
   const setNetworkId = useCallback(
-    (networkId: HexString | EvmNetworkId) => setState((state) => ({ ...state, networkId })),
+    (networkId: HexString | EvmNetworkId | null) => setState((state) => ({ ...state, networkId })),
     []
   )
 
+  const account = useAccountByAddress(address)
+
   return {
     network,
+    networks,
     account,
     accounts,
-    evmNetworks,
-    chains,
     transactions,
     setAddress,
     setNetworkId,
@@ -95,10 +116,12 @@ const getTransactions = (
 ) => {
   return (
     allTransactions
-      ?.filter((tx) => !address || tx.account === address)
-      .filter((tx) => !networkId || (tx.networkType === "evm" && tx.evmNetworkId === networkId))
+      ?.filter((tx) => !address || encodeAnyAddress(tx.account) === encodeAnyAddress(address))
       .filter(
-        (tx) => !networkId || (tx.networkType === "substrate" && tx.genesisHash === networkId)
+        (tx) =>
+          !networkId ||
+          (tx.networkType === "evm" && tx.evmNetworkId === networkId) ||
+          (tx.networkType === "substrate" && tx.genesisHash === networkId)
       ) ?? []
   )
 }
