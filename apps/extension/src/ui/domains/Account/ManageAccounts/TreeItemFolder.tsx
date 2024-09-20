@@ -80,7 +80,7 @@ export const TreeItemFolder: FC<{
       </div>
 
       {!!folder.tree.length && (
-        <div className={classNames("pl-8")}>
+        <div className={classNames("px-4")}>
           <TreeItems
             treeName={treeName}
             parentId={folder.id}
@@ -110,7 +110,7 @@ const EmptyFolderDropZone: FC<{
     <TreeDroppable
       className="bg-grey-850 h-32 w-full shrink-0 rounded-b-sm border border-transparent"
       hasOverClassName=""
-      isOverClassName="bg-primary/50"
+      isOverClassName="bg-body/80"
       parentId={folderId}
       index={0}
       disabled={disabled}

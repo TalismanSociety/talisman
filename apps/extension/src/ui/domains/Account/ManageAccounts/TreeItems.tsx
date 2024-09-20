@@ -117,11 +117,13 @@ const SeparatorDropZone: FC<{
 }> = ({ parentId, index, disabled }) => {
   return (
     <TreeDroppable
-      className="rounded-xs h-4 w-full shrink-0 border border-transparent"
-      isOverClassName="bg-primary/50"
+      className="h-4 w-full shrink-0 p-1"
+      isOverClassName="[&>div]:bg-body/80"
       parentId={parentId}
       index={index}
       disabled={disabled}
-    />
+    >
+      <div className="rounded-xs h-full" />
+    </TreeDroppable>
   )
 }

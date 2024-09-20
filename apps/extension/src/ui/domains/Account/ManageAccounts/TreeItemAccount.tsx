@@ -27,11 +27,11 @@ export const TreeItemAccount: FC<{
   if (!account) return null
 
   return (
-    <div className={classNames("@container relative flex items-center", isInFolder && "pr-8")}>
+    <div className={classNames("@container relative flex items-center")}>
       <div
         className={classNames(
           "bg-grey-850 flex h-[5.9rem] flex-grow items-center gap-8 overflow-hidden rounded-sm border-[1px] border-transparent px-8",
-          isInFolder && "pr-0"
+          isInFolder && "pr-4"
         )}
       >
         <AccountIcon className="text-xl" address={address} genesisHash={account?.genesisHash} />
