@@ -94,7 +94,7 @@ export const Drawer: FC<DrawerProps> = ({
   const container = (containerId && document.getElementById(containerId)) || document.body
 
   return createPortal(
-    <Transition show={!!isOpen}>
+    <Transition show={!!isOpen} appear>
       {/* Background overlay */}
       <Transition.Child
         className={classNames(
