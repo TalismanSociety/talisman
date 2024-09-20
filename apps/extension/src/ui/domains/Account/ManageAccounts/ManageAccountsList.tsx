@@ -1,106 +1,111 @@
-import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { AccountJsonAny } from "extension-core"
-import { FC, useMemo } from "react"
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
-import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { AccountJsonAny, AccountsCatalogTree } from "@extension/core"
+import { api } from "@ui/api"
 
-import { AccountsList } from "./AccountsList"
-import { useManageAccounts } from "./context"
-import { UiTree, UiTreeItem } from "./types"
-import { dataTreeToUiTree } from "./util"
+import type { UiTree, UiTreePosition } from "./types"
+import { TreeItem, TreeItems } from "./TreeItems"
+import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
 
-const isAccountSearchMatch = (account: AccountJsonAny, lowerSearch: string) =>
-  account.name?.toLowerCase().includes(lowerSearch) ??
-  account.address?.toLowerCase().includes(lowerSearch) ??
-  false
+export const ManageAccountsList: FC<{
+  accounts: AccountJsonAny[]
+  balanceTotalPerAccount: Record<string, number>
+  treeName: AccountsCatalogTree
+  tree: UiTree
+  allowReorder: boolean
+}> = ({ accounts, balanceTotalPerAccount, treeName, tree, allowReorder }) => {
+  const { t } = useTranslation()
+  const [items, setItems] = useState(() => tree ?? [])
+  useEffect(() => {
+    setItems(tree ?? [])
+  }, [tree])
 
-const recFilterTree =
-  (lowerSearch: string, accountsMap: Record<string, AccountJsonAny>) =>
-  (item: UiTreeItem): boolean => {
-    switch (item.type) {
-      case "account":
-        return isAccountSearchMatch(accountsMap[item.address], lowerSearch)
+  const itemsMap = useMemo(() => getTreeItemsMap(items), [items])
 
-      case "folder":
-        return (
-          item.name.toLowerCase().includes(lowerSearch) ||
-          item.tree.some(recFilterTree(lowerSearch, accountsMap))
-        )
-    }
-  }
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
 
-const searchTree = (
-  tree: UiTree,
-  lowerSearch: string,
-  accountsMap: Record<string, AccountJsonAny>
-): UiTree => {
-  return tree.filter(recFilterTree(lowerSearch, accountsMap)).map((item) => {
-    if (item.type === "folder")
-      return {
-        ...item,
-        tree: item.tree.filter(recFilterTree(lowerSearch, accountsMap)),
+  const draggedItem = useMemo(
+    () => (draggedItemId ? itemsMap[draggedItemId] : null),
+    [draggedItemId, itemsMap]
+  )
+
+  const isDraggingFolder = useMemo(() => draggedItem?.type === "folder", [draggedItem?.type])
+
+  const sensors = useSensors(useSensor(PointerSensor))
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setDraggedItemId(event.active.id as string)
+  }, [])
+
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      if (active.id && over?.data.current) {
+        setItems((items) => {
+          // reorder
+          const newItems = moveTreeItem(
+            items,
+            active.id as string,
+            over.data.current as UiTreePosition
+          )
+          // asynchronously update backend
+          api.accountsCatalogRunActions([
+            { type: "reorder", tree: treeName, items: uiTreeToDataTree(newItems) },
+          ])
+          return newItems
+        })
       }
 
-    return item
-  })
-}
-
-export const ManageAccountsList: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation("admin")
-  const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()
-
-  const accountsMap = useMemo(
-    () => Object.fromEntries(accounts.map((account) => [account.address, account])),
-    [accounts]
+      return setDraggedItemId(null)
+    },
+    [treeName]
   )
-  const { search, isReordering } = useManageAccounts()
-
-  const [portfolioUiTree, watchedUiTree] = useMemo(
-    (): [UiTree, UiTree] => [
-      dataTreeToUiTree(catalog.portfolio),
-      dataTreeToUiTree(catalog.watched),
-    ],
-    [catalog]
-  )
-
-  const [portfolioTree, watchedTree] = useMemo(() => {
-    const lowerSearch = search.toLowerCase()
-    return [
-      searchTree(portfolioUiTree, lowerSearch, accountsMap),
-      searchTree(watchedUiTree, lowerSearch, accountsMap),
-    ]
-  }, [portfolioUiTree, watchedUiTree, search, accountsMap])
 
   return (
-    <div className={classNames("@container", className)}>
-      {watchedUiTree.length > 0 && (
-        <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
-          <TalismanHandIcon className="inline" />
-          <div>{t("My portfolio")}</div>
+    <div>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <TreeItems
+          treeName={treeName}
+          parentId="root"
+          items={items}
+          disableFolderDrop={isDraggingFolder}
+          accounts={accounts}
+          balanceTotalPerAccount={balanceTotalPerAccount}
+          allowReorder={allowReorder}
+        />
+
+        {draggedItem
+          ? createPortal(
+              <DragOverlay>
+                <TreeItem
+                  treeName={treeName}
+                  item={draggedItem}
+                  isDragged
+                  disableFolderDrop={true}
+                  accounts={accounts}
+                  balanceTotalPerAccount={balanceTotalPerAccount}
+                  allowReorder={allowReorder}
+                />
+              </DragOverlay>,
+              document.getElementById("main") ?? document.body
+            )
+          : null}
+      </DndContext>
+      {!items.length && (
+        <div className="bg-grey-850 text-body-disabled flex h-40 items-center justify-center rounded text-sm">
+          {t("No accounts found")}
         </div>
       )}
-      <AccountsList
-        accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
-        treeName="portfolio"
-        tree={portfolioTree}
-        allowReorder={isReordering}
-      />
-      {watchedUiTree.length > 0 && (
-        <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
-          <EyeIcon className="inline" />
-          <div>{t("Followed only")}</div>
-        </div>
-      )}
-      <AccountsList
-        accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
-        treeName="watched"
-        tree={watchedTree}
-        allowReorder={isReordering}
-      />
     </div>
   )
 }

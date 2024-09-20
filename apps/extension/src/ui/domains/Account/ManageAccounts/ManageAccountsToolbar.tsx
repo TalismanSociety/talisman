@@ -12,7 +12,7 @@ import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { useManageAccounts } from "./context"
+import { useManageAccounts } from "./ManageAccountsProvider"
 
 export const ManageAccountsToolbar: FC<{
   analytics: AnalyticsPage

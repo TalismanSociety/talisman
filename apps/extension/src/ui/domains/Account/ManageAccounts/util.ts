@@ -39,7 +39,6 @@ export const moveTreeItem = (items: UiTreeItem[], itemId: string, target: UiTree
     if (currentIndex === -1)
       for (const item of newItems.filter((item) => item.type === "folder"))
         if (item.type === "folder") {
-          // console.log("item", item)
           currentIndex = item.tree.findIndex((child) => child.id === itemId)
           if (currentIndex !== -1) {
             currentParentId = item.id as string

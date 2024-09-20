@@ -7,9 +7,9 @@ import { useAppState } from "@ui/hooks/useAppState"
 
 import imgWelcome from "./welcome.png"
 
-export const ManageAccountsWelcomeDrawer = () => {
-  const { open, close, isOpen } = useOpenClose()
+export const ManageAccountsWelcome = () => {
   const [hideDrawer, setHideDrawer] = useAppState("hideManageAccountsWelcomeDrawer")
+  const { open, close, isOpen } = useOpenClose()
 
   const handleClose = useCallback(
     (dontShowAgain: boolean) => {
@@ -42,15 +42,15 @@ const DrawerContent: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="border-grey-850 flex w-full flex-col rounded-t-xl border-t bg-black p-12">
-      <div className="mb-12 flex w-full justify-between">
+    <div className="border-grey-850 flex w-full flex-col gap-8 rounded-t-xl border-t bg-black p-12">
+      <div className="flex w-full justify-between py-4">
         <div className="text-md text-body font-bold">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>
           <XIcon />
         </IconButton>
       </div>
       <img src={imgWelcome} alt="welcome" className="aspect-[705/232]" />
-      <p className="text-body-secondary my-8 text-sm">
+      <p className="text-body-secondary text-sm">
         {t(
           "Talisman lets you neatly organise and group your accounts into folders. Keep everything in one place for easy access and enhanced control over your assets."
         )}
@@ -63,7 +63,7 @@ const DrawerContent: FC<{
           {t("Don't show this again")}
         </Checkbox>
       </div>
-      <Button primary fullWidth className="mt-8" onClick={handleCloseClick}>
+      <Button primary fullWidth onClick={handleCloseClick}>
         {t("Get Started")}
       </Button>
     </div>

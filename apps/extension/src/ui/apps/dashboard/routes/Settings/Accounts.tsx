@@ -12,9 +12,11 @@ import {
   chainsMapAtomFamily,
 } from "@ui/atoms"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { ManageAccountsToolbar } from "@ui/domains/Account/ManageAccounts/AccountsToolbar"
-import { ManageAccountsProvider } from "@ui/domains/Account/ManageAccounts/context"
-import { ManageAccountsList } from "@ui/domains/Account/ManageAccounts/ManageAccountsList"
+import {
+  ManageAccountsLists,
+  ManageAccountsProvider,
+  ManageAccountsToolbar,
+} from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -47,7 +49,7 @@ export const AccountsPage = () => {
       <ManageAccountsProvider>
         <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
         <Spacer />
-        <ManageAccountsList />
+        <ManageAccountsLists />
       </ManageAccountsProvider>
       <NewFolderModal />
       <RenameFolderModal />

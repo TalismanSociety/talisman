@@ -6,10 +6,12 @@ import { IconButton } from "talisman-ui"
 
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { ManageAccountsToolbar } from "@ui/domains/Account/ManageAccounts/AccountsToolbar"
-import { ManageAccountsProvider } from "@ui/domains/Account/ManageAccounts/context"
-import { ManageAccountsList } from "@ui/domains/Account/ManageAccounts/ManageAccountsList"
-import { ManageAccountsWelcomeDrawer } from "@ui/domains/Account/ManageAccounts/ManageAccountsWelcomeDrawer"
+import {
+  ManageAccountsLists,
+  ManageAccountsProvider,
+  ManageAccountsToolbar,
+  ManageAccountsWelcome,
+} from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 
@@ -47,12 +49,12 @@ export const ManageAccountsPage = () => (
     <PopupContent>
       <ManageAccountsProvider>
         <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
-        <ManageAccountsList className="py-8" />
+        <ManageAccountsLists className="py-8" />
       </ManageAccountsProvider>
     </PopupContent>
     <NewFolderModal />
     <DeleteFolderModal />
     <RenameFolderModal />
-    <ManageAccountsWelcomeDrawer />
+    <ManageAccountsWelcome />
   </PopupLayout>
 )
