@@ -1,4 +1,4 @@
-import { FolderPlusIcon, PlusIcon, ToolbarSortIcon } from "@talismn/icons"
+import { FolderPlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,7 +19,7 @@ export const ManageAccountsToolbar: FC<{
   className?: string
 }> = ({ className }) => {
   const { t } = useTranslation()
-  const { search, isReordering, onSearchChange, onToggleReorder } = useManageAccounts()
+  const { search, onSearchChange } = useManageAccounts()
 
   const { open: openNewFolderModal } = useNewFolderModal()
 
@@ -41,19 +41,15 @@ export const ManageAccountsToolbar: FC<{
       )}
     >
       <div className="flex grow items-center overflow-hidden">
-        {/* SearchInput needs to remain uncontrolled, so as workaround we empty/disable it when reordering by changing it s key */}
         <SearchInput
-          key={isReordering ? "reordering" : "search"}
           containerClassName={classNames(
             "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-xs !px-4",
             "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
-            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
-            isReordering && "opacity-70 cursor-not-allowed"
+            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
           )}
           placeholder={t("Search account or folder")}
           onChange={onSearchChange}
           initialValue={search}
-          disabled={isReordering}
         />
       </div>
       <Tooltip placement="bottom-end">
@@ -77,20 +73,6 @@ export const ManageAccountsToolbar: FC<{
           </PortfolioToolbarButton>
         </TooltipTrigger>
         <TooltipContent>{t("Add Folder")}</TooltipContent>
-      </Tooltip>
-      <Tooltip placement="bottom-end">
-        <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={onToggleReorder}
-            className={classNames(
-              "border-grey-700 @2xl:size-[4.4rem] size-16 ring-transparent focus-visible:border",
-              isReordering && "text-primary"
-            )}
-          >
-            <ToolbarSortIcon />
-          </PortfolioToolbarButton>
-        </TooltipTrigger>
-        <TooltipContent>{t("Reorder")}</TooltipContent>
       </Tooltip>
     </div>
   )

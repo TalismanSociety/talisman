@@ -21,8 +21,7 @@ export const TreeItemFolder: FC<{
   treeName: AccountsCatalogTree
   accounts: AccountJsonAny[]
   disableFolderDrop?: boolean
-  allowReorder: boolean
-}> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop, allowReorder }) => {
+}> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop }) => {
   const { t } = useTranslation()
   const addresses = useMemo(() => folder.tree.map((item) => item.address), [folder])
   const balanceTotal = useMemo(
@@ -60,7 +59,6 @@ export const TreeItemFolder: FC<{
           <ContextMenuTrigger
             className="enabled:hover:bg-grey-750 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]"
             onClick={stopPropagation()}
-            disabled={allowReorder}
           >
             <MoreHorizontalIcon className="shrink-0" />
           </ContextMenuTrigger>
@@ -88,7 +86,6 @@ export const TreeItemFolder: FC<{
             accounts={accounts}
             disableFolderDrop={disableFolderDrop}
             balanceTotalPerAccount={balanceTotalPerAccount}
-            allowReorder={allowReorder}
           />
         </div>
       )}

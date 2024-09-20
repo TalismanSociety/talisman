@@ -8,7 +8,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 import { ManageAccountsList } from "./ManageAccountsList"
 import { useManageAccounts } from "./ManageAccountsProvider"
-import { UiTree, UiTreeItem } from "./types"
+import { UiTree, UiTreeAccount, UiTreeFolder } from "./types"
 import { dataTreeToUiTree } from "./util"
 
 export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) => {
@@ -19,7 +19,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
     () => Object.fromEntries(accounts.map((account) => [account.address, account])),
     [accounts]
   )
-  const { search, isReordering } = useManageAccounts()
+  const { search } = useManageAccounts()
 
   const [portfolioUiTree, watchedUiTree] = useMemo(
     (): [UiTree, UiTree] => [
@@ -50,7 +50,6 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
         balanceTotalPerAccount={balanceTotalPerAccount}
         treeName="portfolio"
         tree={portfolioTree}
-        allowReorder={isReordering}
       />
       {watchedUiTree.length > 0 && (
         <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
@@ -63,44 +62,36 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
         balanceTotalPerAccount={balanceTotalPerAccount}
         treeName="watched"
         tree={watchedTree}
-        allowReorder={isReordering}
       />
     </div>
   )
 }
-
-const isAccountSearchMatch = (account: AccountJsonAny, lowerSearch: string) =>
-  account.name?.toLowerCase().includes(lowerSearch) ??
-  account.address?.toLowerCase().includes(lowerSearch) ??
-  false
-
-const recFilterTree =
-  (lowerSearch: string, accountsMap: Record<string, AccountJsonAny>) =>
-  (item: UiTreeItem): boolean => {
-    switch (item.type) {
-      case "account":
-        return isAccountSearchMatch(accountsMap[item.address], lowerSearch)
-
-      case "folder":
-        return (
-          item.name.toLowerCase().includes(lowerSearch) ||
-          item.tree.some(recFilterTree(lowerSearch, accountsMap))
-        )
-    }
-  }
 
 const searchTree = (
   tree: UiTree,
   lowerSearch: string,
   accountsMap: Record<string, AccountJsonAny>
 ): UiTree => {
-  return tree.filter(recFilterTree(lowerSearch, accountsMap)).map((item) => {
-    if (item.type === "folder")
-      return {
-        ...item,
-        tree: item.tree.filter(recFilterTree(lowerSearch, accountsMap)),
-      }
+  const workTree = structuredClone(tree)
 
-    return item
-  })
+  const setAccountVisibility = (item: UiTreeAccount) => {
+    const account = accountsMap[item.address]
+    item.isVisible =
+      account.name?.toLowerCase().includes(lowerSearch) ??
+      account.address?.toLowerCase().includes(lowerSearch) ??
+      false
+  }
+
+  const setFolderVisibility = (item: UiTreeFolder) => {
+    for (const child of item.tree) setAccountVisibility(child)
+    item.isVisible =
+      item.name.toLowerCase().includes(lowerSearch) || item.tree.some((item) => item.isVisible)
+  }
+
+  for (const item of workTree) {
+    if (item.type === "account") setAccountVisibility(item)
+    else setFolderVisibility(item)
+  }
+
+  return workTree
 }

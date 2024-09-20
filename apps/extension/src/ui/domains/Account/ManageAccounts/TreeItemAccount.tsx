@@ -15,8 +15,7 @@ export const TreeItemAccount: FC<{
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
   noTooltip?: boolean
-  allowReorder?: boolean
-}> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip, allowReorder }) => {
+}> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip }) => {
   const account = useMemo(
     () => accounts.find((account) => account.address === address),
     [accounts, address]
@@ -56,7 +55,6 @@ export const TreeItemAccount: FC<{
           analyticsFrom="settings - accounts"
           address={address}
           hideManageAccounts
-          disabled={allowReorder}
         />
       </div>
     </div>

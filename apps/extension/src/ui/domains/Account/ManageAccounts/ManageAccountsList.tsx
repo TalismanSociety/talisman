@@ -23,8 +23,7 @@ export const ManageAccountsList: FC<{
   balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree
   tree: UiTree
-  allowReorder: boolean
-}> = ({ accounts, balanceTotalPerAccount, treeName, tree, allowReorder }) => {
+}> = ({ accounts, balanceTotalPerAccount, treeName, tree }) => {
   const { t } = useTranslation()
   const [items, setItems] = useState(() => tree ?? [])
   useEffect(() => {
@@ -81,7 +80,6 @@ export const ManageAccountsList: FC<{
           disableFolderDrop={isDraggingFolder}
           accounts={accounts}
           balanceTotalPerAccount={balanceTotalPerAccount}
-          allowReorder={allowReorder}
         />
 
         {draggedItem
@@ -94,14 +92,13 @@ export const ManageAccountsList: FC<{
                   disableFolderDrop={true}
                   accounts={accounts}
                   balanceTotalPerAccount={balanceTotalPerAccount}
-                  allowReorder={allowReorder}
                 />
               </DragOverlay>,
               document.getElementById("main") ?? document.body
             )
           : null}
       </DndContext>
-      {!items.length && (
+      {!items.filter((i) => i.isVisible).length && (
         <div className="bg-grey-850 text-body-disabled flex h-40 items-center justify-center rounded text-sm">
           {t("No accounts found")}
         </div>

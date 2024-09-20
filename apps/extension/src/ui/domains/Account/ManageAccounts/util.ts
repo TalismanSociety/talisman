@@ -8,12 +8,14 @@ import type { UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem, UiTreePosition } 
 export const accountWithId = (item: TreeAccount): UiTreeAccount => ({
   ...item,
   id: `account-${item.address}`,
+  isVisible: true,
 })
 
 // Add an id to a TreeFolder's TreeAccount decendents
 export const folderWithId = (item: TreeFolder): UiTreeFolder => ({
   ...item,
   tree: item.tree.map(accountWithId),
+  isVisible: true,
 })
 
 // Add an id to each item in a list of TreeItems

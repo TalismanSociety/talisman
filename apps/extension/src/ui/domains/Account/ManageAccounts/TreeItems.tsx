@@ -11,19 +11,11 @@ export const TreeItems: FC<{
   treeName: AccountsCatalogTree
   items: UiTreeItem[]
   parentId: string
-  allowReorder: boolean
   disableFolderDrop?: boolean
   accounts: AccountJsonAny[]
   balanceTotalPerAccount: Record<string, number>
-}> = ({
-  treeName,
-  items,
-  parentId,
-  disableFolderDrop,
-  allowReorder,
-  accounts,
-  balanceTotalPerAccount,
-}) => {
+}> = ({ treeName, items, parentId, disableFolderDrop, accounts, balanceTotalPerAccount }) => {
+  // disallow dropping folders into folders
   const disableDrop = useMemo(
     () => !!disableFolderDrop && parentId !== "root",
     [disableFolderDrop, parentId]
@@ -31,29 +23,26 @@ export const TreeItems: FC<{
 
   return (
     <>
-      {items.map((item, i) => (
-        <Fragment key={item.id}>
-          <SeparatorDropZone parentId={parentId} index={i} disabled={disableDrop} />
-          <TreeDraggable
-            key={item.id}
-            parentId={parentId}
-            index={i}
-            id={item.id}
-            disabled={!allowReorder}
-          >
-            <TreeItem
-              treeName={treeName}
-              item={item}
-              isDragged={false}
-              disableFolderDrop={!!disableFolderDrop}
-              accounts={accounts}
-              balanceTotalPerAccount={balanceTotalPerAccount}
-              isInFolder={parentId !== "root"}
-              allowReorder={allowReorder}
-            />
-          </TreeDraggable>
-        </Fragment>
-      ))}
+      {items
+        // dont filter items from the array, this would invalidate the indexes. render null instead if no match
+        .map((item, i) =>
+          item.isVisible ? (
+            <Fragment key={item.id}>
+              <SeparatorDropZone parentId={parentId} index={i} disabled={disableDrop} />
+              <TreeDraggable key={item.id} parentId={parentId} index={i} id={item.id}>
+                <TreeItem
+                  treeName={treeName}
+                  item={item}
+                  isDragged={false}
+                  disableFolderDrop={!!disableFolderDrop}
+                  accounts={accounts}
+                  balanceTotalPerAccount={balanceTotalPerAccount}
+                  isInFolder={parentId !== "root"}
+                />
+              </TreeDraggable>
+            </Fragment>
+          ) : null
+        )}
       {!!items.length && (
         <SeparatorDropZone parentId={parentId} index={items.length} disabled={disableDrop} />
       )}
@@ -69,7 +58,6 @@ export const TreeItem: FC<{
   accounts: AccountJsonAny[]
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
-  allowReorder: boolean
 }> = ({
   item,
   isDragged,
@@ -78,14 +66,9 @@ export const TreeItem: FC<{
   balanceTotalPerAccount,
   treeName,
   isInFolder,
-  allowReorder,
 }) => {
   return (
-    <div
-      className={classNames(
-        allowReorder ? (isDragged ? "cursor-grabbing" : "cursor-grab") : "cursor-default"
-      )}
-    >
+    <div className={classNames(isDragged ? "cursor-grabbing" : "cursor-grab")}>
       {item.type === "account" && (
         <TreeItemAccount
           address={item.address}
@@ -93,7 +76,6 @@ export const TreeItem: FC<{
           balanceTotalPerAccount={balanceTotalPerAccount}
           isInFolder={isInFolder}
           noTooltip={isDragged}
-          allowReorder={allowReorder}
         />
       )}
       {item.type === "folder" && (
@@ -103,7 +85,6 @@ export const TreeItem: FC<{
           accounts={accounts}
           balanceTotalPerAccount={balanceTotalPerAccount}
           disableFolderDrop={disableFolderDrop}
-          allowReorder={allowReorder}
         />
       )}
     </div>
