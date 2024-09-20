@@ -98,7 +98,7 @@ export const Drawer: FC<DrawerProps> = ({
       {/* Background overlay */}
       <Transition.Child
         className={classNames(
-          "bg-grey-900 left-0 top-0 z-10 h-full w-full bg-opacity-50",
+          "bg-grey-900 left-0 top-0 z-10 h-full w-full bg-opacity-80",
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
           position
         )}

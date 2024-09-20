@@ -9,6 +9,7 @@ import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { ManageAccountsToolbar } from "@ui/domains/Account/ManageAccounts/AccountsToolbar"
 import { ManageAccountsProvider } from "@ui/domains/Account/ManageAccounts/context"
 import { ManageAccountsList } from "@ui/domains/Account/ManageAccounts/ManageAccountsList"
+import { ManageAccountsWelcomeDrawer } from "@ui/domains/Account/ManageAccounts/ManageAccountsWelcomeDrawer"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 
@@ -52,5 +53,6 @@ export const ManageAccountsPage = () => (
     <NewFolderModal />
     <DeleteFolderModal />
     <RenameFolderModal />
+    <ManageAccountsWelcomeDrawer />
   </PopupLayout>
 )
