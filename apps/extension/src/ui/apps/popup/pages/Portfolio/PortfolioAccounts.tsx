@@ -259,10 +259,7 @@ const AccountsToolbar = () => {
       </div>
       <Tooltip placement="bottom">
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={handleAddAccountClick}
-            className="border-grey-700 size-16 ring-transparent focus-visible:border"
-          >
+          <PortfolioToolbarButton onClick={handleAddAccountClick}>
             <PlusIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
@@ -270,10 +267,7 @@ const AccountsToolbar = () => {
       </Tooltip>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={handleManageAccountsClick}
-            className="border-grey-700 size-16 ring-transparent focus-visible:border"
-          >
+          <PortfolioToolbarButton onClick={handleManageAccountsClick}>
             <UsersIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
@@ -281,10 +275,7 @@ const AccountsToolbar = () => {
       </Tooltip>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={openSettings}
-            className="border-grey-700 size-16 ring-transparent focus-visible:border"
-          >
+          <PortfolioToolbarButton onClick={openSettings}>
             <SettingsIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>

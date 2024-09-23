@@ -104,8 +104,10 @@ const PortfolioSearch = () => {
   return (
     <SearchInput
       containerClassName={classNames(
-        "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
-        IS_POPUP ? "max-w-[17rem]" : "max-w-[37.4rem]"
+        "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-xs !px-4",
+        "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+        "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+        IS_POPUP ? "w-full" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
       onChange={setSearch}
@@ -198,8 +200,8 @@ export const SortByButton = () => {
 
 export const PortfolioToolbarNfts = () => {
   return (
-    <div className="flex w-full shrink-0 items-center justify-between gap-4 overflow-hidden">
-      <div className="flex grow items-center overflow-hidden px-1">
+    <div className="@container flex w-full shrink-0 items-center justify-between gap-4 overflow-hidden">
+      <div className="flex grow items-center overflow-hidden">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">

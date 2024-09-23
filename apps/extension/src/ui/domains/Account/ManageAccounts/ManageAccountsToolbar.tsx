@@ -54,10 +54,7 @@ export const ManageAccountsToolbar: FC<{
       </div>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={addNewAccountClick}
-            className="border-grey-700 @2xl:size-[4.4rem] size-16 ring-transparent focus-visible:border"
-          >
+          <PortfolioToolbarButton onClick={addNewAccountClick}>
             <PlusIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
@@ -65,10 +62,7 @@ export const ManageAccountsToolbar: FC<{
       </Tooltip>
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
-          <PortfolioToolbarButton
-            onClick={openNewFolderModal}
-            className="border-grey-700 @2xl:size-[4.4rem] size-16 ring-transparent focus-visible:border"
-          >
+          <PortfolioToolbarButton onClick={openNewFolderModal}>
             <FolderPlusIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
