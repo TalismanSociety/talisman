@@ -258,7 +258,7 @@ const AccountsToolbar = () => {
         />
       </div>
       <Tooltip placement="bottom">
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <PortfolioToolbarButton
             onClick={handleAddAccountClick}
             className="border-grey-700 size-16 ring-transparent focus-visible:border"

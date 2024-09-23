@@ -89,7 +89,7 @@ export const PortfolioAssets = () => {
   return (
     <>
       <PortfolioAssetsHeader backBtnTo={"/portfolio"} />
-      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioTabs className="my-4" />
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
         {!!matchTokens && <PortfolioToolbarTokens />}
         {!!matchNfts && <PortfolioToolbarNfts />}
