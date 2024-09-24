@@ -21,20 +21,19 @@ export const TreeItemFolder: FC<{
   treeName: AccountsCatalogTree
   accounts: AccountJsonAny[]
   disableFolderDrop?: boolean
-}> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop }) => {
+}> = ({
+  folder,
+  balanceTotalPerAccount,
+  treeName,
+  accounts,
+  disableFolderDrop, // onHoverMenu
+}) => {
   const { t } = useTranslation()
   const addresses = useMemo(() => folder.tree.map((item) => item.address), [folder])
   const balanceTotal = useMemo(
     () => addresses.reduce((sum, address) => sum + (balanceTotalPerAccount[address] ?? 0), 0),
     [addresses, balanceTotalPerAccount]
   )
-
-  const stopPropagation =
-    <T extends Pick<Event, "stopPropagation">>(andThen?: (event: T) => void) =>
-    (event: T) => {
-      event.stopPropagation()
-      andThen && andThen(event)
-    }
 
   const { open: renameFolder } = useRenameFolderModal()
   const { open: deleteFolder } = useDeleteFolderModal()
@@ -55,26 +54,24 @@ export const TreeItemFolder: FC<{
           <Fiat amount={balanceTotal} isBalance noCountUp />
         </div>
 
-        <ContextMenu placement="bottom-end">
-          <ContextMenuTrigger
-            className="enabled:hover:bg-grey-750 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]"
-            onClick={stopPropagation()}
-          >
-            <MoreHorizontalIcon className="shrink-0" />
-          </ContextMenuTrigger>
-          <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-            <ContextMenuItem
-              onClick={stopPropagation(() => renameFolder(folder.id, folder.name, treeName))}
+        <div data-no-dnd="true">
+          <ContextMenu placement="bottom-end">
+            <ContextMenuTrigger className="enabled:hover:bg-grey-750 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]">
+              <MoreHorizontalIcon className="shrink-0" />
+            </ContextMenuTrigger>
+            <ContextMenuContent
+              data-no-dnd="true"
+              className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg"
             >
-              {t("Rename")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={stopPropagation(() => deleteFolder(folder.id, folder.name, treeName))}
-            >
-              {t("Delete")}
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+              <ContextMenuItem onClick={() => renameFolder(folder.id, folder.name, treeName)}>
+                {t("Rename")}
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => deleteFolder(folder.id, folder.name, treeName)}>
+                {t("Delete")}
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        </div>
       </div>
 
       {!!folder.tree.length && (

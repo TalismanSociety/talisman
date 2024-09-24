@@ -14,8 +14,8 @@ import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 
 export const PortfolioSidebar: FC = () => {
   return (
@@ -27,67 +27,10 @@ export const PortfolioSidebar: FC = () => {
   )
 }
 
-const SidebarButtonBase: FC<{
-  logo: ReactNode
-  label: ReactNode
-  fiat: ReactNode
-  right?: ReactNode
-  isSelected: boolean
-  onClick: () => void
-}> = ({ logo, label, fiat, right, isSelected, onClick }) => {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        " hover:bg-grey-750 flex h-28 items-center gap-4 rounded-[12px] px-4 text-left",
-        isSelected && "bg-grey-800"
-      )}
-      onClick={onClick}
-    >
-      <div className="size-20 text-[4rem]">{logo}</div>
-      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-        <div className="text-body-secondary truncate">{label}</div>
-        <div className="text-body-disabled truncate text-xs">{fiat}</div>
-      </div>
-      <div>
-        {isSelected ? (
-          <div className="bg-primary flex size-10 items-center justify-center rounded-full text-xs text-black">
-            <CheckIcon />
-          </div>
-        ) : (
-          right
-        )}
-      </div>
-    </button>
-  )
-}
-
-type FolderAccountOption = {
-  type: "folder"
-  treeName: string
-  id: string
-  name: string
-  total?: number
-  addresses: string[]
-}
-
-type AccountAccountOption = {
-  type: "account"
-  name: string
-  address: string
-  total?: number
-  genesisHash?: string | null
-  origin?: AccountType
-  isPortfolio?: boolean
-  signetUrl?: string
-}
-
-type AccountOption = FolderAccountOption | AccountAccountOption
-
 const Accounts = () => {
   const { t } = useTranslation()
 
-  const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
+  const { currentFolder, treeName } = usePortfolioNavigation()
   const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
 
   const [allPortfolioOptions, allWatchedOptions] = useMemo((): [
@@ -95,8 +38,10 @@ const Accounts = () => {
     AccountOption[]
   ] => {
     const [portfolioTree, watchedTree] = (() => {
-      if (folder && folderTreeName === "portfolio") return [folder.tree, []]
-      if (folder && folderTreeName === "watched") return [[], folder.tree]
+      if (currentFolder && treeName === "portfolio")
+        return [[currentFolder, ...currentFolder.tree], []]
+      if (currentFolder && treeName === "watched")
+        return [[], [currentFolder, ...currentFolder.tree]]
       return [catalog.portfolio, catalog.watched]
     })()
 
@@ -140,8 +85,8 @@ const Accounts = () => {
       watchedTree.map(treeItemToOption("watched")).filter(filterEmptyFolders),
     ]
   }, [
-    folder,
-    folderTreeName,
+    currentFolder,
+    treeName,
     catalog.portfolio,
     catalog.watched,
     accounts,
@@ -161,12 +106,7 @@ const Accounts = () => {
         </IconButton>
       </div>
       <div className="bg-grey-800 h-0.5"></div>
-      <TreeAccounts
-        options={allPortfolioOptions}
-        treeName="portfolio"
-        balanceTotalPerAccount={balanceTotalPerAccount}
-        showAllAccounts
-      />
+      <TreeAccounts options={allPortfolioOptions} showAllAccounts />
       {!!allWatchedOptions.length && (
         <>
           {!!allPortfolioOptions.length && <div className="bg-grey-800 h-0.5"></div>}
@@ -174,47 +114,42 @@ const Accounts = () => {
             <EyeIcon />
             <div className="text-sm">{t("Followed only")}</div>
           </div>
-          <TreeAccounts
-            options={allWatchedOptions}
-            treeName="watched"
-            balanceTotalPerAccount={balanceTotalPerAccount}
-          />
+          <TreeAccounts options={allWatchedOptions} />
         </>
       )}
     </div>
   )
 }
 
+type FolderAccountOption = {
+  type: "folder"
+  treeName: string
+  id: string
+  name: string
+  total?: number
+  addresses: string[]
+}
+
+type AccountAccountOption = {
+  type: "account"
+  name: string
+  address: string
+  total?: number
+  genesisHash?: string | null
+  origin?: AccountType
+  isPortfolio?: boolean
+  signetUrl?: string
+}
+
+type AccountOption = FolderAccountOption | AccountAccountOption
+
 const TreeAccounts: FC<{
   options: AccountOption[]
-  treeName: AccountsCatalogTree
-  balanceTotalPerAccount: Record<string, number>
   showAllAccounts?: boolean
-}> = ({ options, treeName, balanceTotalPerAccount, showAllAccounts }) => {
-  const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
-
-  const folderOption = useMemo<FolderAccountOption | null>(() => {
-    if (folder && folderTreeName === treeName)
-      return {
-        type: "folder",
-        treeName,
-        id: folder.id,
-        name: folder.name,
-        total: folder.tree.reduce(
-          (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
-          0
-        ),
-        addresses: folder.tree.map((account) => account.address),
-        searchContent: "", // unused here
-      }
-
-    return null
-  }, [folder, folderTreeName, treeName, balanceTotalPerAccount])
-
+}> = ({ options, showAllAccounts }) => {
   return (
     <div className="flex w-full flex-col gap-2">
       {showAllAccounts && <AllAccountsOption />}
-      {folderOption && <FolderOption option={folderOption} />}
       {options.map((option) => (
         <Fragment key={option.type === "folder" ? option.id : option.address}>
           {option.type === "account" ? (
@@ -308,5 +243,40 @@ const AllAccountsOption = () => {
       onClick={handleClick}
       right={null}
     />
+  )
+}
+
+const SidebarButtonBase: FC<{
+  logo: ReactNode
+  label: ReactNode
+  fiat: ReactNode
+  right?: ReactNode
+  isSelected: boolean
+  onClick: () => void
+}> = ({ logo, label, fiat, right, isSelected, onClick }) => {
+  return (
+    <button
+      type="button"
+      className={classNames(
+        " hover:bg-grey-750 flex h-28 items-center gap-4 rounded-[12px] px-4 text-left",
+        isSelected && "bg-grey-800"
+      )}
+      onClick={onClick}
+    >
+      <div className="size-20 text-[4rem]">{logo}</div>
+      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+        <div className="text-body-secondary truncate">{label}</div>
+        <div className="text-body-disabled truncate text-xs">{fiat}</div>
+      </div>
+      <div>
+        {isSelected ? (
+          <div className="bg-primary flex size-10 items-center justify-center rounded-full text-xs text-black">
+            <CheckIcon />
+          </div>
+        ) : (
+          right
+        )}
+      </div>
+    </button>
   )
 }

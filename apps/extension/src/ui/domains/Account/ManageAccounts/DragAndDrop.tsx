@@ -1,4 +1,10 @@
-import { useDraggable, useDroppable } from "@dnd-kit/core"
+import type { KeyboardEvent, MouseEvent } from "react"
+import {
+  KeyboardSensor as LibKeyboardSensor,
+  MouseSensor as LibMouseSensor,
+  useDraggable,
+  useDroppable,
+} from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { classNames } from "@talismn/util"
 import { CSSProperties, FC, ReactNode, useMemo } from "react"
@@ -63,4 +69,44 @@ export const TreeDroppable: FC<{
       {children}
     </div>
   )
+}
+
+/**
+ * Below sensors are used to prevent context menus clicks from triggering drag event, which results in context menus never opening.
+ * https://github.com/clauderic/dnd-kit/issues/477#issuecomment-985194908
+ */
+
+export class MouseSensor extends LibMouseSensor {
+  static activators = [
+    {
+      eventName: "onMouseDown" as const,
+      handler: ({ nativeEvent: event }: MouseEvent) => {
+        return shouldHandleEvent(event.target as HTMLElement)
+      },
+    },
+  ]
+}
+
+export class KeyboardSensor extends LibKeyboardSensor {
+  static activators = [
+    {
+      eventName: "onKeyDown" as const,
+      handler: ({ nativeEvent: event }: KeyboardEvent<Element>) => {
+        return shouldHandleEvent(event.target as HTMLElement)
+      },
+    },
+  ]
+}
+
+function shouldHandleEvent(element: HTMLElement | null) {
+  let cur = element
+
+  while (cur) {
+    if (cur.dataset && cur.dataset.noDnd) {
+      return false
+    }
+    cur = cur.parentElement
+  }
+
+  return true
 }

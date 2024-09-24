@@ -3,7 +3,6 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
@@ -15,6 +14,7 @@ import { AccountJsonAny, AccountsCatalogTree } from "@extension/core"
 import { api } from "@ui/api"
 
 import type { UiTree, UiTreePosition } from "./types"
+import { KeyboardSensor, MouseSensor } from "./DragAndDrop"
 import { TreeItem, TreeItems } from "./TreeItems"
 import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
 
@@ -46,7 +46,7 @@ export const ManageAccountsList: FC<{
 
   const isDraggingFolder = useMemo(() => draggedItem?.type === "folder", [draggedItem?.type])
 
-  const sensors = useSensors(useSensor(PointerSensor))
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(KeyboardSensor))
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setDraggedItemId(event.active.id as string)
