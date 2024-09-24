@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { FC, useEffect, useMemo, useRef } from "react"
 
 import { AccountJsonAny } from "@extension/core"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
@@ -15,13 +15,36 @@ export const TreeItemAccount: FC<{
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
   noTooltip?: boolean
-}> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip }) => {
+  onHoverMenu?: (hover: boolean) => void
+}> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip, onHoverMenu }) => {
   const account = useMemo(
     () => accounts.find((account) => account.address === address),
     [accounts, address]
   )
   const balanceTotal = balanceTotalPerAccount[account?.address ?? ""] ?? 0
   const formattedAddress = useFormattedAddressForAccount(account)
+
+  const refMenu = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const menu = refMenu.current
+    if (!onHoverMenu || !menu) return
+
+    const handleMouseEnter = () => {
+      onHoverMenu(true)
+    }
+    const handleMouseLeave = () => {
+      onHoverMenu(false)
+    }
+
+    menu.addEventListener("mouseenter", handleMouseEnter)
+    menu.addEventListener("mouseleave", handleMouseLeave)
+
+    return () => {
+      menu.removeEventListener("mouseenter", handleMouseEnter)
+      menu.removeEventListener("mouseleave", handleMouseLeave)
+    }
+  }, [onHoverMenu])
 
   if (!account) return null
 
@@ -55,6 +78,7 @@ export const TreeItemAccount: FC<{
           analyticsFrom="settings - accounts"
           address={address}
           hideManageAccounts
+          ref={refMenu}
         />
       </div>
     </div>

@@ -39,6 +39,11 @@ export const ManageAccountsList: FC<{
     [draggedItemId, itemsMap]
   )
 
+  const isDraggedItemInFolder = useMemo(
+    () => !!draggedItem && !items.some((i) => i.id === draggedItem.id),
+    [draggedItem, items]
+  )
+
   const isDraggingFolder = useMemo(() => draggedItem?.type === "folder", [draggedItem?.type])
 
   const sensors = useSensors(useSensor(PointerSensor))
@@ -89,6 +94,7 @@ export const ManageAccountsList: FC<{
                   treeName={treeName}
                   item={draggedItem}
                   isDragged
+                  isInFolder={isDraggedItemInFolder}
                   disableFolderDrop={true}
                   accounts={accounts}
                   balanceTotalPerAccount={balanceTotalPerAccount}

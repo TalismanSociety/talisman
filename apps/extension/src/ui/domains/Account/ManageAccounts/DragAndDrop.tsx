@@ -9,9 +9,10 @@ export const TreeDraggable: FC<{
   id: string
   parentId: string
   index: number
-  children?: ReactNode
   disabled?: boolean
-}> = ({ id, parentId, index, disabled, children }) => {
+  className?: string
+  children?: ReactNode
+}> = ({ id, parentId, index, disabled, className, children }) => {
   const data = useMemo<UiTreePosition>(() => ({ parentId, index }), [parentId, index])
 
   const { transform, setNodeRef, attributes, listeners } = useDraggable({
@@ -28,7 +29,7 @@ export const TreeDraggable: FC<{
   )
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className={className} {...attributes} {...listeners}>
       {children}
     </div>
   )

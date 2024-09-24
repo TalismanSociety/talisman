@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
 import { AccountJsonAny, AccountsCatalogTree } from "extension-core"
-import { FC, Fragment, useMemo } from "react"
+import { FC, Fragment, useMemo, useState } from "react"
 
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"
 import { TreeItemAccount } from "./TreeItemAccount"
@@ -29,17 +29,17 @@ export const TreeItems: FC<{
           item.isVisible ? (
             <Fragment key={item.id}>
               <SeparatorDropZone parentId={parentId} index={i} disabled={disableDrop} />
-              <TreeDraggable key={item.id} parentId={parentId} index={i} id={item.id}>
-                <TreeItem
-                  treeName={treeName}
-                  item={item}
-                  isDragged={false}
-                  disableFolderDrop={!!disableFolderDrop}
-                  accounts={accounts}
-                  balanceTotalPerAccount={balanceTotalPerAccount}
-                  isInFolder={parentId !== "root"}
-                />
-              </TreeDraggable>
+              <DraggableTreeItem
+                parentId={parentId}
+                index={i}
+                treeName={treeName}
+                item={item}
+                isDragged={false}
+                disableFolderDrop={!!disableFolderDrop}
+                accounts={accounts}
+                balanceTotalPerAccount={balanceTotalPerAccount}
+                isInFolder={parentId !== "root"}
+              />
             </Fragment>
           ) : null
         )}
@@ -50,7 +50,23 @@ export const TreeItems: FC<{
   )
 }
 
-export const TreeItem: FC<{
+const DraggableTreeItem: FC<
+  TreeItemProps & {
+    parentId: string
+    index: number
+  }
+> = ({ parentId, index, ...props }) => {
+  // Clicking the context menu button would initiate a drag and context menu won't appear, unless we temporarily disable drag
+  const [disableDrag, setDisableDrag] = useState(false)
+
+  return (
+    <TreeDraggable parentId={parentId} index={index} id={props.item.id} disabled={disableDrag}>
+      <TreeItem {...props} onDisableDragChange={setDisableDrag} />
+    </TreeDraggable>
+  )
+}
+
+type TreeItemProps = {
   treeName: AccountsCatalogTree
   item: UiTreeItem
   isDragged: boolean
@@ -58,7 +74,10 @@ export const TreeItem: FC<{
   accounts: AccountJsonAny[]
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
-}> = ({
+  onDisableDragChange?: (disable: boolean) => void
+}
+
+export const TreeItem: FC<TreeItemProps> = ({
   item,
   isDragged,
   disableFolderDrop,
@@ -66,9 +85,10 @@ export const TreeItem: FC<{
   balanceTotalPerAccount,
   treeName,
   isInFolder,
+  onDisableDragChange,
 }) => {
   return (
-    <div className={classNames(isDragged ? "cursor-grabbing" : "cursor-grab")}>
+    <div id={item.id} className={classNames(isDragged ? "cursor-grabbing" : "cursor-grab")}>
       {item.type === "account" && (
         <TreeItemAccount
           address={item.address}
@@ -76,6 +96,7 @@ export const TreeItem: FC<{
           balanceTotalPerAccount={balanceTotalPerAccount}
           isInFolder={isInFolder}
           noTooltip={isDragged}
+          onHoverMenu={onDisableDragChange}
         />
       )}
       {item.type === "folder" && (
