@@ -1,13 +1,12 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Navigate, Route, Routes, useMatch, useSearchParams } from "react-router-dom"
+import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
@@ -158,21 +157,21 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 const SelectedAccountChecker: FC<PropsWithChildren> = ({ children }) => {
   // popup may pass an account in the query string
   // we need to update this before first sidebar render to prevent flickering
-  const { select } = useSelectedAccount()
-  const [searchParams, updateSearchParams] = useSearchParams()
+  // const { select } = useSelectedAccount()
+  // const [searchParams, updateSearchParams] = useSearchParams()
 
-  useEffect(() => {
-    const account = searchParams.get("account")
-    if (!account) return
+  // useEffect(() => {
+  //   const account = searchParams.get("account")
+  //   if (!account) return
 
-    const newSearchPrams = new URLSearchParams(searchParams)
-    select(account === "all" ? undefined : account)
-    newSearchPrams.delete("account")
-    updateSearchParams(newSearchPrams, { replace: true })
-  }, [searchParams, select, updateSearchParams])
+  //   const newSearchPrams = new URLSearchParams(searchParams)
+  //   select(account === "all" ? undefined : account)
+  //   newSearchPrams.delete("account")
+  //   updateSearchParams(newSearchPrams, { replace: true })
+  // }, [searchParams, select, updateSearchParams])
 
-  // don't render if search param is still there
-  if (searchParams.get("account")) return null
+  // // don't render if search param is still there
+  // if (searchParams.get("account")) return null
 
   return <>{children}</>
 }

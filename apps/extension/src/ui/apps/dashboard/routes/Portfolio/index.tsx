@@ -4,7 +4,7 @@ import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardMainLayout } from "../../layout/DashboardMainLayout"
 import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
@@ -26,7 +26,7 @@ export const PortfolioRoutes = () => {
 
   return (
     // share layout to prevent sidebar flickering when navigating between pages
-    <DashboardLayout centered large className="min-w-[auto]">
+    <DashboardMainLayout>
       <PortfolioContainer>
         {/* share layout to prevent tabs flickering */}
         <DashboardPortfolioLayout>
@@ -39,6 +39,6 @@ export const PortfolioRoutes = () => {
           </Routes>
         </DashboardPortfolioLayout>
       </PortfolioContainer>
-    </DashboardLayout>
+    </DashboardMainLayout>
   )
 }

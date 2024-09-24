@@ -1,4 +1,11 @@
-import { HistoryIcon, ZapIcon } from "@talismn/icons"
+import {
+  CloseIcon,
+  ExpandIcon,
+  HistoryIcon,
+  MenuIcon,
+  TalismanHandIcon,
+  ZapIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,7 +18,6 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 
-import { NavIconClose, NavIconExpand, NavIconLogo, NavIconMenu } from "./icons"
 import {
   QuickSettingsModal,
   QuickSettingsOverlay,
@@ -103,7 +109,7 @@ export const BottomNav = () => {
           <NavButton
             label={t("Portfolio")}
             // className="!text-white"
-            icon={NavIconLogo}
+            icon={TalismanHandIcon}
             onClick={handleHomeClick}
             route="/portfolio/*"
           />
@@ -114,18 +120,18 @@ export const BottomNav = () => {
             onClick={handleTxHistoryClick}
             route="/tx-history"
           />
-          <NavButton label={t("Fullscreen")} icon={NavIconExpand} onClick={handleExpandClick} />
+          <NavButton label={t("Fullscreen")} icon={ExpandIcon} onClick={handleExpandClick} />
           {isQuickSettingsOpen ? (
             <NavButton
               label={t("Close")}
-              icon={NavIconClose}
+              icon={CloseIcon}
               onClick={closeQuickSettings}
               className="!text-white"
             />
           ) : (
             <NavButton
               label={t("More")}
-              icon={NavIconMenu}
+              icon={MenuIcon}
               onClick={handleMoreClick}
               withBadge={!allBackedUp}
             />

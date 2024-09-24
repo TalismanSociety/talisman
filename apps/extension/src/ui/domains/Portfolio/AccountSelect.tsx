@@ -1,9 +1,13 @@
-import { AccountType, AccountsCatalogTree, TreeItem } from "@extension/core"
-import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
+import { autoUpdate, FloatingPortal, useFloating } from "@floating-ui/react"
 import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { forwardRef, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
+
+import { AccountsCatalogTree, AccountType, TreeItem } from "@extension/core"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -12,8 +16,6 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
-import { forwardRef, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 
@@ -43,7 +45,7 @@ type AccountSelectFolderItem = AccountSelectItem & { type: "folder" }
 
 export const AccountSelect = () => {
   const { t } = useTranslation()
-  const { account: selectedAccount, select } = useSelectedAccount()
+  const { account: selectedAccount } = useSelectedAccount()
   const { accounts, catalog, balanceTotalPerAccount, portfolioTotal } = usePortfolioAccounts()
   const [collapsedFolders = [], setCollapsedFolders] = useSetting("collapsedFolders")
 
@@ -107,10 +109,27 @@ export const AccountSelect = () => {
     [selectedAccount, portfolioItems, watchedItems]
   )
 
+  // const onChange = useCallback(
+  //   (item: AccountSelectItem | "all-accounts") =>
+  //     item === "all-accounts" ? select(undefined) : item.type === "account" && select(item.address),
+  //   [select]
+  // )
+  const [searchParams, updateSearchParams] = useSearchParams()
+
   const onChange = useCallback(
-    (item: AccountSelectItem | "all-accounts") =>
-      item === "all-accounts" ? select(undefined) : item.type === "account" && select(item.address),
-    [select]
+    (item: AccountSelectItem | "all-accounts") => {
+      searchParams.delete("account")
+      searchParams.delete("folder")
+
+      if (item !== "all-accounts")
+        if (item.type === "account") searchParams.set("account", item.address)
+        else if (item.type === "folder") searchParams.set("folder", item.id)
+
+      updateSearchParams(searchParams)
+    },
+
+    //item === "all-accounts" ? select(undefined) : item.type === "account" && select(item.address)},
+    [searchParams, updateSearchParams]
   )
 
   const onFolderClick = useCallback(
