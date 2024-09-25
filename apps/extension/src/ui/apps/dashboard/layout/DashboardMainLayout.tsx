@@ -99,7 +99,7 @@ const HorizontalNav = () => {
   const NO_OP = () => {}
 
   return (
-    <div className="border-body-disabled flex h-24 gap-16 rounded-lg border px-8">
+    <div className="border-grey-800 flex h-24 gap-16 rounded-lg border px-8">
       <NavButton
         label={t("Portfolio")}
         onClick={handlePortfolioClick}
