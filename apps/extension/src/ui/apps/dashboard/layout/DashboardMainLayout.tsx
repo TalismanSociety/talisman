@@ -23,7 +23,7 @@ const Header = () => (
       RESPONSIVE_FLEX_SPACING
     )}
   >
-    <div className="flex h-48 shrink-0 items-center gap-4">
+    <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
       <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
       <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
     </div>
@@ -33,17 +33,19 @@ const Header = () => (
     </IconButton>
   </div>
 )
-
+// dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
   return (
     <div id="main" className="relative h-dvh w-dvw overflow-scroll">
       <Header />
-      <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
-        <div className="@container w-[29.6rem] shrink-0 overflow-hidden">
-          <PortfolioSidebar />
-        </div>
-        <div className="flex grow justify-center">
-          <div className="max-w-[120rem] grow">{children}</div>
+      <div className="absolute left-5 top-48  w-[29.6rem] overflow-hidden md:left-10 lg:left-20">
+        <PortfolioSidebar />
+      </div>
+      <div className="ml-[30.6rem] md:ml-[31.6rem] lg:ml-[33.6rem]">
+        <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
+          <div className="flex grow justify-center">
+            <div className="max-w-[120rem] grow">{children}</div>
+          </div>
         </div>
       </div>
     </div>

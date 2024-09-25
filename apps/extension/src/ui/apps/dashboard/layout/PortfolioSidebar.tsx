@@ -21,7 +21,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 export const PortfolioSidebar: FC = () => {
   return (
     <div className="bg-grey-900 size-full overflow-hidden rounded-lg">
-      <ScrollContainer className="h-full w-full grow">
+      <ScrollContainer className="size-full grow">
         <Accounts />
       </ScrollContainer>
     </div>
