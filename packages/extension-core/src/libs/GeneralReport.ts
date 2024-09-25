@@ -186,8 +186,8 @@ async function getGeneralReport() {
     throw error
   }
 
-  // balances top 10 tokens/networks
-  const TOP_BALANCES_COUNT = 10
+  // balances top 20 tokens/networks
+  const TOP_BALANCES_COUNT = 20
   // get balance list per chain/evmNetwork and token
   const balancesPerChainToken = groupBy(
     balances.each.filter(
@@ -204,6 +204,7 @@ async function getGeneralReport() {
     .map((balances) => new Balances(balances, { chains, evmNetworks, tokens, tokenRates }))
     .map((balances) => ({
       balance: balances.sum.fiat("usd").total,
+      numAccounts: new Set(balances.each.map((b) => b.address)).size,
       chainId: balances.sorted[0].chainId ?? balances.sorted[0].evmNetworkId,
       tokenId: balances.sorted[0].tokenId,
     }))
@@ -237,6 +238,7 @@ async function getGeneralReport() {
     ownedNfts.some((n) => n.collectionId === c.id)
   )
 
+  const TOP_NFT_COLLECTIONS_COUNT = 20
   const nftsCount = ownedNfts.length
   const floorByCollectionId = Object.fromEntries(
     ownedCollections
@@ -249,7 +251,7 @@ async function getGeneralReport() {
   )
   const topNftCollections = Object.entries(floorByCollectionId)
     .sort((c1, c2) => (c2[1] ?? 0) - (c1[1] ?? 0))
-    .slice(0, 20)
+    .slice(0, TOP_NFT_COLLECTIONS_COUNT)
     .map(([collectionId]) => ownedCollections.find((c) => c.id === collectionId)?.name)
 
   return {
