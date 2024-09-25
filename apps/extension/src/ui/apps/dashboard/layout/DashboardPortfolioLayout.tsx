@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/AssetsTable/DashboardPortfolioHeader"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
@@ -56,14 +57,15 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
 
 export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col gap-6 pb-12">
       <Suspense
         fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
       >
         <PortfolioAccountCheck>
+          <DashboardPortfolioHeader />
           <PortfolioTabs className="text-md my-0 h-14 font-bold" />
           <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>
-            <div className="flex w-full flex-col gap-12 py-12">{children}</div>
+            {children}
           </Suspense>
         </PortfolioAccountCheck>
       </Suspense>

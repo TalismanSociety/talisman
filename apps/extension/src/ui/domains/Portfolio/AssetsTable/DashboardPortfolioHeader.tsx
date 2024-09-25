@@ -1,75 +1,103 @@
-import {
-  ArrowDownIcon,
-  CreditCardIcon,
-  EyeIcon,
-  EyeOffIcon,
-  RepeatIcon,
-  SendIcon,
-} from "@talismn/icons"
+import { ArrowDownIcon, CreditCardIcon, FolderIcon, RepeatIcon, SendIcon } from "@talismn/icons"
+import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
+import { AccountJsonAny, TreeFolder } from "extension-core"
 import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { useAtomValue } from "jotai"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { balanceTotalsAtom } from "@ui/atoms"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
-import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useSetting } from "@ui/hooks/useSettings"
 
-type Props = {
-  className?: string
-  mouseOver: boolean
-  disabled?: boolean
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
+
+const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder | null }> = ({
+  account,
+  folder,
+}) => {
+  const { t } = useTranslation()
+
+  if (account)
+    return (
+      <div className="flex items-center gap-3 text-base">
+        <AccountIcon
+          className="shrink-0 text-[2rem]"
+          address={account.address}
+          genesisHash={account.genesisHash}
+        />
+        <div>{account.name ?? shortenAddress(account.address)}</div>
+      </div>
+    )
+
+  if (folder)
+    return (
+      <div className="flex items-center gap-3 text-base">
+        <div className="bg-grey-800 rounded-xs flex size-10 shrink-0 items-center justify-center">
+          <FolderIcon className=" text-primary shrink-0 text-xs" />
+        </div>
+        <div>{folder.name}</div>
+      </div>
+    )
+
+  return (
+    <div className="flex items-center gap-3 text-base">
+      <AllAccountsIcon className="shrink-0 text-[2rem]" />
+      <div>{t("All Accounts")}</div>
+    </div>
+  )
 }
 
-export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
-  const { t } = useTranslation()
-  const { portfolioTotal } = usePortfolioAccounts()
+export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className }) => {
+  const { selectedAccount, selectedAccounts, selectedFolder } = usePortfolioNavigation()
+  //   const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
+
+  const allBalanceTotals = useAtomValue(balanceTotalsAtom)
+
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
-  const [hideBalances, setHideBalances] = useSetting("hideBalances")
-  const { genericEvent } = useAnalytics()
+  const totalPerAddress = useMemo(() => {
+    const balanceTotals = allBalanceTotals.filter((b) => b.currency === currency)
+    return Object.fromEntries(balanceTotals.map((t) => [t.address, t.total]))
+  }, [allBalanceTotals, currency])
 
-  const toggleHideBalance: MouseEventHandler<HTMLButtonElement> = useCallback(
-    (event) => {
-      event.stopPropagation()
-      genericEvent("toggle hide balance")
-      setHideBalances((prev) => !prev)
-    },
-    [genericEvent, setHideBalances]
-  )
+  const selectedTotal = useMemo(() => {
+    return selectedAccounts.reduce((total, acc) => total + totalPerAddress[acc.address] ?? 0, 0)
+  }, [selectedAccounts, totalPerAddress])
 
   return (
-    <div className={classNames("flex flex-col items-start justify-between", className)}>
-      <div className="font-inter flex flex-col gap-2">
-        <div className="text-body  flex gap-4 text-xs">
-          <div className="leading-10 tracking-[0.06px]">{t("Total Portfolio")}</div>
+    <div
+      className={classNames(
+        "bg-grey-900 relative flex h-[19.2rem] flex-col items-start justify-between rounded-lg px-8 pb-6 pt-12",
+        className
+      )}
+    >
+      {selectedAccounts.length && (
+        <TalismanOrbRectangle
+          seed={selectedAccounts?.[0]?.address}
+          className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
+        />
+      )}
+      <div className="font-inter z-[1] flex flex-col gap-6">
+        <SelectionScope folder={selectedFolder} account={selectedAccount} />
+        <div className="flex w-full max-w-full items-center gap-6">
           <button
             className={classNames(
-              "focus:text-body text-grey-200 hover:text-body pointer-events-auto opacity-0 transition-opacity",
-              (hideBalances || mouseOver) && "opacity-100"
-            )}
-            onClick={toggleHideBalance}
-          >
-            {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
-          </button>
-        </div>
-        <div className="flex w-full max-w-full items-center gap-2">
-          <button
-            className={classNames(
-              "bg-grey-700/20 border-grey-200 text-grey-200 hover:text-body hover:bg-grey-700/10 hover:border-body pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out",
-              "",
-              currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
+              "bg-grey-700/20 border-grey-200 text-grey-200 hover:text-body hover:bg-grey-700/10 hover:border-body pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full border text-center text-lg leading-none transition-colors duration-100 ease-out",
+              currencyConfig[currency]?.symbol?.length === 2 && "text-md",
+              currencyConfig[currency]?.symbol?.length > 2 && "text-base"
             )}
             onClick={(event) => {
               event.stopPropagation()
@@ -80,16 +108,18 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           </button>
           <Fiat
             className={classNames(
-              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[3.2rem] font-bold leading-[3.6rem] tracking-[0.016px]",
-              disabled && "text-body-secondary"
+              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[4.8rem] font-bold leading-[4.8rem]"
             )}
-            amount={portfolioTotal}
+            amount={selectedTotal}
             isBalance
             currencyDisplay="code"
           />
         </div>
       </div>
-      <TopActions disabled={disabled} />
+      <TopActions
+
+      // TODOdisabled={disabled}
+      />
     </div>
   )
 }
@@ -133,12 +163,12 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="text-body-secondary hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-[1.2rem] opacity-90"
+          className="text-body-secondary hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-base opacity-90"
           onClick={handleClick}
           disabled={disabled}
         >
           <div>
-            <Icon className="size-6" />
+            <Icon className="size-8" />
           </div>
           <div>{label}</div>
         </button>
