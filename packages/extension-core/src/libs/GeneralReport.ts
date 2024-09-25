@@ -207,6 +207,7 @@ async function getGeneralReport() {
       numAccounts: new Set(balances.each.map((b) => b.address)).size,
       chainId: balances.sorted[0].chainId ?? balances.sorted[0].evmNetworkId,
       tokenId: balances.sorted[0].tokenId,
+      symbol: balances.sorted[0].token?.symbol,
     }))
     .sort((a, b) => b.balance - a.balance)
 
