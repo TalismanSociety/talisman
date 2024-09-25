@@ -6,7 +6,7 @@ import {
   EyeIcon,
   PlusIcon,
   SettingsIcon,
-  UsersIcon,
+  UserIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { atom, useAtom, useAtomValue } from "jotai"
@@ -268,7 +268,7 @@ const AccountsToolbar = () => {
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
           <PortfolioToolbarButton onClick={handleManageAccountsClick}>
-            <UsersIcon />
+            <UserIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
         <TooltipContent>{t("Manage accounts")}</TooltipContent>

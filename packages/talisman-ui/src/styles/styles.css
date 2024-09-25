@@ -7,7 +7,7 @@
   html {
     /* this defines the root font size, on which 'rem' units are based */
     font-size: 10px;
-    color-scheme: only dark;
+    scrollbar-color: theme(colors.grey.700) transparent;
     @apply min-h-screen;
   }
 

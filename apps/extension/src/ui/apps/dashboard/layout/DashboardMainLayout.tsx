@@ -29,7 +29,7 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
             <BigBlock />
           </ScrollContainer> */}
         </div>
-        <div className="relative h-full grow overflow-auto">
+        <div className="relative h-full grow overflow-x-auto overflow-y-scroll">
           <div className="sticky left-0 top-0 z-30 flex h-48 w-full items-center justify-center bg-black">
             <HorizontalNav />
           </div>

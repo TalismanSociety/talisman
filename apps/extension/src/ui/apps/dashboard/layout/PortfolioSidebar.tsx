@@ -1,10 +1,10 @@
-import { CheckIcon, EyeIcon, FolderPlusIcon, PlusIcon } from "@talismn/icons"
+import { CheckIcon, EyeIcon, PlusIcon, UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountsCatalogTree, AccountType, TreeItem } from "extension-core"
 import { FC, Fragment, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
-import { IconButton } from "talisman-ui"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -15,6 +15,7 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 export const PortfolioSidebar: FC = () => {
@@ -94,16 +95,39 @@ const Accounts = () => {
     balanceTotalPerAccount,
   ])
 
+  const { genericEvent } = useAnalytics()
+  const navigate = useNavigate()
+
+  const handleManageAccountsClick = useCallback(() => {
+    genericEvent("goto manage accounts", { from: "sidebar" })
+    navigate("/settings/accounts")
+  }, [genericEvent, navigate])
+
+  const handleAddAccountClick = useCallback(() => {
+    genericEvent("goto add account", { from: "sidebar" })
+    navigate("/accounts/add")
+  }, [genericEvent, navigate])
+
   return (
     <div className="flex w-full flex-col gap-8 p-8">
       <div className="flex h-16 shrink-0 items-center">
         <div className="grow text-[2rem] font-bold">{t("Accounts")}</div>
-        <IconButton className="p-4">
-          <FolderPlusIcon />
-        </IconButton>
-        <IconButton className="p-4">
-          <PlusIcon />
-        </IconButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton onClick={handleManageAccountsClick} className="p-3">
+              <UserIcon className="size-10" />
+            </IconButton>
+          </TooltipTrigger>
+          <TooltipContent>{t("Manage Accounts")}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton onClick={handleAddAccountClick} className="p-3">
+              <PlusIcon className="size-10" />
+            </IconButton>
+          </TooltipTrigger>
+          <TooltipContent>{t("Add Account")}</TooltipContent>
+        </Tooltip>
       </div>
       <div className="bg-grey-800 h-0.5"></div>
       <TreeAccounts options={allPortfolioOptions} showAllAccounts />
