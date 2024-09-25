@@ -187,7 +187,7 @@ async function getGeneralReport() {
   }
 
   // balances top 20 tokens/networks
-  const TOP_BALANCES_COUNT = 20
+  const TOP_BALANCES_COUNT = 100
   // get balance list per chain/evmNetwork and token
   const balancesPerChainToken = groupBy(
     balances.each.filter(
@@ -223,6 +223,8 @@ async function getGeneralReport() {
   const topToken = topChainTokens[0]
     ? `${topChainTokens[0].chainId}: ${topChainTokens[0].tokenId}`
     : undefined
+
+  const numTokens = sortedFiatSumPerChainToken.length
 
   //
   // nfts
@@ -265,6 +267,7 @@ async function getGeneralReport() {
     tokens: tokensBreakdown,
     topChainTokens,
     topToken,
+    numTokens,
 
     // nfts
     nftsCount,
