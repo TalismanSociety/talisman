@@ -1,12 +1,13 @@
-import { encodeAnyAddress } from "@talismn/util"
-import { Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
+import { AccountJsonAny, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { isAddressEqual } from "@ui/util/isAddressEqual"
+import { normalizeAddress } from "@ui/util/normalizeAddress"
 
 export const usePortfolioNavigation = () => {
-  const { catalog } = usePortfolioAccounts()
+  const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
   const [searchParams, updateSearchParams] = useSearchParams()
 
   const [accountAddress, folderId] = useMemo(
@@ -63,12 +64,32 @@ export const usePortfolioNavigation = () => {
     [searchParams, updateSearchParams]
   )
 
+  const selectedAccount = useMemo<AccountJsonAny | null>(() => {
+    return (
+      allAccounts.find((acc) => accountAddress && isAddressEqual(acc.address, accountAddress)) ??
+      null
+    )
+  }, [accountAddress, allAccounts])
+
+  const selectedAccounts = useMemo(() => {
+    if (selectedAccount) return [selectedAccount]
+    if (selectedFolder)
+      return (
+        allAccounts.filter((acc) =>
+          selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address))
+        ) ?? null
+      )
+    return portfolioAccounts
+  }, [allAccounts, portfolioAccounts, selectedAccount, selectedFolder])
+
   return {
-    treeName,
-    selectedFolder,
-    currentFolder,
     accountAddress,
     folderId,
+    treeName,
+    selectedAccount,
+    selectedAccounts,
+    selectedFolder,
+    currentFolder,
     setAccountAddress,
     setFolderId,
   }
@@ -106,7 +127,4 @@ const folderById =
 const folderByAccountAddress =
   (address: string) =>
   (item: TreeItem): item is TreeFolder =>
-    isTreeFolder(item) &&
-    item.tree.some((account) => normalizeAddress(account.address) === normalizeAddress(address))
-
-const normalizeAddress = (address: string) => encodeAnyAddress(address, 42)
+    isTreeFolder(item) && item.tree.some((account) => isAddressEqual(account.address, address))

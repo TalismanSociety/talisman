@@ -1,11 +1,17 @@
-import useAccounts from "@ui/hooks/useAccounts"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
+// TODO yeet
 export const useSelectedAccount = () => {
   // const [selectedAccountAddress, setSelectedAccountAddress] = useSetting("selectedAccount")
-  const accounts = useAccounts()
+  //const allAccounts = useAccounts()
 
-  const account = useSearchParamsSelectedAccount()
+  const { selectedAccount, selectedAccounts } = usePortfolioNavigation()
+
+  // const account = useMemo(() => {
+  //   return allAccounts.find((acc) => accountAddress && isAddressEqual(acc.address, accountAddress)) ?? null
+  // }, [])
+
+  //const account = useSearchParamsSelectedAccount()
   //const dashboardAccount = useAccountByAddress(selectedAccountAddress)
 
   // const select = useCallback(
@@ -25,7 +31,7 @@ export const useSelectedAccount = () => {
 
   return {
     //select,
-    accounts,
-    account: account ?? undefined,
+    accounts: selectedAccounts,
+    account: selectedAccount ?? undefined,
   }
 }

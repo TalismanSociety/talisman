@@ -7,14 +7,17 @@ import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
 } from "@extension/shared"
-import { portfolioAccountAtom, portfolioAtom } from "@ui/atoms"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { portfolioAtom, portfolioSelectedAccountsAtom } from "@ui/atoms"
+import { isAddressEqual } from "@ui/util/isAddressEqual"
 
 // TODO: default tokens should be controlled from chaindata
-const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Balances) => {
-  const accountHasSomeBalance = balances.find({ address: account?.address }).sum.planck.total > 0n
+const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: Balances) => {
+  const accountHasSomeBalance =
+    balances.find((b) => !accounts || accounts.some((a) => isAddressEqual(a.address, b.address)))
+      .sum.planck.total > 0n
 
   return (balance: Balance): boolean => {
+    const account = accounts?.find((a) => isAddressEqual(a.address, balance.address))
     // don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
     if (account?.type === "ethereum" && account.isHardware && !balance.evmNetworkId) return false
 
@@ -43,15 +46,15 @@ export const portfolioDisplayBalancesAtomFamily = atomFamily(
   (filter: "all" | "network" | "search") =>
     atom((get) => {
       const { networkBalances, allBalances, searchBalances } = get(portfolioAtom)
-      const account = get(portfolioAccountAtom)
+      const accounts = get(portfolioSelectedAccountsAtom)
 
       switch (filter) {
         case "all":
-          return networkBalances.find(shouldDisplayBalance(account, allBalances))
+          return networkBalances.find(shouldDisplayBalance(accounts, allBalances))
         case "network":
-          return networkBalances.find(shouldDisplayBalance(account, networkBalances))
+          return networkBalances.find(shouldDisplayBalance(accounts, networkBalances))
         case "search":
-          return searchBalances.find(shouldDisplayBalance(account, searchBalances))
+          return searchBalances.find(shouldDisplayBalance(accounts, searchBalances))
       }
     })
 )
@@ -60,9 +63,12 @@ export const portfolioDisplayBalancesAtomFamily = atomFamily(
  * @deprecated use atoms
  */
 export const useDisplayBalances = (balances: Balances) => {
-  const { account } = useSelectedAccount()
+  const accounts = useAtomValue(portfolioSelectedAccountsAtom)
 
-  return useMemo(() => balances.find(shouldDisplayBalance(account, balances)), [account, balances])
+  return useMemo(
+    () => balances.find(shouldDisplayBalance(accounts, balances)),
+    [accounts, balances]
+  )
 }
 
 export const usePortfolioDisplayBalances = (filter: "all" | "network") => {
