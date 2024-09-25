@@ -1,9 +1,10 @@
-import { HistoryIcon, TalismanHandIcon, UsersIcon, ZapIcon } from "@talismn/icons"
+import { HistoryIcon, MenuIcon, TalismanHandIcon, UsersIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch, useNavigate } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 
 import { LogoDashboard } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -13,29 +14,36 @@ import { PortfolioSidebar } from "./PortfolioSidebar"
 
 // const BigBlock = () => <div className="bg-green/50 border-green size-[80rem] border-2"></div>
 
+const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
+
+const Header = () => (
+  <div
+    className={classNames(
+      "sticky left-0 top-0 z-30 flex h-48 w-full items-center justify-between bg-gradient-to-b from-black via-black via-80% to-transparent ",
+      RESPONSIVE_FLEX_SPACING
+    )}
+  >
+    <div className="flex h-48 shrink-0 items-center gap-4">
+      <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
+      <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+    </div>
+    <HorizontalNav />
+    <IconButton>
+      <MenuIcon />
+    </IconButton>
+  </div>
+)
+
 export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
   return (
-    <div id="main" className="h-dvh w-dvw overflow-hidden">
-      <div className="flex size-full overflow-hidden">
-        <div className="flex h-full flex-col overflow-hidden px-20 pb-20">
-          <div className="flex h-48 shrink-0 items-center gap-4">
-            <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
-            <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
-          </div>
-          <div className="@container w-[29.6rem] grow overflow-hidden">
-            <PortfolioSidebar />
-          </div>
-          {/* <ScrollContainer className="w-[29.6rem] grow ">
-            <BigBlock />
-          </ScrollContainer> */}
+    <div id="main" className="relative h-dvh w-dvw overflow-scroll">
+      <Header />
+      <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
+        <div className="@container w-[29.6rem] shrink-0 overflow-hidden">
+          <PortfolioSidebar />
         </div>
-        <div className="relative h-full grow overflow-x-auto overflow-y-scroll">
-          <div className="sticky left-0 top-0 z-30 flex h-48 w-full items-center justify-center bg-black">
-            <HorizontalNav />
-          </div>
-          <div className="flex w-full min-w-fit justify-center">
-            <div className="max-w-[120rem] grow">{children}</div>
-          </div>
+        <div className="flex grow justify-center">
+          <div className="max-w-[120rem] grow">{children}</div>
         </div>
       </div>
     </div>
@@ -55,14 +63,14 @@ const NavButton: FC<{
     <button
       type="button"
       className={classNames(
-        "text-hover text-body-disabled hover:text-body-secondary flex items-center gap-4",
+        "text-body-disabled hover:text-body-secondary flex items-center gap-4",
         routeMatch && "!text-body",
         className
       )}
       onClick={onClick}
     >
-      <Icon className="text-[2rem]" />
-      <div>{label}</div>
+      <Icon className="shrink-0 text-[2rem]" />
+      <div className="hidden lg:block">{label}</div>
     </button>
   )
 }
