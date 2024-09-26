@@ -1,6 +1,7 @@
 import { useEffect } from "react"
-import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
+import { Route, Routes, useSearchParams } from "react-router-dom"
 
+import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
@@ -35,7 +36,7 @@ export const PortfolioRoutes = () => {
             <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
             <Route path="tokens" element={<PortfolioAssets />} />
             <Route path="nfts" element={<PortfolioNfts />} />
-            <Route path="*" element={<Navigate to="tokens" />} />
+            <Route path="*" element={<NavigateWithQuery url="tokens" />} />
           </Routes>
         </DashboardPortfolioLayout>
       </PortfolioContainer>

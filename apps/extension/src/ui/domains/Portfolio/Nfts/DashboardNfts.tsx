@@ -2,11 +2,11 @@ import { StarIcon } from "@talismn/icons"
 import { NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSetting } from "@ui/hooks/useSettings"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
@@ -79,7 +79,7 @@ const NftCollectionRowInner: FC<{
 
   const floorUsdValue = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (nfts.length === 1) onNftClick(nfts[0].id)
     else navigate(`/portfolio/nfts/${collection.id}`)
@@ -184,7 +184,7 @@ const NftCollectionTileInner: FC<{
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (nfts.length === 1) onNftClick(nfts[0].id)
     else navigate(`/portfolio/nfts/${collection.id}`)

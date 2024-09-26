@@ -3,11 +3,12 @@ import { SendIcon } from "@talismn/icons"
 import { t } from "i18next"
 import { FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Balances } from "@extension/core"
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
+import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -21,7 +22,9 @@ import {
   useTokenBalancesSummary,
 } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 
 const HeaderRow: FC<{
@@ -108,7 +111,7 @@ const TokenBreadcrumb: FC<{
 }> = ({ balances, symbol, token, rate }) => {
   const { t } = useTranslation()
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
@@ -149,15 +152,14 @@ const TokenBreadcrumb: FC<{
 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
-  const [search] = useSearchParams()
   const { allBalances } = usePortfolio()
   const { pageOpenEvent } = useAnalytics()
-  const isTestnet = search.get("testnet") === "true"
+  const [isTestnet] = useSetting("useTestnets")
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-    () => allBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
+    () => allBalances.find((b) => b.token?.symbol === symbol && (!b.token?.isTestnet || isTestnet)),
     [allBalances, isTestnet, symbol]
   )
 
@@ -168,7 +170,7 @@ export const PortfolioAsset = () => {
     pageOpenEvent("portfolio asset", { symbol })
   }, [pageOpenEvent, symbol])
 
-  if (!symbol) return <Navigate to="/portfolio" />
+  if (!symbol) return <NavigateWithQuery url="/portfolio" />
 
   return (
     <>

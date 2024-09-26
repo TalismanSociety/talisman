@@ -1,7 +1,8 @@
 import { FC, useCallback, useEffect, useMemo } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 
 import { Tabs } from "@talisman/components/Tabs"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 
@@ -11,7 +12,7 @@ const URL_TAB_NFTS = "/portfolio/nfts"
 export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   const { account, accounts } = useSelectedAccount()
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
 
   const withNfts = useMemo(() => {
     return account
@@ -39,9 +40,9 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
 
   const handleChange = useCallback(
     (value: string) => {
-      navigate(`${value}${location.search}`)
+      navigate(`${value}`)
     },
-    [location.search, navigate]
+    [navigate]
   )
 
   return (

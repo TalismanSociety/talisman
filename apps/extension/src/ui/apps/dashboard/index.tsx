@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
+import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
@@ -74,7 +75,7 @@ const DashboardInner = () => {
             <Route path="signet/*" element={<AccountAddSignetDashboardWizard />} />
             <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
-          <Route path="" element={<Navigate to="/portfolio" />} />
+          <Route path="" element={<NavigateWithQuery url="/portfolio" replace />} />
         </Route>
         <Route path="settings">
           <Route path="" element={<Navigate to="/settings/general" replace />} />
@@ -140,7 +141,7 @@ const DashboardInner = () => {
           path="qr-metadata"
           element={<Navigate to="/settings/networks-tokens/qr-metadata" replace />}
         />
-        <Route path="*" element={<Navigate to="/portfolio" replace />} />
+        <Route path="*" element={<NavigateWithQuery url="/portfolio" replace />} />
       </Routes>
     </Suspense>
   )

@@ -2,7 +2,6 @@ import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
@@ -15,6 +14,7 @@ import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPool
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -59,22 +59,17 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
-  const { account } = useSelectedAccount()
   const status = useBalancesStatus(balances)
 
   const { token, summary, rate } = useTokenBalancesSummary(balances)
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (!token) return
 
-    const params = new URLSearchParams()
-    token.isTestnet && params.set("testnet", "true")
-    account && params.set("account", account?.address)
-
-    navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}?${params.toString()}`)
+    navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
-  }, [account, genericEvent, navigate, token])
+  }, [genericEvent, navigate, token])
 
   const { tokens, fiat } = useMemo(() => {
     return {

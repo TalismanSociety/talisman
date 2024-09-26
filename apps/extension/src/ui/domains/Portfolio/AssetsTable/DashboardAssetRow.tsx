@@ -2,7 +2,6 @@ import { ExternalLinkIcon, XIcon, ZapFastIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Suspense, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -11,6 +10,7 @@ import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPool
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -81,14 +81,10 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (!token) return
-    navigate(
-      `/portfolio/tokens/${encodeURIComponent(token.symbol)}${
-        token.isTestnet ? "?testnet=true" : ""
-      }`
-    )
+    navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
     genericEvent("goto portfolio asset", { from: "dashboard", symbol: token.symbol })
   }, [genericEvent, navigate, token])
 
