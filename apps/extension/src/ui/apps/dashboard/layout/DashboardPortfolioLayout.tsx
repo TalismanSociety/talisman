@@ -58,7 +58,7 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
 
 export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <div className="flex w-full flex-col gap-6 pb-12">
+    <div className="relative flex w-full flex-col gap-6 pb-12">
       <Suspense
         fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
       >
@@ -69,8 +69,8 @@ export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) =>
             {children}
           </Suspense>
         </PortfolioAccountCheck>
+        <DashboardNotificationsAndModals />
       </Suspense>
-      <DashboardNotificationsAndModals />
     </div>
   )
 }

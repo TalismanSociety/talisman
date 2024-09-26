@@ -12,6 +12,25 @@ import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
 import { PortfolioSidebar } from "./PortfolioSidebar"
 
+// dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
+export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
+  return (
+    <div id="main" className="relative h-dvh w-dvw overflow-scroll">
+      <Header />
+      <div className="absolute left-5 top-48 w-[29.6rem] overflow-hidden md:left-10 lg:left-20">
+        <PortfolioSidebar />
+      </div>
+      <div className="ml-[30.6rem] md:ml-[31.6rem] lg:ml-[33.6rem]">
+        <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
+          <div className="flex grow justify-center">
+            <div className="max-w-[120rem] grow">{children}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
 
 const Header = () => {
@@ -44,24 +63,6 @@ const Header = () => {
         {/* <MenuIcon /> */}
         <SettingsIcon />
       </IconButton>
-    </div>
-  )
-}
-// dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
-export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
-  return (
-    <div id="main" className="relative h-dvh w-dvw overflow-scroll">
-      <Header />
-      <div className="absolute left-5 top-48  w-[29.6rem] overflow-hidden md:left-10 lg:left-20">
-        <PortfolioSidebar />
-      </div>
-      <div className="ml-[30.6rem] md:ml-[31.6rem] lg:ml-[33.6rem]">
-        <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
-          <div className="flex grow justify-center">
-            <div className="max-w-[120rem] grow">{children}</div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
