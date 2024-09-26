@@ -53,7 +53,7 @@ type Props = {
  * If the `address` prop is null, this component will ignore `selectedAccount`
  */
 export const AccountContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
-  { analyticsFrom, address, placement, trigger, hideManageAccounts, disabled },
+  { analyticsFrom, address, placement, trigger, hideManageAccounts, disabled }, // TODO replace trigger like in FolderContextMenu?
   ref
 ) {
   const { t } = useTranslation()

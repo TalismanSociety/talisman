@@ -1,9 +1,11 @@
-import { AccountsCatalogTree, TreeFolder, TreeItem } from "@extension/core"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "@extension/core"
+
 import { usePortfolioAccounts } from "./usePortfolioAccounts"
 
+// TODO yeet
 export const useSearchParamsSelectedFolder = () => {
   const { catalog } = usePortfolioAccounts()
   const [searchParams] = useSearchParams()

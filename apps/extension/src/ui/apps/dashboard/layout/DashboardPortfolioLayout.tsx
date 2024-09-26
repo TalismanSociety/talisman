@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/AssetsTable/DashboardPortfolioHeader"
+import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
 import { NoAccountsFullscreen } from "../routes/Portfolio/NoAccountsFullscreen"
+import { DashboardNotificationsAndModals } from "./DashboardNotificationsAndModals"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
@@ -69,6 +70,7 @@ export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) =>
           </Suspense>
         </PortfolioAccountCheck>
       </Suspense>
+      <DashboardNotificationsAndModals />
     </div>
   )
 }

@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
+import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"

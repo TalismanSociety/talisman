@@ -2,12 +2,13 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 
 import { AccountJsonAny } from "@extension/core"
-import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
+
+import { AccountContextMenu } from "../AccountContextMenu"
 
 export const TreeItemAccount: FC<{
   accounts: AccountJsonAny[]

@@ -1,4 +1,4 @@
-import { HistoryIcon, MenuIcon, TalismanHandIcon, UsersIcon, ZapIcon } from "@talismn/icons"
+import { HistoryIcon, SettingsIcon, TalismanHandIcon, UsersIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
@@ -12,27 +12,41 @@ import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
 import { PortfolioSidebar } from "./PortfolioSidebar"
 
-// const BigBlock = () => <div className="bg-green/50 border-green size-[80rem] border-2"></div>
-
 const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
 
-const Header = () => (
-  <div
-    className={classNames(
-      "sticky left-0 top-0 z-30 flex h-48 w-full items-center justify-between bg-gradient-to-b from-black via-black via-80% to-transparent ",
-      RESPONSIVE_FLEX_SPACING
-    )}
-  >
-    <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
-      <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
-      <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+const Header = () => {
+  const navigate = useNavigate()
+
+  const handleSettingsClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Settings button",
+    })
+    navigate("/settings")
+  }, [navigate])
+
+  return (
+    <div
+      className={classNames(
+        "flex h-48 w-full items-center justify-between",
+        //"sticky left-0 top-0 z-30 ",
+        // "bg-gradient-to-b from-black via-black via-80% to-transparent",
+        RESPONSIVE_FLEX_SPACING
+      )}
+    >
+      <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
+        <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
+        <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+      </div>
+      <HorizontalNav />
+      <IconButton onClick={handleSettingsClick}>
+        {/* <MenuIcon /> */}
+        <SettingsIcon />
+      </IconButton>
     </div>
-    <HorizontalNav />
-    <IconButton>
-      <MenuIcon />
-    </IconButton>
-  </div>
-)
+  )
+}
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
   return (
@@ -106,7 +120,23 @@ const HorizontalNav = () => {
     window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
   }, [])
 
-  const NO_OP = () => {}
+  const handleActivityClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Activity button",
+    })
+    // TODO
+  }, [])
+
+  const handleAddressBookClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Address Book button",
+    })
+    navigate("/settings/address-book")
+  }, [navigate])
 
   return (
     <div className="border-grey-800 flex h-24 gap-16 rounded-lg border px-8">
@@ -117,8 +147,8 @@ const HorizontalNav = () => {
         icon={TalismanHandIcon}
       />
       <NavButton label={t("Staking")} onClick={handleStakingClick} icon={ZapIcon} />
-      <NavButton label={t("Activity")} onClick={NO_OP} icon={HistoryIcon} />
-      <NavButton label={t("Address Book")} onClick={NO_OP} icon={UsersIcon} />
+      <NavButton label={t("Activity")} onClick={handleActivityClick} icon={HistoryIcon} />
+      <NavButton label={t("Address Book")} onClick={handleAddressBookClick} icon={UsersIcon} />
     </div>
   )
 }

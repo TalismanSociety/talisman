@@ -1,4 +1,11 @@
-import { ArrowDownIcon, CreditCardIcon, FolderIcon, RepeatIcon, SendIcon } from "@talismn/icons"
+import {
+  ArrowDownIcon,
+  CreditCardIcon,
+  FolderIcon,
+  MoreHorizontalIcon,
+  RepeatIcon,
+  SendIcon,
+} from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { AccountJsonAny, TreeFolder } from "extension-core"
@@ -6,7 +13,14 @@ import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { useAtomValue } from "jotai"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { useMatch } from "react-router-dom"
+import {
+  ContextMenuTrigger,
+  IconButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
@@ -17,11 +31,13 @@ import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 
-import { usePortfolioNavigation } from "../usePortfolioNavigation"
+import { AccountContextMenu } from "../Account/AccountContextMenu"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { FolderContextMenu } from "../Account/FolderContextMenu"
+import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder | null }> = ({
   account,
@@ -31,28 +47,56 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
 
   if (account)
     return (
-      <div className="flex items-center gap-3 text-base">
-        <AccountIcon
-          className="shrink-0 text-[2rem]"
-          address={account.address}
-          genesisHash={account.genesisHash}
-        />
-        <div>{account.name ?? shortenAddress(account.address)}</div>
+      <div className="flex h-14 w-full items-center gap-6 text-base">
+        <div className="flex grow items-center gap-3 overflow-hidden">
+          <AccountIcon
+            className="shrink-0 text-[2rem]"
+            address={account.address}
+            genesisHash={account.genesisHash}
+          />
+          <div className="truncate">{account.name ?? shortenAddress(account.address)}</div>
+          <AccountTypeIcon origin={account.origin} className="text-primary" />
+        </div>
+        <div className="shrink-0">
+          <AccountContextMenu
+            address={account.address}
+            analyticsFrom="dashboard portfolio"
+            placement="bottom-end"
+            trigger={
+              <IconButton className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0  items-center justify-center overflow-hidden rounded-sm">
+                <MoreHorizontalIcon className="text-base" />
+              </IconButton>
+            }
+          />
+        </div>
       </div>
     )
 
   if (folder)
     return (
-      <div className="flex items-center gap-3 text-base">
-        <div className="bg-grey-800 rounded-xs flex size-10 shrink-0 items-center justify-center">
-          <FolderIcon className=" text-primary shrink-0 text-xs" />
+      <div className="flex h-14 w-full items-center gap-6 text-base">
+        <div className="flex grow items-center gap-3 overflow-hidden text-base">
+          <div className="bg-grey-800 rounded-xs flex size-10 shrink-0 items-center justify-center">
+            <FolderIcon className=" text-primary shrink-0 text-xs" />
+          </div>
+          <div className="truncate">{folder.name}</div>
         </div>
-        <div>{folder.name}</div>
+        <div className="shrink-0">
+          <FolderContextMenu
+            folderId={folder.id}
+            placement="bottom-end"
+            trigger={
+              <ContextMenuTrigger className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0  items-center justify-center overflow-hidden rounded-sm">
+                <MoreHorizontalIcon className="text-base" />
+              </ContextMenuTrigger>
+            }
+          />
+        </div>
       </div>
     )
 
   return (
-    <div className="flex items-center gap-3 text-base">
+    <div className="flex h-14 items-center gap-3 text-base">
       <AllAccountsIcon className="shrink-0 text-[2rem]" />
       <div>{t("All Accounts")}</div>
     </div>
@@ -61,8 +105,6 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
 
 export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className }) => {
   const { selectedAccount, selectedAccounts, selectedFolder } = usePortfolioNavigation()
-  //   const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
-
   const allBalanceTotals = useAtomValue(balanceTotalsAtom)
 
   const currency = useSelectedCurrency()
@@ -80,7 +122,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   return (
     <div
       className={classNames(
-        "bg-grey-900 relative flex h-[19.2rem] flex-col items-start justify-between rounded-lg px-8 pb-6 pt-12",
+        "bg-grey-900 relative flex h-[19.2rem] flex-col items-start justify-between rounded-lg px-8 py-6 pr-6",
         className
       )}
     >
@@ -90,7 +132,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
         />
       )}
-      <div className="font-inter z-[1] flex flex-col gap-6">
+      <div className="font-inter z-[1] flex w-full flex-col gap-3 overflow-hidden">
         <SelectionScope folder={selectedFolder} account={selectedAccount} />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
@@ -116,10 +158,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <TopActions
-
-      // TODOdisabled={disabled}
-      />
+      <TopActions accounts={selectedAccounts} disabled={!selectedAccounts.length} />
     </div>
   )
 }
@@ -187,22 +226,28 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-const TopActions = ({ disabled }: { disabled?: boolean }) => {
+const TopActions: FC<{ accounts: AccountJsonAny[]; disabled?: boolean }> = ({
+  accounts,
+  disabled,
+}) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const ownedAccounts = useAccounts("owned")
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
 
-  const handleSwapClick = useCallback(() => {
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-    window.close()
-  }, [])
-
   const { disableActions, disabledReason } = useMemo(() => {
-    const disableActions = disabled || !ownedAccounts.length
+    const disableActions = disabled || !accounts.length
     const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
     return { disableActions, disabledReason }
-  }, [disabled, ownedAccounts.length, t])
+  }, [disabled, accounts.length, t])
+
+  const selectedAddress = useMemo(
+    () => (accounts.length === 1 ? accounts[0].address : undefined),
+    [accounts]
+  )
+
+  // this component is not located in the asset details route, so we can't use useParams
+  const match = useMatch("/portfolio/tokens/:symbol")
+  const symbol = useMemo(() => match?.params.symbol, [match])
 
   const topActions = useMemo(
     () =>
@@ -212,7 +257,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "Send Funds button",
           label: t("Send"),
           icon: SendIcon,
-          onClick: () => api.sendFundsOpen().then(() => window.close()),
+          onClick: () =>
+            api.sendFundsOpen({
+              from: selectedAddress,
+              tokenSymbol: symbol || undefined,
+            }),
           disabled: disableActions,
           disabledReason,
         },
@@ -221,7 +270,10 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open receive",
           label: t("Receive"),
           icon: ArrowDownIcon,
-          onClick: () => openCopyAddressModal(),
+          onClick: () =>
+            openCopyAddressModal({
+              address: selectedAddress,
+            }),
           disabled: disableActions,
           disabledReason,
         },
@@ -230,7 +282,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => handleSwapClick(),
+          onClick: () => window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"),
         },
         canBuy
           ? {
@@ -238,13 +290,13 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
               analyticsAction: "Buy Crypto button",
               label: t("Buy"),
               icon: CreditCardIcon,
-              onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+              onClick: () => api.modalOpen({ modalType: "buy" }),
               disabled: disableActions,
               disabledReason,
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, handleSwapClick, openCopyAddressModal, t]
+    [canBuy, disableActions, disabledReason, selectedAddress, openCopyAddressModal, symbol, t]
   )
 
   return (
