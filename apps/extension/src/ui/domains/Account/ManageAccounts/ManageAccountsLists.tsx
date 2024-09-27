@@ -39,7 +39,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 
   return (
     <div className={classNames("@container", className)}>
-      {watchedUiTree.length > 0 && (
+      {!!watchedUiTree.length && (
         <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
           <TalismanHandIcon className="inline" />
           <div>{t("My portfolio")}</div>
@@ -51,18 +51,20 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
         treeName="portfolio"
         tree={portfolioTree}
       />
-      {watchedUiTree.length > 0 && (
-        <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
-          <EyeIcon className="inline" />
-          <div>{t("Followed only")}</div>
-        </div>
+      {!!watchedUiTree.length && (
+        <>
+          <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
+            <EyeIcon className="inline" />
+            <div>{t("Followed only")}</div>
+          </div>
+          <ManageAccountsList
+            accounts={accounts}
+            balanceTotalPerAccount={balanceTotalPerAccount}
+            treeName="watched"
+            tree={watchedTree}
+          />
+        </>
       )}
-      <ManageAccountsList
-        accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
-        treeName="watched"
-        tree={watchedTree}
-      />
     </div>
   )
 }

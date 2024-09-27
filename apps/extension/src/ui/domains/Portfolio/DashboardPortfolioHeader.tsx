@@ -126,7 +126,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
         className
       )}
     >
-      {selectedAccounts.length && (
+      {!!selectedAccounts.length && (
         <TalismanOrbRectangle
           seed={selectedAccounts?.[0]?.address}
           className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
