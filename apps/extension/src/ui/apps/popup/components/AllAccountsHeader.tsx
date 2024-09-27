@@ -1,24 +1,12 @@
 import { ChevronRightIcon } from "@talismn/icons"
+import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
 
 import { AccountJsonAny } from "@extension/core"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
-import { useAccountColors } from "@ui/hooks/useAccountColors"
-
-const BG_CONFIG: MysticalPhysicsV3 = {
-  ...MYSTICAL_PHYSICS_V3,
-  artifacts: 2,
-  radiusMin: 4,
-  radiusMax: 4,
-  opacityMin: 0.5,
-  opacityMax: 0.5,
-  durationMin: 12000,
-  durationMax: 15000,
-}
 
 export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
   const navigate = useNavigate()
@@ -40,7 +28,12 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
         onClick={!disabled ? handleClick : undefined}
         disabled={disabled}
       >
-        {!disabled && <AllAccountsHeaderBackground accounts={accounts} />}
+        {!disabled && !!accounts?.[0]?.address && (
+          <TalismanOrbRectangle
+            seed={accounts[0].address}
+            className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
+          />
+        )}
         {!disabled && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
@@ -49,19 +42,5 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
         disabled={disabled}
       />
     </div>
-  )
-}
-
-const AllAccountsHeaderBackground: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
-  const colors = useAccountColors(accounts?.[0]?.address)
-  const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
-
-  //return null
-  return (
-    <MysticalBackground
-      // opacity will ensure bg is dark enough for buttons to be readable
-      className="absolute left-0 top-0 size-full select-none rounded-sm opacity-60"
-      config={config}
-    />
   )
 }
