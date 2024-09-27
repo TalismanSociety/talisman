@@ -23,7 +23,6 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
           "flex size-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
           "bg-black-secondary text-body-secondary transition-colors duration-75",
           !disabled && "hover:text-body"
-          //"bg-brand-blue" // TODO remove
         )}
         onClick={!disabled ? handleClick : undefined}
         disabled={disabled}
