@@ -102,14 +102,14 @@ const EmptyFolderDropZone: FC<{
 
   return (
     <TreeDroppable
-      className="bg-grey-850 h-32 w-full shrink-0 rounded-b-sm border border-transparent"
+      className="bg-grey-850 text-body-disabled h-32 w-full shrink-0 rounded-b-sm border border-dashed border-transparent"
       hasOverClassName=""
-      isOverClassName="bg-body/80"
+      isOverClassName="bg-body/20 border-body text-body"
       parentId={folderId}
       index={0}
       disabled={disabled}
     >
-      <div className="text-body-disabled flex size-full flex-col items-center justify-center">
+      <div className=" flex size-full flex-col items-center justify-center">
         {t("Drag accounts here")}
       </div>
     </TreeDroppable>
