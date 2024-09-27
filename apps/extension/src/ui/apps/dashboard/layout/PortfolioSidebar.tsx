@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -20,10 +19,8 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 export const PortfolioSidebar: FC = () => {
   return (
-    <div className="bg-grey-900 size-full overflow-hidden rounded-lg">
-      <ScrollContainer className="size-full grow">
-        <Accounts />
-      </ScrollContainer>
+    <div className="bg-grey-900 rounded-lg">
+      <Accounts />
     </div>
   )
 }
