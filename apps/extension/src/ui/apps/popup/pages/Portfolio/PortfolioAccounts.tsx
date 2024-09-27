@@ -442,6 +442,7 @@ export const PortfolioAccounts = () => {
                   const account = accounts.find((account) => account.address === item.address)
                   return getSearchContent(account)
                 })
+                .concat(item.name.toLowerCase())
                 .join(" "),
             }
       }
