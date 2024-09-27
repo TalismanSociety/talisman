@@ -1,6 +1,6 @@
 import { ExternalLinkIcon, XIcon, ZapFastIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Suspense, useCallback } from "react"
+import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
@@ -19,12 +19,11 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
-const AssetRowStakingReminderInner = ({ balances }: AssetRowProps) => {
+const AssetRowStakingReminder = (props: ReturnType<typeof useShowStakingBanner>) => {
   const { t } = useTranslation()
 
-  const { token, summary } = useTokenBalancesSummary(balances)
-  const { message, colours, handleClickStakingBanner, handleDismissStakingBanner } =
-    useShowStakingBanner(balances)
+  const { message, colours, handleClickStakingBanner, handleDismissStakingBanner } = props
+  const { token, summary } = useTokenBalancesSummary(props.balances)
 
   if (!token || !summary) return null
 
@@ -61,14 +60,6 @@ const AssetRowStakingReminderInner = ({ balances }: AssetRowProps) => {
   )
 }
 
-const AssetRowStakingReminder = ({ balances }: AssetRowProps) => {
-  const { showBanner } = useShowStakingBanner(balances)
-
-  if (!showBanner) return null
-
-  return <AssetRowStakingReminderInner balances={balances} />
-}
-
 type AssetRowProps = {
   balances: Balances
 }
@@ -93,18 +84,19 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
 
+  const stakingReminder = useShowStakingBanner(balances)
+
   if (!token || !summary) return null
 
   return (
     <div className="relative mb-4">
-      <Suspense>
-        <AssetRowStakingReminder balances={balances} />
-      </Suspense>
+      {stakingReminder.showBanner && <AssetRowStakingReminder {...stakingReminder} />}
 
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base"
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden text-left text-base",
+          stakingReminder.showBanner ? "rounded-b" : "rounded"
         )}
         onClick={handleClick}
       >

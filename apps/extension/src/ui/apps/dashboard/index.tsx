@@ -12,7 +12,6 @@ import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
 
-import { DashboardLayout } from "./layout/DashboardLayout"
 import { AccountAddMenu } from "./routes/AccountAdd"
 import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
@@ -50,15 +49,7 @@ const DashboardInner = () => {
   useModalSubscription()
 
   return (
-    // use an empty layout as fallback to prevent flickering
-    <Suspense
-      fallback={
-        <>
-          <DashboardLayout />
-          <SuspenseTracker name="Dashboard" />
-        </>
-      }
-    >
+    <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
       <Routes>
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="accounts">
@@ -157,7 +148,6 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 
 const SelectedAccountChecker: FC<PropsWithChildren> = ({ children }) => {
   // popup may pass an account in the query string
-  // we need to update this before first sidebar render to prevent flickering
   // const { select } = useSelectedAccount()
   // const [searchParams, updateSearchParams] = useSearchParams()
 
