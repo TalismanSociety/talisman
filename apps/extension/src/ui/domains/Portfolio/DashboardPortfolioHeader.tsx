@@ -122,7 +122,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   return (
     <div
       className={classNames(
-        "bg-grey-900 relative flex h-[19.2rem] flex-col items-start justify-between rounded-lg px-8 py-6 pr-6",
+        "bg-grey-900 relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg px-8 py-6 pr-6",
         className
       )}
     >

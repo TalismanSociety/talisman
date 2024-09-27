@@ -4,13 +4,14 @@ import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch, useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
+import { IconButton, Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { LogoDashboard } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
 import { PortfolioSidebar } from "./PortfolioSidebar"
+import { QuickSettings } from "./QuickSettings"
 
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
@@ -31,39 +32,27 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
 
 const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
 
-const Header = () => {
-  const navigate = useNavigate()
-
-  const handleSettingsClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Settings button",
-    })
-    navigate("/settings")
-  }, [navigate])
-
-  return (
-    <div
-      className={classNames(
-        "flex h-48 w-full items-center justify-between",
-        //"sticky left-0 top-0 z-30 ",
-        // "bg-gradient-to-b from-black via-black via-80% to-transparent",
-        RESPONSIVE_FLEX_SPACING
-      )}
-    >
-      <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
-        <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
-        <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
-      </div>
-      <HorizontalNav />
-      <IconButton onClick={handleSettingsClick}>
-        {/* <MenuIcon /> */}
-        <SettingsIcon />
-      </IconButton>
+const Header = () => (
+  <div
+    className={classNames("flex h-48 w-full items-center justify-between", RESPONSIVE_FLEX_SPACING)}
+  >
+    <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
+      <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
+      <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
     </div>
-  )
-}
+    <HorizontalNav />
+    <Popover placement="bottom-end">
+      <PopoverTrigger asChild>
+        <IconButton>
+          <SettingsIcon />
+        </IconButton>
+      </PopoverTrigger>
+      <PopoverContent>
+        <QuickSettings className="z-50" />
+      </PopoverContent>
+    </Popover>
+  </div>
+)
 
 const NavButton: FC<{
   label: ReactNode
