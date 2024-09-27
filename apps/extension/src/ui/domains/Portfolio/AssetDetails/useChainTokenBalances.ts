@@ -127,7 +127,23 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       }))
     )
 
-    return [...available, ...locked, ...reserved, ...staked, ...crowdloans]
+    // STAKED (SUBTENSOR)
+    const subtensor = tokenBalances.each.flatMap((b) =>
+      b.subtensor.map((subtensor, index) => ({
+        key: `${b.id}-subtensor-${index}`,
+        title: getLockTitle(subtensor, { balance: b }),
+
+        description: undefined,
+        tokens: BigNumber(subtensor.amount.tokens),
+        fiat: subtensor.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: subtensor.meta,
+      }))
+    )
+
+    return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])

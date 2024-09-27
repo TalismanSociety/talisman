@@ -1,72 +1,6 @@
-import { mergeUint8 } from "@polkadot-api/utils"
-import { u8aConcat, u8aToHex } from "@polkadot/util"
-import { blake2AsU8a } from "@polkadot/util-crypto"
 import upperFirst from "lodash/upperFirst"
-import { AccountId, SS58String } from "polkadot-api"
-import { Observable } from "rxjs"
-import { u32 } from "scale-ts"
 
-import {
-  Balance,
-  BalanceFormatter,
-  LockedAmount,
-  SubscriptionCallback,
-  UnsubscribeFn,
-} from "../../types"
-
-/**
- * Converts a subscription function into an Observable
- *
- * The type of a subscription function which can be converted into an observable:
- *
- *     <TArgs, TResult>(...arguments: TArgs, callback: SubscriptionCallback<TResult>) => UnsubscribeFn
- */
-export const asObservable =
-  <T extends unknown[], R>(handler: (...args: [...T, SubscriptionCallback<R>]) => UnsubscribeFn) =>
-  (...args: T) =>
-    new Observable<R>((subscriber) => {
-      const callback: SubscriptionCallback<R> = (error, result) =>
-        error ? subscriber.error(error) : subscriber.next(result)
-
-      const unsubscribe = handler(...args, callback)
-
-      return unsubscribe
-    })
-
-/**
- * Each nominationPool in the nominationPools pallet has access to some accountIds which have no
- * associated private key. Instead, they are derived from this function.
- */
-const nompoolAccountId = (palletId: string, poolId: string | number, index: number): SS58String => {
-  const utf8Encoder = new TextEncoder()
-  const encModPrefix = utf8Encoder.encode("modl")
-  const encPalletId = utf8Encoder.encode(palletId)
-
-  const encIndex = new Uint8Array([index])
-  const encPoolId = u32.enc(typeof poolId === "string" ? parseInt(poolId, 10) : poolId)
-
-  const length = encModPrefix.length + encPalletId.length + encIndex.length + encPoolId.length
-  const remainingBytes = 32 - length
-  const encEmptyH256 = new Uint8Array(remainingBytes)
-
-  const bytes = mergeUint8(encModPrefix, encPalletId, encIndex, encPoolId, encEmptyH256)
-
-  return AccountId().dec(bytes)
-}
-/** The stash account for the nomination pool */
-export const nompoolStashAccountId = (palletId: string, poolId: string | number) =>
-  nompoolAccountId(palletId, poolId, 0)
-/** The rewards account for the nomination pool */
-export const nompoolRewardAccountId = (palletId: string, poolId: string | number) =>
-  nompoolAccountId(palletId, poolId, 1)
-
-/**
- * Crowdloan contributions are stored in the `childstate` key returned by this function.
- */
-export const crowdloanFundContributionsChildKey = (fundIndex: number) =>
-  u8aToHex(
-    u8aConcat(":child_storage:default:", blake2AsU8a(u8aConcat("crowdloan", u32.enc(fundIndex))))
-  )
+import { Balance, BalanceFormatter, LockedAmount } from "../../../types"
 
 export type BalanceLockType =
   | "reserved"
@@ -75,6 +9,7 @@ export type BalanceLockType =
   | "staking"
   | "nompools-staking"
   | "nompools-unbonding"
+  | "subtensor-staking"
   | "vesting"
   | "dapp-staking"
   | `other-${string}`
@@ -160,6 +95,7 @@ export const getLockTitle = (
   }
   if (lock.label === "nompools-staking") return "Pooled Staking"
   if (lock.label === "nompools-unbonding") return "Pooled Staking"
+  if (lock.label === "subtensor-staking") return "Delegate Staking"
   if (lock.label === "dapp-staking") return "DApp Staking"
   if (lock.label === "fees") return "Locked (Fees)"
   if (lock.label === "misc") return "Locked"
