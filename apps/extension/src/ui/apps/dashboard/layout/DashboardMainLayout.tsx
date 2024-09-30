@@ -17,7 +17,7 @@ import { QuickSettings } from "./QuickSettings"
 export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
-      <div className="relative mx-auto w-full max-w-[160rem]">
+      <div className="relative mx-auto w-full max-w-[161.6rem]">
         <Header />
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           <div className="w-[29.6rem] shrink-0 overflow-hidden">

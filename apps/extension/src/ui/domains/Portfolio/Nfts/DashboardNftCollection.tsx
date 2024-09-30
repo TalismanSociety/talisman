@@ -110,7 +110,7 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
         <div className="text-right">{t("Acquired on")}</div>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         {!!collection &&
           nfts.map((nft) => (
             <NftRow

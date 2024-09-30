@@ -53,7 +53,7 @@ const HeaderRow = () => {
   } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
 
   return (
-    <div className="text-body-secondary bg-grey-850 mb-12 rounded p-8 text-left text-base">
+    <div className="text-body-secondary bg-grey-850 mb-4 rounded p-8 text-left text-base">
       <div className="grid grid-cols-[40%_30%_30%]">
         <Statistics
           className="h-auto w-auto p-0"

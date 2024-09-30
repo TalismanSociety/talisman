@@ -64,7 +64,15 @@ export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) =>
       >
         <PortfolioAccountCheck>
           <DashboardPortfolioHeader />
-          <PortfolioTabs className="text-md my-0 h-14 font-bold" />
+          <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
+            <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
+            <div id="portfolio-toolbar" className="shrink-0">
+              {/* 
+                Toolbars are route specific, injected using react portal
+                This allows us to keep Tabs here and prevent flickering when switching between tabs
+               */}
+            </div>
+          </div>
           <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>
             {children}
           </Suspense>
