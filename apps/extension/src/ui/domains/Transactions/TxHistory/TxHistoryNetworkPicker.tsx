@@ -18,6 +18,7 @@ import useChain from "@ui/hooks/useChain"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { IS_POPUP } from "@ui/util/constants"
 
 type Network = Chain | EvmNetwork
 
@@ -46,15 +47,15 @@ export const TxHistoryNetworkPicker: FC<{
       containerId="main"
       isOpen={isOpen}
       onDismiss={onDismiss}
-      className="relative z-50 size-full"
+      className={classNames("relative z-50", IS_POPUP ? "size-full" : "h-[60rem] w-[40rem]")}
     >
       <div className="flex size-full flex-grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
-          <IconButton onClick={onDismiss}>
+          <IconButton onClick={onDismiss} className={IS_POPUP ? "visible" : "invisible"}>
             <ChevronLeftIcon />
           </IconButton>
-          <div>{"Select network"}</div>
-          <IconButton onClick={onDismiss} className="invisible">
+          <div>{t("Select network")}</div>
+          <IconButton onClick={onDismiss} className={IS_POPUP ? "invisible" : "visible"}>
             <XIcon />
           </IconButton>
         </header>

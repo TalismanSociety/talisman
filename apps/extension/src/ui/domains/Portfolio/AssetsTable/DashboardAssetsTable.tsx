@@ -7,7 +7,7 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolio } from "../usePortfolio"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
@@ -83,14 +83,18 @@ const HeaderRow = () => {
 export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolio()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   // group by token (symbol)
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 
   if (!symbolBalances.length && !isInitialising) {
     return (
       <div className="text-body-secondary bg-grey-850 rounded-sm p-8">
-        {account ? t("No assets were found on this account.") : t("No assets were found.")}
+        {selectedAccount
+          ? t("No assets were found on this account.")
+          : selectedFolder
+          ? t("No assets were found in this folder.")
+          : t("No assets were found.")}
       </div>
     )
   }

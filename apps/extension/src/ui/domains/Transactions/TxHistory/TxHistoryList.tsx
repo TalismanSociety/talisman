@@ -46,6 +46,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { TxReplaceDrawer } from "../TxReplaceDrawer"
 import { TxReplaceType } from "../types"
@@ -87,7 +88,7 @@ export const TxHistoryList = () => {
         />
       ))}
       {!isLoading && !transactions.length && (
-        <div className="text-body-disabled bg-grey-900 flex h-40 w-full flex-col items-center justify-center rounded-sm text-xs">
+        <div className="text-body-disabled bg-grey-900 flex h-40 w-full flex-col items-center justify-center rounded-sm text-sm">
           {t("No transactions found")}
         </div>
       )}
@@ -239,7 +240,8 @@ const EvmTxActions: FC<{
   return (
     <div
       className={classNames(
-        " absolute right-0 top-0 z-10 flex h-[36px] items-center",
+        " absolute right-0 top-0 z-10 flex items-center",
+        IS_POPUP ? "h-[36px]" : "h-[42px]",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
         enabled && "group-hover:visible group-hover:opacity-100"
       )}
@@ -373,26 +375,40 @@ const TransactionRowBase: FC<{
   return (
     <div
       className={classNames(
-        "bg-grey-850 group z-0 flex h-[5.2rem] w-full grow items-center gap-6 rounded-sm px-6",
+        "bg-grey-850 group z-0 flex w-full grow items-center rounded-sm",
+        IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
         isCtxMenuOpen && "bg-grey-800",
         enabled && "hover:bg-grey-800"
       )}
     >
       {logo}
       <div className="leading-paragraph relative flex w-full grow justify-between">
-        <div className="text-left">
-          <div className="text-body flex h-10 items-center gap-2 text-sm font-bold">{status}</div>
-          <div className="text-body-disabled text-xs">{wen}</div>
+        <div className="flex flex-col items-start justify-center">
+          <div
+            className={classNames(
+              "text-body flex h-10 items-center gap-2 font-bold",
+              IS_POPUP ? "text-sm" : "text-base"
+            )}
+          >
+            {status}
+          </div>
+          <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
+            {wen}
+          </div>
         </div>
-        <div className="relative grow text-right">
+        <div className="relative flex grow flex-col items-end justify-center">
           <div
             className={classNames(
               isCtxMenuOpen ? "opacity-0" : "opacity-100",
               enabled && "group-hover:opacity-0"
             )}
           >
-            <div className="text-body text-sm">{tokens}</div>
-            <div className="text-body-disabled text-xs">{fiat}</div>
+            <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>
+              {tokens}
+            </div>
+            <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
+              {fiat}
+            </div>
           </div>
 
           {actions}

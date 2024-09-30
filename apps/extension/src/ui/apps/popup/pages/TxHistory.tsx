@@ -25,7 +25,7 @@ export const TxHistoryPage = () => {
     <PopupLayout>
       <TxHistoryProvider>
         <Header />
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense>
           <TxHistoryToolbar />
           <PopupContent withBottomNav className="text-body-secondary text-xs">
             <TxHistoryList />

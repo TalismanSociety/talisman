@@ -3,7 +3,7 @@ import { classNames } from "@talismn/util"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useMatch, useNavigate } from "react-router-dom"
+import { useMatch, useNavigate, useSearchParams } from "react-router-dom"
 import { IconButton, Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { LogoDashboard } from "@talisman/theme/logos"
@@ -88,16 +88,17 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 const HorizontalNav = () => {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
 
   const navigate = useNavigate()
-  const handlePortfolioClick = () => {
+  const handlePortfolioClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
       action: "Portfolio button",
     })
-    navigate("/portfolio")
-  }
+    navigate("/portfolio" + (searchParams.size ? `?${searchParams}` : ""))
+  }, [navigate, searchParams])
 
   const handleStakingClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -114,8 +115,8 @@ const HorizontalNav = () => {
       name: "Goto",
       action: "Activity button",
     })
-    // TODO
-  }, [])
+    navigate("/tx-history" + (searchParams.size ? `?${searchParams}` : ""))
+  }, [navigate, searchParams])
 
   const handleAddressBookClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -131,11 +132,16 @@ const HorizontalNav = () => {
       <NavButton
         label={t("Portfolio")}
         onClick={handlePortfolioClick}
-        route="/portfolio/*"
         icon={TalismanHandIcon}
+        route="/portfolio/*"
       />
       <NavButton label={t("Staking")} onClick={handleStakingClick} icon={ZapIcon} />
-      <NavButton label={t("Activity")} onClick={handleActivityClick} icon={HistoryIcon} />
+      <NavButton
+        label={t("Activity")}
+        onClick={handleActivityClick}
+        icon={HistoryIcon}
+        route="/tx-history"
+      />
       <NavButton label={t("Address Book")} onClick={handleAddressBookClick} icon={UsersIcon} />
     </div>
   )

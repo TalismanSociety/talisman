@@ -44,6 +44,7 @@ import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
+import { TxHistory } from "./routes/TxHistory"
 
 const DashboardInner = () => {
   useModalSubscription()
@@ -52,6 +53,7 @@ const DashboardInner = () => {
     <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
       <Routes>
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
+        <Route path="tx-history/*" element={<TxHistory />} />
         <Route path="accounts">
           <Route path="add">
             <Route index element={<AccountAddMenu />} />

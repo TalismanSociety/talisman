@@ -1,5 +1,4 @@
 import { HexString } from "@polkadot/util/types"
-import { encodeAnyAddress } from "@talismn/util"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Chain, db, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
 import uniq from "lodash/uniq"
@@ -11,12 +10,9 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
+import { normalizeAddress } from "@ui/util/normalizeAddress"
 
-type UseTxHistoryProviderProps = {
-  address?: string
-}
-
-const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderProps) => {
+const useTxHistoryProvider = () => {
   const [includeTestnets] = useSetting("useTestnets")
 
   const accounts = useAccounts("owned")
@@ -35,17 +31,19 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
     return txs.sort((tx1, tx2) => tx2.timestamp - tx1.timestamp)
   }, [])
 
-  const [{ address, networkId }, setState] = useState<{
-    address: string | null
+  const [{ addresses, networkId }, setState] = useState<{
+    addresses: string[] | null
     networkId: HexString | EvmNetworkId | null
   }>({
+    addresses: null,
     networkId: null,
-    address: initialAddress ?? null,
   })
+
+  const encodedAddresses = useMemo(() => addresses?.map(normalizeAddress) ?? [], [addresses])
 
   const networks = useMemo(() => {
     const accountTransactions = allTransactions?.filter(
-      (tx) => !address || encodeAnyAddress(tx.account) === encodeAnyAddress(address)
+      (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account))
     )
 
     const evmNetworks = uniq(
@@ -63,7 +61,7 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
       .filter<Chain>((n): n is Chain => !!n)
 
     return [...evmNetworks, ...chains].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-  }, [address, allTransactions, chainsByGenesisHash, evmNetworksMap])
+  }, [encodedAddresses, allTransactions, chainsByGenesisHash, evmNetworksMap])
 
   const network = useMemo<Chain | EvmNetwork | null>(
     () =>
@@ -74,16 +72,16 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
   )
 
   const transactions = useMemo(
-    () => getTransactions(address, networkId, allTransactions),
-    [address, allTransactions, networkId]
+    () => getTransactions(encodedAddresses, networkId, allTransactions),
+    [encodedAddresses, allTransactions, networkId]
   )
 
   const setAddress = useCallback(
-    (address: string | null) => {
+    (addresses: string[] | null) => {
       setState((state) => {
         // reset network if no txs found for this address
-        const txs = getTransactions(address, state.networkId, allTransactions)
-        return { address, networkId: txs.length ? state.networkId : null }
+        const txs = getTransactions(addresses, state.networkId, allTransactions)
+        return { addresses, networkId: txs.length ? state.networkId : null }
       })
     },
     [allTransactions]
@@ -94,7 +92,8 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
     []
   )
 
-  const account = useAccountByAddress(address)
+  // only for popup, where we can only select 1 account
+  const account = useAccountByAddress(addresses?.length === 1 ? addresses[0] : null)
 
   return {
     isLoading: !allTransactions,
@@ -111,13 +110,17 @@ const useTxHistoryProvider = ({ address: initialAddress }: UseTxHistoryProviderP
 export const [TxHistoryProvider, useTxHistory] = provideContext(useTxHistoryProvider)
 
 const getTransactions = (
-  address: string | null,
+  addresses: string[] | null,
   networkId: HexString | EvmNetworkId | null,
   allTransactions: WalletTransaction[] | undefined
 ) => {
+  const encodedAddresses = addresses?.map(normalizeAddress) ?? []
+
   return (
     allTransactions
-      ?.filter((tx) => !address || encodeAnyAddress(tx.account) === encodeAnyAddress(address))
+      ?.filter(
+        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account))
+      )
       .filter(
         (tx) =>
           !networkId ||

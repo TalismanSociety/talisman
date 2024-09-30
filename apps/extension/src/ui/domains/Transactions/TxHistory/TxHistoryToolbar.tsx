@@ -28,7 +28,7 @@ const AccountFilterButton = () => {
 
   const handleSelect = useCallback(
     (address: string | null) => {
-      setAddress(address)
+      setAddress(address ? [address] : null)
       close()
     },
     [close, setAddress]
