@@ -1,10 +1,9 @@
+import { isAddressEqual, normalizeAddress } from "@talismn/util"
 import { AccountJsonAny, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { isAddressEqual } from "@ui/util/isAddressEqual"
-import { normalizeAddress } from "@ui/util/normalizeAddress"
 
 export const usePortfolioNavigation = () => {
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()

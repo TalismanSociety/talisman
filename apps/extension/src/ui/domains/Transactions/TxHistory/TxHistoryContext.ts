@@ -1,4 +1,5 @@
 import { HexString } from "@polkadot/util/types"
+import { normalizeAddress } from "@talismn/util"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Chain, db, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
 import uniq from "lodash/uniq"
@@ -10,7 +11,6 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { normalizeAddress } from "@ui/util/normalizeAddress"
 
 const useTxHistoryProvider = () => {
   const [includeTestnets] = useSetting("useTestnets")

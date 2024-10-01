@@ -1,10 +1,10 @@
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/util"
 import { t } from "i18next"
 import { atom } from "jotai"
 
 import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
-import { isAddressEqual } from "@ui/util/isAddressEqual"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 

@@ -1,3 +1,4 @@
+import { isAddressEqual } from "@talismn/util"
 import { atom, useAtomValue } from "jotai"
 import { atomFamily } from "jotai/utils"
 import { useMemo } from "react"
@@ -8,7 +9,6 @@ import {
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
 } from "@extension/shared"
 import { portfolioAtom, portfolioSelectedAccountsAtom } from "@ui/atoms"
-import { isAddressEqual } from "@ui/util/isAddressEqual"
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: Balances) => {
