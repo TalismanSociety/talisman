@@ -1,34 +1,13 @@
-import { ProviderType } from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { OptionSwitch } from "@talisman/components/OptionSwitch"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
-import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
-import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
-import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
-import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { AccountAddressType } from "extension-shared"
 import { useAtomValue } from "jotai"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
   DetailedHTMLProps,
-  Suspense,
   forwardRef,
+  Suspense,
   useCallback,
   useMemo,
   useState,
@@ -46,7 +25,29 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { ProviderType } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
+import { Spacer } from "@talisman/components/Spacer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
+import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
+import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
+import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+
+import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -209,7 +210,7 @@ export const AddressBookPage = () => {
 
   return (
     <>
-      <DashboardLayout centered analytics={ANALYTICS_PAGE}>
+      <DashboardAdminLayout centered analytics={ANALYTICS_PAGE}>
         <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <Spacer large />
         <div className="flex justify-between align-middle">
@@ -252,7 +253,7 @@ export const AddressBookPage = () => {
             </div>
           )}
         </div>
-      </DashboardLayout>
+      </DashboardAdminLayout>
 
       {toDelete && (
         <ContactDeleteModal

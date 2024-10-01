@@ -20,23 +20,3 @@ export const SidebarLayout = () => {
     </div>
   )
 }
-
-// const Main = () => (
-//   <>
-//     <MainHeader />
-//     <ScrollContainer className="flex-grow">
-//       <MainSidebar />
-//     </ScrollContainer>
-//     <Footer />
-//   </>
-// )
-
-// const Settings = () => (
-//   <>
-//     <SettingsHeader />
-//     <ScrollContainer className="flex-grow">
-//       <SettingsSidebar />
-//     </ScrollContainer>
-//     <Footer />
-//   </>
-// )

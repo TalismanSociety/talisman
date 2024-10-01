@@ -1,12 +1,29 @@
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
+import { atom, useAtomValue } from "jotai"
+import sortBy from "lodash/sortBy"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useIntersection } from "react-use"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Dropdown,
+  Toggle,
+} from "talisman-ui"
+import urlJoin from "url-join"
+
 import { activeTokensStore, isTokenActive } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
-import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import { DashboardAdminLayout } from "@ui/apps/dashboard/layout/DashboardAdminLayout"
 import {
   chainsMapAtomFamily,
   evmNetworksMapAtomFamily,
@@ -27,22 +44,6 @@ import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { atom, useAtomValue } from "jotai"
-import sortBy from "lodash/sortBy"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  Dropdown,
-  Toggle,
-} from "talisman-ui"
-import urlJoin from "url-join"
 
 const CustomPill = () => {
   const { t } = useTranslation("admin")
@@ -325,7 +326,7 @@ export const TokensPage = () => {
   if (!filteredTokens) return null
 
   return (
-    <DashboardLayout
+    <DashboardAdminLayout
       analytics={ANALYTICS_PAGE}
       withBack
       centered
@@ -372,6 +373,6 @@ export const TokensPage = () => {
       </div>
       <Spacer />
       <TokensTable tokens={displayTokens} />
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

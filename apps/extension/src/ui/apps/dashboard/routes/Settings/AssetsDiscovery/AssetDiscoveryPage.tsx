@@ -69,7 +69,7 @@ import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 import { AccountsStack } from "../../../../../domains/Account/AccountIconsStack"
-import { DashboardLayout } from "../../../layout/DashboardLayout"
+import { DashboardAdminLayout } from "../../../layout/DashboardAdminLayout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,
@@ -578,7 +578,7 @@ export const AssetDiscoveryPage = () => {
   }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
-    <DashboardLayout
+    <DashboardAdminLayout
       analytics={ANALYTICS_PAGE}
       withBack
       centered
@@ -598,6 +598,6 @@ export const AssetDiscoveryPage = () => {
       <ScanInfo />
       <Spacer large />
       <AssetTable />
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

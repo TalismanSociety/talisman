@@ -5,7 +5,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
 
 export const AccountAddWatchedPage = () => {
   const { t } = useTranslation("admin")
@@ -23,13 +23,13 @@ export const AccountAddWatchedPage = () => {
   // )
 
   return (
-    <DashboardLayout withBack centered>
+    <DashboardAdminLayout withBack centered>
       <HeaderBlock
         title={t("Choose account type")}
         text={t("What type of account would you like to add?")}
       />
       <Spacer />
       <AccountAddWatchedForm onSuccess={setAddress} />
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

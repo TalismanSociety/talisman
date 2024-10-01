@@ -1,9 +1,15 @@
+import { InfoIcon, PlusIcon } from "@talismn/icons"
+import { atom, useAtomValue } from "jotai"
+import { FC, useCallback, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { PillButton } from "talisman-ui"
+
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
-import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import {
   chainsActiveAtom,
@@ -14,13 +20,8 @@ import {
 } from "@ui/atoms"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { atom, useAtomValue } from "jotai"
-import { FC, useCallback, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { PillButton } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"
@@ -83,7 +84,7 @@ export const NetworksPage = () => {
   const [search, setSearch] = useState("")
 
   return (
-    <DashboardLayout
+    <DashboardAdminLayout
       analytics={ANALYTICS_PAGE}
       centered
       withBack
@@ -130,6 +131,6 @@ export const NetworksPage = () => {
           <EvmNetworksList search={search} />
         )}
       </FadeIn>
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

@@ -17,7 +17,7 @@ import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import { DashboardAdminLayout } from "@ui/apps/dashboard/layout/DashboardAdminLayout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -297,7 +297,7 @@ export const MnemonicsPage = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <DashboardLayout centered withBack backTo="/settings">
+    <DashboardAdminLayout centered withBack backTo="/settings">
       <MnemonicRenameModalProvider>
         <MnemonicDeleteModalProvider>
           <MnemonicSetPvVerifierModalProvider>
@@ -316,6 +316,6 @@ export const MnemonicsPage = () => {
           </MnemonicSetPvVerifierModalProvider>
         </MnemonicDeleteModalProvider>
       </MnemonicRenameModalProvider>
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

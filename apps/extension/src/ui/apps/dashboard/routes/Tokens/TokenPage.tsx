@@ -1,9 +1,24 @@
 import * as Sentry from "@sentry/browser"
+import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/balances"
+import { RotateCcwIcon } from "@talismn/icons"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
+import {
+  Button,
+  FormFieldContainer,
+  FormFieldInputText,
+  Modal,
+  ModalDialog,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
+
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/balances"
-import { RotateCcwIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
@@ -17,14 +32,8 @@ import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
-import { ModalDialog, Toggle } from "talisman-ui"
-import { Modal, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
 
 const ConfirmRemove = ({
   open,
@@ -121,7 +130,7 @@ export const TokenPage = () => {
   if (!erc20Token || !network) return null
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <DashboardAdminLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={
           <div className="flex items-center justify-between gap-5">
@@ -219,6 +228,6 @@ export const TokenPage = () => {
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

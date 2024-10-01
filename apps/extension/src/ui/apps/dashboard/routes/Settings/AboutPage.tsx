@@ -1,11 +1,4 @@
 import {
-  PRIVACY_POLICY_URL,
-  RELEASE_NOTES_URL,
-  TALISMAN_DOCS_URL_PREFIX,
-  TERMS_OF_USE_URL,
-} from "@extension/shared"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import {
   CodeIcon,
   ExternalLinkIcon,
   GitPullRequestIcon,
@@ -16,12 +9,20 @@ import {
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import {
+  PRIVACY_POLICY_URL,
+  RELEASE_NOTES_URL,
+  TALISMAN_DOCS_URL_PREFIX,
+  TERMS_OF_USE_URL,
+} from "@extension/shared"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+
+import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
 
 export const AboutPage = () => {
   const { t } = useTranslation("admin")
   return (
-    <DashboardLayout centered>
+    <DashboardAdminLayout centered>
       <HeaderBlock title={t("About")} />
       <div className="text-body-secondary my-12 flex flex-col gap-8">
         <p>
@@ -83,6 +84,6 @@ export const AboutPage = () => {
           iconRight={ExternalLinkIcon}
         />
       </div>
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

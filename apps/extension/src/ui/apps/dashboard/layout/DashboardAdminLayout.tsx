@@ -19,7 +19,7 @@ type LayoutProps = {
   analytics?: AnalyticsPage
 }
 
-export const DashboardLayout: FC<LayoutProps> = ({
+export const DashboardAdminLayout: FC<LayoutProps> = ({
   centered,
   large,
   withBack,
