@@ -1,4 +1,4 @@
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress } from "./encodeAnyAddress"
 
 const CACHE = new Map<string, string>()
 
