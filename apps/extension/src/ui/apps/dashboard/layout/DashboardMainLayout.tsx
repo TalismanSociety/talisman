@@ -97,7 +97,7 @@ const HorizontalNav = () => {
       name: "Goto",
       action: "Portfolio button",
     })
-    navigate("/portfolio" + (searchParams.size ? `?${searchParams}` : ""))
+    navigate("/portfolio/tokens" + (searchParams.size ? `?${searchParams}` : ""))
   }, [navigate, searchParams])
 
   const handleStakingClick = useCallback(() => {
