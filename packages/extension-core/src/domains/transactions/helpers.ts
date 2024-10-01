@@ -147,9 +147,9 @@ export const updateTransactionsRestart = async () => {
     // mark all pending transactions as unknown
     await db.transactions.where("status").equals("pending").modify({ status: "unknown" })
 
-    // delete all transactions older than 7 days
-    const cutOffDate = Date.now() - 7 * 24 * 60 * 60 * 1000
-    await db.transactions.where("timestamp").below(cutOffDate).delete()
+    // keep only the last 100 transactions
+    const deleted = await db.transactions.orderBy("timestamp").reverse().offset(100).delete()
+    if (deleted) log.debug("[updateTransactionsRestart] Deleted %d entries", deleted)
 
     return true
   } catch (err) {
