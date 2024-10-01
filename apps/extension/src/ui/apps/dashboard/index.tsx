@@ -148,27 +148,6 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
-const SelectedAccountChecker: FC<PropsWithChildren> = ({ children }) => {
-  // popup may pass an account in the query string
-  // const { select } = useSelectedAccount()
-  // const [searchParams, updateSearchParams] = useSearchParams()
-
-  // useEffect(() => {
-  //   const account = searchParams.get("account")
-  //   if (!account) return
-
-  //   const newSearchPrams = new URLSearchParams(searchParams)
-  //   select(account === "all" ? undefined : account)
-  //   newSearchPrams.delete("account")
-  //   updateSearchParams(newSearchPrams, { replace: true })
-  // }, [searchParams, select, updateSearchParams])
-
-  // // don't render if search param is still there
-  // if (searchParams.get("account")) return null
-
-  return <>{children}</>
-}
-
 const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
   const { t } = useTranslation()
   const { isLoggedIn, isOnboarded } = useLoginCheck()
@@ -199,9 +178,7 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
 const Dashboard = () => (
   <PreventPhishing>
     <LoginChecker>
-      <SelectedAccountChecker>
-        <DashboardInner />
-      </SelectedAccountChecker>
+      <DashboardInner />
     </LoginChecker>
     <DatabaseErrorAlert container="fullscreen" />
     <AssetDiscoveryDashboardAlert />

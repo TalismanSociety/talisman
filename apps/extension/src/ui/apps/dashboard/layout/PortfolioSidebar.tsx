@@ -206,7 +206,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
         </div>
       }
       logo={<AccountIcon address={option.address} genesisHash={option.genesisHash} />}
-      fiat={<Fiat amount={option.total ?? 0} isBalance />}
+      fiat={<Fiat amount={option.total ?? 0} isBalance noCountUp />}
       isSelected={isSelected}
       onClick={handleClick}
       right={null}
@@ -231,7 +231,7 @@ const FolderOption = ({ option }: { option: FolderAccountOption }) => {
     <SidebarButtonBase
       label={option.name}
       logo={<AccountFolderIcon />}
-      fiat={<Fiat amount={option.total ?? 0} isBalance />}
+      fiat={<Fiat amount={option.total ?? 0} isBalance noCountUp />}
       isSelected={isSelected}
       onClick={handleClick}
       right={<AccountsLogoStack addresses={option.addresses} />}
@@ -259,7 +259,7 @@ const AllAccountsOption = () => {
     <SidebarButtonBase
       label={t("All Accounts")}
       logo={<AllAccountsIcon />}
-      fiat={<Fiat amount={portfolioTotal ?? 0} isBalance />}
+      fiat={<Fiat amount={portfolioTotal ?? 0} isBalance noCountUp />}
       isSelected={isSelected}
       onClick={handleClick}
       right={null}

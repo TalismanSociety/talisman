@@ -1,11 +1,12 @@
 import { HistoryIcon, SettingsIcon, TalismanHandIcon, UsersIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
-import { FC, ReactNode, useCallback } from "react"
+import { FC, ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch, useNavigate, useSearchParams } from "react-router-dom"
 import { IconButton, Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { LogoDashboard } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
@@ -21,9 +22,15 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
         <Header />
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           <div className="w-[29.6rem] shrink-0 overflow-hidden">
-            <PortfolioSidebar />
+            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
+              <PortfolioSidebar />
+            </Suspense>
           </div>
-          <div className="grow">{children}</div>
+          <div className="grow">
+            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
+              {children}
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>
