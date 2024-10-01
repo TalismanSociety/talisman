@@ -152,7 +152,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
   onNftClick,
 }) => {
   return (
-    <div className="flex flex-col gap-5 text-sm">
+    <div className="flex flex-col gap-4 text-sm">
       {data.collections.map((collection, i) => (
         <NftCollectionRow
           key={`${collection.id}-${i}`}

@@ -251,7 +251,7 @@ export const PopupAssetsTable = () => {
                 <Fiat amount={total} isBalance />
               </div>
             </div>
-            <div className="h-8" />
+            <div className="h-4" />
           </>
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
@@ -266,7 +266,7 @@ export const PopupAssetsTable = () => {
                 : t("There are no available balances.")}
             </div>
           )}
-          <div className="h-8" />
+          <div className="h-4" />
         </BalancesGroup>
         {lockedSymbolBalances.length > 0 && (
           <BalancesGroup

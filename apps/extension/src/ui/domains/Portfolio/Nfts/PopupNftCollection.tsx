@@ -106,7 +106,7 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-col gap-5 text-sm">
+    <div className="flex flex-col gap-4 text-sm">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftRow

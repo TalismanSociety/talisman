@@ -34,7 +34,7 @@ export const NftsBreadcrumb = () => {
   }, [collection?.name, navigate, t])
 
   return (
-    <div className="flex h-20 items-center justify-between gap-8">
+    <div className="flex h-16 items-center justify-between gap-8">
       <div className="grow overflow-hidden">
         <Breadcrumb items={items} />
       </div>

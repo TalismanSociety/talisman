@@ -93,9 +93,7 @@ export const PortfolioAssets = () => {
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
         {!!matchTokens && <PortfolioToolbarTokens />}
         {!!matchNfts && <PortfolioToolbarNfts />}
-        <div className="py-8">
-          <MainContent />
-        </div>
+        <MainContent />
       </Suspense>
     </>
   )
