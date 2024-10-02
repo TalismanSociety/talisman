@@ -67,7 +67,6 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           <button
             className={classNames(
               "bg-grey-700/20 border-grey-200 text-grey-200 hover:text-body hover:bg-grey-700/10 hover:border-body pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out",
-              "",
               currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
               currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
             )}

@@ -112,7 +112,7 @@ export const BottomNav = () => {
           <NavButton label={t("Staking")} icon={ZapIcon} onClick={handleStakingClick} />
           <NavButton
             label={t("History")}
-            icon={HistoryIcon} // hasPendingTransactions ? NavIconActivityPending : HistoryIcon
+            icon={HistoryIcon}
             onClick={handleTxHistoryClick}
             route="/tx-history"
           />

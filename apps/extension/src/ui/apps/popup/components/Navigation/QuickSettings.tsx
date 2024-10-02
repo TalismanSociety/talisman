@@ -28,9 +28,6 @@ export const useQuickSettingsOpenClose = () => useGlobalOpenClose("quick-setting
 export const QuickSettingsOverlay: FC = () => {
   const { isOpen, close } = useQuickSettingsOpenClose()
 
-  //if (!isOpen) return null
-
-  // TODO proper animation in + out
   return (
     <Transition show={isOpen} appear>
       <Transition.Child

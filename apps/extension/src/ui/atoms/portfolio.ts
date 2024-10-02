@@ -61,7 +61,7 @@ const getNetworkTokenSymbols = ({
 
 const getAccountsType = (accounts?: AccountJsonAny[]) => {
   if (accounts?.every((a) => a.type === "ethereum")) return "ethereum"
-  if (accounts?.every((a) => a.type !== "ethereum")) return "sr25519" // TODO rename substrate
+  if (accounts?.every((a) => a.type !== "ethereum")) return "sr25519" // TODO rename substrate or ss58
   return undefined
 }
 

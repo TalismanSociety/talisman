@@ -60,7 +60,6 @@ export const Portfolio = () => (
       <ErrorBoundary>
         <Content>
           <div className="flex size-full flex-col gap-4 py-8">
-            {/* <AuthorisedSiteToolbar /> */}
             <PortfolioContent />
             <BottomNav />
           </div>

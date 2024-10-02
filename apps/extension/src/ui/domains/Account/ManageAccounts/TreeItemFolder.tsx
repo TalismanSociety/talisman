@@ -21,13 +21,7 @@ export const TreeItemFolder: FC<{
   treeName: AccountsCatalogTree
   accounts: AccountJsonAny[]
   disableFolderDrop?: boolean
-}> = ({
-  folder,
-  balanceTotalPerAccount,
-  treeName,
-  accounts,
-  disableFolderDrop, // onHoverMenu
-}) => {
+}> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop }) => {
   const { t } = useTranslation()
   const addresses = useMemo(() => folder.tree.map((item) => item.address), [folder])
   const balanceTotal = useMemo(
