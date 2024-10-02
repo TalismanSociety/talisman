@@ -7,13 +7,15 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback } from "react"
+import { FC, ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useMatch, useNavigate } from "react-router-dom"
 
 import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 
@@ -133,6 +135,9 @@ export const BottomNav = () => {
             />
           )}
         </div>
+        <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
+          <AssetDiscoveryPopupAlert />
+        </Suspense>
       </div>
     </>
   )

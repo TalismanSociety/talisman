@@ -65,11 +65,6 @@ export const Portfolio = () => (
           </div>
         </Content>
         <NavigationDrawer />
-        {/* 
-        TODO CHECK THIS
-        <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
-          <AssetDiscoveryPopupAlert />
-        </Suspense> */}
       </ErrorBoundary>
     </div>
   </PortfolioContainer>
