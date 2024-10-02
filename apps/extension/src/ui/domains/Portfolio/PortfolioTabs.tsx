@@ -4,21 +4,19 @@ import { useLocation } from "react-router-dom"
 import { Tabs } from "@talisman/components/Tabs"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 
-import { useSelectedAccount } from "./useSelectedAccount"
+import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const URL_TAB_TOKENS = "/portfolio/tokens"
 const URL_TAB_NFTS = "/portfolio/nfts"
 
 export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
-  const { account, accounts } = useSelectedAccount()
+  const { selectedAccounts } = usePortfolioNavigation()
   const location = useLocation()
   const navigate = useNavigateWithQuery()
 
   const withNfts = useMemo(() => {
-    return account
-      ? account.type === "ethereum"
-      : accounts.some((account) => account.type === "ethereum")
-  }, [account, accounts])
+    return selectedAccounts.some((account) => account.type === "ethereum")
+  }, [selectedAccounts])
 
   const tabs = useMemo(() => {
     const resTabs = [{ label: "Tokens", value: URL_TAB_TOKENS }]

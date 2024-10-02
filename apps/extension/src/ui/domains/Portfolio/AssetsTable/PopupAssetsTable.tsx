@@ -21,7 +21,7 @@ import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolio } from "../usePortfolio"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -213,7 +213,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 
 export const PopupAssetsTable = () => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
 
   const { isInitialising } = usePortfolio()
   const balances = usePortfolioDisplayBalances("network")

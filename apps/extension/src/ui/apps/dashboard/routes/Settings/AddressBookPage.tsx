@@ -35,7 +35,6 @@ import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -81,9 +80,8 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const { t } = useTranslation("admin")
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { account } = useSelectedAccount()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
-    account,
+    undefined,
     undefined,
     undefined,
     contact.address

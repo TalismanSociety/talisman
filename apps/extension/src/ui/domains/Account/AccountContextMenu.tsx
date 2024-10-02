@@ -16,12 +16,13 @@ import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExpo
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+
+import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
 const ViewOnExplorerMenuItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
   const { t } = useTranslation()
@@ -59,7 +60,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const { t } = useTranslation()
   const propsAccount = useAccountByAddress(address)
 
-  const { account: selectedAccount } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const account =
     (address === null
       ? // if address prop is null, set account to null

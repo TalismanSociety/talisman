@@ -39,12 +39,12 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/hooks/useBalances"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
@@ -142,10 +142,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
     }
 
     // navigate to list of accounts in folder (user clicked folder on main menu)
-    if (option.type === "folder")
-      return navigate(
-        `/portfolio?${option.treeName === "portfolio" ? "folder" : "watchedFolder"}=${option.id}`
-      )
+    if (option.type === "folder") return navigate(`/portfolio?folder=${option.id}`)
   }, [genericEvent, navigate, option])
 
   const isAccount = option.type === "account"
@@ -306,7 +303,7 @@ const Accounts = ({
   watchedOptions,
 }: {
   accounts: AccountJsonAny[]
-  folder?: TreeFolder
+  folder?: TreeFolder | null
   folderTotal?: number
   portfolioOptions: AccountOption[]
   watchedOptions: AccountOption[]
@@ -369,7 +366,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
         <div className="flex items-center gap-3">
           <div className="text-body-secondary truncate">{folder.name}</div>
         </div>
-        <div className="text-md truncate">
+        <div className="truncate">
           <Fiat amount={folderTotal} isBalance />
         </div>
       </div>
@@ -387,7 +384,7 @@ const BalancesLoader = () => {
 export const PortfolioAccounts = () => {
   const { accounts, ownedAccounts, catalog, balanceTotalPerAccount, ownedTotal } =
     usePortfolioAccounts()
-  const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
+  const { selectedFolder: folder, treeName } = usePortfolioNavigation()
   const search = useAtomValue(portfolioAccountsSearchAtom)
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
@@ -397,8 +394,8 @@ export const PortfolioAccounts = () => {
     AccountOption[]
   ] => {
     const [portfolioTree, watchedTree] = (() => {
-      if (folder && folderTreeName === "portfolio") return [folder.tree, []]
-      if (folder && folderTreeName === "watched") return [[], folder.tree]
+      if (folder && treeName === "portfolio") return [folder.tree, []]
+      if (folder && treeName === "watched") return [[], folder.tree]
       return [catalog.portfolio, catalog.watched]
     })()
 
@@ -451,15 +448,7 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [
-    folder,
-    folderTreeName,
-    catalog.portfolio,
-    catalog.watched,
-    accounts,
-    t,
-    balanceTotalPerAccount,
-  ])
+  }, [folder, treeName, catalog.portfolio, catalog.watched, accounts, t, balanceTotalPerAccount])
 
   const ls = useMemo(() => search.toLowerCase(), [search])
 

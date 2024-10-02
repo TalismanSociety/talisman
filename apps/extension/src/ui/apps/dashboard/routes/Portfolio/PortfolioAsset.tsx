@@ -16,7 +16,7 @@ import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarBu
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import {
   BalanceSummary,
   useTokenBalancesSummary,
@@ -80,7 +80,7 @@ const HeaderRow: FC<{
 }
 
 const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
 
   // don't set the token id here because it could be one of many
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
