@@ -14,7 +14,6 @@ import { useLocation, useMatch, useNavigate } from "react-router-dom"
 import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 
@@ -34,7 +33,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { account } = useSelectedAccount()
   const { open } = usePopupNavOpenClose()
   const { close: closeQuickSettings, isOpen: isQuickSettingsOpen } = useQuickSettingsOpenClose()
 
@@ -75,11 +73,10 @@ export const BottomNav = () => {
       action: "Fullscreen button",
     })
     // assume paths are the same in dashboard
-    // portfolio pages expect an account argument to stay in sync with popup
-    const qs = `?account=${account?.address ?? "all"}`
-    api.dashboardOpen(`${location.pathname}${qs}`)
+    // portfolio pages supports account/folder query string arguments to stay in sync with popup
+    api.dashboardOpen(`${location.pathname}${location.search}`)
     window.close()
-  }, [account, location.pathname])
+  }, [location.pathname, location.search])
 
   const handleMoreClick = useCallback(() => {
     sendAnalyticsEvent({
