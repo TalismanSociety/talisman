@@ -1,4 +1,3 @@
-import { Nav } from "@talisman/components/Nav"
 import {
   AlertCircleIcon,
   GlobeIcon,
@@ -10,9 +9,11 @@ import {
   UserIcon,
   UsersIcon,
 } from "@talismn/icons"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
+
+import { Nav } from "@talisman/components/Nav"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 import { SidebarNavItem } from "./SidebarNavItem"
 

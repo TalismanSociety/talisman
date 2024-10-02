@@ -1,8 +1,9 @@
 import { ChevronLeftIcon, PlusIcon } from "@talismn/icons"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { SidebarNavItem } from "./SidebarNavItem"
 

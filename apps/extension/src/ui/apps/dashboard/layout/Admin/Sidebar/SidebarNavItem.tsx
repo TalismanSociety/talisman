@@ -1,8 +1,9 @@
-import { NavItem, NavItemProps } from "@talisman/components/Nav"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { NavItem, NavItemProps } from "@talisman/components/Nav"
 
 type Props = Omit<NavItemProps, "children"> & {
   title: ReactNode

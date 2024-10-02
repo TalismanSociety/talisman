@@ -1,4 +1,4 @@
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddQrWizard } from "@ui/domains/Account/AccountAdd/AccountAddQr"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 

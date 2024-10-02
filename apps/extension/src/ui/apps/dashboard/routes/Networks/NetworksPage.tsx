@@ -21,7 +21,7 @@ import {
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
-import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"

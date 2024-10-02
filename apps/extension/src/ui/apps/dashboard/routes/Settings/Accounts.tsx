@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
 import {
   accountsByCategoryAtomFamily,
   accountsCatalogAtom,

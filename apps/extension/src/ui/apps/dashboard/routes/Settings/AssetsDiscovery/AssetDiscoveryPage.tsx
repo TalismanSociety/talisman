@@ -69,7 +69,7 @@ import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 import { AccountsStack } from "../../../../../domains/Account/AccountIconsStack"
-import { DashboardAdminLayout } from "../../../layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../../layout/Admin/DashboardAdminLayout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,

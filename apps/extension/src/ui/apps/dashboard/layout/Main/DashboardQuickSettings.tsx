@@ -19,7 +19,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio",
 }
 
-export const QuickSettings: FC<{ className?: string }> = ({ className }) => {
+export const DashboardQuickSettings: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
 
   return (

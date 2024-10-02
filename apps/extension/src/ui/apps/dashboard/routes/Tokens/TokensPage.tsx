@@ -23,7 +23,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
 import {
   chainsMapAtomFamily,
   evmNetworksMapAtomFamily,

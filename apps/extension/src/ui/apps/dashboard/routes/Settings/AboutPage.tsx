@@ -17,7 +17,7 @@ import {
 } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 
-import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
 
 export const AboutPage = () => {
   const { t } = useTranslation("admin")

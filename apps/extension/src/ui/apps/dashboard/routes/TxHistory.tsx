@@ -9,7 +9,7 @@ import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHis
 import { useTxHistory } from "@ui/domains/Transactions/TxHistory/TxHistoryContext"
 import { TxHistoryNetworkPicker } from "@ui/domains/Transactions/TxHistory/TxHistoryNetworkPicker"
 
-import { DashboardMainLayout } from "../layout/DashboardMainLayout"
+import { DashboardMainLayout } from "../layout"
 
 const NetworkFilterButton = () => {
   const { t } = useTranslation()

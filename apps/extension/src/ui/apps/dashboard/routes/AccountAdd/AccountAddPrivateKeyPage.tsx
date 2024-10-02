@@ -1,4 +1,4 @@
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddPrivateKeyForm } from "@ui/domains/Account/AccountAdd/AccountAddPrivateKeyForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 

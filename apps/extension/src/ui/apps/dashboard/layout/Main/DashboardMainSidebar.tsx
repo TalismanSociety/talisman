@@ -17,7 +17,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
-export const PortfolioSidebar: FC = () => {
+export const DashboardAccountsSidebar: FC = () => {
   return (
     <div className="bg-grey-900 rounded-lg">
       <Accounts />

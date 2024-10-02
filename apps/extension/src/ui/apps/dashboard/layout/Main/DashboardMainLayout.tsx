@@ -11,8 +11,9 @@ import { LogoDashboard } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
-import { PortfolioSidebar } from "./PortfolioSidebar"
-import { QuickSettings } from "./QuickSettings"
+import { DashboardNotificationsAndModals } from "../Shared/DashboardNotificationsAndModals"
+import { DashboardAccountsSidebar } from "./DashboardMainSidebar"
+import { DashboardQuickSettings } from "./DashboardQuickSettings"
 
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
@@ -23,7 +24,7 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           <div className="w-[29.6rem] shrink-0 overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
-              <PortfolioSidebar />
+              <DashboardAccountsSidebar />
             </Suspense>
           </div>
           <div className="grow">
@@ -33,6 +34,7 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
           </div>
         </div>
       </div>
+      <DashboardNotificationsAndModals />
     </div>
   )
 }
@@ -55,7 +57,7 @@ const Header = () => (
         </IconButton>
       </PopoverTrigger>
       <PopoverContent>
-        <QuickSettings className="z-50" />
+        <DashboardQuickSettings className="z-50" />
       </PopoverContent>
     </Popover>
   </div>

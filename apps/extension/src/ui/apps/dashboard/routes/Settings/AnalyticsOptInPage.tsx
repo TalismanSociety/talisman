@@ -6,7 +6,7 @@ import { Setting } from "@talisman/components/Setting"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
 
 export const AnalyticsOptInPage = () => {
   const { t } = useTranslation("admin")

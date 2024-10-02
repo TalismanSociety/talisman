@@ -13,8 +13,8 @@ import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnb
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 
-import DashboardNotifications from "./DashboardNotifications"
-import { BackupWarningModal } from "./DashboardNotifications/BackupWarningModal"
+import DashboardNotifications from "."
+import { BackupWarningModal } from "./BackupWarningModal"
 import { OnboardingToast } from "./OnboardingToast"
 
 export const DashboardNotificationsAndModals = () => {

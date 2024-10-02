@@ -1,9 +1,10 @@
 import { AlertCircleIcon } from "@talismn/icons"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Modal } from "talisman-ui"
+
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 const ModalContent: FC<{ snooze: () => void }> = ({ snooze }) => {
   const { t } = useTranslation()

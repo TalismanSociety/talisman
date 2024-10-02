@@ -5,12 +5,12 @@ import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
-import { DashboardMainLayout } from "../../layout/DashboardMainLayout"
-import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
+import { DashboardMainLayout } from "../../layout/Main/DashboardMainLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
+import { PortfolioLayout } from "./Shared/PortfolioLayout"
 
 const BuyTokensOpener = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -35,7 +35,7 @@ export const PortfolioRoutes = () => {
         <BuyTokensOpener />
         <PortfolioContainer>
           {/* share layout to prevent tabs flickering */}
-          <DashboardPortfolioLayout>
+          <PortfolioLayout>
             <Routes>
               <Route path="tokens/:symbol" element={<PortfolioAsset />} />
               <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
@@ -43,7 +43,7 @@ export const PortfolioRoutes = () => {
               <Route path="nfts" element={<PortfolioNfts />} />
               <Route path="*" element={<NavigateWithQuery url="tokens" />} />
             </Routes>
-          </DashboardPortfolioLayout>
+          </PortfolioLayout>
         </PortfolioContainer>
       </DashboardMainLayout>
     </>

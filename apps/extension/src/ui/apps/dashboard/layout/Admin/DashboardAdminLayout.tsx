@@ -6,7 +6,7 @@ import { BackButton } from "@talisman/components/BackButton"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AnalyticsPage } from "@ui/api/analytics"
 
-import { DashboardNotificationsAndModals } from "./DashboardNotificationsAndModals"
+import { DashboardNotificationsAndModals } from "../Shared/DashboardNotificationsAndModals"
 import { Sidebar } from "./Sidebar"
 
 type LayoutProps = {

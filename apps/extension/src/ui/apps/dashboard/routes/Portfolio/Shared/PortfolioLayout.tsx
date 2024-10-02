@@ -9,8 +9,7 @@ import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
-import { NoAccountsFullscreen } from "../routes/Portfolio/NoAccountsFullscreen"
-import { DashboardNotificationsAndModals } from "./DashboardNotificationsAndModals"
+import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
@@ -56,7 +55,7 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
-export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) => {
+export const PortfolioLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
     <div className="relative flex w-full flex-col gap-6 pb-12">
       <Suspense
@@ -77,7 +76,6 @@ export const DashboardPortfolioLayout: FC<PropsWithChildren> = ({ children }) =>
             {children}
           </Suspense>
         </PortfolioAccountCheck>
-        <DashboardNotificationsAndModals />
       </Suspense>
     </div>
   )

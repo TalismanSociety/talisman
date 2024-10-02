@@ -1,11 +1,10 @@
-import { InfoIcon } from "@talismn/icons"
-import { XIcon } from "@talismn/icons"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback } from "react"
-import { ReactNode } from "react"
+import { InfoIcon, XIcon } from "@talismn/icons"
+import { ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 type NotificationProps = {
   icon: ReactNode
