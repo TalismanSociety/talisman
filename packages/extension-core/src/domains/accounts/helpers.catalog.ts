@@ -57,20 +57,16 @@ export const runActionOnTrees =
     const tree = trees[treeName]
     if (!tree) return
 
-    if (type === "reorder") {
-      // TODO check no added and no removed
-      trees[treeName] = structuredClone(action.items)
-      return true
-    }
+    // reordering overrides override the whole trees data
+    if (type === "reorder") return reorderTree(trees, action)
 
-    // TODO REMOVE
     // account actions
-    if (type === "moveAccount") return moveAccount(tree, action)
+    if (type === "moveAccount") return moveAccount(tree, action) // TODO remove?
 
     // folder actions
     if (type === "addFolder") return addFolder(tree, action)
     if (type === "renameFolder") return renameFolder(tree, action)
-    if (type === "moveFolder") return moveFolder(tree, action) // TODO REMOVE
+    if (type === "moveFolder") return moveFolder(tree, action) // TODO remove?
     if (type === "removeFolder") return removeFolder(tree, action)
 
     // force compilation error if any action types don't have a case
@@ -102,6 +98,15 @@ const moveAccount = (tree: Tree, { address, folderId, beforeItem }: MoveAccountA
   }
 
   // inform the store that a change was made
+  return true
+}
+
+type ReorderTreeAction = Extract<RequestAccountsCatalogAction, { type: "reorder" }>
+const reorderTree = (trees: Partial<Trees>, { tree: treeName, items }: ReorderTreeAction) => {
+  if (!isSameTreeItems(trees[treeName], items))
+    throw new Error("reorder action should not add or remove items")
+
+  trees[treeName] = structuredClone(items)
   return true
 }
 
@@ -236,5 +241,36 @@ export const removeAccount = (tree: Tree, address: string) => {
   if (removeAccountFromTree(tree, address) === undefined) return
 
   // inform the store that a change was made
+  return true
+}
+
+const recGetAllAddresses = (tree: TreeItem[] | undefined) => {
+  return (
+    tree?.reduce<string[]>((acc, item) => {
+      if (item.type === "account") {
+        acc.push(item.address)
+      } else {
+        acc.push(...recGetAllAddresses(item.tree))
+      }
+      return acc
+    }, []) ?? []
+  )
+}
+
+const getAllFolderIds = (tree: Tree | undefined) => {
+  return tree?.filter(folderFilter).map((folder) => folder.id) ?? []
+}
+
+const isSameTreeItems = (oldTree: Tree | undefined, newTree: Tree | undefined) => {
+  const oldAddresses = recGetAllAddresses(oldTree)
+  const newAddresses = recGetAllAddresses(newTree)
+  if (oldAddresses.length !== newAddresses.length) return false
+  if (oldAddresses.sort().join(",") !== newAddresses.sort().join(",")) return false
+
+  const oldFolderIds = getAllFolderIds(oldTree)
+  const newFolderIds = getAllFolderIds(newTree)
+  if (oldFolderIds.length !== newFolderIds.length) return false
+  if (oldFolderIds.sort().join(",") !== newFolderIds.sort().join(",")) return false
+
   return true
 }
