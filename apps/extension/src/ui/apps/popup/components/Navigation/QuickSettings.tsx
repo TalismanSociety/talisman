@@ -1,3 +1,4 @@
+import { Transition } from "@headlessui/react"
 import { ArrowUpRightIcon } from "@talismn/icons"
 import { useAtomValue } from "jotai"
 import { FC, ReactNode, useCallback, useMemo } from "react"
@@ -27,15 +28,23 @@ export const useQuickSettingsOpenClose = () => useGlobalOpenClose("quick-setting
 export const QuickSettingsOverlay: FC = () => {
   const { isOpen, close } = useQuickSettingsOpenClose()
 
-  if (!isOpen) return null
+  //if (!isOpen) return null
 
   // TODO proper animation in + out
   return (
-    <div
-      className="animate-fade-in-fast absolute left-0 top-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
-      role="presentation"
-      onClick={close}
-    ></div>
+    <Transition show={isOpen} appear>
+      <Transition.Child
+        className="absolute left-0 top-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
+        role="presentation"
+        onClick={close}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="ease-in duration-300"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      ></Transition.Child>
+    </Transition>
   )
 }
 
@@ -43,23 +52,31 @@ export const QuickSettingsModal: FC = () => {
   const { t } = useTranslation()
   const { isOpen } = useQuickSettingsOpenClose()
 
-  if (!isOpen) return null
-
   return (
-    <div className="border-grey-800 flex w-full flex-col gap-8 rounded border bg-black/90 px-12 py-8">
-      <div className="flex w-full items-center justify-between">
-        <div className="text-body text-md font-bold">{t("Settings")}</div>
-        <AllSettingsButton />
-      </div>
-      <div className="bg-grey-800 h-0.5 w-full"></div>
-      <div className="flex w-full flex-col">
-        <LanguageRow />
-        <CurrenciesRow />
-        <HideBalancesRow />
-        <HideSmallBalancesRow />
-        <ShowTestnetsRow />
-      </div>
-    </div>
+    <Transition show={isOpen} appear>
+      <Transition.Child
+        className="border-grey-800 flex w-full flex-col gap-8 rounded border bg-black/90 px-12 py-8"
+        enter="ease-out duration-200"
+        enterFrom="opacity-0 scale-90"
+        enterTo="opacity-100 scale-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100 scale-100"
+        leaveTo="opacity-0 scale-95"
+      >
+        <div className="flex w-full items-center justify-between">
+          <div className="text-body text-md font-bold">{t("Settings")}</div>
+          <AllSettingsButton />
+        </div>
+        <div className="bg-grey-800 h-0.5 w-full"></div>
+        <div className="flex w-full flex-col">
+          <LanguageRow />
+          <CurrenciesRow />
+          <HideBalancesRow />
+          <HideSmallBalancesRow />
+          <ShowTestnetsRow />
+        </div>
+      </Transition.Child>
+    </Transition>
   )
 }
 

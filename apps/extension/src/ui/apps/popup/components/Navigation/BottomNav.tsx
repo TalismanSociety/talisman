@@ -105,7 +105,6 @@ export const BottomNav = () => {
         >
           <NavButton
             label={t("Portfolio")}
-            // className="!text-white"
             icon={TalismanHandIcon}
             onClick={handleHomeClick}
             route="/portfolio/*"
