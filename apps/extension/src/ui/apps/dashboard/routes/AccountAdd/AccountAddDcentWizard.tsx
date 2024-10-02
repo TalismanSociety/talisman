@@ -1,6 +1,6 @@
 import { AccountAddDcentDisabledMessage } from "@ui/domains/Account/AccountAdd/AccountAddDcent"
 
-import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout"
 
 export const AccountAddDcentDashboardWizard = () => {
   return (

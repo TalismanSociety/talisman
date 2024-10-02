@@ -22,7 +22,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

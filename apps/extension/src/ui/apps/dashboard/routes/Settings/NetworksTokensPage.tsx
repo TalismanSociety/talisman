@@ -14,7 +14,7 @@ import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout"
 
 export const NetworksTokensPage = () => {
   const { t } = useTranslation("admin")

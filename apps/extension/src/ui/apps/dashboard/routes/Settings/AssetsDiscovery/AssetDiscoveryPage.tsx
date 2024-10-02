@@ -50,6 +50,7 @@ import {
   tokensMapAtomFamily,
 } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -68,8 +69,7 @@ import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
-import { AccountsStack } from "../../../../../domains/Account/AccountIconsStack"
-import { DashboardAdminLayout } from "../../../layout/Admin/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,

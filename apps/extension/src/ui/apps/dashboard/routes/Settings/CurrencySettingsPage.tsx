@@ -7,7 +7,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 
-import { DashboardAdminLayout } from "../../layout/Admin/DashboardAdminLayout"
+import { DashboardAdminLayout } from "../../layout"
 
 const CurrencySettingsPage = () => {
   const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
