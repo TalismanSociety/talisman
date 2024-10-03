@@ -122,7 +122,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   return (
     <div
       className={classNames(
-        "bg-grey-900 relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg px-8 py-6 pr-6",
+        "bg-grey-900 relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg p-10",
         className
       )}
     >
@@ -132,7 +132,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
         />
       )}
-      <div className="font-inter z-[1] flex w-full flex-col gap-3 overflow-hidden">
+      <div className="font-inter z-[1] flex w-full flex-col gap-4 overflow-hidden">
         <SelectionScope folder={selectedFolder} account={selectedAccount} />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
