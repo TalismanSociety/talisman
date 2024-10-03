@@ -6,7 +6,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
@@ -17,6 +17,12 @@ import type { UiTree, UiTreePosition } from "./types"
 import { KeyboardSensor, MouseSensor } from "./DragAndDrop"
 import { TreeItem, TreeItems } from "./TreeItems"
 import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
+
+const DRAGGED_OVERLAY_STYLE: CSSProperties = {
+  opacity: 0.95,
+  outline: "1px solid #383838",
+  borderRadius: 8,
+}
 
 export const ManageAccountsList: FC<{
   accounts: AccountJsonAny[]
@@ -89,7 +95,7 @@ export const ManageAccountsList: FC<{
 
         {draggedItem
           ? createPortal(
-              <DragOverlay>
+              <DragOverlay style={DRAGGED_OVERLAY_STYLE}>
                 <TreeItem
                   treeName={treeName}
                   item={draggedItem}
