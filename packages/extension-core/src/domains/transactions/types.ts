@@ -29,6 +29,7 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
   label?: string
   nonce: number
   blockNumber?: string
+  confirmed?: boolean // used only by progress wizard, dont leverage this in tx history UI
 }
 
 export type EvmWalletTransaction = WalletTransactionBase & {

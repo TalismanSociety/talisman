@@ -1,16 +1,21 @@
-import { isAcalaEvmPlus } from "@extension/core"
-import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useTransactionByHash from "@ui/hooks/useTransactionByHash"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
+
+import {
+  EvmWalletTransaction,
+  isAcalaEvmPlus,
+  SubWalletTransaction,
+  WalletTransaction,
+} from "@extension/core"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useTransactionByHash from "@ui/hooks/useTransactionByHash"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
@@ -47,7 +52,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
 
   return (
     <>
-      <div className="mt-8 flex w-full items-center justify-center gap-4">
+      <div className="flex w-full items-center justify-center gap-4">
         <PillButton
           size="sm"
           onClick={handleShowDrawer("speed-up")}
@@ -72,11 +77,10 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
 
 const useStatusDetails = (tx?: WalletTransaction) => {
   const { t } = useTranslation("send-funds")
-  const { title, subtitle, extra, animStatus } = useMemo<{
+  const { title, subtitle, animStatus } = useMemo<{
     title: string
     subtitle: string
     animStatus: ProcessAnimationStatus
-    extra?: string
   }>(() => {
     // missing tx can occur while loading
     if (!tx)
@@ -126,9 +130,6 @@ const useStatusDetails = (tx?: WalletTransaction) => {
           subtitle: isReplacementCancel
             ? t("Attempting to cancel transfer")
             : t("This may take a few minutes."),
-          extra: isReplacementCancel
-            ? undefined
-            : t("You can now close this window. Your transfer will continue in the background."),
           animStatus: "processing",
         }
     }
@@ -137,7 +138,6 @@ const useStatusDetails = (tx?: WalletTransaction) => {
   return {
     title,
     subtitle,
-    extra,
     animStatus,
   }
 }
@@ -157,18 +157,18 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation("send-funds")
-  const { title, subtitle, animStatus, extra } = useStatusDetails(tx)
+  const { title, subtitle, animStatus } = useStatusDetails(tx)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
       <div className="text-body mt-32 text-lg font-bold">{title}</div>
       <div className="text-body-secondary mt-12 text-center text-base font-light">{subtitle}</div>
-      <ProcessAnimation status={animStatus} className="mt-[7.5rem] h-[14.5rem]" />
-      <div className="text-body-secondary flex w-full grow flex-col justify-center px-10 text-center ">
+      <ProcessAnimation status={animStatus} className="mb-8 mt-[7.5rem] h-[14.5rem]" />
+      <div className="text-body-secondary flex w-full grow flex-col justify-center gap-10 px-10 text-center">
         <div>
           {blockNumber ? (
             <>
-              {t("Included in")}{" "}
+              {tx?.confirmed ? t("Confirmed in") : t("Included in")}{" "}
               {href ? (
                 <a target="_blank" className="hover:text-body text-grey-200" href={href}>
                   {t("block #{{blockNumber}}", { blockNumber })}{" "}
@@ -185,12 +185,18 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
                 block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
             </Trans>
-          ) : (
-            extra
+          ) : null}
+        </div>
+        <div className="h-[3.6rem]">
+          {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
+          {tx?.status === "success" && !tx?.confirmed && (
+            <div className="text-secondary h-[3.6rem] animate-pulse ">
+              {t("You may close this window or wait for the transaction to be confirmed")}
+            </div>
           )}
         </div>
-        {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
       </div>
+
       <Button fullWidth onClick={onClose}>
         {t("Close")}
       </Button>

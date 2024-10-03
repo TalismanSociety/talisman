@@ -77,11 +77,10 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
 
 const useTxStatusDetails = (tx?: WalletTransaction) => {
   const { t } = useTranslation()
-  const { title, subtitle, extra, animStatus } = useMemo<{
+  const { title, subtitle, animStatus } = useMemo<{
     title: string
     subtitle: string
     animStatus: ProcessAnimationStatus
-    extra?: string
   }>(() => {
     // missing tx can occur while loading
     if (!tx)
@@ -133,9 +132,6 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
           subtitle: isReplacementCancel
             ? t("Attempting to cancel transaction")
             : t("This may take a few minutes."),
-          extra: isReplacementCancel
-            ? undefined
-            : t("You can now close this window. Your transaction will continue in the background."),
           animStatus: "processing",
         }
     }
@@ -144,7 +140,6 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
   return {
     title,
     subtitle,
-    extra,
     animStatus,
   }
 }
@@ -159,18 +154,18 @@ type TxProgressBaseProps = {
 
 const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose }) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus, extra } = useTxStatusDetails(tx)
+  const { title, subtitle, animStatus } = useTxStatusDetails(tx)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
       <div className="text-body mt-8 text-lg font-bold">{title}</div>
       <div className="text-body-secondary mt-12 text-center text-base font-light">{subtitle}</div>
-      <ProcessAnimation status={animStatus} className="mt-[7.5rem] h-[14.5rem]" />
-      <div className="text-body-secondary flex w-full grow flex-col justify-center px-10 text-center ">
+      <ProcessAnimation status={animStatus} className="mb-8 mt-[7.5rem] h-[14.5rem]" />
+      <div className="text-body-secondary flex w-full grow flex-col justify-center gap-10 px-10 text-center">
         <div>
           {blockNumber ? (
             <>
-              {t("Included in")}{" "}
+              {tx?.confirmed ? t("Confirmed in") : t("Included in")}{" "}
               {href ? (
                 <a target="_blank" className="hover:text-body text-grey-200" href={href}>
                   {t("block #{{blockNumber}}", { blockNumber })}{" "}
@@ -187,11 +182,16 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
                 block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
             </Trans>
-          ) : (
-            extra
+          ) : null}
+        </div>
+        <div className="h-[3.6rem]">
+          {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
+          {tx?.status === "success" && !tx?.confirmed && (
+            <div className="text-secondary h-[3.6rem] animate-pulse ">
+              {t("You may close this window or wait for the transaction to be confirmed")}
+            </div>
           )}
         </div>
-        {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
       </div>
       <Button fullWidth onClick={onClose}>
         {t("Close")}
