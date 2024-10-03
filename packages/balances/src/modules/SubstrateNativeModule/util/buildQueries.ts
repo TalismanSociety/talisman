@@ -1,71 +1,15 @@
-import { Chain, ChaindataProvider, ChainId, Token } from "@talismn/chaindata-provider"
+import { Chain, Token } from "@talismn/chaindata-provider"
 import { Binary, decodeScale, encodeStateKey } from "@talismn/scale"
-import { blake2Concat, decodeAnyAddress, firstThenDebounce } from "@talismn/util"
-import { liveQuery } from "dexie"
-import isEqual from "lodash/isEqual"
-import {
-  combineLatestWith,
-  distinctUntilChanged,
-  filter,
-  firstValueFrom,
-  from,
-  map,
-  pipe,
-  shareReplay,
-  Subscription,
-} from "rxjs"
+import { blake2Concat, decodeAnyAddress } from "@talismn/util"
 import { Struct, u32, u128 } from "scale-ts"
 
-import { SubNativeBalance, SubNativeToken } from "."
-import log from "../../log"
-import { db as balancesDb } from "../../TalismanBalancesDatabase"
-import { AddressesByToken, AmountWithLabel, getValueId, MiniMetadata } from "../../types"
-import {
-  buildStorageCoders,
-  findChainMeta,
-  getUniqueChainIds,
-  RpcStateQuery,
-  StorageCoders,
-} from "../util"
-import { getLockedType } from "./util"
+import log from "../../../log"
+import { AddressesByToken, AmountWithLabel, getValueId, MiniMetadata } from "../../../types"
+import { findChainMeta, RpcStateQuery, StorageCoders } from "../../util"
+import { SubNativeBalance, SubNativeToken } from "../types"
+import { getLockedType } from "./balanceLockTypes"
 
-type QueryKey = string
-
-const detectMiniMetadataChanges = () => {
-  let previousMap: Map<string, MiniMetadata> | null = null
-
-  return pipe(
-    map<Map<string, MiniMetadata>, Set<string> | null>((currMap) => {
-      if (!currMap) return null
-      const changes = new Set<string>()
-
-      if (previousMap) {
-        // Check for added or changed keys/values
-        for (const [key, value] of currMap) {
-          if (!previousMap.has(key) || !isEqual(previousMap.get(key), value)) {
-            changes.add(value.chainId)
-          }
-        }
-
-        // Check for removed keys
-        for (const [key, value] of previousMap) {
-          if (!currMap.has(key)) {
-            changes.add(value.chainId)
-          }
-        }
-      }
-      previousMap = currMap
-      return changes.size > 0 ? changes : null
-    }),
-    // Filter out null emissions (no changes)
-    filter<Set<string> | null, Set<string>>((changes): changes is Set<string> => changes !== null)
-  )
-}
-
-type QueryCacheResults = {
-  existing: RpcStateQuery<SubNativeBalance>[]
-  newAddressesByToken: AddressesByToken<SubNativeToken>
-}
+export type QueryKey = string
 
 // AccountInfo is the state_storage data format for nativeToken balances
 // Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
@@ -101,119 +45,7 @@ const AccountInfoOverrides: Record<
   "nftmart": RegularAccountInfoFallback,
 }
 
-// NOTE: `liveQuery` is not initialized until commonMetadataObservable is subscribed to.
-const commonMetadataObservable = from(
-  liveQuery(() => balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray())
-).pipe(
-  map((items) => new Map(items.map((item) => [item.id, item]))),
-  // `refCount: true` will unsubscribe from the DB when commonMetadataObservable has no more subscribers
-  shareReplay({ bufferSize: 1, refCount: true })
-)
-
-export class QueryCache {
-  private balanceQueryCache = new Map<QueryKey, RpcStateQuery<SubNativeBalance>[]>()
-  private metadataSub: Subscription | null = null
-
-  constructor(private chaindataProvider: ChaindataProvider) {}
-
-  ensureSetup() {
-    if (this.metadataSub) return
-
-    this.metadataSub = commonMetadataObservable
-      .pipe(
-        firstThenDebounce(500),
-        detectMiniMetadataChanges(),
-        combineLatestWith(this.chaindataProvider.tokensObservable),
-        distinctUntilChanged()
-      )
-      .subscribe(([miniMetadataChanges, tokens]) => {
-        // invalidate cache entries for any chains with new metadata
-        const tokensByChainId = tokens
-          .filter((token): token is SubNativeToken => token.type === "substrate-native")
-          .reduce<Record<ChainId, Array<SubNativeToken>>>((result, token) => {
-            if (!token.chain?.id) return result
-            result[token.chain.id]
-              ? result[token.chain.id].push(token)
-              : (result[token.chain.id] = [token])
-            return result
-          }, {})
-
-        miniMetadataChanges.forEach((chainId) => {
-          const chainTokens = tokensByChainId[chainId]
-          if (!chainTokens) return
-
-          chainTokens.forEach((token) => {
-            const tokenId = token.id
-            const cacheKeys = this.balanceQueryCache.keys()
-            for (const key of cacheKeys) {
-              if (key.startsWith(`${tokenId}-`)) this.balanceQueryCache.delete(key)
-            }
-          })
-        })
-      })
-  }
-
-  destroy() {
-    this.metadataSub?.unsubscribe()
-  }
-
-  async getQueries(addressesByToken: AddressesByToken<SubNativeToken>) {
-    this.ensureSetup()
-
-    const chains = await this.chaindataProvider.chainsById()
-    const tokens = await this.chaindataProvider.tokensById()
-
-    const queryResults = Object.entries(addressesByToken).reduce<QueryCacheResults>(
-      (result, [tokenId, addresses]) => {
-        addresses.forEach((address) => {
-          const key = `${tokenId}-${address}`
-          const existing = this.balanceQueryCache.get(key)
-          if (existing) {
-            result.existing.push(...existing)
-          } else {
-            result.newAddressesByToken[tokenId]
-              ? result.newAddressesByToken[tokenId].push(address)
-              : (result.newAddressesByToken[tokenId] = [address])
-          }
-        })
-
-        return result
-      },
-      { existing: [], newAddressesByToken: {} }
-    )
-
-    // build queries for token/address pairs which have not been queried before
-    const miniMetadatas = await firstValueFrom(commonMetadataObservable)
-    const uniqueChainIds = getUniqueChainIds(queryResults.newAddressesByToken, tokens)
-    const chainStorageCoders = buildStorageCoders({
-      chainIds: uniqueChainIds,
-      chains,
-      miniMetadatas,
-      moduleType: "substrate-native",
-      coders: {
-        base: ["System", "Account"],
-        reserves: ["Balances", "Reserves"],
-        holds: ["Balances", "Holds"],
-        locks: ["Balances", "Locks"],
-        freezes: ["Balances", "Freezes"],
-      },
-    })
-    const queries = await buildQueries(
-      chains,
-      tokens,
-      chainStorageCoders,
-      miniMetadatas,
-      queryResults.newAddressesByToken
-    )
-    // now update the cache
-    Object.entries(queries).forEach(([key, query]) => {
-      this.balanceQueryCache.set(key, query)
-    })
-    return queryResults.existing.concat(Object.values(queries).flat())
-  }
-}
-
-async function buildQueries(
+export async function buildQueries(
   chains: Record<string, Chain>,
   tokens: Record<string, Token>,
   chainStorageCoders: StorageCoders<{
