@@ -1,12 +1,15 @@
-import { ChevronRightIcon } from "@talismn/icons"
+import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
+import { IconButton } from "talisman-ui"
 
 import { AccountJsonAny } from "@extension/core"
+import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
   const navigate = useNavigate()
@@ -40,6 +43,20 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
         mouseOver={isHovered}
         disabled={disabled}
       />
+      {IS_EMBEDDED_POPUP && <PopoutButton />}
     </div>
+  )
+}
+
+const PopoutButton: FC = () => {
+  const handleClick = useCallback(() => {
+    api.popupOpen("#/portfolio")
+    window.close()
+  }, [])
+
+  return (
+    <IconButton className="absolute right-3 top-3 p-3 text-base" onClick={handleClick}>
+      <PopoutIcon />
+    </IconButton>
   )
 }
