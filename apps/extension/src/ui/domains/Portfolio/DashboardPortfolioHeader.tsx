@@ -8,7 +8,7 @@ import {
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
-import { AccountJsonAny, TreeFolder } from "extension-core"
+import { AccountJsonAny, AccountType, TreeFolder } from "extension-core"
 import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { useAtomValue } from "jotai"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
@@ -119,6 +119,8 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
     return selectedAccounts.reduce((total, acc) => total + totalPerAddress[acc.address] ?? 0, 0)
   }, [selectedAccounts, totalPerAddress])
 
+  const disableActions = useMemo(() => !selectedAccounts.some(isOwnedAccount), [selectedAccounts])
+
   return (
     <div
       className={classNames(
@@ -158,7 +160,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <TopActions accounts={selectedAccounts} disabled={!selectedAccounts.length} />
+      <TopActions accounts={selectedAccounts} disabled={disableActions} />
     </div>
   )
 }
@@ -306,4 +308,14 @@ const TopActions: FC<{ accounts: AccountJsonAny[]; disabled?: boolean }> = ({
       ))}
     </div>
   )
+}
+
+const isOwnedAccount = (account: AccountJsonAny) => {
+  switch (account.origin) {
+    case AccountType.Watched:
+    case AccountType.Signet:
+      return false
+    default:
+      return true
+  }
 }
