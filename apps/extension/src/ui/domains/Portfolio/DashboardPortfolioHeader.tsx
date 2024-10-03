@@ -137,7 +137,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
         <div className="flex w-full max-w-full items-center gap-6">
           <button
             className={classNames(
-              "bg-grey-700/20 border-grey-200 text-grey-200 hover:text-body hover:bg-grey-700/10 hover:border-body pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full border text-center text-lg leading-none transition-colors duration-100 ease-out",
+              "bg-grey-700/20 border-grey-200 text-grey-200 hover:text-body hover:border-body hover:bg-body/10 pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full border text-center text-lg leading-none transition-colors duration-100 ease-out",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
               currencyConfig[currency]?.symbol?.length > 2 && "text-base"
             )}
