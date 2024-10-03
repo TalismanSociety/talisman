@@ -119,8 +119,6 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
     return selectedAccounts.reduce((total, acc) => total + totalPerAddress[acc.address] ?? 0, 0)
   }, [selectedAccounts, totalPerAddress])
 
-  const disableActions = useMemo(() => !selectedAccounts.some(isOwnedAccount), [selectedAccounts])
-
   return (
     <div
       className={classNames(
@@ -160,7 +158,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <TopActions accounts={selectedAccounts} disabled={disableActions} />
+      <TopActions />
     </div>
   )
 }
@@ -204,7 +202,7 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="text-body-secondary hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-base opacity-90"
+          className="text-body-secondary enabled:hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-base opacity-90 disabled:opacity-70"
           onClick={handleClick}
           disabled={disabled}
         >
@@ -228,24 +226,23 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-const TopActions: FC<{ accounts: AccountJsonAny[]; disabled?: boolean }> = ({
-  accounts,
-  disabled,
-}) => {
+const TopActions: FC = () => {
+  const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
 
-  const { disableActions, disabledReason } = useMemo(() => {
-    const disableActions = disabled || !accounts.length
-    const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
-    return { disableActions, disabledReason }
-  }, [disabled, accounts.length, t])
+  const [disableActions, disabledReason] = useMemo(() => {
+    if (!!selectedAccount && !isOwnedAccount(selectedAccount))
+      return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
 
-  const selectedAddress = useMemo(
-    () => (accounts.length === 1 ? accounts[0].address : undefined),
-    [accounts]
-  )
+    if (!selectedAccounts.some(isOwnedAccount))
+      return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
+
+    return [false, ""]
+  }, [selectedAccount, t, selectedAccounts])
+
+  const selectedAddress = useMemo(() => selectedAccount?.address, [selectedAccount?.address])
 
   // this component is not located in the asset details route, so we can't use useParams
   const match = useMatch("/portfolio/tokens/:symbol")

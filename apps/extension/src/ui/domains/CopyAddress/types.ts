@@ -5,4 +5,5 @@ export type CopyAddressWizardInputs = {
   networkId?: ChainId | EvmNetworkId | null
   address?: Address
   qr?: boolean
+  addresses?: Address[]
 }

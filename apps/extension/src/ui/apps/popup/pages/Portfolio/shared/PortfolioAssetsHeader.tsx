@@ -57,6 +57,7 @@ const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) =
 const CopyAddressButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { selectedFolder } = usePortfolioNavigation()
 
   const { genericEvent } = useAnalytics()
 
@@ -65,9 +66,10 @@ const CopyAddressButton: FC<{ account?: AccountJsonAny | null }> = ({ account })
     openCopyAddressModal({
       address: account?.address,
       networkId: chain?.id,
+      addresses: selectedFolder?.tree.map((account) => account.address),
     })
     genericEvent("open copy address", { from: "popup portfolio" })
-  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])
+  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal, selectedFolder?.tree])
 
   return (
     <Tooltip placement="bottom">
