@@ -46,7 +46,7 @@ export const watchEthereumTransaction = async (
       // so we retry as long as we don't get a receipt, with a timeout on our side
       const getTransactionReceipt = async (hash: Hex): Promise<TransactionReceipt> => {
         try {
-          return await client.waitForTransactionReceipt({ hash })
+          return await client.waitForTransactionReceipt({ hash, confirmations: 0 })
         } catch (err) {
           await sleep(4000)
           return getTransactionReceipt(hash)
