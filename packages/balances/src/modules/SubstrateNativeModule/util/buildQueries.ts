@@ -321,13 +321,19 @@ export async function buildQueries(
             `Failed to decode unbonding query on chain ${chainId}`
           )
 
-          unbondingQueryLocks =
-            decoded?.unlocking?.map?.((unlocking) => ({
-              type: "locked",
-              source: "substrate-native-unbonding",
-              label: "Unbonding",
-              amount: (unlocking.value ?? 0n).toString(),
-            })) ?? []
+          const totalUnlocking =
+            decoded?.unlocking?.reduce?.((acc, unlocking) => acc + unlocking.value, 0n) ?? 0n
+          if (totalUnlocking <= 0n) unbondingQueryLocks = []
+          else {
+            unbondingQueryLocks = [
+              {
+                type: "locked",
+                source: "substrate-native-unbonding",
+                label: "Unbonding",
+                amount: totalUnlocking.toString(),
+              },
+            ]
+          }
 
           // unbonding values should be replaced entirely, not merged or appended
           const nonUnbondingValues = balanceJson.values.filter(
