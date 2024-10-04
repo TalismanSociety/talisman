@@ -114,6 +114,7 @@ export class QueryCache {
       moduleType: "substrate-native",
       coders: {
         base: ["System", "Account"],
+        stakingLedger: ["Staking", "Ledger"],
         reserves: ["Balances", "Reserves"],
         holds: ["Balances", "Holds"],
         locks: ["Balances", "Locks"],
