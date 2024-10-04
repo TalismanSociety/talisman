@@ -19,7 +19,7 @@ export const SendFundsTokenPicker = () => {
   )
 
   const tokenFilter = useMemo<((token: Token) => boolean) | undefined>(() => {
-    // in case the wizard is launched from an address link "send to" link, tokens must be filtered by that address type
+    // in case the wizard is launched from the address book screen, by clicking a contact's "send to" link, tokens must be filtered by that contact address type
     // other cases are handled by the picker directly
     return !from && to && !tokenId ? getTokenFilter(to) : undefined
   }, [from, to, tokenId])
