@@ -29,6 +29,7 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
   label?: string
   nonce: number
   blockNumber?: string
+  confirmed?: boolean
 }
 
 export type EvmWalletTransaction = WalletTransactionBase & {
