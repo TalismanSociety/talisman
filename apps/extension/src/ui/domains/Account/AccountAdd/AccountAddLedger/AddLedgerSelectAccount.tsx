@@ -31,18 +31,15 @@ const items = Object.entries(options).map<Option>(([key, value]) => ({
 }))
 
 type LedgerDerivationPathSelectorProps = {
-  defaultValue: LedgerEthDerivationPathType
+  derivationPathType: LedgerEthDerivationPathType
   onChange: (value: LedgerEthDerivationPathType) => void
 }
 
 const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
-  defaultValue = "LedgerLive",
+  derivationPathType = "LedgerLive",
   onChange,
 }) => {
-  const defaultSelectedItem = useMemo(
-    () => items.find((i) => i.key === defaultValue),
-    [defaultValue]
-  )
+  const value = useMemo(() => items.find((i) => i.key === derivationPathType), [derivationPathType])
 
   const handleChange = useCallback(
     (item: Option | null) => {
@@ -54,11 +51,10 @@ const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
   return (
     <Dropdown
       items={items}
-      value={defaultSelectedItem}
+      value={value}
       propertyKey="key"
       propertyLabel="label"
       onChange={handleChange}
-      className="w-[32rem]"
     />
   )
 }
@@ -133,7 +129,8 @@ export const AddLedgerSelectAccount = () => {
     [setValue]
   )
 
-  const [derivationPath, setDerivationPath] = useState<LedgerEthDerivationPathType>("LedgerLive")
+  const [derivationPathType, setDerivationPathType] =
+    useState<LedgerEthDerivationPathType>("LedgerLive")
 
   const isInvalidInputs = useMemo(() => {
     if (!data.type) return true
@@ -162,8 +159,8 @@ export const AddLedgerSelectAccount = () => {
             </p>
             <div>
               <LedgerDerivationPathSelector
-                defaultValue="LedgerLive"
-                onChange={setDerivationPath}
+                derivationPathType={derivationPathType}
+                onChange={setDerivationPathType}
               />
             </div>
             <div className="h-4" />
@@ -199,7 +196,7 @@ export const AddLedgerSelectAccount = () => {
         {data.type === "ethereum" && (
           <LedgerEthereumAccountPicker
             name={t("Ledger Ethereum")}
-            derivationPathType={derivationPath}
+            derivationPathType={derivationPathType}
             onChange={handleAccountsChange}
           />
         )}
