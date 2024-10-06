@@ -20,7 +20,7 @@ import { Drawer, IconButton } from "talisman-ui"
 import { TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { FullColorSmallLogo } from "@talisman/theme/logos"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
@@ -136,7 +136,7 @@ export const NavigationDrawer: FC = () => {
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
         <header className="border-grey-800 box-border flex h-36 w-full items-center justify-between gap-6 border-b px-12">
-          <FullColorSmallLogo className="h-[2.5rem] w-auto" />
+          <TalismanWhiteLogo className="h-[2.5rem] w-auto" />
           <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
           <div className="grow"></div>
           <IconButton onClick={close} aria-label={t("Close menu")}>
