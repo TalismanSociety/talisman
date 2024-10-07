@@ -1,11 +1,10 @@
 import { EvmNetwork } from "@talismn/chaindata-provider"
 import { GlobeIcon, InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { atom, useAtomValue } from "jotai"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, Radio, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AddEthereumChainParameter, isHex, toHex } from "viem"
 
 import { KnownRequestIdOnly } from "@extension/core"
@@ -22,41 +21,6 @@ import { requestsAtom } from "@ui/hooks/useRequests"
 import useToken from "@ui/hooks/useToken"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
-
-// TODO once finalized with Diogo, convert as style.css classes, then move to talisman-ui along with a test page in playground
-const Radio: FC<{
-  name: string
-  value: string
-  label?: ReactNode
-  checked?: boolean
-  onChange?: ChangeEventHandler<HTMLInputElement>
-  className?: string
-}> = ({ name, value, label, checked, className, onChange }) => {
-  return (
-    <label
-      className={classNames(
-        "cursor-pointer p-0.5",
-        "hover:text-grey-300",
-        "has-[:checked]:text-body has-[:checked]:cursor-default",
-        className
-      )}
-    >
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        checked={checked}
-        onChange={onChange}
-        className={classNames(
-          "bg-body-disabled h-[0.8em] w-[0.8em] appearance-none rounded-full",
-          "checked:bg-primary checked:border-body-disabled checked:border-[0.15em]",
-          "ring-body focus-visible:ring-1"
-        )}
-      />
-      {!!label && <span className="ml-3">{label}</span>}
-    </label>
-  )
-}
 
 type SettingsSource = "talisman" | "dapp"
 
