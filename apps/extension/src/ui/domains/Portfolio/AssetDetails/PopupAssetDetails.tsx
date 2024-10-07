@@ -1,9 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
+import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -271,6 +272,14 @@ const LockedExtra: FC<{
     [rowAddress, data?.accounts]
   )
 
+  const withdrawIn = useMemo(
+    () =>
+      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
+        : null,
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding]
+  )
+
   if (!rowAddress || !accountStatus) return null
 
   return (
@@ -283,17 +292,19 @@ const LockedExtra: FC<{
             className="px-2 py-0.5 text-xs"
           />
         ) : (
-          <span
-            className={classNames(
-              "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
-              isLoading && "animate-pulse transition-opacity"
+          <Tooltip>
+            <TooltipTrigger
+              className={classNames(
+                "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
+                isLoading && "animate-pulse transition-opacity"
+              )}
+            >
+              {t("Unbonding")}
+            </TooltipTrigger>
+            {!!withdrawIn && (
+              <TooltipContent>{t("{{duration}} left", { duration: withdrawIn })}</TooltipContent>
             )}
-          >
-            {t("Unbonding")}
-            {/* TODO: Show time until funds are unbonded */}
-            {/* Problem: We don't have any available space for that here */}
-            {/* <div>4d 14hr 11min</div> */}
-          </span>
+          </Tooltip>
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
       accountStatus.canUnstake ? (
