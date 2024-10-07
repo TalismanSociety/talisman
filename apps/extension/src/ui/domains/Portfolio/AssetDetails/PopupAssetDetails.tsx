@@ -291,6 +291,7 @@ const LockedExtra: FC<{
           >
             {t("Unbonding")}
             {/* TODO: Show time until funds are unbonded */}
+            {/* Problem: We don't have any available space for that here */}
             {/* <div>4d 14hr 11min</div> */}
           </span>
         )

@@ -1,5 +1,6 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -291,6 +292,14 @@ const LockedExtra: FC<{
     [data?.accounts, rowAddress]
   )
 
+  const withdrawIn = useMemo(
+    () =>
+      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
+        : null,
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding]
+  )
+
   if (!rowAddress || !accountStatus) return null
 
   return (
@@ -299,16 +308,21 @@ const LockedExtra: FC<{
         accountStatus.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} />
         ) : (
-          <div
-            className={classNames(
-              "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
-              isLoading && "animate-pulse transition-opacity"
+          <>
+            <div
+              className={classNames(
+                "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
+                isLoading && "animate-pulse transition-opacity"
+              )}
+            >
+              {t("Unbonding")}
+            </div>
+            {!!withdrawIn && (
+              <div className="text-body-disabled text-sm">
+                {t("{{duration}} left", { duration: withdrawIn })}
+              </div>
             )}
-          >
-            {t("Unbonding")}
-            {/* TODO: Show time until funds are unbonded */}
-            {/* <div>4d 14hr 11min</div> */}
-          </div>
+          </>
         )
       ) : accountStatus.canUnstake ? (
         <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} />
