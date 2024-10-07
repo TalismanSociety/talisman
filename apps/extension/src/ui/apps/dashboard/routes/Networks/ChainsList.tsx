@@ -32,25 +32,25 @@ const DeactivateNetworksModalContent: FC<{
 
   const [includeTestnets] = useSetting("useTestnets")
   const balances = useBalances("all")
-  const { chains: allChains } = useChains({ activeOnly: true, includeTestnets })
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
 
   const [activeChainIds, unusedChainIds] = useMemo(() => {
-    const allChainIds = allChains.map((chain) => chain.id)
+    const networkIds = chains.map((chain) => chain.id)
 
     return [
-      allChainIds,
-      allChainIds.filter((chainId) => !balances.find({ chainId }).sum.planck.total),
+      networkIds,
+      networkIds.filter((chainId) => !balances.find({ chainId }).sum.planck.total),
     ]
-  }, [allChains, balances])
+  }, [chains, balances])
 
   const [mode, setMode] = useState<DeactivateMode>("all")
 
   const handleClick = useCallback(async () => {
-    const chainIds = mode === "all" ? activeChainIds : unusedChainIds
+    const networkIds = mode === "all" ? activeChainIds : unusedChainIds
 
     activeChainsStore.mutate((prev) => ({
       ...prev,
-      ...Object.fromEntries(chainIds.map((chainId) => [chainId, false])),
+      ...Object.fromEntries(networkIds.map((chainId) => [chainId, false])),
     }))
 
     onClose()
@@ -58,16 +58,16 @@ const DeactivateNetworksModalContent: FC<{
 
   const disableSubmit = useMemo(() => {
     if (mode === "unused" && (isBalancesInitializing || !unusedChainIds.length)) return true
-    if (mode === "all" && !allChains.length) return true
+    if (mode === "all" && !activeChainIds.length) return true
     return false
-  }, [allChains.length, isBalancesInitializing, mode, unusedChainIds.length])
+  }, [activeChainIds.length, isBalancesInitializing, mode, unusedChainIds.length])
 
   return (
     <ModalDialog title={t("Deactivate Polkadot networks")} onClose={onClose}>
       <div className="text-body-secondary mb-8 text-sm">
         {t("It is recommended to deactivate unused networks to improve Talisman performance.")}
       </div>
-      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-8 rounded-sm px-8 text-sm ">
+      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm ">
         {isBalancesInitializing ? (
           <>
             <LoaderIcon className="text-md shrink-0 animate-spin" />
@@ -79,7 +79,7 @@ const DeactivateNetworksModalContent: FC<{
           <>
             <InfoIcon className="text-md shrink-0" />
             <div className="text-body-secondary grow">
-              {t("Found {{count}} networks without token balances", {
+              {t("Found {{count}} network(s) without token balances", {
                 count: unusedChainIds.length,
               })}
             </div>
@@ -89,7 +89,7 @@ const DeactivateNetworksModalContent: FC<{
       <div className="text-body-secondary flex flex-col items-start py-8 text-sm">
         <Radio
           name="deactivateMode"
-          label={t("Deactivate all Polkadot networks ({{count}})", { count: allChains.length })}
+          label={t("Deactivate all Polkadot networks ({{count}})", { count: chains.length })}
           value="all"
           checked={mode === "all"}
           onChange={() => setMode("all")}
