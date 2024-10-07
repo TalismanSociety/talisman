@@ -1,7 +1,8 @@
+import { Button } from "talisman-ui"
+
 import imgHandOrb from "@talisman/theme/images/onboard_hand_orb.png"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { Button } from "talisman-ui"
 
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
@@ -26,7 +27,7 @@ export const SuccessPage = () => {
           <br />
           You're ready to get started!
         </div>
-        <Button primary onClick={completeOnboarding}>
+        <Button primary onClick={completeOnboarding} data-testid="onboarding-enter-talisman-button">
           Enter Talisman
         </Button>
       </div>

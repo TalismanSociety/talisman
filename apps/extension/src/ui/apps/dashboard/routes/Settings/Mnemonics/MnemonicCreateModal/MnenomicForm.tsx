@@ -1,9 +1,10 @@
 import { InfoIcon } from "@talismn/icons"
-import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
-import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
+import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
 
 import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
@@ -58,6 +59,7 @@ const MnemonicFormInner = () => {
             className="text-grey-300 hover:text-body flex h-11 cursor-pointer gap-5 self-center text-sm font-bold"
             onClick={complete}
             type="button"
+            data-testid="onboarding-mnemonic-skip-button"
           >
             {t("Skip Verification")}
           </button>

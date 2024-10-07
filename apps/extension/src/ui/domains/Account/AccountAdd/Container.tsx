@@ -1,12 +1,13 @@
-import { IS_FIREFOX } from "@extension/shared"
-import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
-import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { IS_FIREFOX } from "@extension/shared"
+import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
+import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
 import { MethodTypes, useAccountCreateContext } from "./context"
 
@@ -88,7 +89,9 @@ const AccountCreateMethodButton = ({
           : "text-body cursor-pointer hover:bg-opacity-10 focus:bg-opacity-10"
       }`}
     >
-      <span className={"flex justify-start"}>{title}</span>
+      <span className={"flex justify-start"} data-testid="onboarding-create-acc-button">
+        {title}
+      </span>
       <span className={"text-body-secondary flex items-center gap-2 text-sm"}>
         {networks.map((network, i) => (
           <span key={network} className={i + 1 < networks.length ? "-mr-[0.8rem]" : ""}>

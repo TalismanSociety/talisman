@@ -1,23 +1,7 @@
-import { AccountAddressType, RequestAccountCreateOptions } from "@extension/core"
-import { AssetDiscoveryMode } from "@extension/core"
-import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { sleep } from "@talismn/util"
+import { classNames, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import {
-  MnemonicCreateModal,
-  MnemonicCreateModalProvider,
-  useMnemonicCreateModal,
-} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -33,6 +17,25 @@ import {
   useOpenClose,
 } from "talisman-ui"
 import * as yup from "yup"
+
+import {
+  AccountAddressType,
+  AssetDiscoveryMode,
+  RequestAccountCreateOptions,
+} from "@extension/core"
+import { log } from "@extension/shared"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { api } from "@ui/api"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useMnemonics } from "@ui/hooks/useMnemonics"
 
 import { AccountIcon } from "../../AccountIcon"
 import { AccountAddPageProps } from "../types"
@@ -263,6 +266,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           <FormFieldInputText
             {...register("name")}
             placeholder={t("Choose a name")}
+            data-testid="onboarding-choose-name-input"
             spellCheck={false}
             autoComplete="off"
             data-lpignore
@@ -313,6 +317,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
+            data-testid="onboarding-create-button"
           >
             {t("Create")}
           </Button>
