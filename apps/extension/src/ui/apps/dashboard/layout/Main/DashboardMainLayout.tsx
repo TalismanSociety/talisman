@@ -7,7 +7,7 @@ import { useMatch, useNavigate, useSearchParams } from "react-router-dom"
 import { IconButton, Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { LogoDashboard } from "@talisman/theme/logos"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
@@ -46,7 +46,7 @@ const Header = () => (
     className={classNames("flex h-48 w-full items-center justify-between", RESPONSIVE_FLEX_SPACING)}
   >
     <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
-      <LogoDashboard className="h-[3rem] w-[14.7172rem]" />
+      <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
       <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
     </div>
     <HorizontalNav />
