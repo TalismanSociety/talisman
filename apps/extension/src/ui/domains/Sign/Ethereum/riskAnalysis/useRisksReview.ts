@@ -3,11 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useOpenClose } from "talisman-ui"
 
 export const useRisksReview = (action?: ActionEnum) => {
-  const [isRiskAknowledged, setIsRiskAknowledged] = useState(false)
+  const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
 
   const drawer = useOpenClose(false)
 
-  const isRiskAknowledgementRequired = useMemo(
+  const isRiskAcknowledgementRequired = useMemo(
     () => action === ActionEnum.Block || action === ActionEnum.Warn,
     [action]
   )
@@ -15,16 +15,16 @@ export const useRisksReview = (action?: ActionEnum) => {
   // open review drawer automatically if risk is required
   const refIsInitialized = useRef(false)
   useEffect(() => {
-    if (!refIsInitialized.current && isRiskAknowledgementRequired) {
+    if (!refIsInitialized.current && isRiskAcknowledgementRequired) {
       refIsInitialized.current = true
       drawer.open()
     }
-  }, [drawer, isRiskAknowledgementRequired])
+  }, [drawer, isRiskAcknowledgementRequired])
 
   return {
-    isRiskAknowledgementRequired,
-    isRiskAknowledged,
-    setIsRiskAknowledged,
+    isRiskAcknowledgementRequired,
+    isRiskAcknowledged,
+    setIsRiskAcknowledged,
     drawer,
   }
 }

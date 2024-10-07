@@ -46,7 +46,7 @@ export const watchEthereumTransaction = async (
       // so we retry as long as we don't get a receipt, with a timeout on our side
       const getTransactionReceipt = async (hash: Hex): Promise<TransactionReceipt> => {
         try {
-          return await client.waitForTransactionReceipt({ hash })
+          return await client.waitForTransactionReceipt({ hash, confirmations: 0 })
         } catch (err) {
           await sleep(4000)
           return getTransactionReceipt(hash)
@@ -75,6 +75,18 @@ export const watchEthereumTransaction = async (
           networkName,
           txUrl
         )
+
+      // wait 2 confirmations before marking as confirmed
+      if (receipt.status === "success") {
+        const receipt = await client.waitForTransactionReceipt({ hash, confirmations: 2 })
+        if (receipt.status === "success")
+          updateTransactionStatus(
+            hash,
+            receipt.status === "success" ? "success" : "error",
+            receipt.blockNumber,
+            true
+          )
+      }
     } catch (err) {
       log.error("watchEthereumTransaction error: ", { err })
       const isNotFound = err instanceof Error && err.message === "Transaction not found"

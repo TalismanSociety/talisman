@@ -1,6 +1,6 @@
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { Binary, decodeScale, encodeStateKey } from "@talismn/scale"
-import { blake2Concat, decodeAnyAddress } from "@talismn/util"
+import { BigMath, blake2Concat, decodeAnyAddress } from "@talismn/util"
 import { Struct, u32, u128 } from "scale-ts"
 
 import log from "../../../log"
@@ -50,6 +50,7 @@ export async function buildQueries(
   tokens: Record<string, Token>,
   chainStorageCoders: StorageCoders<{
     base: ["System", "Account"]
+    stakingLedger: ["Staking", "Ledger"]
     reserves: ["Balances", "Reserves"]
     holds: ["Balances", "Holds"]
     locks: ["Balances", "Locks"]
@@ -100,6 +101,7 @@ export async function buildQueries(
 
       let locksQueryLocks: Array<AmountWithLabel<string>> = []
       let freezesQueryLocks: Array<AmountWithLabel<string>> = []
+      let unbondingQueryLocks: Array<AmountWithLabel<string>> = []
 
       const baseQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
         // For chains which are using metadata < v14
@@ -229,6 +231,7 @@ export async function buildQueries(
               type: "locked",
               source: "substrate-native-locks",
               label: getLockedType(lock?.id?.asText?.()),
+              meta: { id: lock?.id?.asText?.() },
               amount: (lock?.amount ?? 0n).toString(),
             })) ?? []
 
@@ -237,6 +240,9 @@ export async function buildQueries(
             (v) => v.source !== "substrate-native-locks"
           )
           balanceJson.values = nonLockValues.concat(locksQueryLocks)
+
+          // fix any double-counting between Balances.Locks (for staking locks) and Staking.Ledger (for unbonding locks)
+          balanceJson.values = updateStakingLocksUsingUnbondingLocks(balanceJson.values)
 
           return balanceJson
         }
@@ -286,7 +292,65 @@ export async function buildQueries(
         return { chainId, stateKey, decodeResult }
       })()
 
-      const queries = [baseQuery, locksQuery, freezesQuery].filter(
+      const unbondingQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
+        const scaleCoder = chainStorageCoders.get(chainId)?.stakingLedger
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid address in ${chainId} unbonding query ${address}`,
+          address
+        )
+        if (!stateKey) return
+
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type DecodedType = {
+            active: bigint
+            legacy_claimed_rewards: number[]
+            stash: string
+            total: bigint
+            unlocking: Array<{
+              era: number
+              value: bigint
+            }>
+          } | null
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode unbonding query on chain ${chainId}`
+          )
+
+          const totalUnlocking =
+            decoded?.unlocking?.reduce?.((acc, unlocking) => acc + unlocking.value, 0n) ?? 0n
+          if (totalUnlocking <= 0n) unbondingQueryLocks = []
+          else {
+            unbondingQueryLocks = [
+              {
+                type: "locked",
+                source: "substrate-native-unbonding",
+                label: "Unbonding",
+                amount: totalUnlocking.toString(),
+              },
+            ]
+          }
+
+          // unbonding values should be replaced entirely, not merged or appended
+          const nonUnbondingValues = balanceJson.values.filter(
+            (v) => v.source !== "substrate-native-unbonding"
+          )
+          balanceJson.values = nonUnbondingValues.concat(unbondingQueryLocks)
+
+          // fix any double-counting between Balances.Locks (for staking locks) and Staking.Ledger (for unbonding locks)
+          balanceJson.values = updateStakingLocksUsingUnbondingLocks(balanceJson.values)
+
+          return balanceJson
+        }
+
+        return { chainId, stateKey, decodeResult }
+      })()
+
+      const queries = [baseQuery, locksQuery, freezesQuery, unbondingQuery].filter(
         (query): query is RpcStateQuery<SubNativeBalance> => Boolean(query)
       )
 
@@ -295,4 +359,66 @@ export async function buildQueries(
 
     return outerResult
   }, {})
+}
+
+/**
+ * Using the Balances.Locks query, we can find the amount of tokens locked up in the staking pallet.
+ * But without more information, we cannot determine if these tokens are actively staked or are unbonding.
+ *
+ * Using the Staking.Ledger query we can determine how many of these tokens are currently unbonding.
+ * But there is an overlap between our first query (the tokens locked in the staking pallet),
+ * and our second query (the tokens which are locked in the staking pallet and are unbonding).
+ *
+ * So, we need to subtract the unbonding tokens from the staking locked tokens, in order to provide an accurate view
+ * of [tokens being staked] vs [tokens being unbonded].
+ *
+ * When this function is given the `values` property of a SubNative BalanceJson, it will modify the staking locks
+ * to subtract their totals by an amount based on the unbonding locks.
+ *
+ * It keeps track of the original staking lock totals for any which have been modified, by storing them in `lock.meta.totalAmount`.
+ * As such, this function is idempotent. You can call it many times on the same data and the result will be correct.
+ */
+const updateStakingLocksUsingUnbondingLocks = (
+  values: AmountWithLabel<string>[]
+): AmountWithLabel<string>[] => {
+  const stakingLocks: AmountWithLabel<string>[] = []
+  const otherValues: AmountWithLabel<string>[] = []
+  values.forEach((value) => {
+    if (value.type !== "locked") return otherValues.push(value)
+    if (value.source !== "substrate-native-locks") return otherValues.push(value)
+    if (!(value.meta as { id?: string })?.id?.includes("staking")) return otherValues.push(value)
+
+    return stakingLocks.push(value)
+  })
+
+  const unbondingLocks = values.filter(
+    (value) => value.type === "locked" && value.source === "substrate-native-unbonding"
+  )
+
+  // step 1: reset all staking locks to their original amounts, to make this function idempotent
+  stakingLocks.forEach((lock) => {
+    const totalAmount = (lock?.meta as { totalAmount?: string })?.totalAmount
+    if (typeof totalAmount !== "string") return
+
+    lock.amount = totalAmount
+    delete (lock?.meta as { totalAmount?: string })?.totalAmount
+  })
+
+  // step 2: subtract unbonding amounts from staking locks
+  let totalUnbonding = unbondingLocks.reduce((acc, { amount }) => acc + BigInt(amount), 0n)
+  while (totalUnbonding > 0n) {
+    const nextLock = stakingLocks.find((lock) => BigInt(lock.amount) > 0n)
+    if (!nextLock) {
+      break
+    }
+
+    // set nextLock.meta.totalAmount so we can revert the change we are about to make to nextLock.amount
+    ;(nextLock.meta as { totalAmount?: string }).totalAmount = nextLock.amount
+
+    const lockAmount = BigInt(nextLock.amount)
+    nextLock.amount = BigMath.max(0n, lockAmount - totalUnbonding).toString()
+    totalUnbonding -= lockAmount
+  }
+
+  return [...otherValues, ...stakingLocks]
 }

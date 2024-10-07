@@ -2,14 +2,15 @@ import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { Transition } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
+import { useSetting } from "@ui/hooks/useSettings"
+
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
-import { RisksAnalysisAknowledgement } from "./RisksAnalysisAknowledgement"
+import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
 import { EvmRiskAnalysis } from "./types"
 
 const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
@@ -24,7 +25,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ risk
           <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
         </div>
       </div>
-      <RisksAnalysisAknowledgement riskAnalysis={riskAnalysis} />
+      <RisksAnalysisAcknowledgement riskAnalysis={riskAnalysis} />
       <div>
         <Button onClick={riskAnalysis.review.drawer.close} className="w-full">
           {t("Close")}

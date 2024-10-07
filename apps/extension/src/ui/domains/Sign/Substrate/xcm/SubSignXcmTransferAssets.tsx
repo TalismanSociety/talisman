@@ -1,3 +1,4 @@
+import { u8aToHex } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
@@ -87,6 +88,16 @@ const getTargetChain = (
   throw new Error("Unknown multi location")
 }
 
+const isPrefixMatch = (bytes: Uint8Array, prefix: Uint8Array) => {
+  // Check if the Uint8Array length is at least as long as the sequence
+  if (bytes.length < prefix.length) return false
+
+  // Compare each element of the sequence with the array
+  for (let i = 0; i < prefix.length; i++) if (bytes[i] !== prefix[i]) return false
+
+  return true
+}
+
 const getTargetAccount = (
   multiLocation: VersionedMultiLocation | undefined,
   account: AccountJsonAny
@@ -97,7 +108,16 @@ const getTargetAccount = (
     if (interior.type === "Here" && account) return account.address
     if (interior.type === "X1") {
       if (interior.value.type === "AccountKey20") return encodeAnyAddress(interior.value.key)
-      if (interior.value.type === "AccountId32") return encodeAnyAddress(interior.value.id)
+      if (interior.value.type === "AccountId32") {
+        // some chains support evm accounts (AccountId20) as AccountId32, prefixed with ETH (in ASCII) and suffixed with empty bytes to fill the remaining of the array
+        // in this case we should identify the corresponding evm address
+        // test case: hydration portal, xcm mythos from mythos to hydration
+        const ETH_PREFIX = new Uint8Array([69, 84, 72, 0])
+        if (isPrefixMatch(interior.value.id, ETH_PREFIX))
+          return u8aToHex(interior.value.id.slice(4, 24))
+
+        return encodeAnyAddress(interior.value.id)
+      }
     }
   }
   // throw an error so the sign popup fallbacks to default view

@@ -157,18 +157,19 @@ export const useNomPoolBondWizard = () => {
     [isFormValid, setState]
   )
 
+  // we must craft a different extrinsic if the user is already staking in a pool
+  const hasJoinedNomPool = useMemo(() => !!currentPool, [currentPool])
+
   const withSetClaimPermission = useMemo(() => {
     switch (claimPermission) {
       case "PermissionlessCompound":
       case "PermissionlessAll":
         return false
       default:
-        return true
+        // if the user is already staking in a pool, we shouldn't change the claim permission
+        return !hasJoinedNomPool
     }
-  }, [claimPermission])
-
-  // we must craft a different extrinsic if the user is already staking in a pool
-  const hasJoinedNomPool = useMemo(() => !!currentPool, [currentPool])
+  }, [claimPermission, hasJoinedNomPool])
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
 

@@ -104,10 +104,11 @@ export const addSubstrateTransaction = async (
 export const updateTransactionStatus = async (
   hash: string,
   status: TransactionStatus,
-  blockNumber?: bigint | number
+  blockNumber?: bigint | number,
+  confirmed?: boolean
 ) => {
   try {
-    await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString() })
+    await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString(), confirmed })
 
     if (["success", "error"].includes(status)) {
       const tx = await db.transactions.get(hash)

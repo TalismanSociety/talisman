@@ -1,12 +1,15 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
+import { log } from "extension-shared"
 import { useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import useBalances from "@ui/hooks/useBalances"
 import useToken from "@ui/hooks/useToken"
+import { ScaleApi } from "@ui/util/scaleApi"
 
+import { getStakingEraDurationMs } from "../helpers"
 import { NomPoolMember } from "../types"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
@@ -71,20 +74,40 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         balances.map(({ address, transferable }) => [address, transferable.planck])
       )
 
-      const accounts = balances.map(({ address }) => ({
-        address,
-        poolId: nomPoolStakingByAddress[address]?.pool_id,
-        isSoloStaking: !!soloStakingByAddress[address],
-        isNomPoolsStaking: !!nomPoolStakingByAddress[address],
-        canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
-        canUnstake: nomPoolStakingByAddress[address]?.points,
-        canWithdraw: nomPoolStakingByAddress[address]?.unbonding_eras?.some(
-          ([era]) => era < currentEra // TODO maybe equal is good?
-        ),
-      }))
+      const accounts = await Promise.all(
+        balances.map(async ({ address }) => {
+          const unbondingEras =
+            nomPoolStakingByAddress[address]?.unbonding_eras.map(([era]) => era) ?? []
+          const maxUnbondingEra = Math.max(...unbondingEras)
+          const erasToUnbonding = currentEra < maxUnbondingEra ? maxUnbondingEra - currentEra : 0
+
+          return {
+            address,
+            poolId: nomPoolStakingByAddress[address]?.pool_id,
+            isSoloStaking: !!soloStakingByAddress[address],
+            isNomPoolsStaking: !!nomPoolStakingByAddress[address],
+            canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
+            canUnstake: nomPoolStakingByAddress[address]?.points,
+            canWithdraw: maxUnbondingEra < currentEra,
+            canWithdrawIn: await getWithdrawWaitDuration(sapi, erasToUnbonding),
+          }
+        })
+      )
 
       return { accounts, poolId }
     },
     enabled: !!sapi,
   })
+}
+
+const getWithdrawWaitDuration = async (sapi: ScaleApi, eras: number) => {
+  if (eras <= 0) return 0
+
+  try {
+    const eraDuration = await getStakingEraDurationMs(sapi)
+    return eras * Number(eraDuration)
+  } catch (err) {
+    log.error("Failed to get era duration", err)
+    return null
+  }
 }
