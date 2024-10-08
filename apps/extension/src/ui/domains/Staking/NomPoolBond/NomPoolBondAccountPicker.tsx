@@ -66,7 +66,7 @@ export const NomPoolBondAccountPicker = () => {
         </header>
         <div className="flex grow flex-col">
           <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-            <div className="font-bold">{"Account"}</div>
+            <div className="font-bold">{t("Account")}</div>
             <div className="mx-1 grow overflow-hidden px-1">
               <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
             </div>

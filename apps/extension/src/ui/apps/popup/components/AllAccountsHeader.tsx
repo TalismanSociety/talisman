@@ -1,24 +1,15 @@
-import { ChevronRightIcon } from "@talismn/icons"
+import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
+import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
+import { IconButton } from "talisman-ui"
 
 import { AccountJsonAny } from "@extension/core"
+import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
-import { useAccountColors } from "@ui/hooks/useAccountColors"
-
-const BG_CONFIG: MysticalPhysicsV3 = {
-  ...MYSTICAL_PHYSICS_V3,
-  artifacts: 2,
-  radiusMin: 4,
-  radiusMax: 4,
-  opacityMin: 0.5,
-  opacityMax: 0.5,
-  durationMin: 12000,
-  durationMax: 15000,
-}
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
   const navigate = useNavigate()
@@ -28,37 +19,44 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
   const disabled = useMemo(() => !accounts.length, [accounts.length])
 
   return (
-    <div ref={ref} className="relative h-[11.4rem] w-full">
+    <div ref={ref} className="relative h-[14rem] w-full">
       <button
         type="button"
         className={classNames(
-          "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
+          "flex size-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
           "bg-black-secondary text-body-secondary transition-colors duration-75",
-          !disabled && "hover:bg-grey-800 hover:text-white"
+          !disabled && "hover:text-body"
         )}
         onClick={!disabled ? handleClick : undefined}
         disabled={disabled}
       >
-        {!disabled && <AllAccountsHeaderBackground accounts={accounts} />}
+        {!disabled && !!accounts?.[0]?.address && (
+          <TalismanOrbRectangle
+            seed={accounts[0].address}
+            className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
+          />
+        )}
         {!disabled && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
-        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
+        className="pointer-events-none absolute left-0 top-0 size-full p-6"
         mouseOver={isHovered}
         disabled={disabled}
       />
+      {IS_EMBEDDED_POPUP && <PopoutButton />}
     </div>
   )
 }
 
-const AllAccountsHeaderBackground: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
-  const colors = useAccountColors(accounts?.[0]?.address)
-  const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
+const PopoutButton: FC = () => {
+  const handleClick = useCallback(() => {
+    api.popupOpen("#/portfolio")
+    window.close()
+  }, [])
 
   return (
-    <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full rounded-sm"
-      config={config}
-    />
+    <IconButton className="absolute right-3 top-3 p-3 text-base" onClick={handleClick}>
+      <PopoutIcon />
+    </IconButton>
   )
 }

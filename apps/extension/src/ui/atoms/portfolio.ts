@@ -1,5 +1,6 @@
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/util"
 import { t } from "i18next"
 import { atom } from "jotai"
 
@@ -58,9 +59,9 @@ const getNetworkTokenSymbols = ({
   return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
 }
 
-const getAccountType = (account?: AccountJsonAny | null) => {
-  if (account?.type === "ethereum") return "ethereum"
-  if (account?.type) return "sr25519" // all substrate
+const getAccountsType = (accounts?: AccountJsonAny[]) => {
+  if (accounts?.every((a) => a.type === "ethereum")) return "ethereum"
+  if (accounts?.every((a) => a.type !== "ethereum")) return "sr25519" // TODO rename substrate or ss58
   return undefined
 }
 
@@ -165,6 +166,8 @@ const getFilteredBalances = ({
 }
 
 export const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
+// all accounts we want to display balances for : the selected account itself, the accounts within the selected folder, or undefined if nothing is selected
+export const portfolioSelectedAccountsAtom = atom<AccountJsonAny[] | undefined>(undefined)
 
 export const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
 
@@ -218,14 +221,17 @@ const portfolioBaseAtom = atom((get) => {
     isInitialising,
   } = get(portfolioGlobalDataAtom)
   const networkFilter = get(networkFilterAtom)
-  const account = get(portfolioAccountAtom)
 
-  const allBalances = account
-    ? allAccountsBalances.find({ address: account.address })
+  const selectedAccounts = get(portfolioSelectedAccountsAtom)
+
+  const allBalances = selectedAccounts
+    ? allAccountsBalances.find((b) =>
+        selectedAccounts.some((a) => isAddressEqual(a.address, b.address))
+      )
     : portfolioBalances
 
   const networkBalances = getFilteredBalances({ networkFilter, allBalances, hydrate })
-  const accountType = getAccountType(account)
+  const accountType = getAccountsType(selectedAccounts)
   const networks = getNetworkOptions({
     tokens,
     chains,

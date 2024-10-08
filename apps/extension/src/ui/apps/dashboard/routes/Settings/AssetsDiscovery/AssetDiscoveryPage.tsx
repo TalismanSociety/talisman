@@ -1,15 +1,3 @@
-import {
-  AccountJsonAny,
-  AssetDiscoveryMode,
-  DiscoveredBalance,
-  activeEvmNetworksStore,
-  activeTokensStore,
-  isEvmNetworkActive,
-  isTokenActive,
-} from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
@@ -22,33 +10,6 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import {
-  assetDiscoveryScanAtom,
-  assetDiscoveryScanProgressAtom,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import Tokens from "@ui/domains/Asset/Tokens"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
-import useTokens from "@ui/hooks/useTokens"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -67,8 +28,48 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { DashboardLayout } from "../../../layout/DashboardLayout"
-import { AccountsStack } from "../Accounts/AccountIconsStack"
+import {
+  AccountJsonAny,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  AssetDiscoveryMode,
+  DiscoveredBalance,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
+import {
+  assetDiscoveryScanAtom,
+  assetDiscoveryScanProgressAtom,
+  evmNetworksMapAtomFamily,
+  settingsAtomFamily,
+  tokensMapAtomFamily,
+} from "@ui/atoms"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import Tokens from "@ui/domains/Asset/Tokens"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
+import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAppState } from "@ui/hooks/useAppState"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSetting } from "@ui/hooks/useSettings"
+import useToken from "@ui/hooks/useToken"
+import useTokens from "@ui/hooks/useTokens"
+import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
+
+import { DashboardAdminLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,
@@ -577,7 +578,7 @@ export const AssetDiscoveryPage = () => {
   }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
-    <DashboardLayout
+    <DashboardAdminLayout
       analytics={ANALYTICS_PAGE}
       withBack
       centered
@@ -597,6 +598,6 @@ export const AssetDiscoveryPage = () => {
       <ScanInfo />
       <Spacer large />
       <AssetTable />
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

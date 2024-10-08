@@ -3,12 +3,12 @@ import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import useBalances from "@ui/hooks/useBalances"
 import useToken from "@ui/hooks/useToken"
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { useSelectedAccount } from "../../Portfolio/useSelectedAccount"
 import { getStakingEraDurationMs } from "../helpers"
 import { NomPoolMember } from "../types"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
@@ -22,7 +22,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   // dont get sapi if we dont have a poolId, it would fetch metadata for nothing
   const { data: sapi } = useScaleApi(poolId ? token?.chain?.id : null)
   const { data: minJoinBond } = useNomPoolsMinJoinBond(poolId ? token?.chain?.id : null)
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
 
   const [balances, balancesKey] = useMemo(() => {
     if (!minJoinBond || !token) return [[], ""]

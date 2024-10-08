@@ -25,7 +25,7 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -125,7 +125,7 @@ const ChainTokenBalancesUniswapV2Row = ({
   isLastBalance?: boolean
   status: BalancesStatus
 }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const selectedCurrency = useSelectedCurrency()
   const balancePair = useUniswapV2BalancePair(balance)
   if (!balancePair) return null
@@ -142,7 +142,7 @@ const ChainTokenBalancesUniswapV2Row = ({
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
-      {!account && (
+      {!selectedAccount && (
         <div className="flex items-end justify-between gap-4 text-xs">
           <PortfolioAccount address={balance.address} />
         </div>
@@ -263,9 +263,12 @@ const LockedExtra: FC<{
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
 
-  const rowAddress = useMemo(() => address ?? account?.address ?? null, [account?.address, address])
+  const rowAddress = useMemo(
+    () => address ?? selectedAccount?.address ?? null,
+    [selectedAccount?.address, address]
+  )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
@@ -325,17 +328,17 @@ type AssetsTableProps = {
 
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { open } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
 
   const handleCopy = useCallback(() => {
     open({
-      address: account?.address,
+      address: selectedAccount?.address,
       qr: true,
     })
     genericEvent("open receive", { from: "asset details" })
-  }, [account?.address, genericEvent, open])
+  }, [selectedAccount?.address, genericEvent, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
@@ -347,8 +350,10 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
     <FadeIn>
       <div className="bg-field text-body-secondary leading-base rounded-sm p-10 text-center text-sm">
         <div>
-          {account
+          {selectedAccount
             ? t("You don't have any {{symbol}} in this account", { symbol })
+            : selectedFolder
+            ? t("You don't have any {{symbol}} in this folder", { symbol })
             : t("You don't have any {{symbol}}", { symbol })}
         </div>
         <div className="mt-6 flex justify-center gap-4">

@@ -1,13 +1,14 @@
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
+import { useCallback } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { useCallback } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 export const SendFundsButton = ({
   symbol,
@@ -18,7 +19,7 @@ export const SendFundsButton = ({
   networkId: ChainId | EvmNetworkId
   shouldClose?: boolean
 }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const [includeTestnets] = useSetting("useTestnets")
   const { tokens } = useTokens({ activeOnly: true, includeTestnets })
 
@@ -30,7 +31,7 @@ export const SendFundsButton = ({
   )
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
-    account,
+    selectedAccount,
     token?.id
   )
 

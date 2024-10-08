@@ -1,9 +1,9 @@
 import { AuthorisedSites } from "@ui/domains/Settings/AuthorisedSites/AuthorisedSites"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardAdminLayout } from "../../layout"
 
 export const ConnectedSitesPage = () => (
-  <DashboardLayout centered>
+  <DashboardAdminLayout centered>
     <AuthorisedSites />
-  </DashboardLayout>
+  </DashboardAdminLayout>
 )

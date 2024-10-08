@@ -1,5 +1,17 @@
-import { ArrowDownIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@talismn/icons"
+import {
+  ArrowDownIcon,
+  CreditCardIcon,
+  EyeIcon,
+  EyeOffIcon,
+  RepeatIcon,
+  SendIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { FC, MouseEventHandler, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
@@ -11,9 +23,6 @@ import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
-import { ComponentProps, FC, MouseEventHandler, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = {
   className?: string
@@ -40,43 +49,44 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
   )
 
   return (
-    <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>
-      <div className="text-body-secondary mt-2 flex gap-2 text-sm">
-        <span>{t("Total Portfolio")}</span>
-        <button
-          className={classNames(
-            "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-opacity",
-            disabled && "hover:text-body-secondary focus:text-body-secondary",
-            (hideBalances || mouseOver) && "opacity-100"
-          )}
-          onClick={toggleHideBalance}
-        >
-          {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
-        </button>
-      </div>
-      <div className="flex w-full max-w-full items-center gap-2">
-        <button
-          className={classNames(
-            "bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 shrink-0 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out",
-            currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
-            currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
-          )}
-          onClick={(event) => {
-            event.stopPropagation()
-            toggleCurrency()
-          }}
-        >
-          {currencyConfig[currency]?.symbol}
-        </button>
-        <Fiat
-          className={classNames(
-            "font-surtExpanded overflow-hidden text-ellipsis whitespace-pre pr-10 text-lg",
-            disabled && "text-body-secondary"
-          )}
-          amount={portfolioTotal}
-          isBalance
-          currencyDisplay="code"
-        />
+    <div className={classNames("flex flex-col items-start justify-between", className)}>
+      <div className="font-inter flex flex-col gap-2">
+        <div className="text-body  flex gap-4 text-xs">
+          <div className="leading-10 tracking-[0.06px]">{t("Total Portfolio")}</div>
+          <button
+            className={classNames(
+              "focus:text-body text-grey-200 hover:text-body pointer-events-auto opacity-0 transition-opacity",
+              (hideBalances || mouseOver) && "opacity-100"
+            )}
+            onClick={toggleHideBalance}
+          >
+            {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
+          </button>
+        </div>
+        <div className="flex w-full max-w-full items-center gap-2">
+          <button
+            className={classNames(
+              "bg-grey-700/20 text-grey-200 hover:text-body hover:bg-body/10 pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full text-center shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
+              currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
+              currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
+            )}
+            onClick={(event) => {
+              event.stopPropagation()
+              toggleCurrency()
+            }}
+          >
+            {currencyConfig[currency]?.symbol}
+          </button>
+          <Fiat
+            className={classNames(
+              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[3.2rem] font-bold leading-[3.6rem] tracking-[0.016px]",
+              disabled && "text-body-secondary"
+            )}
+            amount={portfolioTotal}
+            isBalance
+            currencyDisplay="code"
+          />
+        </div>
       </div>
       <TopActions disabled={disabled} />
     </div>
@@ -88,7 +98,7 @@ type ActionProps = {
   analyticsAction?: string
   label: string
   tooltip?: string
-  icon: ComponentProps<typeof PillButton>["icon"]
+  icon: FC<{ className?: string }>
   onClick: () => void
   disabled: boolean
   disabledReason?: string
@@ -99,7 +109,7 @@ const Action: FC<ActionProps> = ({
   analyticsAction,
   label,
   tooltip,
-  icon,
+  icon: Icon,
   onClick,
   disabled,
   disabledReason,
@@ -120,14 +130,17 @@ const Action: FC<ActionProps> = ({
   return (
     <Tooltip placement="bottom-start">
       <TooltipTrigger asChild>
-        <PillButton
-          className="pointer-events-auto opacity-90"
+        <button
+          type="button"
+          className="text-body-secondary hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-[1.2rem] opacity-90"
           onClick={handleClick}
-          icon={icon}
           disabled={disabled}
         >
-          {label}
-        </PillButton>
+          <div>
+            <Icon className="size-6" />
+          </div>
+          <div>{label}</div>
+        </button>
       </TooltipTrigger>
       {(!!disabledReason || !!tooltip) && (
         <TooltipContent>{disabledReason || tooltip}</TooltipContent>
@@ -149,48 +162,59 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const ownedAccounts = useAccounts("owned")
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
 
+  const handleSwapClick = useCallback(() => {
+    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
+    window.close()
+  }, [])
+
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
     const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
     return { disableActions, disabledReason }
   }, [disabled, ownedAccounts.length, t])
 
-  const topActions = useMemo(() => {
-    const topActions: Array<ActionProps> = [
-      {
-        analyticsName: "Goto",
-        analyticsAction: "open receive",
-        label: t("Receive"),
-        tooltip: t("Copy address"),
-        icon: ArrowDownIcon,
-        onClick: () => openCopyAddressModal(),
-        disabled: disableActions,
-        disabledReason,
-      },
-      {
-        analyticsName: "Goto",
-        analyticsAction: "Send Funds button",
-        label: t("Send"),
-        tooltip: t("Send tokens"),
-        icon: SendIcon,
-        onClick: () => api.sendFundsOpen().then(() => window.close()),
-        disabled: disableActions,
-        disabledReason,
-      },
-    ]
-    if (canBuy)
-      topActions.push({
-        analyticsName: "Goto",
-        analyticsAction: "Buy Crypto button",
-        label: t("Buy"),
-        tooltip: t("Buy tokens"),
-        icon: CreditCardIcon,
-        onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
-        disabled: disableActions,
-        disabledReason,
-      })
-    return topActions
-  }, [canBuy, disableActions, disabledReason, openCopyAddressModal, t])
+  const topActions = useMemo(
+    () =>
+      [
+        {
+          analyticsName: "Goto",
+          analyticsAction: "Send Funds button",
+          label: t("Send"),
+          icon: SendIcon,
+          onClick: () => api.sendFundsOpen().then(() => window.close()),
+          disabled: disableActions,
+          disabledReason,
+        },
+        {
+          analyticsName: "Goto",
+          analyticsAction: "open receive",
+          label: t("Receive"),
+          icon: ArrowDownIcon,
+          onClick: () => openCopyAddressModal(),
+          disabled: disableActions,
+          disabledReason,
+        },
+        {
+          analyticsName: "Goto",
+          analyticsAction: "open swap",
+          label: t("Swap"),
+          icon: RepeatIcon,
+          onClick: () => handleSwapClick(),
+        },
+        canBuy
+          ? {
+              analyticsName: "Goto",
+              analyticsAction: "Buy Crypto button",
+              label: t("Buy"),
+              icon: CreditCardIcon,
+              onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+              disabled: disableActions,
+              disabledReason,
+            }
+          : null,
+      ].filter(Boolean) as Array<ActionProps>,
+    [canBuy, disableActions, disabledReason, handleSwapClick, openCopyAddressModal, t]
+  )
 
   return (
     <div className="flex justify-center gap-4">

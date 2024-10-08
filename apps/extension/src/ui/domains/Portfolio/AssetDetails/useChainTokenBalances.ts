@@ -11,7 +11,7 @@ import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
 export type DetailRow = {
@@ -33,7 +33,7 @@ type ChainTokenBalancesParams = {
 export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesParams) => {
   const chain = useChain(chainId)
 
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
   const { t } = useTranslation()
 

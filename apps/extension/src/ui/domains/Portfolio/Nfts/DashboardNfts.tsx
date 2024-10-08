@@ -2,32 +2,36 @@ import { StarIcon } from "@talismn/icons"
 import { NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSetting } from "@ui/hooks/useSettings"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
 import { useIsFavoriteNft } from "./useIsFavoriteNft"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
 const NoNftFound = () => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
   const { status } = usePortfolioNfts()
 
   const msg = useMemo(() => {
     if (status === "loading") return <span className="animate-pulse">{t("Loading NFTs...")}</span>
-    return account ? t("No NFTs found for this account") : t("No NFTs found")
-  }, [account, status, t])
+    return selectedAccount
+      ? t("No NFTs found for this account")
+      : selectedFolder
+      ? t("No NFTs found for this folder")
+      : t("No NFTs found")
+  }, [selectedAccount, selectedFolder, status, t])
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
 }
@@ -79,7 +83,7 @@ const NftCollectionRowInner: FC<{
 
   const floorUsdValue = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (nfts.length === 1) onNftClick(nfts[0].id)
     else navigate(`/portfolio/nfts/${collection.id}`)
@@ -151,7 +155,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
         <div className="text-right">{t("Owned")}</div>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         {data.collections.map((collection, i) => (
           <NftCollectionRow
             key={`${collection.id}-${i}`}
@@ -184,7 +188,7 @@ const NftCollectionTileInner: FC<{
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (nfts.length === 1) onNftClick(nfts[0].id)
     else navigate(`/portfolio/nfts/${collection.id}`)

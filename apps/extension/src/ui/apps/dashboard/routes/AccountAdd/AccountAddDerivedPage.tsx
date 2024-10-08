@@ -7,7 +7,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardAdminLayout } from "../../layout"
 
 export const AccountAddDerivedPage = () => {
   const { t } = useTranslation("admin")
@@ -17,13 +17,13 @@ export const AccountAddDerivedPage = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   return (
-    <DashboardLayout withBack centered>
+    <DashboardAdminLayout withBack centered>
       <HeaderBlock
         title={t("Create a new account")}
         text={!urlParamType && t("What type of account would you like to create?")}
       />
       <Spacer small />
       <AccountAddDerivedForm onSuccess={setAddress} />
-    </DashboardLayout>
+    </DashboardAdminLayout>
   )
 }

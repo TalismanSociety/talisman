@@ -43,6 +43,9 @@ export const useNomPoolBondButton = ({
           return a.transferable.planck > b.transferable.planck ? -1 : 1
         })
 
+      // if a watch-only account is selected, there will be no entries here
+      if (!sorted.length) return [null, false]
+
       const address = sorted[0].address
 
       // lookup existing poolId for that account

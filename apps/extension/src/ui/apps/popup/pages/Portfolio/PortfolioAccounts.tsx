@@ -1,10 +1,19 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  EyeIcon,
+  PlusIcon,
+  SettingsIcon,
+  UserIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { atom, useAtom, useAtomValue } from "jotai"
 import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import {
   AccountJsonAny,
@@ -13,26 +22,34 @@ import {
   TreeFolder,
   TreeItem,
 } from "@extension/core"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
-import { NoAccountsPopup } from "@ui/apps/popup/pages/NoAccounts"
+import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/hooks/useBalances"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
+
+import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
+import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
+
+const portfolioAccountsSearchAtom = atom("")
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -48,6 +65,7 @@ type FolderAccountOption = {
   name: string
   total?: number
   addresses: string[]
+  searchContent: string
 }
 
 type AccountAccountOption = {
@@ -59,6 +77,7 @@ type AccountAccountOption = {
   origin?: AccountType
   isPortfolio?: boolean
   signetUrl?: string
+  searchContent: string
 }
 
 type AccountOption = FolderAccountOption | AccountAccountOption
@@ -123,10 +142,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
     }
 
     // navigate to list of accounts in folder (user clicked folder on main menu)
-    if (option.type === "folder")
-      return navigate(
-        `/portfolio?${option.treeName === "portfolio" ? "folder" : "watchedFolder"}=${option.id}`
-      )
+    if (option.type === "folder") return navigate(`/portfolio?folder=${option.id}`)
   }, [genericEvent, navigate, option])
 
   const isAccount = option.type === "account"
@@ -148,9 +164,9 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           <AccountFolderIcon />
         )}
       </div>
-      <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
-        <div className="text-body flex w-full items-center gap-3 text-base leading-none">
-          <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{option.name}</div>
+      <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
+        <div className="text-body flex w-full items-center gap-3 text-base">
+          <div className="truncate">{option.name}</div>
           {isAccount && (
             <AccountTypeIcon
               className="text-primary"
@@ -166,7 +182,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
             </div>
           )}
         </div>
-        <div className="text-body-secondary flex w-full truncate text-left text-sm leading-none">
+        <div className="text-body-secondary flex w-full truncate text-left text-sm">
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
@@ -192,15 +208,83 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
 const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
   option.type === "account"
 
-const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
-  const addresses = useMemo(
-    () => options.filter(accountTypeGuard).map(({ address }) => address),
-    [options]
-  )
+const AccountsToolbar = () => {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [search, setSearch] = useAtom(portfolioAccountsSearchAtom)
+
+  const handleAddAccountClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Add account button",
+    })
+    api.dashboardOpen("/accounts/add")
+    window.close()
+  }, [])
+
+  const handleManageAccountsClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Manage Accounts button",
+    })
+    navigate("/manage-accounts")
+  }, [navigate])
+
+  useEffect(() => {
+    // clear on unmount
+    return () => {
+      setSearch("")
+    }
+  }, [setSearch])
+
+  const { open: openSettings } = useQuickSettingsOpenClose()
 
   return (
+    <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
+      <div className="flex grow items-center overflow-hidden">
+        <SearchInput
+          containerClassName={classNames(
+            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
+            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
+          )}
+          placeholder={t("Search account or folder")}
+          onChange={setSearch}
+          initialValue={search}
+        />
+      </div>
+      <Tooltip placement="bottom">
+        <TooltipTrigger asChild>
+          <PortfolioToolbarButton onClick={handleAddAccountClick}>
+            <PlusIcon />
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>{t("Add account")}</TooltipContent>
+      </Tooltip>
+      <Tooltip placement="bottom-end">
+        <TooltipTrigger asChild>
+          <PortfolioToolbarButton onClick={handleManageAccountsClick}>
+            <UserIcon />
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>{t("Manage accounts")}</TooltipContent>
+      </Tooltip>
+      <Tooltip placement="bottom-end">
+        <TooltipTrigger asChild>
+          <PortfolioToolbarButton onClick={openSettings}>
+            <SettingsIcon />
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>{t("Settings")}</TooltipContent>
+      </Tooltip>
+    </div>
+  )
+}
+
+const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
+  return (
     <div className={classNames("flex w-full flex-col gap-4", className)}>
-      <StakingBanner addresses={addresses} />
       {options.map((option) => (
         <AccountButton
           key={option.type === "account" ? `account-${option.address}` : option.id}
@@ -219,7 +303,7 @@ const Accounts = ({
   watchedOptions,
 }: {
   accounts: AccountJsonAny[]
-  folder?: TreeFolder
+  folder?: TreeFolder | null
   folderTotal?: number
   portfolioOptions: AccountOption[]
   watchedOptions: AccountOption[]
@@ -229,28 +313,40 @@ const Accounts = ({
   const hasPortfolioOptions = portfolioOptions.length > 0
   const hasWatchedOptions = watchedOptions.length > 0
 
+  const addresses = useMemo(
+    () => portfolioOptions.filter(accountTypeGuard).map(({ address }) => address),
+    [portfolioOptions]
+  )
+
   return (
     <div className="flex w-full flex-col gap-4">
-      {!folder && <AllAccountsHeader accounts={accounts} />}
-      {!folder && <NewFeaturesButton />}
-      {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
-
-      {hasPortfolioOptions && (
-        <AccountsList className={folder && "mt-6"} options={portfolioOptions} />
+      {folder ? (
+        <FolderHeader folder={folder} folderTotal={folderTotal} />
+      ) : (
+        <>
+          <AllAccountsHeader accounts={accounts} />
+          <NewFeaturesButton />
+          <StakingBanner addresses={addresses} />
+        </>
       )}
 
+      <AccountsToolbar />
+
+      {hasPortfolioOptions && <AccountsList options={portfolioOptions} />}
+
       {hasWatchedOptions && (
-        <div
-          className={classNames(
-            "text-body-secondary flex items-center gap-2 font-bold",
-            (folder || hasPortfolioOptions) && "mt-6"
-          )}
-        >
+        <div className={classNames("text-body-secondary flex items-center gap-2 font-bold")}>
           <EyeIcon />
           <div>{t("Followed only")}</div>
         </div>
       )}
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
+
+      {!portfolioOptions.length && !watchedOptions.length && (
+        <div className="bg-grey-900 text-body-disabled flex h-[10rem] items-center justify-center rounded-sm text-xs opacity-50">
+          {t("No accounts found")}
+        </div>
+      )}
     </div>
   )
 }
@@ -259,7 +355,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
   const navigate = useNavigate()
 
   return (
-    <div className={"flex w-full items-center gap-4 overflow-hidden"}>
+    <div className={"mb-6 flex w-full items-center gap-4 overflow-hidden"}>
       <IconButton onClick={() => navigate(-1)}>
         <ChevronLeftIcon />
       </IconButton>
@@ -270,7 +366,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
         <div className="flex items-center gap-3">
           <div className="text-body-secondary truncate">{folder.name}</div>
         </div>
-        <div className="text-md truncate">
+        <div className="truncate">
           <Fiat amount={folderTotal} isBalance />
         </div>
       </div>
@@ -288,14 +384,18 @@ const BalancesLoader = () => {
 export const PortfolioAccounts = () => {
   const { accounts, ownedAccounts, catalog, balanceTotalPerAccount, ownedTotal } =
     usePortfolioAccounts()
-  const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
+  const { selectedFolder: folder, treeName } = usePortfolioNavigation()
+  const search = useAtomValue(portfolioAccountsSearchAtom)
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
 
-  const [portfolioOptions, watchedOptions] = useMemo((): [AccountOption[], AccountOption[]] => {
+  const [allPortfolioOptions, allWatchedOptions] = useMemo((): [
+    AccountOption[],
+    AccountOption[]
+  ] => {
     const [portfolioTree, watchedTree] = (() => {
-      if (folder && folderTreeName === "portfolio") return [folder.tree, []]
-      if (folder && folderTreeName === "watched") return [[], folder.tree]
+      if (folder && treeName === "portfolio") return [folder.tree, []]
+      if (folder && treeName === "watched") return [[], folder.tree]
       return [catalog.portfolio, catalog.watched]
     })()
 
@@ -307,6 +407,11 @@ export const PortfolioAccounts = () => {
             ? accounts.find((account) => account.address === item.address)
             : undefined
 
+        const getSearchContent = (account?: AccountJsonAny) =>
+          [account?.name, account?.address, account?.origin?.replaceAll(/talisman/gi, "")]
+            .join(" ")
+            .toLowerCase()
+
         return item.type === "account"
           ? {
               type: "account",
@@ -317,6 +422,7 @@ export const PortfolioAccounts = () => {
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
               signetUrl: account?.signetUrl as string | undefined,
+              searchContent: getSearchContent(account),
             }
           : {
               type: "folder",
@@ -328,6 +434,13 @@ export const PortfolioAccounts = () => {
                 0
               ),
               addresses: item.tree.map((account) => account.address),
+              searchContent: item.tree
+                .map((item) => {
+                  const account = accounts.find((account) => account.address === item.address)
+                  return getSearchContent(account)
+                })
+                .concat(item.name.toLowerCase())
+                .join(" "),
             }
       }
 
@@ -335,15 +448,21 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [
-    folder,
-    folderTreeName,
-    catalog.portfolio,
-    catalog.watched,
-    accounts,
-    t,
-    balanceTotalPerAccount,
-  ])
+  }, [folder, treeName, catalog.portfolio, catalog.watched, accounts, t, balanceTotalPerAccount])
+
+  const ls = useMemo(() => search.toLowerCase(), [search])
+
+  const searchFilter = useCallback(
+    (option: AccountOption): boolean => {
+      return !search || option.searchContent.includes(ls)
+    },
+    [ls, search]
+  )
+
+  const [portfolioOptions, watchedOptions] = useMemo(
+    () => [allPortfolioOptions.filter(searchFilter), allWatchedOptions.filter(searchFilter)],
+    [allPortfolioOptions, allWatchedOptions, searchFilter]
+  )
 
   const folderTotal = useMemo(
     () =>
@@ -374,7 +493,8 @@ export const PortfolioAccounts = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-12 pb-12">
+      {!folder && <AuthorisedSiteToolbar />}
+      <div className="flex w-full flex-col gap-12">
         <Accounts
           accounts={accounts}
           folder={folder}

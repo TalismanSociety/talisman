@@ -1,17 +1,16 @@
-import { AccountJsonAny } from "@extension/core"
-import { notify } from "@talisman/components/Notifications"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
+import { AccountJsonAny } from "@extension/core"
+import { notify } from "@talisman/components/Notifications"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { api } from "@ui/api"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+
+import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
@@ -20,7 +19,7 @@ const accountExportPkAccountState = atom<AccountJsonAny | null>(null)
 export const useAccountExportPrivateKeyModal = () => {
   const [_account, setAccount] = useAtom(accountExportPkAccountState)
 
-  const { account: selectedAccount } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
 
   const open = useCallback(
@@ -33,7 +32,7 @@ export const useAccountExportPrivateKeyModal = () => {
 
   const account = _account ?? selectedAccount
 
-  const canExportAccountFunc = (account?: AccountJsonAny) =>
+  const canExportAccountFunc = (account?: AccountJsonAny | null) =>
     account?.type === "ethereum" && !account.isExternal && !account.isHardware
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])

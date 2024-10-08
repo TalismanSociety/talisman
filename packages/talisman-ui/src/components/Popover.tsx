@@ -195,6 +195,7 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
             aria-describedby={context.descriptionId}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
+            data-no-dnd="true"
           >
             {props.children}
           </div>

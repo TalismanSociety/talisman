@@ -19,7 +19,7 @@ import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -172,7 +172,7 @@ const ChainTokenBalancesUniswapV2Row = ({
   isLastBalance?: boolean
   status: BalancesStatus
 }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const selectedCurrency = useSelectedCurrency()
   const balancePair = useUniswapV2BalancePair(balance)
 
@@ -189,7 +189,7 @@ const ChainTokenBalancesUniswapV2Row = ({
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
-      {!account && (
+      {!selectedAccount && (
         <div className="flex items-end justify-between gap-4 text-xs">
           <PortfolioAccount address={balance.address} />
         </div>
@@ -283,9 +283,12 @@ const LockedExtra: FC<{
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
 
-  const rowAddress = useMemo(() => address ?? account?.address ?? null, [account?.address, address])
+  const rowAddress = useMemo(
+    () => address ?? selectedAccount?.address ?? null,
+    [selectedAccount?.address, address]
+  )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),

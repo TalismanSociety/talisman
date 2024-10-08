@@ -1,18 +1,17 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Navigate, Route, Routes, useMatch, useSearchParams } from "react-router-dom"
+import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
+import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
 
-import { DashboardLayout } from "./layout/DashboardLayout"
 import { AccountAddMenu } from "./routes/AccountAdd"
 import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
@@ -45,22 +44,16 @@ import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
+import { TxHistory } from "./routes/TxHistory"
 
 const DashboardInner = () => {
   useModalSubscription()
 
   return (
-    // use an empty layout as fallback to prevent flickering
-    <Suspense
-      fallback={
-        <>
-          <DashboardLayout />
-          <SuspenseTracker name="Dashboard" />
-        </>
-      }
-    >
+    <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
       <Routes>
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
+        <Route path="tx-history/*" element={<TxHistory />} />
         <Route path="accounts">
           <Route path="add">
             <Route index element={<AccountAddMenu />} />
@@ -75,7 +68,7 @@ const DashboardInner = () => {
             <Route path="signet/*" element={<AccountAddSignetDashboardWizard />} />
             <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
-          <Route path="" element={<Navigate to="/portfolio" />} />
+          <Route path="" element={<NavigateWithQuery url="/portfolio" replace />} />
         </Route>
         <Route path="settings">
           <Route path="" element={<Navigate to="/settings/general" replace />} />
@@ -141,7 +134,7 @@ const DashboardInner = () => {
           path="qr-metadata"
           element={<Navigate to="/settings/networks-tokens/qr-metadata" replace />}
         />
-        <Route path="*" element={<Navigate to="/portfolio" replace />} />
+        <Route path="*" element={<NavigateWithQuery url="/portfolio" replace />} />
       </Routes>
     </Suspense>
   )
@@ -151,28 +144,6 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
   const match = useMatch(`${PHISHING_PAGE_REDIRECT}/:url`)
 
   if (match?.params?.url) return <PhishingPage url={match.params.url} />
-
-  return <>{children}</>
-}
-
-const SelectedAccountChecker: FC<PropsWithChildren> = ({ children }) => {
-  // popup may pass an account in the query string
-  // we need to update this before first sidebar render to prevent flickering
-  const { select } = useSelectedAccount()
-  const [searchParams, updateSearchParams] = useSearchParams()
-
-  useEffect(() => {
-    const account = searchParams.get("account")
-    if (!account) return
-
-    const newSearchPrams = new URLSearchParams(searchParams)
-    select(account === "all" ? undefined : account)
-    newSearchPrams.delete("account")
-    updateSearchParams(newSearchPrams, { replace: true })
-  }, [searchParams, select, updateSearchParams])
-
-  // don't render if search param is still there
-  if (searchParams.get("account")) return null
 
   return <>{children}</>
 }
@@ -207,9 +178,7 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
 const Dashboard = () => (
   <PreventPhishing>
     <LoginChecker>
-      <SelectedAccountChecker>
-        <DashboardInner />
-      </SelectedAccountChecker>
+      <DashboardInner />
     </LoginChecker>
     <DatabaseErrorAlert container="fullscreen" />
     <AssetDiscoveryDashboardAlert />

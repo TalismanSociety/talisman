@@ -18,13 +18,11 @@ export const PortfolioNftCollection = () => {
   return (
     <>
       <PortfolioAssetsHeader backBtnTo={"/portfolio/nfts"} />
-      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioTabs className="mt-4" />
 
       <Suspense fallback={<SuspenseTracker name="PortfolioNftCollection.TabContent" />}>
         <NftsBreadcrumb />
-        <div className="py-8">
-          <PopupNftCollection />
-        </div>
+        <PopupNftCollection />
       </Suspense>
     </>
   )

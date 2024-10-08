@@ -1,10 +1,11 @@
+import { atom, useAtomValue } from "jotai"
+
 import {
   accountsByCategoryAtomFamily,
   accountsCatalogAtom,
   balanceTotalsAtom,
   settingsAtomFamily,
 } from "@ui/atoms"
-import { atom, useAtomValue } from "jotai"
 
 const portfolioAccountsAtom = atom(async (get) => {
   const [accounts, ownedAccounts, portfolioAccounts, catalog, currency, allBalanceTotals] =
@@ -37,6 +38,7 @@ const portfolioAccountsAtom = atom(async (get) => {
   return {
     accounts,
     ownedAccounts,
+    portfolioAccounts,
     catalog,
     balanceTotals,
     currency,
