@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
-import { log } from "extension-shared"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 import { Hex, TransactionReceipt, TransactionRequest } from "viem"
@@ -88,8 +87,10 @@ export const watchEthereumTransaction = async (
           )
       }
     } catch (err) {
-      log.error("watchEthereumTransaction error: ", { err })
-      const isNotFound = err instanceof Error && err.message === "Transaction not found"
+      const isNotFound =
+        err instanceof Error &&
+        (err.message === "Transaction not found" ||
+          err.name === "WaitForTransactionReceiptTimeoutError")
 
       // if not found, mark tx as unknown so user can still cancel/speed-up if necessary
       updateTransactionStatus(hash, isNotFound ? "unknown" : "error")
