@@ -3,7 +3,7 @@ import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
-import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
+import { FullScreenLocked } from "@talisman/components/FullScreenLocked"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
@@ -170,7 +170,7 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
   }, [isLoggedIn, isOnboarded])
 
   if (!isLoggedIn)
-    return <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
+    return <FullScreenLocked title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
 
   return <>{children}</>
 }
