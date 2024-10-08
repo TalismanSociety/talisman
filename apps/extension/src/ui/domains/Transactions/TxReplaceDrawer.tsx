@@ -157,10 +157,9 @@ const EvmDrawerContent: FC<{
       notify({
         title: `Failed to ${type}`,
         type: "error",
-        subtitle:
-          (err as Error)?.message === "nonce too low"
-            ? t("Transaction already confirmed")
-            : t(`Failed to {{type}}`, { type }),
+        subtitle: (err as Error)?.message.includes("nonce too low")
+          ? t("Transaction already confirmed")
+          : t(`Failed to {{type}}`, { type }),
       })
     }
     setIsProcessing(false)

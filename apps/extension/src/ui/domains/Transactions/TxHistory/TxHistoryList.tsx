@@ -46,11 +46,12 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { IS_POPUP } from "@ui/util/constants"
+import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { TxReplaceDrawer } from "../TxReplaceDrawer"
 import { TxReplaceType } from "../types"
 import { useTxHistory } from "./TxHistoryContext"
+import { useCanReplaceTx } from "./useCanReplaceTx"
 
 export const TxHistoryList = () => {
   const { isLoading, transactions } = useTxHistory()
@@ -99,6 +100,7 @@ export const TxHistoryList = () => {
 
 type TransactionRowProps = {
   tx: WalletTransaction
+
   enabled: boolean
   onContextMenuOpen?: () => void
   onContextMenuClose?: () => void
@@ -202,7 +204,7 @@ const EvmTxActions: FC<{
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const isPending = useMemo(() => ["pending", "unknown"].includes(tx?.status), [tx.status])
+  const canReplace = useCanReplaceTx(tx)
 
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
 
@@ -231,8 +233,8 @@ const EvmTxActions: FC<{
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
-    window.open(hrefBlockExplorer)
-    window.close()
+    window.open(hrefBlockExplorer, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
   }, [hrefBlockExplorer])
 
   const { t } = useTranslation("request")
@@ -247,7 +249,7 @@ const EvmTxActions: FC<{
       )}
     >
       <div className="relative">
-        {isPending && !isAcalaEvmPlus(tx.evmNetworkId) && (
+        {canReplace && !isAcalaEvmPlus(tx.evmNetworkId) && (
           <>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -293,7 +295,7 @@ const EvmTxActions: FC<{
               isOpen ? "visible opacity-100" : "invisible opacity-0"
             )}
           >
-            {isPending && (
+            {canReplace && (
               <>
                 <button
                   type="button"
@@ -557,8 +559,8 @@ const SubTxActions: FC<{
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
-    window.open(hrefBlockExplorer)
-    window.close()
+    window.open(hrefBlockExplorer, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
   }, [hrefBlockExplorer])
 
   const { t } = useTranslation("request")
