@@ -314,8 +314,8 @@ const SidebarButtonBase: FC<{
     >
       <div className="size-20 text-[4rem]">{logo}</div>
       <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
-        <div className="text-body-secondary truncate">{label}</div>
-        <div className="text-body-disabled truncate text-xs">{fiat}</div>
+        <div className="text-grey-300 truncate">{label}</div>
+        <div className="text-grey-500 truncate text-xs">{fiat}</div>
       </div>
       <div>
         {isSelected ? (
