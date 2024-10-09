@@ -1,11 +1,14 @@
+import { classNames, encodeAnyAddress } from "@talismn/util"
+import { FC, useMemo } from "react"
+
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { classNames } from "@talismn/util"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { FC, useMemo } from "react"
 
 type AddressProps = {
   address?: string
+  genesisHash?: string | null
   startCharCount?: number
   endCharCount?: number
   as?: "span" | "div"
@@ -17,6 +20,7 @@ type AddressProps = {
 
 export const Address: FC<AddressProps> = ({
   address,
+  genesisHash,
   startCharCount = 4,
   endCharCount = 4,
   as: Component = "span",
@@ -28,14 +32,18 @@ export const Address: FC<AddressProps> = ({
   // if we're not in a popup, no need to wrap
   const noWrap = useMemo(() => !document.getElementById("main"), [])
 
+  const chain = useChainByGenesisHash(genesisHash)
+
   // if address has an onChainId, show that instead of the shortenedAddress
   const [onChainId] = useOnChainId(address)
   const formatted = useMemo(() => {
     if (!noOnChainId && onChainId) return onChainId
-    if (noShorten) return address
-    if (!address) return address
-    return shortenAddress(address, startCharCount, endCharCount)
-  }, [noOnChainId, onChainId, noShorten, address, startCharCount, endCharCount])
+    const addressWithPrefix =
+      address && chain ? encodeAnyAddress(address, chain.prefix ?? 42) : address
+    if (noShorten) return addressWithPrefix
+    if (!addressWithPrefix) return addressWithPrefix
+    return shortenAddress(addressWithPrefix, startCharCount, endCharCount)
+  }, [noOnChainId, onChainId, address, chain, noShorten, startCharCount, endCharCount])
   if (!formatted) return null
 
   const display = (
