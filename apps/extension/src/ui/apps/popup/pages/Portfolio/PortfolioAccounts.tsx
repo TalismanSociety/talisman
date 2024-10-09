@@ -2,7 +2,6 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  CopyIcon,
   EyeIcon,
   PlusIcon,
   SettingsIcon,
@@ -10,7 +9,7 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { atom, useAtom, useAtomValue } from "jotai"
-import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -37,13 +36,10 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/hooks/useBalances"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
@@ -82,47 +78,47 @@ type AccountAccountOption = {
 
 type AccountOption = FolderAccountOption | AccountAccountOption
 
-const FormattedAddress: FC<{
-  address: string
-  genesisHash?: string | null
-  className?: string
-}> = ({ address, genesisHash, className }) => {
-  const formattedAddress = useFormattedAddress(address, genesisHash)
+// const FormattedAddress: FC<{
+//   address: string
+//   genesisHash?: string | null
+//   className?: string
+// }> = ({ address, genesisHash, className }) => {
+//   const formattedAddress = useFormattedAddress(address, genesisHash)
 
-  return <Address className={className} address={formattedAddress} />
-}
+//   return <Address className={className} address={formattedAddress} />
+// }
 
-const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
-  const { open } = useCopyAddressModal()
+// const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
+//   const { open } = useCopyAddressModal()
 
-  const chain = useChainByGenesisHash(option.type === "account" ? option.genesisHash : null)
+//   const chain = useChainByGenesisHash(option.type === "account" ? option.genesisHash : null)
 
-  const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
-    (event) => {
-      event.stopPropagation()
-      if (option.type === "account") {
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Goto",
-          action: "open copy address",
-        })
-        open({
-          address: option.address,
-          networkId: chain?.id,
-        })
-      }
-    },
-    [open, option, chain?.id]
-  )
+//   const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
+//     (event) => {
+//       event.stopPropagation()
+//       if (option.type === "account") {
+//         sendAnalyticsEvent({
+//           ...ANALYTICS_PAGE,
+//           name: "Goto",
+//           action: "open copy address",
+//         })
+//         open({
+//           address: option.address,
+//           networkId: chain?.id,
+//         })
+//       }
+//     },
+//     [open, option, chain?.id]
+//   )
 
-  return (
-    <CopyIcon
-      role="button"
-      className="text-body-secondary hover:text-body !text-sm "
-      onClick={handleCopyClick}
-    />
-  )
-}
+//   return (
+//     <CopyIcon
+//       role="button"
+//       className="text-body-secondary hover:text-body !text-sm "
+//       onClick={handleCopyClick}
+//     />
+//   )
+// }
 
 const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
@@ -195,36 +191,124 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
               origin={option.origin}
               signetUrl={option.signetUrl}
             />
-            <div className="show-on-hover flex flex-col justify-end">
+            {/* <div className="show-on-hover flex flex-col justify-end">
               <Suspense>
                 <CopyAddressButton option={option} />
               </Suspense>
-            </div>
+            </div> */}
           </div>
           <div className="text-body-secondary flex w-full truncate text-left text-sm">
-            <Fiat amount={option.total} isBalance />
+            <Fiat amount={option.total} isBalance className="hide-on-hover" />
+            {/* <Suspense>
+              <FormattedAddress
+                address={option.address}
+                genesisHash={option.genesisHash}
+                className="show-on-hover text-body-secondary "
+              />
+            </Suspense> */}
+            <Address
+              className="show-on-hover truncate"
+              address={option.address}
+              genesisHash={option.genesisHash}
+              noTooltip
+              startCharCount={6}
+              endCharCount={6}
+            />
           </div>
         </div>
-        <Suspense>
+        {/* <Suspense>
           <FormattedAddress
             address={option.address}
             genesisHash={option.genesisHash}
             className="show-on-hover text-body-secondary text-xs"
           />
-        </Suspense>
-        <div className="hide-on-hover text-lg">
+        </Suspense> */}
+        <div className="text-lg">
           <ChevronRightIcon />
         </div>
       </button>
       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
-      <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center text-xl">
-        <div className="relative size-[3.2rem]">
-          <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
+      <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center">
+        <div className="relative size-[3.2rem] text-xl">
+          <AccountIconCopyAddressButton
+            address={option.address}
+            genesisHash={option.genesisHash}
+            className="text-body"
+          />
         </div>
       </div>
     </div>
   )
 }
+
+// const AccountButton2: FC<{ option: AccountAccountOption }> = ({ option }) => {
+//   const navigate = useNavigate()
+//   const { genericEvent } = useAnalytics()
+
+//   const handleClick = useCallback(() => {
+//     genericEvent("select account(s)", {
+//       type: option.address ? (isEthereumAddress(option.address) ? "ethereum" : "substrate") : "all",
+//       from: "popup",
+//     })
+//     navigate(`/portfolio/tokens?account=${option.address}`)
+//   }, [genericEvent, navigate, option])
+
+//   return (
+//     <div
+//       className={classNames(
+//         "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
+//         "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
+//       )}
+//     >
+//       <button
+//         type="button"
+//         tabIndex={0}
+//         className={classNames(
+//           "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+//         )}
+//         onClick={handleClick}
+//       >
+//         <div className="flex flex-col justify-center text-xl">
+//           <div className="size-[3.2rem]"></div>
+//         </div>
+//         <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
+//           <div className="text-body flex w-full items-center gap-3 text-base">
+//             <div className="truncate">{option.name}</div>
+//             <AccountTypeIcon
+//               className="text-primary"
+//               origin={option.origin}
+//               signetUrl={option.signetUrl}
+//             />
+//             <div className="show-on-hover flex flex-col justify-end">
+//               <Suspense>
+//                 <CopyAddressButton option={option} />
+//               </Suspense>
+//             </div>
+//           </div>
+//           <div className="text-body-secondary flex w-full truncate text-left text-sm">
+//             <Fiat amount={option.total} isBalance />
+//           </div>
+//         </div>
+//         <Suspense>
+//           <FormattedAddress
+//             address={option.address}
+//             genesisHash={option.genesisHash}
+//             className="show-on-hover text-body-secondary text-xs"
+//           />
+//         </Suspense>
+//         <div className="hide-on-hover text-lg">
+//           <ChevronRightIcon />
+//         </div>
+//       </button>
+//       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
+//       <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center text-xl">
+//         <div className="relative size-[3.2rem]">
+//           <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
 
 const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
   option.type === "account"

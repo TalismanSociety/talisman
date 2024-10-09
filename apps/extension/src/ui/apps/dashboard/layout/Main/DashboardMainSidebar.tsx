@@ -11,6 +11,7 @@ import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -184,6 +185,81 @@ const TreeAccounts: FC<{
   )
 }
 
+// const AccountOptionAddress = ({ option }: { option: AccountAccountOption }) => {
+//   const [searchParams, updateSearchParams] = useSearchParams()
+
+//   const handleClick = useCallback(() => {
+//     searchParams.delete("folder")
+//     searchParams.set("account", option.address)
+//     updateSearchParams(searchParams, { replace: true })
+//   }, [option.address, searchParams, updateSearchParams])
+
+//   const isSelected = useMemo(() => {
+//     return searchParams.get("account") === option.address
+//   }, [option.address, searchParams])
+
+//   const chain = useChainByGenesisHash(option.genesisHash)
+//   const { open } = useCopyAddressModal()
+
+//   const handleCopyClick = useCallback(() => {
+//     open({
+//       address: option.address,
+//       networkId: chain?.id,
+//     })
+//   }, [chain?.id, open, option.address])
+
+//   return (
+//     <div className="hover:bg-grey-750 group relative w-full rounded-[12px]">
+//       <SidebarButtonBase
+//         label={
+//           <div className="flex w-full items-center gap-2">
+//             <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
+//             <AccountTypeIcon className="text-primary shrink-0" origin={option.origin} />
+//           </div>
+//         }
+//         logo={
+//           <AccountIcon
+//             address={option.address}
+//             genesisHash={option.genesisHash}
+//             className="text-[4rem]"
+//           />
+//         }
+//         fiat={
+//           <div className="flex h-8 w-full select-none items-center overflow-hidden">
+//             <Fiat
+//               className="h-8 group-hover:hidden"
+//               amount={option.total ?? 0}
+//               isBalance
+//               noCountUp
+//             />
+//           </div>
+//         }
+//         isSelected={isSelected}
+//         onClick={handleClick}
+//         right={null}
+//       />
+//       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
+//       <div className="text-body-disabled absolute left-28 top-[3rem] hidden h-8 w-[17.2rem] items-center gap-2 overflow-hidden text-xs group-hover:flex">
+//         <Address
+//           className="truncate"
+//           address={option.address}
+//           genesisHash={option.genesisHash}
+//           noTooltip
+//           startCharCount={6}
+//           endCharCount={6}
+//         />
+//         <button
+//           type="button"
+//           onClick={handleCopyClick}
+//           className="text-body-disabled hover:text-body-secondary"
+//         >
+//           <CopyIcon />
+//         </button>
+//       </div>
+//     </div>
+//   )
+// }
+
 const AccountOption = ({ option }: { option: AccountAccountOption }) => {
   const [searchParams, updateSearchParams] = useSearchParams()
 
@@ -198,7 +274,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
   }, [option.address, searchParams])
 
   return (
-    <div className="hover:bg-grey-750 relative w-full rounded-[12px]">
+    <div className="hover:bg-grey-750 group relative w-full rounded-[12px]">
       <SidebarButtonBase
         label={
           <div className="flex w-full items-center gap-2">
@@ -207,16 +283,34 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
           </div>
         }
         logo={<div className="size-20 shrink-0"></div>}
-        fiat={<Fiat amount={option.total ?? 0} isBalance noCountUp />}
+        fiat={
+          <>
+            <Fiat
+              className="h-8 group-hover:hidden"
+              amount={option.total ?? 0}
+              isBalance
+              noCountUp
+            />
+            <Address
+              className="hidden group-hover:block"
+              address={option.address}
+              genesisHash={option.genesisHash}
+              noTooltip
+              startCharCount={6}
+              endCharCount={6}
+            />
+          </>
+        }
         isSelected={isSelected}
         onClick={handleClick}
         right={null}
       />
-      {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
+
+      {/* Absolute positioning based on parent, to prevent a "button inside a button" situation*/}
       <AccountIconCopyAddressButton
         address={option.address}
         genesisHash={option.genesisHash}
-        className="absolute left-4 top-4 text-[4rem]"
+        className="text-body absolute left-4 top-4 text-[4rem]"
       />
     </div>
   )
@@ -293,7 +387,7 @@ const SidebarButtonBase: FC<{
       onClick={onClick}
     >
       <div className="size-20 text-[4rem]">{logo}</div>
-      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+      <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
         <div className="text-body-secondary truncate">{label}</div>
         <div className="text-body-disabled truncate text-xs">{fiat}</div>
       </div>
