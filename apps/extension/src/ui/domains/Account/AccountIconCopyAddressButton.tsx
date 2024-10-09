@@ -27,10 +27,14 @@ export const AccountIconCopyAddressButton: FC<AccountIconProps> = ({
     <button
       type="button"
       onClick={handleAvatarClick}
-      className={classNames("group size-[1em] shrink-0 rounded-full", className)}
+      className={classNames(
+        "size-[1em] shrink-0 rounded-full",
+        "[&:hover>.copy-overlay]:opacity-100 [&>.copy-overlay]:opacity-0",
+        className
+      )}
     >
       <AccountIcon type={type} address={address} genesisHash={genesisHash} />
-      <div className="absolute  left-0 top-0  flex size-full items-center justify-center rounded-full bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="copy-overlay absolute left-0 top-0  flex size-full items-center justify-center rounded-full bg-black/60 opacity-0 transition-opacity">
         <CopyIcon className="text-[0.5em]" />
       </div>
     </button>
