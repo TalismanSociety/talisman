@@ -90,7 +90,6 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
       type="button"
       tabIndex={0}
       className={classNames(
-        "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
         "text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
       )}
       onClick={handleClick}
@@ -127,7 +126,6 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
     <div
       className={classNames(
         "group",
-        "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
         "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
       )}
     >
@@ -152,9 +150,9 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
             />
           </div>
           <div className="text-body-secondary flex w-full truncate text-left text-sm">
-            <Fiat amount={option.total} isBalance className="hide-on-hover" />
+            <Fiat amount={option.total} isBalance className="group-hover:hidden" />
             <Address
-              className="show-on-hover truncate"
+              className="hidden truncate group-hover:block"
               address={option.address}
               genesisHash={option.genesisHash}
               noTooltip
