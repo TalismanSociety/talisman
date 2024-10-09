@@ -2,7 +2,6 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  CopyIcon,
   EyeIcon,
   PlusIcon,
   SettingsIcon,
@@ -10,7 +9,7 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { atom, useAtom, useAtomValue } from "jotai"
-import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -31,19 +30,16 @@ import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
 import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/hooks/useBalances"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
@@ -82,126 +78,101 @@ type AccountAccountOption = {
 
 type AccountOption = FolderAccountOption | AccountAccountOption
 
-const FormattedAddress: FC<{
-  address: string
-  genesisHash?: string | null
-  className?: string
-}> = ({ address, genesisHash, className }) => {
-  const formattedAddress = useFormattedAddress(address, genesisHash)
-
-  return <Address className={className} address={formattedAddress} />
-}
-
-const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
-  const { open } = useCopyAddressModal()
-
-  const chain = useChainByGenesisHash(option.type === "account" ? option.genesisHash : null)
-
-  const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
-    (event) => {
-      event.stopPropagation()
-      if (option.type === "account") {
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Goto",
-          action: "open copy address",
-        })
-        open({
-          address: option.address,
-          networkId: chain?.id,
-        })
-      }
-    },
-    [open, option, chain?.id]
-  )
-
-  return (
-    <CopyIcon
-      role="button"
-      className="text-body-secondary hover:text-body !text-sm "
-      onClick={handleCopyClick}
-    />
-  )
-}
-
-const AccountButton = ({ option }: { option: AccountOption }) => {
+const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
-  const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    if (option.type === "account") {
-      genericEvent("select account(s)", {
-        type: option.address
-          ? isEthereumAddress(option.address)
-            ? "ethereum"
-            : "substrate"
-          : "all",
-        from: "popup",
-      })
-      return navigate(`/portfolio/tokens?account=${option.address}`)
-    }
-
-    // navigate to list of accounts in folder (user clicked folder on main menu)
-    if (option.type === "folder") return navigate(`/portfolio?folder=${option.id}`)
-  }, [genericEvent, navigate, option])
-
-  const isAccount = option.type === "account"
+    navigate(`/portfolio?folder=${option.id}`)
+  }, [navigate, option])
 
   return (
     <button
       type="button"
       tabIndex={0}
       className={classNames(
-        "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
         "text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
       )}
       onClick={handleClick}
     >
       <div className="flex flex-col justify-center text-xl">
-        {isAccount ? (
-          <AccountIcon address={option.address} genesisHash={option.genesisHash} />
-        ) : (
-          <AccountFolderIcon />
-        )}
+        <AccountFolderIcon />
       </div>
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base">
           <div className="truncate">{option.name}</div>
-          {isAccount && (
-            <AccountTypeIcon
-              className="text-primary"
-              origin={option.origin}
-              signetUrl={option.signetUrl}
-            />
-          )}
-          {isAccount && (
-            <div className="show-on-hover flex flex-col justify-end">
-              <Suspense>
-                <CopyAddressButton option={option} />
-              </Suspense>
-            </div>
-          )}
         </div>
         <div className="text-body-secondary flex w-full truncate text-left text-sm">
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
-      {isAccount && (
-        <Suspense>
-          <FormattedAddress
-            address={option.address}
-            genesisHash={option.genesisHash}
-            className="show-on-hover text-body-secondary text-xs"
-          />
-        </Suspense>
+      <AccountsLogoStack className="text-sm" addresses={option.addresses} />
+    </button>
+  )
+}
+
+const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
+  const navigate = useNavigate()
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    genericEvent("select account(s)", {
+      type: option.address ? (isEthereumAddress(option.address) ? "ethereum" : "substrate") : "all",
+      from: "popup",
+    })
+    navigate(`/portfolio/tokens?account=${option.address}`)
+  }, [genericEvent, navigate, option])
+
+  return (
+    <div
+      className={classNames(
+        "group",
+        "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
       )}
-      {isAccount && (
-        <div className="hide-on-hover text-lg">
+    >
+      <button
+        type="button"
+        tabIndex={0}
+        className={classNames(
+          "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+        )}
+        onClick={handleClick}
+      >
+        <div className="flex flex-col justify-center text-xl">
+          <div className="size-[3.2rem]"></div>
+        </div>
+        <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
+          <div className="text-body flex w-full items-center gap-3 text-base">
+            <div className="truncate">{option.name}</div>
+            <AccountTypeIcon
+              className="text-primary"
+              origin={option.origin}
+              signetUrl={option.signetUrl}
+            />
+          </div>
+          <div className="text-body-secondary flex w-full truncate text-left text-sm">
+            <Fiat amount={option.total} isBalance className="group-hover:hidden" />
+            <Address
+              className="hidden truncate group-hover:block"
+              address={option.address}
+              genesisHash={option.genesisHash}
+              noTooltip
+              startCharCount={6}
+              endCharCount={6}
+            />
+          </div>
+        </div>
+
+        <div className="text-lg">
           <ChevronRightIcon />
         </div>
-      )}
-      {!isAccount && <AccountsLogoStack className="text-sm" addresses={option.addresses} />}
-    </button>
+      </button>
+      {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
+      <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center">
+        <div className="relative size-[3.2rem] text-xl">
+          <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -246,7 +217,7 @@ const AccountsToolbar = () => {
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
+            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.2rem] w-full border border-field text-sm !px-4",
             "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
           )}
           placeholder={t("Search account or folder")}
@@ -285,12 +256,13 @@ const AccountsToolbar = () => {
 const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
   return (
     <div className={classNames("flex w-full flex-col gap-4", className)}>
-      {options.map((option) => (
-        <AccountButton
-          key={option.type === "account" ? `account-${option.address}` : option.id}
-          option={option}
-        />
-      ))}
+      {options.map((option) =>
+        option.type === "folder" ? (
+          <FolderButton key={option.id} option={option} />
+        ) : (
+          <AccountButton key={`account-${option.address}`} option={option} />
+        )
+      )}
     </div>
   )
 }

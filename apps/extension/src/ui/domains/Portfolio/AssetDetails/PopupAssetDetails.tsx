@@ -60,10 +60,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           <TokenLogo tokenId={tokenId} />
         </div>
         <div className="flex grow flex-col justify-center gap-2 pr-8">
-          <div className="flex justify-between font-bold text-white">
+          <div className="flex grow justify-between font-bold text-white">
             <div className="flex items-center">
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
-              <span className="mr-2">{chainOrNetwork.name}</span>
+              <span className="mr-2 truncate">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
@@ -75,7 +75,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           </div>
         </div>
         {tokenId && (
-          <div className="size-[3.8rem] shrink-0">
+          <div className="size-[3.8rem] shrink-0 empty:hidden">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
               <NomPoolBondButton tokenId={tokenId} balances={balances} />
             </Suspense>
