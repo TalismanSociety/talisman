@@ -31,7 +31,7 @@ import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
 import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -124,28 +124,12 @@ const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
   )
 }
 
-const AccountButton = ({ option }: { option: AccountOption }) => {
+const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
-  const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    if (option.type === "account") {
-      genericEvent("select account(s)", {
-        type: option.address
-          ? isEthereumAddress(option.address)
-            ? "ethereum"
-            : "substrate"
-          : "all",
-        from: "popup",
-      })
-      return navigate(`/portfolio/tokens?account=${option.address}`)
-    }
-
-    // navigate to list of accounts in folder (user clicked folder on main menu)
-    if (option.type === "folder") return navigate(`/portfolio?folder=${option.id}`)
-  }, [genericEvent, navigate, option])
-
-  const isAccount = option.type === "account"
+    navigate(`/portfolio?folder=${option.id}`)
+  }, [navigate, option])
 
   return (
     <button
@@ -158,35 +142,69 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
       onClick={handleClick}
     >
       <div className="flex flex-col justify-center text-xl">
-        {isAccount ? (
-          <AccountIcon address={option.address} genesisHash={option.genesisHash} />
-        ) : (
-          <AccountFolderIcon />
-        )}
+        <AccountFolderIcon />
       </div>
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base">
           <div className="truncate">{option.name}</div>
-          {isAccount && (
-            <AccountTypeIcon
-              className="text-primary"
-              origin={option.origin}
-              signetUrl={option.signetUrl}
-            />
-          )}
-          {isAccount && (
-            <div className="show-on-hover flex flex-col justify-end">
-              <Suspense>
-                <CopyAddressButton option={option} />
-              </Suspense>
-            </div>
-          )}
         </div>
         <div className="text-body-secondary flex w-full truncate text-left text-sm">
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
-      {isAccount && (
+      <AccountsLogoStack className="text-sm" addresses={option.addresses} />
+    </button>
+  )
+}
+
+const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
+  const navigate = useNavigate()
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    genericEvent("select account(s)", {
+      type: option.address ? (isEthereumAddress(option.address) ? "ethereum" : "substrate") : "all",
+      from: "popup",
+    })
+    navigate(`/portfolio/tokens?account=${option.address}`)
+  }, [genericEvent, navigate, option])
+
+  return (
+    <div
+      className={classNames(
+        "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
+        "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
+      )}
+    >
+      <button
+        type="button"
+        tabIndex={0}
+        className={classNames(
+          "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+        )}
+        onClick={handleClick}
+      >
+        <div className="flex flex-col justify-center text-xl">
+          <div className="size-[3.2rem]"></div>
+        </div>
+        <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
+          <div className="text-body flex w-full items-center gap-3 text-base">
+            <div className="truncate">{option.name}</div>
+            <AccountTypeIcon
+              className="text-primary"
+              origin={option.origin}
+              signetUrl={option.signetUrl}
+            />
+            <div className="show-on-hover flex flex-col justify-end">
+              <Suspense>
+                <CopyAddressButton option={option} />
+              </Suspense>
+            </div>
+          </div>
+          <div className="text-body-secondary flex w-full truncate text-left text-sm">
+            <Fiat amount={option.total} isBalance />
+          </div>
+        </div>
         <Suspense>
           <FormattedAddress
             address={option.address}
@@ -194,14 +212,17 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
             className="show-on-hover text-body-secondary text-xs"
           />
         </Suspense>
-      )}
-      {isAccount && (
         <div className="hide-on-hover text-lg">
           <ChevronRightIcon />
         </div>
-      )}
-      {!isAccount && <AccountsLogoStack className="text-sm" addresses={option.addresses} />}
-    </button>
+      </button>
+      {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
+      <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center text-xl">
+        <div className="relative size-[3.2rem]">
+          <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -285,12 +306,13 @@ const AccountsToolbar = () => {
 const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
   return (
     <div className={classNames("flex w-full flex-col gap-4", className)}>
-      {options.map((option) => (
-        <AccountButton
-          key={option.type === "account" ? `account-${option.address}` : option.id}
-          option={option}
-        />
-      ))}
+      {options.map((option) =>
+        option.type === "folder" ? (
+          <FolderButton key={option.id} option={option} />
+        ) : (
+          <AccountButton key={`account-${option.address}`} option={option} />
+        )
+      )}
     </div>
   )
 }
