@@ -8,7 +8,7 @@ import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
@@ -198,19 +198,27 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
   }, [option.address, searchParams])
 
   return (
-    <SidebarButtonBase
-      label={
-        <div className="flex w-full items-center gap-2">
-          <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
-          <AccountTypeIcon className="text-primary shrink-0" origin={option.origin} />
-        </div>
-      }
-      logo={<AccountIcon address={option.address} genesisHash={option.genesisHash} />}
-      fiat={<Fiat amount={option.total ?? 0} isBalance noCountUp />}
-      isSelected={isSelected}
-      onClick={handleClick}
-      right={null}
-    />
+    <div className="hover:bg-grey-750 relative w-full rounded-[12px]">
+      <SidebarButtonBase
+        label={
+          <div className="flex w-full items-center gap-2">
+            <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
+            <AccountTypeIcon className="text-primary shrink-0" origin={option.origin} />
+          </div>
+        }
+        logo={<div className="size-20 shrink-0"></div>}
+        fiat={<Fiat amount={option.total ?? 0} isBalance noCountUp />}
+        isSelected={isSelected}
+        onClick={handleClick}
+        right={null}
+      />
+      {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
+      <AccountIconCopyAddressButton
+        address={option.address}
+        genesisHash={option.genesisHash}
+        className="absolute left-4 top-4 text-[4rem]"
+      />
+    </div>
   )
 }
 
@@ -279,7 +287,7 @@ const SidebarButtonBase: FC<{
     <button
       type="button"
       className={classNames(
-        " hover:bg-grey-750 flex h-28 items-center gap-4 rounded-[12px] px-4 text-left",
+        "hover:bg-grey-750 flex h-28 w-full items-center gap-4 rounded-[12px] px-4 text-left",
         isSelected && "bg-grey-800"
       )}
       onClick={onClick}

@@ -1,10 +1,10 @@
-import { Address } from "@extension/core"
-import { IdenticonType } from "@extension/core"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames, isEthereumAddress } from "@talismn/util"
+import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
+
+import { Address, IdenticonType } from "@extension/core"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSetting } from "@ui/hooks/useSettings"
-import { CSSProperties, FC, Suspense, lazy, useMemo } from "react"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
@@ -12,7 +12,7 @@ const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 
 const IDENTICON_STYLE: CSSProperties = { cursor: "inherit" }
 
-type AccountIconProps = {
+export type AccountIconProps = {
   address: Address
   className?: string
   genesisHash?: string | null
@@ -25,7 +25,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
   return chain ? (
     <ChainLogo
       id={chain.id}
-      className="bg-grey-800 !absolute right-[-0.2em] top-[-0.2em] rounded-full text-[0.5em]"
+      className="bg-grey-800 !absolute right-[-0.2em] top-[-0.2em] z-10 rounded-full text-[0.5em]"
     />
   ) : null
 }
