@@ -78,48 +78,6 @@ type AccountAccountOption = {
 
 type AccountOption = FolderAccountOption | AccountAccountOption
 
-// const FormattedAddress: FC<{
-//   address: string
-//   genesisHash?: string | null
-//   className?: string
-// }> = ({ address, genesisHash, className }) => {
-//   const formattedAddress = useFormattedAddress(address, genesisHash)
-
-//   return <Address className={className} address={formattedAddress} />
-// }
-
-// const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
-//   const { open } = useCopyAddressModal()
-
-//   const chain = useChainByGenesisHash(option.type === "account" ? option.genesisHash : null)
-
-//   const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
-//     (event) => {
-//       event.stopPropagation()
-//       if (option.type === "account") {
-//         sendAnalyticsEvent({
-//           ...ANALYTICS_PAGE,
-//           name: "Goto",
-//           action: "open copy address",
-//         })
-//         open({
-//           address: option.address,
-//           networkId: chain?.id,
-//         })
-//       }
-//     },
-//     [open, option, chain?.id]
-//   )
-
-//   return (
-//     <CopyIcon
-//       role="button"
-//       className="text-body-secondary hover:text-body !text-sm "
-//       onClick={handleCopyClick}
-//     />
-//   )
-// }
-
 const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
 
@@ -168,6 +126,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
   return (
     <div
       className={classNames(
+        "group",
         "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
         "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
       )}
@@ -191,21 +150,9 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
               origin={option.origin}
               signetUrl={option.signetUrl}
             />
-            {/* <div className="show-on-hover flex flex-col justify-end">
-              <Suspense>
-                <CopyAddressButton option={option} />
-              </Suspense>
-            </div> */}
           </div>
           <div className="text-body-secondary flex w-full truncate text-left text-sm">
             <Fiat amount={option.total} isBalance className="hide-on-hover" />
-            {/* <Suspense>
-              <FormattedAddress
-                address={option.address}
-                genesisHash={option.genesisHash}
-                className="show-on-hover text-body-secondary "
-              />
-            </Suspense> */}
             <Address
               className="show-on-hover truncate"
               address={option.address}
@@ -216,13 +163,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
             />
           </div>
         </div>
-        {/* <Suspense>
-          <FormattedAddress
-            address={option.address}
-            genesisHash={option.genesisHash}
-            className="show-on-hover text-body-secondary text-xs"
-          />
-        </Suspense> */}
+
         <div className="text-lg">
           <ChevronRightIcon />
         </div>
@@ -230,85 +171,12 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
       <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center">
         <div className="relative size-[3.2rem] text-xl">
-          <AccountIconCopyAddressButton
-            address={option.address}
-            genesisHash={option.genesisHash}
-            className="text-body"
-          />
+          <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
         </div>
       </div>
     </div>
   )
 }
-
-// const AccountButton2: FC<{ option: AccountAccountOption }> = ({ option }) => {
-//   const navigate = useNavigate()
-//   const { genericEvent } = useAnalytics()
-
-//   const handleClick = useCallback(() => {
-//     genericEvent("select account(s)", {
-//       type: option.address ? (isEthereumAddress(option.address) ? "ethereum" : "substrate") : "all",
-//       from: "popup",
-//     })
-//     navigate(`/portfolio/tokens?account=${option.address}`)
-//   }, [genericEvent, navigate, option])
-
-//   return (
-//     <div
-//       className={classNames(
-//         "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
-//         "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
-//       )}
-//     >
-//       <button
-//         type="button"
-//         tabIndex={0}
-//         className={classNames(
-//           "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
-//         )}
-//         onClick={handleClick}
-//       >
-//         <div className="flex flex-col justify-center text-xl">
-//           <div className="size-[3.2rem]"></div>
-//         </div>
-//         <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
-//           <div className="text-body flex w-full items-center gap-3 text-base">
-//             <div className="truncate">{option.name}</div>
-//             <AccountTypeIcon
-//               className="text-primary"
-//               origin={option.origin}
-//               signetUrl={option.signetUrl}
-//             />
-//             <div className="show-on-hover flex flex-col justify-end">
-//               <Suspense>
-//                 <CopyAddressButton option={option} />
-//               </Suspense>
-//             </div>
-//           </div>
-//           <div className="text-body-secondary flex w-full truncate text-left text-sm">
-//             <Fiat amount={option.total} isBalance />
-//           </div>
-//         </div>
-//         <Suspense>
-//           <FormattedAddress
-//             address={option.address}
-//             genesisHash={option.genesisHash}
-//             className="show-on-hover text-body-secondary text-xs"
-//           />
-//         </Suspense>
-//         <div className="hide-on-hover text-lg">
-//           <ChevronRightIcon />
-//         </div>
-//       </button>
-//       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
-//       <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center text-xl">
-//         <div className="relative size-[3.2rem]">
-//           <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
 
 const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
   option.type === "account"

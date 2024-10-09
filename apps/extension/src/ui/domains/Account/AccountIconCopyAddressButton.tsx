@@ -1,3 +1,4 @@
+import { Placement } from "@floating-ui/react"
 import { CopyIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback } from "react"
@@ -9,12 +10,9 @@ import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useCopyAddressModal } from "../CopyAddress"
 import { AccountIcon, AccountIconProps } from "./AccountIcon"
 
-export const AccountIconCopyAddressButton: FC<AccountIconProps> = ({
-  address,
-  genesisHash,
-  className,
-  type,
-}) => {
+export const AccountIconCopyAddressButton: FC<
+  AccountIconProps & { tooltipPlacement?: Placement }
+> = ({ address, genesisHash, className, type, tooltipPlacement = "bottom-start" }) => {
   const { t } = useTranslation()
   const chain = useChainByGenesisHash(genesisHash)
   const { open } = useCopyAddressModal()
@@ -27,23 +25,23 @@ export const AccountIconCopyAddressButton: FC<AccountIconProps> = ({
   }, [address, chain?.id, open])
 
   return (
-    <Tooltip>
+    <Tooltip placement={tooltipPlacement}>
       <TooltipTrigger
         type="button"
         onClick={handleAvatarClick}
         className={classNames(
-          "size-[1em] shrink-0 rounded-full",
-          "[&:hover>.copy-overlay]:opacity-100 [&>.copy-overlay]:opacity-0",
-          "text-body-secondary",
+          "text-body size-[1em] shrink-0 rounded-full",
+          "[&:hover>.copy-overlay]:opacity-100", // show overlay while hovering
+          "[&:hover_.orb-type]:hidden", // hide orb type svg while showing overlay
           className
         )}
       >
         <AccountIcon type={type} address={address} genesisHash={genesisHash} />
         <div
           className={classNames(
-            "absolute left-0 top-0 flex  size-full items-center justify-center rounded-full",
-            "copy-overlay opacity-0 transition-opacity",
-            "bg-[radial-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6),rgba(0,0,0,0.1))]"
+            "copy-overlay",
+            "absolute left-0 top-0 flex size-full items-center justify-center rounded-full opacity-0",
+            "bg-[radial-gradient(rgba(90,90,90,0.6),rgba(90,90,90,0.6),rgba(90,90,90,0.1))]"
           )}
         >
           <CopyIcon className="text-[0.5em]" />

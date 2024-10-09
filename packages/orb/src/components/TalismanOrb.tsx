@@ -72,7 +72,7 @@ const TalismanOrbLogo = ({ id, iconType }: { id: string; iconType?: LogoIconType
   switch (iconType) {
     case "ethereum":
       return (
-        <g opacity="0.75" transform="scale(0.7) translate(14 14)">
+        <g opacity="0.75" transform="scale(0.7) translate(14 14)" className="orb-type">
           <path
             d="M12.8101 32.76L32.0001 44.62L51.1901 32.76L32.0001 -0.0699997L12.8101 32.76Z"
             fill="white"
@@ -90,6 +90,7 @@ const TalismanOrbLogo = ({ id, iconType }: { id: string; iconType?: LogoIconType
             clipPath={`url(#${id}_1751_2030)`}
             opacity="0.75"
             transform="scale(2.2) translate(4.5 3.9)"
+            className="orb-type"
           >
             <path
               d="M9.99937 4.4612C12.1176 4.4612 13.8347 3.46253 13.8347 2.2306C13.8347 0.998674 12.1176 0 9.99937 0C7.88119 0 6.16406 0.998674 6.16406 2.2306C6.16406 3.46253 7.88119 4.4612 9.99937 4.4612Z"

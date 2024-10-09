@@ -185,81 +185,6 @@ const TreeAccounts: FC<{
   )
 }
 
-// const AccountOptionAddress = ({ option }: { option: AccountAccountOption }) => {
-//   const [searchParams, updateSearchParams] = useSearchParams()
-
-//   const handleClick = useCallback(() => {
-//     searchParams.delete("folder")
-//     searchParams.set("account", option.address)
-//     updateSearchParams(searchParams, { replace: true })
-//   }, [option.address, searchParams, updateSearchParams])
-
-//   const isSelected = useMemo(() => {
-//     return searchParams.get("account") === option.address
-//   }, [option.address, searchParams])
-
-//   const chain = useChainByGenesisHash(option.genesisHash)
-//   const { open } = useCopyAddressModal()
-
-//   const handleCopyClick = useCallback(() => {
-//     open({
-//       address: option.address,
-//       networkId: chain?.id,
-//     })
-//   }, [chain?.id, open, option.address])
-
-//   return (
-//     <div className="hover:bg-grey-750 group relative w-full rounded-[12px]">
-//       <SidebarButtonBase
-//         label={
-//           <div className="flex w-full items-center gap-2">
-//             <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
-//             <AccountTypeIcon className="text-primary shrink-0" origin={option.origin} />
-//           </div>
-//         }
-//         logo={
-//           <AccountIcon
-//             address={option.address}
-//             genesisHash={option.genesisHash}
-//             className="text-[4rem]"
-//           />
-//         }
-//         fiat={
-//           <div className="flex h-8 w-full select-none items-center overflow-hidden">
-//             <Fiat
-//               className="h-8 group-hover:hidden"
-//               amount={option.total ?? 0}
-//               isBalance
-//               noCountUp
-//             />
-//           </div>
-//         }
-//         isSelected={isSelected}
-//         onClick={handleClick}
-//         right={null}
-//       />
-//       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
-//       <div className="text-body-disabled absolute left-28 top-[3rem] hidden h-8 w-[17.2rem] items-center gap-2 overflow-hidden text-xs group-hover:flex">
-//         <Address
-//           className="truncate"
-//           address={option.address}
-//           genesisHash={option.genesisHash}
-//           noTooltip
-//           startCharCount={6}
-//           endCharCount={6}
-//         />
-//         <button
-//           type="button"
-//           onClick={handleCopyClick}
-//           className="text-body-disabled hover:text-body-secondary"
-//         >
-//           <CopyIcon />
-//         </button>
-//       </div>
-//     </div>
-//   )
-// }
-
 const AccountOption = ({ option }: { option: AccountAccountOption }) => {
   const [searchParams, updateSearchParams] = useSearchParams()
 
@@ -310,7 +235,8 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
       <AccountIconCopyAddressButton
         address={option.address}
         genesisHash={option.genesisHash}
-        className="text-body absolute left-4 top-4 text-[4rem]"
+        className="absolute left-4 top-4 text-[4rem]"
+        tooltipPlacement="bottom"
       />
     </div>
   )
