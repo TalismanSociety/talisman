@@ -159,3 +159,8 @@ export const getNomPoolStakingPayload = async (
         { address }
       )
 }
+export const cleanupNomPoolName = (name: string | null | undefined) =>
+  name
+    ?.replace(": app.talisman.xyz/staking", "")
+    .replace(" | Auto-Compound > $2USD", "")
+    .replace(" | Auto-Compound > 1 DOT", "") ?? null
