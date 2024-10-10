@@ -79,7 +79,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
           const unbondingEras =
             nomPoolStakingByAddress[address]?.unbonding_eras.map(([era]) => era) ?? []
           const maxUnbondingEra = Math.max(...unbondingEras)
-          const erasToUnbonding = currentEra < maxUnbondingEra ? maxUnbondingEra - currentEra : 0
+          const erasToUnbonding = currentEra <= maxUnbondingEra ? maxUnbondingEra - currentEra : 0
 
           return {
             address,
@@ -88,7 +88,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             isNomPoolsStaking: !!nomPoolStakingByAddress[address],
             canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
             canUnstake: nomPoolStakingByAddress[address]?.points,
-            canWithdraw: maxUnbondingEra < currentEra,
+            canWithdraw: maxUnbondingEra <= currentEra,
             canWithdrawIn: await getWithdrawWaitDuration(sapi, erasToUnbonding),
           }
         })

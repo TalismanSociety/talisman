@@ -76,7 +76,7 @@ export const useNomPoolWithdrawWizard = () => {
   const pointsToWithdraw = useMemo(() => {
     if (!currentEra || !pool) return null
     return pool.unbonding_eras
-      .filter(([era]) => era < currentEra)
+      .filter(([era]) => era <= currentEra)
       .reduce((acc, [, points]) => acc + points, 0n)
   }, [currentEra, pool])
 
