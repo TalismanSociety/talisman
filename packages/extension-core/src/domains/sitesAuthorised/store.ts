@@ -1,5 +1,5 @@
 import { assert } from "@polkadot/util"
-import { convertAddress } from "@talismn/util"
+import { isAddressEqual } from "@talismn/util"
 import { isTalismanHostname } from "extension-shared"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
@@ -55,8 +55,8 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     // check the supplied address is authorised to interact with this URL
     if (address)
       assert(
-        addresses.includes(convertAddress(address, null)),
-        `The source ${url} is not allowed to intract with this account.`
+        addresses.some((addr) => isAddressEqual(addr, address)),
+        `The source ${url} is not allowed to interact with this account.`
       )
     return true
   }
