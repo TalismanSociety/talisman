@@ -4,6 +4,8 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
+import { cleanupNomPoolName } from "../helpers"
+
 export const useNomPoolName = (
   chainId: ChainId | null | undefined,
   poolId: number | null | undefined
@@ -17,12 +19,7 @@ export const useNomPoolName = (
 
       const metadata = await sapi.getStorage<Binary>("NominationPools", "Metadata", [poolId])
 
-      return (
-        metadata
-          ?.asText()
-          .replace(": app.talisman.xyz/staking", "")
-          .replace(" | Auto-Compound > $2USD", "") ?? null
-      )
+      return cleanupNomPoolName(metadata?.asText())
     },
     enabled: !!sapi,
     refetchInterval: false,

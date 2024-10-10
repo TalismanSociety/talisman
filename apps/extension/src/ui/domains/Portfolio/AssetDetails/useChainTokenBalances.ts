@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
@@ -96,12 +97,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       b.nompools.map((nomPool, index) => ({
         key: `${b.id}-nomPool-${index}`,
         title: getLockTitle(nomPool, { balance: b }),
-
-        description:
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (nomPool.meta as any)?.description
-            ?.replace(": app.talisman.xyz/staking", "")
-            .replace(" | Auto-Compound > $2USD", "") ?? undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: cleanupNomPoolName((nomPool.meta as any).description) ?? undefined,
         tokens: BigNumber(nomPool.amount.tokens),
         fiat: nomPool.amount.fiat(currency),
         locked: true,
