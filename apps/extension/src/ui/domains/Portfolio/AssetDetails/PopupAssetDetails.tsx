@@ -1,5 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
+import { ArrowDownIcon, CreditCardIcon, LockIcon, ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useCallback, useMemo } from "react"
@@ -205,8 +205,8 @@ const ChainTokenBalancesDetailRow = ({
     )}
   >
     <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-      <div className="font-bold text-white">
-        {row.title}{" "}
+      <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
+        <div className="truncate">{row.title}</div>
         {!!row.locked && tokenId && row.meta && (
           <LockedExtra
             tokenId={tokenId}
@@ -229,23 +229,20 @@ const ChainTokenBalancesDetailRow = ({
     </div>
     <div
       className={classNames(
-        "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
+        "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
         status.status === "fetching" && "animate-pulse transition-opacity"
       )}
     >
-      <div className={classNames("font-bold", row.locked ? "text-body-secondary" : "text-white")}>
+      <div
+        className={classNames(
+          "flex h-10 items-center gap-2 font-bold",
+          row.locked ? "text-body-secondary" : "text-white"
+        )}
+      >
         <Tokens amount={row.tokens} symbol={symbol} isBalance />
-        {row.locked ? (
-          <>
-            {" "}
-            <LockIcon className="lock inline align-baseline" />
-          </>
-        ) : null}
+        {row.locked ? <LockIcon className="lock shrink-0" /> : null}
         {status.status === "stale" ? (
-          <>
-            {" "}
-            <StaleBalancesIcon className="inline align-baseline" staleChains={status.staleChains} />
-          </>
+          <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />
         ) : null}
       </div>
       <div className="text-xs">
@@ -289,20 +286,19 @@ const LockedExtra: FC<{
     <>
       {rowMeta.unbonding ? (
         accountStatus.canWithdraw ? (
-          <NomPoolWithdrawButton
-            tokenId={tokenId}
-            address={rowAddress}
-            className="px-2 py-0.5 text-xs"
-          />
+          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="small" />
         ) : (
           <Tooltip>
             <TooltipTrigger
               className={classNames(
-                "text-body-secondary bg-body/10 rounded-xs px-2 py-0.5 text-xs opacity-60",
-                isLoading && "animate-pulse transition-opacity"
+                "text-body-secondary bg-body/10 h-10 rounded-sm px-3 text-xs opacity-60",
+                isLoading && "animate-pulse"
               )}
             >
-              {t("Unbonding")}
+              <div className="flex items-center gap-2 ">
+                <ZapOffIcon className="shrink-0 text-xs" />
+                <div>{t("Unbonding")}</div>
+              </div>
             </TooltipTrigger>
             {!!withdrawIn && (
               <TooltipContent>{t("{{duration}} left", { duration: withdrawIn })}</TooltipContent>
@@ -311,11 +307,7 @@ const LockedExtra: FC<{
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
       accountStatus.canUnstake ? (
-        <NomPoolUnbondButton
-          tokenId={tokenId}
-          address={rowAddress}
-          className="px-2 py-0.5 text-xs"
-        />
+        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="small" />
       ) : null}
     </>
   )

@@ -1,4 +1,5 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useMemo } from "react"
@@ -309,26 +310,24 @@ const LockedExtra: FC<{
     <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
       {rowMeta.unbonding ? (
         accountStatus.canWithdraw ? (
-          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} />
+          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
         ) : (
           <>
-            <div
-              className={classNames(
-                "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
-                isLoading && "animate-pulse transition-opacity"
-              )}
-            >
-              {t("Unbonding")}
+            <div className={classNames(isLoading && "animate-pulse transition-opacity")}>
+              <div className="flex items-center gap-2">
+                <ZapOffIcon className="shrink-0 text-sm" />
+                <div>{t("Unbonding")}</div>
+              </div>
             </div>
             {!!withdrawIn && (
-              <div className="text-body-disabled text-sm">
+              <div className="text-body-500 text-sm">
                 {t("{{duration}} left", { duration: withdrawIn })}
               </div>
             )}
           </>
         )
       ) : accountStatus.canUnstake ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} />
+        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
       ) : null}
     </div>
   )

@@ -1,4 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { ZapMinusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,7 +13,8 @@ export const NomPoolWithdrawButton: FC<{
   tokenId: TokenId
   address: string
   className?: string
-}> = ({ tokenId, address, className }) => {
+  variant: "small" | "large"
+}> = ({ tokenId, address, variant, className }) => {
   const { t } = useTranslation()
   const { open } = useNomPoolWithdrawModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
@@ -33,14 +35,25 @@ export const NomPoolWithdrawButton: FC<{
 
   return (
     <button
-      type="button"
-      onClick={handleClick}
       className={classNames(
-        "bg-body/10 hover:bg-body/20 text-body-secondary hover:text-body rounded-xs px-4 py-1",
+        "text-primary/80 hover:text-primary bg-primary/10 hover:bg-primary/20 font-light",
+        variant === "small" && "h-10 rounded-sm px-3 text-xs",
+        variant === "large" && "h-14 rounded px-4 text-sm",
         className
       )}
+      type="button"
+      onClick={handleClick}
     >
-      {t("Withdraw")}
+      <div className="flex items-center gap-2 ">
+        <ZapMinusIcon
+          className={classNames(
+            "shrink-0",
+            variant === "small" && "text-xs",
+            variant === "large" && "text-base"
+          )}
+        />
+        <div>{t("Withdraw")}</div>
+      </div>
     </button>
   )
 }
