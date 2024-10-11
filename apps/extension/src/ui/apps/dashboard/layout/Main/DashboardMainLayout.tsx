@@ -18,7 +18,7 @@ import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardMainLayout: FC<{
   children?: ReactNode
-  withBack?: boolean | string // TODO
+  withBack?: boolean | string
   sidebar: "portfolio" | "settings"
   width?: "660" | "800"
 }> = ({ children, sidebar, width, withBack }) => {
