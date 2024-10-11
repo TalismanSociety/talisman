@@ -17,12 +17,12 @@ import {
 } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
-export const AboutPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   return (
-    <DashboardAdminLayout centered>
+    <>
       <HeaderBlock title={t("About")} />
       <div className="text-body-secondary my-12 flex flex-col gap-8">
         <p>
@@ -84,6 +84,12 @@ export const AboutPage = () => {
           iconRight={ExternalLinkIcon}
         />
       </div>
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const AboutPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

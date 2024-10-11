@@ -28,24 +28,20 @@ const BuyTokensOpener = () => {
   return null
 }
 
-export const PortfolioRoutes = () => {
-  return (
-    <>
-      <DashboardMainLayout>
-        <BuyTokensOpener />
-        <PortfolioContainer>
-          {/* share layout to prevent tabs flickering */}
-          <PortfolioLayout>
-            <Routes>
-              <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-              <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
-              <Route path="tokens" element={<PortfolioAssets />} />
-              <Route path="nfts" element={<PortfolioNfts />} />
-              <Route path="*" element={<NavigateWithQuery url="tokens" />} />
-            </Routes>
-          </PortfolioLayout>
-        </PortfolioContainer>
-      </DashboardMainLayout>
-    </>
-  )
-}
+export const PortfolioRoutes = () => (
+  <DashboardMainLayout sidebar="portfolio">
+    <BuyTokensOpener />
+    <PortfolioContainer>
+      {/* share layout to prevent tabs flickering */}
+      <PortfolioLayout>
+        <Routes>
+          <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+          <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+          <Route path="tokens" element={<PortfolioAssets />} />
+          <Route path="nfts" element={<PortfolioNfts />} />
+          <Route path="*" element={<NavigateWithQuery url="tokens" />} />
+        </Routes>
+      </PortfolioLayout>
+    </PortfolioContainer>
+  </DashboardMainLayout>
+)

@@ -14,7 +14,7 @@ import { CustomEvmErc20TokenCreate } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
+import { DashboardMainLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -34,7 +34,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Add Token",
 }
 
-export const AddCustomTokenPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
@@ -134,7 +134,7 @@ export const AddCustomTokenPage = () => {
   }, [t, tokenInfoError])
 
   return (
-    <DashboardAdminLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <>
       <HeaderBlock
         title={t("Add custom token")}
         text={t(
@@ -215,6 +215,12 @@ export const AddCustomTokenPage = () => {
           </Button>
         </div>
       </form>
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const AddCustomTokenPage = () => (
+  <DashboardMainLayout withBack sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

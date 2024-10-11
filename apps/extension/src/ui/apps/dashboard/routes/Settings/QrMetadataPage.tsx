@@ -25,7 +25,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import useChains from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation("admin")
@@ -242,7 +242,7 @@ const preloadAtom = atom(async (get) => {
   ])
 })
 
-export const QrMetadataPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
 
@@ -250,12 +250,18 @@ export const QrMetadataPage = () => {
   const mnemonic = useMnemonic(certifierMnemonicId)
 
   return (
-    <DashboardAdminLayout centered withBack backTo="/settings/networks-tokens">
+    <>
       <HeaderBlock
         title={t("Polkadot Vault Metadata")}
         text={t("Register networks on your Polkadot Vault device, or update their metadata.")}
       />
       {mnemonic ? <MetadataPortalContent /> : <SetVerifierCertificateContent />}
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const QrMetadataPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660" withBack="/settings/networks-tokens">
+    <Content />
+  </DashboardMainLayout>
+)

@@ -17,9 +17,9 @@ import { Spacer } from "@talisman/components/Spacer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
-export const SecurityPrivacyPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
@@ -29,7 +29,7 @@ export const SecurityPrivacyPage = () => {
   const { allBackedUp } = useMnemonicBackup()
 
   return (
-    <DashboardAdminLayout centered>
+    <>
       <HeaderBlock
         title={t("Security and Privacy")}
         text={t("Control security and privacy preferences")}
@@ -133,6 +133,12 @@ export const SecurityPrivacyPage = () => {
           />
         </Setting>
       </div>
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const SecurityPrivacyPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

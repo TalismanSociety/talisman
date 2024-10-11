@@ -33,7 +33,7 @@ import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
 const ConfirmRemove = ({
   open,
@@ -101,7 +101,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Token Details",
 }
 
-export const TokenPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
@@ -130,7 +130,7 @@ export const TokenPage = () => {
   if (!erc20Token || !network) return null
 
   return (
-    <DashboardAdminLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <>
       <HeaderBlock
         title={
           <div className="flex items-center justify-between gap-5">
@@ -228,6 +228,12 @@ export const TokenPage = () => {
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const TokenPage = () => (
+  <DashboardMainLayout withBack sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

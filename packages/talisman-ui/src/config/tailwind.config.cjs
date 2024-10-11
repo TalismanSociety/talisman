@@ -16,6 +16,7 @@ module.exports = {
       },
       body: {
         disabled: "#5a5a5a", // rgb(90, 90, 90)
+        inactive: "#717171", // rgb(113, 113, 113)
         secondary: "#a5a5a5", // rgb(165, 165, 165)
         DEFAULT: "#fafafa", // rgb(250, 250, 250)
         black: "#121212", // rgb(18, 18, 18)

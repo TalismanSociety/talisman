@@ -34,7 +34,7 @@ import { AssetDiscoveryPage } from "./routes/Settings/AssetsDiscovery/AssetDisco
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
-import CurrencySettingsPage from "./routes/Settings/CurrencySettingsPage"
+import { CurrencySettingsPage } from "./routes/Settings/CurrencySettingsPage"
 import { GeneralPage } from "./routes/Settings/GeneralPage"
 import { LanguagePage } from "./routes/Settings/LanguagePage"
 import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"

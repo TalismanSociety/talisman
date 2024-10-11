@@ -10,7 +10,7 @@ import {
 } from "@ui/domains/Settings/ManageNetworks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 import { useNetworksType } from "./useNetworksType"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -20,7 +20,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Network",
 }
 
-export const NetworkPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { id } = useParams<"id">()
@@ -42,7 +42,7 @@ export const NetworkPage = () => {
   )
 
   return (
-    <DashboardAdminLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <>
       {isChain && (
         <>
           {id && <SubNetworkFormEdit chainId={id} onSubmitted={handleSubmitted} />}
@@ -50,6 +50,11 @@ export const NetworkPage = () => {
         </>
       )}
       {isEvmNetwork && <EvmNetworkForm evmNetworkId={id} onSubmitted={handleSubmitted} />}
-    </DashboardAdminLayout>
+    </>
   )
 }
+export const NetworkPage = () => (
+  <DashboardMainLayout withBack sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

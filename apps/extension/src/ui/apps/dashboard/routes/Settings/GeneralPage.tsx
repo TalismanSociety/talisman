@@ -22,7 +22,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -31,7 +31,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "General",
 }
 
-export const GeneralPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
@@ -43,7 +43,7 @@ export const GeneralPage = () => {
   const [developerMode, setDeveloperMode] = useSetting("developerMode")
 
   return (
-    <DashboardAdminLayout centered>
+    <>
       <HeaderBlock title={t("General")} text={t("General settings")} />
       <div className="mt-16 flex flex-col gap-4">
         {hasRuntimeReloadFn ? (
@@ -140,6 +140,12 @@ export const GeneralPage = () => {
           <Toggle checked={developerMode} onChange={(e) => setDeveloperMode(e.target.checked)} />
         </Setting>
       </div>
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const GeneralPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

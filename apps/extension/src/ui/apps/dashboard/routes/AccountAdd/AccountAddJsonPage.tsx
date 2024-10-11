@@ -5,20 +5,26 @@ import { Spacer } from "@talisman/components/Spacer"
 import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
-export const AccountAddJsonPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   return (
-    <DashboardAdminLayout withBack centered>
+    <>
       <HeaderBlock
         title={t("Import JSON")}
         text={t("Please choose the .json file you exported from Polkadot.js or Talisman")}
       />
       <Spacer />
       <AccountAddJson onSuccess={setAddress} />
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const AccountAddJsonPage = () => (
+  <DashboardMainLayout withBack sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

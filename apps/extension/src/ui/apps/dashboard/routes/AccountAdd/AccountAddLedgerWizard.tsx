@@ -1,16 +1,18 @@
 import { lazy } from "react"
 
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
+import { DashboardMainLayout } from "@ui/apps/dashboard/layout"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
 const AccountAddLedgerWizard = lazy(() => import("@ui/domains/Account/AccountAdd/AccountAddLedger"))
 
-export const AccountAddLedgerDashboardWizard = () => {
+const Content = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
-  return (
-    <DashboardAdminLayout withBack centered>
-      <AccountAddLedgerWizard onSuccess={setAddress} />
-    </DashboardAdminLayout>
-  )
+  return <AccountAddLedgerWizard onSuccess={setAddress} />
 }
+
+export const AccountAddLedgerDashboardWizard = () => (
+  <DashboardMainLayout withBack sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

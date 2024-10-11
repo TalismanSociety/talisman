@@ -21,7 +21,7 @@ import {
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"
@@ -64,7 +64,7 @@ const preloadAtom = atom((get) =>
   ])
 )
 
-export const NetworksPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
   useAnalyticsPageView(ANALYTICS_PAGE)
@@ -84,12 +84,7 @@ export const NetworksPage = () => {
   const [search, setSearch] = useState("")
 
   return (
-    <DashboardAdminLayout
-      analytics={ANALYTICS_PAGE}
-      centered
-      withBack
-      backTo="/settings/networks-tokens"
-    >
+    <>
       <HeaderBlock title={t("Manage Networks")} text={t("Add, enable and disable networks")} />
       <Spacer small />
       <Notice />
@@ -131,6 +126,12 @@ export const NetworksPage = () => {
           <EvmNetworksList search={search} />
         )}
       </FadeIn>
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const NetworksPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660" withBack="/settings/networks-tokens">
+    <Content />
+  </DashboardMainLayout>
+)

@@ -86,7 +86,7 @@ const TxHistoryAccountFilter = () => {
 
 export const TxHistory = () => {
   return (
-    <DashboardMainLayout>
+    <DashboardMainLayout sidebar="portfolio">
       <TxHistoryProvider>
         <TxHistoryAccountFilter />
         <div className="min-w-[60rem]">

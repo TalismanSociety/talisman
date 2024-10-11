@@ -14,14 +14,14 @@ import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
-export const NetworksTokensPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   return (
-    <DashboardAdminLayout centered>
+    <>
       <HeaderBlock
         title={t("Networks & Tokens")}
         text={t("View, edit and add custom networks and tokens")}
@@ -78,6 +78,12 @@ export const NetworksTokensPage = () => {
           to={`/settings/networks-tokens/qr-metadata`}
         />
       </div>
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const NetworksTokensPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

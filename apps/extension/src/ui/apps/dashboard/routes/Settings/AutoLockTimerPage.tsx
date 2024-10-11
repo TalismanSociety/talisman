@@ -7,12 +7,12 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
 type AllowedValues = SettingsStoreData["autoLockTimeout"]
 type Option = { value: AllowedValues; label: string }
 
-export const AutoLockTimerPage = () => {
+export const Content = () => {
   const { t } = useTranslation("admin")
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
 
@@ -41,7 +41,7 @@ export const AutoLockTimerPage = () => {
   )
 
   return (
-    <DashboardAdminLayout centered withBack>
+    <>
       <HeaderBlock
         title="Auto-lock Timer"
         text="Set a timer to automatically lock the Talisman wallet extension."
@@ -56,6 +56,12 @@ export const AutoLockTimerPage = () => {
         onChange={handleChange}
       />
       <Spacer />
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const AutoLockTimerPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

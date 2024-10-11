@@ -5,20 +5,27 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { balancesHydrateAtom } from "@ui/atoms"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardMainLayout } from "../../layout"
 
-export const AccountAddMenu = () => {
+const Content = () => {
   useAtomValue(balancesHydrateAtom)
   const { t } = useTranslation()
+
   return (
-    <DashboardAdminLayout centered withBack>
-      <div className="flex flex-col gap-16">
-        <HeaderBlock
-          title={t("Add Account")}
-          text={t("Create a new account or import an existing one")}
-        />
-        <AccountCreateMenu />
-      </div>
-    </DashboardAdminLayout>
+    <div className="flex flex-col gap-16">
+      <HeaderBlock
+        title={t("Add Account")}
+        text={t("Create a new account or import an existing one")}
+      />
+      <AccountCreateMenu />
+    </div>
+  )
+}
+
+export const AccountAddMenu = () => {
+  return (
+    <DashboardMainLayout withBack sidebar="settings" width="660">
+      <Content />
+    </DashboardMainLayout>
   )
 }
