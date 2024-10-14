@@ -49,16 +49,6 @@ export const DashboardSettingsSidebar = () => {
       <div className="flex w-full flex-col gap-2">
         <SidebarNavItem to="/settings/general" label={t("General")} icon={<SlidersIcon />} />
         <SidebarNavItem
-          to="/settings/address-book"
-          label={t("Address Book")}
-          icon={<UsersIcon />}
-        />
-        <SidebarNavItem
-          label={t("Connected Sites")}
-          to="/settings/connected-sites"
-          icon={<LinkIcon />}
-        />
-        <SidebarNavItem
           label={t("Accounts")}
           to="/settings/accounts"
           icon={<UserIcon />}
@@ -75,6 +65,16 @@ export const DashboardSettingsSidebar = () => {
           }
           to="/settings/mnemonics"
           icon={<SecretIcon />}
+        />
+        <SidebarNavItem
+          to="/settings/address-book"
+          label={t("Address Book")}
+          icon={<UsersIcon />}
+        />
+        <SidebarNavItem
+          label={t("Connected Sites")}
+          to="/settings/connected-sites"
+          icon={<LinkIcon />}
         />
         <SidebarNavItem
           label={t("Security & Privacy")}
