@@ -261,7 +261,7 @@ const Content = () => {
 }
 
 export const QrMetadataPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660" withBack="/settings/networks-tokens">
+  <DashboardMainLayout sidebar="settings" width="660">
     <Content />
   </DashboardMainLayout>
 )

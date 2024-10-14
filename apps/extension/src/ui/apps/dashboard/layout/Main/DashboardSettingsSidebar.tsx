@@ -13,7 +13,7 @@ import {
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { NavLink, To, useNavigate } from "react-router-dom"
+import { NavLink, To, useMatch, useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -58,7 +58,12 @@ export const DashboardSettingsSidebar = () => {
           to="/settings/connected-sites"
           icon={<LinkIcon />}
         />
-        <SidebarNavItem label={t("Accounts")} to="/settings/accounts" icon={<UserIcon />} />
+        <SidebarNavItem
+          label={t("Accounts")}
+          to="/settings/accounts"
+          icon={<UserIcon />}
+          matchPath="/accounts/*"
+        />
         <SidebarNavItem
           label={
             <span className="flex items-center gap-2">
@@ -87,26 +92,32 @@ export const DashboardSettingsSidebar = () => {
   )
 }
 
-const SidebarNavItem: FC<{ to: To; icon: ReactNode; label: ReactNode; className?: string }> = ({
-  to,
-  icon,
-  label,
-  className,
-}) => (
-  <NavLink
-    to={to}
-    className={classNames(
-      "flex w-full items-center gap-6 overflow-hidden rounded",
-      "text-body-secondary [&.active]:text-body",
-      "hover:bg-grey-750 [&.active]:bg-grey-800",
-      "h-28 px-6",
-      className
-    )}
-  >
-    <span className="size-12 shrink-0 text-lg">{icon}</span>
-    <span className="truncate">{label}</span>
-  </NavLink>
-)
+const SidebarNavItem: FC<{
+  to: To
+  icon: ReactNode
+  label: ReactNode
+  matchPath?: string
+  className?: string
+}> = ({ to, icon, label, matchPath, className }) => {
+  const forceActive = useMatch(matchPath ?? "UNEXISTANT_PATH")
+
+  return (
+    <NavLink
+      to={to}
+      className={classNames(
+        "flex w-full items-center gap-6 overflow-hidden rounded",
+        "text-body-inactive [&.active]:text-body",
+        "hover:bg-grey-750 [&.active]:bg-grey-800",
+        "h-28 px-6",
+        forceActive && "active",
+        className
+      )}
+    >
+      <span className="size-12 shrink-0 text-lg">{icon}</span>
+      <span className="truncate">{label}</span>
+    </NavLink>
+  )
+}
 
 const MnemonicNotification = () => {
   const { allBackedUp } = useMnemonicBackup()

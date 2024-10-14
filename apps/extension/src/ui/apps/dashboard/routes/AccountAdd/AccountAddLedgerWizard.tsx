@@ -12,7 +12,7 @@ const Content = () => {
 }
 
 export const AccountAddLedgerDashboardWizard = () => (
-  <DashboardMainLayout withBack sidebar="settings" width="660">
+  <DashboardMainLayout sidebar="settings" width="660">
     <Content />
   </DashboardMainLayout>
 )

@@ -63,7 +63,7 @@ const Content = () => {
 }
 
 export const LanguagePage = () => (
-  <DashboardMainLayout sidebar="settings" width="660" withBack="/settings/general">
+  <DashboardMainLayout sidebar="settings" width="660">
     <Content />
   </DashboardMainLayout>
 )

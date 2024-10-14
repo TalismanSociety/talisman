@@ -5,7 +5,6 @@ import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
-import { BackButton } from "@talisman/components/BackButton"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -14,14 +13,14 @@ import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { DashboardNotificationsAndModals } from "../Shared/DashboardNotificationsAndModals"
 import { DashboardAccountsSidebar } from "./DashboardAccountsSidebar"
 import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
+import { LayoutBreadcrumb } from "./LayoutBreadcrumb"
 
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardMainLayout: FC<{
   children?: ReactNode
-  withBack?: boolean | string
   sidebar: "portfolio" | "settings"
   width?: "660" | "800"
-}> = ({ children, sidebar, width, withBack }) => {
+}> = ({ children, sidebar, width }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
       <div className="relative mx-auto w-full max-w-[161.6rem]">
@@ -42,12 +41,7 @@ export const DashboardMainLayout: FC<{
                   width === "800" && "max-w-[80rem]"
                 )}
               >
-                {!!withBack && (
-                  <BackButton
-                    className="mb-24"
-                    to={typeof withBack === "string" ? withBack : undefined}
-                  />
-                )}
+                <LayoutBreadcrumb />
                 {children}
               </div>
             </Suspense>

@@ -220,7 +220,7 @@ const Content = () => {
 }
 
 export const AddCustomTokenPage = () => (
-  <DashboardMainLayout withBack sidebar="settings" width="660">
+  <DashboardMainLayout sidebar="settings" width="660">
     <Content />
   </DashboardMainLayout>
 )

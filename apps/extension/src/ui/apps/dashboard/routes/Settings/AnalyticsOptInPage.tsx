@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { useNavigationType } from "react-router-dom"
 import { Toggle } from "talisman-ui"
 
 import { Setting } from "@talisman/components/Setting"
@@ -33,12 +32,8 @@ const Content = () => {
   )
 }
 
-export const AnalyticsOptInPage = () => {
-  const nav = useNavigationType()
-
-  return (
-    <DashboardMainLayout sidebar="settings" width="660" withBack={nav === "PUSH"}>
-      <Content />
-    </DashboardMainLayout>
-  )
-}
+export const AnalyticsOptInPage = () => (
+  <DashboardMainLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardMainLayout>
+)

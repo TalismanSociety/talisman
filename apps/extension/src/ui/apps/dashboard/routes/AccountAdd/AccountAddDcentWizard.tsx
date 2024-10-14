@@ -4,7 +4,7 @@ import { DashboardMainLayout } from "../../layout"
 
 export const AccountAddDcentDashboardWizard = () => {
   return (
-    <DashboardMainLayout withBack sidebar="settings" width="660">
+    <DashboardMainLayout sidebar="settings" width="660">
       <AccountAddDcentDisabledMessage />
     </DashboardMainLayout>
   )

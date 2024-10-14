@@ -596,7 +596,7 @@ const Content = () => {
 }
 
 export const AssetDiscoveryPage = () => (
-  <DashboardMainLayout sidebar="settings" width="800" withBack="/settings/networks-tokens">
+  <DashboardMainLayout sidebar="settings" width="800">
     <Content />
   </DashboardMainLayout>
 )
