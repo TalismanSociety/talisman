@@ -24,7 +24,7 @@ const Content = () => {
   return (
     <>
       <HeaderBlock title={t("About")} />
-      <div className="text-body-secondary mb-12 mt-4 flex flex-col gap-8 text-sm">
+      <div className="text-body-secondary mb-12 mt-4 flex flex-col gap-4 text-sm">
         <p>
           <Trans t={t}>
             In the beginning, the paraverse swarmed with formless life and chaotic energy.
