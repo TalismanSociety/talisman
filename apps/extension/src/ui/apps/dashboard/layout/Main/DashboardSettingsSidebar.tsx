@@ -11,33 +11,42 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, Suspense } from "react"
+import { FC, ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { NavLink, To } from "react-router-dom"
+import { NavLink, To, useNavigate } from "react-router-dom"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+  const navigate = useNavigate()
+
+  const handleAddAccountClick = useCallback(() => {
+    genericEvent("goto add account", { from: "sidebar" })
+    navigate("/accounts/add")
+  }, [genericEvent, navigate])
 
   return (
     <div className={classNames("bg-grey-900 rounded-lg", "flex w-full flex-col gap-8 p-8")}>
       <div className="flex h-16 shrink-0 items-center">
         <div className="grow pl-4 text-[2rem] font-bold">{t("Settings")}</div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton
+              onClick={handleAddAccountClick}
+              className="bg-primary/10 enabled:hover:bg-primary/20 enabled:hover:text-primary text-primary/90 rounded-full p-3"
+            >
+              <PlusIcon className="size-10" />
+            </IconButton>
+          </TooltipTrigger>
+          <TooltipContent>{t("Add Account")}</TooltipContent>
+        </Tooltip>
       </div>
       <div className="bg-grey-800 h-0.5"></div>
-
       <div className="flex w-full flex-col gap-2">
-        <SidebarNavItem
-          to="/accounts/add"
-          label={t("Add Account")}
-          icon={
-            <div className="bg-primary/10 flex size-12 flex-col items-center justify-center rounded-full">
-              <PlusIcon className="text-base" />
-            </div>
-          }
-          className="!text-primary font-bold"
-        />
         <SidebarNavItem to="/settings/general" label={t("General")} icon={<SlidersIcon />} />
         <SidebarNavItem
           to="/settings/address-book"
@@ -88,7 +97,7 @@ const SidebarNavItem: FC<{ to: To; icon: ReactNode; label: ReactNode; className?
     to={to}
     className={classNames(
       "flex w-full items-center gap-6 overflow-hidden rounded",
-      "text-body-inactive [&.active]:text-body",
+      "text-body-secondary [&.active]:text-body",
       "hover:bg-grey-750 [&.active]:bg-grey-800",
       "h-28 px-6",
       className
