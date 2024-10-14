@@ -1,22 +1,26 @@
-import { HistoryIcon, SettingsIcon, TalismanHandIcon, UsersIcon, ZapIcon } from "@talismn/icons"
+import { HistoryIcon, SettingsIcon, TalismanHandIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
-import { FC, ReactNode, Suspense, useCallback } from "react"
+import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useMatch, useNavigate, useSearchParams } from "react-router-dom"
-import { IconButton, Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
+import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
-import { DashboardNotificationsAndModals } from "../Shared/DashboardNotificationsAndModals"
-import { DashboardAccountsSidebar } from "./DashboardMainSidebar"
-import { DashboardQuickSettings } from "./DashboardQuickSettings"
+import { DashboardAccountsSidebar } from "./DashboardAccountsSidebar"
+import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
+import { LayoutBreadcrumb } from "./LayoutBreadcrumb"
+import { DashboardNotificationsAndModals } from "./notifications/DashboardNotificationsAndModals"
 
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
-export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) => {
+export const DashboardLayout: FC<{
+  children?: ReactNode
+  sidebar: "accounts" | "settings"
+  width?: "660" | "800"
+}> = ({ children, sidebar, width }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
       <div className="relative mx-auto w-full max-w-[161.6rem]">
@@ -24,12 +28,22 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           <div className="w-[29.6rem] shrink-0 overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
-              <DashboardAccountsSidebar />
+              {sidebar === "accounts" && <DashboardAccountsSidebar />}
+              {sidebar === "settings" && <DashboardSettingsSidebar />}
             </Suspense>
           </div>
-          <div className="grow">
+          <div className="flex grow justify-center pb-20">
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
-              {children}
+              <div
+                className={classNames(
+                  "animate-fade-in grow",
+                  width === "660" && "max-w-[80rem]",
+                  width === "800" && "max-w-[80rem]"
+                )}
+              >
+                <LayoutBreadcrumb />
+                {children}
+              </div>
             </Suspense>
           </div>
         </div>
@@ -42,41 +56,35 @@ export const DashboardMainLayout: FC<{ children?: ReactNode }> = ({ children }) 
 const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
 
 const Header = () => (
-  <div
-    className={classNames("flex h-48 w-full items-center justify-between", RESPONSIVE_FLEX_SPACING)}
-  >
+  <div className={classNames("flex h-48 w-full items-center", RESPONSIVE_FLEX_SPACING)}>
     <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
       <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
       <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
     </div>
-    <HorizontalNav />
-    <Popover placement="bottom-end">
-      <PopoverTrigger asChild>
-        <IconButton>
-          <SettingsIcon />
-        </IconButton>
-      </PopoverTrigger>
-      <PopoverContent>
-        <DashboardQuickSettings className="z-50" />
-      </PopoverContent>
-    </Popover>
+    <div className="flex grow justify-center">
+      <HorizontalNav />
+    </div>
   </div>
 )
 
 const NavButton: FC<{
   label: ReactNode
   icon: FC<{ className?: string }>
-  route?: string
+  route?: string | string[]
   className?: string
   onClick: () => void
 }> = ({ label, icon: Icon, route, className, onClick }) => {
-  const routeMatch = useMatch(route ?? "")
+  const location = useLocation()
+  const routeMatch = useMemo(() => {
+    const matches = Array.isArray(route) ? route : ([route].filter(Boolean) as string[])
+    return matches.some((route) => matchPath(route, location.pathname))
+  }, [location.pathname, route])
 
   return (
     <button
       type="button"
       className={classNames(
-        "text-body-disabled hover:text-body-secondary flex items-center gap-4",
+        "text-body-inactive hover:text-body-secondary flex items-center gap-4",
         routeMatch && "!text-body",
         className
       )}
@@ -127,17 +135,17 @@ const HorizontalNav = () => {
     navigate("/tx-history" + (searchParams.size ? `?${searchParams}` : ""))
   }, [navigate, searchParams])
 
-  const handleAddressBookClick = useCallback(() => {
+  const handleSettingsClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Address Book button",
+      action: "Settings button",
     })
-    navigate("/settings/address-book")
+    navigate("/settings/general")
   }, [navigate])
 
   return (
-    <div className="border-grey-800 flex h-24 gap-16 rounded-lg border px-8">
+    <div className="border-grey-700 flex h-24 gap-16 rounded-lg border px-8">
       <NavButton
         label={t("Portfolio")}
         onClick={handlePortfolioClick}
@@ -151,7 +159,12 @@ const HorizontalNav = () => {
         icon={HistoryIcon}
         route="/tx-history"
       />
-      <NavButton label={t("Address Book")} onClick={handleAddressBookClick} icon={UsersIcon} />
+      <NavButton
+        label={t("Settings")}
+        onClick={handleSettingsClick}
+        icon={SettingsIcon}
+        route={["/settings/*", "/accounts/*"]}
+      />
     </div>
   )
 }

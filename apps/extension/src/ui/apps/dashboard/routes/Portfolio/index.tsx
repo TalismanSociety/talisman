@@ -5,7 +5,7 @@ import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
@@ -28,24 +28,20 @@ const BuyTokensOpener = () => {
   return null
 }
 
-export const PortfolioRoutes = () => {
-  return (
-    <>
-      <DashboardMainLayout>
-        <BuyTokensOpener />
-        <PortfolioContainer>
-          {/* share layout to prevent tabs flickering */}
-          <PortfolioLayout>
-            <Routes>
-              <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-              <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
-              <Route path="tokens" element={<PortfolioAssets />} />
-              <Route path="nfts" element={<PortfolioNfts />} />
-              <Route path="*" element={<NavigateWithQuery url="tokens" />} />
-            </Routes>
-          </PortfolioLayout>
-        </PortfolioContainer>
-      </DashboardMainLayout>
-    </>
-  )
-}
+export const PortfolioRoutes = () => (
+  <DashboardLayout sidebar="accounts">
+    <BuyTokensOpener />
+    <PortfolioContainer>
+      {/* share layout to prevent tabs flickering */}
+      <PortfolioLayout>
+        <Routes>
+          <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+          <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+          <Route path="tokens" element={<PortfolioAssets />} />
+          <Route path="nfts" element={<PortfolioNfts />} />
+          <Route path="*" element={<NavigateWithQuery url="tokens" />} />
+        </Routes>
+      </PortfolioLayout>
+    </PortfolioContainer>
+  </DashboardLayout>
+)

@@ -1,12 +1,13 @@
-import { IS_FIREFOX } from "@extension/shared"
-import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
-import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { IS_FIREFOX } from "@extension/shared"
+import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
+import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
 import { MethodTypes, useAccountCreateContext } from "./context"
 
@@ -166,13 +167,6 @@ const ConnectAccountMethodButtons = () => {
         subtitle={t("Or Parity Signer (Legacy)")}
         networks={["polkadot"]}
         to={`/accounts/add/qr`}
-      />
-      <AccountCreateMethodButton
-        title={t("Connect D'CENT")}
-        subtitle={t("Disabled - please contact support")}
-        networks={[]}
-        disabled={true}
-        to={`/accounts/add/dcent`}
       />
       <AccountCreateMethodButton
         title={t("Connect Signet")}

@@ -23,7 +23,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
   chainsMapAtomFamily,
   evmNetworksMapAtomFamily,
@@ -243,7 +243,7 @@ const preloadAtom = atom((get) =>
   ])
 )
 
-export const TokensPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
 
@@ -326,12 +326,7 @@ export const TokensPage = () => {
   if (!filteredTokens) return null
 
   return (
-    <DashboardAdminLayout
-      analytics={ANALYTICS_PAGE}
-      withBack
-      centered
-      backTo="/settings/networks-tokens"
-    >
+    <>
       <div className="flex w-full gap-8">
         <HeaderBlock
           title={t("Ethereum Tokens")}
@@ -373,6 +368,12 @@ export const TokensPage = () => {
       </div>
       <Spacer />
       <TokensTable tokens={displayTokens} />
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const TokensPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

@@ -69,7 +69,7 @@ import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
-import { DashboardAdminLayout } from "../../../layout"
+import { DashboardLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,
@@ -564,7 +564,7 @@ const preloadAtom = atom((get) =>
   ])
 )
 
-export const AssetDiscoveryPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
 
@@ -578,14 +578,7 @@ export const AssetDiscoveryPage = () => {
   }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
-    <DashboardAdminLayout
-      analytics={ANALYTICS_PAGE}
-      withBack
-      centered
-      backTo="/settings/networks-tokens"
-      large
-      className="max-w-[81rem]"
-    >
+    <>
       <HeaderBlock
         title={t("Asset Discovery")}
         text={t("Scan for well-known tokens in your accounts and add them to your portfolio.")}
@@ -598,6 +591,12 @@ export const AssetDiscoveryPage = () => {
       <ScanInfo />
       <Spacer large />
       <AssetTable />
-    </DashboardAdminLayout>
+    </>
   )
 }
+
+export const AssetDiscoveryPage = () => (
+  <DashboardLayout sidebar="settings" width="800">
+    <Content />
+  </DashboardLayout>
+)

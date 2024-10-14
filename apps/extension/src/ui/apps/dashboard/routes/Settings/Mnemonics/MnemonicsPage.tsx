@@ -17,7 +17,7 @@ import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
@@ -293,29 +293,33 @@ const MnemonicsList = () => {
   )
 }
 
-export const MnemonicsPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <DashboardAdminLayout centered withBack backTo="/settings">
-      <MnemonicRenameModalProvider>
-        <MnemonicDeleteModalProvider>
-          <MnemonicSetPvVerifierModalProvider>
-            <MnemonicBackupModalProvider>
-              <HeaderBlock
-                title={t("Recovery Phrases")}
-                text={t("Manage and backup your recovery phrases")}
-              />
-              <Spacer large />
-              <BackupReminder />
-              <MnemonicsList />
-              <MnemonicDeleteModal />
-              <MnemonicRenameModal />
-              <MnemonicSetPvVerifierModal />
-            </MnemonicBackupModalProvider>
-          </MnemonicSetPvVerifierModalProvider>
-        </MnemonicDeleteModalProvider>
-      </MnemonicRenameModalProvider>
-    </DashboardAdminLayout>
+    <MnemonicRenameModalProvider>
+      <MnemonicDeleteModalProvider>
+        <MnemonicSetPvVerifierModalProvider>
+          <MnemonicBackupModalProvider>
+            <HeaderBlock
+              title={t("Recovery Phrases")}
+              text={t("Manage and backup your recovery phrases")}
+            />
+            <Spacer large />
+            <BackupReminder />
+            <MnemonicsList />
+            <MnemonicDeleteModal />
+            <MnemonicRenameModal />
+            <MnemonicSetPvVerifierModal />
+          </MnemonicBackupModalProvider>
+        </MnemonicSetPvVerifierModalProvider>
+      </MnemonicDeleteModalProvider>
+    </MnemonicRenameModalProvider>
   )
 }
+
+export const MnemonicsPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

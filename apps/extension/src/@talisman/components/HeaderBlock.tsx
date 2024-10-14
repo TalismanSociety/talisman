@@ -1,4 +1,3 @@
-import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
 
 export const HeaderBlock: FC<{
@@ -6,8 +5,8 @@ export const HeaderBlock: FC<{
   text?: ReactNode
   className?: string
 }> = ({ title, text, className }) => (
-  <header className={classNames("", className)}>
+  <header className={className}>
     {title && <h1 className="text-body text-lg">{title}</h1>}
-    {text && <p className="text-body-secondary mt-8 text-base">{text}</p>}
+    {text && <p className="text-body-secondary mt-4 text-sm">{text}</p>}
   </header>
 )

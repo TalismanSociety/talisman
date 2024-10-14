@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
   accountsByCategoryAtomFamily,
   accountsCatalogAtom,
@@ -16,6 +16,7 @@ import {
   ManageAccountsLists,
   ManageAccountsProvider,
   ManageAccountsToolbar,
+  ManageAccountsWelcome,
 } from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
@@ -37,13 +38,13 @@ const preloadAtom = atom((get) =>
   ])
 )
 
-export const AccountsPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <DashboardAdminLayout analytics={ANALYTICS_PAGE} centered>
+    <>
       <HeaderBlock title={t("Accounts")} text={t("Organise and sort your accounts")} />
       <Spacer large />
       <ManageAccountsProvider>
@@ -54,6 +55,13 @@ export const AccountsPage = () => {
       <NewFolderModal />
       <RenameFolderModal />
       <DeleteFolderModal />
-    </DashboardAdminLayout>
+      <ManageAccountsWelcome />
+    </>
   )
 }
+
+export const AccountsPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

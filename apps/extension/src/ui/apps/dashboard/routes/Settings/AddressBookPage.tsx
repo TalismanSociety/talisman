@@ -46,7 +46,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -182,7 +182,7 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
   ethereum: "ethereum",
 }
 
-export const AddressBookPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   // preload balances because of the send button
   useAtomValue(balancesByAccountCategoryAtomFamily("owned"))
@@ -208,50 +208,48 @@ export const AddressBookPage = () => {
 
   return (
     <>
-      <DashboardAdminLayout centered analytics={ANALYTICS_PAGE}>
-        <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
-        <Spacer large />
-        <div className="flex justify-between align-middle">
-          <OptionSwitch
-            options={[
-              ["all", t("All")],
-              ["ethereum", t("Ethereum")],
-              ["polkadot", t("Polkadot")],
-            ]}
-            className="text-xs [&>div]:h-full"
-            defaultOption="all"
-            onChange={setAddressType}
+      <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
+      <Spacer large />
+      <div className="flex justify-between align-middle">
+        <OptionSwitch
+          options={[
+            ["all", t("All")],
+            ["ethereum", t("Ethereum")],
+            ["polkadot", t("Polkadot")],
+          ]}
+          className="text-xs [&>div]:h-full"
+          defaultOption="all"
+          onChange={setAddressType}
+        />
+        {contactsToDisplay.length > 0 && (
+          <PillButton onClick={open} icon={UserPlusIcon}>
+            {t("Add new contact")}
+          </PillButton>
+        )}
+      </div>
+      <Spacer small />
+      <div className="flex flex-col gap-3">
+        {contactsToDisplay.map((contact) => (
+          <AddressBookContactItem
+            contact={contact}
+            key={contact.address}
+            handleDelete={setToDelete}
+            handleEdit={setToEdit}
           />
-          {contactsToDisplay.length > 0 && (
-            <PillButton onClick={open} icon={UserPlusIcon}>
-              {t("Add new contact")}
-            </PillButton>
-          )}
-        </div>
-        <Spacer small />
-        <div className="flex flex-col gap-3">
-          {contactsToDisplay.map((contact) => (
-            <AddressBookContactItem
-              contact={contact}
-              key={contact.address}
-              handleDelete={setToDelete}
-              handleEdit={setToEdit}
-            />
-          ))}
-          {contactsToDisplay.length === 0 && (
-            <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
-              <span>
-                {t("You have no saved {{addressType}} contacts yet.", {
-                  addressType: startCase(addressType),
-                })}
-              </span>
-              <Button primary onClick={open} iconLeft={PlusIcon}>
-                {t("Add a contact")}
-              </Button>
-            </div>
-          )}
-        </div>
-      </DashboardAdminLayout>
+        ))}
+        {contactsToDisplay.length === 0 && (
+          <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
+            <span>
+              {t("You have no saved {{addressType}} contacts yet.", {
+                addressType: startCase(addressType),
+              })}
+            </span>
+            <Button primary onClick={open} iconLeft={PlusIcon}>
+              {t("Add a contact")}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {toDelete && (
         <ContactDeleteModal
@@ -271,3 +269,9 @@ export const AddressBookPage = () => {
     </>
   )
 }
+
+export const AddressBookPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

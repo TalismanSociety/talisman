@@ -7,15 +7,15 @@ import { Spacer } from "@talisman/components/Spacer"
 import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 
-import { DashboardAdminLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
-const CurrencySettingsPage = () => {
+const Content = () => {
   const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
   const setSelectedCurrency = useSetAtom(selectedCurrencyAtom)
   const { t } = useTranslation()
 
   return (
-    <DashboardAdminLayout centered withBack backTo="/settings">
+    <>
       <HeaderBlock
         title={t("Currency")}
         text={t(
@@ -62,8 +62,12 @@ const CurrencySettingsPage = () => {
           </button>
         ))}
       </div>
-    </DashboardAdminLayout>
+    </>
   )
 }
 
-export default CurrencySettingsPage
+export const CurrencySettingsPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

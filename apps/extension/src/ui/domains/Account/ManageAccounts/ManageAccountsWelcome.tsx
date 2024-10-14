@@ -1,36 +1,50 @@
 import { XIcon } from "@talismn/icons"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, IconButton, useOpenClose } from "talisman-ui"
+import { Button, Checkbox, Drawer, IconButton, Modal, useOpenClose } from "talisman-ui"
 
+import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
 import { useAppState } from "@ui/hooks/useAppState"
+import { IS_POPUP } from "@ui/util/constants"
 
 import imgWelcome from "./welcome.png"
 
 export const ManageAccountsWelcome = () => {
-  const [hideDrawer, setHideDrawer] = useAppState("hideManageAccountsWelcomeDrawer")
+  const [hideWelcome, setHideWelcome] = useAppState("hideManageAccountsWelcome")
   const { open, close, isOpen } = useOpenClose()
+
+  const catalog = useAccountsCatalog()
+  const hasFolders = useMemo(
+    () => [...catalog.portfolio, ...catalog.watched].some((a) => a.type === "folder"),
+    [catalog]
+  )
 
   const handleClose = useCallback(
     (dontShowAgain: boolean) => {
-      if (dontShowAgain) setHideDrawer(true)
+      if (dontShowAgain) setHideWelcome(true)
       close()
     },
-    [close, setHideDrawer]
+    [close, setHideWelcome]
   )
 
   useEffect(() => {
-    if (!hideDrawer) open()
-  }, [hideDrawer, open])
+    // dont't show the welcome if user already has folders
+    if (hasFolders && !hideWelcome) setHideWelcome(true)
+    else if (!hideWelcome && !hasFolders) open()
+  }, [hasFolders, hideWelcome, open, setHideWelcome])
 
-  return (
-    <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
-      <DrawerContent onClose={handleClose} onDismiss={close} />
+  return IS_POPUP ? (
+    <Drawer anchor={"bottom"} containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Content onClose={handleClose} onDismiss={close} />
     </Drawer>
+  ) : (
+    <Modal isOpen={isOpen} onDismiss={close}>
+      <Content onClose={handleClose} onDismiss={close} />
+    </Modal>
   )
 }
 
-const DrawerContent: FC<{
+const Content: FC<{
   onClose: (dontShowThisAgain: boolean) => void
   onDismiss: () => void
 }> = ({ onClose, onDismiss }) => {
@@ -42,7 +56,7 @@ const DrawerContent: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="border-grey-850 flex w-full flex-col gap-8 rounded-t-xl border-t bg-black p-12">
+    <div className="border-grey-850 flex w-full max-w-[74rem] flex-col gap-8 rounded-t-xl border-t bg-black p-12">
       <div className="flex w-full justify-between py-4">
         <div className="text-md text-body font-bold">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>

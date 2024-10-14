@@ -1,12 +1,14 @@
-import { DashboardAdminLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddPrivateKeyForm } from "@ui/domains/Account/AccountAdd/AccountAddPrivateKeyForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-export const AccountAddPrivateKeyDashboardPage = () => {
+const Content = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
-  return (
-    <DashboardAdminLayout withBack centered>
-      <AccountAddPrivateKeyForm onSuccess={setAddress} />
-    </DashboardAdminLayout>
-  )
+  return <AccountAddPrivateKeyForm onSuccess={setAddress} />
 }
+
+export const AccountAddPrivateKeyDashboardPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)
