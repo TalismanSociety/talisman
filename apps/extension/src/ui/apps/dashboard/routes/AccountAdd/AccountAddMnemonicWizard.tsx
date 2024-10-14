@@ -1,6 +1,6 @@
 import { lazy } from "react"
 
-import { DashboardMainLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
 const AccountAddMnemonicWizard = lazy(
@@ -14,7 +14,7 @@ const Content = () => {
 }
 
 export const AccountAddMnemonicDashboardWizard = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

@@ -17,7 +17,7 @@ import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { DashboardMainLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
@@ -319,7 +319,7 @@ const Content = () => {
 }
 
 export const MnemonicsPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

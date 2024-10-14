@@ -1,2 +1,1 @@
-export { DashboardAdminLayout } from "./Admin/DashboardAdminLayout"
-export { DashboardMainLayout } from "./Main/DashboardMainLayout"
+export { DashboardLayout } from "./DashboardLayout"

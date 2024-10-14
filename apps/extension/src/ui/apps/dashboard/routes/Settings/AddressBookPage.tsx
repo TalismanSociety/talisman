@@ -46,7 +46,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -271,7 +271,7 @@ const Content = () => {
 }
 
 export const AddressBookPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

@@ -5,7 +5,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")
@@ -24,7 +24,7 @@ const Content = () => {
 }
 
 export const AccountAddJsonPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

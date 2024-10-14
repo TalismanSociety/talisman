@@ -10,7 +10,7 @@ import {
 } from "@ui/domains/Settings/ManageNetworks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 import { useNetworksType } from "./useNetworksType"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -54,7 +54,7 @@ const Content = () => {
   )
 }
 export const NetworkPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

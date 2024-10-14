@@ -5,7 +5,7 @@ import { Setting } from "@talisman/components/Setting"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")
@@ -33,7 +33,7 @@ const Content = () => {
 }
 
 export const AnalyticsOptInPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

@@ -69,7 +69,7 @@ import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
-import { DashboardMainLayout } from "../../../layout"
+import { DashboardLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,
@@ -596,7 +596,7 @@ const Content = () => {
 }
 
 export const AssetDiscoveryPage = () => (
-  <DashboardMainLayout sidebar="settings" width="800">
+  <DashboardLayout sidebar="settings" width="800">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

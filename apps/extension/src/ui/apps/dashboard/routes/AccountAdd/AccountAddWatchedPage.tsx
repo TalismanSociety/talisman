@@ -5,7 +5,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 export const Content = () => {
   const { t } = useTranslation("admin")
@@ -24,7 +24,7 @@ export const Content = () => {
 }
 
 export const AccountAddWatchedPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

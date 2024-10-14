@@ -5,7 +5,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { balancesHydrateAtom } from "@ui/atoms"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   useAtomValue(balancesHydrateAtom)
@@ -24,8 +24,8 @@ const Content = () => {
 
 export const AccountAddMenu = () => {
   return (
-    <DashboardMainLayout sidebar="settings" width="660">
+    <DashboardLayout sidebar="settings" width="660">
       <Content />
-    </DashboardMainLayout>
+    </DashboardLayout>
   )
 }

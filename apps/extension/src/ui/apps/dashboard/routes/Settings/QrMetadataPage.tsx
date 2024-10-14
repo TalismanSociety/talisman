@@ -25,7 +25,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import useChains from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation("admin")
@@ -261,7 +261,7 @@ const Content = () => {
 }
 
 export const QrMetadataPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardMainLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
   accountsByCategoryAtomFamily,
   accountsCatalogAtom,
@@ -59,7 +59,7 @@ const Content = () => {
 }
 
 export const AccountsPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

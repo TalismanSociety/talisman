@@ -17,7 +17,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")
@@ -138,7 +138,7 @@ const Content = () => {
 }
 
 export const SecurityPrivacyPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

@@ -12,7 +12,7 @@ import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMess
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { DashboardMainLayout } from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"
@@ -206,7 +206,7 @@ const Content = () => {
 }
 
 export const ChangePasswordPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

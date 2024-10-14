@@ -10,15 +10,15 @@ import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
-import { DashboardNotificationsAndModals } from "../Shared/DashboardNotificationsAndModals"
 import { DashboardAccountsSidebar } from "./DashboardAccountsSidebar"
 import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
 import { LayoutBreadcrumb } from "./LayoutBreadcrumb"
+import { DashboardNotificationsAndModals } from "./notifications/DashboardNotificationsAndModals"
 
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
-export const DashboardMainLayout: FC<{
+export const DashboardLayout: FC<{
   children?: ReactNode
-  sidebar: "portfolio" | "settings"
+  sidebar: "accounts" | "settings"
   width?: "660" | "800"
 }> = ({ children, sidebar, width }) => {
   return (
@@ -28,7 +28,7 @@ export const DashboardMainLayout: FC<{
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           <div className="w-[29.6rem] shrink-0 overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
-              {sidebar === "portfolio" && <DashboardAccountsSidebar />}
+              {sidebar === "accounts" && <DashboardAccountsSidebar />}
               {sidebar === "settings" && <DashboardSettingsSidebar />}
             </Suspense>
           </div>

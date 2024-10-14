@@ -5,7 +5,7 @@ import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
@@ -29,7 +29,7 @@ const BuyTokensOpener = () => {
 }
 
 export const PortfolioRoutes = () => (
-  <DashboardMainLayout sidebar="portfolio">
+  <DashboardLayout sidebar="accounts">
     <BuyTokensOpener />
     <PortfolioContainer>
       {/* share layout to prevent tabs flickering */}
@@ -43,5 +43,5 @@ export const PortfolioRoutes = () => (
         </Routes>
       </PortfolioLayout>
     </PortfolioContainer>
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

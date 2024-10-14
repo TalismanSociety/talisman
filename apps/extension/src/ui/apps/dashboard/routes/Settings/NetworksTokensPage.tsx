@@ -14,7 +14,7 @@ import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")
@@ -83,7 +83,7 @@ const Content = () => {
 }
 
 export const NetworksTokensPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

@@ -5,7 +5,7 @@ import { languages } from "@common/i18nConfig"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const LanguageButton = ({
   displayName,
@@ -63,7 +63,7 @@ const Content = () => {
 }
 
 export const LanguagePage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

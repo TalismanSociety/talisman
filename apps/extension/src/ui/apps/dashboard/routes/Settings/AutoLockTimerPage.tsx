@@ -7,7 +7,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 type AllowedValues = SettingsStoreData["autoLockTimeout"]
 type Option = { value: AllowedValues; label: string }
@@ -61,7 +61,7 @@ export const Content = () => {
 }
 
 export const AutoLockTimerPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )

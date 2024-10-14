@@ -17,7 +17,7 @@ import {
 } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 
-import { DashboardMainLayout } from "../../layout"
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")
@@ -89,7 +89,7 @@ const Content = () => {
 }
 
 export const AboutPage = () => (
-  <DashboardMainLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings" width="660">
     <Content />
-  </DashboardMainLayout>
+  </DashboardLayout>
 )
