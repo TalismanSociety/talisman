@@ -24,7 +24,7 @@ const Content = () => {
   return (
     <>
       <HeaderBlock title={t("About")} />
-      <div className="text-body-secondary my-12 flex flex-col gap-8">
+      <div className="text-body-secondary mb-12 mt-4 flex flex-col gap-8 text-sm">
         <p>
           <Trans t={t}>
             In the beginning, the paraverse swarmed with formless life and chaotic energy.
@@ -47,7 +47,7 @@ const Content = () => {
           </Trans>
         </p>
       </div>
-      <div className="mt-20 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <CtaButton
           title={t("Privacy Policy")}
           subtitle={t("Read our Privacy Policy")}
