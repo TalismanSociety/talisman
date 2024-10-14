@@ -1,4 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -8,11 +9,12 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNomPoolStakingStatus } from "../shared/useNomPoolStakingStatus"
 import { useNomPoolUnbondModal } from "./useNomPoolUnbondModal"
 
-export const NomPoolUnbondButton: FC<{ tokenId: TokenId; address: string; className?: string }> = ({
-  tokenId,
-  address,
-  className,
-}) => {
+export const NomPoolUnbondButton: FC<{
+  tokenId: TokenId
+  address: string
+  className?: string
+  variant: "small" | "large"
+}> = ({ tokenId, address, className, variant }) => {
   const { t } = useTranslation()
   const { open } = useNomPoolUnbondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
@@ -33,14 +35,25 @@ export const NomPoolUnbondButton: FC<{ tokenId: TokenId; address: string; classN
 
   return (
     <button
-      type="button"
-      onClick={handleClick}
       className={classNames(
-        "bg-body/10 hover:bg-body/20 text-body-secondary hover:text-body rounded-xs px-4 py-1",
+        "bg-body/10 hover:bg-body/20 text-body-secondary hover:text-body font-light",
+        variant === "small" && "h-10 rounded-sm px-3 text-xs",
+        variant === "large" && "h-14 rounded px-4 text-sm",
         className
       )}
+      type="button"
+      onClick={handleClick}
     >
-      {t("Unbond")}
+      <div className="flex items-center gap-2 ">
+        <ZapOffIcon
+          className={classNames(
+            "shrink-0",
+            variant === "small" && "text-xs",
+            variant === "large" && "text-base"
+          )}
+        />
+        <div>{t("Unbond")}</div>
+      </div>
     </button>
   )
 }
