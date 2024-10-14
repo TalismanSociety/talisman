@@ -10,7 +10,7 @@ import { IS_POPUP } from "@ui/util/constants"
 import imgWelcome from "./welcome.png"
 
 export const ManageAccountsWelcome = () => {
-  const [hideDrawer, setHideDrawer] = useAppState("hideManageAccountsWelcomeDrawer")
+  const [hideWelcome, setHideWelcome] = useAppState("hideManageAccountsWelcome")
   const { open, close, isOpen } = useOpenClose()
 
   const catalog = useAccountsCatalog()
@@ -21,29 +21,30 @@ export const ManageAccountsWelcome = () => {
 
   const handleClose = useCallback(
     (dontShowAgain: boolean) => {
-      if (dontShowAgain) setHideDrawer(true)
+      if (dontShowAgain) setHideWelcome(true)
       close()
     },
-    [close, setHideDrawer]
+    [close, setHideWelcome]
   )
 
   useEffect(() => {
-    if (hasFolders && !hideDrawer) setHideDrawer(true)
-    else if (!hideDrawer && !hasFolders) open()
-  }, [hasFolders, hideDrawer, open, setHideDrawer])
+    // dont't show the welcome if user already has folders
+    if (hasFolders && !hideWelcome) setHideWelcome(true)
+    else if (!hideWelcome && !hasFolders) open()
+  }, [hasFolders, hideWelcome, open, setHideWelcome])
 
   return IS_POPUP ? (
     <Drawer anchor={"bottom"} containerId="main" isOpen={isOpen} onDismiss={close}>
-      <DrawerContent onClose={handleClose} onDismiss={close} />
+      <Content onClose={handleClose} onDismiss={close} />
     </Drawer>
   ) : (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <DrawerContent onClose={handleClose} onDismiss={close} />
+      <Content onClose={handleClose} onDismiss={close} />
     </Modal>
   )
 }
 
-const DrawerContent: FC<{
+const Content: FC<{
   onClose: (dontShowThisAgain: boolean) => void
   onDismiss: () => void
 }> = ({ onClose, onDismiss }) => {
