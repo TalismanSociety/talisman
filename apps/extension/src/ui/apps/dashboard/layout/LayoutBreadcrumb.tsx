@@ -9,103 +9,126 @@ const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> =>
 
   // this array contains all entries, instead of being a tree
   // this allows for route structures to be more flexible (ex: account add paths are not under /settings/accounts)
-  return useMemo(
-    () => ({
-      "/settings/accounts": [{ label: t("Accounts"), to: "/settings/accounts" }],
-      "/accounts/add": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
-      ],
+  return useMemo(() => {
+    // reusables
+    const settings = { label: t("Settings"), to: "/settings/general" }
+    const accounts = { label: t("Accounts"), to: "/settings/accounts" }
+    const accountsAdd = { label: t("Add Account"), to: "/accounts/add" }
+    const securityAndPrivacy = {
+      label: t("Security & Privacy"),
+      to: "/settings/security-privacy-settings",
+    }
+    const networksAndTokens = { label: t("Networks & Tokens"), to: "/settings/networks-tokens" }
+
+    return {
+      "/settings/accounts": [settings, accounts],
+      "/accounts/add": [settings, accounts, accountsAdd],
       "/accounts/add/derived": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("New"), to: "/accounts/add/derived" },
       ],
       "/accounts/add/mnemonic": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("Recovery Phrase"), to: "/accounts/add/mnemonic" },
       ],
       "/accounts/add/pk": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("Private Key"), to: "/accounts/add/pk" },
       ],
       "/accounts/add/json": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("JSON"), to: "/accounts/add/json" },
       ],
       "/accounts/add/ledger": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("Ledger"), to: "/accounts/add/ledger" },
       ],
       "/accounts/add/qr": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("Polkadot Vault"), to: "/accounts/add/qr" },
       ],
       "/accounts/add/signet": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("Signet Vault"), to: "/accounts/add/signet" },
       ],
       "/accounts/add/watched": [
-        { label: t("Accounts"), to: "/settings/accounts" },
-        { label: t("Add Account"), to: "/accounts/add" },
+        settings,
+        accounts,
+        accountsAdd,
         { label: t("Watched Account"), to: "/accounts/add/watched" },
       ],
 
-      "/settings/general": [{ label: t("General settings"), to: "/settings/general" }],
+      "/settings/general": [settings],
       "/settings/general/language": [
-        { label: t("General"), to: "/settings/general" },
+        settings,
         { label: t("Language"), to: "/settings/general/language" },
       ],
       "/settings/general/currency": [
-        { label: t("General"), to: "/settings/general" },
+        settings,
         { label: t("Currency"), to: "/settings/general/currency" },
       ],
-      "/settings/address-book": [{ label: t("Address Book"), to: "/settings/address-book" }],
+      "/settings/address-book": [
+        settings,
+        { label: t("Address Book"), to: "/settings/address-book" },
+      ],
       "/settings/connected-sites": [
+        settings,
         { label: t("Connected Sites"), to: "/settings/connected-sites" },
       ],
-      "/settings/mnemonics": [{ label: t("Recovery Phrases"), to: "/settings/mnemonics" }],
-      "/settings/security-privacy-settings": [
-        { label: t("Security & Privacy"), to: "/settings/security-privacy-settings" },
+      "/settings/mnemonics": [
+        settings,
+        { label: t("Recovery Phrases"), to: "/settings/mnemonics" },
       ],
+      "/settings/security-privacy-settings": [settings, securityAndPrivacy],
       "/settings/security-privacy-settings/autolock": [
-        { label: t("Security & Privacy"), to: "/settings/security-privacy-settings" },
+        settings,
+        securityAndPrivacy,
         { label: t("Auto-lock Timer"), to: "/settings/security-privacy-settings/autolock" },
       ],
       "/settings/security-privacy-settings/change-password": [
-        { label: t("Security & Privacy"), to: "/settings/security-privacy-settings" },
+        settings,
+        securityAndPrivacy,
         { label: t("Change Password"), to: "/settings/security-privacy-settings/change-password" },
       ],
-      "/settings/networks-tokens": [
-        { label: t("Networks & Tokens"), to: "/settings/networks-tokens" },
-      ],
+      "/settings/networks-tokens": [settings, networksAndTokens],
       "/settings/networks-tokens/asset-discovery": [
-        { label: t("Networks & Tokens"), to: "/settings/networks-tokens" },
+        settings,
+        networksAndTokens,
         { label: t("Asset Discovery"), to: "/settings/networks-tokens/asset-discovery" },
       ],
       "/settings/networks-tokens/networks": [
-        { label: t("Networks & Tokens"), to: "/settings/networks-tokens" },
+        settings,
+        networksAndTokens,
         { label: t("Networks"), to: "/settings/networks-tokens/networks" },
       ],
       "/settings/networks-tokens/tokens": [
-        { label: t("Networks & Tokens"), to: "/settings/networks-tokens" },
+        settings,
+        networksAndTokens,
         { label: t("Tokens"), to: "/settings/networks-tokens/tokens" },
       ],
       "/settings/networks-tokens/qr-metadata": [
-        { label: t("Networks & Tokens"), to: "/settings/networks-tokens" },
+        settings,
+        networksAndTokens,
         { label: t("Polkadot Vault Metadata"), to: "/settings/networks-tokens/qr-metadata" },
       ],
-      "/settings/about": [{ label: t("About"), to: "/settings/about" }],
-      "/settings/analytics": [{ label: t("Usage Settings"), to: "/settings/analytics" }],
-    }),
-    [t]
-  )
+      "/settings/about": [settings, { label: t("About"), to: "/settings/about" }],
+      "/settings/analytics": [settings, { label: t("Usage Settings"), to: "/settings/analytics" }],
+    }
+  }, [t])
 }
 
 const useBreadcrumb = () => {
