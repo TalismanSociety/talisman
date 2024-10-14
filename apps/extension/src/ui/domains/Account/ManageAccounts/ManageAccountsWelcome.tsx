@@ -1,15 +1,23 @@
 import { XIcon } from "@talismn/icons"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, IconButton, useOpenClose } from "talisman-ui"
+import { Button, Checkbox, Drawer, IconButton, Modal, useOpenClose } from "talisman-ui"
 
+import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
 import { useAppState } from "@ui/hooks/useAppState"
+import { IS_POPUP } from "@ui/util/constants"
 
 import imgWelcome from "./welcome.png"
 
 export const ManageAccountsWelcome = () => {
   const [hideDrawer, setHideDrawer] = useAppState("hideManageAccountsWelcomeDrawer")
   const { open, close, isOpen } = useOpenClose()
+
+  const catalog = useAccountsCatalog()
+  const hasFolders = useMemo(
+    () => [...catalog.portfolio, ...catalog.watched].some((a) => a.type === "folder"),
+    [catalog]
+  )
 
   const handleClose = useCallback(
     (dontShowAgain: boolean) => {
@@ -20,13 +28,18 @@ export const ManageAccountsWelcome = () => {
   )
 
   useEffect(() => {
-    if (!hideDrawer) open()
-  }, [hideDrawer, open])
+    if (hasFolders && !hideDrawer) setHideDrawer(true)
+    else if (!hideDrawer && !hasFolders) open()
+  }, [hasFolders, hideDrawer, open, setHideDrawer])
 
-  return (
-    <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+  return IS_POPUP ? (
+    <Drawer anchor={"bottom"} containerId="main" isOpen={isOpen} onDismiss={close}>
       <DrawerContent onClose={handleClose} onDismiss={close} />
     </Drawer>
+  ) : (
+    <Modal isOpen={isOpen} onDismiss={close}>
+      <DrawerContent onClose={handleClose} onDismiss={close} />
+    </Modal>
   )
 }
 
@@ -42,7 +55,7 @@ const DrawerContent: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="border-grey-850 flex w-full flex-col gap-8 rounded-t-xl border-t bg-black p-12">
+    <div className="border-grey-850 flex w-full max-w-[74rem] flex-col gap-8 rounded-t-xl border-t bg-black p-12">
       <div className="flex w-full justify-between py-4">
         <div className="text-md text-body font-bold">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>
