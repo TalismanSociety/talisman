@@ -1,4 +1,5 @@
 import {
+  AlertCircleIcon,
   GlobeIcon,
   LinkIcon,
   PlusIcon,
@@ -10,9 +11,11 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode } from "react"
+import { FC, ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, To } from "react-router-dom"
+
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()
@@ -48,7 +51,14 @@ export const DashboardSettingsSidebar = () => {
         />
         <SidebarNavItem label={t("Accounts")} to="/settings/accounts" icon={<UserIcon />} />
         <SidebarNavItem
-          label={t("Recovery Phrases")}
+          label={
+            <span className="flex items-center gap-2">
+              {t("Recovery Phrases")}
+              <Suspense>
+                <MnemonicNotification />
+              </Suspense>
+            </span>
+          }
           to="/settings/mnemonics"
           icon={<SecretIcon />}
         />
@@ -88,3 +98,9 @@ const SidebarNavItem: FC<{ to: To; icon: ReactNode; label: ReactNode; className?
     <span className="truncate">{label}</span>
   </NavLink>
 )
+
+const MnemonicNotification = () => {
+  const { allBackedUp } = useMnemonicBackup()
+
+  return !allBackedUp ? <AlertCircleIcon className="text-alert-warn" /> : null
+}
