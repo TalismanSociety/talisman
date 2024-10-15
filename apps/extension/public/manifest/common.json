@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "author": "Talisman",
-  "name": "Talisman - Ethereum and Polkadot Wallet",
-  "description": "Talisman is a Ethereum and Polkadot wallet that unlocks a new world of multichain web3 applications.",
+  "name": "Talisman Wallet",
+  "description": "Talisman is an open-source crypto wallet that makes web3 simple for beginners and unlocks superpowers for pros",
   "version": "latest",
   "action": {
     "default_title": "Talisman",
