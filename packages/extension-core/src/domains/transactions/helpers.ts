@@ -130,7 +130,11 @@ export const updateTransactionStatus = async (
   try {
     // this can be called after the tx has been overriden/replaced, check status first
     const existing = await db.transactions.get(hash)
-    if (["success", "error", "replaced"].includes(existing?.status ?? "")) return false
+    if (
+      ["success", "error", "replaced"].includes(existing?.status ?? "") &&
+      !!confirmed === !!existing?.confirmed
+    )
+      return false
 
     await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString(), confirmed })
 
@@ -155,7 +159,7 @@ export const updateTransactionStatus = async (
     return true
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error("updateEvmTransaction", { err })
+    console.error("updateTransactionStatus", { err })
     return false
   }
 }
