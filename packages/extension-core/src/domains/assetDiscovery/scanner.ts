@@ -3,12 +3,14 @@ import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi } from "@talismn/balances"
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
+import { PublicClient } from "viem"
 
+import { sentry } from "../../config/sentry"
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -29,6 +31,7 @@ const IGNORED_COINGECKO_IDS = [
   "malou", // BSC - NEVER
 
   "outter-finance", // BSC - OUT (temporary workaround, error breaks scans with Manifest V3)
+  "peri-finance", // Mainnet - PERI (timeouts on balance reads)
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
@@ -192,42 +195,21 @@ class AssetDiscoveryScanner {
           for (const checks of chunkedChecks) {
             const res = await Promise.allSettled(
               checks.map(async (check) => {
-                const token = tokensMap[check.tokenId]
-                if (!token) {
-                  throw new Error(`No token found for tokenId ${check.tokenId}`)
-                }
-
-                if (token.type === "evm-erc20" || token.type === "evm-uniswapv2") {
-                  const balance = await client.readContract({
-                    abi: erc20Abi,
-                    address: token.contractAddress as EvmAddress,
-                    functionName: "balanceOf",
-                    args: [check.address as EvmAddress],
-                  })
-                  return balance.toString()
-                }
-
-                if (token.type === "evm-native") {
-                  const addressMulticall = client.chain?.contracts?.multicall3?.address
-                  if (addressMulticall) {
-                    // if multicall is available then fetch balance using this contract call,
-                    // this will allow the client to batch it along with other pending erc20 calls
-                    const balance = await client.readContract({
-                      abi: abiMulticall,
-                      address: addressMulticall,
-                      functionName: "getEthBalance",
-                      args: [check.address as EvmAddress],
-                    })
-                    return balance.toString()
+                try {
+                  const token = tokensMap[check.tokenId]
+                  if (!token) {
+                    throw new Error(`No token found for tokenId ${check.tokenId}`)
                   }
 
-                  const balance = await client.getBalance({
-                    address: check.address as EvmAddress,
-                  })
-                  return balance.toString()
+                  return await Promise.race([
+                    getEvmTokenBalance(client, token, check.address as EvmAddress),
+                    throwAfter(5000, `Asset Scan Timeout - ${check.tokenId}`),
+                  ])
+                } catch (err) {
+                  log.error(`Failed to scan ${check.tokenId} for ${check.address}`, { err })
+                  sentry.captureException(err)
+                  return "0"
                 }
-
-                throw new Error("Unsupported token type")
               })
             )
 
@@ -329,6 +311,40 @@ class AssetDiscoveryScanner {
     await this.startScan({ addresses, mode: AssetDiscoveryMode.ACTIVE_NETWORKS })
     await appStore.set({ isAssetDiscoveryScanPending: false })
   }
+}
+
+const getEvmTokenBalance = async (client: PublicClient, token: Token, address: EvmAddress) => {
+  if (token.type === "evm-erc20" || token.type === "evm-uniswapv2") {
+    const balance = await client.readContract({
+      abi: erc20Abi,
+      address: token.contractAddress as EvmAddress,
+      functionName: "balanceOf",
+      args: [address],
+    })
+    return balance.toString()
+  }
+
+  if (token.type === "evm-native") {
+    const addressMulticall = client.chain?.contracts?.multicall3?.address
+    if (addressMulticall) {
+      // if multicall is available then fetch balance using this contract call,
+      // this will allow the client to batch it along with other pending erc20 calls
+      const balance = await client.readContract({
+        abi: abiMulticall,
+        address: addressMulticall,
+        functionName: "getEthBalance",
+        args: [address],
+      })
+      return balance.toString()
+    }
+
+    const balance = await client.getBalance({
+      address,
+    })
+    return balance.toString()
+  }
+
+  throw new Error("Unsupported token type")
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
