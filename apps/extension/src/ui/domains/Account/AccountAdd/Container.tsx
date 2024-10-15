@@ -259,7 +259,7 @@ export const AccountCreateContainer = ({ className }: Props) => {
         <div className="flex flex-col items-center justify-center gap-4 self-stretch">
           <div className="flex items-center gap-8 self-stretch">
             <span className="bg-grey-700 h-[0.08rem] w-full"></span>
-            <span className="text-grey-500 w-full flex-auto whitespace-nowrap text-xs">
+            <span className="text-grey-500 w-full flex-auto whitespace-nowrap text-center text-xs">
               {t("Don't want to import your private key?")}
             </span>
             <span className="bg-grey-700 h-[0.08rem] w-full"></span>
