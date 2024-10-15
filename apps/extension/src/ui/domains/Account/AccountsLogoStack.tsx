@@ -24,7 +24,7 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
   )
 
   return (
-    <div className={classNames("shrink-0 pl-[0.25em]", className)}>
+    <div className={classNames("shrink-0 whitespace-nowrap pl-[0.25em]", className)}>
       {visibleAccounts.map((account) => (
         <AccountsLogoStackItem key={account.address} account={account} />
       ))}
