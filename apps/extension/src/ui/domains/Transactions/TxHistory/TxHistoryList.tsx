@@ -401,6 +401,7 @@ const TransactionRowBase: FC<{
         <div className="relative flex grow flex-col items-end justify-center">
           <div
             className={classNames(
+              "text-right",
               isCtxMenuOpen ? "opacity-0" : "opacity-100",
               enabled && "group-hover:opacity-0"
             )}
