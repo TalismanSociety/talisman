@@ -199,7 +199,7 @@ class AssetDiscoveryScanner {
                     throw new Error(`No token found for tokenId ${check.tokenId}`)
                   }
 
-                  return Promise.race([
+                  return await Promise.race([
                     getEvmTokenBalance(client, token, check.address as EvmAddress),
                     throwAfter(5000, "timeout"),
                   ])
