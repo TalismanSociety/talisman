@@ -30,6 +30,7 @@ const IGNORED_COINGECKO_IDS = [
   "malou", // BSC - NEVER
 
   "outter-finance", // BSC - OUT (temporary workaround, error breaks scans with Manifest V3)
+  "peri-finance", // Mainnet - PERI (timeouts on balance reads)
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
