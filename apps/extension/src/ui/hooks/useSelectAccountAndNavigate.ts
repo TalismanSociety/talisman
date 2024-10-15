@@ -6,9 +6,9 @@ import useAccounts from "./useAccounts"
 
 export const useSelectAccountAndNavigate = (url: string) => {
   const navigate = useNavigate()
+  const accounts = useAccounts()
 
   const [address, setAddress] = useState<string>()
-  const accounts = useAccounts()
 
   useEffect(() => {
     if (!address) return
