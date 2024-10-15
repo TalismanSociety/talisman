@@ -10,6 +10,7 @@ import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
 import { PublicClient } from "viem"
 
+import { sentry } from "../../config/sentry"
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -202,10 +203,11 @@ class AssetDiscoveryScanner {
 
                   return await Promise.race([
                     getEvmTokenBalance(client, token, check.address as EvmAddress),
-                    throwAfter(5000, "timeout"),
+                    throwAfter(5000, `Asset Scan Timeout - ${check.tokenId}`),
                   ])
                 } catch (err) {
-                  log.error(`Failed to scan ${check.tokenId} for ${check.address}`, { err, client })
+                  log.error(`Failed to scan ${check.tokenId} for ${check.address}`, { err })
+                  sentry.captureException(err)
                   return "0"
                 }
               })
