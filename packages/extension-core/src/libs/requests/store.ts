@@ -160,10 +160,13 @@ export class RequestStore {
   }
 
   public getRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
+    if (!this.requests[id]) return
+
     const { request } = this.requests[id]
     const requestType = id.split(".")[0] as T
-    if (isRequestOfType(request, requestType)) return request as KnownRespondableRequest<T>
-    return
+    if (!isRequestOfType(request, requestType)) return
+
+    return request as KnownRespondableRequest<T>
   }
 
   public deleteRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
