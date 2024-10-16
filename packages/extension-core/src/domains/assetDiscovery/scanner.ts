@@ -3,7 +3,7 @@ import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi } from "@talismn/balances"
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-import { isEthereumAddress, throwAfter } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
@@ -34,7 +34,7 @@ const IGNORED_COINGECKO_IDS = [
   "peri-finance", // Mainnet - PERI (timeouts on balance reads)
 ]
 
-const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
+const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 2
 const BALANCES_FETCH_CHUNK_SIZE = 100
 
 // native tokens should be processed and displayed first
@@ -117,12 +117,12 @@ class AssetDiscoveryScanner {
   }
 
   private async resumeScan(): Promise<void> {
-    const currentScanId = await assetDiscoveryStore.get("currentScanId")
-    if (!currentScanId) return
+    const scanId = await assetDiscoveryStore.get("currentScanId")
+    if (!scanId) return
 
     // ensure a scan can't run twice in parallel
-    if (this.#resumedScans.includes(currentScanId)) return
-    this.#resumedScans.push(currentScanId)
+    if (this.#resumedScans.includes(scanId)) return
+    this.#resumedScans.push(scanId)
 
     const {
       currentScanMode: mode,
@@ -162,11 +162,21 @@ class AssetDiscoveryScanner {
     const totalChecks = tokensToScan.length * addresses.length
     const totalTokens = tokensToScan.length
 
+    let currentScanId: string | null = null
+    await new Promise<void>((resolve) =>
+      assetDiscoveryStore.observable.subscribe((state) => {
+        currentScanId = state.currentScanId
+        resolve()
+      })
+    )
+
     // process multiple networks at a time
     await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
       .for(Object.keys(tokensByNetwork))
       .process(async (networkId) => {
-        if (currentScanId !== (await assetDiscoveryStore.get("currentScanId"))) return
+        // stop if scan was cancelled
+        if (currentScanId !== scanId) return
+
         try {
           const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
           if (!client) return
@@ -193,6 +203,9 @@ class AssetDiscoveryScanner {
           const chunkedChecks = chunk(remainingChecks, BALANCES_FETCH_CHUNK_SIZE)
 
           for (const checks of chunkedChecks) {
+            // stop if scan was cancelled
+            if (currentScanId !== scanId) return
+
             const res = await Promise.allSettled(
               checks.map(async (check) => {
                 try {
@@ -201,17 +214,17 @@ class AssetDiscoveryScanner {
                     throw new Error(`No token found for tokenId ${check.tokenId}`)
                   }
 
-                  return await Promise.race([
-                    getEvmTokenBalance(client, token, check.address as EvmAddress),
-                    throwAfter(5000, `Asset Scan Timeout - ${check.tokenId}`),
-                  ])
+                  return await getEvmTokenBalance(client, token, check.address as EvmAddress)
                 } catch (err) {
-                  log.error(`Failed to scan ${check.tokenId} for ${check.address}`, { err })
                   sentry.captureException(err)
+                  log.error(`Failed to scan ${check.tokenId} for ${check.address}`, { err })
                   return "0"
                 }
               })
             )
+
+            // stop if scan was cancelled
+            if (currentScanId !== scanId) return
 
             const newBalances = checks
               .map((check, i) => [check, res[i]] as const)
@@ -224,7 +237,7 @@ class AssetDiscoveryScanner {
               }))
 
             const newState = await assetDiscoveryStore.mutate((prev) => {
-              if (prev.currentScanId !== currentScanId) return prev
+              if (prev.currentScanId !== scanId) return prev
 
               const currentScanCursors = {
                 ...prev.currentScanCursors,
@@ -257,7 +270,7 @@ class AssetDiscoveryScanner {
               }
             })
 
-            if (newState.currentScanId === currentScanId)
+            if (newState.currentScanId === scanId)
               if (newBalances.length) {
                 await db.assetDiscovery.bulkPut(newBalances)
 
@@ -265,10 +278,7 @@ class AssetDiscoveryScanner {
                 // happens if user navigated away from asset discovery screen before a new token is found
                 const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
                   await appStore.get()
-                if (
-                  !showAssetDiscoveryAlert &&
-                  dismissedAssetDiscoveryAlertScanId !== currentScanId
-                )
+                if (!showAssetDiscoveryAlert && dismissedAssetDiscoveryAlertScanId !== scanId)
                   await appStore.set({ showAssetDiscoveryAlert: true })
               }
           }
@@ -278,7 +288,7 @@ class AssetDiscoveryScanner {
       })
 
     await assetDiscoveryStore.mutate((prev) => {
-      if (prev.currentScanId !== currentScanId) return prev
+      if (prev.currentScanId !== scanId) return prev
       return {
         ...prev,
         currentScanId: null,
