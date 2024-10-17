@@ -64,7 +64,7 @@
     "ts-results": "3.3.0",
     "url-join": "^5.0.0",
     "uuid": "^8.3.2",
-    "viem": "^2.18.2",
+    "viem": "^2.21.28",
     "yup": "0.32.11"
   },
   "devDependencies": {

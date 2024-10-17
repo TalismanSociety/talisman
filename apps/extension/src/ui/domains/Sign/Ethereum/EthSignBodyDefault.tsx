@@ -1,9 +1,10 @@
+import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
 import { BalanceFormatter } from "@extension/core"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../SignContainer"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
@@ -46,7 +47,7 @@ export const EthSignBodyDefault: FC = () => {
           </div>
           <div className="flex">
             <span>{t("from")} </span>
-            <SignParamAccountButton address={request.from} withIcon />
+            <SignParamAccountButton address={request.from!} withIcon />
           </div>
           <div className="flex">
             <span>{decodedTx.isContractCall ? t("to contract") : t("to account")} </span>
@@ -66,7 +67,7 @@ export const EthSignBodyDefault: FC = () => {
           <div>{t("You are submitting a transaction")}</div>
           <div className="flex">
             <span>{t("with")}</span>
-            <SignParamAccountButton address={request.from} withIcon />
+            <SignParamAccountButton address={request.from!} withIcon />
           </div>
           {request.to ? (
             <div className="flex">

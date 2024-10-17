@@ -96,7 +96,7 @@ export const watchEthereumTransaction = async (
       updateTransactionStatus(hash, isNotFound ? "unknown" : "error")
 
       // observed on polygon, some submitted transactions are not found, in which case we must reset the nonce counter to avoid being stuck
-      resetTransactionCount(unsigned.from, evmNetworkId)
+      if (unsigned.from) resetTransactionCount(unsigned.from, evmNetworkId)
 
       if (withNotifications)
         await createNotification(
