@@ -8,6 +8,7 @@ import { log } from "extension-shared"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
+import { Subscription } from "rxjs"
 import { PublicClient } from "viem"
 
 import { sentry } from "../../config/sentry"
@@ -163,147 +164,154 @@ class AssetDiscoveryScanner {
     const totalTokens = tokensToScan.length
 
     let currentScanId: string | null = null
-    await new Promise<void>((resolve) =>
-      assetDiscoveryStore.observable.subscribe((state) => {
+    const sub = await new Promise<Subscription>((resolve) => {
+      const sub = assetDiscoveryStore.observable.subscribe((state) => {
         currentScanId = state.currentScanId
-        resolve()
+        resolve(sub)
       })
-    )
+    })
 
-    const erc20aggregators = Object.fromEntries(
-      Object.values(evmNetworks)
-        .filter((n) => n.erc20aggregator)
-        .map((n) => [n.id, n.erc20aggregator] as const)
-    )
+    try {
+      const erc20aggregators = Object.fromEntries(
+        Object.values(evmNetworks)
+          .filter((n) => n.erc20aggregator)
+          .map((n) => [n.id, n.erc20aggregator] as const)
+      )
 
-    // process multiple networks at a time
-    await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
-      .for(Object.keys(tokensByNetwork))
-      .process(async (networkId) => {
-        // stop if scan was cancelled
-        if (currentScanId !== scanId) return
+      // process multiple networks at a time
+      await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
+        .for(Object.keys(tokensByNetwork))
+        .process(async (networkId) => {
+          // stop if scan was cancelled
+          if (currentScanId !== scanId) return
 
-        try {
-          const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
-          if (!client) return
+          try {
+            const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
+            if (!client) return
 
-          // build the list of token+address to check balances for
-          const allChecks = sortBy(
-            tokensByNetwork[networkId]
-              .map((t) => addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a })))
-              .flat(),
-            (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap)
-          )
-          let startIndex = 0
-
-          // skip checks that were already scanned
-          if (cursors[networkId]) {
-            const { tokenId, address } = cursors[networkId]
-            startIndex =
-              1 + allChecks.findIndex((c) => c.tokenId === tokenId && c.address === address)
-          }
-
-          const remainingChecks = allChecks.slice(startIndex)
-
-          //Split into chunks of 50 token+id
-          const chunkedChecks = chunk(remainingChecks, BALANCES_FETCH_CHUNK_SIZE)
-
-          for (const checks of chunkedChecks) {
-            // stop if scan was cancelled
-            if (currentScanId !== scanId) return
-
-            const res = await getEvmTokenBalances(
-              client,
-              checks.map((c) => ({
-                token: tokensMap[c.tokenId],
-                address: c.address as EvmAddress,
-              })),
-              erc20aggregators[networkId]
+            // build the list of token+address to check balances for
+            const allChecks = sortBy(
+              tokensByNetwork[networkId]
+                .map((t) => addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a })))
+                .flat(),
+              (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap)
             )
+            let startIndex = 0
 
-            // stop if scan was cancelled
-            if (currentScanId !== scanId) return
-
-            const newBalances = checks
-              .map((check, i) => [check, res[i]] as const)
-              .filter(([, res]) => res !== "0")
-              .map<DiscoveredBalance>(([{ address, tokenId }, res]) => ({
-                id: getSortableIdentifier(tokenId, address, tokensMap),
-                tokenId,
-                address,
-                balance: res,
-              }))
-
-            const newState = await assetDiscoveryStore.mutate((prev) => {
-              if (prev.currentScanId !== scanId) return prev
-
-              const currentScanCursors = {
-                ...prev.currentScanCursors,
-                [networkId]: {
-                  address: checks[checks.length - 1].address,
-                  tokenId: checks[checks.length - 1].tokenId,
-                  scanned: (prev.currentScanCursors[networkId]?.scanned ?? 0) + checks.length,
-                },
-              }
-
-              // Update progress
-              // in case of full scan it takes longer to scan networks
-              // in case of active scan it takes longer to scan tokens
-              // => use the min of both ratios as current progress
-              const totalScanned = Object.values(currentScanCursors).reduce(
-                (acc, cur) => acc + cur.scanned,
-                0
-              )
-              const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
-              const networksProgress = Math.round(
-                (100 * Object.keys(currentScanCursors).length) / Object.keys(tokensByNetwork).length
-              )
-              const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
-
-              return {
-                ...prev,
-                currentScanCursors,
-                currentScanProgressPercent,
-                currentScanTokensCount: totalTokens,
-              }
-            })
-
-            if (newState.currentScanId !== scanId) return
-
-            if (newBalances.length) {
-              await db.assetDiscovery.bulkPut(newBalances)
-
-              // display alert if it has not been explicitely dismissed
-              // happens if user navigated away from asset discovery screen before a new token is found
-              const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
-                await appStore.get()
-              if (!showAssetDiscoveryAlert && dismissedAssetDiscoveryAlertScanId !== scanId)
-                await appStore.set({ showAssetDiscoveryAlert: true })
+            // skip checks that were already scanned
+            if (cursors[networkId]) {
+              const { tokenId, address } = cursors[networkId]
+              startIndex =
+                1 + allChecks.findIndex((c) => c.tokenId === tokenId && c.address === address)
             }
+
+            const remainingChecks = allChecks.slice(startIndex)
+
+            //Split into chunks of 50 token+id
+            const chunkedChecks = chunk(remainingChecks, BALANCES_FETCH_CHUNK_SIZE)
+
+            for (const checks of chunkedChecks) {
+              // stop if scan was cancelled
+              if (currentScanId !== scanId) return
+
+              const res = await getEvmTokenBalances(
+                client,
+                checks.map((c) => ({
+                  token: tokensMap[c.tokenId],
+                  address: c.address as EvmAddress,
+                })),
+                erc20aggregators[networkId]
+              )
+
+              // stop if scan was cancelled
+              if (currentScanId !== scanId) return
+
+              const newBalances = checks
+                .map((check, i) => [check, res[i]] as const)
+                .filter(([, res]) => res !== "0")
+                .map<DiscoveredBalance>(([{ address, tokenId }, res]) => ({
+                  id: getSortableIdentifier(tokenId, address, tokensMap),
+                  tokenId,
+                  address,
+                  balance: res,
+                }))
+
+              const newState = await assetDiscoveryStore.mutate((prev) => {
+                if (prev.currentScanId !== scanId) return prev
+
+                const currentScanCursors = {
+                  ...prev.currentScanCursors,
+                  [networkId]: {
+                    address: checks[checks.length - 1].address,
+                    tokenId: checks[checks.length - 1].tokenId,
+                    scanned: (prev.currentScanCursors[networkId]?.scanned ?? 0) + checks.length,
+                  },
+                }
+
+                // Update progress
+                // in case of full scan it takes longer to scan networks
+                // in case of active scan it takes longer to scan tokens
+                // => use the min of both ratios as current progress
+                const totalScanned = Object.values(currentScanCursors).reduce(
+                  (acc, cur) => acc + cur.scanned,
+                  0
+                )
+                const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
+                const networksProgress = Math.round(
+                  (100 * Object.keys(currentScanCursors).length) /
+                    Object.keys(tokensByNetwork).length
+                )
+                const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
+
+                return {
+                  ...prev,
+                  currentScanCursors,
+                  currentScanProgressPercent,
+                  currentScanTokensCount: totalTokens,
+                }
+              })
+
+              if (newState.currentScanId !== scanId) return
+
+              if (newBalances.length) {
+                await db.assetDiscovery.bulkPut(newBalances)
+
+                // display alert if it has not been explicitely dismissed
+                // happens if user navigated away from asset discovery screen before a new token is found
+                const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
+                  await appStore.get()
+                if (!showAssetDiscoveryAlert && dismissedAssetDiscoveryAlertScanId !== scanId)
+                  await appStore.set({ showAssetDiscoveryAlert: true })
+              }
+            }
+          } catch (err) {
+            log.error(`Could not scan network ${networkId}`, { err })
+          } finally {
+            sub.unsubscribe()
           }
-        } catch (err) {
-          log.error(`Could not scan network ${networkId}`, { err })
+        })
+
+      await assetDiscoveryStore.mutate((prev) => {
+        if (prev.currentScanId !== scanId) return prev
+        return {
+          ...prev,
+          currentScanId: null,
+          currentScanProgressPercent: 100,
+          currentScanCursors: {},
+          currentScanAccounts: [],
+          lastScanTimestamp: Date.now(),
+          lastScanAccounts: prev.currentScanAccounts,
+          lastScanMode: prev.currentScanMode,
+          lastScanTokensCount: prev.currentScanTokensCount,
+          status: "idle",
         }
       })
 
-    await assetDiscoveryStore.mutate((prev) => {
-      if (prev.currentScanId !== scanId) return prev
-      return {
-        ...prev,
-        currentScanId: null,
-        currentScanProgressPercent: 100,
-        currentScanCursors: {},
-        currentScanAccounts: [],
-        lastScanTimestamp: Date.now(),
-        lastScanAccounts: prev.currentScanAccounts,
-        lastScanMode: prev.currentScanMode,
-        lastScanTokensCount: prev.currentScanTokensCount,
-        status: "idle",
-      }
-    })
-
-    if ((await db.assetDiscovery.count()) === 0)
-      await appStore.set({ showAssetDiscoveryAlert: false })
+      if ((await db.assetDiscovery.count()) === 0)
+        await appStore.set({ showAssetDiscoveryAlert: false })
+    } finally {
+      sub.unsubscribe()
+    }
   }
 
   public async startPendingScan(): Promise<void> {
