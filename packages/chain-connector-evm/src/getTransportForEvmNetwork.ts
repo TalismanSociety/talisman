@@ -11,7 +11,6 @@ export type TransportOptions = {
         batchSize?: number | undefined
         wait?: number | undefined
       }
-    | undefined
 }
 
 export const getTransportForEvmNetwork = (

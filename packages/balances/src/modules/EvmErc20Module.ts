@@ -14,8 +14,9 @@ import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import { erc20Abi } from "./abis/erc20"
+import { erc20BalancesAggregatorAbi } from "./abis/erc20BalancesAggregator"
 
-export { erc20Abi }
+export { erc20Abi, erc20BalancesAggregatorAbi }
 
 type ModuleType = "evm-erc20"
 const moduleType: ModuleType = "evm-erc20"

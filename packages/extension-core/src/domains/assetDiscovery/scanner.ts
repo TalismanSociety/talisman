@@ -1,9 +1,9 @@
 import keyring from "@polkadot/ui-keyring"
 import PromisePool from "@supercharge/promise-pool"
-import { erc20Abi } from "@talismn/balances"
+import { erc20Abi, erc20BalancesAggregatorAbi, EvmErc20Token } from "@talismn/balances"
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
@@ -34,8 +34,8 @@ const IGNORED_COINGECKO_IDS = [
   "peri-finance", // Mainnet - PERI (timeouts on balance reads)
 ]
 
-const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 2
-const BALANCES_FETCH_CHUNK_SIZE = 100
+const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
+const BALANCES_FETCH_CHUNK_SIZE = 500
 
 // native tokens should be processed and displayed first
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
@@ -170,6 +170,12 @@ class AssetDiscoveryScanner {
       })
     )
 
+    const erc20aggregators = Object.fromEntries(
+      Object.values(evmNetworks)
+        .filter((n) => n.erc20aggregator)
+        .map((n) => [n.id, n.erc20aggregator] as const)
+    )
+
     // process multiple networks at a time
     await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
       .for(Object.keys(tokensByNetwork))
@@ -206,21 +212,13 @@ class AssetDiscoveryScanner {
             // stop if scan was cancelled
             if (currentScanId !== scanId) return
 
-            const res = await Promise.allSettled(
-              checks.map(async (check) => {
-                try {
-                  const token = tokensMap[check.tokenId]
-                  if (!token) {
-                    throw new Error(`No token found for tokenId ${check.tokenId}`)
-                  }
-
-                  return await getEvmTokenBalance(client, token, check.address as EvmAddress)
-                } catch (err) {
-                  sentry.captureException(err)
-                  log.error(`Failed to scan ${check.tokenId} for ${check.address}`, { err })
-                  return "0"
-                }
-              })
+            const res = await getEvmTokenBalances(
+              client,
+              checks.map((c) => ({
+                token: tokensMap[c.tokenId],
+                address: c.address as EvmAddress,
+              })),
+              erc20aggregators[networkId]
             )
 
             // stop if scan was cancelled
@@ -228,12 +226,12 @@ class AssetDiscoveryScanner {
 
             const newBalances = checks
               .map((check, i) => [check, res[i]] as const)
-              .filter(([, res]) => res.status === "fulfilled" && res.value !== "0")
+              .filter(([, res]) => res !== "0")
               .map<DiscoveredBalance>(([{ address, tokenId }, res]) => ({
                 id: getSortableIdentifier(tokenId, address, tokensMap),
                 tokenId,
                 address,
-                balance: (res as PromiseFulfilledResult<string>).value,
+                balance: res,
               }))
 
             const newState = await assetDiscoveryStore.mutate((prev) => {
@@ -270,17 +268,18 @@ class AssetDiscoveryScanner {
               }
             })
 
-            if (newState.currentScanId === scanId)
-              if (newBalances.length) {
-                await db.assetDiscovery.bulkPut(newBalances)
+            if (newState.currentScanId !== scanId) return
 
-                // display alert if it has not been explicitely dismissed
-                // happens if user navigated away from asset discovery screen before a new token is found
-                const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
-                  await appStore.get()
-                if (!showAssetDiscoveryAlert && dismissedAssetDiscoveryAlertScanId !== scanId)
-                  await appStore.set({ showAssetDiscoveryAlert: true })
-              }
+            if (newBalances.length) {
+              await db.assetDiscovery.bulkPut(newBalances)
+
+              // display alert if it has not been explicitely dismissed
+              // happens if user navigated away from asset discovery screen before a new token is found
+              const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
+                await appStore.get()
+              if (!showAssetDiscoveryAlert && dismissedAssetDiscoveryAlertScanId !== scanId)
+                await appStore.set({ showAssetDiscoveryAlert: true })
+            }
           }
         } catch (err) {
           log.error(`Could not scan network ${networkId}`, { err })
@@ -355,6 +354,96 @@ const getEvmTokenBalance = async (client: PublicClient, token: Token, address: E
   }
 
   throw new Error("Unsupported token type")
+}
+
+type BalanceDef = { token: Token; address: EvmAddress }
+
+const getEvmTokenBalancesWithoutAggregator = async (
+  client: PublicClient,
+  balanceDefs: BalanceDef[]
+) => {
+  if (balanceDefs.length === 0) return []
+
+  const res = await Promise.allSettled(
+    balanceDefs.map(async ({ token, address }) => {
+      try {
+        let retries = 0
+        while (retries < 3) {
+          try {
+            return await Promise.race([
+              getEvmTokenBalance(client, token, address as EvmAddress),
+              throwAfter(20_000, "Timeout"),
+            ])
+          } catch (err) {
+            if ((err as Error).message === "Timeout") retries++
+            else throw err
+          }
+        }
+
+        throw new Error(`Failed to scan ${token.id} (Timeout)`)
+      } catch (err) {
+        sentry.captureException(err)
+        log.error(`Failed to scan ${token.id} for ${address}: `, { err })
+        return "0"
+      }
+    })
+  )
+
+  return res.map((r, i) => {
+    if (r.status === "fulfilled") return r.value
+    log.warn("Failed to get balance", { err: r.reason, ...balanceDefs[i] })
+    return "0"
+  })
+}
+
+const getEvmTokenBalancesWithAggregator = async (
+  client: PublicClient,
+  balanceDefs: BalanceDef[],
+  aggregatorAddress: EvmAddress
+) => {
+  if (balanceDefs.length === 0) return []
+
+  // keep track of index so we can split queries and rebuild the original order afterwards
+  const indexedBalanceDefs = balanceDefs.map((bd, index) => ({ ...bd, index }))
+  const erc20BalanceDefs = indexedBalanceDefs.filter(
+    (b) => b.token.type === "evm-erc20" || b.token.type === "evm-uniswapv2"
+  )
+  const otherBalanceDefs = indexedBalanceDefs.filter(
+    (b) => b.token.type !== "evm-erc20" && b.token.type !== "evm-uniswapv2"
+  )
+
+  const [erc20Balances, otherBalances] = await Promise.all([
+    client.readContract({
+      abi: erc20BalancesAggregatorAbi,
+      address: aggregatorAddress,
+      functionName: "balances",
+      args: [
+        erc20BalanceDefs.map((b) => ({
+          account: b.address,
+          token: (b.token as EvmErc20Token).contractAddress as EvmAddress,
+        })),
+      ],
+    }),
+    getEvmTokenBalancesWithoutAggregator(client, otherBalanceDefs),
+  ])
+
+  const resByIndex: Record<number, string> = Object.fromEntries(
+    erc20Balances
+      .map((res, i) => [i, String(res)])
+      .concat(otherBalances.map((res, i) => [i, String(res)]))
+  )
+
+  return indexedBalanceDefs.map((bd) => resByIndex[bd.index])
+}
+
+const getEvmTokenBalances = (
+  client: PublicClient,
+  balanceDefs: BalanceDef[],
+  aggregatorAddress: EvmAddress | undefined
+) => {
+  return aggregatorAddress
+    ? getEvmTokenBalancesWithAggregator(client, balanceDefs, aggregatorAddress)
+    : getEvmTokenBalancesWithoutAggregator(client, balanceDefs)
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
