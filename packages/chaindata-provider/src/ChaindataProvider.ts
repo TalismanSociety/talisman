@@ -378,7 +378,7 @@ export class ChaindataProvider implements IChaindataProvider {
           await this.#db.tokens.delete(networkToDelete.nativeToken.id)
         await this.#db.evmNetworks.delete(evmNetworkId)
 
-        // reprovision them from subsquid data
+        // reprovision them from chaindata
         await this.#db.evmNetworks.put(builtInEvmNetwork)
         await this.#db.tokens.put(builtInNativeToken as never)
       })
@@ -552,9 +552,20 @@ export class ChaindataProvider implements IChaindataProvider {
           .filter((network) => !("isCustom" in network && network.isCustom))
           .delete()
 
-        // add all except ones matching custom existing ones (user may customize built-in networks)
-        const customNetworkIds = (await this.#db.evmNetworks.toArray()).map((network) => network.id)
-        const newNetworks = evmNetworks.filter((network) => !customNetworkIds.includes(network.id))
+        // remaining entries are custom networks
+        const existingCustomNetworks = await this.#db.evmNetworks.toArray()
+        const existingCustomNetworksById = Object.fromEntries(
+          existingCustomNetworks.map((network) => [network.id, network])
+        )
+
+        // dont override custom networks, except for the balancesConfig property
+        const newNetworks = evmNetworks.map((network) => {
+          const existing = existingCustomNetworksById[network.id]
+          return existing
+            ? Object.assign({}, existing, { balancesConfig: network.balancesConfig })
+            : network
+        })
+
         await this.#db.evmNetworks.bulkPut(newNetworks)
       })
       this.#lastHydratedEvmNetworksAt = now

@@ -3,11 +3,14 @@ import { fallback, http } from "viem"
 
 import { addOnfinalityApiKey } from "./util"
 
-const HTTP_BATCH_WAIT = 25
-const HTTP_BATCH_SIZE = 30
-
-type TransportOptions = {
+export type TransportOptions = {
   onFinalityApiKey?: string
+  batch?:
+    | boolean
+    | {
+        batchSize?: number | undefined
+        wait?: number | undefined
+      }
 }
 
 export const getTransportForEvmNetwork = (
@@ -16,10 +19,12 @@ export const getTransportForEvmNetwork = (
 ) => {
   if (!evmNetwork.rpcs?.length) throw new Error("No RPCs found for EVM network")
 
+  const { batch, onFinalityApiKey } = options
+
   return fallback(
     evmNetwork.rpcs.map((rpc) =>
-      http(addOnfinalityApiKey(rpc.url, options.onFinalityApiKey), {
-        batch: { wait: HTTP_BATCH_WAIT, batchSize: HTTP_BATCH_SIZE },
+      http(addOnfinalityApiKey(rpc.url, onFinalityApiKey), {
+        batch,
         retryCount: 0,
       })
     ),

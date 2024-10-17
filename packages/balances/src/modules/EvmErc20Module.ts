@@ -7,15 +7,16 @@ import {
   Token,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import { Address, PublicClient } from "viem"
+import { isEthereumAddress } from "@talismn/util"
+import { Address, Hex, PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import { erc20Abi } from "./abis/erc20"
+import { erc20BalancesAggregatorAbi } from "./abis/erc20BalancesAggregator"
 
-export { erc20Abi }
+export { erc20Abi, erc20BalancesAggregatorAbi }
 
 type ModuleType = "evm-erc20"
 const moduleType: ModuleType = "evm-erc20"
@@ -95,6 +96,13 @@ export const EvmErc20Module: NewBalanceModule<
 
   const getModuleTokens = async () => {
     return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, EvmErc20Token>
+  }
+
+  const getErc20Aggregators = async () => {
+    const evmNetworks = await chaindataProvider.evmNetworks()
+    return Object.fromEntries(
+      evmNetworks.filter((n) => n.erc20aggregator).map((n) => [n.id, n.erc20aggregator!])
+    )
   }
 
   return {
@@ -201,6 +209,8 @@ export const EvmErc20Module: NewBalanceModule<
 
         zeroBalanceSubscriptionIntervalCounter = (zeroBalanceSubscriptionIntervalCounter + 1) % 5
 
+        const aggregators = await getErc20Aggregators()
+
         try {
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
           for (const evmNetworkId of Object.keys(fetchesPerNetwork)) {
@@ -230,7 +240,8 @@ export const EvmErc20Module: NewBalanceModule<
 
               const { errors, results } = await fetchBalances(
                 chainConnectors.evm,
-                fetchesPerNetwork
+                fetchesPerNetwork,
+                aggregators
               )
               // handle errors first
               errors.forEach((error) => {
@@ -293,9 +304,9 @@ export const EvmErc20Module: NewBalanceModule<
 
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
-      const tokens = await getModuleTokens()
+      const [aggregators, tokens] = await Promise.all([getErc20Aggregators(), getModuleTokens()])
       const fetchesPerNetwork = await prepareFetchParameters(addressesByToken, tokens)
-      const balances = await fetchBalances(chainConnectors.evm, fetchesPerNetwork)
+      const balances = await fetchBalances(chainConnectors.evm, fetchesPerNetwork, aggregators)
       return new Balances(balances.results)
     },
   }
@@ -330,7 +341,8 @@ type EvmErc20TokenBalanceResponse = {
 
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
-  tokenAddressesByNetwork: EvmErc20NetworkParams
+  tokenAddressesByNetwork: EvmErc20NetworkParams,
+  erc20Aggregators: Record<EvmNetworkId, Hex> = {}
 ): Promise<EvmErc20TokenBalanceResponse> => {
   const result = {
     results: [] as EvmErc20Balance[],
@@ -345,42 +357,109 @@ const fetchBalances = async (
           evmNetworkId
         )
 
-      // fetch all balances for this network
-      return await Promise.all(
-        networkParams.map(
-          async ({ token, address }) =>
-            await getFreeBalance(
-              publicClient,
-              token.contractAddress as `0x${string}`,
-              address as `0x${string}`
-            )
-              .then((free) =>
-                result.results.push({
-                  source: "evm-erc20",
-                  status: "live",
-                  address: address,
-                  multiChainId: { evmChainId: evmNetworkId },
-                  evmNetworkId,
-                  tokenId: token.id,
-                  value: free,
-                } as EvmErc20Balance)
-              )
-              .catch((error) => {
-                const balanceId = getErc20BalanceId({ token, address, evmNetworkId })
-                result.errors.push(
-                  new EvmErc20BalanceError(
-                    `Failed to get balance for token ${token.id} and address ${address} on chain ${evmNetworkId}`,
-                    balanceId,
-                    error
-                  )
-                )
-              })
+      const balances = await getEvmTokenBalances(
+        publicClient,
+        networkParams as BalanceDef[],
+        result.errors,
+        erc20Aggregators[evmNetworkId]
+      )
+
+      // consider only non null balances in the results
+      result.results.push(
+        ...balances.filter(Boolean).map(
+          (free, i) =>
+            ({
+              source: "evm-erc20",
+              status: "live",
+              address: networkParams[i].address,
+              multiChainId: { evmChainId: evmNetworkId },
+              evmNetworkId,
+              tokenId: networkParams[i].token.id,
+              value: free!,
+            } as EvmErc20Balance)
         )
       )
     })
   )
 
   return result
+}
+
+type BalanceDef = { token: EvmErc20Token; address: Hex }
+
+const getEvmTokenBalances = (
+  client: PublicClient,
+  balanceDefs: BalanceDef[],
+  errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>,
+  aggregatorAddress: Hex | undefined
+) => {
+  return aggregatorAddress
+    ? getEvmTokenBalancesWithAggregator(client, balanceDefs, errors, aggregatorAddress)
+    : getEvmTokenBalancesWithoutAggregator(client, balanceDefs, errors)
+}
+
+const getEvmTokenBalancesWithoutAggregator = async (
+  client: PublicClient,
+  balanceDefs: BalanceDef[],
+  errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>
+) => {
+  if (balanceDefs.length === 0) return []
+
+  return await Promise.all(
+    balanceDefs.map(async ({ token, address }) => {
+      try {
+        const balance = await client.readContract({
+          abi: erc20Abi,
+          address: token.contractAddress as Hex,
+          functionName: "balanceOf",
+          args: [address],
+        })
+        return balance.toString()
+      } catch (err) {
+        errors.push(
+          new EvmErc20BalanceError(
+            `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
+            getErc20BalanceId({ token, address, evmNetworkId: String(client.chain!.id) }),
+            err as Error
+          )
+        )
+        return null
+      }
+    })
+  )
+}
+
+const getEvmTokenBalancesWithAggregator = async (
+  client: PublicClient,
+  balanceDefs: BalanceDef[],
+  errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>,
+  aggregatorAddress: Hex
+) => {
+  if (balanceDefs.length === 0) return []
+
+  try {
+    const erc20Balances = await client.readContract({
+      abi: erc20BalancesAggregatorAbi,
+      address: aggregatorAddress,
+      functionName: "balances",
+      args: [
+        balanceDefs.map((b) => ({
+          account: b.address,
+          token: b.token.contractAddress as Hex,
+        })),
+      ],
+    })
+
+    return erc20Balances.map((res) => String(res))
+  } catch (err) {
+    errors.push(
+      new EvmErc20NetworkError(
+        `Failed to get balance for token ${balanceDefs[0].token.id} on chain ${client.chain?.id}`,
+        String(client.chain?.id)
+      )
+    )
+    return balanceDefs.map(() => null)
+  }
 }
 
 /**
@@ -421,36 +500,4 @@ function groupAddressesByTokenByEvmNetwork(
 
     return byChain
   }, {} as Record<string, AddressesByToken<EvmErc20Token>>)
-}
-
-async function getFreeBalance(
-  publicClient: PublicClient,
-  contractAddress: `0x${string}`,
-  accountAddress: `0x${string}`
-): Promise<string> {
-  if (!isEthereumAddress(accountAddress)) return "0"
-
-  try {
-    const res = await publicClient.readContract({
-      abi: erc20Abi,
-      address: contractAddress,
-      functionName: "balanceOf",
-      args: [accountAddress],
-    })
-
-    return res.toString()
-  } catch (error) {
-    const errorMessage = hasOwnProperty(error, "shortMessage")
-      ? error.shortMessage
-      : hasOwnProperty(error, "message")
-      ? error.message
-      : error
-    log.warn(
-      `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}: ${errorMessage}`
-    )
-    throw new Error(
-      `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}`,
-      { cause: error as Error }
-    )
-  }
 }

@@ -1,4 +1,4 @@
-import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
+import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
@@ -406,7 +406,7 @@ export class EthHandler extends ExtensionHandler {
         isCustom: true,
         explorerUrls: network.blockExplorerUrls || (known?.explorerUrl ? [known.explorerUrl] : []),
         iconUrls: network.iconUrls || [],
-        balancesConfig: [],
+        balancesConfig: existingNetwork.balancesConfig ?? [],
         balancesMetadata: [],
       }
 
@@ -462,7 +462,7 @@ export class EthHandler extends ExtensionHandler {
           explorerUrl: network.blockExplorerUrl ?? null,
           rpcs: network.rpcs.map(({ url }) => ({ url })),
           substrateChain: existingNetwork?.substrateChain ?? null,
-          balancesConfig: [],
+          balancesConfig: existingNetwork?.balancesConfig ?? [],
           balancesMetadata: [],
           // CustomEvmNetwork
           isCustom: true,

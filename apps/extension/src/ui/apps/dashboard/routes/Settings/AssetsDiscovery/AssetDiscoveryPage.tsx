@@ -10,7 +10,7 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { atom, useAtomValue } from "jotai"
+import { atom, useAtom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -81,6 +81,8 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   featureVersion: 1,
   page: "Settings - Asset Discovery",
 }
+
+const isInitializingScanAtom = atom(false)
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
@@ -302,11 +304,12 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
+  const isInitializing = useAtomValue(isInitializingScanAtom)
   const { balances, balancesByTokenId, tokenIds } = useAtomValue(assetDiscoveryScanProgressAtom)
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
-  if (!balances.length) return null
+  if (!balances.length || isInitializing) return null
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
@@ -326,18 +329,24 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
+  const [isInitializing, setIsInitializing] = useAtom(isInitializingScanAtom)
   const { balances, accountsCount, tokensCount, percent, isInProgress } = useAtomValue(
     assetDiscoveryScanProgressAtom
   )
+
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
 
+  const effectivePercent = isInitializing ? 0 : percent
+
   const handleScanClick = useCallback(
-    (mode: AssetDiscoveryMode) => () => {
-      api.assetDiscoveryStartScan(mode)
+    (mode: AssetDiscoveryMode) => async () => {
+      setIsInitializing(true)
+      await api.assetDiscoveryStartScan(mode)
+      setIsInitializing(false)
     },
-    []
+    [setIsInitializing]
   )
   const handleCancelScanClick = useCallback(() => {
     api.assetDiscoveryStopScan()
@@ -346,14 +355,19 @@ const Header: FC = () => {
   return (
     <div className="bg-grey-850 flex h-[8.6rem] items-center gap-8 rounded-sm px-8">
       <DiamondIcon
-        className={classNames("text-lg", isInProgress ? "text-primary" : "text-body-secondary")}
+        className={classNames(
+          "text-lg",
+          isInProgress || isInitializing ? "text-primary" : "text-body-secondary"
+        )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {isInProgress || balances.length ? (
+        {isInitializing || isInProgress || balances.length ? (
           <>
             <div className="flex text-base">
               <div className="grow">
-                {isInProgress
+                {isInitializing
+                  ? t("Initialising...")
+                  : isInProgress
                   ? t("Scanning {{tokensCount}} tokens for {{count}} account(s)", {
                       tokensCount,
                       count: accountsCount,
@@ -363,16 +377,16 @@ const Header: FC = () => {
                       count: accountsCount,
                     })}
               </div>
-              <div className="text-primary">{percent}%</div>
+              <div className="text-primary">{effectivePercent}%</div>
             </div>
             <div className="bg-grey-800 relative flex h-4 overflow-hidden rounded-lg">
               <div
                 className={classNames(
                   "bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg",
-                  percent && "transition-transform duration-300 ease-out" // no animation on restart
+                  effectivePercent && "transition-transform duration-300 ease-out" // no animation on restart
                 )}
                 style={{
-                  transform: `translateX(-${100 - percent}%)`,
+                  transform: `translateX(-${100 - effectivePercent}%)`,
                 }}
               ></div>
             </div>
@@ -439,6 +453,7 @@ const AccountsWrapper: FC<{
 
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
+  const isInitializing = useAtomValue(isInitializingScanAtom)
 
   const { balancesByTokenId, balances, isInProgress } = useAtomValue(assetDiscoveryScanProgressAtom)
   const { lastScanAccounts, lastScanTimestamp } = useAtomValue(assetDiscoveryScanAtom)
@@ -484,6 +499,8 @@ const ScanInfo: FC = () => {
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
     [accounts, lastScanAccounts]
   )
+
+  if (isInitializing) return null
 
   return (
     <div className="flex h-16 w-full items-center px-8">

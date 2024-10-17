@@ -3,19 +3,19 @@ import { erc20Abi } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
+  encodeFunctionData,
+  getAddress,
   Hex,
+  hexToBigInt,
+  hexToNumber,
+  isAddress,
+  isHex,
   TransactionRequest,
   TransactionRequestBase,
   TransactionSerializable,
   TransactionSerializableEIP1559,
   TransactionSerializableEIP2930,
   TransactionSerializableLegacy,
-  encodeFunctionData,
-  getAddress,
-  hexToBigInt,
-  hexToNumber,
-  isAddress,
-  isHex,
 } from "viem"
 import * as yup from "yup"
 
@@ -182,8 +182,8 @@ export const parseTransactionRequest = (
 
 export const parseRpcTransactionRequestBase = (
   rtx: TransactionRequestBase<Hex, Hex>
-): TransactionRequestBase => {
-  const txBase: TransactionRequestBase = { from: rtx.from }
+): TransactionRequest => {
+  const txBase: TransactionRequest = { from: rtx.from }
 
   if (isHex(rtx.to)) txBase.to = rtx.to
   if (isHex(rtx.data)) txBase.data = rtx.data
@@ -224,7 +224,6 @@ export const getTransactionSerializable = (
         nonce: txRequest.nonce,
         to: txRequest.to,
         value: txRequest.value,
-        accessList: txRequest.accessList,
       }
       return res
     }
