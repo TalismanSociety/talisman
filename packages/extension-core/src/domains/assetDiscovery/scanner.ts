@@ -35,7 +35,7 @@ const IGNORED_COINGECKO_IDS = [
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
-const BALANCES_FETCH_CHUNK_SIZE = 500
+const BALANCES_FETCH_CHUNK_SIZE = 1000
 
 // native tokens should be processed and displayed first
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
