@@ -1,22 +1,15 @@
-import { assetDiscoveryStore, db } from "@extension/core"
-import { firstThenDebounce } from "@talismn/util"
-import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
-import { from } from "rxjs"
+
+import { assetDiscoveryStore } from "@extension/core"
+import { assetDiscoveryBalances$ } from "@ui/state"
 
 import { tokensMapAtomFamily } from "./chaindata"
 import { logObservableUpdate } from "./utils/logObservableUpdate"
 
-const assetDiscoveryBalancesAtom = atomWithObservable(() =>
-  // backend will do a lot of updates
-  // debounce to mitigate performance issues
-  from(liveQuery(() => db.assetDiscovery.toArray()))
-    .pipe(firstThenDebounce(500))
-    .pipe(logObservableUpdate("assetDiscoveryBalancesAtom"))
-)
+const assetDiscoveryBalancesAtom = atomWithObservable(() => assetDiscoveryBalances$)
 
 export const assetDiscoveryScanAtom = atomWithObservable(() =>
   assetDiscoveryStore.observable.pipe(logObservableUpdate("assetDiscoveryScanAtom"))

@@ -13,7 +13,7 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useChains from "@ui/hooks/useChains"
+import { useChains } from "@ui/hooks/useChains"
 import { useAccounts } from "@ui/state"
 
 export type JsonImportAccount = {

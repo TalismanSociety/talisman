@@ -7,7 +7,7 @@ import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useChains from "@ui/hooks/useChains"
+import { useChains } from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useAccounts } from "@ui/state"

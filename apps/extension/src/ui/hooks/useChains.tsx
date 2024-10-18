@@ -1,32 +1,13 @@
-import {
-  ChainsQueryOptions,
-  allChainsAtom,
-  allChainsMapAtom,
-  allChainsMapByGenesisHashAtom,
-  chainsArrayAtomFamily,
-  chainsMapAtomFamily,
-} from "@ui/atoms"
-import { atom, useAtomValue } from "jotai"
-import { atomFamily } from "jotai/utils"
-import isEqual from "lodash/isEqual"
+import { bind } from "@react-rxjs/core"
+import { combineLatest, map } from "rxjs"
 
-export const useAllChains = () => useAtomValue(allChainsAtom)
-export const useAllChainsMap = () => useAtomValue(allChainsMapAtom)
-export const useAllChainsMapByGenesisHash = () => useAtomValue(allChainsMapByGenesisHashAtom)
+import { ChaindataQueryOptions, getChains$, getChainsMap$ } from "@ui/state"
 
-const chainsAtomFamily = atomFamily(
-  (filter: ChainsQueryOptions) =>
-    atom(async (get) => {
-      const [chains, chainsMap] = await Promise.all([
-        get(chainsArrayAtomFamily(filter)),
-        get(chainsMapAtomFamily(filter)),
-      ])
+export { useAllChains, useAllChainsMap, useAllChainsMapByGenesisHash } from "@ui/state"
 
-      return { chains, chainsMap }
-    }),
-  isEqual
+// TODO put in state
+export const [useChains] = bind((filter: ChaindataQueryOptions) =>
+  combineLatest([getChains$(filter), getChainsMap$(filter)]).pipe(
+    map(([chains, chainsMap]) => ({ chains, chainsMap }))
+  )
 )
-
-export const useChains = (filter: ChainsQueryOptions) => useAtomValue(chainsAtomFamily(filter))
-
-export default useChains

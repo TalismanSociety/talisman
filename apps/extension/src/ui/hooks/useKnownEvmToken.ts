@@ -1,11 +1,12 @@
-import { activeTokensStore, isTokenActive } from "@extension/core"
 import { Token } from "@talismn/chaindata-provider"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { useCallback, useMemo } from "react"
 
+import { activeTokensStore, isTokenActive } from "@extension/core"
+import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
+
 import { useActiveTokensState } from "./useActiveTokensState"
-import useTokens from "./useTokens"
+import { useTokens } from "./useTokens"
 
 /**
  * NOTE: Works for both `evm-erc20` as well as `evm-uniswapv2` tokens.

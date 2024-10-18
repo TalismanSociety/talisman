@@ -3,7 +3,7 @@ import { useMemo } from "react"
 
 import { AddSubstrateLedgerAppType } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 
-import useChains from "../useChains"
+import { useChains } from "../useChains"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"
 
 export type ChainWithLedgerApp = Chain & {
