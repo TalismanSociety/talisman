@@ -1,11 +1,12 @@
-import { appStore } from "@extension/core"
-import { api } from "@ui/api"
-import { balanceTotalsAtom } from "@ui/atoms"
 import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
-import useAccounts from "./useAccounts"
+import { appStore } from "@extension/core"
+import { api } from "@ui/api"
+import { balanceTotalsAtom } from "@ui/atoms"
+import { useAccounts } from "@ui/state"
+
 import { useAppState } from "./useAppState"
 import { useMnemonics } from "./useMnemonics"
 

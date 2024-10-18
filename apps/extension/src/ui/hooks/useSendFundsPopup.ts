@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next"
 
 import { AccountJsonAny, AccountType } from "@extension/core"
 import { api } from "@ui/api"
+import { useAccounts } from "@ui/state"
 
-import useAccounts from "./useAccounts"
 import useBalances from "./useBalances"
 
 const isCompatibleAddress = (from: Address, to: Address) => {

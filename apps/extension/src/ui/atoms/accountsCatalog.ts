@@ -1,7 +1,5 @@
-import { api } from "@ui/api"
+import { atomWithObservable } from "jotai/utils"
 
-import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { accountsCatalog$ } from "@ui/state"
 
-export const accountsCatalogAtom = atomWithSubscription(api.accountsCatalogSubscribe, {
-  debugLabel: "accountsCatalogAtom",
-})
+export const accountsCatalogAtom = atomWithObservable(() => accountsCatalog$)

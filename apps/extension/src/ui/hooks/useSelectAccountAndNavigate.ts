@@ -2,7 +2,7 @@ import { isAddressEqual } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import useAccounts from "./useAccounts"
+import { useAccounts } from "@ui/state"
 
 export const useSelectAccountAndNavigate = (url: string) => {
   const navigate = useNavigate()

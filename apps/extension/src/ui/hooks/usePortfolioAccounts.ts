@@ -26,12 +26,12 @@ const portfolioAccountsAtom = atom(async (get) => {
   )
 
   const portfolioTotal = portfolioAccounts.reduce(
-    (total, acc) => total + balanceTotalPerAccount[acc.address] ?? 0,
+    (total, acc) => total + (balanceTotalPerAccount[acc.address] ?? 0),
     0
   )
 
   const ownedTotal = ownedAccounts.reduce(
-    (total, acc) => total + balanceTotalPerAccount[acc.address] ?? 0,
+    (total, acc) => total + (balanceTotalPerAccount[acc.address] ?? 0),
     0
   )
 

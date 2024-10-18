@@ -11,8 +11,8 @@ import {
   StakingSupportedChain,
 } from "@extension/core"
 import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useAccounts } from "@ui/state"
 
 import { colours, isNomPoolChain, isStakingSupportedChain } from "./helpers"
 

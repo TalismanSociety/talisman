@@ -19,8 +19,8 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts } from "@ui/state"
 
 import { PopupContent, PopupLayout } from "../Layout/PopupLayout"
 

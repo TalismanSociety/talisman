@@ -2,7 +2,7 @@ import { renderHook, waitFor } from "@testing-library/react"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
-import { useAccounts } from "../useAccounts"
+import { useAccounts } from "../../state"
 
 test("Can get accounts", async () => {
   const { result } = renderHook(() => useAccounts(), { wrapper: TestWrapper })

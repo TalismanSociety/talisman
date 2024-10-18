@@ -1,6 +1,7 @@
-import { Chain } from "@extension/core"
-import useChains from "@ui/hooks/useChains"
 import { useMemo } from "react"
+
+import { Chain } from "@extension/core"
+import { useChains } from "@ui/hooks/useChains"
 
 const sortChains = (a: Chain, b: Chain) =>
   (a.sortIndex || Number.MAX_SAFE_INTEGER) - (b.sortIndex || Number.MAX_SAFE_INTEGER)

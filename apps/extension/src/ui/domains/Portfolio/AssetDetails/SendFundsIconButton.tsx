@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useSetting } from "@ui/hooks/useSettings"
-import useTokens from "@ui/hooks/useTokens"
+import { useTokens } from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"

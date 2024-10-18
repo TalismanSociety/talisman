@@ -16,7 +16,7 @@ import { balancesInitialisingAtom } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useBalances from "@ui/hooks/useBalances"
-import useChains from "@ui/hooks/useChains"
+import { useChains } from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 
 import { ANALYTICS_PAGE } from "./analytics"

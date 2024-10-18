@@ -1,23 +1,23 @@
-import { SettingsStoreData, settingsStore } from "@extension/core"
-import { settingsAtom } from "@ui/atoms"
-import { SetStateAction, useAtomValue } from "jotai"
-import { useCallback, useMemo } from "react"
+// import { SetStateAction, useCallback } from "react"
+// import { firstValueFrom } from "rxjs"
 
-export const useSetting = <K extends keyof SettingsStoreData, V = SettingsStoreData[K]>(key: K) => {
-  // don't use settingsAtomFamily here, because it would suspense the first time each key is called
-  const settings = useAtomValue(settingsAtom)
+// import { settingsStore, SettingsStoreData } from "@extension/core"
+export { useSetting } from "@ui/state"
 
-  const value = useMemo(() => settings[key] as V, [key, settings])
+// // TODO move directly in @ui/state
+// export const useSetting = <K extends keyof SettingsStoreData, V = SettingsStoreData[K]>(key: K) => {
+//   const state = useSettingValue(key)
 
-  const set = useCallback(
-    async (valueOrSetter: SetStateAction<V>) => {
-      if (typeof valueOrSetter === "function") {
-        const setter = valueOrSetter as (prev: V) => V
-        await settingsStore.set({ [key]: setter(value) })
-      } else await settingsStore.set({ [key]: valueOrSetter as V })
-    },
-    [key, value]
-  )
+//   const setState = useCallback(
+//     async (value: SetStateAction<V>) => {
+//       if (typeof value === "function") {
+//         const setter = value as (prev: V) => V
+//         value = setter((await firstValueFrom(getSettingValue$(key))) as V)
+//       }
+//       await settingsStore.set({ [key]: value })
+//     },
+//     [key]
+//   )
 
-  return [value, set] as const
-}
+//   return [state, setState] as const
+// }

@@ -1,13 +1,6 @@
-import { AssetDiscoveryMode } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import { encodeAnyAddress } from "@talismn/util"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import useAccounts from "@ui/hooks/useAccounts"
 import i18next from "i18next"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -24,6 +17,14 @@ import {
 import { isHex, toHex } from "viem"
 import { publicKeyToAddress } from "viem/accounts"
 import * as yup from "yup"
+
+import { AssetDiscoveryMode } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { api } from "@ui/api"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { useAccounts } from "@ui/state"
 
 import { AccountAddPageProps } from "./types"
 

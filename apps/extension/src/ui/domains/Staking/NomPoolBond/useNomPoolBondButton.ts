@@ -5,9 +5,9 @@ import { useAtomValue } from "jotai"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
+import { useAccounts } from "@ui/state"
 
 import { useNomPoolBondModal } from "./useNomPoolBondModal"
 

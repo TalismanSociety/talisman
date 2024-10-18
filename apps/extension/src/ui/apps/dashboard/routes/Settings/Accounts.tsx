@@ -5,12 +5,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import {
-  accountsByCategoryAtomFamily,
-  accountsCatalogAtom,
-  balanceTotalsAtom,
-  chainsMapAtomFamily,
-} from "@ui/atoms"
+import { accountsByCategoryAtomFamily, balanceTotalsAtom, chainsMapAtomFamily } from "@ui/atoms"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import {
   ManageAccountsLists,
@@ -32,7 +27,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const preloadAtom = atom((get) =>
   Promise.all([
     get(accountsByCategoryAtomFamily("all")),
-    get(accountsCatalogAtom),
     get(balanceTotalsAtom),
     get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: false })),
   ])

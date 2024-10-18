@@ -1,10 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useQuery } from "@tanstack/react-query"
-import useChains from "@ui/hooks/useChains"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
+
+import { useChains } from "@ui/hooks/useChains"
 
 import { SubNetworkForm } from "./Form"
 import { getSubstrateRpcInfo } from "./helpers"

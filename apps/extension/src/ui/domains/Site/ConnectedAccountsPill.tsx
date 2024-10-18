@@ -4,9 +4,9 @@ import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import { useAccounts } from "@ui/state"
 
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
 

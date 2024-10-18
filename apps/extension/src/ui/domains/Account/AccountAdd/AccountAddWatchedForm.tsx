@@ -14,8 +14,8 @@ import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts } from "@ui/state"
 
 type FormData = {
   name: string

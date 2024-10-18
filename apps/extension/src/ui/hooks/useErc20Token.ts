@@ -1,9 +1,10 @@
-import { EvmAddress } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { isErc20Token } from "@ui/util/isErc20Token"
 import { useMemo } from "react"
 
-import useTokens from "./useTokens"
+import { EvmAddress } from "@extension/core"
+import { isErc20Token } from "@ui/util/isErc20Token"
+
+import { useTokens } from "./useTokens"
 
 // TODO leverage a selectorFamily (waiting for jotai migration)
 export const useErc20Token = (

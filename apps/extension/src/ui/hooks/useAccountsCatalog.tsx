@@ -1,4 +1,4 @@
-import { accountsCatalogAtom } from "@ui/atoms"
-import { useAtomValue } from "jotai"
+// import { accountsCatalogAtom } from "@ui/atoms"
+// import { useAtomValue } from "jotai"
 
-export const useAccountsCatalog = () => useAtomValue(accountsCatalogAtom)
+// export const useAccountsCatalog = () => useAtomValue(accountsCatalogAtom)

@@ -13,7 +13,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import useChains from "@ui/hooks/useChains"
+import { useChains } from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 
 import { AccountIcon } from "../Account/AccountIcon"

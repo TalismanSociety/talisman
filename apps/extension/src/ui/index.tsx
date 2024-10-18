@@ -1,5 +1,6 @@
 import "@talisman/theme/styles.css"
 
+import { Subscribe } from "@react-rxjs/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React, { ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
@@ -41,10 +42,12 @@ export const renderTalisman = (app: ReactNode) => {
         <ErrorBoundaryDatabaseMigration>
           <Suspense fallback={<SuspenseTracker name="Root" />}>
             <KeepBackgroundOpen />
-            <QueryClientProvider client={queryClient}>
-              <HashRouter>{app}</HashRouter>
-              <NotificationsContainer />
-            </QueryClientProvider>
+            <Subscribe>
+              <QueryClientProvider client={queryClient}>
+                <HashRouter>{app}</HashRouter>
+                <NotificationsContainer />
+              </QueryClientProvider>
+            </Subscribe>
           </Suspense>
         </ErrorBoundaryDatabaseMigration>
       </ErrorBoundary>

@@ -1,4 +1,4 @@
-import useAccounts from "./useAccounts"
+import { useAccounts } from "@ui/state"
 
 export const useQrCodeAccounts = () => {
   const accounts = useAccounts()
