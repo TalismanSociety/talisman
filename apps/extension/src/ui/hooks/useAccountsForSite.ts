@@ -1,7 +1,7 @@
 import { AuthorizedSite } from "@extension/core"
 import { isTalismanUrl } from "@extension/shared"
+import { useAccounts } from "@ui/state"
 
-import useAccounts from "./useAccounts"
 import { useSetting } from "./useSettings"
 
 export const useAccountsForSite = (site: AuthorizedSite | string | null) => {

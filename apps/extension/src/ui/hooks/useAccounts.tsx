@@ -1,7 +1,11 @@
-import { AccountCategory, accountsByCategoryAtomFamily } from "@ui/atoms/accounts"
-import { useAtomValue } from "jotai"
+// import { useAtomValue } from "jotai"
 
-export const useAccounts = (filter: AccountCategory = "all") =>
-  useAtomValue(accountsByCategoryAtomFamily(filter))
+// import { AccountCategory, accountsByCategoryAtomFamily } from "@ui/atoms/accounts"
+// import { useAccountsByCategory } from "@ui/state"
 
-export default useAccounts
+// // export const useAccounts = (filter: AccountCategory = "all") =>
+// //   useAtomValue(accountsByCategoryAtomFamily(filter))
+
+// // export default useAccounts
+
+// export const useAccounts = useAccountsByCategory

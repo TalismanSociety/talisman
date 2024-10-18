@@ -1,15 +1,15 @@
 import { ChevronLeftIcon, StarIcon } from "@talismn/icons"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { useAtom, useSetAtom } from "jotai"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, IconButton } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
+import { useFavoriteCurrencies } from "@ui/hooks/useCurrency"
+import { useSetting } from "@ui/state"
 
 export const useCurrenciesDrawerOpenClose = () => useGlobalOpenClose("currencies-drawer")
 
@@ -46,18 +46,20 @@ const CurrencyButton: FC<{
 }
 
 const CurrenciesList = () => {
-  const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
-  const setSelectedCurrency = useSetAtom(selectedCurrencyAtom)
+  const [favorites, setFavorites] = useFavoriteCurrencies()
+  const [, setSelected] = useSetting("selectedCurrency")
 
   const handleCurrencyClick = useCallback(
     (currency: TokenRateCurrency) => () => {
-      setSelectableCurrencies((selectable) => {
+      setFavorites((selectable) => {
         const newSelectable = selectable.includes(currency)
           ? selectable.filter((x) => x !== currency)
           : selectable.concat(currency).sort(sortCurrencies)
 
+        if (!newSelectable.length) return selectable
+
         // NOTE: This makes sure that the `selectedCurrency` is always in the list of `selectableCurrencies`
-        setSelectedCurrency((selected) =>
+        setSelected((selected) =>
           newSelectable.length === 0 || newSelectable.includes(selected)
             ? selected
             : newSelectable[0]
@@ -67,7 +69,7 @@ const CurrenciesList = () => {
       })
     },
 
-    [setSelectableCurrencies, setSelectedCurrency]
+    [setFavorites, setSelected]
   )
 
   return (
@@ -76,7 +78,7 @@ const CurrenciesList = () => {
         <CurrencyButton
           key={currency}
           currency={currency}
-          selected={selectableCurrencies.includes(currency)}
+          selected={favorites.includes(currency)}
           onClick={handleCurrencyClick(currency)}
         />
       ))}

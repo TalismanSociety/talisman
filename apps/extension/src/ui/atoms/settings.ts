@@ -1,18 +1,19 @@
 import { atom, SetStateAction } from "jotai"
-import { atomFamily } from "jotai/utils"
+import { atomFamily, atomWithObservable } from "jotai/utils"
 
 import { settingsStore, SettingsStoreData } from "@extension/core"
 
-import { atomWithSubscription } from "./utils/atomWithSubscription"
 import { KeyValueAtomFamily } from "./utils/types"
 
-export const settingsAtom = atomWithSubscription<SettingsStoreData>(
-  (callback) => {
-    const sub = settingsStore.observable.subscribe(callback)
-    return () => sub.unsubscribe()
-  },
-  { debugLabel: "settingsAtom" }
-)
+// export const settingsAtom = atomWithSubscription<SettingsStoreData>(
+//   (callback) => {
+//     const sub = settingsStore.observable.subscribe(callback)
+//     return () => sub.unsubscribe()
+//   },
+//   { debugLabel: "settingsAtom" }
+// )
+
+export const settingsAtom = atomWithObservable(() => settingsStore.observable)
 
 export const settingsAtomFamily: KeyValueAtomFamily<SettingsStoreData> = atomFamily((key) =>
   atom(

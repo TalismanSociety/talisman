@@ -15,7 +15,7 @@ import * as yup from "yup"
 import { AccountsCatalogTree } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
+import { useAccountsCatalog } from "@ui/state"
 
 export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
 

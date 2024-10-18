@@ -1,14 +1,15 @@
-import { formatSuri } from "@extension/core"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+
 import {
   AccountAddressType,
-  RequestAccountCreateFromSuri,
+  formatSuri,
   getEthDerivationPath,
+  RequestAccountCreateFromSuri,
 } from "@extension/core"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useAccounts } from "@ui/state"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 

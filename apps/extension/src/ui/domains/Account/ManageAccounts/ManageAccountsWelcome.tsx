@@ -3,8 +3,8 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer, IconButton, Modal, useOpenClose } from "talisman-ui"
 
-import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useAccountsCatalog } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import imgWelcome from "./welcome.png"

@@ -1,5 +1,6 @@
+import { useAccounts } from "@ui/state"
+
 import { useAccountColors } from "./useAccountColors"
-import useAccounts from "./useAccounts"
 
 export const useFirstAccountColors = () => {
   // pick first account and apply it's colors to background

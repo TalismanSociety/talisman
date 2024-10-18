@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
+import { useAccountsCatalog } from "@ui/state"
 
 import { useDeleteFolderModal } from "./DeleteFolderModal"
 import { useRenameFolderModal } from "./RenameFolderModal"

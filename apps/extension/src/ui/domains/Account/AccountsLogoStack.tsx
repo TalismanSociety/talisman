@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { AccountJsonAny } from "@extension/core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import useAccounts from "@ui/hooks/useAccounts"
+import { useAccounts } from "@ui/state"
 
 type Props = { addresses?: string[]; className?: string; max?: number }
 

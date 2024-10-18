@@ -1,12 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { api } from "@ui/api"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { FC, RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { api } from "@ui/api"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAccounts } from "@ui/state"
 
 type FormData = {
   name: string

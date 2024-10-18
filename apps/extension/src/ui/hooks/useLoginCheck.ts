@@ -1,10 +1,7 @@
-import { isLoggedInAtom, isOnboardedAtom } from "@ui/atoms"
-import { atom, useAtomValue } from "jotai"
-
-// load both isLoggedIn and isOnboarded atoms concurrently
-const loginCheckAtom = atom((get) => Promise.all([get(isLoggedInAtom), get(isOnboardedAtom)]))
+import { useIsLoggedIn, useIsOnboarded } from "@ui/state"
 
 export const useLoginCheck = () => {
-  const [isLoggedIn, isOnboarded] = useAtomValue(loginCheckAtom)
+  const isLoggedIn = useIsLoggedIn()
+  const isOnboarded = useIsOnboarded()
   return { isLoggedIn, isOnboarded }
 }

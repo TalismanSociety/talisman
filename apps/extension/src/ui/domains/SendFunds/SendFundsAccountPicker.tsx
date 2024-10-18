@@ -1,14 +1,15 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { encodeAnyAddress } from "@talismn/util"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import useAccounts from "@ui/hooks/useAccounts"
-import useChain from "@ui/hooks/useChain"
-import useToken from "@ui/hooks/useToken"
-import { isEvmToken } from "@ui/util/isEvmToken"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import useChain from "@ui/hooks/useChain"
+import useToken from "@ui/hooks/useToken"
+import { useAccounts } from "@ui/state"
+import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 

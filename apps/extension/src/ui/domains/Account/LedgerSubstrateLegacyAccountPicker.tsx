@@ -9,9 +9,9 @@ import { LEDGER_HARDENED_OFFSET } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useChain from "@ui/hooks/useChain"
+import { useAccounts } from "@ui/state"
 
 import {
   LedgerAccountDefSubstrate,
