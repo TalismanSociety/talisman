@@ -7,9 +7,8 @@ import { useTranslation } from "react-i18next"
 
 import { AccountJsonAny } from "@extension/core"
 import { log } from "@extension/shared"
-import { useChains } from "@ui/hooks/useChains"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useTokenRatesMap } from "@ui/state"
+import { useChains, useTokenRatesMap } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -129,7 +128,7 @@ export const SubSignXcmTransferAssets = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
   const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains({ activeOnly: false, includeTestnets: true })
   const tokenRates = useTokenRatesMap()
 
   const props = useMemo(() => {

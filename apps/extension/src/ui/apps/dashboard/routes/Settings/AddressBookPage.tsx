@@ -41,9 +41,8 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances } from "@ui/state"
+import { useBalances, useChainByGenesisHash } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 

@@ -8,10 +8,15 @@ import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useChains } from "@ui/hooks/useChains"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useAccountByAddress, useAccounts, useChain, useToken } from "@ui/state"
+import {
+  useAccountByAddress,
+  useAccounts,
+  useChain,
+  useChainByGenesisHash,
+  useChainsMap,
+  useToken,
+} from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
@@ -141,7 +146,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   const accounts = useAccounts()
   const { contacts } = useAddressBook()
-  const { chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
+  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
     (chainId: ChainId | null) => {

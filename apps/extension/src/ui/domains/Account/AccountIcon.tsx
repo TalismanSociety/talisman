@@ -3,8 +3,8 @@ import { classNames, isEthereumAddress } from "@talismn/util"
 import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
 
 import { Address, IdenticonType } from "@extension/core"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 

@@ -1,11 +1,12 @@
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
-import { useAllChainsMap } from "@ui/hooks/useChains"
-import { copyAddress } from "@ui/util/copyAddress"
 import { atom, useAtom } from "jotai"
 import { useCallback } from "react"
 import { getAddress } from "viem"
+
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { useChainsMap } from "@ui/state"
+import { copyAddress } from "@ui/util/copyAddress"
 
 import { CopyAddressWizardInputs } from "./types"
 
@@ -13,7 +14,7 @@ const copyAddressInputsState = atom<CopyAddressWizardInputs>({})
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
-  const chainsMap = useAllChainsMap()
+  const chainsMap = useChainsMap()
   const [inputs, setInputs] = useAtom(copyAddressInputsState)
 
   const open = useCallback(

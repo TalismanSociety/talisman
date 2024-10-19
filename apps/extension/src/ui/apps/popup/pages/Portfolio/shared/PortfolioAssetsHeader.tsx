@@ -20,11 +20,10 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, usePortfolio } from "@ui/state"
+import { useBalances, useChainByGenesisHash, usePortfolio } from "@ui/state"
 
 const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
   const { t } = useTranslation()

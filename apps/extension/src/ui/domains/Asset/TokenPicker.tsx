@@ -11,7 +11,6 @@ import { useIntersection } from "react-use"
 import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useChains } from "@ui/hooks/useChains"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -19,6 +18,8 @@ import { useTokens } from "@ui/hooks/useTokens"
 import {
   useAccountByAddress,
   useBalances,
+  useChains,
+  useChainsMap,
   useIsBalanceInitializing,
   useTokenRatesMap,
 } from "@ui/state"
@@ -193,7 +194,8 @@ const TokensList: FC<TokensListProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const [includeTestnets] = useSetting("useTestnets")
-  const { chainsMap, chains } = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
+  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets })
   const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const { tokens: allTokens } = useTokens({ activeOnly: true, includeTestnets })
   const tokenRatesMap = useTokenRatesMap()

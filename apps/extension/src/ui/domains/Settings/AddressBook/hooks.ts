@@ -3,10 +3,10 @@ import { Chain, CustomChain } from "@talismn/chaindata-provider"
 import { convertAddress, decodeSs58Format } from "@talismn/util"
 import { useEffect, useMemo } from "react"
 
-import { useAllChains } from "@ui/hooks/useChains"
+import { useChains } from "@ui/state"
 
 export const useChainsFilteredByAddressPrefix = (address?: string) => {
-  const chains = useAllChains() as Chain[]
+  const chains = useChains()
 
   return useMemo(() => {
     if (!address) return []

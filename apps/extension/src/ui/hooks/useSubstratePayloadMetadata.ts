@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { SignerPayloadJSON } from "extension-core"
 
 import { log } from "@extension/shared"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useToken } from "@ui/state"
+import { useChainByGenesisHash, useToken } from "@ui/state"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 
 export const useSubstratePayloadMetadata = (

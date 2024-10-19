@@ -17,7 +17,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
+import { useAllChainsMapByGenesisHash } from "@ui/state"
 
 import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"

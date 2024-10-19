@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useChain } from "@ui/state"
+import { useChain, useChainByGenesisHash } from "@ui/state"
 
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"
 

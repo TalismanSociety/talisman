@@ -19,8 +19,7 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress, useChainByGenesisHash } from "@ui/state"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 

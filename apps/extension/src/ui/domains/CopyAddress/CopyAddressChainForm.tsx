@@ -11,9 +11,8 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useChains } from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useAccountByAddress, useBalancesByAddress } from "@ui/state"
+import { useAccountByAddress, useBalancesByAddress, useChains } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -109,7 +108,7 @@ export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const [includeTestnets] = useSetting("useTestnets")
-  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)

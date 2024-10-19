@@ -11,9 +11,8 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useChains } from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useChainByGenesisHash, useChains } from "@ui/state"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"
@@ -52,7 +51,7 @@ export const ConfigureAccount = () => {
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 

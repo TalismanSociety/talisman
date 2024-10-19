@@ -13,8 +13,7 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useChains } from "@ui/hooks/useChains"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useChains } from "@ui/state"
 
 export type JsonImportAccount = {
   id: string
@@ -154,7 +153,7 @@ const useJsonAccountImportProvider = () => {
     [existingAccounts, file]
   )
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains({ activeOnly: false, includeTestnets: true })
   const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {

@@ -12,9 +12,8 @@ import { activeChainsStore, isChainActive } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useChains } from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useActiveChainsState, useBalances, useIsBalanceInitializing } from "@ui/state"
+import { useActiveChainsState, useBalances, useChains, useIsBalanceInitializing } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
@@ -28,7 +27,7 @@ const DeactivateNetworksModalContent: FC<{
   const isBalancesInitializing = useIsBalanceInitializing()
   const [includeTestnets] = useSetting("useTestnets")
   const balances = useBalances("all")
-  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
 
   const [activeChainIds, unusedChainIds] = useMemo(() => {
     const networkIds = chains.map((chain) => chain.id)
@@ -114,7 +113,7 @@ const DeactivateNetworksModalContent: FC<{
 export const ChainsList = ({ search }: { search?: string }) => {
   const { t } = useTranslation("admin")
   const [useTestnets] = useSetting("useTestnets")
-  const { chains: allChains } = useChains({ activeOnly: false, includeTestnets: true })
+  const allChains = useChains()
   const networksActiveState = useActiveChainsState()
   const chains = useMemo(
     () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),

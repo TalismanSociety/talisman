@@ -6,9 +6,8 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
-import { useChain } from "@ui/state"
+import { useChain, useChainByGenesisHash } from "@ui/state"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
 

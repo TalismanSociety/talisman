@@ -19,9 +19,8 @@ import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/Accou
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useChains } from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { useAppState } from "@ui/state"
+import { useAppState, useChains } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
@@ -136,7 +135,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 
 const MetadataPortalContent = () => {
   const { t } = useTranslation("admin")
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains({ activeOnly: false, includeTestnets: true })
   const [chain, setChain] = useState<Chain | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 
