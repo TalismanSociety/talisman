@@ -1,5 +1,4 @@
-import { AccountCategory } from "@ui/atoms"
-import { useAccounts } from "@ui/state"
+import { AccountCategory, useAccounts } from "@ui/state"
 
 /**
  *

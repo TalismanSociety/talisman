@@ -31,13 +31,15 @@ export const accountsMap$ = accounts$.pipe(
 
 export const [useAccountsMap] = bind(accountsMap$)
 
-export const [useAccountByAddress, getAccountByAddress$] = bind((address: string) =>
-  accountsMap$.pipe(
-    map((accountsMap) => {
-      const normalizedAddress = normalizeAddress(address)
-      return accountsMap[normalizedAddress] ?? null
-    })
-  )
+export const [useAccountByAddress, getAccountByAddress$] = bind(
+  (address: string | null | undefined) =>
+    accountsMap$.pipe(
+      map((accountsMap) => {
+        if (!address) return null
+        const normalizedAddress = normalizeAddress(address)
+        return accountsMap[normalizedAddress] ?? null
+      })
+    )
 )
 
 export type AccountCategory = "all" | "watched" | "owned" | "portfolio" | "signet"

@@ -6,8 +6,9 @@ import isEqual from "lodash/isEqual"
 
 import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
 import { api } from "@ui/api"
+import { AccountCategory } from "@ui/state"
 
-import { AccountCategory, accountsByCategoryAtomFamily, accountsMapAtom } from "./accounts"
+import { accountsByCategoryAtomFamily, accountsMapAtom } from "./accounts"
 import {
   activeChainsWithTestnetsMapAtom,
   activeEvmNetworksWithTestnetsMapAtom,
