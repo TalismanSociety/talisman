@@ -9,8 +9,13 @@ import { isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useAccountByAddress, useBalances, useChains, useEvmNetworks } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalances,
+  useChains,
+  useEvmNetworks,
+  useSettingValue,
+} from "@ui/state"
 import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -24,7 +29,7 @@ type NetworkWithExplorer = {
 
 const useExplorerNetworks = (address: string, search: string): NetworkWithExplorer[] => {
   const account = useAccountByAddress(address)
-  const [includeTestnets] = useSetting("useTestnets")
+  const includeTestnets = useSettingValue("useTestnets")
   const chains = useChains({ activeOnly: true, includeTestnets })
   const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
   const balances = useBalances({ address })

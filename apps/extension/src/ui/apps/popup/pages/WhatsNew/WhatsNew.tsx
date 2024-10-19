@@ -12,7 +12,7 @@ import { IconButton } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 import { latestUpdates } from "./assets"

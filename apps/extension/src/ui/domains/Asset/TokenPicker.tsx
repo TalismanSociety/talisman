@@ -12,7 +12,6 @@ import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useSetting } from "@ui/hooks/useSettings"
 import {
   useAccountByAddress,
   useBalances,
@@ -20,6 +19,7 @@ import {
   useChainsMap,
   useEvmNetworksMap,
   useIsBalanceInitializing,
+  useSetting,
   useTokenRatesMap,
   useTokens,
 } from "@ui/state"

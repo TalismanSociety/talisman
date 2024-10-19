@@ -5,7 +5,7 @@ import { Dropdown } from "talisman-ui"
 import { SettingsStoreData } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 

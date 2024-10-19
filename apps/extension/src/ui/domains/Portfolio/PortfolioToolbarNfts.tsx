@@ -23,7 +23,7 @@ import {
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { nftsVisibilityFilterAtom, NftVisibilityFilter } from "@ui/atoms"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"

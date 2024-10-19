@@ -12,7 +12,7 @@ import { CtaButton, Toggle } from "talisman-ui"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 

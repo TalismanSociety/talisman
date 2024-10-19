@@ -4,8 +4,7 @@ import { useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useTokens } from "@ui/state"
+import { useSetting, useTokens } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"

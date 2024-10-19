@@ -50,7 +50,6 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useSetting } from "@ui/hooks/useSettings"
 import {
   useAccounts,
   useActiveEvmNetworksState,
@@ -61,6 +60,7 @@ import {
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
+  useSetting,
   useToken,
   useTokensMap,
 } from "@ui/state"

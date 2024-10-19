@@ -28,12 +28,12 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useSetting } from "@ui/hooks/useSettings"
 import {
   useActiveTokensState,
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
+  useSetting,
   useTokens,
 } from "@ui/state"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"

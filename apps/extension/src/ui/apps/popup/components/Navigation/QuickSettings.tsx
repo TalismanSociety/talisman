@@ -10,7 +10,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useCurrency"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { CurrenciesDrawer, useCurrenciesDrawerOpenClose } from "./CurrenciesDrawer"
 import { LanguageDrawer, useLanguageDrawerOpenClose } from "./LanguageDrawer"

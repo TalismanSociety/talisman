@@ -6,8 +6,7 @@ import { combineLatest, map } from "rxjs"
 
 import { Balance, Balances } from "@extension/core"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useSetting } from "@ui/hooks/useSettings"
-import { getSettingValue$, selectedCurrency$ } from "@ui/state"
+import { getSettingValue$, selectedCurrency$, useSetting } from "@ui/state"
 
 import { portfolioDisplayBalances$ } from "../useDisplayBalances"
 

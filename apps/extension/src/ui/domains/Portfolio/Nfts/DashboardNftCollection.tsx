@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"

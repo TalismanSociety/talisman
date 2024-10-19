@@ -3,7 +3,7 @@ import { Toggle } from "talisman-ui"
 
 import { Setting } from "@talisman/components/Setting"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 

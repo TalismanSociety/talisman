@@ -10,8 +10,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useAuthorisedSites, useEvmNetwork, useEvmNetworks } from "@ui/state"
+import { useAuthorisedSites, useEvmNetwork, useEvmNetworks, useSetting } from "@ui/state"
 
 import { NetworkLogo } from "./NetworkLogo"
 

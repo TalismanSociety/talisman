@@ -9,12 +9,12 @@ import { useIntersection } from "react-use"
 import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useSetting } from "@ui/hooks/useSettings"
 import {
   useAccountByAddress,
   useChains,
   useChainsMap,
   useEvmNetworksMap,
+  useSetting,
   useTokenRatesMap,
   useTokens,
 } from "@ui/state"

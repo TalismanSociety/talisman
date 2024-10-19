@@ -21,8 +21,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useSetting } from "@ui/state"
 
 type Props = {
   className?: string

@@ -15,8 +15,7 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useSetting } from "@ui/hooks/useSettings"
-import { usePortfolio } from "@ui/state"
+import { usePortfolio, useSetting } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"

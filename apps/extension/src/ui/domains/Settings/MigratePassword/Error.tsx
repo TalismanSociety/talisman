@@ -1,7 +1,7 @@
-import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Button, Checkbox } from "talisman-ui"
+import { Button, Checkbox, ModalDialog } from "talisman-ui"
+
+import { useSetting } from "@ui/state"
 
 import { useMigratePassword } from "./context"
 

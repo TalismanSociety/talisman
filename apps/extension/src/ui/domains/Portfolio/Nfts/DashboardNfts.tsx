@@ -6,8 +6,7 @@ import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useEvmNetworksMap } from "@ui/state"
+import { useEvmNetworksMap, useSetting } from "@ui/state"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"

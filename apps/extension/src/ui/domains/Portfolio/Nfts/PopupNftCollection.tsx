@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
