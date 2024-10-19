@@ -1,6 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
-import { atom, useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -24,12 +23,6 @@ import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import {
-  chainsMapAtomFamily,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
@@ -234,18 +227,18 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Tokens",
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-)
+// const preloadAtom = atom((get) =>
+//   Promise.all([
+//     get(settingsAtomFamily("useTestnets")),
+//     get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//     get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//     get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//   ])
+// )
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  // seAtomValue(preloadAtom) TODO preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()

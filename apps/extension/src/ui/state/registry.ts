@@ -27,6 +27,16 @@ import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 type AnyEvmNetwork = EvmNetwork | CustomEvmNetwork
 type AnyChain = Chain | CustomChain
 
+export type ChaindataQueryOptions = {
+  activeOnly: boolean
+  includeTestnets: boolean
+}
+
+const DEFAULT_CHAINDATA_QUERY_OPTIONS: ChaindataQueryOptions = {
+  activeOnly: false,
+  includeTestnets: true,
+}
+
 const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
@@ -154,29 +164,36 @@ export const activeChainsWithoutTestnetsMap$ = activeChainsWithoutTestnets$.pipe
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export type ChaindataQueryOptions = {
-  activeOnly: boolean
-  includeTestnets: boolean
-}
-
-export const getEvmNetworks$ = ({ activeOnly, includeTestnets }: ChaindataQueryOptions) => {
+export const getEvmNetworks$ = ({
+  activeOnly,
+  includeTestnets,
+}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
   if (activeOnly)
     return includeTestnets ? activeEvmNetworksWithTestnets$ : activeEvmNetworksWithoutTestnets$
   return includeTestnets ? allEvmNetworks$ : allEvmNetworksWithoutTestnets$
 }
-export const getChains$ = ({ activeOnly, includeTestnets }: ChaindataQueryOptions) => {
+export const getChains$ = ({
+  activeOnly,
+  includeTestnets,
+}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
   if (activeOnly) return includeTestnets ? activeChainsWithTestnets$ : activeChainsWithoutTestnets$
   return includeTestnets ? allChains$ : allChainsWithoutTestnets$
 }
 
-export const getEvmNetworksMap$ = ({ activeOnly, includeTestnets }: ChaindataQueryOptions) => {
+export const getEvmNetworksMap$ = ({
+  activeOnly,
+  includeTestnets,
+}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
   if (activeOnly)
     return includeTestnets
       ? activeEvmNetworksWithTestnetsMap$
       : activeEvmNetworksWithoutTestnetsMap$
   return includeTestnets ? allEvmNetworksMap$ : allEvmNetworksWithoutTestnetsMap$
 }
-export const getChainsMap$ = ({ activeOnly, includeTestnets }: ChaindataQueryOptions) => {
+export const getChainsMap$ = ({
+  activeOnly,
+  includeTestnets,
+}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
   if (activeOnly)
     return includeTestnets ? activeChainsWithTestnetsMap$ : activeChainsWithoutTestnetsMap$
   return includeTestnets ? allChainsMap$ : allChainsWithoutTestnetsMap$
@@ -296,20 +313,25 @@ const activeTokensWithoutTestnetsMap$ = activeTokensWithoutTestnets$.pipe(
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const getTokens$ = ({ activeOnly, includeTestnets }: ChaindataQueryOptions) => {
-  if (activeOnly) return includeTestnets ? activeTokensWithTestnets$ : activeTokensWithoutTestnets$
-  return includeTestnets ? allTokens$ : allTokensWithoutTestnets$
-}
+export const [useTokens, getTokens$] = bind(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
+    if (activeOnly)
+      return includeTestnets ? activeTokensWithTestnets$ : activeTokensWithoutTestnets$
+    return includeTestnets ? allTokens$ : allTokensWithoutTestnets$
+  }
+)
 
-export const getTokensMap$ = ({ activeOnly, includeTestnets }: ChaindataQueryOptions) => {
-  if (activeOnly)
-    return includeTestnets ? activeTokensWithTestnetsMap$ : activeTokensWithoutTestnetsMap$
-  return includeTestnets ? allTokensMap$ : allTokensWithoutTestnetsMap$
-}
+export const [useTokensMap, getTokensMap$] = bind(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
+    if (activeOnly)
+      return includeTestnets ? activeTokensWithTestnetsMap$ : activeTokensWithoutTestnetsMap$
+    return includeTestnets ? allTokensMap$ : allTokensWithoutTestnetsMap$
+  }
+)
 
-export const getTokenById$ = (tokenId: TokenId | null | undefined) => {
+export const [useTokenById, getTokenById$] = bind((tokenId: TokenId | null | undefined) => {
   return allTokensMap$.pipe(
     map((tokensMap) => tokensMap[tokenId ?? "#"] ?? null),
     shareReplay({ bufferSize: 1, refCount: true })
   )
-}
+})

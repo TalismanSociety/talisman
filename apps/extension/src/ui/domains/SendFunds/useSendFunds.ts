@@ -27,14 +27,14 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import { useTokens } from "@ui/hooks/useTokens"
 import {
   useAccountByAddress,
   useBalance,
   useBalancesByAddress,
   useBalancesHydrate,
+  useTokenRates,
+  useTokenRatesMap,
 } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"

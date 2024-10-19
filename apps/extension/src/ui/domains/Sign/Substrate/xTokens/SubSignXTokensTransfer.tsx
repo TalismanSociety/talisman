@@ -10,8 +10,8 @@ import { useTranslation } from "react-i18next"
 
 import { log } from "@extension/shared"
 import { useChains } from "@ui/hooks/useChains"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import { useTokens } from "@ui/hooks/useTokens"
+import { useTokenRatesMap } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"

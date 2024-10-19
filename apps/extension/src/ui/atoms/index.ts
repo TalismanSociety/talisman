@@ -1,7 +1,5 @@
 export * from "./accounts"
-export * from "./chaindata"
 export * from "./qrReader"
-export * from "./settings"
 export * from "./tab"
 export * from "./tokenRates"
 export * from "./nfts"

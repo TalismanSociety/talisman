@@ -1,6 +1,7 @@
 import { NftData, SettingsStoreData } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
+import { isEqual } from "lodash"
 
 import { api } from "@ui/api"
 import {
@@ -8,19 +9,34 @@ import {
   getNftCollectionLastAcquiredAt,
   getNftLastAcquiredAt,
 } from "@ui/domains/Portfolio/Nfts/helpers"
-import { NetworkOption, portfolioSelectedAccounts$ } from "@ui/state"
+import {
+  ChaindataQueryOptions,
+  getEvmNetworks$,
+  getSettingValue$,
+  NetworkOption,
+  portfolioSelectedAccounts$,
+} from "@ui/state"
 
 import { accountsByCategoryAtomFamily } from "./accounts"
-import { evmNetworksArrayAtomFamily } from "./chaindata"
 // import { NetworkOption, portfolioSelectedAccountsAtom } from "./portfolio"
-import { settingsAtomFamily } from "./settings"
 import { atomWithDebounce } from "./utils/atomWithDebounce"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { KeyValueAtomFamily } from "./utils/types"
 
 const nftDataAtom = atomWithSubscription(api.nftsSubscribe, {
   debugLabel: "nftDataAtom",
   refCount: true,
 })
+
+const evmNetworksArrayAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions) =>
+    atomWithObservable(() => getEvmNetworks$({ activeOnly, includeTestnets })),
+  isEqual
+)
+
+const settingsAtomFamily: KeyValueAtomFamily<SettingsStoreData> = atomFamily((key) =>
+  atomWithObservable(() => getSettingValue$(key))
+)
 
 export const nftsNetworkOptionsAtom = atom(async (get) => {
   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean

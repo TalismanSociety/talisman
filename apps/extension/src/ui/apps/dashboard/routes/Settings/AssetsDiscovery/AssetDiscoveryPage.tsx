@@ -42,7 +42,6 @@ import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { evmNetworksMapAtomFamily, settingsAtomFamily, tokensMapAtomFamily } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -566,17 +565,17 @@ const Notice: FC = () => {
   )
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-)
+// const preloadAtom = atom((get) =>
+//   Promise.all([
+//     get(settingsAtomFamily("useTestnets")),
+//     get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//     get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//   ])
+// )
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  // useAtomValue(preloadAtom) // TODO preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =

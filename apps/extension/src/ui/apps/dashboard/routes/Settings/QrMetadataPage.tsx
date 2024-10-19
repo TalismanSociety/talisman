@@ -1,6 +1,5 @@
 import { Chain } from "@talismn/chaindata-provider"
 import { LoaderIcon, SecretIcon } from "@talismn/icons"
-import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -16,7 +15,6 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { chainsMapAtomFamily, evmNetworksMapAtomFamily } from "@ui/atoms"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
@@ -235,16 +233,16 @@ const MetadataPortalContent = () => {
   )
 }
 
-const preloadAtom = atom(async (get) => {
-  await Promise.all([
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-})
+// const preloadAtom = atom(async (get) => {
+//   await Promise.all([
+//     get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//     get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+//   ])
+// })
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  // useAtomValue(preloadAtom) // TODO preload
 
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)

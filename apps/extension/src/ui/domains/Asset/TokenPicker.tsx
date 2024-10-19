@@ -15,9 +15,13 @@ import { useChains } from "@ui/hooks/useChains"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useAccountByAddress, useBalances, useIsBalanceInitializing } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalances,
+  useIsBalanceInitializing,
+  useTokenRatesMap,
+} from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"

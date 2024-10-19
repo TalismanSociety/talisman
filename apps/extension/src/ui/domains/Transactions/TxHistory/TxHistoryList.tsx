@@ -45,7 +45,7 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useTokenRates } from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { TxReplaceDrawer } from "../TxReplaceDrawer"

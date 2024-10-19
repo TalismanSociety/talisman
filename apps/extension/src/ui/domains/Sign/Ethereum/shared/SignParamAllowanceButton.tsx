@@ -30,7 +30,7 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useTokenRates } from "@ui/state"
 
 export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

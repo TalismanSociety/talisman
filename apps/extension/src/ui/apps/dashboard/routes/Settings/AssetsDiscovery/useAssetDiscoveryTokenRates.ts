@@ -2,12 +2,12 @@ import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, TokenRatesError, TokenRatesList } from "@talismn/token-rates"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
+import { isEqual } from "lodash"
 import { useEffect, useState } from "react"
 
 import { remoteConfigStore } from "@extension/core"
 import { log } from "@extension/shared"
-import { tokensArrayAtomFamily } from "@ui/atoms"
-import { assetDiscoveryScanProgress$ } from "@ui/state"
+import { assetDiscoveryScanProgress$, ChaindataQueryOptions, getTokens$ } from "@ui/state"
 
 const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
 
@@ -23,6 +23,13 @@ export const useAssetDiscoveryTokenRate = (tokenId: TokenId | undefined) =>
   useAtomValue(assetDiscoveryTokenRatesAtomFamily(tokenId))
 
 const assetDiscoveryScanProgressAtom = atomWithObservable(() => assetDiscoveryScanProgress$)
+
+const tokensArrayAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions) =>
+    atomWithObservable(() => getTokens$({ activeOnly, includeTestnets })),
+
+  isEqual
+)
 
 const missingTokenRatesAtom = atom(async (get) => {
   const [{ tokenIds }, tokens, tokenRates] = await Promise.all([

@@ -20,15 +20,19 @@ export const tokenRates$ = new Observable<DbTokenRates[]>((subscriber) => {
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const tokenRatesMap$ = tokenRates$.pipe(
-  map((tokenRates) => Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates])))
+export const [useTokenRatesMap, tokenRatesMap$] = bind(
+  tokenRates$.pipe(
+    map((tokenRates) =>
+      Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
+    )
+  )
 )
 
-export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | undefined) => {
-  return tokenRatesMap$.pipe(
+export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | undefined) =>
+  tokenRatesMap$.pipe(
     map((tokenRatesMap) => {
       if (!tokenId) return null
       return tokenRatesMap[tokenId] ?? null
     })
   )
-})
+)
