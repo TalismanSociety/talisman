@@ -9,11 +9,10 @@ import urlJoin from "url-join"
 
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress, useChain } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { AccountIcon } from "../Account/AccountIcon"

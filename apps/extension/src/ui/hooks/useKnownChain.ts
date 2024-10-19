@@ -2,9 +2,7 @@ import { isCustomChain } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
 import { activeChainsStore, isChainActive } from "@extension/core"
-import { useActiveChainsState } from "@ui/state"
-
-import useChain from "./useChain"
+import { useActiveChainsState, useChain } from "@ui/state"
 
 export const useKnownChain = (chainId: string | null | undefined) => {
   const chain = useChain(chainId ?? undefined)

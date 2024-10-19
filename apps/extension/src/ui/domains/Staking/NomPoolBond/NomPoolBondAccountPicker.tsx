@@ -6,8 +6,7 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import useChain from "@ui/hooks/useChain"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useChain } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { NomPoolBondAccountsList } from "./NomPoolBondAccountsList"

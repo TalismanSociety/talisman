@@ -21,7 +21,6 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
@@ -32,6 +31,7 @@ import {
   useBalance,
   useBalancesByAddress,
   useBalancesHydrate,
+  useChain,
   useToken,
   useTokenRates,
   useTokenRatesMap,

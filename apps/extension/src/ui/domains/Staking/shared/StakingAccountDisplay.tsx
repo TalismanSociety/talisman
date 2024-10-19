@@ -7,9 +7,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import useChain from "@ui/hooks/useChain"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress, useChain } from "@ui/state"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"

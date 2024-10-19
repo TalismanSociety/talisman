@@ -279,7 +279,7 @@ const Content = () => {
 
     return sortBy(
       result,
-      (t) => evmNetworksMap[t.evmNetwork!.id].name,
+      (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
       (t) => t.symbol
     )
   }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])

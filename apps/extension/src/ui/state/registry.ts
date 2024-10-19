@@ -10,6 +10,7 @@ import {
   EvmNetworkList,
   Token,
   TokenId,
+  TokenList,
 } from "@talismn/chaindata-provider"
 import {
   activeChainsStore,
@@ -32,7 +33,7 @@ export type ChaindataQueryOptions = {
   includeTestnets: boolean
 }
 
-const DEFAULT_CHAINDATA_QUERY_OPTIONS: ChaindataQueryOptions = {
+const ALL: ChaindataQueryOptions = {
   activeOnly: false,
   includeTestnets: true,
 }
@@ -164,63 +165,53 @@ export const activeChainsWithoutTestnetsMap$ = activeChainsWithoutTestnets$.pipe
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const getEvmNetworks$ = ({
-  activeOnly,
-  includeTestnets,
-}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
-  if (activeOnly)
-    return includeTestnets ? activeEvmNetworksWithTestnets$ : activeEvmNetworksWithoutTestnets$
-  return includeTestnets ? allEvmNetworks$ : allEvmNetworksWithoutTestnets$
-}
-export const getChains$ = ({
-  activeOnly,
-  includeTestnets,
-}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
-  if (activeOnly) return includeTestnets ? activeChainsWithTestnets$ : activeChainsWithoutTestnets$
-  return includeTestnets ? allChains$ : allChainsWithoutTestnets$
-}
+export const [useEvmNetworks, getEvmNetworks$] = bind(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
+    if (activeOnly)
+      return includeTestnets ? activeEvmNetworksWithTestnets$ : activeEvmNetworksWithoutTestnets$
+    return includeTestnets ? allEvmNetworks$ : allEvmNetworksWithoutTestnets$
+  }
+)
+export const [useChains, getChains$] = bind(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
+    if (activeOnly)
+      return includeTestnets ? activeChainsWithTestnets$ : activeChainsWithoutTestnets$
+    return includeTestnets ? allChains$ : allChainsWithoutTestnets$
+  }
+)
 
-export const getEvmNetworksMap$ = ({
-  activeOnly,
-  includeTestnets,
-}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
-  if (activeOnly)
-    return includeTestnets
-      ? activeEvmNetworksWithTestnetsMap$
-      : activeEvmNetworksWithoutTestnetsMap$
-  return includeTestnets ? allEvmNetworksMap$ : allEvmNetworksWithoutTestnetsMap$
-}
-export const getChainsMap$ = ({
-  activeOnly,
-  includeTestnets,
-}: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
-  if (activeOnly)
-    return includeTestnets ? activeChainsWithTestnetsMap$ : activeChainsWithoutTestnetsMap$
-  return includeTestnets ? allChainsMap$ : allChainsWithoutTestnetsMap$
-}
+export const [useEvmNetworksMap, getEvmNetworksMap$] = bind(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
+    if (activeOnly)
+      return includeTestnets
+        ? activeEvmNetworksWithTestnetsMap$
+        : activeEvmNetworksWithoutTestnetsMap$
+    return includeTestnets ? allEvmNetworksMap$ : allEvmNetworksWithoutTestnetsMap$
+  }
+)
+export const [useChainsMap, getChainsMap$] = bind(
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
+    if (activeOnly)
+      return includeTestnets ? activeChainsWithTestnetsMap$ : activeChainsWithoutTestnetsMap$
+    return includeTestnets ? allChainsMap$ : allChainsWithoutTestnetsMap$
+  }
+)
 
-export const getEvmNetwork$ = (evmNetworkId: EvmNetworkId | null | undefined) => {
-  return allEvmNetworksMap$.pipe(
-    map((evmNetworksMap) => evmNetworksMap[evmNetworkId ?? "#"] ?? null),
-    shareReplay({ bufferSize: 1, refCount: true })
-  )
-}
-export const getChain$ = (chainId: ChainId | null | undefined) => {
-  return allChainsMap$.pipe(
-    map((chainsMap) => chainsMap[chainId ?? "#"] ?? null),
-    shareReplay({ bufferSize: 1, refCount: true })
-  )
-}
-export const getChainByGenesisHash$ = (genesisHash: string | null | undefined) => {
-  return allChainsByGenesisHash$.pipe(
-    map((chainsMap) => chainsMap[genesisHash ?? "#"] ?? null),
-    shareReplay({ bufferSize: 1, refCount: true })
-  )
-}
-
-// export const tokensActive$ = activeTokensStore.observable.pipe(
-//   shareReplay({ bufferSize: 1, refCount: true })
-// )
+export const [useEvmNetwork, getEvmNetwork$] = bind(
+  (evmNetworkId: EvmNetworkId | null | undefined) =>
+    allEvmNetworksMap$.pipe(
+      map((evmNetworksMap) => (evmNetworkId && evmNetworksMap[evmNetworkId ?? "#"]) || null)
+    )
+)
+export const [useChain, getChain$] = bind((chainId: ChainId | null | undefined) =>
+  allChainsMap$.pipe(map((chainsMap) => (chainId && chainsMap[chainId ?? "#"]) || null))
+)
+export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(
+  (genesisHash: string | null | undefined) =>
+    allChainsByGenesisHash$.pipe(
+      map((chainsMap) => (genesisHash && chainsMap[genesisHash ?? "#"]) || null)
+    )
+)
 
 export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
 
@@ -289,7 +280,7 @@ const activeTokensWithTestnets$ = combineLatest([
 
 // todo remove export
 export const activeTokensWithTestnetsMap$ = activeTokensWithTestnets$.pipe(
-  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token]))),
+  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList),
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
@@ -309,12 +300,12 @@ const activeTokensWithoutTestnets$ = combineLatest([
 )
 
 const activeTokensWithoutTestnetsMap$ = activeTokensWithoutTestnets$.pipe(
-  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token]))),
+  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList),
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useTokens, getTokens$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
     if (activeOnly)
       return includeTestnets ? activeTokensWithTestnets$ : activeTokensWithoutTestnets$
     return includeTestnets ? allTokens$ : allTokensWithoutTestnets$
@@ -322,7 +313,7 @@ export const [useTokens, getTokens$] = bind(
 )
 
 export const [useTokensMap, getTokensMap$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = DEFAULT_CHAINDATA_QUERY_OPTIONS) => {
+  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
     if (activeOnly)
       return includeTestnets ? activeTokensWithTestnetsMap$ : activeTokensWithoutTestnetsMap$
     return includeTestnets ? allTokensMap$ : allTokensWithoutTestnetsMap$
@@ -331,7 +322,7 @@ export const [useTokensMap, getTokensMap$] = bind(
 
 export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
   return allTokensMap$.pipe(
-    map((tokensMap) => tokensMap[tokenId ?? "#"] ?? null),
+    map((tokensMap) => (tokenId && tokensMap[tokenId ?? "#"]) || null),
     shareReplay({ bufferSize: 1, refCount: true })
   )
 })

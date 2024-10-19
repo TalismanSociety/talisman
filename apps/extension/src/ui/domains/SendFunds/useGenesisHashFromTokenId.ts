@@ -1,5 +1,4 @@
-import useChain from "@ui/hooks/useChain"
-import { useToken } from "@ui/state"
+import { useChain, useToken } from "@ui/state"
 
 export const useGenesisHashFromTokenId = (tokenId?: string | null) => {
   const token = useToken(tokenId)

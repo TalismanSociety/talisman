@@ -3,7 +3,7 @@ import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/util"
 import { t } from "i18next"
-import { BehaviorSubject, combineLatest, map, mergeMap } from "rxjs"
+import { BehaviorSubject, combineLatest, map, switchMap } from "rxjs"
 
 import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
 import {
@@ -181,7 +181,7 @@ const setSearch = (search: string) => portfolioSearch$.next(search)
 
 export const [usePortfolioGlobalData, portfolioGlobalData$] = bind(
   getSettingValue$("useTestnets").pipe(
-    mergeMap((includeTestnets) =>
+    switchMap((includeTestnets) =>
       combineLatest([
         getChains$({ activeOnly: true, includeTestnets }),
         getEvmNetworks$({ activeOnly: true, includeTestnets }),

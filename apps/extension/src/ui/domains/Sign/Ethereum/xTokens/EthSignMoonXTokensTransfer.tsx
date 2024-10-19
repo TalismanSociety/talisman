@@ -5,12 +5,11 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EvmAddress } from "@extension/core"
-import useChain from "@ui/hooks/useChain"
 import { useChains } from "@ui/hooks/useChains"
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useToken } from "@ui/state"
+import { useChain, useToken } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"

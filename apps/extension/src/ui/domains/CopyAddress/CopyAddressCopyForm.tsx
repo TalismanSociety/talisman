@@ -9,10 +9,9 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useAccountByAddress, useAccounts } from "@ui/state"
+import { useAccountByAddress, useAccounts, useChain } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"

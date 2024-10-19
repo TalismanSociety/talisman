@@ -1,13 +1,14 @@
 import { HexString } from "@polkadot/util/types"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import useChain from "@ui/hooks/useChain"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import startCase from "lodash/startCase"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
+
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
+import { useChain } from "@ui/state"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
 
@@ -60,9 +61,13 @@ export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
   const polkadot = useChain("polkadot")
   const kusama = useChain("kusama")
   const westend = useChain("westend")
-  const parityDefaultChains = [polkadot?.genesisHash, kusama?.genesisHash, westend?.genesisHash]
+  const parityDefaultChains = [
+    polkadot?.genesisHash,
+    kusama?.genesisHash,
+    westend?.genesisHash,
+  ].filter(Boolean) as HexString[]
   const defaultSourceForChain =
-    sources.includes("parity") && parityDefaultChains.includes(genesisHash)
+    sources.includes("parity") && parityDefaultChains.includes(genesisHash ?? "0x")
       ? "parity"
       : sources.includes("talisman")
       ? "talisman"

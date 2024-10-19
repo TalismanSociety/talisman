@@ -10,14 +10,15 @@ import {
   getNftLastAcquiredAt,
 } from "@ui/domains/Portfolio/Nfts/helpers"
 import {
+  AccountCategory,
   ChaindataQueryOptions,
+  getAccountsByCategory$,
   getEvmNetworks$,
   getSettingValue$,
   NetworkOption,
   portfolioSelectedAccounts$,
 } from "@ui/state"
 
-import { accountsByCategoryAtomFamily } from "./accounts"
 // import { NetworkOption, portfolioSelectedAccountsAtom } from "./portfolio"
 import { atomWithDebounce } from "./utils/atomWithDebounce"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -27,6 +28,27 @@ const nftDataAtom = atomWithSubscription(api.nftsSubscribe, {
   debugLabel: "nftDataAtom",
   refCount: true,
 })
+
+const accountsByCategoryAtomFamily = atomFamily(
+  (category: AccountCategory = "all") => atomWithObservable(() => getAccountsByCategory$(category))
+  // atom(async (get) => {
+  //   const accounts = await get(accountsAtom)
+  //   switch (category) {
+  //     case "portfolio":
+  //       return accounts.filter(
+  //         ({ origin, isPortfolio }) => !origin || !IS_EXTERNAL[origin] || isPortfolio
+  //       )
+  //     case "watched":
+  //       return accounts.filter(({ origin }) => origin === AccountType.Watched)
+  //     case "owned":
+  //       return accounts.filter(({ origin }) => !origin || !IS_EXTERNAL[origin])
+  //     case "signet":
+  //       return accounts.filter(({ origin }) => origin === AccountType.Signet)
+  //     case "all":
+  //       return accounts
+  //   }
+  // })
+)
 
 const evmNetworksArrayAtomFamily = atomFamily(
   ({ activeOnly, includeTestnets }: ChaindataQueryOptions) =>

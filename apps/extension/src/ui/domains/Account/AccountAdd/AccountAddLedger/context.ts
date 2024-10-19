@@ -13,7 +13,7 @@ import {
 } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import useChain from "@ui/hooks/useChain"
+import { useChain } from "@ui/state"
 
 export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
 export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
