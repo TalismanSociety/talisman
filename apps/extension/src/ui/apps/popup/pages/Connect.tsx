@@ -14,7 +14,7 @@ import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountTo
 import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useRequest } from "@ui/hooks/useRequest"
+import { useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

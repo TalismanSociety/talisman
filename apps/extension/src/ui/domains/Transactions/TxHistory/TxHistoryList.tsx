@@ -215,7 +215,7 @@ const EvmTxActions: FC<{
       onContextMenuClose?.()
       if (action === "speed-up") setReplaceType("speed-up")
       if (action === "cancel") setReplaceType("cancel")
-      if (action === "dismiss") db.transactions.delete(tx.hash)
+      if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
     },
     [onContextMenuClose, tx.hash]
   )
@@ -542,7 +542,7 @@ const SubTxActions: FC<{
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "dismiss") db.transactions.delete(tx.hash)
+      if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
     },
     [onContextMenuClose, tx.hash]
   )

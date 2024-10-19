@@ -8,8 +8,7 @@ import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
-import { useRequest } from "@ui/hooks/useRequest"
-import { useEvmNetwork } from "@ui/state"
+import { useEvmNetwork, useRequest } from "@ui/state"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 

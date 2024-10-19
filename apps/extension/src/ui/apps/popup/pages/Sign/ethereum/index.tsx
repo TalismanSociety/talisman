@@ -7,7 +7,7 @@ import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,
 } from "@ui/domains/Sign/SignRequestContext"
-import { useRequest } from "@ui/hooks/useRequest"
+import { useRequest } from "@ui/state"
 
 import { SignPopupShimmer } from "../SignPopupShimmer"
 import { EthSignMessageRequest } from "./Message"

@@ -13,8 +13,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkDetailsButton, NetworkDetailsLink } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useRequest } from "@ui/hooks/useRequest"
-import { useEvmNetwork, useToken } from "@ui/state"
+import { useEvmNetwork, useRequest, useToken } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

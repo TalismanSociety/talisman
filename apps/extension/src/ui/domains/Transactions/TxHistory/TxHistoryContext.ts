@@ -1,7 +1,6 @@
 import { HexString } from "@polkadot/util/types"
 import { normalizeAddress } from "@talismn/util"
-import { useLiveQuery } from "dexie-react-hooks"
-import { Chain, db, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
+import { Chain, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
 import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
 
@@ -13,6 +12,7 @@ import {
   useEvmNetworksMap,
   useSettingValue,
 } from "@ui/state"
+import { useTransactions } from "@ui/state/transactions"
 
 const useTxHistoryProvider = () => {
   const includeTestnets = useSettingValue("useTestnets")
@@ -28,10 +28,7 @@ const useTxHistoryProvider = () => {
     [chains]
   )
 
-  const allTransactions = useLiveQuery(async () => {
-    const txs = await db.transactions.toArray()
-    return txs.sort((tx1, tx2) => tx2.timestamp - tx1.timestamp)
-  }, [])
+  const allTransactions = useTransactions()
 
   const [{ addresses, networkId }, setState] = useState<{
     addresses: string[] | null
