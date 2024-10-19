@@ -7,15 +7,20 @@ import { combineLatest, distinctUntilChanged, map, Observable, shareReplay } fro
 
 import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
 import { api } from "@ui/api"
-import {
-  AccountCategory,
-  accountsMap$,
-  getAccountsByCategory$,
-  getChainsMap$,
-  getEvmNetworksMap$,
-  getTokensMap$,
-  tokenRatesMap$,
-} from "@ui/state"
+
+import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
+import { getChainsMap$, getEvmNetworksMap$, getTokensMap$ } from "./registry"
+import { tokenRatesMap$ } from "./tokenRates"
+
+// import {
+//   AccountCategory,
+//   accountsMap$,
+//   getAccountsByCategory$,
+//   getChainsMap$,
+//   getEvmNetworksMap$,
+//   getTokensMap$,
+//   tokenRatesMap$,
+// } from "./state"
 
 // Reading this atom triggers the balances backend subscription
 // Note : unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed

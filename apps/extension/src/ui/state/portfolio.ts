@@ -6,17 +6,21 @@ import { t } from "i18next"
 import { BehaviorSubject, combineLatest, map, switchMap } from "rxjs"
 
 import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
-import {
-  balancesHydrate$,
-  getBalances$,
-  getChains$,
-  getEvmNetworks$,
-  getSettingValue$,
-  getTokens$,
-  isBalanceInitialising$,
-} from "@ui/state"
+// import {
+//   balancesHydrate$,
+//   getBalances$,
+//   getChains$,
+//   getEvmNetworks$,
+//   getSettingValue$,
+//   getTokens$,
+//   isBalanceInitialising$,
+// } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
+
+import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"
+import { getChains$, getEvmNetworks$, getTokens$ } from "./registry"
+import { getSettingValue$ } from "./settings"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
