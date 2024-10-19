@@ -18,10 +18,10 @@ import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useAccounts, useSetting } from "@ui/state"
+import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
+import { useAccounts, useSelectedCurrency, useSetting } from "@ui/state"
 
 type Props = {
   className?: string

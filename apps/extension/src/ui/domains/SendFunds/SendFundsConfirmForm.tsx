@@ -6,8 +6,7 @@ import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useSelectedCurrency } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../Asset/ChainLogo"

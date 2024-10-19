@@ -12,9 +12,8 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { useBalances, usePortfolio, useSetting } from "@ui/state"
+import { useBalances, usePortfolio, useSelectedCurrency, useSetting } from "@ui/state"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()

@@ -27,4 +27,5 @@ export const useSetting = <K extends keyof SettingsStoreData, V = SettingsStoreD
   return [state, setState] as const
 }
 
-export const selectedCurrency$ = getSettingValue$("selectedCurrency")
+// shortcut, heavily used
+export const [useSelectedCurrency, selectedCurrency$] = bind(getSettingValue$("selectedCurrency"))

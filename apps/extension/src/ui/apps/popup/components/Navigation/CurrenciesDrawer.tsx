@@ -8,7 +8,7 @@ import { Drawer, IconButton } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
-import { useFavoriteCurrencies } from "@ui/hooks/useCurrency"
+import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
 
 export const useCurrenciesDrawerOpenClose = () => useGlobalOpenClose("currencies-drawer")

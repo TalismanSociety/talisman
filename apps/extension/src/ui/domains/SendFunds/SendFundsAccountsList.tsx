@@ -6,9 +6,8 @@ import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountType } from "@extension/core"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useBalances, useToken } from "@ui/state"
+import { useBalances, useSelectedCurrency, useToken } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"

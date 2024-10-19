@@ -40,9 +40,14 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import { useChainByGenesisHash, useEvmNetwork, useToken, useTokenRates } from "@ui/state"
+import {
+  useChainByGenesisHash,
+  useEvmNetwork,
+  useSelectedCurrency,
+  useToken,
+  useTokenRates,
+} from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { TxReplaceDrawer } from "../TxReplaceDrawer"

@@ -17,7 +17,7 @@ import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUn
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"

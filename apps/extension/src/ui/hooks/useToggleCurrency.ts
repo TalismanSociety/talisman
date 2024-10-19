@@ -1,32 +1,10 @@
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { SetStateAction, useCallback } from "react"
+import { useCallback } from "react"
 
 import { currencyOrder } from "@ui/domains/Asset/currencyConfig"
 import { useSetting } from "@ui/state"
 
-// TODO own file
-export const useFavoriteCurrencies = () => {
-  const [favorites, setFavoritesInner] = useSetting("selectableCurrencies")
-
-  const setFavorites = useCallback(
-    async (value: SetStateAction<TokenRateCurrency[]>) => {
-      if (typeof value === "function") {
-        const setter = value as (prev: TokenRateCurrency[]) => TokenRateCurrency[]
-        value = setter(favorites)
-      }
-      await setFavoritesInner(value)
-    },
-    [setFavoritesInner, favorites]
-  )
-
-  return [favorites, setFavorites] as const
-}
-
-// TODO own file
-export const useSelectedCurrency = () => {
-  const [selected] = useSetting("selectedCurrency")
-  return selected
-}
+import { useFavoriteCurrencies } from "./useFavoriteCurrencies"
 
 const sortCurrencies = (a: TokenRateCurrency, b: TokenRateCurrency) => {
   const aIndex = currencyOrder.indexOf(a) ?? Number.MAX_SAFE_INTEGER
@@ -35,7 +13,6 @@ const sortCurrencies = (a: TokenRateCurrency, b: TokenRateCurrency) => {
   return aIndex - bIndex
 }
 
-// TODO own file
 export const useToggleCurrency = () => {
   const [favorites] = useFavoriteCurrencies()
   const [selected, setSelected] = useSetting("selectedCurrency")

@@ -2,8 +2,7 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { usePortfolio } from "@ui/state"
+import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"

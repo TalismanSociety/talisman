@@ -4,7 +4,8 @@ import { classNames } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
-import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
+import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
+import { useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../Asset/currencyConfig"
 import { Fiat } from "../Asset/Fiat"

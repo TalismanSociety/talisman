@@ -21,8 +21,8 @@ import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPo
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
+import { useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"

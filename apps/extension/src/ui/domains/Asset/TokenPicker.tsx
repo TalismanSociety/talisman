@@ -11,7 +11,6 @@ import { useIntersection } from "react-use"
 import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import {
   useAccountByAddress,
   useBalances,
@@ -19,6 +18,7 @@ import {
   useChainsMap,
   useEvmNetworksMap,
   useIsBalanceInitializing,
+  useSelectedCurrency,
   useSetting,
   useTokenRatesMap,
   useTokens,

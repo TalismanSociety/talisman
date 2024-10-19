@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
-import { useFavoriteCurrencies } from "@ui/hooks/useCurrency"
+import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"

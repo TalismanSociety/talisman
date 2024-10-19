@@ -5,8 +5,7 @@ import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 
 import { Balance, Balances } from "@extension/core"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { getSettingValue$, selectedCurrency$, useSetting } from "@ui/state"
+import { getSettingValue$, selectedCurrency$, useSelectedCurrency, useSetting } from "@ui/state"
 
 import { portfolioDisplayBalances$ } from "../useDisplayBalances"
 

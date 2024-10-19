@@ -3,9 +3,8 @@ import { useTranslation } from "react-i18next"
 
 import { BalanceFormatter, EvmAddress } from "@extension/core"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useToken, useTokenRates } from "@ui/state"
+import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
