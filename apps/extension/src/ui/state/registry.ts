@@ -48,57 +48,42 @@ export const [useActiveEvmNetworksState, activeEvmNetworksState$] = bind(
 
 export const [useActiveChainsState, activeChainsState$] = bind(activeChainsStore.observable)
 
-export const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
+const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
   const subData = chaindataProvider.evmNetworksObservable.subscribe(subscriber)
-  const unsubscribe = api.ethereumNetworks(NO_OP)
+  const unsubscribe = api.ethereumNetworks(NO_OP) // keeps provider up to date from chaindata
   return () => {
     unsubscribe()
     subData.unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
-export const allChains$ = new Observable<AnyChain[]>((subscriber) => {
+
+const allChains$ = new Observable<AnyChain[]>((subscriber) => {
   const subData = chaindataProvider.chainsObservable.subscribe(subscriber)
-  const unsubscribe = api.chains(NO_OP)
+  const unsubscribe = api.chains(NO_OP) // keeps provider up to date from chaindata
   return () => {
     unsubscribe()
     subData.unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const [useAllEvmNetworks] = bind(allEvmNetworks$)
-export const [useAllChains] = bind(allChains$)
-
-export const allEvmNetworksMap$ = allEvmNetworks$.pipe(
+const allEvmNetworksMap$ = allEvmNetworks$.pipe(
   map(
     (evmNetworks) =>
       Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 )
-export const allChainsMap$ = allChains$.pipe(
+
+const allChainsMap$ = allChains$.pipe(
   map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
   shareReplay({ bufferSize: 1, refCount: true })
 )
-export const allChainsByGenesisHash$ = allChains$.pipe(
-  map(
-    (chains) =>
-      Object.fromEntries(
-        chains
-          .filter((network) => network.genesisHash)
-          .map((network) => [network.genesisHash, network])
-      ) as ChainList
-  ),
-  shareReplay({ bufferSize: 1, refCount: true })
-)
-
-export const [useAllEvmNetworksMap] = bind(allEvmNetworksMap$)
-export const [useAllChainsMap] = bind(allChainsMap$)
-export const [useAllChainsMapByGenesisHash] = bind(allChainsByGenesisHash$)
 
 const allEvmNetworksWithoutTestnets$ = allEvmNetworks$.pipe(
   map((evmNetworks) => evmNetworks.filter(filterNoTestnet)),
   shareReplay({ bufferSize: 1, refCount: true })
 )
+
 const allChainsWithoutTestnets$ = allChains$.pipe(
   map((chains) => chains.filter(filterNoTestnet)),
   shareReplay({ bufferSize: 1, refCount: true })
@@ -130,15 +115,15 @@ const activeChainsWithTestnets$ = combineLatest([allChains$, activeChainsState$]
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-// TODO don't export
-export const activeEvmNetworksWithTestnetsMap$ = activeEvmNetworksWithTestnets$.pipe(
+const activeEvmNetworksWithTestnetsMap$ = activeEvmNetworksWithTestnets$.pipe(
   map(
     (evmNetworks) =>
       Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 )
-export const activeChainsWithTestnetsMap$ = activeChainsWithTestnets$.pipe(
+
+const activeChainsWithTestnetsMap$ = activeChainsWithTestnets$.pipe(
   map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
   shareReplay({ bufferSize: 1, refCount: true })
 )
@@ -147,20 +132,21 @@ const activeEvmNetworksWithoutTestnets$ = activeEvmNetworksWithTestnets$.pipe(
   map((evmNetworks) => evmNetworks.filter(filterNoTestnet)),
   shareReplay({ bufferSize: 1, refCount: true })
 )
+
 const activeChainsWithoutTestnets$ = activeChainsWithTestnets$.pipe(
   map((chains) => chains.filter(filterNoTestnet)),
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-// TODO don't export
-export const activeEvmNetworksWithoutTestnetsMap$ = activeEvmNetworksWithoutTestnets$.pipe(
+const activeEvmNetworksWithoutTestnetsMap$ = activeEvmNetworksWithoutTestnets$.pipe(
   map(
     (evmNetworks) =>
       Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 )
-export const activeChainsWithoutTestnetsMap$ = activeChainsWithoutTestnets$.pipe(
+
+const activeChainsWithoutTestnetsMap$ = activeChainsWithoutTestnets$.pipe(
   map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
   shareReplay({ bufferSize: 1, refCount: true })
 )
@@ -189,6 +175,7 @@ export const [useEvmNetworksMap, getEvmNetworksMap$] = bind(
     return includeTestnets ? allEvmNetworksMap$ : allEvmNetworksWithoutTestnetsMap$
   }
 )
+
 export const [useChainsMap, getChainsMap$] = bind(
   ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
     if (activeOnly)
@@ -197,15 +184,30 @@ export const [useChainsMap, getChainsMap$] = bind(
   }
 )
 
+export const [useChainsMapByGenesisHash, allChainsByGenesisHash$] = bind(
+  allChains$.pipe(
+    map(
+      (chains) =>
+        Object.fromEntries(
+          chains
+            .filter((network) => network.genesisHash)
+            .map((network) => [network.genesisHash, network])
+        ) as ChainList
+    )
+  )
+)
+
 export const [useEvmNetwork, getEvmNetwork$] = bind(
   (evmNetworkId: EvmNetworkId | null | undefined) =>
     allEvmNetworksMap$.pipe(
       map((evmNetworksMap) => (evmNetworkId && evmNetworksMap[evmNetworkId ?? "#"]) || null)
     )
 )
+
 export const [useChain, getChain$] = bind((chainId: ChainId | null | undefined) =>
   allChainsMap$.pipe(map((chainsMap) => (chainId && chainsMap[chainId ?? "#"]) || null))
 )
+
 export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(
   (genesisHash: string | null | undefined) =>
     allChainsByGenesisHash$.pipe(
@@ -224,7 +226,7 @@ const allTokensUnsafe$ = new Observable<Token[]>((subscriber) => {
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const allTokens$ = combineLatest([allTokensUnsafe$, allEvmNetworksMap$, allChainsMap$]).pipe(
+const allTokens$ = combineLatest([allTokensUnsafe$, allEvmNetworksMap$, allChainsMap$]).pipe(
   map(([tokens, evmNetworksMap, chainsMap]) =>
     tokens.filter(
       (token) => chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]
@@ -233,14 +235,10 @@ export const allTokens$ = combineLatest([allTokensUnsafe$, allEvmNetworksMap$, a
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-export const [useAllTokens] = bind(allTokens$)
-
-export const allTokensMap$ = allTokensUnsafe$.pipe(
+const allTokensMap$ = allTokensUnsafe$.pipe(
   map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token]))),
   shareReplay({ bufferSize: 1, refCount: true })
 )
-
-export const [useAllTokensMap] = bind(allTokensMap$)
 
 const allTokensWithoutTestnets$ = combineLatest([
   allTokensUnsafe$,
@@ -278,8 +276,7 @@ const activeTokensWithTestnets$ = combineLatest([
   shareReplay({ bufferSize: 1, refCount: true })
 )
 
-// todo remove export
-export const activeTokensWithTestnetsMap$ = activeTokensWithTestnets$.pipe(
+const activeTokensWithTestnetsMap$ = activeTokensWithTestnets$.pipe(
   map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList),
   shareReplay({ bufferSize: 1, refCount: true })
 )

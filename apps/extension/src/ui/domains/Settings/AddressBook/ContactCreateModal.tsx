@@ -23,7 +23,7 @@ import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useAllChainsMapByGenesisHash } from "@ui/state"
+import { useAccounts, useChainsMapByGenesisHash } from "@ui/state"
 
 import { useAddressEffects, useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
@@ -164,7 +164,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   const { address } = watch()
   const chains = useChainsFilteredByAddressPrefix(address)
-  const chainsByGenesisHash = useAllChainsMapByGenesisHash()
+  const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
     (genesisHash?: string) =>
       setValue("genesisHash", genesisHash, {
