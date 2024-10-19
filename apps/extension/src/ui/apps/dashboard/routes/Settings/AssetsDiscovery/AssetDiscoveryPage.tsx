@@ -42,13 +42,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import {
-  assetDiscoveryScanAtom,
-  assetDiscoveryScanProgressAtom,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
+import { evmNetworksMapAtomFamily, settingsAtomFamily, tokensMapAtomFamily } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -65,7 +59,7 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useAssetDiscoveryScan, useAssetDiscoveryScanProgress } from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
@@ -305,7 +299,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
   const isInitializing = useAtomValue(isInitializingScanAtom)
-  const { balances, balancesByTokenId, tokenIds } = useAtomValue(assetDiscoveryScanProgressAtom)
+  const { balances, balancesByTokenId, tokenIds } = useAssetDiscoveryScanProgress()
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
@@ -330,9 +324,8 @@ const AssetTable: FC = () => {
 const Header: FC = () => {
   const { t } = useTranslation("admin")
   const [isInitializing, setIsInitializing] = useAtom(isInitializingScanAtom)
-  const { balances, accountsCount, tokensCount, percent, isInProgress } = useAtomValue(
-    assetDiscoveryScanProgressAtom
-  )
+  const { balances, accountsCount, tokensCount, percent, isInProgress } =
+    useAssetDiscoveryScanProgress()
 
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
@@ -455,8 +448,8 @@ const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
   const isInitializing = useAtomValue(isInitializingScanAtom)
 
-  const { balancesByTokenId, balances, isInProgress } = useAtomValue(assetDiscoveryScanProgressAtom)
-  const { lastScanAccounts, lastScanTimestamp } = useAtomValue(assetDiscoveryScanAtom)
+  const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
+  const { lastScanAccounts, lastScanTimestamp } = useAssetDiscoveryScan()
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()

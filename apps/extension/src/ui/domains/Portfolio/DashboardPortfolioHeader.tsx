@@ -10,7 +10,6 @@ import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { AccountJsonAny, AccountType, TreeFolder } from "extension-core"
 import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
-import { useAtomValue } from "jotai"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
@@ -25,7 +24,6 @@ import {
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { balanceTotalsAtom } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
@@ -33,6 +31,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
+import { useBalanceTotals } from "@ui/state"
 
 import { AccountContextMenu } from "../Account/AccountContextMenu"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -105,7 +104,7 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
 
 export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className }) => {
   const { selectedAccount, selectedAccounts, selectedFolder } = usePortfolioNavigation()
-  const allBalanceTotals = useAtomValue(balanceTotalsAtom)
+  const allBalanceTotals = useBalanceTotals()
 
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
@@ -116,7 +115,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   }, [allBalanceTotals, currency])
 
   const selectedTotal = useMemo(() => {
-    return selectedAccounts.reduce((total, acc) => total + totalPerAddress[acc.address] ?? 0, 0)
+    return selectedAccounts.reduce((total, acc) => total + (totalPerAddress[acc.address] ?? 0), 0)
   }, [selectedAccounts, totalPerAddress])
 
   return (

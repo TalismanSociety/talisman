@@ -1,11 +1,13 @@
+import { TokenId, TokenList } from "@talismn/chaindata-provider"
+import { fetchTokenRates, TokenRatesError, TokenRatesList } from "@talismn/token-rates"
+import { atom, useAtomValue, useSetAtom } from "jotai"
+import { atomFamily, atomWithObservable } from "jotai/utils"
+import { useEffect, useState } from "react"
+
 import { remoteConfigStore } from "@extension/core"
 import { log } from "@extension/shared"
-import { TokenId, TokenList } from "@talismn/chaindata-provider"
-import { TokenRatesError, TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
-import { assetDiscoveryScanProgressAtom, tokensArrayAtomFamily } from "@ui/atoms"
-import { atom, useAtomValue, useSetAtom } from "jotai"
-import { atomFamily } from "jotai/utils"
-import { useEffect, useState } from "react"
+import { tokensArrayAtomFamily } from "@ui/atoms"
+import { assetDiscoveryScanProgress$ } from "@ui/state"
 
 const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
 
@@ -19,6 +21,8 @@ const assetDiscoveryTokenRatesAtomFamily = atomFamily((tokenId: TokenId = "") =>
 
 export const useAssetDiscoveryTokenRate = (tokenId: TokenId | undefined) =>
   useAtomValue(assetDiscoveryTokenRatesAtomFamily(tokenId))
+
+const assetDiscoveryScanProgressAtom = atomWithObservable(() => assetDiscoveryScanProgress$)
 
 const missingTokenRatesAtom = atom(async (get) => {
   const [{ tokenIds }, tokens, tokenRates] = await Promise.all([

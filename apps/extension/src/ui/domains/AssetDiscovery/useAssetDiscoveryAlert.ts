@@ -1,9 +1,7 @@
-import { useAtomValue } from "jotai"
 import { useCallback } from "react"
 
-import { assetDiscoveryScanAtom, assetDiscoveryScanProgressAtom } from "@ui/atoms"
 import { useAppState } from "@ui/hooks/useAppState"
-import { useIsLoggedIn } from "@ui/state"
+import { useAssetDiscoveryScan, useAssetDiscoveryScanProgress, useIsLoggedIn } from "@ui/state"
 
 export const useAssetDiscoveryAlert = () => {
   const isLoggedIn = useIsLoggedIn()
@@ -12,8 +10,8 @@ export const useAssetDiscoveryAlert = () => {
   const [, setDismissedAssetDiscoveryAlertScanId] = useAppState(
     "dismissedAssetDiscoveryAlertScanId"
   )
-  const { currentScanId } = useAtomValue(assetDiscoveryScanAtom)
-  const { isInProgress, percent, balances } = useAtomValue(assetDiscoveryScanProgressAtom)
+  const { currentScanId } = useAssetDiscoveryScan()
+  const { isInProgress, percent, balances } = useAssetDiscoveryScanProgress()
 
   const dismissAlert = useCallback(() => {
     setShowAssetDiscoveryAlert(false)
