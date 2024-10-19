@@ -391,6 +391,7 @@ export class EthHandler extends ExtensionHandler {
       const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
 
       const newNetwork: CustomEvmNetwork = {
+        ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
         id: networkId,
         isTestnet: isTestnet,
         isDefault: existingNetwork?.isDefault ?? false,
@@ -449,6 +450,7 @@ export class EthHandler extends ExtensionHandler {
         }
 
         const newNetwork: CustomEvmNetwork = {
+          ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
           // EvmNetwork
           id: network.id,
           isTestnet: network.isTestnet,
