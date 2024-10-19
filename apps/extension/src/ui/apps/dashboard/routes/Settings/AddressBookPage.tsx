@@ -1,7 +1,6 @@
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountAddressType } from "extension-shared"
-import { useAtomValue } from "jotai"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
@@ -31,7 +30,6 @@ import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -45,6 +43,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useBalances } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
@@ -185,7 +184,8 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
 const Content = () => {
   const { t } = useTranslation("admin")
   // preload balances because of the send button
-  useAtomValue(balancesByAccountCategoryAtomFamily("owned"))
+  useBalances("owned")
+
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),

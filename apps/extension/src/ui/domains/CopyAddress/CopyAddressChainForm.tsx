@@ -11,10 +11,10 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import { useChains } from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useBalancesByAddress } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -119,7 +119,7 @@ export const CopyAddressChainForm = () => {
     [account?.genesisHash, chains]
   )
 
-  const balances = useBalancesByAddress(address ?? "")
+  const balances = useBalancesByAddress(address)
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
   const SUBSTRATE_FORMAT: Omit<ChainFormat, "address"> = useMemo(

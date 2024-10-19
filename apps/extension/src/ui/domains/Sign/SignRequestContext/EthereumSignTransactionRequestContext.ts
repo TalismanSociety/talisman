@@ -1,5 +1,4 @@
 import { HexString } from "@polkadot/util/types"
-import { useAtomValue } from "jotai"
 import { useCallback, useMemo, useRef, useState } from "react"
 
 import {
@@ -10,18 +9,18 @@ import {
 import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { balancesHydrateAtom } from "@ui/atoms"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useRequest } from "@ui/hooks/useRequest"
+import { useBalancesHydrate } from "@ui/state"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
-  useAtomValue(balancesHydrateAtom)
+  useBalancesHydrate() // preload
   const { genericEvent } = useAnalytics()
   const signingRequest = useRequest(id)
   const network = useEvmNetwork(signingRequest?.ethChainId)

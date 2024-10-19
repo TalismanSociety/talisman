@@ -6,8 +6,8 @@ import { Button } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
+import { usePortfolio } from "@ui/state"
 
 import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
 

@@ -1,17 +1,18 @@
-import { AddressesByChain, BalanceSubscriptionResponse } from "@extension/core"
-import {
-  AddressesAndTokens,
-  Balances,
-  AddressesAndEvmNetwork as EvmNetworksAndAddresses,
-} from "@extension/core"
-import { api } from "@ui/api"
-import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import md5 from "blueimp-md5"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"
 
-import { useBalancesHydrate } from "./useBalancesHydrate"
+import {
+  AddressesAndTokens,
+  AddressesByChain,
+  Balances,
+  BalanceSubscriptionResponse,
+  AddressesAndEvmNetwork as EvmNetworksAndAddresses,
+} from "@extension/core"
+import { api } from "@ui/api"
+import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
+import { useBalancesHydrate } from "@ui/state"
 
 const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", data: [] }
 

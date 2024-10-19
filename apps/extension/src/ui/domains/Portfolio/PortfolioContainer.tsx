@@ -1,6 +1,8 @@
-import { FC, ReactNode } from "react"
+import { FC, ReactNode, useEffect } from "react"
 
-import { usePortfolioProvisioning } from "./usePortfolio"
+import { portfolioSelectedAccounts$, usePortfolio } from "@ui/state"
+
+import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 // const preloadAtom = atom((get) =>
 //   Promise.all([
@@ -17,12 +19,21 @@ export const PortfolioContainer: FC<{ children: ReactNode; renderWhileLoading?: 
 }) => {
   // useAtomValue(preloadAtom) TODO
 
-  // keeps portfolio sync atoms up to date with subscription async atoms
-  const isProvisioned = usePortfolioProvisioning()
+  const { selectedAccounts } = usePortfolioNavigation()
+  const { isProvisioned } = usePortfolio()
 
-  // on popup home page, portfolio is loading while we display the home page
-  // but on dashboard, don't render until portfolio is provisioned
+  useEffect(() => {
+    portfolioSelectedAccounts$.next(selectedAccounts)
+  }, [selectedAccounts])
+
+  // keeps portfolio sync atoms up to date with subscription async atoms
+  // const isProvisioned = usePortfolioProvisioning()
+
+  // // on popup home page, portfolio is loading while we display the home page
+  // // but on dashboard, don't render until portfolio is provisioned
   if (!renderWhileLoading && !isProvisioned) return null
+
+  // if (!isProvisioned) return null
 
   return <>{children}</>
 }

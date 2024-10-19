@@ -5,8 +5,8 @@ import { useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import useBalances from "@ui/hooks/useBalances"
 import useToken from "@ui/hooks/useToken"
+import { useBalances } from "@ui/state"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { getStakingEraDurationMs } from "../helpers"

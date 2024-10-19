@@ -9,11 +9,11 @@ import { isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import { useChains } from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useBalances } from "@ui/state"
 import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -30,7 +30,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
   const [includeTestnets] = useSetting("useTestnets")
   const { chains } = useChains({ activeOnly: true, includeTestnets })
   const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const balances = useBalancesByAddress(address)
+  const balances = useBalances({ address }) // TODO memo arg ?
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
   const compatibleChains = useMemo<NetworkWithExplorer[]>(

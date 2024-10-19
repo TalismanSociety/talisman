@@ -1,7 +1,6 @@
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,12 +11,11 @@ import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } f
 import { activeEvmNetworksStore, EvmNetwork, isEvmNetworkActive } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
-import { balancesInitialisingAtom } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
-import useBalances from "@ui/hooks/useBalances"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useBalances, useIsBalanceInitializing } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
@@ -28,7 +26,7 @@ const DeactivateNetworksModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const { t } = useTranslation("admin")
-  const isBalancesInitializing = useAtomValue(balancesInitialisingAtom)
+  const isBalancesInitializing = useIsBalanceInitializing()
 
   const [includeTestnets] = useSetting("useTestnets")
   const balances = useBalances("all")

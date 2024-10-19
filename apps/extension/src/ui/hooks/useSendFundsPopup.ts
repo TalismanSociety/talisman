@@ -6,9 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { AccountJsonAny, AccountType } from "@extension/core"
 import { api } from "@ui/api"
-import { useAccounts } from "@ui/state"
-
-import useBalances from "./useBalances"
+import { useAccounts, useBalances } from "@ui/state"
 
 const isCompatibleAddress = (from: Address, to: Address) => {
   // in the future there might be other account types, for now only ethereum is specific

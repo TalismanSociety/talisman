@@ -1,10 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { Address } from "@ui/domains/Account/Address"
-import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,6 +11,13 @@ import {
   ModalDialog,
 } from "talisman-ui"
 import * as yup from "yup"
+
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Address } from "@ui/domains/Account/Address"
+import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 
 import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"

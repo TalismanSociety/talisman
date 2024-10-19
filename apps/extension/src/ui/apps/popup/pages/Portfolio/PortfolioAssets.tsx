@@ -10,9 +10,9 @@ import { PopupNfts } from "@ui/domains/Portfolio/Nfts/PopupNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { usePortfolio } from "@ui/state"
 
 import { PortfolioAssetsHeader } from "./shared/PortfolioAssetsHeader"
 

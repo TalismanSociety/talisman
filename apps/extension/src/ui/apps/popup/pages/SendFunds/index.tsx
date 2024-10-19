@@ -1,7 +1,6 @@
-import { balancesByAccountCategoryAtomFamily, balancesHydrateAtom } from "@ui/atoms"
-import { SendFundsProvider } from "@ui/domains/SendFunds/useSendFunds"
-import { atom, useAtomValue } from "jotai"
 import { Route, Routes } from "react-router-dom"
+
+import { SendFundsProvider } from "@ui/domains/SendFunds/useSendFunds"
 
 import { SendFundsWizardProvider } from "./context"
 import { SendFundsAmount } from "./SendFundsAmount"
@@ -12,12 +11,12 @@ import { SendFundsSubmitted } from "./SendFundsSubmitted"
 import { SendFundsTo } from "./SendFundsTo"
 import { SendFundsToken } from "./SendFundsToken"
 
-const preloadAtom = atom((get) =>
-  Promise.all([get(balancesHydrateAtom), get(balancesByAccountCategoryAtomFamily("all"))])
-)
+// const preloadAtom = atom((get) =>
+//   Promise.all([get(balancesHydrateAtom), get(balancesByAccountCategoryAtomFamily("all"))])
+// )
 
 export const SendFundsPage = () => {
-  useAtomValue(preloadAtom)
+  // useAtomValue(preloadAtom) // TODO preload
 
   return (
     <SendFundsWizardProvider>

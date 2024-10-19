@@ -3,10 +3,10 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolio } from "@ui/state"
 
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
-import { usePortfolio } from "../usePortfolio"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"

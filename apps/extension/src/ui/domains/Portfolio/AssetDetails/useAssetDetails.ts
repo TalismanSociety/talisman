@@ -1,7 +1,7 @@
-import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { useMemo } from "react"
 
-import { usePortfolio } from "../usePortfolio"
+import { Balances, ChainId, EvmNetworkId } from "@extension/core"
+import { usePortfolio } from "@ui/state"
 
 export const useAssetDetails = (balances: Balances) => {
   const { hydrate } = usePortfolio()

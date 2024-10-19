@@ -1,6 +1,6 @@
 import { NftData, SettingsStoreData } from "extension-core"
 import { atom } from "jotai"
-import { atomFamily } from "jotai/utils"
+import { atomFamily, atomWithObservable } from "jotai/utils"
 
 import { api } from "@ui/api"
 import {
@@ -8,10 +8,11 @@ import {
   getNftCollectionLastAcquiredAt,
   getNftLastAcquiredAt,
 } from "@ui/domains/Portfolio/Nfts/helpers"
+import { NetworkOption, portfolioSelectedAccounts$ } from "@ui/state"
 
 import { accountsByCategoryAtomFamily } from "./accounts"
 import { evmNetworksArrayAtomFamily } from "./chaindata"
-import { NetworkOption, portfolioSelectedAccountsAtom } from "./portfolio"
+// import { NetworkOption, portfolioSelectedAccountsAtom } from "./portfolio"
 import { settingsAtomFamily } from "./settings"
 import { atomWithDebounce } from "./utils/atomWithDebounce"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -58,23 +59,26 @@ export const nftsVisibilityFilterAtom = atom<NftVisibilityFilter>(NftVisibilityF
 
 export const { debouncedValueAtom: nftsPortfolioSearchAtom } = atomWithDebounce<string>("")
 
+const tmpPortfolioSelectedAccountsAtom = atomWithObservable(() => portfolioSelectedAccounts$)
+
 export const nftsAtom = atom(async (get) => {
   const [
     { status, nfts: allNfts, collections: allCollections, hiddenNftCollectionIds, favoriteNftIds },
     accounts,
     networks,
     nftsSortBy,
+    selectedAccounts,
   ] = await Promise.all([
     get(nftDataAtom),
     get(accountsByCategoryAtomFamily("portfolio")),
     get(nftsNetworkOptionsAtom),
     get(settingsAtomFamily("nftsSortBy")),
+    get(tmpPortfolioSelectedAccountsAtom),
   ])
 
   const sortBy = nftsSortBy as SettingsStoreData["nftsSortBy"]
 
   const visibility = get(nftsVisibilityFilterAtom)
-  const selectedAccounts = get(portfolioSelectedAccountsAtom)
   const networkFilter = get(nftsNetworkFilterAtom)
   const lowerSearch = get(nftsPortfolioSearchAtom).toLowerCase()
 
