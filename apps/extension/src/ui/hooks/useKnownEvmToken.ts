@@ -2,11 +2,9 @@ import { Token } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
 import { activeTokensStore, isTokenActive } from "@extension/core"
-import { useActiveTokensState } from "@ui/state"
+import { useActiveTokensState, useTokens } from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-
-import { useTokens } from "./useTokens"
 
 /**
  * NOTE: Works for both `evm-erc20` as well as `evm-uniswapv2` tokens.
@@ -15,7 +13,7 @@ export const useKnownEvmToken = (
   evmNetworkId: string | undefined | null,
   contractAddress: string | undefined | null
 ) => {
-  const { tokens: allTokens } = useTokens({ activeOnly: false, includeTestnets: true })
+  const allTokens = useTokens()
   const allErc20Tokens = useMemo(
     () => allTokens.filter((t) => isErc20Token(t) || isUniswapV2Token(t)),
     [allTokens]

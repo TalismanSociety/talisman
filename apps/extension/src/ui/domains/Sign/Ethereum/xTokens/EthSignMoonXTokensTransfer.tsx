@@ -7,8 +7,7 @@ import { useTranslation } from "react-i18next"
 import { EvmAddress } from "@extension/core"
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
-import { useTokens } from "@ui/hooks/useTokens"
-import { useChain, useChains, useToken } from "@ui/state"
+import { useChain, useChains, useToken, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -69,7 +68,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation("request")
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
+  const tokens = useTokens()
 
   const [destination, amount, currencyAddress] = useMemo(
     () => [

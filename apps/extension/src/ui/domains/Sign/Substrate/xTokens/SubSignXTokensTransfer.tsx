@@ -9,8 +9,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { log } from "@extension/shared"
-import { useTokens } from "@ui/hooks/useTokens"
-import { useChains, useTokenRatesMap } from "@ui/state"
+import { useChains, useTokenRatesMap, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -140,8 +139,8 @@ const getTarget = (
 export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const chains = useChains({ activeOnly: false, includeTestnets: true })
+  const tokens = useTokens()
+  const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
   const props = useMemo(() => {

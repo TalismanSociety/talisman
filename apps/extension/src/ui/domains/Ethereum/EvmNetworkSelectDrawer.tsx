@@ -10,10 +10,8 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useAuthorisedSites } from "@ui/state"
+import { useAuthorisedSites, useEvmNetwork, useEvmNetworks } from "@ui/state"
 
 import { NetworkLogo } from "./NetworkLogo"
 
@@ -37,7 +35,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     [isTestnet, settingUseTestnets]
   )
 
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
 
   const [search, setSearch] = useDebouncedState("", 150)
 

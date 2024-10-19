@@ -12,10 +12,9 @@ import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useBalancesHydrate } from "@ui/state"
+import { useBalancesHydrate, useEvmNetwork } from "@ui/state"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 

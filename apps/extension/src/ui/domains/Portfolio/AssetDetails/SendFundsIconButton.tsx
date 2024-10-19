@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useTokens } from "@ui/hooks/useTokens"
+import { useTokens } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -21,7 +21,7 @@ export const SendFundsButton = ({
 }) => {
   const { selectedAccount } = usePortfolioNavigation()
   const [includeTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
+  const tokens = useTokens({ activeOnly: true, includeTestnets })
 
   const token = tokens?.find(
     (t) =>

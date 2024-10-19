@@ -12,9 +12,13 @@ import { activeEvmNetworksStore, EvmNetwork, isEvmNetworkActive } from "@extensi
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useActiveEvmNetworksState, useBalances, useIsBalanceInitializing } from "@ui/state"
+import {
+  useActiveEvmNetworksState,
+  useBalances,
+  useEvmNetworks,
+  useIsBalanceInitializing,
+} from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
@@ -29,7 +33,7 @@ const DeactivateNetworksModalContent: FC<{
 
   const [includeTestnets] = useSetting("useTestnets")
   const balances = useBalances("all")
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
 
   const [activeEvmNetworkIds, unusedEvmNetworkIds] = useMemo(() => {
     const networkIds = evmNetworks.map((chain) => chain.id)
@@ -120,7 +124,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
   const { t } = useTranslation("admin")
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks } = useEvmNetworks({
+  const evmNetworks = useEvmNetworks({
     activeOnly: false,
     includeTestnets,
   })

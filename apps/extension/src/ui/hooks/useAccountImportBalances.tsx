@@ -10,8 +10,7 @@ import {
   isAccountCompatibleWithChain,
 } from "@extension/core"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useChains } from "@ui/state"
+import { useChains, useEvmNetworks } from "@ui/state"
 
 export type AccountImportDef = { address: string; type: KeypairType; genesisHash?: string | null }
 
@@ -27,7 +26,7 @@ export const useAccountImportBalances = (accounts: AccountImportDef[]) => {
   )
 
   const chains = useChains({ includeTestnets: false, activeOnly: true })
-  const { evmNetworks } = useEvmNetworks({ includeTestnets: false, activeOnly: true })
+  const evmNetworks = useEvmNetworks({ includeTestnets: false, activeOnly: true })
 
   const balanceParams = useMemo(() => {
     const addressesByChain: AddressesByChain = chains.reduce((prev, chain) => {

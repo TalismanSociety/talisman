@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useEvmNetworksMap } from "@ui/state"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -74,7 +74,7 @@ const NftCollectionRowInner: FC<{
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets: true })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
   const networkName = useMemo(() => {
     if (networkIds.length !== 1) return null
     const network = evmNetworksMap[networkIds[0]]

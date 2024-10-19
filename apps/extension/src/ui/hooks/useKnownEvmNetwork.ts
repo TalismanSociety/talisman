@@ -2,9 +2,7 @@ import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
 import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
-import { useActiveEvmNetworksState } from "@ui/state"
-
-import { useEvmNetwork } from "./useEvmNetwork"
+import { useActiveEvmNetworksState, useEvmNetwork } from "@ui/state"
 
 export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   const evmNetwork = useEvmNetwork(evmNetworkId ?? undefined)

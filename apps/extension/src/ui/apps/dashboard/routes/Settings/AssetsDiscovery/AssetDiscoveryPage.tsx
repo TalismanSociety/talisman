@@ -50,10 +50,7 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useTokens } from "@ui/hooks/useTokens"
 import {
   useAccounts,
   useActiveEvmNetworksState,
@@ -61,7 +58,11 @@ import {
   useAppState,
   useAssetDiscoveryScan,
   useAssetDiscoveryScanProgress,
+  useEvmNetwork,
+  useEvmNetworks,
+  useEvmNetworksMap,
   useToken,
+  useTokensMap,
 } from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
@@ -331,8 +332,8 @@ const Header: FC = () => {
     useAssetDiscoveryScanProgress()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
+  const activeNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
 
   const effectivePercent = isInitializing ? 0 : percent
 
@@ -456,8 +457,8 @@ const ScanInfo: FC = () => {
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
-  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
+  const tokensMap = useTokensMap()
+  const evmNetworksMap = useEvmNetworksMap()
 
   const canEnable = useMemo(() => {
     const tokenIds = Object.keys(balancesByTokenId)

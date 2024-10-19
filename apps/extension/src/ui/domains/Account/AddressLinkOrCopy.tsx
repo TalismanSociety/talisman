@@ -4,8 +4,7 @@ import { ChainId, EvmNetworkId } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useChain } from "@ui/state"
+import { useChain, useEvmNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { Address } from "./Address"

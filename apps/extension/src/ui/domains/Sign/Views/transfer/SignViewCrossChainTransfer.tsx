@@ -14,9 +14,8 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useChain } from "@ui/state"
+import { useChain, useEvmNetwork } from "@ui/state"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
   const isKnown = useIsKnownAddress(address)

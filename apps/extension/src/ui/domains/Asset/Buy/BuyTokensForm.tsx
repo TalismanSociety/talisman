@@ -18,9 +18,15 @@ import { BANXA_URL } from "@extension/shared"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useTokens } from "@ui/hooks/useTokens"
-import { useAccounts, useChains, useChainsMap, useRemoteConfig } from "@ui/state"
+import {
+  useAccounts,
+  useChains,
+  useChainsMap,
+  useEvmNetworksMap,
+  useRemoteConfig,
+  useTokens,
+  useTokensMap,
+} from "@ui/state"
 
 import { BuyTokensAmountField } from "./BuyTokensAmountField"
 import { useBuyTokensModal } from "./useBuyTokensModal"
@@ -108,10 +114,11 @@ export const BuyTokensForm = () => {
   })
 
   const [address, tokenId] = watch(["address", "tokenId"])
-  const { tokens, tokensMap } = useTokens({ activeOnly: false, includeTestnets: false })
+  const tokens = useTokens({ activeOnly: false, includeTestnets: false })
+  const tokensMap = useTokensMap({ activeOnly: false, includeTestnets: false })
   const chains = useChains({ activeOnly: false, includeTestnets: false })
   const chainsMap = useChainsMap({ activeOnly: false, includeTestnets: false })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: false })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: false, includeTestnets: false })
 
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,

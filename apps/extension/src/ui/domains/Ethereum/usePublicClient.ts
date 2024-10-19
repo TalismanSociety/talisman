@@ -5,8 +5,7 @@ import { createPublicClient, custom, PublicClient } from "viem"
 
 import { log } from "@extension/shared"
 import { api } from "@ui/api"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useToken } from "@ui/state"
+import { useEvmNetwork, useToken } from "@ui/state"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 

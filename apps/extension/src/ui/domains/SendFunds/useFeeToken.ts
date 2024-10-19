@@ -1,7 +1,6 @@
 import { useMemo } from "react"
 
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useChain, useToken } from "@ui/state"
+import { useChain, useEvmNetwork, useToken } from "@ui/state"
 
 export const useFeeToken = (tokenId?: string | null) => {
   const token = useToken(tokenId)

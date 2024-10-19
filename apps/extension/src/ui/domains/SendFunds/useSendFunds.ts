@@ -22,19 +22,19 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTip } from "@ui/hooks/useTip"
-import { useTokens } from "@ui/hooks/useTokens"
 import {
   useAccountByAddress,
   useBalance,
   useBalancesByAddress,
   useBalancesHydrate,
   useChain,
+  useEvmNetwork,
   useToken,
   useTokenRates,
   useTokenRatesMap,
+  useTokensMap,
 } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -222,7 +222,7 @@ const useSendFundsProvider = () => {
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
   const fromAccount = useAccountByAddress(from)
-  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
+  const tokensMap = useTokensMap()
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
   const currency = useSelectedCurrency()

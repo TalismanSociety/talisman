@@ -12,16 +12,16 @@ import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useTokens } from "@ui/hooks/useTokens"
 import {
   useAccountByAddress,
   useBalances,
   useChains,
   useChainsMap,
+  useEvmNetworksMap,
   useIsBalanceInitializing,
   useTokenRatesMap,
+  useTokens,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
@@ -196,8 +196,8 @@ const TokensList: FC<TokensListProps> = ({
   const [includeTestnets] = useSetting("useTestnets")
   const chains = useChains({ activeOnly: true, includeTestnets })
   const chainsMap = useChainsMap({ activeOnly: true, includeTestnets })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { tokens: allTokens } = useTokens({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
+  const allTokens = useTokens({ activeOnly: true, includeTestnets })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
   const isBalancesInitializing = useIsBalanceInitializing()

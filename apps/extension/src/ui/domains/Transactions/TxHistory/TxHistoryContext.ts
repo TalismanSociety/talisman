@@ -6,15 +6,14 @@ import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useAccountByAddress, useAccounts, useChains } from "@ui/state"
+import { useAccountByAddress, useAccounts, useChains, useEvmNetworksMap } from "@ui/state"
 
 const useTxHistoryProvider = () => {
   const [includeTestnets] = useSetting("useTestnets")
 
   const accounts = useAccounts("owned")
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
   const chains = useChains({ activeOnly: true, includeTestnets })
   const chainsByGenesisHash = useMemo(
     () =>

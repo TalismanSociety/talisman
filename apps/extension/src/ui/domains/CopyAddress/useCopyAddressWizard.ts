@@ -8,13 +8,13 @@ import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import {
   useAccountByAddress,
   useAccounts,
   useChain,
   useChainByGenesisHash,
   useChainsMap,
+  useEvmNetwork,
   useToken,
 } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"

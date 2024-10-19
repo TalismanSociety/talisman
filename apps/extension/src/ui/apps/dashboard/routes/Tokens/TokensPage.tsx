@@ -28,11 +28,14 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useTokens } from "@ui/hooks/useTokens"
-import { useActiveTokensState } from "@ui/state"
+import {
+  useActiveTokensState,
+  useEvmNetwork,
+  useEvmNetworks,
+  useEvmNetworksMap,
+  useTokens,
+} from "@ui/state"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
@@ -245,8 +248,9 @@ const Content = () => {
   const location = useLocation()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks, evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
+  const tokens = useTokens({ activeOnly: false, includeTestnets })
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(false)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
