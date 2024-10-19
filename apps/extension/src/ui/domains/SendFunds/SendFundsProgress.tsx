@@ -13,8 +13,7 @@ import {
   WalletTransaction,
 } from "@extension/core"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useChainByGenesisHash, useEvmNetwork } from "@ui/state"
-import { useTransaction } from "@ui/state/transactions"
+import { useChainByGenesisHash, useEvmNetwork, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 

@@ -11,8 +11,8 @@ import {
   useChains,
   useEvmNetworksMap,
   useSettingValue,
+  useTransactions,
 } from "@ui/state"
-import { useTransactions } from "@ui/state/transactions"
 
 const useTxHistoryProvider = () => {
   const includeTestnets = useSettingValue("useTestnets")
