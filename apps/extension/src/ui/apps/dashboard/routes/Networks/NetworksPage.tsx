@@ -1,5 +1,4 @@
 import { InfoIcon, PlusIcon } from "@talismn/icons"
-import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -11,13 +10,6 @@ import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
-import {
-  chainsActiveAtom,
-  chainsMapAtomFamily,
-  evmNetworksActiveAtom,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-} from "@ui/atoms"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
@@ -54,19 +46,19 @@ const Notice: FC = () => {
   )
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: true })),
-    get(evmNetworksMapAtomFamily({ activeOnly: false, includeTestnets: true })),
-    get(chainsActiveAtom),
-    get(evmNetworksActiveAtom),
-  ])
-)
+// const preloadAtom = atom((get) =>
+//   Promise.all([
+//     get(settingsAtomFamily("useTestnets")),
+//     get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: true })),
+//     get(evmNetworksMapAtomFamily({ activeOnly: false, includeTestnets: true })),
+//     get(chainsActiveAtom),
+//     get(evmNetworksActiveAtom),
+//   ])
+// )
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  // useAtomValue(preloadAtom) // TODO preload
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 

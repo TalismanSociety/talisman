@@ -4,7 +4,6 @@ import isEqual from "lodash/isEqual"
 import {
   activeChainsState$,
   activeChainsWithTestnetsMap$,
-  activeEvmNetworksState$,
   activeEvmNetworksWithTestnetsMap$,
   activeTokensWithTestnetsMap$,
   ChaindataQueryOptions,
@@ -20,7 +19,7 @@ import {
 
 // const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
-export const evmNetworksActiveAtom = atomWithObservable(() => activeEvmNetworksState$)
+// export const evmNetworksActiveAtom = atomWithObservable(() => activeEvmNetworksState$)
 
 // const allEvmNetworksAtom = atomWithObservable(() => allEvmNetworks$)
 
