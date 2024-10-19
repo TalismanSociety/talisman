@@ -13,7 +13,7 @@ import { KeyValueAtomFamily } from "./utils/types"
 //   { debugLabel: "settingsAtom" }
 // )
 
-export const settingsAtom = atomWithObservable(() => settingsStore.observable)
+const settingsAtom = atomWithObservable(() => settingsStore.observable)
 
 export const settingsAtomFamily: KeyValueAtomFamily<SettingsStoreData> = atomFamily((key) =>
   atom(

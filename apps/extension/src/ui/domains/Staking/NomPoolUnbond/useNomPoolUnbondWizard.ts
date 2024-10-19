@@ -10,11 +10,10 @@ import { Hex } from "viem"
 
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { useBalance } from "@ui/state"
+import { useAccountByAddress, useBalance } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useNomPoolByMember } from "../shared/useNomPoolByMember"

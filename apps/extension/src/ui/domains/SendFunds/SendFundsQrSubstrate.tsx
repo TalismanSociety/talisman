@@ -8,10 +8,10 @@ import { AccountJsonQr, privacyRoundCurrency } from "@extension/core"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
+import { useAccountByAddress } from "@ui/state"
 
 import { useSendFunds } from "./useSendFunds"
 

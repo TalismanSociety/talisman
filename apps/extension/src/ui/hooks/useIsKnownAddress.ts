@@ -1,9 +1,10 @@
-import { AddressBookContact } from "@extension/core"
 import { AccountJson } from "@polkadot/extension-base/background/types"
-import { convertAddress } from "@talisman/util/convertAddress"
+import { isAddressEqual } from "@talismn/util"
 import { useMemo } from "react"
 
-import { useAccountByAddress } from "./useAccountByAddress"
+import { AddressBookContact } from "@extension/core"
+import { useAccountByAddress } from "@ui/state"
+
 import { useAddressBook } from "./useAddressBook"
 
 type IsKnownAccount = {
@@ -23,11 +24,11 @@ export const useIsKnownAddress = (
   const { contacts } = useAddressBook()
   const contactAddress = useMemo(
     () =>
-      contacts.filter(
-        (contact) =>
-          address && convertAddress(contact.address, null) === convertAddress(address, null)
-      )[0],
-    [contacts, address]
+      (!localAccount &&
+        address &&
+        contacts.find((contact) => isAddressEqual(contact.address, address))) ||
+      null,
+    [address, contacts, localAccount]
   )
   if (localAccount)
     return {

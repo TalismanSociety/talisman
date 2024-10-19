@@ -17,7 +17,7 @@ import { log } from "@extension/shared"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import {
   LedgerConnectionStatus,

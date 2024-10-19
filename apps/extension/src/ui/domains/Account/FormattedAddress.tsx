@@ -1,9 +1,10 @@
 import { classNames } from "@talismn/util"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import { AccountIcon } from "./AccountIcon"
 import { AccountTypeIcon } from "./AccountTypeIcon"

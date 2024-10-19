@@ -1,12 +1,13 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { UserPlusIcon } from "@talismn/icons"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { AccountAddressType } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, useOpenClose } from "talisman-ui"
+
+import { convertAddress } from "@talisman/util/convertAddress"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAccountByAddress } from "@ui/state"
 
 import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"

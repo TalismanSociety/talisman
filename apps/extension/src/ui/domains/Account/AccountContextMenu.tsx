@@ -17,10 +17,10 @@ import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useAccountByAddress } from "@ui/state"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 

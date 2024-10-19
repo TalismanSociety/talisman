@@ -21,7 +21,6 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -31,7 +30,12 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalance,
+  useBalancesByAddress,
+  useBalancesHydrate,
+} from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"

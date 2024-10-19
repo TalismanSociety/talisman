@@ -6,8 +6,7 @@ import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { api } from "@ui/api"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useAccounts } from "@ui/state"
+import { useAccountByAddress, useAccounts } from "@ui/state"
 
 type FormData = {
   name: string

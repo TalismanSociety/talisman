@@ -3,9 +3,9 @@ import { FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"

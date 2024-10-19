@@ -8,7 +8,7 @@ import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { log } from "@extension/shared"
 import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE, LedgerError } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import {
   LedgerConnectionStatus,

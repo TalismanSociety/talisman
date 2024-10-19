@@ -23,10 +23,9 @@ import {
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useBalance } from "@ui/state"
+import { useAccountByAddress, useBalance } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"

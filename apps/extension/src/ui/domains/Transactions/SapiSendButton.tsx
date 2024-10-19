@@ -8,7 +8,7 @@ import { Button } from "talisman-ui"
 import { Hex } from "viem"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
