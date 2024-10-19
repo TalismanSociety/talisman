@@ -6,15 +6,13 @@ import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { useSetting } from "@ui/state"
+import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
-import { useIsFavoriteNft } from "./useIsFavoriteNft"
-import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
 export const DashboardNftCollection = () => {
   const [viewMode] = useSetting("nftsViewMode")
@@ -103,7 +101,7 @@ const NftRow: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> =
 const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
   const { t } = useTranslation()
-  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+  const { collection, nfts } = useNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 
@@ -170,7 +168,7 @@ const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
 
 const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
-  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+  const { collection, nfts } = useNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 

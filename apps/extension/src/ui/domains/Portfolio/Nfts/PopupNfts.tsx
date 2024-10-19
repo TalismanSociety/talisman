@@ -7,7 +7,7 @@ import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useEvmNetworksMap, useSetting } from "@ui/state"
+import { useEvmNetworksMap, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
 
 import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -15,14 +15,12 @@ import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
-import { useIsFavoriteNft } from "./useIsFavoriteNft"
-import { usePortfolioNfts } from "./usePortfolioNfts"
 
 const NoNftFound = () => {
   const { t } = useTranslation()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
-  const { status } = usePortfolioNfts()
+  const { status } = useNfts()
 
   const msg = useMemo(() => {
     if (status === "loading") return <span className="animate-pulse">{t("Loading NFTs...")}</span>
@@ -40,7 +38,7 @@ export const PopupNfts: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
   const [dialogNftId, setDialogNftId] = useState<string | null>(null)
 
-  const data = usePortfolioNfts()
+  const data = useNfts()
 
   return (
     <div>

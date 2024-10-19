@@ -34,7 +34,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useEvmNetwork } from "@ui/state"
+import { useEvmNetwork, useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -44,9 +44,6 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
 import { getNftCollectionFloorUsd } from "./Nfts/helpers"
-import { useIsFavoriteNft } from "./Nfts/useIsFavoriteNft"
-import { useIsHiddenNftCollection } from "./Nfts/useIsHiddenNftCollection"
-import { useNft } from "./Nfts/useNft"
 
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()

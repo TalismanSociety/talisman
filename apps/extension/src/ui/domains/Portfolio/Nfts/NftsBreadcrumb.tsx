@@ -4,16 +4,16 @@ import { useParams } from "react-router-dom"
 
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { useNfts } from "@ui/state"
 
 import { NftViewModeToggleButton, SortByButton } from "../PortfolioToolbarNfts"
-import { usePortfolioNfts } from "./usePortfolioNfts"
 
 export const NftsBreadcrumb = () => {
   const { t } = useTranslation()
   const { collectionId } = useParams()
   const navigate = useNavigateWithQuery()
 
-  const { collections } = usePortfolioNfts()
+  const { collections } = useNfts()
   const collection = useMemo(
     () => collections.find((c) => c.id === collectionId),
     [collections, collectionId]
