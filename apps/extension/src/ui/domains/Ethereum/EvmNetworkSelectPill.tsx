@@ -1,11 +1,12 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { Suspense, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
+
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useAuthorisedSites } from "@ui/state"
 
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
 import { NetworkLogo } from "./NetworkLogo"

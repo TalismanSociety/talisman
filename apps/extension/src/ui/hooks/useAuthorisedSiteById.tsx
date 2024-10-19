@@ -8,9 +8,9 @@ import {
 } from "@extension/core"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl } from "@extension/shared"
 import { api } from "@ui/api"
+import { useAuthorisedSites } from "@ui/state"
 
 import { useAccountAddresses } from "./useAccountAddresses"
-import { useAuthorisedSites } from "./useAuthorisedSites"
 import { useSetting } from "./useSettings"
 
 const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
