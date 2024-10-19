@@ -17,7 +17,7 @@ import { NavLink, To, useMatch, useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()

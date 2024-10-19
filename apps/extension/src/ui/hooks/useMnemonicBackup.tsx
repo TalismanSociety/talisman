@@ -3,11 +3,9 @@ import { useLocation } from "react-router-dom"
 
 import { appStore } from "@extension/core"
 import { api } from "@ui/api"
-import { useAccounts, useAppState, useBalanceTotals } from "@ui/state"
+import { useAccounts, useAppState, useBalanceTotals, useMnemonics } from "@ui/state"
 
-import { useMnemonics } from "./useMnemonics"
-
-const useMnemonicBackup = () => {
+export const useMnemonicBackup = () => {
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const mnemonics = useMnemonics()
   const balanceTotals = useBalanceTotals()
@@ -96,5 +94,3 @@ const useMnemonicBackup = () => {
     isSnoozed,
   }
 }
-
-export default useMnemonicBackup

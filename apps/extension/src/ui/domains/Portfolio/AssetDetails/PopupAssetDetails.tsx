@@ -21,8 +21,7 @@ import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPo
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
-import { useSelectedCurrency } from "@ui/state"
+import { useFeatureFlag, useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -332,7 +331,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
     genericEvent("open receive", { from: "asset details" })
   }, [selectedAccount?.address, genericEvent, open])
 
-  const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
+  const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
     await api.modalOpen({ modalType: "buy" })
     window.close()

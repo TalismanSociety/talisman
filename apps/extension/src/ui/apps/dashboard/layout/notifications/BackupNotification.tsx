@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 
 type NotificationProps = {
   icon: ReactNode

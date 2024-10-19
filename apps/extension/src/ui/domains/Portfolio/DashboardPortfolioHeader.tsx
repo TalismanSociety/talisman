@@ -29,9 +29,8 @@ import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
-import { useBalanceTotals, useSelectedCurrency } from "@ui/state"
+import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
 
 import { AccountContextMenu } from "../Account/AccountContextMenu"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -229,7 +228,7 @@ const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+  const canBuy = useFeatureFlag("BUY_CRYPTO")
 
   const [disableActions, disabledReason] = useMemo(() => {
     if (!!selectedAccount && !isOwnedAccount(selectedAccount))

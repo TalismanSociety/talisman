@@ -6,8 +6,7 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { useAppState } from "@ui/state"
+import { useAppState, useMnemonic } from "@ui/state"
 
 const useMnemonicSetPvVerifierModalProvider = () => {
   const { isOpen, open: innerOpen, close } = useOpenClose()

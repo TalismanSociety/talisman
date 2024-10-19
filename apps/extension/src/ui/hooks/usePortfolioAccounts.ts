@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { combineLatest, map, shareReplay } from "rxjs"
+import { combineLatest, map } from "rxjs"
 
 import {
   accountsCatalog$,
@@ -8,7 +8,6 @@ import {
   getSettingValue$,
 } from "@ui/state"
 
-// TODO move to @ui/state
 export const [usePortfolioAccounts, portfolioAccounts$] = bind(
   combineLatest([
     getAccountsByCategory$("all"),
@@ -47,7 +46,6 @@ export const [usePortfolioAccounts, portfolioAccounts$] = bind(
         portfolioTotal,
         ownedTotal,
       }
-    }),
-    shareReplay(1)
+    })
   )
 )

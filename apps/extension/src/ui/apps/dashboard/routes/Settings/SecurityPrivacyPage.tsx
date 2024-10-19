@@ -14,7 +14,7 @@ import { CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "tali
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"

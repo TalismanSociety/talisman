@@ -34,8 +34,7 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import { useMnemonics } from "@ui/hooks/useMnemonics"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useMnemonics } from "@ui/state"
 
 import { AccountIcon } from "../../AccountIcon"
 import { AccountAddPageProps } from "../types"

@@ -5,10 +5,9 @@ import { passwordStore } from "@extension/core"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useMnemonics } from "@ui/hooks/useMnemonics"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
-import { useSetting } from "@ui/state"
+import { useMnemonics, useSetting } from "@ui/state"
 
 import { dismissMigratePasswordModal } from "./useMigratePasswordModal"
 

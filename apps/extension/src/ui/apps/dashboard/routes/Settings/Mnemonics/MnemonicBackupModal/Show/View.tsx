@@ -1,11 +1,12 @@
+import { ChangeEventHandler, FC, useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Checkbox } from "talisman-ui"
+
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useMnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
-import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { ChangeEventHandler, FC, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Checkbox } from "talisman-ui"
+import { useMnemonic } from "@ui/state"
 
 import { useMnemonicBackupModal } from "../context"
 import { ShowMnemonicProps } from "./types"

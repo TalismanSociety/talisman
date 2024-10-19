@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
 
 import { AccountJsonAny } from "@extension/core"
-import { useMnemonics } from "@ui/hooks/useMnemonics"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useMnemonics } from "@ui/state"
 
 export type MnemonicOption = {
   value: string

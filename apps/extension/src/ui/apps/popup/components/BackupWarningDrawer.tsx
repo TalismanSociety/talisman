@@ -1,9 +1,10 @@
 import { AlertCircleIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
+
+import { api } from "@ui/api"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 
 export const BackupWarningDrawer = () => {
   const { t } = useTranslation()
