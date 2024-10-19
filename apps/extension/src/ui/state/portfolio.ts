@@ -18,12 +18,6 @@ import {
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
-// import {
-//   balancesByAccountCategoryAtomFamily,
-//   balancesHydrateAtom,
-//   balancesInitialisingAtom,
-// } from "./balances"
-
 export type NetworkOption = {
   id: string // here we'll merge all ids together
   name: string
@@ -168,8 +162,6 @@ const getFilteredBalances = ({
   return new Balances(filtered, hydrate)
 }
 
-//const portfolioAccount$ = new BehaviorSubject<AccountJsonAny | undefined>(undefined)
-
 // TODO review this, we may want to use usePortfolioNavigation instead
 export const portfolioSelectedAccounts$ = new BehaviorSubject<AccountJsonAny[] | undefined>(
   undefined
@@ -179,11 +171,13 @@ export const [usePortfolioSelectedAccounts] = bind(portfolioSelectedAccounts$)
 
 export const portfolioNetworkFilter$ = new BehaviorSubject<NetworkOption | undefined>(undefined)
 
-// export const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
-// // all accounts we want to display balances for : the selected account itself, the accounts within the selected folder, or undefined if nothing is selected
-// export const portfolioSelectedAccountsAtom = atom<AccountJsonAny[] | undefined>(undefined)
+const setNetworkFilter = (network: NetworkOption | undefined) =>
+  portfolioNetworkFilter$.next(network)
 
-// export const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
+// TODO debounce ?
+export const portfolioSearch$ = new BehaviorSubject<string>("")
+
+const setSearch = (search: string) => portfolioSearch$.next(search)
 
 export const [usePortfolioGlobalData, portfolioGlobalData$] = bind(
   getSettingValue$("useTestnets").pipe(
@@ -233,45 +227,7 @@ export const [usePortfolioGlobalData, portfolioGlobalData$] = bind(
   } as PortfolioGlobalData
 )
 
-// // the async atom, whose value must be copied in the sync atom
-// export const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
-//   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
-//   const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances, isInitialising] =
-//     await Promise.all([
-//       get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
-//       get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
-//       get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
-//       get(balancesHydrateAtom),
-//       get(balancesByAccountCategoryAtomFamily("all")),
-//       get(balancesByAccountCategoryAtomFamily("portfolio")),
-//       get(balancesInitialisingAtom),
-//     ])
-
-//   return {
-//     chains,
-//     tokens,
-//     evmNetworks,
-//     hydrate,
-//     allBalances,
-//     portfolioBalances,
-//     isInitialising,
-//     isProvisioned: true,
-//   }
-// })
-
-// the sync atom from which portfolio atoms will derive
-// export const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
-//   chains: [],
-//   tokens: [],
-//   evmNetworks: [],
-//   hydrate: {},
-//   allBalances: new Balances([]),
-//   portfolioBalances: new Balances([]),
-//   isProvisioned: false,
-//   isInitialising: false,
-// })
-
-const portfolioBase$ = combineLatest([
+const portfolioForSelectedNetwork$ = combineLatest([
   portfolioGlobalData$,
   portfolioNetworkFilter$,
   portfolioSelectedAccounts$,
@@ -314,8 +270,7 @@ const portfolioBase$ = combineLatest([
         evmNetworks,
         hydrate,
         networkFilter,
-        setNetworkFilter: (network: NetworkOption | undefined) =>
-          portfolioNetworkFilter$.next(network),
+
         networkBalances,
         accountType,
         networks,
@@ -326,85 +281,24 @@ const portfolioBase$ = combineLatest([
   )
 )
 
-// recomputes only if a filter (account, network) is changed
-// const portfolioBaseAtom = atom((get) => {
-//   const {
-//     hydrate,
-//     tokens,
-//     chains,
-//     evmNetworks,
-//     allBalances: allAccountsBalances,
-//     portfolioBalances,
-//     isInitialising,
-//   } = get(portfolioGlobalDataAtom)
-//   const networkFilter = get(networkFilterAtom)
-
-//   const selectedAccounts = get(portfolioSelectedAccountsAtom)
-
-//   const allBalances = selectedAccounts
-//     ? allAccountsBalances.find((b) =>
-//         selectedAccounts.some((a) => isAddressEqual(a.address, b.address))
-//       )
-//     : portfolioBalances
-
-//   const networkBalances = getFilteredBalances({ networkFilter, allBalances, hydrate })
-//   const accountType = getAccountsType(selectedAccounts)
-//   const networks = getNetworkOptions({
-//     tokens,
-//     chains,
-//     evmNetworks,
-//     balances: allBalances,
-//     type: accountType,
-//   })
-
-//   return {
-//     allBalances,
-//     chains,
-//     tokens,
-//     evmNetworks,
-//     hydrate,
-//     networkFilter,
-//     networkBalances,
-//     accountType,
-//     networks,
-//     isInitialising,
-//   }
-// })
-
-// TODO debounce
-export const portfolioSearch$ = new BehaviorSubject<string>("")
-
 export const [usePortfolio, portfolio$] = bind(
-  combineLatest([portfolioBase$, portfolioSearch$]).pipe(
-    map(([base, search]) => {
+  combineLatest([portfolioForSelectedNetwork$, portfolioSearch$]).pipe(
+    map(([portfolioForSelectedNetwork, search]) => {
       const searchBalances = getFilteredBalances({
-        allBalances: base.networkBalances,
-        hydrate: base.hydrate,
+        allBalances: portfolioForSelectedNetwork.networkBalances,
+        hydrate: portfolioForSelectedNetwork.hydrate,
         search,
       })
 
       return {
-        ...base,
+        ...portfolioForSelectedNetwork,
+
         search,
-        setSearch: (search: string) => portfolioSearch$.next(search),
         searchBalances,
+
+        setNetworkFilter,
+        setSearch,
       }
     })
   )
 )
-
-// recomputes on each search change
-// export const portfolioAtom = atom((get) => {
-//   const search = get(portfolioSearchAtom)
-//   const portfolio = get(portfolioBaseAtom)
-//   const searchBalances = getFilteredBalances({
-//     allBalances: portfolio.networkBalances,
-//     hydrate: portfolio.hydrate,
-//     search: (search as string) ?? "",
-//   })
-
-//   return {
-//     ...portfolio,
-//     searchBalances,
-//   }
-// })
