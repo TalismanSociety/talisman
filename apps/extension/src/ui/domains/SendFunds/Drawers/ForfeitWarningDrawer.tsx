@@ -1,10 +1,11 @@
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
-import useToken from "@ui/hooks/useToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
+
+import { useToken } from "@ui/state"
+import { isSubToken } from "@ui/util/isSubToken"
 
 import Tokens from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"

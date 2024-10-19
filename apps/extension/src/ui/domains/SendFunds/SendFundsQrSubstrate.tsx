@@ -10,8 +10,7 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import useToken from "@ui/hooks/useToken"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress, useToken } from "@ui/state"
 
 import { useSendFunds } from "./useSendFunds"
 

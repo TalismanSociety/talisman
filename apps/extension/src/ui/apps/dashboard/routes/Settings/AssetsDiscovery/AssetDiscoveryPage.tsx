@@ -48,17 +48,21 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAppState } from "@ui/hooks/useAppState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useAccounts, useAssetDiscoveryScan, useAssetDiscoveryScanProgress } from "@ui/state"
+import {
+  useAccounts,
+  useActiveEvmNetworksState,
+  useActiveTokensState,
+  useAppState,
+  useAssetDiscoveryScan,
+  useAssetDiscoveryScanProgress,
+  useToken,
+} from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 

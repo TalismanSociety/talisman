@@ -2,7 +2,7 @@ import { Token, TokenId } from "@talismn/chaindata-provider"
 import { BalanceFormatter } from "extension-core"
 import { useMemo } from "react"
 
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 export const useExistentialDeposit = (tokenId: TokenId | null | undefined) => {
   const token = useToken(tokenId) as Token

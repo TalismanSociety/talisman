@@ -1,7 +1,8 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import useToken from "@ui/hooks/useToken"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
+
+import { useToken } from "@ui/state"
 
 export const SignViewStakingSetAutoCompound: FC<{
   tokenId: TokenId

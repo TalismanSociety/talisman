@@ -4,8 +4,7 @@ import { log } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import { useAccounts, useRemoteConfig } from "@ui/state"
+import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
 import { useNomPoolBondModal } from "./useNomPoolBondModal"
 

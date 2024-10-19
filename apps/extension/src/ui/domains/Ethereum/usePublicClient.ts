@@ -1,11 +1,12 @@
-import { log } from "@extension/shared"
 import { EvmNativeToken } from "@talismn/balances"
 import { EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { useMemo } from "react"
+import { createPublicClient, custom, PublicClient } from "viem"
+
+import { log } from "@extension/shared"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useToken from "@ui/hooks/useToken"
-import { useMemo } from "react"
-import { PublicClient, createPublicClient, custom } from "viem"
+import { useToken } from "@ui/state"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 

@@ -329,7 +329,7 @@ export const [useTokensMap, getTokensMap$] = bind(
   }
 )
 
-export const [useTokenById, getTokenById$] = bind((tokenId: TokenId | null | undefined) => {
+export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
   return allTokensMap$.pipe(
     map((tokensMap) => tokensMap[tokenId ?? "#"] ?? null),
     shareReplay({ bufferSize: 1, refCount: true })

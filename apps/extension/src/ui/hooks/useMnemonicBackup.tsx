@@ -3,9 +3,8 @@ import { useLocation } from "react-router-dom"
 
 import { appStore } from "@extension/core"
 import { api } from "@ui/api"
-import { useAccounts, useBalanceTotals } from "@ui/state"
+import { useAccounts, useAppState, useBalanceTotals } from "@ui/state"
 
-import { useAppState } from "./useAppState"
 import { useMnemonics } from "./useMnemonics"
 
 const useMnemonicBackup = () => {

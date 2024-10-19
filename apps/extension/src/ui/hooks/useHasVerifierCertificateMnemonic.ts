@@ -1,4 +1,5 @@
-import { useAppState } from "./useAppState"
+import { useAppState } from "@ui/state"
+
 import { useMnemonic } from "./useMnemonics"
 
 export const useHasVerifierCertificateMnemonic = () => {

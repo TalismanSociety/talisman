@@ -26,13 +26,13 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTip } from "@ui/hooks/useTip"
-import useToken from "@ui/hooks/useToken"
 import { useTokens } from "@ui/hooks/useTokens"
 import {
   useAccountByAddress,
   useBalance,
   useBalancesByAddress,
   useBalancesHydrate,
+  useToken,
   useTokenRates,
   useTokenRatesMap,
 } from "@ui/state"

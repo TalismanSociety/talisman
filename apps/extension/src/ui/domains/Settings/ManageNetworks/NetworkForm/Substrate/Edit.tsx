@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 
 import useChain from "@ui/hooks/useChain"
 import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 import { SubNetworkForm } from "./Form"
 import { RemoveSubNetworkButton } from "./RemoveSubNetworkButton"

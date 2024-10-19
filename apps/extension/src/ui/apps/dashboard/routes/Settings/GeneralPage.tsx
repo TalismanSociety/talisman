@@ -18,9 +18,9 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
-import { useAppState } from "@ui/hooks/useAppState"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useAppState } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 

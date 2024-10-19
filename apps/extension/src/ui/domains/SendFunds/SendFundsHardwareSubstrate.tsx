@@ -7,7 +7,7 @@ import { log } from "@extension/shared"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 import { useSendFunds } from "./useSendFunds"

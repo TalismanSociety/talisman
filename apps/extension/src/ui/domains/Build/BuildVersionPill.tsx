@@ -1,8 +1,9 @@
-import { RELEASE_NOTES_URL } from "@extension/shared"
 import { KeyIcon } from "@talismn/icons"
-import { useAppState } from "@ui/hooks/useAppState"
 import { FC, useCallback } from "react"
 import { PillButton } from "talisman-ui"
+
+import { RELEASE_NOTES_URL } from "@extension/shared"
+import { useAppState } from "@ui/state"
 
 export interface BuildVersioProps {
   className?: string

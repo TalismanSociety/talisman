@@ -15,7 +15,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkDetailsButton, NetworkDetailsLink } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 

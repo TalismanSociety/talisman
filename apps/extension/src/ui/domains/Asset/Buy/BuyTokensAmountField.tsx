@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { Modal } from "talisman-ui"
 
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 import { TokenLogo } from "../TokenLogo"
 import { BuyTokensPicker } from "./BuyTokensPicker"

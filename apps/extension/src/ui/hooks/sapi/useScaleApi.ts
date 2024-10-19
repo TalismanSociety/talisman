@@ -6,11 +6,11 @@ import { ChainId } from "extension-core"
 import { useMemo } from "react"
 
 import { api } from "@ui/api"
+import { useToken } from "@ui/state"
 import { getScaleApi, ScaleApi } from "@ui/util/scaleApi"
 
 import useChain from "../useChain"
 import { useChainByGenesisHash } from "../useChainByGenesisHash"
-import useToken from "../useToken"
 
 export const useScaleApi = (
   chainIdOrHash: ChainId | HexString | null | undefined,

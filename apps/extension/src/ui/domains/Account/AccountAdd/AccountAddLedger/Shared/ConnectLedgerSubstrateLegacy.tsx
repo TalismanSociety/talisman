@@ -6,7 +6,7 @@ import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStat
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import useChain from "@ui/hooks/useChain"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 type ConnectLedgerSubstrateLegacyProps = {
   chainId: string

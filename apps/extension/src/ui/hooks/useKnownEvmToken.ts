@@ -2,10 +2,10 @@ import { Token } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
 import { activeTokensStore, isTokenActive } from "@extension/core"
+import { useActiveTokensState } from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
-import { useActiveTokensState } from "./useActiveTokensState"
 import { useTokens } from "./useTokens"
 
 /**

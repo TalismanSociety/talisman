@@ -1,7 +1,11 @@
 import { useCallback } from "react"
 
-import { useAppState } from "@ui/hooks/useAppState"
-import { useAssetDiscoveryScan, useAssetDiscoveryScanProgress, useIsLoggedIn } from "@ui/state"
+import {
+  useAppState,
+  useAssetDiscoveryScan,
+  useAssetDiscoveryScanProgress,
+  useIsLoggedIn,
+} from "@ui/state"
 
 export const useAssetDiscoveryAlert = () => {
   const isLoggedIn = useIsLoggedIn()

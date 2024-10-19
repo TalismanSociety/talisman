@@ -12,8 +12,7 @@ import {
 } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/state"
+import { useToken, useTokenRates } from "@ui/state"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAddress } from "./ViewDetailsAddress"

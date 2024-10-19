@@ -19,9 +19,9 @@ import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/Accou
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useAppState } from "@ui/hooks/useAppState"
 import { useChains } from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
+import { useAppState } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 

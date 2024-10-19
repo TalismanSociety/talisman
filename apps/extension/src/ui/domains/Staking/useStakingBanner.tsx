@@ -9,8 +9,7 @@ import {
   STAKING_BANNER_CHAINS,
   StakingSupportedChain,
 } from "@extension/core"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useAccounts, useStakingBannerStore } from "@ui/state"
+import { useAccounts, useAppState, useStakingBannerStore } from "@ui/state"
 
 import { colours, isNomPoolChain, isStakingSupportedChain } from "./helpers"
 

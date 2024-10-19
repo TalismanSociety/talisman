@@ -12,10 +12,9 @@ import { activeEvmNetworksStore, EvmNetwork, isEvmNetworkActive } from "@extensi
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useBalances, useIsBalanceInitializing } from "@ui/state"
+import { useActiveEvmNetworksState, useBalances, useIsBalanceInitializing } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"

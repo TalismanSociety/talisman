@@ -8,8 +8,7 @@ import { Hex } from "viem"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import { useAccountByAddress, useBalance, useTokenRates } from "@ui/state"
+import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../SendFunds/useFeeToken"
