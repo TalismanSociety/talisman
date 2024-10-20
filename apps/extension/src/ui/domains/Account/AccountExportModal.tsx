@@ -1,8 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { atom, useAtom } from "jotai"
+import { bind } from "@react-rxjs/core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
@@ -16,23 +17,23 @@ import { api } from "@ui/api"
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const accountExportAccountState = atom<AccountJsonAny | null>(null)
+const accountExportAccountState$ = new BehaviorSubject<AccountJsonAny | null>(null)
+
+const [useAccountExportAccount] = bind(accountExportAccountState$)
 
 export const useAccountExportModal = () => {
-  const [_account, setAccount] = useAtom(accountExportAccountState)
+  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")
 
   const { selectedAccount } = usePortfolioNavigation()
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")
+  const account = useAccountExportAccount() ?? selectedAccount
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account ?? null)
+      accountExportAccountState$.next(account ?? null)
       innerOpen()
     },
-    [innerOpen, setAccount]
+    [innerOpen]
   )
-
-  const account = _account ?? selectedAccount
 
   const canExportAccountFunc = (account?: AccountJsonAny | null) =>
     account?.origin === AccountType.Talisman
