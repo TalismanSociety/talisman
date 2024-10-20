@@ -71,7 +71,7 @@ import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { DashboardLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
-  useAssetDiscoveryTokenRate,
+  useAssetDiscoveryTokenRates,
 } from "./useAssetDiscoveryTokenRates"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -140,7 +140,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const tokenRates = useAssetDiscoveryTokenRate(token?.id)
+  const tokenRates = useAssetDiscoveryTokenRates(token?.id)
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
 

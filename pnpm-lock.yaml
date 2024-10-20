@@ -447,12 +447,6 @@ importers:
       i18next-http-backend:
         specifier: ^2.2.1
         version: 2.2.1
-      jotai:
-        specifier: ^2.8.0
-        version: 2.8.0(@types/react@18.0.14)(react@18.2.0)
-      jotai-effect:
-        specifier: ^0.6.0
-        version: 0.6.0(jotai@2.8.0(@types/react@18.0.14)(react@18.2.0))
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
@@ -498,9 +492,6 @@ importers:
       react-router-dom:
         specifier: 6.14.1
         version: 6.14.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      react-rx:
-        specifier: ^4.0.0
-        version: 4.0.0(react@18.2.0)(rxjs@7.8.1)
       react-toastify:
         specifier: ^9.1.1
         version: 9.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -10242,12 +10233,6 @@ packages:
   obliterator@2.0.4:
     resolution: {integrity: sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==}
 
-  observable-callback@1.0.3:
-    resolution: {integrity: sha512-VlS275UyPnwdMtzxDgr/lCiOUyq9uXNll3vdwzDcJ6PB/LuO7gLmxAQopcCA3JoFwwujBwyA7/tP5TXZwWSXew==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      rxjs: ^6.5 || ^7
-
   ofetch@1.3.3:
     resolution: {integrity: sha512-s1ZCMmQWXy4b5K/TW9i/DtiN8Ku+xCiHcjQ6/J/nDdssirrQNOoB165Zu8EqLMA2lln1JUth9a0aW9Ap2ctrUg==}
 
@@ -11043,12 +11028,6 @@ packages:
     engines: {node: '>=14'}
     peerDependencies:
       react: '>=16.8'
-
-  react-rx@4.0.0:
-    resolution: {integrity: sha512-nJbL5VvUUKaNlEzPcAcGdTe9HqJLKfFi7SM3FFAqnPYdJ1mJbZHfmGH82DCkAEzGmOtW9ItdtDbjXSLMswE+dg==}
-    peerDependencies:
-      react: ^18.3 || >=19.0.0-rc
-      rxjs: ^7
 
   react-shallow-renderer@16.15.0:
     resolution: {integrity: sha512-oScf2FqQ9LFVQgA73vr86xl2NaOIX73rh+YFqcOp68CWj56tSfgtGKrEbyhCj0rSijyG9M1CYprTh39fBi5hzA==}
@@ -12509,11 +12488,6 @@ packages:
   url@0.11.3:
     resolution: {integrity: sha512-6hxOLGfZASQK/cijlZnZJTq8OXAkt/3YGfQX45vvMYXpZoo8NdWZcY73K108Jf759lS1Bv/8wXnHDTSz17dSRw==}
 
-  use-effect-event@1.0.2:
-    resolution: {integrity: sha512-9c8AAmtQja4LwJXI0EQPhQCip6dmrcSe0FMcTUZBeGh/XTCOLgw3Qbt0JdUT8Rcrm/ZH+Web7MIcMdqgQKdXJg==}
-    peerDependencies:
-      react: ^18.3 || ^19.0.0-0
-
   use-sync-external-store@1.2.0:
     resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
     peerDependencies:
@@ -13246,7 +13220,7 @@ snapshots:
       '@babel/traverse': 7.23.7
       '@babel/types': 7.24.0
       convert-source-map: 2.0.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 7.5.4
@@ -13266,7 +13240,7 @@ snapshots:
       '@babel/traverse': 7.24.7
       '@babel/types': 7.24.7
       convert-source-map: 2.0.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 7.5.4
@@ -13357,7 +13331,7 @@ snapshots:
       '@babel/core': 7.23.7
       '@babel/helper-compilation-targets': 7.23.6
       '@babel/helper-plugin-utils': 7.22.5
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       lodash.debounce: 4.0.8
       resolve: 1.22.3
     transitivePeerDependencies:
@@ -14403,7 +14377,7 @@ snapshots:
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/parser': 7.23.6
       '@babel/types': 7.24.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -14418,7 +14392,7 @@ snapshots:
       '@babel/helper-split-export-declaration': 7.24.7
       '@babel/parser': 7.24.7
       '@babel/types': 7.24.7
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -15107,7 +15081,7 @@ snapshots:
   '@eslint/eslintrc@0.4.3':
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       espree: 7.3.1
       globals: 13.23.0
       ignore: 4.0.6
@@ -15121,7 +15095,7 @@ snapshots:
   '@eslint/eslintrc@2.1.2':
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       espree: 9.6.1
       globals: 13.23.0
       ignore: 5.2.4
@@ -15490,7 +15464,7 @@ snapshots:
   '@humanwhocodes/config-array@0.11.13':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.1
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -15498,7 +15472,7 @@ snapshots:
   '@humanwhocodes/config-array@0.5.0':
     dependencies:
       '@humanwhocodes/object-schema': 1.2.1
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -16236,7 +16210,7 @@ snapshots:
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@types/debug': 4.1.7
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       semver: 7.5.4
       superstruct: 1.0.3
     transitivePeerDependencies:
@@ -16248,7 +16222,7 @@ snapshots:
       '@noble/hashes': 1.3.3
       '@scure/base': 1.1.5
       '@types/debug': 4.1.7
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       pony-cause: 2.1.10
       semver: 7.5.4
       superstruct: 1.0.3
@@ -16374,7 +16348,7 @@ snapshots:
       '@nomicfoundation/ethereumjs-tx': 5.0.2(bufferutil@4.0.8)
       '@nomicfoundation/ethereumjs-util': 9.0.2
       abstract-level: 1.0.3
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       ethereum-cryptography: 0.1.3
       level: 8.0.0
       lru-cache: 5.1.1
@@ -16407,7 +16381,7 @@ snapshots:
       '@nomicfoundation/ethereumjs-common': 4.0.2
       '@nomicfoundation/ethereumjs-tx': 5.0.2(bufferutil@4.0.8)
       '@nomicfoundation/ethereumjs-util': 9.0.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       ethereum-cryptography: 0.1.3
       mcl-wasm: 0.7.9
       rustbn.js: 0.2.0
@@ -16422,7 +16396,7 @@ snapshots:
     dependencies:
       '@nomicfoundation/ethereumjs-common': 4.0.2
       '@nomicfoundation/ethereumjs-rlp': 5.0.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       ethereum-cryptography: 0.1.3
       ethers: 5.7.2(bufferutil@4.0.8)
       js-sdsl: 4.4.0
@@ -16468,7 +16442,7 @@ snapshots:
       '@nomicfoundation/ethereumjs-trie': 6.0.2
       '@nomicfoundation/ethereumjs-tx': 5.0.2(bufferutil@4.0.8)
       '@nomicfoundation/ethereumjs-util': 9.0.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       ethereum-cryptography: 0.1.3
       mcl-wasm: 0.7.9
       rustbn.js: 0.2.0
@@ -18508,14 +18482,14 @@ snapshots:
     dependencies:
       '@substrate/connect-extension-protocol': 2.0.0
       '@substrate/connect-known-chains': 1.1.5
-      '@substrate/light-client-extension-helpers': 0.0.6(smoldot@2.0.22)
+      '@substrate/light-client-extension-helpers': 0.0.6(smoldot@2.0.22(bufferutil@4.0.8)(utf-8-validate@6.0.3))
       smoldot: 2.0.22(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
     optional: true
 
-  '@substrate/light-client-extension-helpers@0.0.6(smoldot@2.0.22)':
+  '@substrate/light-client-extension-helpers@0.0.6(smoldot@2.0.22(bufferutil@4.0.8)(utf-8-validate@6.0.3))':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.1
       '@polkadot-api/json-rpc-provider-proxy': 0.0.1
@@ -19120,7 +19094,7 @@ snapshots:
       '@typescript-eslint/type-utils': 6.21.0(eslint@8.52.0)(typescript@5.3.3)
       '@typescript-eslint/utils': 6.21.0(eslint@8.52.0)(typescript@5.3.3)
       '@typescript-eslint/visitor-keys': 6.21.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       eslint: 8.52.0
       graphemer: 1.4.0
       ignore: 5.2.4
@@ -19140,7 +19114,7 @@ snapshots:
       '@typescript-eslint/type-utils': 6.9.0(eslint@8.52.0)(typescript@5.3.3)
       '@typescript-eslint/utils': 6.9.0(eslint@8.52.0)(typescript@5.3.3)
       '@typescript-eslint/visitor-keys': 6.9.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       eslint: 8.52.0
       graphemer: 1.4.0
       ignore: 5.2.4
@@ -19158,7 +19132,7 @@ snapshots:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.3.3)
       '@typescript-eslint/visitor-keys': 6.21.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       eslint: 8.52.0
     optionalDependencies:
       typescript: 5.3.3
@@ -19171,7 +19145,7 @@ snapshots:
       '@typescript-eslint/types': 6.9.0
       '@typescript-eslint/typescript-estree': 6.9.0(typescript@5.3.3)
       '@typescript-eslint/visitor-keys': 6.9.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       eslint: 8.52.0
     optionalDependencies:
       typescript: 5.3.3
@@ -19197,7 +19171,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.3.3)
       '@typescript-eslint/utils': 6.21.0(eslint@8.52.0)(typescript@5.3.3)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       eslint: 8.52.0
       ts-api-utils: 1.0.3(typescript@5.3.3)
     optionalDependencies:
@@ -19209,7 +19183,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.9.0(typescript@5.3.3)
       '@typescript-eslint/utils': 6.9.0(eslint@8.52.0)(typescript@5.3.3)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       eslint: 8.52.0
       ts-api-utils: 1.0.3(typescript@5.3.3)
     optionalDependencies:
@@ -19227,7 +19201,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 5.47.1
       '@typescript-eslint/visitor-keys': 5.47.1
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.5.4
@@ -19241,7 +19215,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/visitor-keys': 6.21.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
@@ -19256,7 +19230,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.9.0
       '@typescript-eslint/visitor-keys': 6.9.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.5.4
@@ -19981,7 +19955,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -21670,7 +21644,7 @@ snapshots:
   engine.io-client@6.5.3(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       engine.io-parser: 5.2.2
       ws: 8.11.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       xmlhttprequest-ssl: 2.0.0
@@ -22051,7 +22025,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       doctrine: 3.0.0
       enquirer: 2.3.6
       escape-string-regexp: 4.0.0
@@ -22101,7 +22075,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.2.2
@@ -22512,7 +22486,7 @@ snapshots:
 
   follow-redirects@1.15.3(debug@4.3.4):
     optionalDependencies:
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
 
   follow-redirects@1.15.6: {}
 
@@ -22910,7 +22884,7 @@ snapshots:
       chalk: 2.4.2
       chokidar: 3.5.3
       ci-info: 2.0.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       enquirer: 2.3.6
       env-paths: 2.2.1
       ethereum-cryptography: 1.2.0
@@ -23110,7 +23084,7 @@ snapshots:
     dependencies:
       '@tootallnate/once': 2.0.0
       agent-base: 6.0.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -23127,7 +23101,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -23307,7 +23281,7 @@ snapshots:
     dependencies:
       '@ioredis/commands': 1.2.0
       cluster-key-slot: 1.1.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       denque: 2.1.0
       lodash.defaults: 4.2.0
       lodash.isarguments: 3.1.0
@@ -23586,7 +23560,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       istanbul-lib-coverage: 3.2.0
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -24209,18 +24183,9 @@ snapshots:
       '@sideway/formula': 3.0.1
       '@sideway/pinpoint': 2.0.0
 
-  jotai-effect@0.6.0(jotai@2.8.0(@types/react@18.0.14)(react@18.2.0)):
-    dependencies:
-      jotai: 2.8.0(@types/react@18.0.14)(react@18.2.0)
-
   jotai-effect@0.6.0(jotai@2.8.0(@types/react@18.0.27)(react@18.2.0)):
     dependencies:
       jotai: 2.8.0(@types/react@18.0.27)(react@18.2.0)
-
-  jotai@2.8.0(@types/react@18.0.14)(react@18.2.0):
-    optionalDependencies:
-      '@types/react': 18.0.14
-      react: 18.2.0
 
   jotai@2.8.0(@types/react@18.0.27)(react@18.2.0):
     optionalDependencies:
@@ -25185,7 +25150,7 @@ snapshots:
 
   nock@13.5.4:
     dependencies:
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       json-stringify-safe: 5.0.1
       propagate: 2.0.1
     transitivePeerDependencies:
@@ -25357,10 +25322,6 @@ snapshots:
       es-abstract: 1.21.1
 
   obliterator@2.0.4: {}
-
-  observable-callback@1.0.3(rxjs@7.8.1):
-    dependencies:
-      rxjs: 7.8.1
 
   ofetch@1.3.3:
     dependencies:
@@ -26199,13 +26160,6 @@ snapshots:
       '@remix-run/router': 1.7.1
       react: 18.2.0
 
-  react-rx@4.0.0(react@18.2.0)(rxjs@7.8.1):
-    dependencies:
-      observable-callback: 1.0.3(rxjs@7.8.1)
-      react: 18.2.0
-      rxjs: 7.8.1
-      use-effect-event: 1.0.2(react@18.2.0)
-
   react-shallow-renderer@16.15.0(react@18.2.0):
     dependencies:
       object-assign: 4.1.1
@@ -26843,7 +26797,7 @@ snapshots:
   socket.io-client@4.7.5(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
       engine.io-client: 6.5.3(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       socket.io-parser: 4.2.4
     transitivePeerDependencies:
@@ -26854,7 +26808,7 @@ snapshots:
   socket.io-parser@4.2.4:
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4(supports-color@9.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -27956,10 +27910,6 @@ snapshots:
     dependencies:
       punycode: 1.4.1
       qs: 6.11.2
-
-  use-effect-event@1.0.2(react@18.2.0):
-    dependencies:
-      react: 18.2.0
 
   use-sync-external-store@1.2.0(react@18.2.0):
     dependencies:

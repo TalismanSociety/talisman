@@ -1,12 +1,13 @@
-import { errorsStore } from "@extension/core"
-import { Card } from "@talisman/components/Card"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useErrorsStoreValue } from "@ui/hooks/useErrors"
-import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { errorsStore } from "@extension/core"
+import { Card } from "@talisman/components/Card"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
+import { useErrorsStoreValue } from "@ui/state"
 
 const ANALYTICS_PAGES: Record<"popup" | "fullscreen", AnalyticsPage> = {
   popup: {
@@ -30,8 +31,8 @@ export type Props = {
 export const DatabaseErrorAlert = ({ container }: Props) => {
   const { t } = useTranslation()
 
-  const [databaseUnavailable] = useErrorsStoreValue("databaseUnavailable")
-  const [databaseQuotaExceeded] = useErrorsStoreValue("databaseQuotaExceeded")
+  const databaseUnavailable = useErrorsStoreValue("databaseUnavailable")
+  const databaseQuotaExceeded = useErrorsStoreValue("databaseQuotaExceeded")
   const isOpen = databaseUnavailable || databaseQuotaExceeded
 
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(

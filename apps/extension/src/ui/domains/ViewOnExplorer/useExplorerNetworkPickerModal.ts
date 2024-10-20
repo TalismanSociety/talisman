@@ -1,18 +1,31 @@
+import { bind } from "@react-rxjs/core"
+import { useCallback } from "react"
+import { BehaviorSubject } from "rxjs"
+
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { atom, useAtom } from "jotai"
 
 type ExplorerNetworkPickerModalInputs = { address: string }
 
-const inputsAtom = atom<ExplorerNetworkPickerModalInputs | null>(null)
+const inputs$ = new BehaviorSubject<ExplorerNetworkPickerModalInputs | null>(null)
+
+const setInputs = (inputs: ExplorerNetworkPickerModalInputs | null) => {
+  inputs$.next(inputs)
+}
+
+const [useInputs] = bind(inputs$)
 
 export const useExplorerNetworkPickerModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("blockExplorerNetworkPickerModal")
-  const [inputs, setInputs] = useAtom(inputsAtom)
 
-  const open = (opts: ExplorerNetworkPickerModalInputs) => {
-    setInputs(opts)
-    innerOpen()
-  }
+  const inputs = useInputs()
+
+  const open = useCallback(
+    (opts: ExplorerNetworkPickerModalInputs) => {
+      setInputs(opts)
+      innerOpen()
+    },
+    [innerOpen]
+  )
 
   return {
     isOpen,

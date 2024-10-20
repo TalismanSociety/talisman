@@ -1,8 +1,10 @@
 import { bind } from "@react-rxjs/core"
 import { BrowserCodeReader } from "@zxing/browser"
+import { TEST } from "extension-shared"
 import { BehaviorSubject, combineLatest, from, map } from "rxjs"
 
 const getCurrentTab = async () => {
+  if (TEST) return null
   const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true })
   return currentTab
 }
@@ -10,7 +12,7 @@ const getCurrentTab = async () => {
 export const [useCurrentTab, currentTab$] = bind(from(getCurrentTab()))
 
 export const [useVideoInputDevices, videoInputDevices$] = bind(
-  from(BrowserCodeReader.listVideoInputDevices())
+  from(TEST ? [] : BrowserCodeReader.listVideoInputDevices())
 )
 
 const selectedVideoInputId$ = new BehaviorSubject<string | null>(null)
