@@ -8,8 +8,6 @@ import { remoteConfigStore } from "@extension/core"
 import { log } from "@extension/shared"
 import { assetDiscoveryScanProgress$, getTokens$ } from "@ui/state"
 
-// const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
-
 const assetDiscoveryAllTokenRates$ = new BehaviorSubject<TokenRatesList>({})
 
 const setTokenRates = (state: SetStateAction<TokenRatesList>) => {

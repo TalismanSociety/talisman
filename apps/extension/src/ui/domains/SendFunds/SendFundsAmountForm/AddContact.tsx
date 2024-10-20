@@ -1,11 +1,11 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { UserPlusIcon } from "@talismn/icons"
+import { isAddressEqual } from "@talismn/util"
 import { AccountAddressType } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, useOpenClose } from "talisman-ui"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAccountByAddress } from "@ui/state"
 
@@ -21,8 +21,7 @@ export const AddContact = ({ tokenGenesisHash }: { tokenGenesisHash?: string }) 
 
   const canAdd = useMemo(() => {
     if (account || !to) return false
-    const genericAddress = convertAddress(to, null)
-    return !contacts?.find((c) => convertAddress(c.address, null) === genericAddress) ?? null
+    return !contacts?.find((c) => isAddressEqual(c.address, to))
   }, [account, contacts, to])
 
   const addressType: AccountAddressType = useMemo(() => {

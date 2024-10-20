@@ -23,8 +23,6 @@ export const accountsCatalog$ = new Observable<Trees>((subscriber) => {
 
 export const [useAccountsCatalog] = bind(accountsCatalog$)
 
-// export const [useAccounts] = bind(accounts$)
-
 export const accountsMap$ = accounts$.pipe(
   map((accounts) =>
     Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account]))

@@ -153,7 +153,7 @@ const useJsonAccountImportProvider = () => {
     [existingAccounts, file]
   )
 
-  const chains = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains()
   const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {

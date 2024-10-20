@@ -5,7 +5,7 @@ import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
 import { combineLatest, from, map, Observable, shareReplay, throttleTime } from "rxjs"
 
-import { getTokensMap$ } from "./registry"
+import { getTokensMap$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
 // TODO return dexie observable directly ?

@@ -10,8 +10,6 @@ import {
 } from "@extension/shared"
 import { portfolio$, portfolioSelectedAccounts$, usePortfolioSelectedAccounts } from "@ui/state"
 
-// import { portfolioAtom, portfolioSelectedAccountsAtom } from "@ui/atoms"
-
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: Balances) => {
   const accountHasSomeBalance =
@@ -60,23 +58,6 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
     )
 )
 
-// export const portfolioDisplayBalancesAtomFamily = atomFamily(
-//   (filter: "all" | "network" | "search") =>
-//     atom((get) => {
-//       const { networkBalances, allBalances, searchBalances } = get(portfolioAtom)
-//       const accounts = get(portfolioSelectedAccountsAtom)
-
-//       switch (filter) {
-//         case "all":
-//           return networkBalances.find(shouldDisplayBalance(accounts, allBalances))
-//         case "network":
-//           return networkBalances.find(shouldDisplayBalance(accounts, networkBalances))
-//         case "search":
-//           return searchBalances.find(shouldDisplayBalance(accounts, searchBalances))
-//       }
-//     })
-// )
-
 /**
  * @deprecated use atoms
  */
@@ -88,7 +69,3 @@ export const useDisplayBalances = (balances: Balances) => {
     [accounts, balances]
   )
 }
-
-// export const usePortfolioDisplayBalances = (filter: "all" | "network") => {
-//   return useAtomValue(portfolioDisplayBalancesAtomFamily(filter))
-// }

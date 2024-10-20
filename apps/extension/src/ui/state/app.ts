@@ -31,6 +31,6 @@ export const useAppState = <K extends keyof AppStoreData, V = AppStoreData[K]>(k
   return [state, setState] as const
 }
 
-export const [useIsOnboarded, getIsOnboarded$] = bind(() =>
+export const [useIsOnboarded, isOnboarded$] = bind(
   getAppStateValue$("onboarded").pipe(map((onboarded) => onboarded === "TRUE"))
 )

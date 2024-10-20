@@ -10,8 +10,8 @@ import {
 } from "@ui/domains/Portfolio/Nfts/helpers"
 
 import { getAccountsByCategory$ } from "./accounts"
+import { getEvmNetworks$ } from "./chaindata"
 import { NetworkOption, portfolioSelectedAccounts$ } from "./portfolio"
-import { getEvmNetworks$ } from "./registry"
 import { getSettingValue$ } from "./settings"
 import { debugObservable } from "./util/debugObservable"
 

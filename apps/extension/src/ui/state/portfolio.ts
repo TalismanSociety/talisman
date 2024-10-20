@@ -10,7 +10,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"
-import { getChains$, getEvmNetworks$, getTokens$ } from "./registry"
+import { getChains$, getEvmNetworks$, getTokens$ } from "./chaindata"
 import { getSettingValue$ } from "./settings"
 
 export type NetworkOption = {

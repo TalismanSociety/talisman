@@ -217,15 +217,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  // const chainsOptions = useMemo(() => chains.map((c) => ({ ...c, symbols: null })), [chains])
-  // const selectedChainOption = useMemo(
-  //   () =>
-  //     genesisHash && chainsByGenesisHash[genesisHash]
-  //       ? { ...chainsByGenesisHash[genesisHash], symbols: null }
-  //       : undefined,
-  //   [chainsByGenesisHash, genesisHash]
-  // )
-
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title="Add new contact">

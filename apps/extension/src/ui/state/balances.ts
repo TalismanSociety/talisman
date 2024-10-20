@@ -1,7 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -15,7 +14,7 @@ import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@exte
 import { api } from "@ui/api"
 
 import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
-import { getChainsMap$, getEvmNetworksMap$, getTokensMap$ } from "./registry"
+import { getChainsMap$, getEvmNetworksMap$, getTokensMap$ } from "./chaindata"
 import { tokenRatesMap$ } from "./tokenRates"
 import { debugObservable } from "./util/debugObservable"
 
@@ -120,7 +119,6 @@ export const [useBalances, getBalances$] = bind((arg: BalancesFilter = "all") =>
   typeof arg === "object" ? getBalancesByQuery$(arg) : getBalancesByCategory$(arg)
 )
 
-export const useBalancesByAddress = (address: Address | null | undefined) => {
-  const arg = useMemo(() => ({ address }), [address])
-  return useBalances(arg)
-}
+export const [useBalancesByAddress] = bind((address: Address | null | undefined) =>
+  getBalances$({ address })
+)
