@@ -77,10 +77,10 @@ const searchTree = (
   const workTree = structuredClone(tree)
 
   const setAccountVisibility = (item: UiTreeAccount) => {
-    const account = accountsMap[item.address]
+    const account = accountsMap[item.address] as AccountJsonAny | undefined // may be undefined for a moment right after deletion
     item.isVisible =
-      account.name?.toLowerCase().includes(lowerSearch) ??
-      account.address?.toLowerCase().includes(lowerSearch) ??
+      account?.name?.toLowerCase().includes(lowerSearch) ??
+      account?.address?.toLowerCase().includes(lowerSearch) ??
       false
   }
 
