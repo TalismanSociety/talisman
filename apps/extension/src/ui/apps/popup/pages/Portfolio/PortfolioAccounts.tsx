@@ -1,4 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { bind } from "@react-rxjs/core"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -8,10 +9,10 @@ import {
   UserIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { atom, useAtom, useAtomValue } from "jotai"
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { BehaviorSubject } from "rxjs"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import {
@@ -45,7 +46,13 @@ import { useBalances } from "@ui/state"
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 
-const portfolioAccountsSearchAtom = atom("")
+const portfolioAccountsSearch$ = new BehaviorSubject("")
+
+const setPortfolioAccountsSearch = (search: string) => {
+  portfolioAccountsSearch$.next(search)
+}
+
+const [usePortfolioAccountsSearch] = bind(portfolioAccountsSearch$)
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -182,7 +189,7 @@ const accountTypeGuard = (option: AccountOption): option is AccountAccountOption
 const AccountsToolbar = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [search, setSearch] = useAtom(portfolioAccountsSearchAtom)
+  const search = usePortfolioAccountsSearch()
 
   const handleAddAccountClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -206,9 +213,9 @@ const AccountsToolbar = () => {
   useEffect(() => {
     // clear on unmount
     return () => {
-      setSearch("")
+      portfolioAccountsSearch$.next("")
     }
-  }, [setSearch])
+  }, [])
 
   const { open: openSettings } = useQuickSettingsOpenClose()
 
@@ -221,7 +228,7 @@ const AccountsToolbar = () => {
             "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
           )}
           placeholder={t("Search account or folder")}
-          onChange={setSearch}
+          onChange={setPortfolioAccountsSearch}
           initialValue={search}
         />
       </div>
@@ -357,7 +364,7 @@ export const PortfolioAccounts = () => {
   const { accounts, ownedAccounts, catalog, balanceTotalPerAccount, ownedTotal } =
     usePortfolioAccounts()
   const { selectedFolder: folder, treeName } = usePortfolioNavigation()
-  const search = useAtomValue(portfolioAccountsSearchAtom)
+  const search = usePortfolioAccountsSearch()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
 

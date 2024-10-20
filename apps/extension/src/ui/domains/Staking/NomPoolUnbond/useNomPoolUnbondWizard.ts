@@ -1,11 +1,12 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
+import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
-import { atom, useAtom, useSetAtom } from "jotai"
-import { useCallback, useMemo } from "react"
+import { SetStateAction, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { Hex } from "viem"
 
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
@@ -32,24 +33,28 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
 }
 
-const unstakeWizardAtom = atom(DEFAULT_STATE)
+const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
+
+const setWizardState = (state: SetStateAction<WizardState>) => {
+  if (typeof state === "function") wizardState$.next(state(wizardState$.value))
+  else wizardState$.next(state)
+}
+
+const [useWizardState] = bind(wizardState$)
 
 export const useResetNomPoolUnbondWizard = () => {
-  const setState = useSetAtom(unstakeWizardAtom)
-
-  const reset = useCallback(
-    (init: Pick<WizardState, "address" | "tokenId">) => setState({ ...DEFAULT_STATE, ...init }),
-    [setState]
+  return useCallback(
+    (init: Pick<WizardState, "address" | "tokenId">) =>
+      setWizardState({ ...DEFAULT_STATE, ...init }),
+    []
   )
-
-  return reset
 }
 
 export const useNomPoolUnbondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const [{ address, step, hash, tokenId }, setState] = useAtom(unstakeWizardAtom)
+  const { address, step, hash, tokenId } = useWizardState()
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -63,9 +68,9 @@ export const useNomPoolUnbondWizard = () => {
   const onSubmitted = useCallback(
     (hash: Hex) => {
       genericEvent("NomPool Unbond", { tokenId })
-      if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
+      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, setState, tokenId]
+    [genericEvent, tokenId]
   )
 
   const { data: plancksToUnbond } = useQuery({

@@ -15,19 +15,23 @@ import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const accountExportAccountState$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const localAccount$ = new BehaviorSubject<AccountJsonAny | null>(null)
 
-const [useAccountExportAccount] = bind(accountExportAccountState$)
+const setLocalAccount = (account: AccountJsonAny | null) => {
+  localAccount$.next(account)
+}
+
+const [useLocalAccount] = bind(localAccount$)
 
 export const useAccountExportPrivateKeyModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
 
   const { selectedAccount } = usePortfolioNavigation()
-  const account = useAccountExportAccount() ?? selectedAccount
+  const account = useLocalAccount() ?? selectedAccount
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      accountExportAccountState$.next(account ?? null)
+      setLocalAccount(account ?? null)
       innerOpen()
     },
     [innerOpen]
