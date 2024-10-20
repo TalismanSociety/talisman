@@ -3,7 +3,8 @@ import { MonoTypeOperatorFunction, tap } from "rxjs"
 import { log } from "@extension/shared"
 
 // @dev turn this on temporarily when needed
-const ACTIVE = false
+// note that log.debug() outputs nothing on prod builds
+const ACTIVE = true
 
 export const debugObservable = <T>(
   label: string,

@@ -1,3 +1,4 @@
+import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
@@ -10,11 +11,11 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { atom, useAtom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
+import { BehaviorSubject } from "rxjs"
 import {
   Button,
   ContextMenu,
@@ -80,7 +81,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Asset Discovery",
 }
 
-const isInitializingScanAtom = atom(false)
+const isInitializingScan$ = new BehaviorSubject(false)
+
+const [useIsInitializingScan] = bind(isInitializingScan$)
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
@@ -302,7 +305,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const isInitializing = useAtomValue(isInitializingScanAtom)
+  const isInitializing = useIsInitializingScan()
   const { balances, balancesByTokenId, tokenIds } = useAssetDiscoveryScanProgress()
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
@@ -327,7 +330,7 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const [isInitializing, setIsInitializing] = useAtom(isInitializingScanAtom)
+  const isInitializing = useIsInitializingScan()
   const { balances, accountsCount, tokensCount, percent, isInProgress } =
     useAssetDiscoveryScanProgress()
 
@@ -339,12 +342,13 @@ const Header: FC = () => {
 
   const handleScanClick = useCallback(
     (mode: AssetDiscoveryMode) => async () => {
-      setIsInitializing(true)
+      isInitializingScan$.next(true)
       await api.assetDiscoveryStartScan(mode)
-      setIsInitializing(false)
+      isInitializingScan$.next(false)
     },
-    [setIsInitializing]
+    []
   )
+
   const handleCancelScanClick = useCallback(() => {
     api.assetDiscoveryStopScan()
   }, [])
@@ -450,7 +454,7 @@ const AccountsWrapper: FC<{
 
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
-  const isInitializing = useAtomValue(isInitializingScanAtom)
+  const isInitializing = useIsInitializingScan()
 
   const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
   const { lastScanAccounts, lastScanTimestamp } = useAssetDiscoveryScan()
