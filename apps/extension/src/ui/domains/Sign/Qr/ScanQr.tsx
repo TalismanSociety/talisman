@@ -1,14 +1,14 @@
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { BrowserQRCodeReader } from "@zxing/browser"
 import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
-import { useAtom, useAtomValue } from "jotai"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { Toggle } from "talisman-ui"
 
-import { codeReaderAtom, selectedVideoInputAtom, videoInputDevicesAtom } from "@ui/atoms"
+import { setSelectedVideoInput, useSelectedVideoInput, useVideoInputDevices } from "@ui/state"
 
 type Types = "address" | "signature"
 type CommonProps<T extends Types> = {
@@ -104,13 +104,13 @@ const Scanner = ({
 }) => {
   const preview = useRef<HTMLVideoElement>(null)
 
-  const [selectedVideoInput, selectVideoInput] = useAtom(selectedVideoInputAtom)
-  const inputDevices = useAtomValue(videoInputDevicesAtom)
+  const selectedVideoInput = useSelectedVideoInput()
+  const inputDevices = useVideoInputDevices()
   const [showInputMenu, setShowInputMenu] = useState(false)
   const inputMenu = useRef(null)
   useClickAway(inputMenu, () => setShowInputMenu(false))
 
-  const codeReader = useAtomValue(codeReaderAtom)
+  const codeReader = useMemo(() => new BrowserQRCodeReader(), [])
 
   useEffect(() => {
     if (!codeReader) return
@@ -167,7 +167,7 @@ const Scanner = ({
               key={device.deviceId}
               type="button"
               className="flex w-full items-center gap-3 text-sm"
-              onClick={() => selectVideoInput(device.deviceId)}
+              onClick={() => setSelectedVideoInput(device.deviceId)}
             >
               <div
                 className={classNames(
