@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import { NavLink, To, useMatch, useNavigate } from "react-router-dom"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 
@@ -58,7 +59,7 @@ export const DashboardSettingsSidebar = () => {
           label={
             <span className="flex items-center gap-2">
               {t("Recovery Phrases")}
-              <Suspense>
+              <Suspense fallback={<SuspenseTracker name="SettingsSidebar.MnemonicNotification" />}>
                 <MnemonicNotification />
               </Suspense>
             </span>

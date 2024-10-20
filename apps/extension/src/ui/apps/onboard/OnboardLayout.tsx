@@ -1,8 +1,10 @@
+import { classNames } from "@talismn/util"
+import { FC, ReactNode, Suspense } from "react"
+
 import { BackButton } from "@talisman/components/BackButton"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { classNames } from "@talismn/util"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { FC, ReactNode, Suspense } from "react"
 
 type LayoutProps = {
   withBack?: boolean
@@ -30,7 +32,7 @@ export const OnboardLayout: FC<LayoutProps> = ({
       />
     )}
     {/* Wrap in suspense to prevent bg full reset when reaching create account page (loads different translations domain) */}
-    <Suspense>
+    <Suspense fallback={<SuspenseTracker name="OnboardLayout.Content" />}>
       <FadeIn className="z-10 duration-500">{children}</FadeIn>
     </Suspense>
   </div>

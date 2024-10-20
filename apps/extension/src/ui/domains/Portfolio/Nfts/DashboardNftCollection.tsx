@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
@@ -25,7 +26,7 @@ export const DashboardNftCollection = () => {
 
   return (
     <div>
-      <Suspense>
+      <Suspense fallback={<SuspenseTracker name="DashboardNftCollection" />}>
         {viewMode === "list" ? (
           <NftsRows onNftClick={handleNftClick} />
         ) : (

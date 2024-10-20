@@ -4,6 +4,7 @@ import { HexString } from "@polkadot/util/types"
 import { FC, lazy, Suspense } from "react"
 
 import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignDcentSubstrate } from "./SignDcentSubstrate"
@@ -51,7 +52,7 @@ export const SignHardwareSubstrate: FC<SignHardwareSubstrateProps> = (props) => 
   if (!SignHardwareComponent) return null
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="SignHardwareSubstrate" />}>
       <SignHardwareComponent {...props} />
     </Suspense>
   )

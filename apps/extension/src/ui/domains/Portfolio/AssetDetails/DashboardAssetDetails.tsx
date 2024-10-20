@@ -6,6 +6,7 @@ import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Address, Balance, Balances } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -93,7 +94,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
-              <Suspense>
+              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
                 {tokenId && (
                   <TokenContextMenu

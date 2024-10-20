@@ -2,6 +2,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
 import { FC, Suspense, useCallback } from "react"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
@@ -36,7 +37,14 @@ const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {
 }
 
 export const CopyAddressButton: FC<CopyAddressButtonProps> = ({ networkId }) => (
-  <Suspense fallback={<div className="inline-block h-9 w-9"></div>}>
+  <Suspense
+    fallback={
+      <>
+        <div className="inline-block h-9 w-9"></div>
+        <SuspenseTracker name="CopyAddressButton" />
+      </>
+    }
+  >
     <CopyAddressButtonInner networkId={networkId} />
   </Suspense>
 )

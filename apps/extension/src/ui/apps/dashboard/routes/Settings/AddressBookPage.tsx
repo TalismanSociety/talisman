@@ -28,6 +28,7 @@ import { ProviderType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -138,7 +139,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
             </SquareButton>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <Suspense>
+            <Suspense fallback={<SuspenseTracker name="AddressBookContactItem.ContextMenu" />}>
               <ContextMenuItem onClick={() => handleEdit(contact.address)}>
                 {t("Edit contact")}
               </ContextMenuItem>

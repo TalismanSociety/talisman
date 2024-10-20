@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useAccounts, useSelectedCurrency } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
@@ -143,7 +144,7 @@ const SendButton = () => {
   }, [])
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="SendButton" />}>
       <div className="flex w-full flex-col gap-6">
         {sendErrorMessage ? (
           <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">

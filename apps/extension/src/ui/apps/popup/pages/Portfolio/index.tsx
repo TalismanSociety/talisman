@@ -4,6 +4,7 @@ import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
@@ -26,7 +27,7 @@ const HasAccountsPortfolioContent = () => (
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>
       <BraveWarningPopupBanner />
       <MigratePasswordAlert />
     </Suspense>

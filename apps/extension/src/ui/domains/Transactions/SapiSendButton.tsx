@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 import { Hex } from "viem"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state"
 
@@ -169,7 +170,7 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
   if (!account) return null
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="SapiSendButton" />}>
       {signMethod === "local" && <LocalAccountSendButton {...props} />}
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}

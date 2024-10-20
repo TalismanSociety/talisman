@@ -64,7 +64,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2 truncate">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
-              <Suspense>
+              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
               </Suspense>
             </div>

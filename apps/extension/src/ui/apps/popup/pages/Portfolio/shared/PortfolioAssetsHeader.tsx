@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -159,7 +160,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
         </div>
       </div>
       <div className="flex grow items-center justify-end">
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="PortfolioAssetHeader.Buttons" />}>
           <CopyAddressButton account={account} />
           <SendFundsButton account={account} />
           {account && (
