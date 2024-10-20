@@ -12,7 +12,6 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { tapDebug } from "@talismn/util"
 import {
   activeChainsStore,
   activeEvmNetworksStore,
@@ -26,6 +25,8 @@ import { combineLatest, distinctUntilChanged, map, Observable, shareReplay } fro
 
 import { api } from "@ui/api"
 import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
+
+import { debugObservable } from "./util/debugObservable"
 
 type AnyEvmNetwork = EvmNetwork | CustomEvmNetwork
 type AnyChain = Chain | CustomChain
@@ -61,7 +62,7 @@ const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
     unsubscribe()
     subData.unsubscribe()
   }
-}).pipe(tapDebug("allEvmNetworks$"), shareReplay(1))
+}).pipe(debugObservable("allEvmNetworks$"), shareReplay(1))
 
 const allChains$ = new Observable<AnyChain[]>((subscriber) => {
   const subData = chaindataProvider.chainsObservable
@@ -74,7 +75,7 @@ const allChains$ = new Observable<AnyChain[]>((subscriber) => {
     unsubscribe()
     subData.unsubscribe()
   }
-}).pipe(tapDebug("allChains$"), shareReplay(1))
+}).pipe(debugObservable("allChains$"), shareReplay(1))
 
 const allEvmNetworksMap$ = allEvmNetworks$.pipe(
   map(
@@ -239,7 +240,7 @@ const rawTokens$ = new Observable<Token[]>((subscriber) => {
     unsubscribe()
     subData.unsubscribe()
   }
-}).pipe(tapDebug("rawTokens$"), shareReplay(1))
+}).pipe(debugObservable("rawTokens$"), shareReplay(1))
 
 const allTokens$ = combineLatest([rawTokens$, allEvmNetworksMap$, allChainsMap$]).pipe(
   map(([tokens, evmNetworksMap, chainsMap]) =>

@@ -1,5 +1,4 @@
 import { bind } from "@react-rxjs/core"
-import { tapDebug } from "@talismn/util"
 import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap } from "rxjs"
 
@@ -14,6 +13,7 @@ import { getAccountsByCategory$ } from "./accounts"
 import { NetworkOption, portfolioSelectedAccounts$ } from "./portfolio"
 import { getEvmNetworks$ } from "./registry"
 import { getSettingValue$ } from "./settings"
+import { debugObservable } from "./util/debugObservable"
 
 export enum NftVisibilityFilter {
   Default = "Default",
@@ -46,7 +46,7 @@ const nftData$ = new Observable<NftData>((subscriber) => {
     subscriber.next(data)
   })
   return () => unsubscribe()
-}).pipe(tapDebug("nftData$"), shareReplay(1))
+}).pipe(debugObservable("nftData$"), shareReplay(1))
 
 const evmNetworks$ = getSettingValue$("useTestnets").pipe(
   switchMap((includeTestnets) => getEvmNetworks$({ activeOnly: true, includeTestnets })),

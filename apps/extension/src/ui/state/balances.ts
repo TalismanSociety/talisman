@@ -1,7 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { tapDebug } from "@talismn/util"
 import { useMemo } from "react"
 import { combineLatest, distinctUntilChanged, map, Observable, shareReplay } from "rxjs"
 
@@ -11,6 +10,7 @@ import { api } from "@ui/api"
 import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
 import { getChainsMap$, getEvmNetworksMap$, getTokensMap$ } from "./registry"
 import { tokenRatesMap$ } from "./tokenRates"
+import { debugObservable } from "./util/debugObservable"
 
 // fetch only active chains but include testnets, testnet data will be filterd out by hooks on render based on user settings
 const BALANCES_CHAINDATA_QUERY = { includeTestnets: true, activeOnly: true }
@@ -28,7 +28,7 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
       tokens,
       tokenRates,
     })),
-    tapDebug("balancesHydrate$")
+    debugObservable("balancesHydrate$")
   )
 )
 
@@ -39,7 +39,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
     subscriber.next(balances)
   })
   return () => unsubscribe()
-}).pipe(tapDebug("rawBalances$"), shareReplay(1))
+}).pipe(debugObservable("rawBalances$"), shareReplay(1))
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   rawBalances$.pipe(
