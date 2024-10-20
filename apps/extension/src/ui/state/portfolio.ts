@@ -3,18 +3,9 @@ import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/util"
 import { t } from "i18next"
-import { BehaviorSubject, combineLatest, map, switchMap } from "rxjs"
+import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
 
 import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
-// import {
-//   balancesHydrate$,
-//   getBalances$,
-//   getChains$,
-//   getEvmNetworks$,
-//   getSettingValue$,
-//   getTokens$,
-//   isBalanceInitialising$,
-// } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -282,7 +273,8 @@ const portfolioForSelectedNetwork$ = combineLatest([
         isProvisioned,
       }
     }
-  )
+  ),
+  shareReplay(1)
 )
 
 export const [usePortfolio, portfolio$] = bind(

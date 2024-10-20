@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { normalizeAddress } from "@talismn/util"
+import { normalizeAddress, tapDebug } from "@talismn/util"
 import { AccountJsonAny, AccountType, Trees } from "extension-core"
 import { map, Observable, shareReplay } from "rxjs"
 
@@ -10,14 +10,14 @@ export const accounts$ = new Observable<AccountJsonAny[]>((subscriber) => {
     subscriber.next(accounts)
   })
   return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(tapDebug("accounts$"), shareReplay(1))
 
 export const accountsCatalog$ = new Observable<Trees>((subscriber) => {
   const unsubscribe = api.accountsCatalogSubscribe((trees) => {
     subscriber.next(trees)
   })
   return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(tapDebug("accountsCatalog$"), shareReplay(1))
 
 export const [useAccountsCatalog] = bind(accountsCatalog$)
 

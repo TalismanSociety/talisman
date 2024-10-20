@@ -18,7 +18,7 @@ export const tokenRates$ = new Observable<DbTokenRates[]>((subscriber) => {
     sub.unsubscribe()
     unsubscribe()
   }
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(shareReplay(1))
 
 export const [useTokenRatesMap, tokenRatesMap$] = bind(
   tokenRates$.pipe(

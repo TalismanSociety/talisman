@@ -1,6 +1,7 @@
 import { bind } from "@react-rxjs/core"
+import { tapDebug } from "@talismn/util"
 import { NftData } from "extension-core"
-import { BehaviorSubject, combineLatest, map, Observable, switchMap } from "rxjs"
+import { BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap } from "rxjs"
 
 import { api } from "@ui/api"
 import {
@@ -45,10 +46,11 @@ const nftData$ = new Observable<NftData>((subscriber) => {
     subscriber.next(data)
   })
   return () => unsubscribe()
-})
+}).pipe(tapDebug("nftData$"), shareReplay(1))
 
 const evmNetworks$ = getSettingValue$("useTestnets").pipe(
-  switchMap((includeTestnets) => getEvmNetworks$({ activeOnly: true, includeTestnets }))
+  switchMap((includeTestnets) => getEvmNetworks$({ activeOnly: true, includeTestnets })),
+  shareReplay(1)
 )
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
@@ -102,10 +104,6 @@ export const [useNfts, nfts$] = bind(
         networkFilter,
         search,
       ]) => {
-        //const sortBy = nftsSortBy as SettingsStoreData["nftsSortBy"]
-
-        //const visibility = get(nftsVisibilityFilterAtom)
-        //const networkFilter = get(nftsNetworkFilterAtom)
         const lowerSearch = search.toLowerCase()
 
         const addresses = selectedAccounts

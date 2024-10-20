@@ -7,6 +7,7 @@ import { combineLatest, from, map, Observable, shareReplay, throttleTime } from 
 
 import { getTokensMap$ } from "./registry"
 
+// TODO return dexie observable directly ?
 export const assetDiscoveryBalances$ = new Observable<DiscoveredBalance[]>((subscriber) => {
   const sub = from(liveQuery(() => db.assetDiscovery.toArray()))
     .pipe(throttleTime(500, undefined, { leading: true, trailing: true }))
