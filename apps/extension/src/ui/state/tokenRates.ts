@@ -7,6 +7,8 @@ import { from, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
+import { debugObservable } from "./util/debugObservable"
+
 // TODO: plug the actual sub inside this ? api.tokenRates(NO_OP)
 export const tokenRates$ = new Observable<DbTokenRates[]>((subscriber) => {
   // sync data from db
@@ -18,7 +20,7 @@ export const tokenRates$ = new Observable<DbTokenRates[]>((subscriber) => {
     sub.unsubscribe()
     unsubscribe()
   }
-}).pipe(shareReplay(1))
+}).pipe(debugObservable("tokenRates$"), shareReplay(1))
 
 export const [useTokenRatesMap, tokenRatesMap$] = bind(
   tokenRates$.pipe(

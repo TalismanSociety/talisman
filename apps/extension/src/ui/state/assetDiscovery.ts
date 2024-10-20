@@ -6,6 +6,7 @@ import sortBy from "lodash/sortBy"
 import { combineLatest, from, map, Observable, shareReplay, throttleTime } from "rxjs"
 
 import { getTokensMap$ } from "./registry"
+import { debugObservable } from "./util/debugObservable"
 
 // TODO return dexie observable directly ?
 export const assetDiscoveryBalances$ = new Observable<DiscoveredBalance[]>((subscriber) => {
@@ -14,7 +15,7 @@ export const assetDiscoveryBalances$ = new Observable<DiscoveredBalance[]>((subs
     .subscribe(subscriber)
 
   return () => sub.unsubscribe()
-}).pipe(shareReplay(1))
+}).pipe(debugObservable("assetDiscoveryBalances$"), shareReplay(1))
 
 export const [useAssetDiscoveryScan, assetDiscoveryScan$] = bind(assetDiscoveryStore.observable)
 

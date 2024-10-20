@@ -19,7 +19,7 @@ import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/Accou
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useAppState, useChains, useMnemonic } from "@ui/state"
+import { useAppState, useBalancesHydrate, useChains, useMnemonic } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
@@ -231,16 +231,9 @@ const MetadataPortalContent = () => {
   )
 }
 
-// const preloadAtom = atom(async (get) => {
-//   await Promise.all([
-//     get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//     get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//   ])
-// })
-
 const Content = () => {
   const { t } = useTranslation("admin")
-  // useAtomValue(preloadAtom) // TODO preload
+  useBalancesHydrate() // preload
 
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)

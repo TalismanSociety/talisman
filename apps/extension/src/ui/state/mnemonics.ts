@@ -2,6 +2,8 @@ import { bind } from "@react-rxjs/core"
 import { MnemonicSource, mnemonicsStore } from "extension-core"
 import { map } from "rxjs"
 
+import { debugObservable } from "./util/debugObservable"
+
 export type Mnemonic = {
   id: string
   name: string
@@ -21,7 +23,8 @@ export const [useMnemonics, mnemonics$] = bind(
             source,
           } as Mnemonic)
       )
-    )
+    ),
+    debugObservable("mnemonics$")
   )
 )
 

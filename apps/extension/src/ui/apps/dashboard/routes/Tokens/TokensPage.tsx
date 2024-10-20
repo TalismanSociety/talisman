@@ -30,6 +30,7 @@ import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillB
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import {
   useActiveTokensState,
+  useBalancesHydrate,
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
@@ -230,18 +231,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Tokens",
 }
 
-// const preloadAtom = atom((get) =>
-//   Promise.all([
-//     get(settingsAtomFamily("useTestnets")),
-//     get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//     get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//     get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//   ])
-// )
-
 const Content = () => {
   const { t } = useTranslation("admin")
-  // seAtomValue(preloadAtom) TODO preload
+  useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()

@@ -169,7 +169,6 @@ export const portfolioNetworkFilter$ = new BehaviorSubject<NetworkOption | undef
 const setNetworkFilter = (network: NetworkOption | undefined) =>
   portfolioNetworkFilter$.next(network)
 
-// TODO debounce ?
 export const portfolioSearch$ = new BehaviorSubject<string>("")
 
 const setSearch = (search: string) => portfolioSearch$.next(search)

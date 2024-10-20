@@ -58,6 +58,7 @@ import {
   useAppState,
   useAssetDiscoveryScan,
   useAssetDiscoveryScanProgress,
+  useBalancesHydrate,
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
@@ -574,17 +575,9 @@ const Notice: FC = () => {
   )
 }
 
-// const preloadAtom = atom((get) =>
-//   Promise.all([
-//     get(settingsAtomFamily("useTestnets")),
-//     get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//     get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-//   ])
-// )
-
 const Content = () => {
   const { t } = useTranslation("admin")
-  // useAtomValue(preloadAtom) // TODO preload
+  useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =

@@ -13,7 +13,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkDetailsButton, NetworkDetailsLink } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useEvmNetwork, useRequest, useToken } from "@ui/state"
+import { useBalancesHydrate, useEvmNetwork, useRequest, useToken } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -101,11 +101,9 @@ const SettingsSourceSelector: FC<{
   )
 }
 
-// const preloadAtom = atom((get) => Promise.all([get(balancesHydrateAtom), get(requestsAtom)]))
-
 export const AddEthereumNetwork = () => {
   const { t } = useTranslation("request")
-  //  useAtomValue(preloadAtom) ?? TODO preload
+  useBalancesHydrate() // preload
   const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
   const request = useRequest(id)
 

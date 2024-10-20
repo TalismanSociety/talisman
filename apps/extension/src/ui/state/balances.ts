@@ -2,7 +2,14 @@ import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
-import { combineLatest, distinctUntilChanged, map, Observable, shareReplay } from "rxjs"
+import {
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  shareReplay,
+  throttleTime,
+} from "rxjs"
 
 import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
 import { api } from "@ui/api"
@@ -39,7 +46,11 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
     subscriber.next(balances)
   })
   return () => unsubscribe()
-}).pipe(debugObservable("rawBalances$"), shareReplay(1))
+}).pipe(
+  throttleTime(200, undefined, { leading: true, trailing: true }),
+  debugObservable("rawBalances$"),
+  shareReplay(1)
+)
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   rawBalances$.pipe(

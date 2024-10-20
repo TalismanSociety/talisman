@@ -4,12 +4,14 @@ import { Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
+import { debugObservable } from "./util/debugObservable"
+
 export const authorisedSites$ = new Observable<AuthorizedSites>((subscriber) => {
   const unsubscribe = api.authorizedSitesSubscribe((sites) => {
     subscriber.next(sites)
   })
 
   return () => unsubscribe()
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(debugObservable("authorisedSites$"), shareReplay({ bufferSize: 1, refCount: true }))
 
 export const [useAuthorisedSites] = bind(authorisedSites$)

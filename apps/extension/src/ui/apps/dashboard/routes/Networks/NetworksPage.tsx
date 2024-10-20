@@ -1,7 +1,9 @@
+import { bind } from "@react-rxjs/core"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { combineLatest } from "rxjs"
 import { PillButton } from "talisman-ui"
 
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -12,6 +14,12 @@ import { Spacer } from "@talisman/components/Spacer"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import {
+  activeChainsState$,
+  activeEvmNetworksState$,
+  balancesHydrate$,
+  getSettingValue$,
+} from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 import { ANALYTICS_PAGE } from "./analytics"
@@ -46,19 +54,18 @@ const Notice: FC = () => {
   )
 }
 
-// const preloadAtom = atom((get) =>
-//   Promise.all([
-//     get(settingsAtomFamily("useTestnets")),
-//     get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: true })),
-//     get(evmNetworksMapAtomFamily({ activeOnly: false, includeTestnets: true })),
-//     get(chainsActiveAtom),
-//     get(evmNetworksActiveAtom),
-//   ])
-// )
+const [usePreload] = bind(
+  combineLatest([
+    getSettingValue$("useTestnets"),
+    balancesHydrate$,
+    activeChainsState$,
+    activeEvmNetworksState$,
+  ])
+)
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  // useAtomValue(preloadAtom) // TODO preload
+  usePreload()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 

@@ -4,9 +4,12 @@ import { db } from "extension-core"
 import { from, map } from "rxjs"
 import { Hex } from "viem"
 
+import { debugObservable } from "./util/debugObservable"
+
 export const [useTransactions, transactions$] = bind(
   from(liveQuery(() => db.transactions.toArray())).pipe(
-    map((txs) => txs.sort((tx1, tx2) => tx2.timestamp - tx1.timestamp))
+    map((txs) => txs.sort((tx1, tx2) => tx2.timestamp - tx1.timestamp)),
+    debugObservable("transactions$")
   )
 )
 

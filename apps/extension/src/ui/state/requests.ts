@@ -4,13 +4,15 @@ import { map, Observable } from "rxjs"
 
 import { api } from "@ui/api"
 
+import { debugObservable } from "./util/debugObservable"
+
 export const [useRequests, requests$] = bind(
   new Observable<ValidRequests[]>((subscriber) => {
     const unsubscribe = api.subscribeRequests((requests) => {
       subscriber.next(requests)
     })
     return () => unsubscribe()
-  })
+  }).pipe(debugObservable("requests$"))
 )
 
 const [useRequestInner] = bind(<T extends KnownRequestTypes>(id: KnownRequestId<T>) =>

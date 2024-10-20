@@ -1,10 +1,14 @@
 import { bind } from "@react-rxjs/core"
 import { settingsStore, SettingsStoreData } from "extension-core"
 import { SetStateAction, useCallback } from "react"
-import { firstValueFrom, map, Observable } from "rxjs"
+import { firstValueFrom, map, Observable, shareReplay } from "rxjs"
+
+import { debugObservable } from "./util/debugObservable"
+
+const settings$ = settingsStore.observable.pipe(debugObservable("settings$"), shareReplay(1))
 
 export const [useSettingValue, getSettingValue$] = bind((key: keyof SettingsStoreData) =>
-  settingsStore.observable.pipe(map((state) => state[key]))
+  settings$.pipe(map((state) => state[key]))
 ) as [
   <K extends keyof SettingsStoreData, V = SettingsStoreData[K]>(key: K) => V,
   <K extends keyof SettingsStoreData, V = SettingsStoreData[K]>(key: K) => Observable<V>

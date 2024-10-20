@@ -1,10 +1,14 @@
 import { bind } from "@react-rxjs/core"
 import { appStore, AppStoreData } from "extension-core"
 import { SetStateAction, useCallback } from "react"
-import { firstValueFrom, map, Observable } from "rxjs"
+import { firstValueFrom, map, Observable, shareReplay } from "rxjs"
+
+import { debugObservable } from "./util/debugObservable"
+
+const appState$ = appStore.observable.pipe(debugObservable("appState$"), shareReplay(1))
 
 export const [useAppStateValue, getAppStateValue$] = bind((key: keyof AppStoreData) =>
-  appStore.observable.pipe(map((state) => state[key]))
+  appState$.pipe(map((state) => state[key]))
 ) as [
   <K extends keyof AppStoreData, V = AppStoreData[K]>(key: K) => V,
   <K extends keyof AppStoreData, V = AppStoreData[K]>(key: K) => Observable<V>
