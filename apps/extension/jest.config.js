@@ -1,4 +1,4 @@
-/* eslint-env es2022 */
+/* eslint-env es2023 */
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 const { defaults } = require("jest-config")
 const { pathsToModuleNameMapper } = require("ts-jest")
@@ -6,7 +6,7 @@ const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
   transformIgnorePatterns: [
-    "/node_modules/.pnpm/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|nanoid|@talismn|scale-ts)",
+    "/node_modules/.pnpm/(?!@polkadot|@react-rxjs|@rx-state|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|nanoid|@talismn|scale-ts)",
   ],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest"],
