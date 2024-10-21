@@ -88,7 +88,7 @@ export const DashboardAssetsTable = () => {
 
   if (!symbolBalances.length && !isInitialising) {
     return (
-      <div className="text-body-secondary bg-grey-850 rounded-sm p-8">
+      <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
         {selectedAccount
           ? t("No assets were found on this account.")
           : selectedFolder

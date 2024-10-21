@@ -24,9 +24,9 @@ import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
+import { useAccounts } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -38,7 +38,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
   const { isOpen, close } = usePopupNavOpenClose()
-  const hasAccounts = useHasAccounts()
+  const ownedAccounts = useAccounts("owned")
 
   const handleLock = useCallback(async () => {
     sendAnalyticsEvent({
@@ -148,7 +148,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
               {t("Add Account")}
             </NavItem>
-            {hasAccounts && (
+            {!!ownedAccounts.length && (
               <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
                 {t("Send Funds")}
               </NavItem>
