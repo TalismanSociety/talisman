@@ -36,8 +36,8 @@ export const DashboardLayout: FC<{
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
               <div
                 className={classNames(
-                  "animate-fade-in grow",
-                  width === "660" && "max-w-[80rem]",
+                  "animate-fade-in min-w-[60rem] grow",
+                  width === "660" && "max-w-[66rem]",
                   width === "800" && "max-w-[80rem]"
                 )}
               >
