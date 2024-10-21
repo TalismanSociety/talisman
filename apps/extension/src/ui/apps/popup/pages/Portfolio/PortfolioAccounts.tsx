@@ -29,7 +29,6 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
-import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -37,6 +36,7 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -361,8 +361,7 @@ const BalancesLoader = () => {
 }
 
 export const PortfolioAccounts = () => {
-  const { accounts, ownedAccounts, catalog, balanceTotalPerAccount, ownedTotal } =
-    usePortfolioAccounts()
+  const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
   const { selectedFolder: folder, treeName } = usePortfolioNavigation()
   const search = usePortfolioAccountsSearch()
   const { popupOpenEvent } = useAnalytics()
@@ -454,8 +453,6 @@ export const PortfolioAccounts = () => {
     [balanceTotalPerAccount, folder]
   )
 
-  const showGetStartedPopup = !ownedTotal && ownedAccounts.length <= 2
-
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
@@ -473,16 +470,14 @@ export const PortfolioAccounts = () => {
   return (
     <>
       {!folder && <AuthorisedSiteToolbar />}
-      <div className="flex w-full flex-col gap-12">
-        <Accounts
-          accounts={accounts}
-          folder={folder}
-          folderTotal={folderTotal}
-          portfolioOptions={portfolioOptions}
-          watchedOptions={watchedOptions}
-        />
-        {showGetStartedPopup && <NoAccountsPopup accounts={accounts} />}
-      </div>
+      <Accounts
+        accounts={accounts}
+        folder={folder}
+        folderTotal={folderTotal}
+        portfolioOptions={portfolioOptions}
+        watchedOptions={watchedOptions}
+      />
+      <GetStarted />
       {fetchBalances && (
         <Suspense fallback={<SuspenseTracker name="BalancesLoader" />}>
           <BalancesLoader />
