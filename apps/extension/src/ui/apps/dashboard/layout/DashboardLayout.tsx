@@ -36,7 +36,8 @@ export const DashboardLayout: FC<{
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
               <div
                 className={classNames(
-                  "animate-fade-in min-w-[60rem] grow",
+                  // minimum width should be the one of the horizontal bar which never shrinks
+                  "animate-fade-in min-w-[48rem] grow",
                   width === "660" && "max-w-[66rem]",
                   width === "800" && "max-w-[80rem]"
                 )}
@@ -57,11 +58,11 @@ const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "
 
 const Header = () => (
   <div className={classNames("flex h-48 w-full items-center", RESPONSIVE_FLEX_SPACING)}>
-    <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
+    <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
       <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
       <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
     </div>
-    <div className="flex grow justify-center">
+    <div className="flex shrink-0 grow justify-center">
       <HorizontalNav />
     </div>
   </div>
@@ -91,7 +92,7 @@ const NavButton: FC<{
       onClick={onClick}
     >
       <Icon className="shrink-0 text-[2rem]" />
-      <div className="hidden lg:block">{label}</div>
+      <div>{label}</div>
     </button>
   )
 }
