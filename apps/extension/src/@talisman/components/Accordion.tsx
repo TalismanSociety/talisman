@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TargetAndTransition, Transition, motion } from "framer-motion"
+import { motion, TargetAndTransition, Transition } from "framer-motion"
 import throttle from "lodash/throttle"
 import { CSSProperties, FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 
@@ -30,7 +30,7 @@ export const Accordion: FC<{
   alwaysRender?: boolean
   className?: string
 }> = ({ isOpen, children, alwaysRender, className }) => {
-  const [contentHeight, setContentHeight] = useState<number>()
+  const [contentHeight, setContentHeight] = useState<number | "auto">(isOpen ? "auto" : 0)
   const refContainer = useRef<HTMLDivElement>(null)
 
   const [shouldRender, setShouldRender] = useState(isOpen)
@@ -39,9 +39,13 @@ export const Accordion: FC<{
     const container = refContainer.current
     if (!container) return () => {}
 
-    const updateContentHeight = throttle(() => {
-      if (container.scrollHeight !== contentHeight) setContentHeight(container.scrollHeight)
-    }, 50) // prevent multiple re-renders in case of batch
+    const updateContentHeight = throttle(
+      () => {
+        if (container.scrollHeight !== contentHeight) setContentHeight(container.scrollHeight)
+      },
+      50,
+      { trailing: true }
+    ) // prevent multiple re-renders in case of batch
 
     const observer = new MutationObserver(updateContentHeight)
     observer.observe(container, { childList: true, subtree: true })
@@ -65,6 +69,8 @@ export const Accordion: FC<{
   const animate: TargetAndTransition = useMemo(
     () => ({
       height: isOpen ? contentHeight : 0,
+
+      transitionEnd: { height: isOpen ? "auto" : 0 },
     }),
     [contentHeight, isOpen]
   )

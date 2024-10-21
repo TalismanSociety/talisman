@@ -1,6 +1,6 @@
 import { FolderPlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback } from "react"
+import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -52,22 +52,30 @@ export const ManageAccountsToolbar: FC<{
           initialValue={search}
         />
       </div>
-      <Tooltip placement="bottom-end">
-        <TooltipTrigger asChild>
-          <PortfolioToolbarButton onClick={addNewAccountClick}>
-            <PlusIcon />
-          </PortfolioToolbarButton>
-        </TooltipTrigger>
-        <TooltipContent>{t("Add Account")}</TooltipContent>
-      </Tooltip>
-      <Tooltip placement="bottom-end">
-        <TooltipTrigger asChild>
-          <PortfolioToolbarButton onClick={openNewFolderModal}>
-            <FolderPlusIcon />
-          </PortfolioToolbarButton>
-        </TooltipTrigger>
-        <TooltipContent>{t("Add Folder")}</TooltipContent>
-      </Tooltip>
+      <ToolbarButton icon={FolderPlusIcon} onClick={openNewFolderModal} label={t("Add Folder")} />
+      <ToolbarButton icon={PlusIcon} onClick={addNewAccountClick} label={t("Add Account")} />
     </div>
   )
 }
+
+const ToolbarButton: FC<{
+  label?: ReactNode
+  icon: FC<{ className?: string }>
+  onClick: () => void
+}> = ({ label, icon: Icon, onClick }) => (
+  <Tooltip placement="bottom-end">
+    <TooltipTrigger asChild>
+      <PortfolioToolbarButton
+        className={classNames(
+          "size-[3.6rem]",
+          !IS_POPUP && "@2xl:h-[4.4rem] @2xl:px-6 flex h-[3.6rem] w-auto items-center gap-3 px-4"
+        )}
+        onClick={onClick}
+      >
+        <Icon />
+        {!IS_POPUP && <div>{label}</div>}
+      </PortfolioToolbarButton>
+    </TooltipTrigger>
+    {IS_POPUP && !label && <TooltipContent>{label}</TooltipContent>}
+  </Tooltip>
+)
