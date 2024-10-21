@@ -1,7 +1,7 @@
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountJsonAny } from "extension-core"
-import { FC, useMemo } from "react"
+import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
@@ -39,12 +39,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 
   return (
     <div className={classNames("@container", className)}>
-      {!!watchedUiTree.length && (
-        <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
-          <TalismanHandIcon className="inline" />
-          <div>{t("My portfolio")}</div>
-        </div>
-      )}
+      {!!watchedUiTree.length && <Separator icon={TalismanHandIcon} label={t("My portfolio")} />}
       <ManageAccountsList
         accounts={accounts}
         balanceTotalPerAccount={balanceTotalPerAccount}
@@ -53,10 +48,8 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
       />
       {!!watchedUiTree.length && (
         <>
-          <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
-            <EyeIcon className="inline" />
-            <div>{t("Followed only")}</div>
-          </div>
+          {!!portfolioUiTree.length && <div className="h-8 shrink-0"></div>}
+          <Separator icon={EyeIcon} label={t("Followed only")} />
           <ManageAccountsList
             accounts={accounts}
             balanceTotalPerAccount={balanceTotalPerAccount}
@@ -97,3 +90,14 @@ const searchTree = (
 
   return workTree
 }
+
+const Separator: FC<{ label: ReactNode; icon: FC<{ className?: string }> }> = ({
+  icon: Icon,
+  label,
+}) => (
+  <div className="text-body-disabled @xl:text-sm flex w-full items-center gap-4 text-xs font-bold">
+    <Icon className="inline" />
+    <div>{label}</div>
+    <div className="bg-grey-800 h-0.5 grow"></div>
+  </div>
+)
