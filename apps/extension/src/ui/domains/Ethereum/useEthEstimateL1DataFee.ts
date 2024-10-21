@@ -12,7 +12,7 @@ import {
 } from "viem"
 
 import { getTransactionSerializable } from "@extension/core"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetwork } from "@ui/state"
 
 const getOpStackEthL1DataFee = async (
   publicClient: PublicClient,

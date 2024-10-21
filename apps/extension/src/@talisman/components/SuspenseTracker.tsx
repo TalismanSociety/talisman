@@ -1,24 +1,21 @@
 /* eslint-disable no-console */
-import { DEBUG } from "@extension/shared"
 import { FC, useEffect } from "react"
 
-// Dev tool to track Suspense render times
-export const SuspenseTracker: FC<{ name: string }> = ({ name }) => {
+import { DEBUG } from "@extension/shared"
+
+const SuspenseTrackerInner: FC<{ name: string }> = ({ name }) => {
   useEffect(() => {
-    if (!DEBUG) return
-
-    const key = `[SuspenseTracker] ${name} - ${crypto.randomUUID()}}`
-    console.time(key)
-
-    const timeout = setTimeout(() => {
-      console.warn(`[SuspenseTracker] ${name} is taking too long to render`)
-    }, 5_000)
+    const start = performance.now()
 
     return () => {
-      console.timeEnd(key)
-      clearTimeout(timeout)
+      console.log(`[SuspenseTracker] ${name} - ${(performance.now() - start).toFixed()} ms`)
     }
   }, [name])
 
   return null
+}
+
+// Dev tool to track Suspense render times
+export const SuspenseTracker: FC<{ name: string }> = ({ name }) => {
+  return DEBUG ? <SuspenseTrackerInner name={name} /> : null
 }

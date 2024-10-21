@@ -5,9 +5,8 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
-import { NetworkOption } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
+import { NetworkOption, usePortfolio } from "@ui/state"
 
 type NullableKeys<T> = {
   [P in keyof T]: T[P] | null

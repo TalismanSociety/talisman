@@ -1,12 +1,13 @@
+import { useCallback, useEffect } from "react"
+import { useTranslation } from "react-i18next"
+
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { OnboardDialog } from "@ui/apps/onboard/components/OnboardDialog"
 import { useOnboard } from "@ui/apps/onboard/context"
 import { OnboardLayout } from "@ui/apps/onboard/OnboardLayout"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
-import { useCallback, useEffect } from "react"
-import { useTranslation } from "react-i18next"
+import { useIsLoggedIn } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

@@ -3,8 +3,8 @@ import { FC, useMemo } from "react"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
+import { useChainByGenesisHash } from "@ui/state"
 
 type AddressProps = {
   address?: string

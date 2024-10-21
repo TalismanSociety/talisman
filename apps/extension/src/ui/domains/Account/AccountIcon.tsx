@@ -3,8 +3,8 @@ import { classNames, isEthereumAddress } from "@talismn/util"
 import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
 
 import { Address, IdenticonType } from "@extension/core"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useSetting } from "@ui/hooks/useSettings"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useChainByGenesisHash, useSetting } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
@@ -57,7 +57,7 @@ const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHas
         <TalismanOrb seed={address} />
       )}
       {genesisHash && (
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="AccountIconInner.Badge" />}>
           <ChainBadge genesisHash={genesisHash} />
         </Suspense>
       )}

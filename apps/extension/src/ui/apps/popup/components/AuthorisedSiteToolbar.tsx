@@ -2,8 +2,8 @@ import { useMemo } from "react"
 
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import { useAuthorisedSites } from "@ui/state"
 
 export const AuthorisedSiteToolbar = () => {
   const currentSite = useCurrentSite()

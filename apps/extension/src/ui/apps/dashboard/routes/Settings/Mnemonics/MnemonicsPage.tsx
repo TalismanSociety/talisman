@@ -21,9 +21,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAppState } from "@ui/hooks/useAppState"
-import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
+import { Mnemonic, useAccounts, useAppState, useMnemonics } from "@ui/state"
 
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {

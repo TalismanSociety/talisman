@@ -267,6 +267,12 @@ importers:
       '@polkadot/util-crypto':
         specifier: 12.6.2
         version: 12.6.2(@polkadot/util@12.6.2)
+      '@react-rxjs/core':
+        specifier: ^0.10.7
+        version: 0.10.7(react@18.2.0)(rxjs@7.8.1)
+      '@react-rxjs/utils':
+        specifier: ^0.9.7
+        version: 0.9.7(@react-rxjs/core@0.10.7(react@18.2.0)(rxjs@7.8.1))(react@18.2.0)(rxjs@7.8.1)
       '@scure/bip39':
         specifier: ^1.2.2
         version: 1.2.2
@@ -441,12 +447,6 @@ importers:
       i18next-http-backend:
         specifier: ^2.2.1
         version: 2.2.1
-      jotai:
-        specifier: ^2.8.0
-        version: 2.8.0(@types/react@18.0.14)(react@18.2.0)
-      jotai-effect:
-        specifier: ^0.6.0
-        version: 0.6.0(jotai@2.8.0(@types/react@18.0.14)(react@18.2.0))
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
@@ -1252,7 +1252,7 @@ importers:
         version: 12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@polkadot/phishing':
         specifier: latest
-        version: 0.23.4
+        version: 0.23.7
       '@polkadot/types':
         specifier: 12.0.2
         version: 12.0.2
@@ -4373,8 +4373,8 @@ packages:
     resolution: {integrity: sha512-Nyi1gzSGvIYy2uioJ4C+FJhaqts6Npr8HT7SVTw1Lp+0zr+4tD1+heW4sfuiWcggtlkiar6kYmgiwT+5wtMA3Q==}
     engines: {node: '>=18'}
 
-  '@polkadot/phishing@0.23.4':
-    resolution: {integrity: sha512-ume//AmN/+QDdgm6PhGUg3YMlrGY/qL/nBN27WdGtdRwjgrUV+IjpZt4mE31CCDO9jUPdzGJRylTrp8bNcr9jQ==}
+  '@polkadot/phishing@0.23.7':
+    resolution: {integrity: sha512-aYVr/oIj0hVvhioO9zFotLlst2X21pZR1e71NUqLKkoSI2NG+O8u+xOAkZe5RRHY0J/BIlANC7TtJZFjTDkh5Q==}
     engines: {node: '>=18'}
 
   '@polkadot/react-identicon@3.6.4':
@@ -4645,6 +4645,19 @@ packages:
       '@types/react':
         optional: true
 
+  '@react-rxjs/core@0.10.7':
+    resolution: {integrity: sha512-dornp8pUs9OcdqFKKRh9+I2FVe21gWufNun6RYU1ddts7kUy9i4Thvl0iqcPFbGY61cJQMAJF7dxixWMSD/A/A==}
+    peerDependencies:
+      react: '>=16.8.0'
+      rxjs: '>=7'
+
+  '@react-rxjs/utils@0.9.7':
+    resolution: {integrity: sha512-m9CUTdRsglObvUAlYfB24QvN+QH4XqCGEKnCdSILIeOx7mMqSi9TTFp2zrj5XqtMiLnj4ReAdDxrXegLPB73bQ==}
+    peerDependencies:
+      '@react-rxjs/core': '>=0.1.0'
+      react: '>=16.8.0'
+      rxjs: '>=6'
+
   '@remix-run/router@1.7.1':
     resolution: {integrity: sha512-bgVQM4ZJ2u2CM8k1ey70o1ePFXsEzYVZoWghh6WjM8p59jQ7HxzbHW4SbnWFG7V9ig9chLawQxDTZ3xzOF8MkQ==}
     engines: {node: '>=14'}
@@ -4770,6 +4783,11 @@ packages:
     resolution: {integrity: sha512-2jsCDZwtQvRhejHLfZ1JY6w6kEuEtfF9nzYsZxzSlNVKDX+DpsDJ+Rbjkm74nvg2rdx0gwBS+IMdvwJuq3S9pQ==}
     cpu: [x64]
     os: [win32]
+
+  '@rx-state/core@0.1.4':
+    resolution: {integrity: sha512-Z+3hjU2xh1HisLxt+W5hlYX/eGSDaXXP+ns82gq/PLZpkXLu0uwcNUh9RLY3Clq4zT+hSsA3vcpIGt6+UAb8rQ==}
+    peerDependencies:
+      rxjs: '>=7'
 
   '@safe-global/safe-apps-provider@0.18.1':
     resolution: {integrity: sha512-V4a05A3EgJcriqtDoJklDz1BOinWhC6P0hjUSxshA4KOZM7rGPCTto/usXs09zr1vvL28evl/NldSTv97j2bmg==}
@@ -7804,11 +7822,13 @@ packages:
   eslint@7.32.0:
     resolution: {integrity: sha512-VHZ8gX+EDfz+97jGcgyGCyRia/dPOd6Xh9yPv8Bl1+SoaIwD+a/vlrOmGRUyOYu7MwUhc7CxqeaDZU13S4+EpA==}
     engines: {node: ^10.12.0 || >=12.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   eslint@8.52.0:
     resolution: {integrity: sha512-zh/JHnaixqHZsolRB/w9/02akBk9EPrOs9JwcTP2ek7yL5bVvXuRariiaAjjoJ5DvuwQ1WAE/HsMz+w17YgBCg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@7.3.1:
@@ -17250,7 +17270,7 @@ snapshots:
       '@polkadot/x-fetch': 12.6.2
       tslib: 2.6.2
 
-  '@polkadot/phishing@0.23.4':
+  '@polkadot/phishing@0.23.7':
     dependencies:
       '@polkadot/util': 12.6.2
       '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)
@@ -17886,6 +17906,19 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.0.14
 
+  '@react-rxjs/core@0.10.7(react@18.2.0)(rxjs@7.8.1)':
+    dependencies:
+      '@rx-state/core': 0.1.4(rxjs@7.8.1)
+      react: 18.2.0
+      rxjs: 7.8.1
+      use-sync-external-store: 1.2.0(react@18.2.0)
+
+  '@react-rxjs/utils@0.9.7(@react-rxjs/core@0.10.7(react@18.2.0)(rxjs@7.8.1))(react@18.2.0)(rxjs@7.8.1)':
+    dependencies:
+      '@react-rxjs/core': 0.10.7(react@18.2.0)(rxjs@7.8.1)
+      react: 18.2.0
+      rxjs: 7.8.1
+
   '@remix-run/router@1.7.1': {}
 
   '@rnx-kit/chromium-edge-launcher@1.0.0':
@@ -17995,6 +18028,10 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.21.0':
     optional: true
+
+  '@rx-state/core@0.1.4(rxjs@7.8.1)':
+    dependencies:
+      rxjs: 7.8.1
 
   '@safe-global/safe-apps-provider@0.18.1(bufferutil@4.0.8)(typescript@5.3.3)':
     dependencies:
@@ -24146,18 +24183,9 @@ snapshots:
       '@sideway/formula': 3.0.1
       '@sideway/pinpoint': 2.0.0
 
-  jotai-effect@0.6.0(jotai@2.8.0(@types/react@18.0.14)(react@18.2.0)):
-    dependencies:
-      jotai: 2.8.0(@types/react@18.0.14)(react@18.2.0)
-
   jotai-effect@0.6.0(jotai@2.8.0(@types/react@18.0.27)(react@18.2.0)):
     dependencies:
       jotai: 2.8.0(@types/react@18.0.27)(react@18.2.0)
-
-  jotai@2.8.0(@types/react@18.0.14)(react@18.2.0):
-    optionalDependencies:
-      '@types/react': 18.0.14
-      react: 18.2.0
 
   jotai@2.8.0(@types/react@18.0.27)(react@18.2.0):
     optionalDependencies:

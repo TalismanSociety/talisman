@@ -1,33 +1,38 @@
+import { bind } from "@react-rxjs/core"
+import { TokenId, TokenList } from "@talismn/chaindata-provider"
+import { fetchTokenRates, TokenRatesError, TokenRatesList } from "@talismn/token-rates"
+import { SetStateAction, useEffect, useState } from "react"
+import { BehaviorSubject, combineLatest, map } from "rxjs"
+
 import { remoteConfigStore } from "@extension/core"
 import { log } from "@extension/shared"
-import { TokenId, TokenList } from "@talismn/chaindata-provider"
-import { TokenRatesError, TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
-import { assetDiscoveryScanProgressAtom, tokensArrayAtomFamily } from "@ui/atoms"
-import { atom, useAtomValue, useSetAtom } from "jotai"
-import { atomFamily } from "jotai/utils"
-import { useEffect, useState } from "react"
+import { assetDiscoveryScanProgress$, getTokens$ } from "@ui/state"
 
-const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
+const assetDiscoveryAllTokenRates$ = new BehaviorSubject<TokenRatesList>({})
 
-const assetDiscoveryTokenRatesAtomFamily = atomFamily((tokenId: TokenId = "") =>
-  atom((get) => {
-    if (!tokenId) return null
-    const tokenRates = get(assetDiscoveryTokenRatesAtom)
-    return tokenRates[tokenId] ?? null
-  })
+const setTokenRates = (state: SetStateAction<TokenRatesList>) => {
+  if (typeof state === "function")
+    assetDiscoveryAllTokenRates$.next(state(assetDiscoveryAllTokenRates$.value))
+  else assetDiscoveryAllTokenRates$.next(state)
+}
+
+export const [useAssetDiscoveryTokenRates] = bind((tokenId: TokenId | null | undefined) =>
+  assetDiscoveryAllTokenRates$.pipe(map((rates) => (tokenId && rates[tokenId]) || null))
 )
 
-export const useAssetDiscoveryTokenRate = (tokenId: TokenId | undefined) =>
-  useAtomValue(assetDiscoveryTokenRatesAtomFamily(tokenId))
-
-const missingTokenRatesAtom = atom(async (get) => {
-  const [{ tokenIds }, tokens, tokenRates] = await Promise.all([
-    get(assetDiscoveryScanProgressAtom),
-    get(tokensArrayAtomFamily({ activeOnly: false, includeTestnets: false })),
-    get(assetDiscoveryTokenRatesAtom),
-  ])
-  return tokens.filter((t) => !!t.coingeckoId && !tokenRates[t.id] && tokenIds.includes(t.id))
-})
+const [useMissingTokenRates] = bind(
+  combineLatest([
+    assetDiscoveryScanProgress$,
+    getTokens$({ activeOnly: false, includeTestnets: false }),
+    assetDiscoveryAllTokenRates$,
+  ]).pipe(
+    map(([scanProgress, tokens, tokenRates]) =>
+      tokens.filter(
+        (t) => !!t.coingeckoId && !tokenRates[t.id] && scanProgress.tokenIds.includes(t.id)
+      )
+    )
+  )
+)
 
 const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
 
@@ -47,14 +52,13 @@ const safeFetchTokenRates = async (tokenList: TokenList) => {
 
 // this should be called only once on the page
 export const useAssetDiscoveryFetchTokenRates = () => {
-  const missingTokenRatesList = useAtomValue(missingTokenRatesAtom)
-  const setTokenRates = useSetAtom(assetDiscoveryTokenRatesAtom)
+  const missingTokenRatesList = useMissingTokenRates()
   const [canFetch, setCanFetch] = useState(true)
 
   useEffect(() => {
     // reset on mount
     setTokenRates({})
-  }, [setTokenRates])
+  }, [])
 
   useEffect(() => {
     const fetchMissingTokenRates = () => {
@@ -94,5 +98,5 @@ export const useAssetDiscoveryFetchTokenRates = () => {
     return () => {
       clearInterval(interval)
     }
-  }, [canFetch, missingTokenRatesList, setTokenRates])
+  }, [canFetch, missingTokenRatesList])
 }

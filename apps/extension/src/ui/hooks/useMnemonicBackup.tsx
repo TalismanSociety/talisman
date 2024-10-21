@@ -1,18 +1,14 @@
-import { appStore } from "@extension/core"
-import { api } from "@ui/api"
-import { balanceTotalsAtom } from "@ui/atoms"
-import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
-import useAccounts from "./useAccounts"
-import { useAppState } from "./useAppState"
-import { useMnemonics } from "./useMnemonics"
+import { appStore } from "@extension/core"
+import { api } from "@ui/api"
+import { useAccounts, useAppState, useBalanceTotals, useMnemonics } from "@ui/state"
 
-const useMnemonicBackup = () => {
+export const useMnemonicBackup = () => {
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const mnemonics = useMnemonics()
-  const balanceTotals = useAtomValue(balanceTotalsAtom)
+  const balanceTotals = useBalanceTotals()
   const accounts = useAccounts("owned")
 
   const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
@@ -98,5 +94,3 @@ const useMnemonicBackup = () => {
     isSnoozed,
   }
 }
-
-export default useMnemonicBackup

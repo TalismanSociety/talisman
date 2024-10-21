@@ -2,7 +2,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
-import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,13 +16,17 @@ import {
 } from "@extension/core"
 import { BANXA_URL } from "@extension/shared"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useAccounts,
+  useChains,
+  useChainsMap,
+  useEvmNetworksMap,
+  useRemoteConfig,
+  useTokens,
+  useTokensMap,
+} from "@ui/state"
 
 import { BuyTokensAmountField } from "./BuyTokensAmountField"
 import { useBuyTokensModal } from "./useBuyTokensModal"
@@ -48,7 +51,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: string) => {
-  const config = useAtomValue(remoteConfigAtom)
+  const config = useRemoteConfig()
 
   const supportedTokens = useMemo(
     () => tokens?.filter((t) => config.buyTokens.tokenIds?.includes(t.id)) ?? [],
@@ -111,9 +114,11 @@ export const BuyTokensForm = () => {
   })
 
   const [address, tokenId] = watch(["address", "tokenId"])
-  const { tokens, tokensMap } = useTokens({ activeOnly: false, includeTestnets: false })
-  const { chains, chainsMap } = useChains({ activeOnly: false, includeTestnets: false })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: false })
+  const tokens = useTokens({ activeOnly: false, includeTestnets: false })
+  const tokensMap = useTokensMap({ activeOnly: false, includeTestnets: false })
+  const chains = useChains({ activeOnly: false, includeTestnets: false })
+  const chainsMap = useChainsMap({ activeOnly: false, includeTestnets: false })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: false, includeTestnets: false })
 
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,

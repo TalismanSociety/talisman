@@ -13,7 +13,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"
 

@@ -5,7 +5,7 @@ import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { useCopyAddressModal } from "../CopyAddress"
 import { AccountIcon, AccountIconProps } from "./AccountIcon"

@@ -1,18 +1,17 @@
+import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
+import { ReactNode, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
-import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import useChains from "@ui/hooks/useChains"
-import { useSetting } from "@ui/hooks/useSettings"
-import { ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { useChainByGenesisHash, useChains, useSetting } from "@ui/state"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"
@@ -51,7 +50,7 @@ export const ConfigureAccount = () => {
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 

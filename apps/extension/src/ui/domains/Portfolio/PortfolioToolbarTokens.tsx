@@ -15,13 +15,12 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useSetting } from "@ui/hooks/useSettings"
+import { usePortfolio, useSetting } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkFilterModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
-import { usePortfolio, usePortfolioSearch } from "./usePortfolio"
 
 const NetworkFilterButton = () => {
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
@@ -69,7 +68,7 @@ const NetworkFilterButton = () => {
 
 const PortfolioSearch = () => {
   const { t } = useTranslation()
-  const { search, setSearch } = usePortfolioSearch()
+  const { search, setSearch } = usePortfolio()
 
   return (
     <SearchInput

@@ -1,20 +1,19 @@
-import { AccountType } from "@extension/core"
-import { AssetDiscoveryMode } from "@extension/core"
-import { log } from "@extension/shared"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
 import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
-import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import { AccountType, AssetDiscoveryMode } from "@extension/core"
+import { log } from "@extension/shared"
+import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
-import useChains from "@ui/hooks/useChains"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAccounts, useChains } from "@ui/state"
 
 export type JsonImportAccount = {
   id: string
@@ -154,7 +153,7 @@ const useJsonAccountImportProvider = () => {
     [existingAccounts, file]
   )
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains()
   const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {

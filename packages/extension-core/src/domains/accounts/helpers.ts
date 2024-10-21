@@ -1,7 +1,7 @@
-import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import { canDerive } from "@polkadot/extension-base/utils"
+import keyring from "@polkadot/ui-keyring"
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
@@ -175,4 +175,14 @@ export const isAccountCompatibleWithChain = (
 ) => {
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+}
+
+export const isOwnedAccountOrigin = (origin: AccountType) => {
+  switch (origin) {
+    case AccountType.Watched:
+    case AccountType.Signet:
+      return false
+    default:
+      return true
+  }
 }

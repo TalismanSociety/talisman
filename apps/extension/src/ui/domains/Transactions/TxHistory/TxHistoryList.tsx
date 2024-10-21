@@ -40,12 +40,14 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
+import {
+  useChainByGenesisHash,
+  useEvmNetwork,
+  useSelectedCurrency,
+  useToken,
+  useTokenRates,
+} from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { TxReplaceDrawer } from "../TxReplaceDrawer"
@@ -213,7 +215,7 @@ const EvmTxActions: FC<{
       onContextMenuClose?.()
       if (action === "speed-up") setReplaceType("speed-up")
       if (action === "cancel") setReplaceType("cancel")
-      if (action === "dismiss") db.transactions.delete(tx.hash)
+      if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
     },
     [onContextMenuClose, tx.hash]
   )
@@ -540,7 +542,7 @@ const SubTxActions: FC<{
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "dismiss") db.transactions.delete(tx.hash)
+      if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
     },
     [onContextMenuClose, tx.hash]
   )

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { getWhatsNewVersions } from "@ui/apps/popup/pages/WhatsNew/WhatsNew"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

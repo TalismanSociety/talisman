@@ -1,14 +1,14 @@
+import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/util"
-import { atom, useAtomValue } from "jotai"
-import { atomFamily } from "jotai/utils"
 import { useMemo } from "react"
+import { combineLatest, map } from "rxjs"
 
 import { AccountJsonAny, Balance, Balances } from "@extension/core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
 } from "@extension/shared"
-import { portfolioAtom, portfolioSelectedAccountsAtom } from "@ui/atoms"
+import { portfolio$, portfolioSelectedAccounts$, usePortfolioSelectedAccounts } from "@ui/state"
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: Balances) => {
@@ -42,35 +42,30 @@ const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: 
   }
 }
 
-export const portfolioDisplayBalancesAtomFamily = atomFamily(
+export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
   (filter: "all" | "network" | "search") =>
-    atom((get) => {
-      const { networkBalances, allBalances, searchBalances } = get(portfolioAtom)
-      const accounts = get(portfolioSelectedAccountsAtom)
-
-      switch (filter) {
-        case "all":
-          return networkBalances.find(shouldDisplayBalance(accounts, allBalances))
-        case "network":
-          return networkBalances.find(shouldDisplayBalance(accounts, networkBalances))
-        case "search":
-          return searchBalances.find(shouldDisplayBalance(accounts, searchBalances))
-      }
-    })
+    combineLatest([portfolio$, portfolioSelectedAccounts$]).pipe(
+      map(([{ networkBalances, allBalances, searchBalances }, accounts]) => {
+        switch (filter) {
+          case "all":
+            return networkBalances.find(shouldDisplayBalance(accounts, allBalances))
+          case "network":
+            return networkBalances.find(shouldDisplayBalance(accounts, networkBalances))
+          case "search":
+            return searchBalances.find(shouldDisplayBalance(accounts, searchBalances))
+        }
+      })
+    )
 )
 
 /**
  * @deprecated use atoms
  */
 export const useDisplayBalances = (balances: Balances) => {
-  const accounts = useAtomValue(portfolioSelectedAccountsAtom)
+  const accounts = usePortfolioSelectedAccounts()
 
   return useMemo(
     () => balances.find(shouldDisplayBalance(accounts, balances)),
     [accounts, balances]
   )
-}
-
-export const usePortfolioDisplayBalances = (filter: "all" | "network") => {
-  return useAtomValue(portfolioDisplayBalancesAtomFamily(filter))
 }

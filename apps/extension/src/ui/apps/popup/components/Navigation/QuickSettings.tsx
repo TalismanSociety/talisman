@@ -1,6 +1,5 @@
 import { Transition } from "@headlessui/react"
 import { ArrowUpRightIcon } from "@talismn/icons"
-import { useAtomValue } from "jotai"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Toggle } from "talisman-ui"
@@ -9,9 +8,9 @@ import { languages } from "@common/i18nConfig"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { selectableCurrenciesAtom } from "@ui/atoms"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
+import { useSetting } from "@ui/state"
 
 import { CurrenciesDrawer, useCurrenciesDrawerOpenClose } from "./CurrenciesDrawer"
 import { LanguageDrawer, useLanguageDrawerOpenClose } from "./LanguageDrawer"
@@ -109,7 +108,7 @@ const LanguageRow = () => {
 const CurrenciesRow = () => {
   const { t } = useTranslation()
   const { open } = useCurrenciesDrawerOpenClose()
-  const favorites = useAtomValue(selectableCurrenciesAtom)
+  const [favorites] = useFavoriteCurrencies()
 
   const moreLabel = useMemo(() => {
     const moreItems = favorites.length - 3

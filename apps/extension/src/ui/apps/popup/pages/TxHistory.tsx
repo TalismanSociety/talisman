@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AnalyticsPage } from "@ui/api/analytics"
 import {
   TxHistoryList,
@@ -25,7 +26,7 @@ export const TxHistoryPage = () => {
     <PopupLayout>
       <TxHistoryProvider>
         <Header />
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="TxHistoryPage" />}>
           <TxHistoryToolbar />
           <PopupContent withBottomNav className="text-body-secondary text-xs">
             <TxHistoryList />

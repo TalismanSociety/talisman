@@ -1,10 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useQuery } from "@tanstack/react-query"
-import useChains from "@ui/hooks/useChains"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
+
+import { useChains } from "@ui/state"
 
 import { SubNetworkForm } from "./Form"
 import { getSubstrateRpcInfo } from "./helpers"
@@ -19,7 +20,7 @@ const DEFAULT_VALUES: Partial<SubNetworkFormData> = {
 export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
   const { t } = useTranslation("admin")
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains()
 
   const formProps = useForm<SubNetworkFormData>({
     mode: "all",

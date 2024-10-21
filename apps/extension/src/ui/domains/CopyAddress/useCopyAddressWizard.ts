@@ -1,22 +1,25 @@
+import { isEthereumAddress } from "@polkadot/util-crypto"
+import { Chain, ChainId, ChainList, Token } from "@talismn/chaindata-provider"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { getAddress } from "viem"
+
 import { AccountJsonAny, Address, AddressBookContact } from "@extension/core"
 import { log } from "@extension/shared"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
-import { Chain, ChainId, Token } from "@talismn/chaindata-provider"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
-import useChain from "@ui/hooks/useChain"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useToken from "@ui/hooks/useToken"
+import {
+  useAccountByAddress,
+  useAccounts,
+  useChain,
+  useChainByGenesisHash,
+  useChainsMap,
+  useEvmNetwork,
+  useToken,
+} from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { getAddress } from "viem"
 
 import { CopyAddressWizardInputs } from "./types"
 import { useCopyAddressModal } from "./useCopyAddressModal"
@@ -27,7 +30,7 @@ type CopyAddressWizardState = CopyAddressWizardInputs & { route: CopyAddressWiza
 const isAccountCompatibleWithChain = (
   accounts: AccountJsonAny[],
   contacts: AddressBookContact[],
-  chainsMap: Record<ChainId, Chain>,
+  chainsMap: ChainList,
   address: Address | undefined | null,
   chainId: ChainId | undefined | null
 ) => {
@@ -143,7 +146,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   const accounts = useAccounts()
   const { contacts } = useAddressBook()
-  const { chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
+  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
     (chainId: ChainId | null) => {

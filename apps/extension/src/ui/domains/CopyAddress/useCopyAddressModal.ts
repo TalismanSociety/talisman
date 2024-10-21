@@ -1,20 +1,28 @@
+import { bind } from "@react-rxjs/core"
+import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
+import { useCallback } from "react"
+import { BehaviorSubject } from "rxjs"
+import { getAddress } from "viem"
+
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
-import { useAllChainsMap } from "@ui/hooks/useChains"
+import { useChainsMap } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
-import { atom, useAtom } from "jotai"
-import { useCallback } from "react"
-import { getAddress } from "viem"
 
 import { CopyAddressWizardInputs } from "./types"
 
-const copyAddressInputsState = atom<CopyAddressWizardInputs>({})
+const copyAddressInputs$ = new BehaviorSubject<CopyAddressWizardInputs>({})
+
+const setCopyAddressInputs = (inputs: CopyAddressWizardInputs) => {
+  copyAddressInputs$.next(inputs)
+}
+
+const [useCopyAddressInputs] = bind(copyAddressInputs$)
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
-  const chainsMap = useAllChainsMap()
-  const [inputs, setInputs] = useAtom(copyAddressInputsState)
+  const chainsMap = useChainsMap()
+  const inputs = useCopyAddressInputs()
 
   const open = useCallback(
     (opts: CopyAddressWizardInputs = {}) => {
@@ -39,10 +47,10 @@ export const useCopyAddressModal = () => {
       }
 
       // display the wizard
-      setInputs(opts)
+      setCopyAddressInputs(opts)
       innerOpen()
     },
-    [chainsMap, innerOpen, setInputs]
+    [chainsMap, innerOpen]
   )
 
   return {

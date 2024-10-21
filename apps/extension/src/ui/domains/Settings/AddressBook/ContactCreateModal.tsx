@@ -20,11 +20,10 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts, useChainsMapByGenesisHash } from "@ui/state"
 
 import { useAddressEffects, useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
@@ -165,7 +164,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   const { address } = watch()
   const chains = useChainsFilteredByAddressPrefix(address)
-  const chainsByGenesisHash = useAllChainsMapByGenesisHash()
+  const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
     (genesisHash?: string) =>
       setValue("genesisHash", genesisHash, {

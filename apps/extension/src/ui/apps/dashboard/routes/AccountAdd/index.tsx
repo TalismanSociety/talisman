@@ -1,14 +1,13 @@
-import { useAtomValue } from "jotai"
 import { useTranslation } from "react-i18next"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { balancesHydrateAtom } from "@ui/atoms"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
+import { useBalancesHydrate } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
 const Content = () => {
-  useAtomValue(balancesHydrateAtom)
+  useBalancesHydrate() // preload
   const { t } = useTranslation()
 
   return (

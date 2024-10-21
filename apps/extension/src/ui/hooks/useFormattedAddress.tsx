@@ -1,7 +1,8 @@
-import { AccountJsonAny } from "@extension/core"
 import { encodeAnyAddress } from "@talismn/util"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useMemo } from "react"
+
+import { AccountJsonAny } from "@extension/core"
+import { useChainByGenesisHash } from "@ui/state"
 
 export const useFormattedAddress = (address: string | undefined, genesisHash?: string | null) => {
   const chain = useChainByGenesisHash(genesisHash)

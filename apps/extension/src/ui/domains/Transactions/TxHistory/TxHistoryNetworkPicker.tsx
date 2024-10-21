@@ -14,10 +14,8 @@ import { IconButton, Modal } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import useChain from "@ui/hooks/useChain"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { useChain, useChainByGenesisHash, useEvmNetwork } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 type Network = Chain | EvmNetwork

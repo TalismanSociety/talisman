@@ -1,37 +1,32 @@
-import { atom, useAtomValue, useSetAtom } from "jotai"
-import { useCallback, useEffect } from "react"
+import { bind } from "@react-rxjs/core"
+import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
+import { BehaviorSubject, map } from "rxjs"
 
 import { passwordStore } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
 
-const dismissAtom = atom(false)
+const dismiss$ = new BehaviorSubject(false)
 
-export const shouldMigratePasswordAtom = atomWithSubscription<boolean>((callback) => {
-  const sub = passwordStore.observable.subscribe(({ isHashed }) => {
-    callback(!isHashed)
-  })
-  return () => sub.unsubscribe()
-})
+export const dismissMigratePasswordModal = () => {
+  dismiss$.next(true)
+}
+
+const [useDismiss] = bind(dismiss$)
+
+export const [useShouldMigratePassword, shouldMigratePassword$] = bind(
+  passwordStore.observable.pipe(map(({ isHashed }) => !isHashed))
+)
 
 export const useMigratePasswordModal = () => {
   const location = useLocation()
   const { isOpen, setIsOpen, close } = useOpenClose()
-  const shouldMigrate = useAtomValue(shouldMigratePasswordAtom)
-  const dismissed = useAtomValue(dismissAtom)
+  const shouldMigrate = useShouldMigratePassword()
+  const dismissed = useDismiss()
 
   useEffect(() => {
     setIsOpen(!dismissed && shouldMigrate)
   }, [setIsOpen, shouldMigrate, location, dismissed]) // reset modal when location changes
 
   return { isOpen, close }
-}
-
-export const useDismissMigratePasswordModal = () => {
-  const setShouldMigrate = useSetAtom(dismissAtom)
-
-  return useCallback(() => {
-    setShouldMigrate(false)
-  }, [setShouldMigrate])
 }

@@ -1,11 +1,12 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, CustomChain } from "@talismn/chaindata-provider"
 import { convertAddress, decodeSs58Format } from "@talismn/util"
-import { useAllChains } from "@ui/hooks/useChains"
 import { useEffect, useMemo } from "react"
 
+import { useChains } from "@ui/state"
+
 export const useChainsFilteredByAddressPrefix = (address?: string) => {
-  const chains = useAllChains()
+  const chains = useChains()
 
   return useMemo(() => {
     if (!address) return []

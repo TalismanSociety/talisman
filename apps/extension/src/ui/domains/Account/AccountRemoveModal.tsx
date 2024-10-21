@@ -1,7 +1,9 @@
-import { atom, useAtom } from "jotai"
+import { bind } from "@react-rxjs/core"
+import { isEqual } from "lodash"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
+import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { AccountJsonAny, AccountType } from "@extension/core"
@@ -10,20 +12,24 @@ import { api } from "@ui/api"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
-const accountRemoveAccountState = atom<AccountJsonAny | null>(null)
+const accountToRemove$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const [useAccount] = bind(
+  accountToRemove$.pipe(distinctUntilChanged<AccountJsonAny | null>(isEqual)),
+  null
+)
 
 export const useAccountRemoveModal = () => {
-  const [_account, setAccount] = useAtom(accountRemoveAccountState)
+  const _account = useAccount()
 
   const { selectedAccount } = usePortfolioNavigation()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRemoveModal")
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account ?? null)
+      accountToRemove$.next(account ?? null)
       innerOpen()
     },
-    [innerOpen, setAccount]
+    [innerOpen]
   )
 
   useEffect(() => {

@@ -1,6 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
-import { atom, useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -24,22 +23,20 @@ import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import {
-  chainsMapAtomFamily,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useActiveTokensState,
+  useBalancesHydrate,
+  useEvmNetwork,
+  useEvmNetworks,
+  useEvmNetworksMap,
+  useSetting,
+  useTokens,
+} from "@ui/state"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
@@ -234,26 +231,18 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Tokens",
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-)
-
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks, evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
+  const tokens = useTokens({ activeOnly: false, includeTestnets })
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(false)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
@@ -286,7 +275,7 @@ const Content = () => {
 
     return sortBy(
       result,
-      (t) => evmNetworksMap[t.evmNetwork!.id].name,
+      (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
       (t) => t.symbol
     )
   }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])

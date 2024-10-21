@@ -1,3 +1,4 @@
+import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
@@ -10,11 +11,11 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { atom, useAtom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
+import { BehaviorSubject } from "rxjs"
 import {
   Button,
   ContextMenu,
@@ -42,37 +43,36 @@ import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import {
-  assetDiscoveryScanAtom,
-  assetDiscoveryScanProgressAtom,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useAccounts,
+  useActiveEvmNetworksState,
+  useActiveTokensState,
+  useAppState,
+  useAssetDiscoveryScan,
+  useAssetDiscoveryScanProgress,
+  useBalancesHydrate,
+  useEvmNetwork,
+  useEvmNetworks,
+  useEvmNetworksMap,
+  useSetting,
+  useToken,
+  useTokensMap,
+} from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 import { DashboardLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
-  useAssetDiscoveryTokenRate,
+  useAssetDiscoveryTokenRates,
 } from "./useAssetDiscoveryTokenRates"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -82,7 +82,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Asset Discovery",
 }
 
-const isInitializingScanAtom = atom(false)
+const isInitializingScan$ = new BehaviorSubject(false)
+
+const [useIsInitializingScan] = bind(isInitializingScan$)
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
@@ -139,7 +141,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const tokenRates = useAssetDiscoveryTokenRate(token?.id)
+  const tokenRates = useAssetDiscoveryTokenRates(token?.id)
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
 
@@ -304,8 +306,8 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const isInitializing = useAtomValue(isInitializingScanAtom)
-  const { balances, balancesByTokenId, tokenIds } = useAtomValue(assetDiscoveryScanProgressAtom)
+  const isInitializing = useIsInitializingScan()
+  const { balances, balancesByTokenId, tokenIds } = useAssetDiscoveryScanProgress()
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
@@ -329,25 +331,25 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const [isInitializing, setIsInitializing] = useAtom(isInitializingScanAtom)
-  const { balances, accountsCount, tokensCount, percent, isInProgress } = useAtomValue(
-    assetDiscoveryScanProgressAtom
-  )
+  const isInitializing = useIsInitializingScan()
+  const { balances, accountsCount, tokensCount, percent, isInProgress } =
+    useAssetDiscoveryScanProgress()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
+  const activeNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
 
   const effectivePercent = isInitializing ? 0 : percent
 
   const handleScanClick = useCallback(
     (mode: AssetDiscoveryMode) => async () => {
-      setIsInitializing(true)
+      isInitializingScan$.next(true)
       await api.assetDiscoveryStartScan(mode)
-      setIsInitializing(false)
+      isInitializingScan$.next(false)
     },
-    [setIsInitializing]
+    []
   )
+
   const handleCancelScanClick = useCallback(() => {
     api.assetDiscoveryStopScan()
   }, [])
@@ -453,15 +455,15 @@ const AccountsWrapper: FC<{
 
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
-  const isInitializing = useAtomValue(isInitializingScanAtom)
+  const isInitializing = useIsInitializingScan()
 
-  const { balancesByTokenId, balances, isInProgress } = useAtomValue(assetDiscoveryScanProgressAtom)
-  const { lastScanAccounts, lastScanTimestamp } = useAtomValue(assetDiscoveryScanAtom)
+  const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
+  const { lastScanAccounts, lastScanTimestamp } = useAssetDiscoveryScan()
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
-  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
+  const tokensMap = useTokensMap()
+  const evmNetworksMap = useEvmNetworksMap()
 
   const canEnable = useMemo(() => {
     const tokenIds = Object.keys(balancesByTokenId)
@@ -573,17 +575,9 @@ const Notice: FC = () => {
   )
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-)
-
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =

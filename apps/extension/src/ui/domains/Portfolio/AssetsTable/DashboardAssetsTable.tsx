@@ -2,11 +2,10 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
-import { usePortfolio } from "../usePortfolio"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
@@ -89,7 +88,7 @@ export const DashboardAssetsTable = () => {
 
   if (!symbolBalances.length && !isInitialising) {
     return (
-      <div className="text-body-secondary bg-grey-850 rounded-sm p-8">
+      <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
         {selectedAccount
           ? t("No assets were found on this account.")
           : selectedFolder

@@ -1,9 +1,10 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
 import { evmErc20TokenId } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import useToken from "@ui/hooks/useToken"
 import { CSSProperties, FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
+import { useToken } from "@ui/state"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false

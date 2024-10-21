@@ -1,8 +1,9 @@
-import { DEFAULT_APP_STATE } from "@extension/core"
 import { renderHook, waitFor } from "@testing-library/react"
 
+import { DEFAULT_APP_STATE } from "@extension/core"
+
 import { TestWrapper } from "../../../../tests/TestWrapper"
-import { useAppState } from "../useAppState"
+import { useAppState } from "../../state"
 
 test("Can get analyticsRequestShown appState data", async () => {
   const { result } = renderHook(() => useAppState("analyticsRequestShown"), {
@@ -57,5 +58,5 @@ test("Can get showStakingBanner appState data", async () => {
   const { result } = renderHook(() => useAppState("hideStakingBanner"), {
     wrapper: TestWrapper,
   })
-  await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hideStakingBanner))
+  await waitFor(() => expect(result.current[0]).toStrictEqual(DEFAULT_APP_STATE.hideStakingBanner))
 })

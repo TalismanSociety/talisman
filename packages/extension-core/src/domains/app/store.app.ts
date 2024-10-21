@@ -34,6 +34,7 @@ export type AppStoreData = {
   isAssetDiscoveryScanPending?: boolean
   showLedgerPolkadotGenericMigrationAlert?: boolean
   hideManageAccountsWelcome?: boolean
+  hideGetStarted?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -112,6 +113,7 @@ if (DEBUG) {
       hideStakingBanner: [],
       hideBackupWarningUntil: undefined,
       hideManageAccountsWelcome: false,
+      hideGetStarted: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

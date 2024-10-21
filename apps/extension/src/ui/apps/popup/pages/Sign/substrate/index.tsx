@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom"
 import { isJsonPayload, KnownSigningRequestIdOnly } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PolkadotSigningRequestProvider } from "@ui/domains/Sign/SignRequestContext"
-import { useRequest } from "@ui/hooks/useRequest"
+import { useRequest } from "@ui/state"
 
 import { SignPopupShimmer } from "../SignPopupShimmer"
 import { PolkadotSignMessageRequest } from "./Message"

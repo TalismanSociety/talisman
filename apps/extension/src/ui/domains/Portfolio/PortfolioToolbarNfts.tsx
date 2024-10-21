@@ -7,7 +7,6 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
-import { useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -22,13 +21,21 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { nftsVisibilityFilterAtom, NftVisibilityFilter } from "@ui/atoms"
-import { useSetting } from "@ui/hooks/useSettings"
+import {
+  NftVisibilityFilter,
+  setNftNetworkFilter,
+  setNftSearch,
+  setNftsVisibilityFilter,
+  useNftNetworkFilter,
+  useNftNetworkOptions,
+  useNftSearch,
+  useNftsVisibilityFilter,
+  useSetting,
+} from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkFilterModal"
-import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./Nfts/usePortfolioNfts"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 export const NftViewModeToggleButton = () => {
@@ -54,17 +61,19 @@ export const NftViewModeToggleButton = () => {
 }
 
 const NetworkFilterButton = () => {
-  const { networks, networkFilter, setNetworkFilter } = usePortfolioNftsNetwork()
+  const networks = useNftNetworkOptions()
+  const networkFilter = useNftNetworkFilter()
+  //const { networks, networkFilter } = usePortfolioNftsNetwork()
   const { isOpen, open, close } = useOpenClose()
 
   const networkIds = useMemo(() => networks.map((network) => network.id), [networks])
 
   const handleChange = useCallback(
     (networkId: string | null) => {
-      setNetworkFilter(networks.find((n) => n.id === networkId))
+      setNftNetworkFilter(networks.find((n) => n.id === networkId))
       close()
     },
-    [close, networks, setNetworkFilter]
+    [close, networks]
   )
 
   return (
@@ -99,7 +108,7 @@ const NetworkFilterButton = () => {
 
 const PortfolioSearch = () => {
   const { t } = useTranslation()
-  const { search, setSearch } = usePortfolioNftsSearch()
+  const search = useNftSearch()
 
   return (
     <SearchInput
@@ -110,7 +119,7 @@ const PortfolioSearch = () => {
         IS_POPUP ? "w-full" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
-      onChange={setSearch}
+      onChange={setNftSearch}
       initialValue={search}
     />
   )
@@ -118,7 +127,7 @@ const PortfolioSearch = () => {
 
 const VisibilityFilterButton = () => {
   const { t } = useTranslation()
-  const [visibilityFilter, setVisibilityFilter] = useAtom(nftsVisibilityFilterAtom)
+  const nftsVisibilityFilter = useNftsVisibilityFilter()
 
   return (
     <Tooltip>
@@ -128,7 +137,7 @@ const VisibilityFilterButton = () => {
             <ContextMenuTrigger asChild>
               <PortfolioToolbarButton
                 className={classNames(
-                  visibilityFilter !== NftVisibilityFilter.Default && "text-primary"
+                  nftsVisibilityFilter !== NftVisibilityFilter.Default && "text-primary"
                 )}
               >
                 <ToolbarFilterIcon />
@@ -137,18 +146,18 @@ const VisibilityFilterButton = () => {
             <ContextMenuContent>
               <ContextMenuOptionItem
                 label={t("Default")}
-                selected={visibilityFilter === NftVisibilityFilter.Default}
-                onClick={() => setVisibilityFilter(NftVisibilityFilter.Default)}
+                selected={nftsVisibilityFilter === NftVisibilityFilter.Default}
+                onClick={() => setNftsVisibilityFilter(NftVisibilityFilter.Default)}
               />
               <ContextMenuOptionItem
                 label={t("Favorites")}
-                selected={visibilityFilter === NftVisibilityFilter.Favorites}
-                onClick={() => setVisibilityFilter(NftVisibilityFilter.Favorites)}
+                selected={nftsVisibilityFilter === NftVisibilityFilter.Favorites}
+                onClick={() => setNftsVisibilityFilter(NftVisibilityFilter.Favorites)}
               />
               <ContextMenuOptionItem
                 label={t("Hidden")}
-                selected={visibilityFilter === NftVisibilityFilter.Hidden}
-                onClick={() => setVisibilityFilter(NftVisibilityFilter.Hidden)}
+                selected={nftsVisibilityFilter === NftVisibilityFilter.Hidden}
+                onClick={() => setNftsVisibilityFilter(NftVisibilityFilter.Hidden)}
               />
             </ContextMenuContent>
           </ContextMenu>

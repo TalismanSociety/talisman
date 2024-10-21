@@ -1,6 +1,6 @@
 import { ErrorEvent, EventHint } from "@sentry/types"
 import { Dexie, DexieError } from "dexie"
-import { ReplaySubject, firstValueFrom } from "rxjs"
+import { firstValueFrom, ReplaySubject } from "rxjs"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -93,7 +93,7 @@ export const findDexieErrors = (rootError: any) => {
   }
 
   // find the first dexie error in the chain
-  const dexieError: DexieError = errorChain.find((error) => error instanceof Dexie.DexieError)
+  const dexieError = errorChain.find((error) => error instanceof Dexie.DexieError)
 
   // ignore this error unless it, or one of its causes is a DexieError
   if (!dexieError) return [] as const

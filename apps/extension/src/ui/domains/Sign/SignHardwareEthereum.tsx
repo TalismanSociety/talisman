@@ -1,8 +1,9 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
-import { EthSignMessageMethod } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { FC, Suspense, lazy } from "react"
+import { FC, lazy, Suspense } from "react"
+
+import { AccountJsonAny, AccountType, EthSignMessageMethod } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import SignDcentEthereum from "./SignDcentEthereum"
 
@@ -41,7 +42,7 @@ export const SignHardwareEthereum: FC<SignHardwareEthereumProps> = (props) => {
   if (!SignHardwareComponent || !props.payload) return null
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="SignHardwareEthereum" />}>
       <SignHardwareComponent {...props} />
     </Suspense>
   )

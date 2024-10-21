@@ -9,7 +9,7 @@ import {
   getMaxTransactionCost,
   serializeTransactionRequest,
 } from "@extension/core"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import { useEthBalance } from "./useEthBalance"
 

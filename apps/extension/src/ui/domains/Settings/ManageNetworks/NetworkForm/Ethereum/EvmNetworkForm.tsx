@@ -36,12 +36,9 @@ import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 import { useEvmChainIcon } from "@ui/hooks/useEvmChainIcon"
 import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
+import { useEvmNetwork, useEvmNetworks, useSetting, useToken } from "@ui/state"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -106,7 +103,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const { t } = useTranslation("admin")
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
-  const { evmNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
+  const evmNetworks = useEvmNetworks()
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)

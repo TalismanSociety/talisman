@@ -1,31 +1,38 @@
-import { accountsByCategoryAtomFamily, balancesHydrateAtom } from "@ui/atoms"
-import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
-import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
-import { atom, useAtomValue } from "jotai"
-import { FC, ReactNode } from "react"
+import { bind } from "@react-rxjs/core"
+import { FC, ReactNode, useEffect } from "react"
+import { combineLatest } from "rxjs"
 
-import { usePortfolioProvisioning } from "./usePortfolio"
+import {
+  accounts$,
+  accountsCatalog$,
+  balancesHydrate$,
+  portfolioSelectedAccounts$,
+  remoteConfig$,
+  stakingBannerStore$,
+  usePortfolio,
+} from "@ui/state"
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(accountsByCategoryAtomFamily("all")),
-    get(remoteConfigAtom),
-    get(balancesHydrateAtom),
-    get(stakingBannerAtom),
-  ])
+import { usePortfolioNavigation } from "./usePortfolioNavigation"
+
+const [usePreload] = bind(
+  combineLatest([balancesHydrate$, accounts$, accountsCatalog$, remoteConfig$, stakingBannerStore$])
 )
 
 export const PortfolioContainer: FC<{ children: ReactNode; renderWhileLoading?: boolean }> = ({
   children,
   renderWhileLoading, // true in popup, false in dashboard
 }) => {
-  useAtomValue(preloadAtom)
+  usePreload()
 
-  // keeps portfolio sync atoms up to date with subscription async atoms
-  const isProvisioned = usePortfolioProvisioning()
+  const { selectedAccounts } = usePortfolioNavigation()
+  const { isProvisioned } = usePortfolio()
 
-  // on popup home page, portfolio is loading while we display the home page
-  // but on dashboard, don't render until portfolio is provisioned
+  useEffect(() => {
+    portfolioSelectedAccounts$.next(selectedAccounts)
+  }, [selectedAccounts])
+
+  // // on popup home page, portfolio is loading while we display the home page
+  // // but on dashboard, don't render until portfolio is provisioned
   if (!renderWhileLoading && !isProvisioned) return null
 
   return <>{children}</>

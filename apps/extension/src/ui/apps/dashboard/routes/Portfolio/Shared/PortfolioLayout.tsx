@@ -1,15 +1,14 @@
-import { FC, PropsWithChildren, Suspense, useCallback } from "react"
+import { FC, PropsWithChildren, ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
+import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-
-import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { usePortfolio } from "@ui/state"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
@@ -34,14 +33,9 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 
 const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
   const { evmNetworks, chains, accountType } = usePortfolio()
-  const hasAccounts = useHasAccounts()
+  const { selectedAccounts } = usePortfolioNavigation()
 
-  if (!hasAccounts)
-    return (
-      <div className="mt-[3.8rem] flex grow items-center justify-center">
-        <NoAccountsFullscreen />
-      </div>
-    )
+  if (!selectedAccounts.length) return <GetStarted />
 
   if (!accountType && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
   if (accountType === "sr25519" && !chains.length) return <EnableNetworkMessage type="substrate" />
@@ -55,21 +49,23 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
-export const PortfolioLayout: FC<PropsWithChildren> = ({ children }) => {
+export const PortfolioLayout: FC<PropsWithChildren & { toolbar?: ReactNode }> = ({
+  toolbar,
+  children,
+}) => {
   return (
     <div className="relative flex w-full flex-col gap-6 pb-12">
       <Suspense
         fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
       >
+        <DashboardPortfolioHeader />
         <PortfolioAccountCheck>
-          <DashboardPortfolioHeader />
           <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
             <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
-            <div id="portfolio-toolbar" className="shrink-0">
-              {/* 
-                Toolbars are route specific, injected using react portal
-                This allows us to keep Tabs here and prevent flickering when switching between tabs
-               */}
+            <div className="shrink-0">
+              <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
+                {toolbar}
+              </Suspense>
             </div>
           </div>
           <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>

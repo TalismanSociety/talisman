@@ -10,7 +10,7 @@ import { AccountJsonQr, isJsonPayload, SignerPayloadJSON, SignerPayloadRaw } fro
 import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"

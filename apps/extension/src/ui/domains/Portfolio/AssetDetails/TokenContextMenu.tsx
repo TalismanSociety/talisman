@@ -18,7 +18,7 @@ import { useNomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/useNomPoolB
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -116,12 +116,12 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
         {token?.type === "evm-erc20" && (
-          <Suspense>
+          <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Explorer" />}>
             <ViewOnExplorerMenuItem token={token} />
           </Suspense>
         )}
         {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
-        <Suspense fallback={<SuspenseTracker name="StakeMenuItem" />}>
+        <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Stake" />}>
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
       </ContextMenuContent>

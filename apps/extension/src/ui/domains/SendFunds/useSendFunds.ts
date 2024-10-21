@@ -21,19 +21,21 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useBalance } from "@ui/hooks/useBalance"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
-import useChain from "@ui/hooks/useChain"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTip } from "@ui/hooks/useTip"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useAccountByAddress,
+  useBalance,
+  useBalancesByAddress,
+  useBalancesHydrate,
+  useChain,
+  useEvmNetwork,
+  useSelectedCurrency,
+  useToken,
+  useTokenRates,
+  useTokenRatesMap,
+  useTokensMap,
+} from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
@@ -220,7 +222,7 @@ const useSendFundsProvider = () => {
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
   const fromAccount = useAccountByAddress(from)
-  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
+  const tokensMap = useTokensMap()
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
   const currency = useSelectedCurrency()

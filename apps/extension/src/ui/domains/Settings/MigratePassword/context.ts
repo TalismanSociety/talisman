@@ -1,15 +1,15 @@
-import { passwordStore } from "@extension/core"
 import * as Sentry from "@sentry/react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import { passwordStore } from "@extension/core"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useMnemonics } from "@ui/hooks/useMnemonics"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useMnemonics, useSetting } from "@ui/state"
 
-import { useDismissMigratePasswordModal } from "./useMigratePasswordModal"
+import { dismissMigratePasswordModal } from "./useMigratePasswordModal"
 
 const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) => {
   const [password, setPassword] = useSensitiveState<string>()
@@ -66,12 +66,10 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     }
   }, [allBackedUp, status, migratePassword])
 
-  const dismiss = useDismissMigratePasswordModal()
-
   const closeAndComplete = useCallback(() => {
-    dismiss()
+    dismissMigratePasswordModal()
     onComplete()
-  }, [dismiss, onComplete])
+  }, [onComplete])
 
   return {
     mnemonicId,

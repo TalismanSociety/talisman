@@ -4,10 +4,10 @@ import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
@@ -15,9 +15,8 @@ import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
-import { NoAccounts } from "./shared/NoAccounts"
 
-const HasAccountsPortfolioContent = () => (
+const PortfolioRoutes = () => (
   <>
     <Routes>
       <Route path="tokens" element={<PortfolioAssets />} />
@@ -26,17 +25,12 @@ const HasAccountsPortfolioContent = () => (
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>
       <BraveWarningPopupBanner />
       <MigratePasswordAlert />
     </Suspense>
   </>
 )
-
-const PortfolioContent = () => {
-  const hasAccounts = useHasAccounts()
-  return hasAccounts ? <HasAccountsPortfolioContent /> : <NoAccounts />
-}
 
 const Content: FC<PropsWithChildren> = ({ children }) => {
   //scrollToTop on location change
@@ -60,7 +54,7 @@ export const Portfolio = () => (
       <ErrorBoundary>
         <Content>
           <div className="flex size-full flex-col gap-4 py-8">
-            <PortfolioContent />
+            <PortfolioRoutes />
             <BottomNav />
           </div>
         </Content>

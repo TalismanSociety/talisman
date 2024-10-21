@@ -1,5 +1,4 @@
 import { Token } from "@talismn/chaindata-provider"
-import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,14 +9,12 @@ import {
   STAKING_BANNER_CHAINS,
   StakingSupportedChain,
 } from "@extension/core"
-import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAppState } from "@ui/hooks/useAppState"
+import { useAccounts, useAppState, useStakingBannerStore } from "@ui/state"
 
 import { colours, isNomPoolChain, isStakingSupportedChain } from "./helpers"
 
 const useEvmLsdStakingEligibility = () => {
-  const chainAddressEligibility = useAtomValue(stakingBannerAtom).evmLsd
+  const chainAddressEligibility = useStakingBannerStore().evmLsd
   const accounts = useAccounts("owned")
   const ownedAddresses = useMemo(
     () => accounts.filter(({ type }) => type === "ethereum").map(({ address }) => address),

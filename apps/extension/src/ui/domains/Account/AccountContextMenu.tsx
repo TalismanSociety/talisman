@@ -11,16 +11,16 @@ import {
 } from "talisman-ui"
 
 import { AccountJsonAny } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useAccountByAddress, useChainByGenesisHash } from "@ui/state"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
@@ -136,7 +136,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="AccountContextMenu" />}>
           {account && (
             <>
               {canToggleIsPortfolio && (

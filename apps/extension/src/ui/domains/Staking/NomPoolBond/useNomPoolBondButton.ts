@@ -1,13 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "extension-core"
 import { log } from "extension-shared"
-import { useAtomValue } from "jotai"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
-import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
+import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
 import { useNomPoolBondModal } from "./useNomPoolBondModal"
 
@@ -22,7 +19,7 @@ export const useNomPoolBondButton = ({
 
   const ownedAccounts = useAccounts("owned")
   const token = useToken(tokenId)
-  const remoteConfig = useAtomValue(remoteConfigAtom)
+  const remoteConfig = useRemoteConfig()
   const { open } = useNomPoolBondModal()
 
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {

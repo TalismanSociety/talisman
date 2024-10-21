@@ -1,16 +1,15 @@
-import { log } from "@extension/shared"
 import { Codec } from "@polkadot/types-codec/types"
 import { assert } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { Chain, Token } from "@talismn/chaindata-provider"
 import * as $ from "@talismn/subshape-fork"
 import { encodeAnyAddress } from "@talismn/util"
-import useChains from "@ui/hooks/useChains"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
-import useTokens from "@ui/hooks/useTokens"
 import isEqual from "lodash/isEqual"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { log } from "@extension/shared"
+import { useChains, useTokenRatesMap, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -140,8 +139,8 @@ const getTarget = (
 export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const tokens = useTokens()
+  const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
   const props = useMemo(() => {

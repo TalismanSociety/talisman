@@ -1,37 +1,45 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { atom, useAtom } from "jotai"
+import { bind } from "@react-rxjs/core"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 import { AccountsCatalogTree } from "@extension/core"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 
-const renameFolderModalOpenState = atom(false)
-const renameFolderItemState = atom<{
+type FolderProps = {
   id: string | null
   name: string | null
   treeName: AccountsCatalogTree | null
-}>({ id: null, name: null, treeName: null })
+}
+
+const localFolder$ = new BehaviorSubject<FolderProps>({
+  id: null,
+  name: null,
+  treeName: null,
+})
+
+const setLocalFolder = (item: FolderProps) => {
+  localFolder$.next(item)
+}
+
+const [useLocalFolder] = bind(localFolder$)
 
 export const useRenameFolderModal = () => {
-  const [{ id, name, treeName }, setFolderItem] = useAtom(renameFolderItemState)
-  const [isOpen, setIsOpen] = useAtom(renameFolderModalOpenState)
+  const { id, name, treeName } = useLocalFolder()
+  const { isOpen, open: _open, close } = useGlobalOpenClose("renameFolderModal")
 
   const open = useCallback(
     (id: string, name: string, treeName: AccountsCatalogTree) => {
-      setFolderItem({ id, name, treeName })
-      setIsOpen(true)
+      setLocalFolder({ id, name, treeName })
+      _open()
     },
-    [setFolderItem, setIsOpen]
+    [_open]
   )
-  const close = useCallback(() => setIsOpen(false), [setIsOpen])
-
-  useEffect(() => {
-    close()
-  }, [close])
 
   return {
     id,

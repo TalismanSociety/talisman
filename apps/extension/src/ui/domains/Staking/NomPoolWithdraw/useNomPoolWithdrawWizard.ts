@@ -1,19 +1,17 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
+import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
-import { atom, useAtom, useSetAtom } from "jotai"
-import { useCallback, useMemo } from "react"
+import { SetStateAction, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { Hex } from "viem"
 
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useBalance } from "@ui/hooks/useBalance"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useCurrentStakingEra } from "../shared/useCurrentStakingEra"
@@ -35,24 +33,28 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
 }
 
-const wizardAtom = atom(DEFAULT_STATE)
+const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
+
+const setWizardState = (state: SetStateAction<WizardState>) => {
+  if (typeof state === "function") wizardState$.next(state(wizardState$.value))
+  else wizardState$.next(state)
+}
+
+const [useWizardState] = bind(wizardState$)
 
 export const useResetNomPoolWithdrawWizard = () => {
-  const setState = useSetAtom(wizardAtom)
-
-  const reset = useCallback(
-    (init: Pick<WizardState, "address" | "tokenId">) => setState({ ...DEFAULT_STATE, ...init }),
-    [setState]
+  return useCallback(
+    (init: Pick<WizardState, "address" | "tokenId">) =>
+      setWizardState({ ...DEFAULT_STATE, ...init }),
+    []
   )
-
-  return reset
 }
 
 export const useNomPoolWithdrawWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const [{ address, step, hash, tokenId }, setState] = useAtom(wizardAtom)
+  const { address, step, hash, tokenId } = useWizardState()
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -66,9 +68,9 @@ export const useNomPoolWithdrawWizard = () => {
   const onSubmitted = useCallback(
     (hash: Hex) => {
       genericEvent("NomPool Withdraw", { tokenId })
-      if (hash) setState((prev) => ({ ...prev, step: "follow-up", hash }))
+      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, setState, tokenId]
+    [genericEvent, tokenId]
   )
 
   const { data: currentEra } = useCurrentStakingEra(token?.chain?.id)

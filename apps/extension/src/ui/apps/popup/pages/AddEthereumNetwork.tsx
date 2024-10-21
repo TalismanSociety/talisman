@@ -1,6 +1,5 @@
 import { EvmNetwork } from "@talismn/chaindata-provider"
 import { GlobeIcon, InfoIcon } from "@talismn/icons"
-import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
@@ -12,13 +11,9 @@ import { log } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { balancesHydrateAtom } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkDetailsButton, NetworkDetailsLink } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useRequest } from "@ui/hooks/useRequest"
-import { requestsAtom } from "@ui/hooks/useRequests"
-import useToken from "@ui/hooks/useToken"
+import { useBalancesHydrate, useEvmNetwork, useRequest, useToken } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -106,11 +101,9 @@ const SettingsSourceSelector: FC<{
   )
 }
 
-const preloadAtom = atom((get) => Promise.all([get(balancesHydrateAtom), get(requestsAtom)]))
-
 export const AddEthereumNetwork = () => {
   const { t } = useTranslation("request")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
   const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
   const request = useRequest(id)
 

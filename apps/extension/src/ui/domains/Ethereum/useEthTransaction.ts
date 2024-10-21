@@ -24,7 +24,7 @@ import {
 } from "@extension/core"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetwork } from "@ui/state"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"

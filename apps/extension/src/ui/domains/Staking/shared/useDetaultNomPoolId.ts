@@ -1,11 +1,10 @@
-import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 
 import { ChainId } from "@extension/core"
-import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
+import { useRemoteConfig } from "@ui/state"
 
 export const useDetaultNomPoolId = (chainId?: ChainId | null | undefined) => {
-  const remoteConfig = useAtomValue(remoteConfigAtom)
+  const remoteConfig = useRemoteConfig()
 
   return useMemo(() => {
     if (!chainId) return null

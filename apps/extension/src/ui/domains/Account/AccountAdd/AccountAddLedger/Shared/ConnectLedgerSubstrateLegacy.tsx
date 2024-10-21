@@ -5,8 +5,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import useChain from "@ui/hooks/useChain"
-import useToken from "@ui/hooks/useToken"
+import { useChain, useToken } from "@ui/state"
 
 type ConnectLedgerSubstrateLegacyProps = {
   chainId: string

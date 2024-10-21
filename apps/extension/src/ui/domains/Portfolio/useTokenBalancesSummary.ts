@@ -4,8 +4,7 @@ import { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 export type BalanceSummary = {
   totalTokens: BigNumber

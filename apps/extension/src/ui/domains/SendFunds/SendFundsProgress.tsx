@@ -13,9 +13,7 @@ import {
   WalletTransaction,
 } from "@extension/core"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useTransactionByHash from "@ui/hooks/useTransactionByHash"
+import { useChainByGenesisHash, useEvmNetwork, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
@@ -267,7 +265,7 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
   onClose,
   className,
 }) => {
-  const tx = useTransactionByHash(hash)
+  const tx = useTransaction(hash)
   const evmNetwork = useEvmNetwork(networkIdOrHash)
   const chain = useChainByGenesisHash(networkIdOrHash)
 

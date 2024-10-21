@@ -12,20 +12,18 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useBalances, useChainByGenesisHash, usePortfolio, useSelectedCurrency } from "@ui/state"
 
 const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
   const { t } = useTranslation()
@@ -162,7 +160,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
         </div>
       </div>
       <div className="flex grow items-center justify-end">
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="PortfolioAssetHeader.Buttons" />}>
           <CopyAddressButton account={account} />
           <SendFundsButton account={account} />
           {account && (

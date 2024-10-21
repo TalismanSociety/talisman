@@ -1,7 +1,8 @@
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import useTokens from "@ui/hooks/useTokens"
 import { Suspense, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
+
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useTokens } from "@ui/state"
 
 import { OnboardBackground } from "./components/OnboardBackground"
 import Context from "./context"

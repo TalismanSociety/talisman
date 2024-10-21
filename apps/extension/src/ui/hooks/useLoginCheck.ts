@@ -1,10 +1,10 @@
-import { isLoggedInAtom, isOnboardedAtom } from "@ui/atoms"
-import { atom, useAtomValue } from "jotai"
+import { bind } from "@react-rxjs/core"
+import { combineLatest, map } from "rxjs"
 
-// load both isLoggedIn and isOnboarded atoms concurrently
-const loginCheckAtom = atom((get) => Promise.all([get(isLoggedInAtom), get(isOnboardedAtom)]))
+import { isLoggedIn$, isOnboarded$ } from "@ui/state"
 
-export const useLoginCheck = () => {
-  const [isLoggedIn, isOnboarded] = useAtomValue(loginCheckAtom)
-  return { isLoggedIn, isOnboarded }
-}
+export const [useLoginCheck] = bind(
+  combineLatest([isLoggedIn$, isOnboarded$]).pipe(
+    map(([isLoggedIn, isOnboarded]) => ({ isLoggedIn, isOnboarded }))
+  )
+)

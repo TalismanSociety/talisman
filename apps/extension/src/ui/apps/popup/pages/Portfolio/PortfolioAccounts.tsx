@@ -1,4 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { bind } from "@react-rxjs/core"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -8,10 +9,10 @@ import {
   UserIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { atom, useAtom, useAtomValue } from "jotai"
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { BehaviorSubject } from "rxjs"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import {
@@ -28,7 +29,6 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
-import { NoAccountsPopup } from "@ui/apps/popup/pages/Portfolio/shared/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -36,16 +36,23 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useBalances } from "@ui/hooks/useBalances"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 
-const portfolioAccountsSearchAtom = atom("")
+const portfolioAccountsSearch$ = new BehaviorSubject("")
+
+const setPortfolioAccountsSearch = (search: string) => {
+  portfolioAccountsSearch$.next(search)
+}
+
+const [usePortfolioAccountsSearch] = bind(portfolioAccountsSearch$)
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -182,7 +189,7 @@ const accountTypeGuard = (option: AccountOption): option is AccountAccountOption
 const AccountsToolbar = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [search, setSearch] = useAtom(portfolioAccountsSearchAtom)
+  const search = usePortfolioAccountsSearch()
 
   const handleAddAccountClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -206,9 +213,9 @@ const AccountsToolbar = () => {
   useEffect(() => {
     // clear on unmount
     return () => {
-      setSearch("")
+      portfolioAccountsSearch$.next("")
     }
-  }, [setSearch])
+  }, [])
 
   const { open: openSettings } = useQuickSettingsOpenClose()
 
@@ -221,7 +228,7 @@ const AccountsToolbar = () => {
             "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
           )}
           placeholder={t("Search account or folder")}
-          onChange={setSearch}
+          onChange={setPortfolioAccountsSearch}
           initialValue={search}
         />
       </div>
@@ -354,10 +361,9 @@ const BalancesLoader = () => {
 }
 
 export const PortfolioAccounts = () => {
-  const { accounts, ownedAccounts, catalog, balanceTotalPerAccount, ownedTotal } =
-    usePortfolioAccounts()
+  const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
   const { selectedFolder: folder, treeName } = usePortfolioNavigation()
-  const search = useAtomValue(portfolioAccountsSearchAtom)
+  const search = usePortfolioAccountsSearch()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
 
@@ -447,8 +453,6 @@ export const PortfolioAccounts = () => {
     [balanceTotalPerAccount, folder]
   )
 
-  const showGetStartedPopup = !ownedTotal && ownedAccounts.length <= 2
-
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
@@ -466,16 +470,14 @@ export const PortfolioAccounts = () => {
   return (
     <>
       {!folder && <AuthorisedSiteToolbar />}
-      <div className="flex w-full flex-col gap-12">
-        <Accounts
-          accounts={accounts}
-          folder={folder}
-          folderTotal={folderTotal}
-          portfolioOptions={portfolioOptions}
-          watchedOptions={watchedOptions}
-        />
-        {showGetStartedPopup && <NoAccountsPopup accounts={accounts} />}
-      </div>
+      <Accounts
+        accounts={accounts}
+        folder={folder}
+        folderTotal={folderTotal}
+        portfolioOptions={portfolioOptions}
+        watchedOptions={watchedOptions}
+      />
+      <GetStarted />
       {fetchBalances && (
         <Suspense fallback={<SuspenseTracker name="BalancesLoader" />}>
           <BalancesLoader />

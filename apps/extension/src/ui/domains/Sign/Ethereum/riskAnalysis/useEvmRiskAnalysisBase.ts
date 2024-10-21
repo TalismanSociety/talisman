@@ -1,8 +1,9 @@
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
-import { useSetting } from "@ui/hooks/useSettings"
 import { EvmNetworkId } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { useSetting } from "@ui/state"
 
 import { getBlowfishChainInfo } from "./blowfish"
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"

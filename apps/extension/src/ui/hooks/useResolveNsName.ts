@@ -1,9 +1,10 @@
-import { NsLookupType, isPotentialAzns, isPotentialEns } from "@talismn/on-chain-id"
+import { isPotentialAzns, isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
 import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
 import { useState } from "react"
 import { useDebounce } from "react-use"
+
+import { api } from "@ui/api"
 
 export type Options = {
   /** Enabled by default, set to false to disable */
@@ -57,8 +58,8 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
       const item = nsNamesCache.get(name)
       if (!item?.result) return null
 
-      const address = Array.isArray(item.result) ? item.result[0] : null ?? null
-      const nsLookupType = Array.isArray(item.result) ? item.result[1] : null ?? null
+      const address = Array.isArray(item.result) ? item.result[0] ?? null : null
+      const nsLookupType = Array.isArray(item.result) ? item.result[1] ?? null : null
       if (!address || !nsLookupType) return null
 
       return [address, nsLookupType]

@@ -17,12 +17,10 @@ import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/a
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
-import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
+import { useAccounts, useFeatureFlag, useSelectedCurrency, useSetting } from "@ui/state"
 
 type Props = {
   className?: string
@@ -160,7 +158,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const ownedAccounts = useAccounts("owned")
-  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+  const canBuy = useFeatureFlag("BUY_CRYPTO")
 
   const handleSwapClick = useCallback(() => {
     window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")

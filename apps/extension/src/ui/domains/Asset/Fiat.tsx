@@ -5,8 +5,8 @@ import React, { useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { useSelectedCurrency } from "@ui/state"
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null

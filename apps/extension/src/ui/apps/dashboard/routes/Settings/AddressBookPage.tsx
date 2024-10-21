@@ -1,7 +1,6 @@
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountAddressType } from "extension-shared"
-import { useAtomValue } from "jotai"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
@@ -29,9 +28,9 @@ import { ProviderType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -43,8 +42,8 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useBalances, useChainByGenesisHash } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
@@ -140,7 +139,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
             </SquareButton>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <Suspense>
+            <Suspense fallback={<SuspenseTracker name="AddressBookContactItem.ContextMenu" />}>
               <ContextMenuItem onClick={() => handleEdit(contact.address)}>
                 {t("Edit contact")}
               </ContextMenuItem>
@@ -185,7 +184,8 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
 const Content = () => {
   const { t } = useTranslation("admin")
   // preload balances because of the send button
-  useAtomValue(balancesByAccountCategoryAtomFamily("owned"))
+  useBalances("owned")
+
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),

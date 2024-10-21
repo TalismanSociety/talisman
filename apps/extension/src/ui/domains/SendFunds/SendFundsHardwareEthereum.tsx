@@ -1,8 +1,9 @@
+import { HexString } from "@polkadot/util/types"
+import { useCallback, useState } from "react"
+
 import { AccountJsonDcent } from "@extension/core"
 import { log } from "@extension/shared"
-import { HexString } from "@polkadot/util/types"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useCallback, useState } from "react"
+import { useAccountByAddress } from "@ui/state"
 
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import { useSendFunds } from "./useSendFunds"

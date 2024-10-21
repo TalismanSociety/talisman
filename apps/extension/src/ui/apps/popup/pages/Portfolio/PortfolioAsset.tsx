@@ -9,14 +9,11 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useSetting } from "@ui/hooks/useSettings"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
+import { useBalances, usePortfolio, useSelectedCurrency, useSetting } from "@ui/state"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()

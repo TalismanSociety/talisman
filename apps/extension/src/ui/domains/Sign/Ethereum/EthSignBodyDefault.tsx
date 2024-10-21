@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { BalanceFormatter } from "@extension/core"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useToken, useTokenRates } from "@ui/state"
 
 import { SignContainer } from "../SignContainer"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"

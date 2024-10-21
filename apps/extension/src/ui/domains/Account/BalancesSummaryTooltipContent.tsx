@@ -1,11 +1,10 @@
 import { Balances } from "@talismn/balances"
 import { isBooleanTrue } from "@talismn/util"
-import { useAllChainsMap } from "@ui/hooks/useChains"
-import { useAllEvmNetworksMap } from "@ui/hooks/useEvmNetworks"
-import { useAllTokensMap } from "@ui/hooks/useTokens"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TooltipContent } from "talisman-ui"
+
+import { useChainsMap, useEvmNetworksMap, useTokensMap } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -13,9 +12,9 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 
 export const BalancesSummaryTooltipContent: FC<{ balances: Balances }> = ({ balances }) => {
   const { t } = useTranslation()
-  const tokens = useAllTokensMap()
-  const evmNetworks = useAllEvmNetworksMap()
-  const chains = useAllChainsMap()
+  const tokens = useTokensMap()
+  const evmNetworks = useEvmNetworksMap()
+  const chains = useChainsMap()
 
   const tokenBalances = useMemo(() => {
     const positiveBalances = balances.each.filter((b) => b.total.planck > 0)

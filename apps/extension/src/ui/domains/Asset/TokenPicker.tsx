@@ -3,7 +3,6 @@ import { Balances } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
-import { useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,15 +11,18 @@ import { useIntersection } from "react-use"
 import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { balancesInitialisingAtom } from "@ui/atoms"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useBalances from "@ui/hooks/useBalances"
-import useChains from "@ui/hooks/useChains"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useAccountByAddress,
+  useBalances,
+  useChains,
+  useChainsMap,
+  useEvmNetworksMap,
+  useIsBalanceInitializing,
+  useSelectedCurrency,
+  useSetting,
+  useTokenRatesMap,
+  useTokens,
+} from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
@@ -192,12 +194,13 @@ const TokensList: FC<TokensListProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const [includeTestnets] = useSetting("useTestnets")
-  const { chainsMap, chains } = useChains({ activeOnly: true, includeTestnets })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { tokens: allTokens } = useTokens({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
+  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
+  const allTokens = useTokens({ activeOnly: true, includeTestnets })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
-  const isBalancesInitializing = useAtomValue(balancesInitialisingAtom)
+  const isBalancesInitializing = useIsBalanceInitializing()
   const balances = useBalances(ownedOnly ? "owned" : "all")
   const currency = useSelectedCurrency()
 

@@ -7,9 +7,9 @@ import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useChainByGenesisHash } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
-import { useChainByGenesisHash } from "../useChainByGenesisHash"
 import { useSetInterval } from "../useSetInterval"
 import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,

@@ -1,6 +1,5 @@
 import { Spacer } from "@talisman/components/Spacer"
-import { balancesHydrateAtom } from "@ui/atoms"
-import { useAtomValue } from "jotai"
+import { useBalancesHydrate } from "@ui/state"
 
 import { AccountAddPageProps } from "../types"
 import { JsonAccountImportProvider } from "./context"
@@ -9,7 +8,7 @@ import { ImportJsonFileDrop } from "./ImportJsonFileDrop"
 import { UnlockJsonFileForm } from "./UnlockJsonFileForm"
 
 export const AccountAddJson = ({ onSuccess }: AccountAddPageProps) => {
-  useAtomValue(balancesHydrateAtom)
+  useBalancesHydrate() // preload
 
   return (
     <JsonAccountImportProvider>

@@ -9,12 +9,15 @@ import { useIntersection } from "react-use"
 import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useAccountByAddress,
+  useChains,
+  useChainsMap,
+  useEvmNetworksMap,
+  useSetting,
+  useTokenRatesMap,
+  useTokens,
+} from "@ui/state"
 
 import { useFormatNetworkName } from "../../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "../ChainLogo"
@@ -106,9 +109,10 @@ const TokensList: FC<TokensListProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const [includeTestnets] = useSetting("useTestnets")
-  const { chainsMap, chains } = useChains({ activeOnly: false, includeTestnets })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets })
-  const { tokens: allTokens } = useTokens({ activeOnly: false, includeTestnets })
+  const chains = useChains({ activeOnly: false, includeTestnets })
+  const chainsMap = useChainsMap({ activeOnly: false, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: false, includeTestnets })
+  const allTokens = useTokens({ activeOnly: false, includeTestnets })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
 

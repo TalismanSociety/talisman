@@ -1,17 +1,17 @@
 import { StarIcon } from "@talismn/icons"
-import { useAtom, useSetAtom } from "jotai"
 import { useTranslation } from "react-i18next"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
+import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
+import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
 const Content = () => {
-  const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
-  const setSelectedCurrency = useSetAtom(selectedCurrencyAtom)
+  const [favorites, setFavorites] = useFavoriteCurrencies()
+  const [, setSelected] = useSetting("selectedCurrency")
   const { t } = useTranslation()
 
   return (
@@ -30,13 +30,15 @@ const Content = () => {
             key={currency}
             className="bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body-secondary flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
-              setSelectableCurrencies((selectable) => {
+              setFavorites((selectable) => {
                 const newSelectable = selectable.includes(currency)
                   ? selectable.filter((x) => x !== currency)
                   : selectable.concat(currency).sort(sortCurrencies)
 
+                if (!newSelectable.length) return selectable
+
                 // NOTE: This makes sure that the `selectedCurrency` is always in the list of `selectableCurrencies`
-                setSelectedCurrency((selected) =>
+                setSelected((selected) =>
                   newSelectable.length === 0 || newSelectable.includes(selected)
                     ? selected
                     : newSelectable[0]
@@ -54,7 +56,7 @@ const Content = () => {
                 {currencyConfig[currency]?.name ?? currency}
               </div>
             </div>
-            {selectableCurrencies.includes(currency) ? (
+            {favorites.includes(currency) ? (
               <StarIcon className="stroke-primary fill-primary" />
             ) : (
               <StarIcon />

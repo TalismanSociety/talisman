@@ -15,7 +15,6 @@ import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import {
   BalanceSummary,
@@ -24,8 +23,8 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useSetting } from "@ui/hooks/useSettings"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
+import { usePortfolio, useSetting } from "@ui/state"
 
 const HeaderRow: FC<{
   token: Token | undefined

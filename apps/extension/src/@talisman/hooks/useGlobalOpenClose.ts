@@ -1,21 +1,26 @@
-import { SetStateAction, atom, useAtom } from "jotai"
-import { atomFamily } from "jotai/utils"
-import { useCallback } from "react"
+import { bind } from "@react-rxjs/core"
+import { SetStateAction, useCallback } from "react"
+import { BehaviorSubject, distinctUntilChanged, map } from "rxjs"
 
-const openCloseAtom = atom<{ [key: string]: boolean }>({})
+const allOpenCloseState$ = new BehaviorSubject<{ [key: string]: boolean }>({})
 
-const openCloseAtomFamily = atomFamily((key: string) =>
-  atom(
-    (get) => get(openCloseAtom)[key] ?? false,
-    (get, set, value: SetStateAction<boolean>) => {
-      if (typeof value === "function") value = value(get(openCloseAtom)[key])
-      set(openCloseAtom, (prev) => ({ ...prev, [key]: !!value }))
-    }
+export const [useGlobalOpenCloseValue, getGlobalOpenCloseValue$] = bind((key: string) =>
+  allOpenCloseState$.pipe(
+    map((state) => state[key] ?? false),
+    distinctUntilChanged<boolean>()
   )
 )
 
 export const useGlobalOpenClose = (key: string) => {
-  const [isOpen, setIsOpen] = useAtom(openCloseAtomFamily(key))
+  const isOpen = useGlobalOpenCloseValue(key)
+
+  const setIsOpen = useCallback(
+    (value: SetStateAction<boolean>) => {
+      const newValue = typeof value === "function" ? value(allOpenCloseState$.value[key]) : value
+      allOpenCloseState$.next({ ...allOpenCloseState$.value, [key]: newValue })
+    },
+    [key]
+  )
 
   const open = useCallback(() => setIsOpen(true), [setIsOpen])
   const close = useCallback(() => setIsOpen(false), [setIsOpen])

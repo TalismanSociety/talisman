@@ -1,6 +1,5 @@
 import { Chain } from "@talismn/chaindata-provider"
 import { LoaderIcon, SecretIcon } from "@talismn/icons"
-import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -16,14 +15,11 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { chainsMapAtomFamily, evmNetworksMapAtomFamily } from "@ui/atoms"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useAppState } from "@ui/hooks/useAppState"
-import useChains from "@ui/hooks/useChains"
-import { useMnemonic } from "@ui/hooks/useMnemonics"
+import { useAppState, useBalancesHydrate, useChains, useMnemonic } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
@@ -138,7 +134,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 
 const MetadataPortalContent = () => {
   const { t } = useTranslation("admin")
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains({ activeOnly: false, includeTestnets: true })
   const [chain, setChain] = useState<Chain | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 
@@ -235,16 +231,9 @@ const MetadataPortalContent = () => {
   )
 }
 
-const preloadAtom = atom(async (get) => {
-  await Promise.all([
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-})
-
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
 
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)

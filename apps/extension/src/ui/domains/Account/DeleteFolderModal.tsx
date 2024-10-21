@@ -1,28 +1,41 @@
-import { atom, useAtom } from "jotai"
+import { bind } from "@react-rxjs/core"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { AccountsCatalogTree } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 
-const deleteFolderItemState = atom<{
+type FolderProps = {
   id: string | null
   name: string | null
   treeName: AccountsCatalogTree | null
-}>({ id: null, name: null, treeName: null })
+}
+
+const localFolder$ = new BehaviorSubject<FolderProps>({
+  id: null,
+  name: null,
+  treeName: null,
+})
+
+const setLocalFolder = (item: FolderProps) => {
+  localFolder$.next(item)
+}
+
+const [useLocalFolder] = bind(localFolder$)
 
 export const useDeleteFolderModal = () => {
-  const [{ id, name, treeName }, setFolderItem] = useAtom(deleteFolderItemState)
+  const { id, name, treeName } = useLocalFolder()
   const { isOpen, open: _open, close } = useGlobalOpenClose("deleteFolderModal")
 
   const open = useCallback(
     (id: string, name: string, treeName: AccountsCatalogTree) => {
-      setFolderItem({ id, name, treeName })
+      setLocalFolder({ id, name, treeName })
       _open()
     },
-    [setFolderItem, _open]
+    [_open]
   )
 
   return {

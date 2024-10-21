@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
+import { useFeatureFlag } from "@ui/state"
 
 import { useBuyTokensModal } from "../Asset/Buy/useBuyTokensModal"
 import { useCopyAddressModal } from "../CopyAddress"
@@ -25,7 +25,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
     genericEvent("open receive", { from: "NoTokensMessage" })
   }, [selectedAccount?.address, genericEvent, open])
 
-  const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
+  const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const { open: openBuyCrypto } = useBuyTokensModal()
   const handleBuyCryptoClick = useCallback(() => {
     openBuyCrypto()

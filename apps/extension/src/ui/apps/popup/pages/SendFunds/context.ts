@@ -1,10 +1,11 @@
-import { Address } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
-import { provideContext } from "@talisman/util/provideContext"
 import { TokenId } from "@talismn/chaindata-provider"
-import { useAllTokensMap } from "@ui/hooks/useTokens"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
+
+import { Address } from "@extension/core"
+import { provideContext } from "@talisman/util/provideContext"
+import { useTokensMap } from "@ui/state"
 
 type SendFundsWizardParams = {
   from: Address
@@ -23,7 +24,7 @@ export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const allTokensMap = useAllTokensMap()
+  const allTokensMap = useTokensMap()
 
   const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
     () => ({

@@ -1,23 +1,25 @@
 import { HexString } from "@polkadot/util/types"
 import { normalizeAddress } from "@talismn/util"
-import { useLiveQuery } from "dexie-react-hooks"
-import { Chain, db, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
+import { Chain, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
 import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useAccounts from "@ui/hooks/useAccounts"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
+import {
+  useAccountByAddress,
+  useAccounts,
+  useChains,
+  useEvmNetworksMap,
+  useSettingValue,
+  useTransactions,
+} from "@ui/state"
 
 const useTxHistoryProvider = () => {
-  const [includeTestnets] = useSetting("useTestnets")
+  const includeTestnets = useSettingValue("useTestnets")
 
   const accounts = useAccounts("owned")
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets })
   const chainsByGenesisHash = useMemo(
     () =>
       Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Partial<
@@ -26,10 +28,7 @@ const useTxHistoryProvider = () => {
     [chains]
   )
 
-  const allTransactions = useLiveQuery(async () => {
-    const txs = await db.transactions.toArray()
-    return txs.sort((tx1, tx2) => tx2.timestamp - tx1.timestamp)
-  }, [])
+  const allTransactions = useTransactions()
 
   const [{ addresses, networkId }, setState] = useState<{
     addresses: string[] | null

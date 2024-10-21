@@ -16,9 +16,8 @@ import { useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useBalance } from "@ui/hooks/useBalance"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useBalance, useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"

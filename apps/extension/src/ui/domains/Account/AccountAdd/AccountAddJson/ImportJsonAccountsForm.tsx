@@ -1,7 +1,3 @@
-import { AccountType } from "@extension/core"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -10,13 +6,18 @@ import {
   UnlockIcon,
 } from "@talismn/icons"
 import { classNames, sleep } from "@talismn/util"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountType } from "@extension/core"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useSelectedCurrency } from "@ui/state"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { JsonImportAccount, useJsonAccountImport } from "./context"

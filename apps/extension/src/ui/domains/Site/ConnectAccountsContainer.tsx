@@ -7,7 +7,7 @@ import { useOpenClose } from "talisman-ui"
 import { AccountJsonAny } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
-import useAccounts from "@ui/hooks/useAccounts"
+import { useAccounts } from "@ui/state"
 
 import { FormattedAddress } from "../Account/FormattedAddress"
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"

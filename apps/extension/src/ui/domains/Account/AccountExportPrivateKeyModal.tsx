@@ -1,7 +1,8 @@
+import { bind } from "@react-rxjs/core"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
-import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { AccountJsonAny } from "@extension/core"
@@ -14,23 +15,27 @@ import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const accountExportPkAccountState = atom<AccountJsonAny | null>(null)
+const localAccount$ = new BehaviorSubject<AccountJsonAny | null>(null)
+
+const setLocalAccount = (account: AccountJsonAny | null) => {
+  localAccount$.next(account)
+}
+
+const [useLocalAccount] = bind(localAccount$)
 
 export const useAccountExportPrivateKeyModal = () => {
-  const [_account, setAccount] = useAtom(accountExportPkAccountState)
+  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
 
   const { selectedAccount } = usePortfolioNavigation()
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
+  const account = useLocalAccount() ?? selectedAccount
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account ?? null)
+      setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen, setAccount]
+    [innerOpen]
   )
-
-  const account = _account ?? selectedAccount
 
   const canExportAccountFunc = (account?: AccountJsonAny | null) =>
     account?.type === "ethereum" && !account.isExternal && !account.isHardware

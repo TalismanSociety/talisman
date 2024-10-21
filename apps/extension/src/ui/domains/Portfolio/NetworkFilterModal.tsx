@@ -6,11 +6,10 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { NetworkOption } from "@ui/atoms"
+import { NetworkOption, usePortfolio } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import { usePortfolio } from "./usePortfolio"
 
 const NetworkRow: FC<{ id: string; name: string; isSelected?: boolean; onClick: () => void }> = ({
   id,

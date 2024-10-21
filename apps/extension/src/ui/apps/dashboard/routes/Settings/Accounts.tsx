@@ -1,16 +1,11 @@
-import { atom, useAtomValue } from "jotai"
+import { bind } from "@react-rxjs/core"
 import { useTranslation } from "react-i18next"
+import { combineLatest } from "rxjs"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import {
-  accountsByCategoryAtomFamily,
-  accountsCatalogAtom,
-  balanceTotalsAtom,
-  chainsMapAtomFamily,
-} from "@ui/atoms"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import {
   ManageAccountsLists,
@@ -21,6 +16,7 @@ import {
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { accounts$, accountsCatalog$, balancesHydrate$, balanceTotals$ } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -29,18 +25,13 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Accounts",
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(accountsByCategoryAtomFamily("all")),
-    get(accountsCatalogAtom),
-    get(balanceTotalsAtom),
-    get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: false })),
-  ])
+const [usePreload] = bind(
+  combineLatest([accounts$, accountsCatalog$, balanceTotals$, balancesHydrate$])
 )
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  usePreload()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (

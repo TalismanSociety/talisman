@@ -1,8 +1,9 @@
 import { classNames } from "@talismn/util"
+import { useTranslation } from "react-i18next"
+
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useTranslation } from "react-i18next"
+import { useAccountByAddress } from "@ui/state"
 
 export const PortfolioAccount = ({
   address,

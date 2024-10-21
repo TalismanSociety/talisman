@@ -10,7 +10,7 @@ import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
 import { Message } from "@ui/domains/Sign/Message"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useRequest } from "@ui/hooks/useRequest"
+import { useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 import { SignAccountAvatar } from "./Sign/SignAccountAvatar"

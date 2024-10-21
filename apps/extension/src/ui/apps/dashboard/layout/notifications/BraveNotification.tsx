@@ -6,7 +6,7 @@ import { Modal, ModalDialog } from "talisman-ui"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
-import { useAppState } from "@ui/hooks/useAppState"
+import { useAppState } from "@ui/state"
 
 import { DashboardNotification } from "./DashboardNotification"
 
