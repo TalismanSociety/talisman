@@ -24,20 +24,28 @@ export const DashboardLayout: FC<{
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
       <div className="relative mx-auto w-full max-w-[161.6rem]">
-        <Header />
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
+          {/* Sidebar */}
           <div className="w-[29.6rem] shrink-0 overflow-hidden">
+            <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
+              <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
+              <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+            </div>
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
               {sidebar === "accounts" && <DashboardAccountsSidebar />}
               {sidebar === "settings" && <DashboardSettingsSidebar />}
             </Suspense>
           </div>
-          <div className="flex grow justify-center pb-20">
+          {/* Main area */}
+          <div className="flex grow flex-col items-center pb-20">
+            <div className="flex h-48 w-full shrink-0 items-center justify-center">
+              <HorizontalNav />
+            </div>
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
               <div
                 className={classNames(
-                  // minimum width should be the one of the horizontal bar which never shrinks
-                  "animate-fade-in min-w-[48rem] grow",
+                  // minimum width is automatically set by the horizontal nav bar which never shrinks
+                  "animate-fade-in w-full grow",
                   width === "660" && "max-w-[66rem]",
                   width === "800" && "max-w-[80rem]"
                 )}
@@ -55,18 +63,6 @@ export const DashboardLayout: FC<{
 }
 
 const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
-
-const Header = () => (
-  <div className={classNames("flex h-48 w-full items-center", RESPONSIVE_FLEX_SPACING)}>
-    <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
-      <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
-      <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
-    </div>
-    <div className="flex shrink-0 grow justify-center">
-      <HorizontalNav />
-    </div>
-  </div>
-)
 
 const NavButton: FC<{
   label: ReactNode
