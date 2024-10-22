@@ -41,7 +41,7 @@
     "hardhat": "^2.19.4",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.2.2",
+    "typescript": "^5.6.3",
     "vite": "^4.4.3",
     "vite-plugin-svgr": "^2.2.1"
   },

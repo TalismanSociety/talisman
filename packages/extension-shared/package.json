@@ -24,7 +24,7 @@
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "eslint": "^8.52.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.6.3"
   },
   "preconstruct": {
     "entrypoints": [

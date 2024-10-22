@@ -17,6 +17,7 @@
     "@ledgerhq/hw-transport-webusb": "6.28.1",
     "@metamask/eth-sig-util": "7.0.1",
     "@polkadot-api/merkleize-metadata": "^1.1.7",
+    "@polkadot/apps-config": "0.145.1",
     "@polkadot/extension-base": "0.54.1",
     "@polkadot/extension-inject": "0.54.1",
     "@polkadot/keyring": "13.2.1",
@@ -106,9 +107,9 @@
     "semver": "~7.5.4",
     "talisman-ui": "workspace:*",
     "ts-results": "3.3.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.6.3",
     "url-join": "^5.0.0",
-    "viem": "^2.21.28",
+    "viem": "^2.21.32",
     "yup": "0.32.11"
   },
   "devDependencies": {
@@ -119,6 +120,7 @@
     "@babel/plugin-transform-react-jsx": "^7.23.4",
     "@babel/preset-env": "^7.23.7",
     "@babel/preset-typescript": "^7.23.3",
+    "@mangata-finance/type-definitions": "2.1.2",
     "@peculiar/webcrypto": "^1.4.3",
     "@sentry/webpack-plugin": "2.10.2",
     "@svgr/webpack": "^6.5.1",

@@ -33,7 +33,7 @@ const TokensAndFiat = ({
   tokenAmount?: BigNumber
   fiat: number | null
   token?: Token
-  currencyDisplay?: string
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   className?: string
 }) => (
   <div className={classNames("flex flex-col gap-2 whitespace-nowrap", className)}>
@@ -51,7 +51,13 @@ const TokensAndFiat = ({
   </div>
 )
 
-const FiatOnly = ({ fiat, currencyDisplay }: { fiat: number | null; currencyDisplay?: string }) => (
+const FiatOnly = ({
+  fiat,
+  currencyDisplay,
+}: {
+  fiat: number | null
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
+}) => (
   <div className="textbase text-white">
     {fiat === null ? "-" : <Fiat amount={fiat} isBalance currencyDisplay={currencyDisplay} />}
   </div>

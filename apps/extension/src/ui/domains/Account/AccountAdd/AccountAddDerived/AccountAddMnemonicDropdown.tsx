@@ -15,7 +15,7 @@ export type MnemonicOption = {
 const GENERATE_MNEMONIC_OPTION = {
   value: "new",
   label: "Generate new recovery phrase",
-  accountsCount: undefined,
+  accounts: [],
 }
 
 export const AccountAddMnemonicDropdown: FC<{

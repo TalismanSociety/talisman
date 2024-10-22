@@ -15,7 +15,8 @@ import {
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useChainByGenesisHash, useEvmNetwork, useTransaction } from "@ui/state"
 
-import { TxReplaceDrawer, TxReplaceType } from "."
+import { TxReplaceDrawer } from "./TxReplaceDrawer"
+import { TxReplaceType } from "./types"
 
 const getBlockExplorerUrl = (
   network: EvmNetwork | undefined | null,

@@ -9,7 +9,7 @@ export const fiatGroupSeparator = parts.find((p) => p.type === "group")?.value ?
 export const formatFiat = (
   amount = 0,
   currency: Intl.NumberFormatOptions["currency"] | undefined,
-  currencyDisplay?: string,
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"],
   minimumDecimalPlaces?: number
 ) => {
   const formatOptions: Intl.NumberFormatOptions = {
