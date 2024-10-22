@@ -1509,8 +1509,8 @@ importers:
   packages/on-chain-id:
     dependencies:
       '@azns/resolver-core':
-        specifier: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main
-        version: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main(@polkadot/api-contract@12.0.2)(@polkadot/api@12.0.2)(@polkadot/types@12.0.2)(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
+        specifier: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2
+        version: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2(@polkadot/api-contract@12.0.2)(@polkadot/api@12.0.2)(@polkadot/types@12.0.2)(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@talismn/balances':
         specifier: workspace:*
         version: link:../balances
@@ -1830,8 +1830,8 @@ packages:
       '@polkadot/util': 12.6.2
       '@polkadot/util-crypto': 12.6.2
 
-  '@azns/resolver-core@https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main':
-    resolution: {tarball: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main}
+  '@azns/resolver-core@https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2':
+    resolution: {tarball: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2}
     version: 1.6.0
     engines: {node: '>=16 <=18', pnpm: '8'}
     peerDependencies:
@@ -13178,7 +13178,7 @@ snapshots:
       loglevel: 1.8.1
       utf-8-validate: 6.0.3
 
-  '@azns/resolver-core@https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main(@polkadot/api-contract@12.0.2)(@polkadot/api@12.0.2)(@polkadot/types@12.0.2)(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)':
+  '@azns/resolver-core@https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2(@polkadot/api-contract@12.0.2)(@polkadot/api@12.0.2)(@polkadot/types@12.0.2)(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)':
     dependencies:
       '@polkadot/api': 12.0.2
       '@polkadot/api-contract': 12.0.2
