@@ -1,7 +1,6 @@
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
-import { OverrideBundleType } from "@polkadot/types/types"
 import { hexToNumber, isHex } from "@polkadot/util"
 import { Chain } from "@talismn/chaindata-provider"
 import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
@@ -35,15 +34,15 @@ export const getTypeRegistry = async (
 
   // register typesBundle in registry for legacy (pre metadata v14) chains
   if (typesBundle.spec && chain?.specName && typesBundle.spec[chain.specName]) {
-    const chainBundle: OverrideBundleType =
+    const chainBundle =
       chain.chainName && typesBundle.chain?.[chain.chainName]
         ? { chain: { [chain.chainName]: typesBundle.chain[chain.chainName] } }
         : {}
-    const specBundle: OverrideBundleType =
+    const specBundle =
       chain.specName && typesBundle.spec?.[chain.specName]
         ? { spec: { [chain.specName]: typesBundle.spec[chain.specName] } }
         : {}
-    const legacyTypesBundle: OverrideBundleType = { ...chainBundle, ...specBundle }
+    const legacyTypesBundle = { ...chainBundle, ...specBundle }
 
     if (legacyTypesBundle) {
       log.debug(`Setting known types for chain ${chain.id}`)
