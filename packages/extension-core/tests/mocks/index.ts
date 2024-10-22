@@ -53,4 +53,10 @@ jest.mock("webextension-polyfill", () => {
   }
 })
 
+jest.mock("@polkadot/apps-config/api", () => {
+  return {
+    typesBundle: {},
+  }
+})
+
 export {}
