@@ -1,8 +1,7 @@
 import { ExternalLinkIcon, XIcon, ZapFastIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Suspense, useCallback } from "react"
+import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -11,6 +10,7 @@ import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPool
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -19,12 +19,11 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
-const AssetRowStakingReminderInner = ({ balances }: AssetRowProps) => {
+const AssetRowStakingReminder = (props: ReturnType<typeof useShowStakingBanner>) => {
   const { t } = useTranslation()
 
-  const { token, summary } = useTokenBalancesSummary(balances)
-  const { message, colours, handleClickStakingBanner, handleDismissStakingBanner } =
-    useShowStakingBanner(balances)
+  const { message, colours, handleClickStakingBanner, handleDismissStakingBanner } = props
+  const { token, summary } = useTokenBalancesSummary(props.balances)
 
   if (!token || !summary) return null
 
@@ -61,14 +60,6 @@ const AssetRowStakingReminderInner = ({ balances }: AssetRowProps) => {
   )
 }
 
-const AssetRowStakingReminder = ({ balances }: AssetRowProps) => {
-  const { showBanner } = useShowStakingBanner(balances)
-
-  if (!showBanner) return null
-
-  return <AssetRowStakingReminderInner balances={balances} />
-}
-
 type AssetRowProps = {
   balances: Balances
 }
@@ -81,14 +72,10 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
 
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
     if (!token) return
-    navigate(
-      `/portfolio/tokens/${encodeURIComponent(token.symbol)}${
-        token.isTestnet ? "?testnet=true" : ""
-      }`
-    )
+    navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
     genericEvent("goto portfolio asset", { from: "dashboard", symbol: token.symbol })
   }, [genericEvent, navigate, token])
 
@@ -97,18 +84,19 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
 
+  const stakingReminder = useShowStakingBanner(balances)
+
   if (!token || !summary) return null
 
   return (
     <div className="relative mb-4">
-      <Suspense>
-        <AssetRowStakingReminder balances={balances} />
-      </Suspense>
+      {stakingReminder.showBanner && <AssetRowStakingReminder {...stakingReminder} />}
 
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base"
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden text-left text-base",
+          stakingReminder.showBanner ? "rounded-b" : "rounded"
         )}
         onClick={handleClick}
       >

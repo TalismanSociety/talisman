@@ -1,115 +1,170 @@
+import { HistoryIcon, SettingsIcon, TalismanHandIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Suspense, useEffect, useRef, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
+import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
-import { BackButton } from "@talisman/components/BackButton"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
-import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
-import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
-import { CopyAddressModal } from "@ui/domains/CopyAddress"
-import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { NomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/NomPoolBondModal"
-import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
-import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
-import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
-import DashboardNotifications from "./DashboardNotifications"
-import { BackupWarningModal } from "./DashboardNotifications/BackupWarningModal"
-import { OnboardingToast } from "./OnboardingToast"
-import { Sidebar } from "./Sidebar"
+import { DashboardAccountsSidebar } from "./DashboardAccountsSidebar"
+import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
+import { LayoutBreadcrumb } from "./LayoutBreadcrumb"
+import { DashboardNotificationsAndModals } from "./notifications/DashboardNotificationsAndModals"
 
-type LayoutProps = {
-  children?: React.ReactNode
-  centered?: boolean
-  large?: boolean
-  withBack?: boolean
-  backTo?: string
-  className?: string
-  analytics?: AnalyticsPage
-}
-
-const DashboardNotificationsAndModals = () => {
-  const [shouldRender, setShouldRender] = useState(false)
-  useEffect(() => {
-    // delay the display of modals to prevent slowing down the initial render
-    const timeout = setTimeout(() => {
-      setShouldRender(true)
-    }, 100)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
-
-  if (!shouldRender) return null
-
+// dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
+export const DashboardLayout: FC<{
+  children?: ReactNode
+  sidebar: "accounts" | "settings"
+  width?: "660" | "800"
+}> = ({ children, sidebar, width }) => {
   return (
-    <Suspense fallback={<SuspenseTracker name="Modals" />}>
-      {/* this actually needs renders in place at the bottom of the page */}
-      <DashboardNotifications />
-      {/* below components can be rendered from anywhere */}
-      <BackupWarningModal />
-      <BuyTokensModal />
-      <AccountRenameModal />
-      <AccountExportModal />
-      <AccountExportPrivateKeyModal />
-      <AccountRemoveModal />
-      <CopyAddressModal />
-      <ExplorerNetworkPickerModal />
-      <MigratePasswordModal />
-      <OnboardingToast />
-      <NomPoolBondModal />
-      <NomPoolUnbondModal />
-      <NomPoolWithdrawModal />
-    </Suspense>
+    <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
+      <div className="relative mx-auto w-full max-w-[161.6rem]">
+        <Header />
+        <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
+          <div className="w-[29.6rem] shrink-0 overflow-hidden">
+            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
+              {sidebar === "accounts" && <DashboardAccountsSidebar />}
+              {sidebar === "settings" && <DashboardSettingsSidebar />}
+            </Suspense>
+          </div>
+          <div className="flex grow justify-center pb-20">
+            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
+              <div
+                className={classNames(
+                  "animate-fade-in grow",
+                  width === "660" && "max-w-[80rem]",
+                  width === "800" && "max-w-[80rem]"
+                )}
+              >
+                <LayoutBreadcrumb />
+                {children}
+              </div>
+            </Suspense>
+          </div>
+        </div>
+      </div>
+      <DashboardNotificationsAndModals />
+    </div>
   )
 }
 
-export const DashboardLayout: FC<LayoutProps> = ({
-  centered,
-  large,
-  withBack,
-  backTo,
-  children,
-  className,
-  analytics,
-}) => {
-  //scrollToTop on location change
-  const scrollableRef = useRef<HTMLDivElement>(null)
-  const location = useLocation()
+const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
 
-  useEffect(() => {
-    scrollableRef.current?.scrollTo(0, 0)
-  }, [location.pathname])
+const Header = () => (
+  <div className={classNames("flex h-48 w-full items-center", RESPONSIVE_FLEX_SPACING)}>
+    <div className="hidden h-48 shrink-0 items-center gap-4 sm:flex">
+      <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
+      <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+    </div>
+    <div className="flex grow justify-center">
+      <HorizontalNav />
+    </div>
+  </div>
+)
+
+const NavButton: FC<{
+  label: ReactNode
+  icon: FC<{ className?: string }>
+  route?: string | string[]
+  className?: string
+  onClick: () => void
+}> = ({ label, icon: Icon, route, className, onClick }) => {
+  const location = useLocation()
+  const routeMatch = useMemo(() => {
+    const matches = Array.isArray(route) ? route : ([route].filter(Boolean) as string[])
+    return matches.some((route) => matchPath(route, location.pathname))
+  }, [location.pathname, route])
 
   return (
-    <main className="flex h-dvh w-dvw">
-      <Sidebar />
-      <section
-        ref={scrollableRef}
-        className={classNames(
-          "scrollable scrollable-800 flex-grow overflow-x-auto overflow-y-scroll p-10 sm:p-[5.2rem]"
-        )}
-      >
-        <Suspense fallback={<SuspenseTracker name="DashboardLayout.main" />}>
-          <div
-            className={classNames(
-              "relative w-full min-w-[66rem]",
-              centered && "mx-auto",
-              centered && (large ? "max-w-[120rem]" : "max-w-[66rem]"),
-              className
-            )}
-          >
-            {!!withBack && <BackButton analytics={analytics} className="mb-[3rem]" to={backTo} />}
-            {children}
-          </div>
-          <DashboardNotificationsAndModals />
-        </Suspense>
-      </section>
-    </main>
+    <button
+      type="button"
+      className={classNames(
+        "text-body-inactive hover:text-body-secondary flex items-center gap-4",
+        routeMatch && "!text-body",
+        className
+      )}
+      onClick={onClick}
+    >
+      <Icon className="shrink-0 text-[2rem]" />
+      <div className="hidden lg:block">{label}</div>
+    </button>
+  )
+}
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Navigation",
+  featureVersion: 3,
+  page: "Portfolio",
+}
+
+const HorizontalNav = () => {
+  const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
+
+  const navigate = useNavigate()
+  const handlePortfolioClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Portfolio button",
+    })
+    navigate("/portfolio/tokens" + (searchParams.size ? `?${searchParams}` : ""))
+  }, [navigate, searchParams])
+
+  const handleStakingClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Staking button",
+    })
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
+  }, [])
+
+  const handleActivityClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Activity button",
+    })
+    navigate("/tx-history" + (searchParams.size ? `?${searchParams}` : ""))
+  }, [navigate, searchParams])
+
+  const handleSettingsClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Settings button",
+    })
+    navigate("/settings/general")
+  }, [navigate])
+
+  return (
+    <div className="border-grey-700 flex h-24 gap-16 rounded-lg border px-8">
+      <NavButton
+        label={t("Portfolio")}
+        onClick={handlePortfolioClick}
+        icon={TalismanHandIcon}
+        route="/portfolio/*"
+      />
+      <NavButton label={t("Staking")} onClick={handleStakingClick} icon={ZapIcon} />
+      <NavButton
+        label={t("Activity")}
+        onClick={handleActivityClick}
+        icon={HistoryIcon}
+        route="/tx-history"
+      />
+      <NavButton
+        label={t("Settings")}
+        onClick={handleSettingsClick}
+        icon={SettingsIcon}
+        route={["/settings/*", "/accounts/*"]}
+      />
+    </div>
   )
 }

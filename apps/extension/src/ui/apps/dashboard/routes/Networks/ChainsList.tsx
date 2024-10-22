@@ -1,21 +1,119 @@
-import { activeChainsStore, isChainActive } from "@extension/core"
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
-import { ChevronRightIcon } from "@talismn/icons"
+import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
-import useChains from "@ui/hooks/useChains"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
-import { ChangeEventHandler, useCallback, useMemo, useRef } from "react"
+import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
-import { ListButton, Toggle } from "talisman-ui"
+import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
+
+import { activeChainsStore, isChainActive } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { sendAnalyticsEvent } from "@ui/api/analytics"
+import { balancesInitialisingAtom } from "@ui/atoms"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
+import useBalances from "@ui/hooks/useBalances"
+import useChains from "@ui/hooks/useChains"
+import { useSetting } from "@ui/hooks/useSettings"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
+
+type DeactivateMode = "all" | "unused"
+
+const DeactivateNetworksModalContent: FC<{
+  onClose: () => void
+}> = ({ onClose }) => {
+  const { t } = useTranslation("admin")
+  const isBalancesInitializing = useAtomValue(balancesInitialisingAtom)
+
+  const [includeTestnets] = useSetting("useTestnets")
+  const balances = useBalances("all")
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
+
+  const [activeChainIds, unusedChainIds] = useMemo(() => {
+    const networkIds = chains.map((chain) => chain.id)
+
+    return [
+      networkIds,
+      networkIds.filter((chainId) => !balances.find({ chainId }).sum.planck.total),
+    ]
+  }, [chains, balances])
+
+  const [mode, setMode] = useState<DeactivateMode>("all")
+
+  const handleClick = useCallback(async () => {
+    const networkIds = mode === "all" ? activeChainIds : unusedChainIds
+
+    activeChainsStore.mutate((prev) => ({
+      ...prev,
+      ...Object.fromEntries(networkIds.map((chainId) => [chainId, false])),
+    }))
+
+    onClose()
+  }, [activeChainIds, mode, onClose, unusedChainIds])
+
+  const disableSubmit = useMemo(() => {
+    if (mode === "unused" && (isBalancesInitializing || !unusedChainIds.length)) return true
+    if (mode === "all" && !activeChainIds.length) return true
+    return false
+  }, [activeChainIds.length, isBalancesInitializing, mode, unusedChainIds.length])
+
+  return (
+    <ModalDialog title={t("Deactivate Polkadot networks")} onClose={onClose}>
+      <div className="text-body-secondary mb-8 text-sm">
+        {t("It is recommended to deactivate unused networks to improve Talisman performance.")}
+      </div>
+      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm ">
+        {isBalancesInitializing ? (
+          <>
+            <LoaderIcon className="text-md shrink-0 animate-spin" />
+            <div className="grow">
+              {t("Scanning networks - found {{count}} unused", { count: unusedChainIds.length })}
+            </div>
+          </>
+        ) : (
+          <>
+            <InfoIcon className="text-md shrink-0" />
+            <div className="text-body-secondary grow">
+              {t("Found {{count}} network(s) without token balances", {
+                count: unusedChainIds.length,
+              })}
+            </div>
+          </>
+        )}
+      </div>
+      <div className="text-body-secondary flex flex-col items-start py-8 text-sm">
+        <Radio
+          name="deactivateMode"
+          label={t("Deactivate all Polkadot networks ({{count}})", { count: chains.length })}
+          value="all"
+          checked={mode === "all"}
+          onChange={() => setMode("all")}
+        />
+        <Radio
+          name="deactivateMode"
+          label={t("Deactivate unused Polkadot networks ({{count}})", {
+            count: unusedChainIds.length,
+          })}
+          value="unused"
+          checked={mode === "unused"}
+          onChange={() => setMode("unused")}
+        />
+      </div>
+
+      <div className="mt-4 flex justify-end gap-8">
+        <Button onClick={onClose}>{t("Cancel")}</Button>
+        <Button primary disabled={disableSubmit} onClick={handleClick}>
+          {t("Deactivate")}
+        </Button>
+      </div>
+    </ModalDialog>
+  )
+}
 
 export const ChainsList = ({ search }: { search?: string }) => {
   const { t } = useTranslation("admin")
@@ -75,6 +173,8 @@ export const ChainsList = ({ search }: { search?: string }) => {
     [filteredChains]
   )
 
+  const ocDeactivateAllModal = useOpenClose()
+
   if (!sortedChains) return null
 
   return (
@@ -95,11 +195,17 @@ export const ChainsList = ({ search }: { search?: string }) => {
         <div className="bg-body-disabled h-6 w-0.5"></div>
         <button
           type="button"
-          onClick={activateAll(false)}
+          onClick={() => ocDeactivateAllModal.open()}
           className="text-body-disabled hover:text-body-secondary text-xs"
         >
           {t("Deactivate all")}
         </button>
+
+        <Suspense fallback={<SuspenseTracker name="DeactivateAllModal" />}>
+          <Modal isOpen={ocDeactivateAllModal.isOpen} onDismiss={ocDeactivateAllModal.close}>
+            <DeactivateNetworksModalContent onClose={ocDeactivateAllModal.close} />
+          </Modal>
+        </Suspense>
       </div>
       {sortedChains.map((chain) => (
         <ChainsListItem

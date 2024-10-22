@@ -72,7 +72,7 @@ const TalismanOrbLogo = ({ id, iconType }: { id: string; iconType?: LogoIconType
   switch (iconType) {
     case "ethereum":
       return (
-        <g opacity="0.75" transform="scale(0.7) translate(14 14)">
+        <g opacity="0.75" transform="scale(0.7) translate(14 14)" className="orb-type">
           <path
             d="M12.8101 32.76L32.0001 44.62L51.1901 32.76L32.0001 -0.0699997L12.8101 32.76Z"
             fill="white"
@@ -90,6 +90,7 @@ const TalismanOrbLogo = ({ id, iconType }: { id: string; iconType?: LogoIconType
             clipPath={`url(#${id}_1751_2030)`}
             opacity="0.75"
             transform="scale(2.2) translate(4.5 3.9)"
+            className="orb-type"
           >
             <path
               d="M9.99937 4.4612C12.1176 4.4612 13.8347 3.46253 13.8347 2.2306C13.8347 0.998674 12.1176 0 9.99937 0C7.88119 0 6.16406 0.998674 6.16406 2.2306C6.16406 3.46253 7.88119 4.4612 9.99937 4.4612Z"
@@ -164,6 +165,42 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
           <circle fill={`url(#${id}-circle)`} cx={cx} cy={cy} r={45} opacity={0.7} />
         </g>
         <TalismanOrbLogo id={id} iconType={iconType} />
+      </g>
+    </svg>
+  )
+}
+
+export const TalismanOrbRectangle: FC<TalismanOrbProps> = ({ width, height, seed, className }) => {
+  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy } = useTalismanOrb(seed)
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 64 64`}
+      preserveAspectRatio="none"
+      className={className}
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`${id}-bg`}>
+          <stop offset="20%" stopColor={bgColor1} />
+          <stop offset="100%" stopColor={bgColor2} />
+        </linearGradient>
+        <radialGradient id={`${id}-circle`}>
+          <stop offset="10%" stopColor={glowColor} />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <clipPath id={`${id}-clip`}>
+          <circle cx="32" cy="32" r="48" />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${id}-clip)`}>
+        <g transform={transform}>
+          <rect fill={`url(#${id}-bg)`} x={-16} y={-16} width={96} height={96} />
+          <circle fill={`url(#${id}-circle)`} cx={cx} cy={cy} r={45} opacity={0.7} />
+        </g>
       </g>
     </svg>
   )

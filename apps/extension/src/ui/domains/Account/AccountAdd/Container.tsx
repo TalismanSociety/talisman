@@ -1,12 +1,13 @@
-import { IS_FIREFOX } from "@extension/shared"
-import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
-import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { IS_FIREFOX } from "@extension/shared"
+import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
+import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
 import { MethodTypes, useAccountCreateContext } from "./context"
 
@@ -168,13 +169,6 @@ const ConnectAccountMethodButtons = () => {
         to={`/accounts/add/qr`}
       />
       <AccountCreateMethodButton
-        title={t("Connect D'CENT")}
-        subtitle={t("Disabled - please contact support")}
-        networks={[]}
-        disabled={true}
-        to={`/accounts/add/dcent`}
-      />
-      <AccountCreateMethodButton
         title={t("Connect Signet")}
         subtitle={!IS_FIREFOX ? t("Connect your Signet Vault") : t("Not supported on this browser")}
         networks={!IS_FIREFOX ? ["polkadot"] : []}
@@ -265,7 +259,7 @@ export const AccountCreateContainer = ({ className }: Props) => {
         <div className="flex flex-col items-center justify-center gap-4 self-stretch">
           <div className="flex items-center gap-8 self-stretch">
             <span className="bg-grey-700 h-[0.08rem] w-full"></span>
-            <span className="text-grey-500 w-full flex-auto whitespace-nowrap text-xs">
+            <span className="text-grey-500 w-full flex-auto whitespace-nowrap text-center text-xs">
               {t("Don't want to import your private key?")}
             </span>
             <span className="bg-grey-700 h-[0.08rem] w-full"></span>

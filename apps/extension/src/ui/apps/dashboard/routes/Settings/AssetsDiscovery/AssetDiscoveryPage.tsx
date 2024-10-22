@@ -1,15 +1,3 @@
-import {
-  AccountJsonAny,
-  AssetDiscoveryMode,
-  DiscoveredBalance,
-  activeEvmNetworksStore,
-  activeTokensStore,
-  isEvmNetworkActive,
-  isTokenActive,
-} from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
@@ -22,34 +10,7 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import {
-  assetDiscoveryScanAtom,
-  assetDiscoveryScanProgressAtom,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import Tokens from "@ui/domains/Asset/Tokens"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
-import useTokens from "@ui/hooks/useTokens"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { atom, useAtomValue } from "jotai"
+import { atom, useAtom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -67,8 +28,48 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { DashboardLayout } from "../../../layout/DashboardLayout"
-import { AccountsStack } from "../Accounts/AccountIconsStack"
+import {
+  AccountJsonAny,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  AssetDiscoveryMode,
+  DiscoveredBalance,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
+import {
+  assetDiscoveryScanAtom,
+  assetDiscoveryScanProgressAtom,
+  evmNetworksMapAtomFamily,
+  settingsAtomFamily,
+  tokensMapAtomFamily,
+} from "@ui/atoms"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import Tokens from "@ui/domains/Asset/Tokens"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
+import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAppState } from "@ui/hooks/useAppState"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSetting } from "@ui/hooks/useSettings"
+import useToken from "@ui/hooks/useToken"
+import useTokens from "@ui/hooks/useTokens"
+import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
+
+import { DashboardLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,
@@ -80,6 +81,8 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   featureVersion: 1,
   page: "Settings - Asset Discovery",
 }
+
+const isInitializingScanAtom = atom(false)
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
@@ -301,11 +304,12 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
+  const isInitializing = useAtomValue(isInitializingScanAtom)
   const { balances, balancesByTokenId, tokenIds } = useAtomValue(assetDiscoveryScanProgressAtom)
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
-  if (!balances.length) return null
+  if (!balances.length || isInitializing) return null
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
@@ -325,18 +329,24 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
+  const [isInitializing, setIsInitializing] = useAtom(isInitializingScanAtom)
   const { balances, accountsCount, tokensCount, percent, isInProgress } = useAtomValue(
     assetDiscoveryScanProgressAtom
   )
+
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
 
+  const effectivePercent = isInitializing ? 0 : percent
+
   const handleScanClick = useCallback(
-    (mode: AssetDiscoveryMode) => () => {
-      api.assetDiscoveryStartScan(mode)
+    (mode: AssetDiscoveryMode) => async () => {
+      setIsInitializing(true)
+      await api.assetDiscoveryStartScan(mode)
+      setIsInitializing(false)
     },
-    []
+    [setIsInitializing]
   )
   const handleCancelScanClick = useCallback(() => {
     api.assetDiscoveryStopScan()
@@ -345,14 +355,19 @@ const Header: FC = () => {
   return (
     <div className="bg-grey-850 flex h-[8.6rem] items-center gap-8 rounded-sm px-8">
       <DiamondIcon
-        className={classNames("text-lg", isInProgress ? "text-primary" : "text-body-secondary")}
+        className={classNames(
+          "text-lg",
+          isInProgress || isInitializing ? "text-primary" : "text-body-secondary"
+        )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {isInProgress || balances.length ? (
+        {isInitializing || isInProgress || balances.length ? (
           <>
             <div className="flex text-base">
               <div className="grow">
-                {isInProgress
+                {isInitializing
+                  ? t("Initialising...")
+                  : isInProgress
                   ? t("Scanning {{tokensCount}} tokens for {{count}} account(s)", {
                       tokensCount,
                       count: accountsCount,
@@ -362,16 +377,16 @@ const Header: FC = () => {
                       count: accountsCount,
                     })}
               </div>
-              <div className="text-primary">{percent}%</div>
+              <div className="text-primary">{effectivePercent}%</div>
             </div>
             <div className="bg-grey-800 relative flex h-4 overflow-hidden rounded-lg">
               <div
                 className={classNames(
                   "bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg",
-                  percent && "transition-transform duration-300 ease-out" // no animation on restart
+                  effectivePercent && "transition-transform duration-300 ease-out" // no animation on restart
                 )}
                 style={{
-                  transform: `translateX(-${100 - percent}%)`,
+                  transform: `translateX(-${100 - effectivePercent}%)`,
                 }}
               ></div>
             </div>
@@ -438,6 +453,7 @@ const AccountsWrapper: FC<{
 
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
+  const isInitializing = useAtomValue(isInitializingScanAtom)
 
   const { balancesByTokenId, balances, isInProgress } = useAtomValue(assetDiscoveryScanProgressAtom)
   const { lastScanAccounts, lastScanTimestamp } = useAtomValue(assetDiscoveryScanAtom)
@@ -483,6 +499,8 @@ const ScanInfo: FC = () => {
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
     [accounts, lastScanAccounts]
   )
+
+  if (isInitializing) return null
 
   return (
     <div className="flex h-16 w-full items-center px-8">
@@ -563,7 +581,7 @@ const preloadAtom = atom((get) =>
   ])
 )
 
-export const AssetDiscoveryPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
 
@@ -577,14 +595,7 @@ export const AssetDiscoveryPage = () => {
   }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
-    <DashboardLayout
-      analytics={ANALYTICS_PAGE}
-      withBack
-      centered
-      backTo="/settings/networks-tokens"
-      large
-      className="max-w-[81rem]"
-    >
+    <>
       <HeaderBlock
         title={t("Asset Discovery")}
         text={t("Scan for well-known tokens in your accounts and add them to your portfolio.")}
@@ -597,6 +608,12 @@ export const AssetDiscoveryPage = () => {
       <ScanInfo />
       <Spacer large />
       <AssetTable />
-    </DashboardLayout>
+    </>
   )
 }
+
+export const AssetDiscoveryPage = () => (
+  <DashboardLayout sidebar="settings" width="800">
+    <Content />
+  </DashboardLayout>
+)

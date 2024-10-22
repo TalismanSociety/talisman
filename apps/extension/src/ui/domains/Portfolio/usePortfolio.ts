@@ -4,28 +4,28 @@ import { useEffect } from "react"
 
 import {
   networkFilterAtom,
-  portfolioAccountAtom,
   portfolioAtom,
   portfolioGlobalDataAsyncAtom,
   portfolioGlobalDataAtom,
   portfolioSearchAtom,
+  portfolioSelectedAccountsAtom,
 } from "@ui/atoms"
 
-import { useSelectedAccount } from "./useSelectedAccount"
+import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 let isProvisioningHookMounted = false
 
 // call this only in the root component, this sadly can't be done from an atom
 export const usePortfolioProvisioning = () => {
   const globalData = useAtomValue(portfolioGlobalDataAsyncAtom)
-  const { account } = useSelectedAccount()
+  const { selectedAccounts } = usePortfolioNavigation()
 
   // sync atom to maintain
   const [{ isProvisioned }, setGlobalData] = useAtom(portfolioGlobalDataAtom)
 
   const setSearch = useSetAtom(portfolioSearchAtom)
   const setNetworkFilter = useSetAtom(networkFilterAtom)
-  const setAccount = useSetAtom(portfolioAccountAtom)
+  const setAccounts = useSetAtom(portfolioSelectedAccountsAtom)
 
   useEffect(() => {
     // update sync atom
@@ -34,8 +34,8 @@ export const usePortfolioProvisioning = () => {
 
   useEffect(() => {
     // update sync atom
-    setAccount(account)
-  }, [account, setAccount])
+    setAccounts(selectedAccounts)
+  }, [selectedAccounts, setAccounts])
 
   useEffect(() => {
     if (isProvisioningHookMounted) {

@@ -1,6 +1,3 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
-import { Spacer } from "@talisman/components/Spacer"
 import {
   ActivityIcon,
   AlertCircleIcon,
@@ -10,15 +7,19 @@ import {
   LockIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Setting } from "@talisman/components/Setting"
+import { Spacer } from "@talisman/components/Spacer"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSetting } from "@ui/hooks/useSettings"
 
-export const SecurityPrivacyPage = () => {
+import { DashboardLayout } from "../../layout"
+
+const Content = () => {
   const { t } = useTranslation("admin")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
@@ -28,7 +29,7 @@ export const SecurityPrivacyPage = () => {
   const { allBackedUp } = useMnemonicBackup()
 
   return (
-    <DashboardLayout centered>
+    <>
       <HeaderBlock
         title={t("Security and Privacy")}
         text={t("Control security and privacy preferences")}
@@ -132,6 +133,12 @@ export const SecurityPrivacyPage = () => {
           />
         </Setting>
       </div>
-    </DashboardLayout>
+    </>
   )
 }
+
+export const SecurityPrivacyPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

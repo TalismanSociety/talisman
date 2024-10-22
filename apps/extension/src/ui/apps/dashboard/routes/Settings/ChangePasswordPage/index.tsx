@@ -12,7 +12,7 @@ import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMess
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"
@@ -23,7 +23,7 @@ type FormData = {
   newPwConfirm: string
 }
 
-export const ChangePasswordPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { allBackedUp } = useMnemonicBackup()
@@ -126,83 +126,87 @@ export const ChangePasswordPage = () => {
 
   return (
     <>
-      <DashboardLayout withBack centered>
-        <HeaderBlock title={t("Change your password")} />
-        <p className="text-body-secondary my-10">
-          {t(
-            "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
-          )}
-        </p>
-        {!allBackedUp && (
-          <div className="mnemonic-warning flex flex-col gap-0.5 rounded-sm border border-white p-8">
-            <div className="flex items-center justify-between">
-              <InfoIcon className="text-primary mr-10 text-3xl" />
-              {t(
-                "You'll need to confirm your recovery phrase is backed up before you change your password."
-              )}
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={handleBackupClick}>{t("Backup Recovery Phrase")}</Button>
-            </div>
-          </div>
+      <HeaderBlock title={t("Change your password")} />
+      <p className="text-body-secondary my-10">
+        {t(
+          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
         )}
-
-        <form className="mt-8" onSubmit={handleSubmit(subscribeChangePassword)}>
-          <FormFieldContainer error={errors.currentPw?.message} label={t("Old Password")}>
-            <FormFieldInputText
-              {...register("currentPw")}
-              placeholder={t("Enter Old Password")}
-              spellCheck={false}
-              autoComplete="off"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              data-lpignore
-              type="password"
-              tabIndex={0}
-              disabled={!allBackedUp}
-            />
-          </FormFieldContainer>
-          <FormFieldContainer error={errors.newPw?.message} label={t("New Password")}>
-            <FormFieldInputText
-              {...register("newPw")}
-              placeholder={t("Enter New Password")}
-              spellCheck={false}
-              autoComplete="new-password"
-              data-lpignore
-              type="password"
-              tabIndex={0}
-              disabled={!allBackedUp}
-            />
-          </FormFieldContainer>
-          <FormFieldContainer error={errors.newPwConfirm?.message}>
-            <FormFieldInputText
-              {...register("newPwConfirm")}
-              placeholder={t("Confirm New Password")}
-              spellCheck={false}
-              autoComplete="off"
-              data-lpignore
-              type="password"
-              tabIndex={0}
-              disabled={!allBackedUp}
-            />
-          </FormFieldContainer>
-          <div className="mt-8 flex items-center justify-between">
-            <div>
-              <CapsLockWarningMessage />
-            </div>
-            <Button
-              className="w-[20rem]"
-              type="submit"
-              primary
-              disabled={!isValid || !allBackedUp}
-              processing={isSubmitting}
-            >
-              {t("Submit")}
-            </Button>
+      </p>
+      {!allBackedUp && (
+        <div className="mnemonic-warning flex flex-col gap-0.5 rounded-sm border border-white p-8">
+          <div className="flex items-center justify-between">
+            <InfoIcon className="text-primary mr-10 text-3xl" />
+            {t(
+              "You'll need to confirm your recovery phrase is backed up before you change your password."
+            )}
           </div>
-        </form>
-        <ChangePasswordModal isOpen={isSubmitting} progressStage={progress} />
-      </DashboardLayout>
+          <div className="flex justify-end">
+            <Button onClick={handleBackupClick}>{t("Backup Recovery Phrase")}</Button>
+          </div>
+        </div>
+      )}
+
+      <form className="mt-8" onSubmit={handleSubmit(subscribeChangePassword)}>
+        <FormFieldContainer error={errors.currentPw?.message} label={t("Old Password")}>
+          <FormFieldInputText
+            {...register("currentPw")}
+            placeholder={t("Enter Old Password")}
+            spellCheck={false}
+            autoComplete="off"
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+            data-lpignore
+            type="password"
+            tabIndex={0}
+            disabled={!allBackedUp}
+          />
+        </FormFieldContainer>
+        <FormFieldContainer error={errors.newPw?.message} label={t("New Password")}>
+          <FormFieldInputText
+            {...register("newPw")}
+            placeholder={t("Enter New Password")}
+            spellCheck={false}
+            autoComplete="new-password"
+            data-lpignore
+            type="password"
+            tabIndex={0}
+            disabled={!allBackedUp}
+          />
+        </FormFieldContainer>
+        <FormFieldContainer error={errors.newPwConfirm?.message}>
+          <FormFieldInputText
+            {...register("newPwConfirm")}
+            placeholder={t("Confirm New Password")}
+            spellCheck={false}
+            autoComplete="off"
+            data-lpignore
+            type="password"
+            tabIndex={0}
+            disabled={!allBackedUp}
+          />
+        </FormFieldContainer>
+        <div className="mt-8 flex items-center justify-between">
+          <div>
+            <CapsLockWarningMessage />
+          </div>
+          <Button
+            className="w-[20rem]"
+            type="submit"
+            primary
+            disabled={!isValid || !allBackedUp}
+            processing={isSubmitting}
+          >
+            {t("Submit")}
+          </Button>
+        </div>
+      </form>
+      <ChangePasswordModal isOpen={isSubmitting} progressStage={progress} />
     </>
   )
 }
+
+export const ChangePasswordPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

@@ -1,8 +1,7 @@
-import { StatusIcon } from "@talisman/components/StatusIcon"
-import { statusOptions } from "@talisman/hooks/useStatus"
 import { useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { Modal, ModalDialog, ProcessAnimation } from "talisman-ui"
+
+import { statusOptions } from "@talisman/hooks/useStatus"
 
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
 import { MigratePasswordProvider, useMigratePassword } from "./context"
@@ -19,7 +18,7 @@ const MigratePasswordModalContent = () => {
   if (status === statusOptions.PROCESSING)
     return (
       <ModalDialog title={t("Please wait...")}>
-        <StatusIcon status="SPINNING" className="my-20" />
+        <ProcessAnimation status="processing" className="my-20 h-[14rem]" />
       </ModalDialog>
     )
   if (status === statusOptions.SUCCESS) return <MigratePasswordSuccess />

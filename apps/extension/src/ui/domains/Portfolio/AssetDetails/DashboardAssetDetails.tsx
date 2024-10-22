@@ -1,5 +1,7 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,7 +20,7 @@ import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -171,7 +173,7 @@ const ChainTokenBalancesUniswapV2Row = ({
   isLastBalance?: boolean
   status: BalancesStatus
 }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const selectedCurrency = useSelectedCurrency()
   const balancePair = useUniswapV2BalancePair(balance)
 
@@ -188,7 +190,7 @@ const ChainTokenBalancesUniswapV2Row = ({
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
-      {!account && (
+      {!selectedAccount && (
         <div className="flex items-end justify-between gap-4 text-xs">
           <PortfolioAccount address={balance.address} />
         </div>
@@ -282,13 +284,24 @@ const LockedExtra: FC<{
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
 
-  const rowAddress = useMemo(() => address ?? account?.address ?? null, [account?.address, address])
+  const rowAddress = useMemo(
+    () => address ?? selectedAccount?.address ?? null,
+    [selectedAccount?.address, address]
+  )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
     [data?.accounts, rowAddress]
+  )
+
+  const withdrawIn = useMemo(
+    () =>
+      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
+        : null,
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding]
   )
 
   if (!rowAddress || !accountStatus) return null
@@ -297,21 +310,24 @@ const LockedExtra: FC<{
     <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
       {rowMeta.unbonding ? (
         accountStatus.canWithdraw ? (
-          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} />
+          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
         ) : (
-          <div
-            className={classNames(
-              "text-body-secondary bg-body/10 rounded-sm px-4 py-1 opacity-60",
-              isLoading && "animate-pulse transition-opacity"
+          <>
+            <div className={classNames(isLoading && "animate-pulse transition-opacity")}>
+              <div className="flex items-center gap-2">
+                <ZapOffIcon className="shrink-0 text-sm" />
+                <div>{t("Unbonding")}</div>
+              </div>
+            </div>
+            {!!withdrawIn && (
+              <div className="text-body-500 text-sm">
+                {t("{{duration}} left", { duration: withdrawIn })}
+              </div>
             )}
-          >
-            {t("Unbonding")}
-            {/* TODO: Show time until funds are unbonded */}
-            {/* <div>4d 14hr 11min</div> */}
-          </div>
+          </>
         )
       ) : accountStatus.canUnstake ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} />
+        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
       ) : null}
     </div>
   )

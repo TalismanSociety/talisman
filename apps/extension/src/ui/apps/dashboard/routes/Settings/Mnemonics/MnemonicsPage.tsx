@@ -1,8 +1,3 @@
-import { AccountJsonAny } from "@extension/core"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -12,18 +7,24 @@ import {
   SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAppState } from "@ui/hooks/useAppState"
-import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { AccountsStack } from "../Accounts/AccountIconsStack"
+import { AccountJsonAny } from "@extension/core"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { Address } from "@ui/domains/Account/Address"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useAppState } from "@ui/hooks/useAppState"
+import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
+
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {
   MnemonicDeleteModal,
@@ -292,29 +293,33 @@ const MnemonicsList = () => {
   )
 }
 
-export const MnemonicsPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <DashboardLayout centered withBack backTo="/settings">
-      <MnemonicRenameModalProvider>
-        <MnemonicDeleteModalProvider>
-          <MnemonicSetPvVerifierModalProvider>
-            <MnemonicBackupModalProvider>
-              <HeaderBlock
-                title={t("Recovery Phrases")}
-                text={t("Manage and backup your recovery phrases")}
-              />
-              <Spacer large />
-              <BackupReminder />
-              <MnemonicsList />
-              <MnemonicDeleteModal />
-              <MnemonicRenameModal />
-              <MnemonicSetPvVerifierModal />
-            </MnemonicBackupModalProvider>
-          </MnemonicSetPvVerifierModalProvider>
-        </MnemonicDeleteModalProvider>
-      </MnemonicRenameModalProvider>
-    </DashboardLayout>
+    <MnemonicRenameModalProvider>
+      <MnemonicDeleteModalProvider>
+        <MnemonicSetPvVerifierModalProvider>
+          <MnemonicBackupModalProvider>
+            <HeaderBlock
+              title={t("Recovery Phrases")}
+              text={t("Manage and backup your recovery phrases")}
+            />
+            <Spacer large />
+            <BackupReminder />
+            <MnemonicsList />
+            <MnemonicDeleteModal />
+            <MnemonicRenameModal />
+            <MnemonicSetPvVerifierModal />
+          </MnemonicBackupModalProvider>
+        </MnemonicSetPvVerifierModalProvider>
+      </MnemonicDeleteModalProvider>
+    </MnemonicRenameModalProvider>
   )
 }
+
+export const MnemonicsPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

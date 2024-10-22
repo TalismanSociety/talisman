@@ -1,20 +1,22 @@
-import { Balances } from "@extension/core"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
+import { IconButton } from "talisman-ui"
+
+import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { IconButton } from "talisman-ui"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -70,12 +72,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
-  const [search] = useSearchParams()
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
   const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
-  const isTestnet = search.get("testnet") === "true"
+  const [withTestnets] = useSetting("useTestnets")
 
   const accountBalances = useMemo(
     () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
@@ -86,8 +87,11 @@ export const PortfolioAsset = () => {
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
     () =>
-      accountBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
-    [accountBalances, isTestnet, symbol]
+      accountBalances.find(
+        (b) =>
+          b.token?.symbol === symbol && (!b.token?.isTestnet || b.token?.isTestnet === withTestnets)
+      ),
+    [accountBalances, symbol, withTestnets]
   )
 
   useEffect(() => {

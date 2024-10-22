@@ -34,6 +34,7 @@ export type EvmNetwork = {
   // TODO: Delete (has its own store now)
   /** @deprecated has its own store now */
   balancesMetadata: Array<BalancesMetadata>
+  erc20aggregator?: `0x${string}`
 }
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true

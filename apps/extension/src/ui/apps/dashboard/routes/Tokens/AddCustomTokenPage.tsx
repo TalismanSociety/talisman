@@ -1,25 +1,26 @@
-import { CustomEvmErc20TokenCreate } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { LoaderIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
-import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
-import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
-import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { CustomEvmErc20TokenCreate } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
+import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
+import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 
 type FormData = Pick<
   CustomEvmErc20TokenCreate,
@@ -33,7 +34,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Add Token",
 }
 
-export const AddCustomTokenPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
@@ -133,7 +134,7 @@ export const AddCustomTokenPage = () => {
   }, [t, tokenInfoError])
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <>
       <HeaderBlock
         title={t("Add custom token")}
         text={t(
@@ -214,6 +215,12 @@ export const AddCustomTokenPage = () => {
           </Button>
         </div>
       </form>
-    </DashboardLayout>
+    </>
   )
 }
+
+export const AddCustomTokenPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

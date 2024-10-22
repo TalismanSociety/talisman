@@ -1,27 +1,28 @@
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, Suspense, useCallback } from "react"
 
-import { useSelectedAccount } from "../useSelectedAccount"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 type CopyAddressButtonProps = {
   networkId: ChainId | EvmNetworkId | null | undefined
 }
 
 const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const { genericEvent } = useAnalytics()
   const { open } = useCopyAddressModal()
 
   const handleClick = useCallback(() => {
     open({
-      address: account?.address,
+      address: selectedAccount?.address,
       networkId,
     })
     genericEvent("open receive", { from: "asset details" })
-  }, [account?.address, genericEvent, open, networkId])
+  }, [selectedAccount?.address, genericEvent, open, networkId])
 
   return (
     <button

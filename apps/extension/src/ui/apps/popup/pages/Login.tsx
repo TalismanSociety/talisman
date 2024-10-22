@@ -1,25 +1,26 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  SubmitHandler,
+  useForm,
+  UseFormHandleSubmit,
+  UseFormSetValue,
+  UseFormWatch,
+} from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import * as yup from "yup"
+
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { HandMonoLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSetting } from "@ui/hooks/useSettings"
-import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
-import {
-  SubmitHandler,
-  UseFormHandleSubmit,
-  UseFormSetValue,
-  UseFormWatch,
-  useForm,
-} from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 import { ResetWallet } from "./ResetWallet"
@@ -159,7 +160,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         className={classNames("z-10 pt-32 text-center", isSubmitting && "animate-pulse")}
       >
         <div className="mt-[60px]">
-          <HandMonoTransparentLogo className="inline-block text-[64px]" />
+          <HandMonoLogo className="inline-block text-[64px]" />
         </div>
         <h1 className="font-surtExpanded mt-[34px] text-lg">{t("Unlock the Talisman")}</h1>
         {errors.password?.message && (

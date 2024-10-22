@@ -42,8 +42,6 @@ export const TALISMAN_WEB_APP_SWAP_URL = "https://app.talisman.xyz/transport/swa
 export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
-export const QUEST_APP_URL = "https://quest.talisman.xyz"
-
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"

@@ -12,23 +12,22 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
+import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 
-const SendFundsButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
+const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
   const { t } = useTranslation()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
@@ -55,9 +54,10 @@ const SendFundsButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
   )
 }
 
-const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
+const CopyAddressButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { selectedFolder } = usePortfolioNavigation()
 
   const { genericEvent } = useAnalytics()
 
@@ -66,9 +66,10 @@ const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
     openCopyAddressModal({
       address: account?.address,
       networkId: chain?.id,
+      addresses: selectedFolder?.tree.map((account) => account.address),
     })
     genericEvent("open copy address", { from: "popup portfolio" })
-  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])
+  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal, selectedFolder?.tree])
 
   return (
     <Tooltip placement="bottom">
@@ -89,9 +90,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
 
   const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
-  const { account } = useSelectedAccount()
-
-  const { folder } = useSearchParamsSelectedFolder()
+  const { selectedAccount: account, selectedFolder: folder } = usePortfolioNavigation()
 
   const balancesByAddress = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -140,7 +139,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
         </div>
         <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
           <div className="flex items-center gap-3">
-            <div className={classNames("truncate", account ? "text-md" : "text-body-secondary")}>
+            <div className={classNames("truncate", account ? "" : "text-body-secondary")}>
               {account
                 ? account.name ?? t("Unnamed Account")
                 : folder
@@ -153,7 +152,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
               signetUrl={account?.signetUrl as string}
             />
           </div>
-          <div className={classNames("truncate", account ? "text-body-secondary" : "text-md")}>
+          <div className={classNames("truncate", account ? "text-body-secondary" : "")}>
             {account ? (
               <Address address={formattedAddress} />
             ) : (

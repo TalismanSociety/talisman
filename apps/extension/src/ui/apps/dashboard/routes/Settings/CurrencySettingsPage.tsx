@@ -1,20 +1,21 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import { StarIcon } from "@talismn/icons"
-import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
-import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 import { useAtom, useSetAtom } from "jotai"
 import { useTranslation } from "react-i18next"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
+import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 
-const CurrencySettingsPage = () => {
+import { DashboardLayout } from "../../layout"
+
+const Content = () => {
   const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
   const setSelectedCurrency = useSetAtom(selectedCurrencyAtom)
   const { t } = useTranslation()
 
   return (
-    <DashboardLayout centered withBack backTo="/settings">
+    <>
       <HeaderBlock
         title={t("Currency")}
         text={t(
@@ -61,8 +62,12 @@ const CurrencySettingsPage = () => {
           </button>
         ))}
       </div>
-    </DashboardLayout>
+    </>
   )
 }
 
-export default CurrencySettingsPage
+export const CurrencySettingsPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

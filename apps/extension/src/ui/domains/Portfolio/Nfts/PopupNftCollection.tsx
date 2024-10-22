@@ -12,7 +12,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
 import { useIsFavoriteNft } from "./useIsFavoriteNft"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
@@ -42,11 +42,16 @@ export const PopupNftCollection: FC<{ className?: string }> = () => {
 
 const NoNftFound = () => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
   const msg = useMemo(
-    () => (account ? t("No NFTs found for this account") : t("No NFTs found")),
-    [account, t]
+    () =>
+      selectedAccount
+        ? t("No NFTs found for this account")
+        : selectedFolder
+        ? t("No NFTs found for this folder")
+        : t("No NFTs found"),
+    [selectedAccount, selectedFolder, t]
   )
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
@@ -106,7 +111,7 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-col gap-5 text-sm">
+    <div className="flex flex-col gap-4 text-sm">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftRow

@@ -1,6 +1,8 @@
+import { HexString } from "@polkadot/util/types"
+import { useCallback, useMemo, useRef } from "react"
+
 import { KnownSigningRequestIdOnly } from "@extension/core"
 import { log } from "@extension/shared"
-import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
@@ -8,7 +10,6 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useCallback, useMemo, useRef } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -54,7 +55,10 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   const refIsApproveCaptured = useRef(false)
 
   const approve = useCallback(() => {
-    if (riskAnalysis.review.isRiskAknowledgementRequired && !riskAnalysis.review.isRiskAknowledged)
+    if (
+      riskAnalysis.review.isRiskAcknowledgementRequired &&
+      !riskAnalysis.review.isRiskAcknowledged
+    )
       return riskAnalysis.review.drawer.open()
 
     if (!refIsApproveCaptured.current) {
@@ -80,8 +84,8 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
       if (
-        riskAnalysis.review.isRiskAknowledgementRequired &&
-        !riskAnalysis.review.isRiskAknowledged
+        riskAnalysis.review.isRiskAcknowledgementRequired &&
+        !riskAnalysis.review.isRiskAcknowledged
       )
         return riskAnalysis.review.drawer.open()
 

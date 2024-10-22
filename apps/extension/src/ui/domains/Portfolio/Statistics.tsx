@@ -19,6 +19,7 @@ type StatisticsProps = {
   locked?: boolean
   showTokens?: boolean
   showCurrencyToggle?: boolean
+  align: "left" | "right"
 }
 
 const TokensAndFiat = ({
@@ -26,13 +27,15 @@ const TokensAndFiat = ({
   fiat,
   token,
   currencyDisplay,
+  className,
 }: {
   tokenAmount?: BigNumber
   fiat: number | null
   token?: Token
   currencyDisplay?: string
+  className?: string
 }) => (
-  <div className="flex flex-col gap-2 whitespace-nowrap">
+  <div className={classNames("flex flex-col gap-2 whitespace-nowrap", className)}>
     <div className="textbase text-white">
       <Tokens
         amount={tokenAmount ?? "0"}
@@ -62,6 +65,7 @@ export const Statistics = ({
   locked,
   showTokens,
   showCurrencyToggle,
+  align,
 }: StatisticsProps) => {
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
@@ -70,6 +74,7 @@ export const Statistics = ({
     <div
       className={classNames(
         "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8",
+        align === "right" ? "items-end" : "items-start",
         className
       )}
     >
@@ -99,6 +104,7 @@ export const Statistics = ({
             fiat={fiat}
             token={token}
             currencyDisplay={showCurrencyToggle ? "code" : undefined}
+            className={align === "right" ? "items-end" : "items-start"}
           />
         ) : (
           <FiatOnly fiat={fiat} currencyDisplay={showCurrencyToggle ? "code" : undefined} />

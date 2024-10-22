@@ -3,12 +3,13 @@ import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { normalizeAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import merge from "lodash/merge"
 import { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
-import { TransactionStatus } from "./types"
+import { TransactionStatus, WalletTransaction } from "./types"
 
 type AddTransactionOptions = {
   label?: string
@@ -101,38 +102,64 @@ export const addSubstrateTransaction = async (
   }
 }
 
+export const filterIsSameNetworkAndAddressTx =
+  (ref: WalletTransaction) => (tx: WalletTransaction) => {
+    if (normalizeAddress(ref.account) !== normalizeAddress(tx.account)) return false
+    if (ref.networkType !== tx.networkType) return false
+    if (
+      ref.networkType === "evm" &&
+      tx.networkType === "evm" &&
+      ref.evmNetworkId === tx.evmNetworkId
+    )
+      return true
+    if (
+      ref.networkType === "substrate" &&
+      tx.networkType === "substrate" &&
+      ref.genesisHash === tx.genesisHash
+    )
+      return true
+    return false
+  }
+
 export const updateTransactionStatus = async (
   hash: string,
   status: TransactionStatus,
-  blockNumber?: bigint | number
+  blockNumber?: bigint | number,
+  confirmed?: boolean
 ) => {
   try {
-    await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString() })
+    // this can be called after the tx has been overriden/replaced, check status first
+    const existing = await db.transactions.get(hash)
+    if (
+      ["success", "error", "replaced"].includes(existing?.status ?? "") &&
+      !!confirmed === !!existing?.confirmed
+    )
+      return false
+
+    await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString(), confirmed })
 
     if (["success", "error"].includes(status)) {
       const tx = await db.transactions.get(hash)
 
-      // mark pending transactions with the same nonce as replaced
-      if (tx)
+      if (tx) {
+        // mark pending transactions with the same nonce as replaced
         await db.transactions
-          .filter(
-            (row) =>
-              ((tx.networkType === "evm" &&
-                row.networkType === "evm" &&
-                row.evmNetworkId === tx.evmNetworkId) ||
-                (tx.networkType === "substrate" &&
-                  row.networkType === "substrate" &&
-                  row.genesisHash === tx.genesisHash)) &&
-              row.nonce === tx.nonce &&
-              ["pending", "unknown"].includes(row.status)
-          )
+          .filter(filterIsSameNetworkAndAddressTx(tx))
+          .filter((row) => row.nonce === tx.nonce && ["pending", "unknown"].includes(row.status))
           .modify({ status: "replaced" })
+
+        // mark pending transactions with a lower nonce as unknown
+        await db.transactions
+          .filter(filterIsSameNetworkAndAddressTx(tx))
+          .filter((row) => row.nonce < tx.nonce && row.status === "pending")
+          .modify({ status: "unknown" })
+      }
     }
 
     return true
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error("updateEvmTransaction", { err })
+    console.error("updateTransactionStatus", { err })
     return false
   }
 }
@@ -144,12 +171,22 @@ export const getTransactionStatus = async (hash: string) => {
 
 export const updateTransactionsRestart = async () => {
   try {
-    // mark all pending transactions as unknown
+    // for all successful tx, mark the pending ones with the same nonce as failed
+    for (const successfulTx of await db.transactions.where("status").equals("success").toArray()) {
+      await db.transactions
+        .filter(filterIsSameNetworkAndAddressTx(successfulTx))
+        .filter(
+          (row) => row.nonce === successfulTx.nonce && ["pending", "unknown"].includes(row.status)
+        )
+        .modify({ status: "error" })
+    }
+
+    // mark all other pending transactions as unknown
     await db.transactions.where("status").equals("pending").modify({ status: "unknown" })
 
-    // delete all transactions older than 7 days
-    const cutOffDate = Date.now() - 7 * 24 * 60 * 60 * 1000
-    await db.transactions.where("timestamp").below(cutOffDate).delete()
+    // keep only the last 100 transactions
+    const deleted = await db.transactions.orderBy("timestamp").reverse().offset(100).delete()
+    if (deleted) log.debug("[updateTransactionsRestart] Deleted %d entries", deleted)
 
     return true
   } catch (err) {

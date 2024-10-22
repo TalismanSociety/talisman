@@ -1,13 +1,15 @@
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddQrWizard } from "@ui/domains/Account/AccountAdd/AccountAddQr"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-export const AccountAddQrDashboardWizard = () => {
+const Content = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
-  return (
-    <DashboardLayout withBack centered>
-      <AccountAddQrWizard onSuccess={setAddress} />
-    </DashboardLayout>
-  )
+  return <AccountAddQrWizard onSuccess={setAddress} />
 }
+
+export const AccountAddQrDashboardWizard = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

@@ -1,13 +1,12 @@
-import { TreeFolder } from "@extension/core"
-import { AccountJsonAny } from "@extension/core"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
-import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
+import { AccountJsonAny, TreeFolder } from "@extension/core"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
+
+import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountFolderIcon } from "./AccountFolderIcon"
 import { AccountIcon } from "./AccountIcon"
 
@@ -17,8 +16,8 @@ const Avatar = ({
   className,
 }: {
   className?: string
-  account?: AccountJsonAny
-  folder?: TreeFolder
+  account?: AccountJsonAny | null
+  folder?: TreeFolder | null
 }) => {
   return account?.address ? (
     <AccountIcon
@@ -44,8 +43,8 @@ export const CurrentAccountAvatar = ({
   className?: string
   withTooltip?: boolean
 }) => {
-  const { account } = useSelectedAccount()
-  const { folder } = useSearchParamsSelectedFolder()
+  const { selectedAccount: account, selectedFolder: folder } = usePortfolioNavigation()
+
   const { t } = useTranslation()
   const tooltip = useMemo(() => {
     if (!withTooltip) return

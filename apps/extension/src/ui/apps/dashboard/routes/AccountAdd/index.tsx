@@ -1,23 +1,31 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { balancesHydrateAtom } from "@ui/atoms"
-import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useAtomValue } from "jotai"
 import { useTranslation } from "react-i18next"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { balancesHydrateAtom } from "@ui/atoms"
+import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 
-export const AccountAddMenu = () => {
+import { DashboardLayout } from "../../layout"
+
+const Content = () => {
   useAtomValue(balancesHydrateAtom)
   const { t } = useTranslation()
+
   return (
-    <DashboardLayout centered withBack>
-      <div className="flex flex-col gap-16">
-        <HeaderBlock
-          title={t("Add Account")}
-          text={t("Create a new account or import an existing one")}
-        />
-        <AccountCreateMenu />
-      </div>
+    <div className="flex flex-col gap-16">
+      <HeaderBlock
+        title={t("Add Account")}
+        text={t("Create a new account or import an existing one")}
+      />
+      <AccountCreateMenu />
+    </div>
+  )
+}
+
+export const AccountAddMenu = () => {
+  return (
+    <DashboardLayout sidebar="settings" width="660">
+      <Content />
     </DashboardLayout>
   )
 }

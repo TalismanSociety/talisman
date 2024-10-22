@@ -1,6 +1,6 @@
 import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
 import { NewTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import { BigMath, NonFunctionProperties, isArrayOf, isBigInt, planckToTokens } from "@talismn/util"
+import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 
 import log from "../log"
@@ -520,6 +520,7 @@ export class Balance {
         this.reserved.planck +
         this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         this.crowdloans.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
+        this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         includeInTotalExtraAmount(extra)
     )
   }
@@ -562,6 +563,10 @@ export class Balance {
 
   get nompools() {
     return this.getValue("nompool")
+  }
+
+  get subtensor() {
+    return this.getValue("subtensor")
   }
 
   /** The extra balance of this token */
@@ -637,7 +642,8 @@ export class Balance {
       : newCalculation()
     const otherUnavailable =
       this.crowdloans.reduce((total, each) => total + each.amount.planck, 0n) +
-      this.nompools.reduce((total, each) => total + each.amount.planck, 0n)
+      this.nompools.reduce((total, each) => total + each.amount.planck, 0n) +
+      this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
     return this.#format(baseUnavailable + otherUnavailable)
   }
 

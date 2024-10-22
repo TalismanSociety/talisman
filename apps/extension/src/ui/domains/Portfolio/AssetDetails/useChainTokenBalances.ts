@@ -6,12 +6,13 @@ import { useTranslation } from "react-i18next"
 
 import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
 export type DetailRow = {
@@ -33,7 +34,7 @@ type ChainTokenBalancesParams = {
 export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesParams) => {
   const chain = useChain(chainId)
 
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
   const { t } = useTranslation()
 
@@ -96,12 +97,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       b.nompools.map((nomPool, index) => ({
         key: `${b.id}-nomPool-${index}`,
         title: getLockTitle(nomPool, { balance: b }),
-
-        description:
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (nomPool.meta as any)?.description
-            ?.replace(": app.talisman.xyz/staking", "")
-            .replace(" | Auto-Compound > $2USD", "") ?? undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: cleanupNomPoolName((nomPool.meta as any).description) ?? undefined,
         tokens: BigNumber(nomPool.amount.tokens),
         fiat: nomPool.amount.fiat(currency),
         locked: true,
@@ -127,7 +124,23 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       }))
     )
 
-    return [...available, ...locked, ...reserved, ...staked, ...crowdloans]
+    // STAKED (SUBTENSOR)
+    const subtensor = tokenBalances.each.flatMap((b) =>
+      b.subtensor.map((subtensor, index) => ({
+        key: `${b.id}-subtensor-${index}`,
+        title: getLockTitle(subtensor, { balance: b }),
+
+        description: undefined,
+        tokens: BigNumber(subtensor.amount.tokens),
+        fiat: subtensor.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: subtensor.meta,
+      }))
+    )
+
+    return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])

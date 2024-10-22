@@ -1,10 +1,11 @@
-import { languages } from "@common/i18nConfig"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
 import { CheckIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { languages } from "@common/i18nConfig"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+
+import { DashboardLayout } from "../../layout"
 
 const LanguageButton = ({
   displayName,
@@ -30,14 +31,14 @@ const LanguageButton = ({
   </button>
 )
 
-export const LanguagePage = () => {
+const Content = () => {
   const { t, i18n } = useTranslation("admin")
 
   const currentLang = i18n.language
   const changeLang = (lang?: keyof typeof languages) => lang && i18n.changeLanguage(lang)
 
   return (
-    <DashboardLayout centered withBack backTo="/settings/general">
+    <>
       <HeaderBlock title={t("Language")} text={t("Choose your preferred language")} />
       <Spacer />
       <div className="flex flex-col gap-4">
@@ -57,6 +58,12 @@ export const LanguagePage = () => {
           />
         ))}
       </div>
-    </DashboardLayout>
+    </>
   )
 }
+
+export const LanguagePage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

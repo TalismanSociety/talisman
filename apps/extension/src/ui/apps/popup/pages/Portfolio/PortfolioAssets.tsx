@@ -11,7 +11,7 @@ import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { PortfolioAssetsHeader } from "./shared/PortfolioAssetsHeader"
@@ -49,7 +49,7 @@ const PopupAnalyticsEvent: FC<{ name: string }> = ({ name }) => {
 
 const MainContent: FC = () => {
   const { evmNetworks, chains } = usePortfolio()
-  const { account } = useSelectedAccount()
+  const { selectedAccount: account } = usePortfolioNavigation()
 
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
@@ -89,13 +89,11 @@ export const PortfolioAssets = () => {
   return (
     <>
       <PortfolioAssetsHeader backBtnTo={"/portfolio"} />
-      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioTabs className="mt-4" />
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
         {!!matchTokens && <PortfolioToolbarTokens />}
         {!!matchNfts && <PortfolioToolbarNfts />}
-        <div className="py-8">
-          <MainContent />
-        </div>
+        <MainContent />
       </Suspense>
     </>
   )

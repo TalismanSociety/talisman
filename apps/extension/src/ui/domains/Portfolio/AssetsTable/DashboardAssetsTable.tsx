@@ -7,7 +7,7 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolio } from "../usePortfolio"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
@@ -53,24 +53,27 @@ const HeaderRow = () => {
   } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
 
   return (
-    <div className="text-body-secondary bg-grey-850 mb-12 rounded p-8 text-left text-base">
+    <div className="text-body-secondary bg-grey-850 mb-4 rounded p-8 text-left text-base">
       <div className="grid grid-cols-[40%_30%_30%]">
         <Statistics
           className="h-auto w-auto p-0"
           title={t("Total Value")}
           fiat={portfolio}
           showCurrencyToggle
+          align="left"
         />
         <Statistics
           className="h-auto w-auto items-end p-0 pr-8"
           title={t("Locked")}
           fiat={locked}
           locked
+          align="right"
         />
         <Statistics
           className="h-auto w-auto items-end p-0"
           title={t("Available")}
           fiat={available}
+          align="right"
         />
       </div>
     </div>
@@ -80,14 +83,18 @@ const HeaderRow = () => {
 export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolio()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   // group by token (symbol)
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 
   if (!symbolBalances.length && !isInitialising) {
     return (
       <div className="text-body-secondary bg-grey-850 rounded-sm p-8">
-        {account ? t("No assets were found on this account.") : t("No assets were found.")}
+        {selectedAccount
+          ? t("No assets were found on this account.")
+          : selectedFolder
+          ? t("No assets were found in this folder.")
+          : t("No assets were found.")}
       </div>
     )
   }

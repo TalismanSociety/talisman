@@ -1,10 +1,15 @@
-import { log } from "@extension/shared"
-import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
+import { Chain } from "@talismn/chaindata-provider"
+import { LoaderIcon, SecretIcon } from "@talismn/icons"
+import { atom, useAtomValue } from "jotai"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Button, Dropdown } from "talisman-ui"
+
+import { log, POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
-import { Chain } from "@talismn/chaindata-provider"
-import { LoaderIcon, SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import {
   MnemonicCreateModal,
@@ -19,13 +24,8 @@ import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChains from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { atom, useAtomValue } from "jotai"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button, Dropdown } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardLayout } from "../../layout"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation("admin")
@@ -242,7 +242,7 @@ const preloadAtom = atom(async (get) => {
   ])
 })
 
-export const QrMetadataPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
 
@@ -250,12 +250,18 @@ export const QrMetadataPage = () => {
   const mnemonic = useMnemonic(certifierMnemonicId)
 
   return (
-    <DashboardLayout centered withBack backTo="/settings/networks-tokens">
+    <>
       <HeaderBlock
         title={t("Polkadot Vault Metadata")}
         text={t("Register networks on your Polkadot Vault device, or update their metadata.")}
       />
       {mnemonic ? <MetadataPortalContent /> : <SetVerifierCertificateContent />}
-    </DashboardLayout>
+    </>
   )
 }
+
+export const QrMetadataPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

@@ -1,8 +1,4 @@
-import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { HandMonoLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
 import {
   DetailedHTMLProps,
   FC,
@@ -13,6 +9,11 @@ import {
   useRef,
 } from "react"
 import { useLocation } from "react-router-dom"
+
+import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { HandMonoLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
 
 import { BottomNav } from "../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
@@ -46,7 +47,12 @@ export const PopupHeader: FC<ContainerProps & { right?: ReactNode }> = ({
   )
 }
 
-export const PopupContent: FC<ContainerProps> = ({ className, ...props }) => {
+export const PopupContent: FC<ContainerProps & { withBottomNav?: boolean }> = ({
+  withBottomNav,
+  className,
+  children,
+  ...props
+}) => {
   //scrollToTop on location change
   const scrollableRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
@@ -59,8 +65,16 @@ export const PopupContent: FC<ContainerProps> = ({ className, ...props }) => {
     <ScrollContainer
       {...props}
       ref={scrollableRef}
-      className={classNames("w-full flex-grow overflow-hidden px-12", className)}
-    />
+      className={classNames("w-full flex-grow overflow-hidden px-8", className)}
+    >
+      {children}
+      {!!withBottomNav && (
+        <>
+          <BottomNav />
+          <NavigationDrawer />
+        </>
+      )}
+    </ScrollContainer>
   )
 }
 
@@ -68,27 +82,14 @@ export const PopupFooter: FC<ContainerProps> = ({ className, ...props }) => {
   return <footer {...props} className={classNames("shrink-0 px-12 py-10", className)} />
 }
 
-export const PopupLayout: FC<ContainerProps & { withBottomNav?: boolean }> = ({
-  withBottomNav,
-  className,
-  children,
-  ...props
-}) => {
+export const PopupLayout: FC<ContainerProps> = ({ className, children, ...props }) => {
   return (
     <main
       id="main"
       {...props}
       className={classNames("relative flex h-full w-full flex-col overflow-hidden", className)}
     >
-      <ErrorBoundary>
-        {children}
-        {withBottomNav && (
-          <>
-            <BottomNav />
-            <NavigationDrawer />
-          </>
-        )}
-      </ErrorBoundary>
+      <ErrorBoundary>{children}</ErrorBoundary>
     </main>
   )
 }

@@ -1,11 +1,12 @@
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isAddressEqual, normalizeAddress } from "@talismn/util"
+import { FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+
 import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
 
@@ -23,9 +24,9 @@ export const ConnectedAccountsPill: FC = () => {
 
   const { count, label } = useMemo(() => {
     const { addresses = [], ethAddresses = [] } = site || {}
-    const connected = [...new Set([...addresses, ...ethAddresses])].map((a) =>
-      accounts.find(({ address }) => address === a)
-    )
+    const connected = [
+      ...new Set([...addresses.map(normalizeAddress), ...ethAddresses.map(normalizeAddress)]),
+    ].map((a) => accounts.find(({ address }) => isAddressEqual(address, a)))
 
     if (connected.length === 0) return { count: 0, label: t("Not connected") }
 

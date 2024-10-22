@@ -1,49 +1,29 @@
-import { db } from "@extension/core"
-import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
-import { AlertCircleIcon, HistoryIcon, PieChartIcon, ZapIcon } from "@talismn/icons"
+import {
+  CloseIcon,
+  ExpandIcon,
+  HistoryIcon,
+  MenuIcon,
+  TalismanHandIcon,
+  ZapIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { FC, ReactNode, Suspense, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useMatch, useNavigate } from "react-router-dom"
+
+import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
+import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { useLiveQuery } from "dexie-react-hooks"
-import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
-import { NavIconActivityPending, NavIconExpand, NavIconMore, NavIconMoreAlert } from "./icons"
-
-type BottomNavButtonProps = DetailedHTMLProps<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  HTMLButtonElement
-> & {
-  current?: boolean
-}
-
-const BottomNavButton = forwardRef<HTMLButtonElement, BottomNavButtonProps>(
-  ({ current, className, children, ...props }, ref) => (
-    <button
-      type="button"
-      ref={ref}
-      {...props}
-      className={classNames(
-        " text-body-secondary flex h-20 w-20 justify-center rounded-sm text-center",
-        "enabled:hover:bg-grey-800 enabled:hover:text-body",
-        "enabled:focus-visible:border-body enabled:active:text-body",
-        current && "allow-focus",
-        className
-      )}
-      disabled={current}
-    >
-      {children}
-    </button>
-  )
-)
-BottomNavButton.displayName = "BottomNavButton"
+import {
+  QuickSettingsModal,
+  QuickSettingsOverlay,
+  useQuickSettingsOpenClose,
+} from "./QuickSettings"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -52,49 +32,11 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio",
 }
 
-const RecentActivityButton = () => {
-  const hasPendingTransactions = useLiveQuery(
-    async () => !!(await db.transactions.where("status").equals("pending").count()),
-    []
-  )
-  const { isOpen, open, close } = useOpenClose()
-
-  const handleClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Interact",
-      action: "Recent activity button",
-    })
-    open()
-  }, [open])
-
-  const { t } = useTranslation()
-
-  return (
-    <>
-      <Tooltip placement="top">
-        <TooltipTrigger asChild>
-          <BottomNavButton onClick={handleClick}>
-            {hasPendingTransactions ? (
-              <NavIconActivityPending />
-            ) : (
-              <HistoryIcon className="self-center text-lg" />
-            )}
-          </BottomNavButton>
-        </TooltipTrigger>
-        <TooltipContent>{t("Recent activity")}</TooltipContent>
-      </Tooltip>
-      <PendingTransactionsDrawer isOpen={isOpen} onClose={close} />
-    </>
-  )
-}
-
 export const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { folder } = useSearchParamsSelectedFolder()
-  const { account } = useSelectedAccount()
   const { open } = usePopupNavOpenClose()
+  const { close: closeQuickSettings, isOpen: isQuickSettingsOpen } = useQuickSettingsOpenClose()
 
   const handleHomeClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -103,7 +45,18 @@ export const BottomNav = () => {
       action: "Home button",
     })
     navigate("/portfolio")
-  }, [navigate])
+    closeQuickSettings()
+  }, [closeQuickSettings, navigate])
+
+  const handleTxHistoryClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Recent activity button",
+    })
+    navigate("/tx-history")
+    closeQuickSettings()
+  }, [closeQuickSettings, navigate])
 
   const handleStakingClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -122,11 +75,10 @@ export const BottomNav = () => {
       action: "Fullscreen button",
     })
     // assume paths are the same in dashboard
-    // portfolio pages expect an account argument to stay in sync with popup
-    const qs = `?account=${account?.address ?? "all"}`
-    api.dashboardOpen(`${location.pathname}${qs}`)
+    // portfolio pages supports account/folder query string arguments to stay in sync with popup
+    api.dashboardOpen(`${location.pathname}${location.search}`)
     window.close()
-  }, [account, location.pathname])
+  }, [location.pathname, location.search])
 
   const handleMoreClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -137,63 +89,106 @@ export const BottomNav = () => {
     open()
   }, [open])
 
-  const { showBackupWarningBanner, allBackedUp } = useMnemonicBackup()
+  const { allBackedUp } = useMnemonicBackup()
 
   const { t } = useTranslation()
 
   return (
     <>
-      {showBackupWarningBanner && (
-        <div className="bg-black-tertiary w-100 flex h-20 min-h-[4rem] items-center justify-center gap-4 px-4">
-          <AlertCircleIcon className="text-primary-500 h-12 w-12" />
-          <div className="text-body-secondary text-center text-xs">
-            <Trans
-              t={t}
-              defaults="<Highlight>Backup your wallet</Highlight> to prevent losing access to your funds"
-              components={{ Highlight: <span className="font-bold text-white" /> }}
+      <div className="h-32 shrink-0">{/* Placeholder for nav height */}</div>
+      <QuickSettingsOverlay />
+
+      <div className="absolute bottom-0 left-0 z-20 flex w-full flex-col justify-center gap-6 px-8 pb-6">
+        <QuickSettingsModal />
+        <div
+          className={classNames(
+            "border-grey-800 flex h-[5.2rem] w-full items-center justify-between rounded border bg-black/90 px-7 backdrop-blur-[2px]"
+          )}
+        >
+          <NavButton
+            label={t("Portfolio")}
+            icon={TalismanHandIcon}
+            onClick={handleHomeClick}
+            route="/portfolio/*"
+          />
+          <NavButton label={t("Staking")} icon={ZapIcon} onClick={handleStakingClick} />
+          <NavButton
+            label={t("History")}
+            icon={HistoryIcon}
+            onClick={handleTxHistoryClick}
+            route="/tx-history"
+          />
+          <NavButton label={t("Fullscreen")} icon={ExpandIcon} onClick={handleExpandClick} />
+          {isQuickSettingsOpen ? (
+            <NavButton
+              label={t("Close")}
+              icon={CloseIcon}
+              onClick={closeQuickSettings}
+              className="!text-white"
             />
-          </div>
+          ) : (
+            <NavButton
+              label={t("More")}
+              icon={MenuIcon}
+              onClick={handleMoreClick}
+              withBadge={!allBackedUp}
+            />
+          )}
         </div>
-      )}
-      <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
-        <Tooltip placement="top">
-          <TooltipTrigger asChild>
-            <BottomNavButton
-              onClick={handleHomeClick}
-              current={location.pathname === "/portfolio" && folder === undefined}
-            >
-              <PieChartIcon className="self-center text-lg" />
-            </BottomNavButton>
-          </TooltipTrigger>
-          <TooltipContent>{t("Portfolio")}</TooltipContent>
-        </Tooltip>
-        <Tooltip placement="top">
-          <TooltipTrigger asChild>
-            <BottomNavButton onClick={handleStakingClick}>
-              <ZapIcon className="self-center text-lg" />
-            </BottomNavButton>
-          </TooltipTrigger>
-          <TooltipContent>{t("Staking")}</TooltipContent>
-        </Tooltip>
-        <RecentActivityButton />
-        <Tooltip placement="top">
-          <TooltipTrigger asChild>
-            <BottomNavButton onClick={handleExpandClick}>
-              <NavIconExpand />
-            </BottomNavButton>
-          </TooltipTrigger>
-          <TooltipContent>{t("Fullscreen View")}</TooltipContent>
-        </Tooltip>
-        <Tooltip placement="top">
-          <TooltipTrigger asChild>
-            <BottomNavButton onClick={handleMoreClick}>
-              {!allBackedUp && <NavIconMoreAlert />}
-              {allBackedUp && <NavIconMore />}
-            </BottomNavButton>
-          </TooltipTrigger>
-          <TooltipContent>{t("More Options")}</TooltipContent>
-        </Tooltip>
+        <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
+          <AssetDiscoveryPopupAlert />
+        </Suspense>
       </div>
     </>
+  )
+}
+
+const NavButton: FC<{
+  label: ReactNode
+  icon: FC<{ className?: string }>
+  className?: string
+  withBadge?: boolean
+  route?: string
+  onClick: () => void
+}> = ({ label, icon: Icon, withBadge, route, className, onClick }) => {
+  const routeMatch = useMatch(route ?? "")
+
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "group",
+        "text-body-disabled h-20 w-20",
+        "enabled:hover:text-body-secondary",
+        "enabled:focus-visible:border",
+        routeMatch && "!text-body",
+        className
+      )}
+      onClick={onClick}
+    >
+      <div
+        className={classNames(
+          "flex size-full flex-col items-center justify-center gap-[0.15rem]",
+          "translate-y-4 transition-transform group-hover:translate-y-0"
+        )}
+      >
+        {withBadge ? (
+          <div className="relative size-10">
+            <Icon className="size-10" />
+            <div className="bg-primary absolute -right-1 -top-1 size-3 rounded-full"></div>
+          </div>
+        ) : (
+          <Icon className="size-10" />
+        )}
+        <div
+          className={classNames(
+            "leading-paragraph text-[1rem]",
+            "opacity-0 transition-opacity group-hover:opacity-100"
+          )}
+        >
+          {label}
+        </div>
+      </div>
+    </button>
   )
 }

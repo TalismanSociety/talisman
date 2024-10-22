@@ -1,20 +1,19 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { atom, useAtom } from "jotai"
+import { useCallback, useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
+import * as yup from "yup"
+
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
-import { atom, useAtom } from "jotai"
-import { useCallback, useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import * as yup from "yup"
 
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
+import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const accountExportAccountState = atom<AccountJsonAny | null>(null)
@@ -22,7 +21,7 @@ const accountExportAccountState = atom<AccountJsonAny | null>(null)
 export const useAccountExportModal = () => {
   const [_account, setAccount] = useAtom(accountExportAccountState)
 
-  const { account: selectedAccount } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")
 
   const open = useCallback(
@@ -35,7 +34,7 @@ export const useAccountExportModal = () => {
 
   const account = _account ?? selectedAccount
 
-  const canExportAccountFunc = (account?: AccountJsonAny) =>
+  const canExportAccountFunc = (account?: AccountJsonAny | null) =>
     account?.origin === AccountType.Talisman
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])

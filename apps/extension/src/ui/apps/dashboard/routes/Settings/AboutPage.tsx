@@ -1,11 +1,4 @@
 import {
-  PRIVACY_POLICY_URL,
-  RELEASE_NOTES_URL,
-  TALISMAN_DOCS_URL_PREFIX,
-  TERMS_OF_USE_URL,
-} from "@extension/shared"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import {
   CodeIcon,
   ExternalLinkIcon,
   GitPullRequestIcon,
@@ -16,14 +9,22 @@ import {
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import {
+  PRIVACY_POLICY_URL,
+  RELEASE_NOTES_URL,
+  TALISMAN_DOCS_URL_PREFIX,
+  TERMS_OF_USE_URL,
+} from "@extension/shared"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 
-export const AboutPage = () => {
+import { DashboardLayout } from "../../layout"
+
+const Content = () => {
   const { t } = useTranslation("admin")
   return (
-    <DashboardLayout centered>
+    <>
       <HeaderBlock title={t("About")} />
-      <div className="text-body-secondary my-12 flex flex-col gap-8">
+      <div className="text-body-secondary mb-12 mt-4 flex flex-col gap-4 text-sm">
         <p>
           <Trans t={t}>
             In the beginning, the paraverse swarmed with formless life and chaotic energy.
@@ -46,7 +47,7 @@ export const AboutPage = () => {
           </Trans>
         </p>
       </div>
-      <div className="mt-20 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <CtaButton
           title={t("Privacy Policy")}
           subtitle={t("Read our Privacy Policy")}
@@ -83,6 +84,12 @@ export const AboutPage = () => {
           iconRight={ExternalLinkIcon}
         />
       </div>
-    </DashboardLayout>
+    </>
   )
 }
+
+export const AboutPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

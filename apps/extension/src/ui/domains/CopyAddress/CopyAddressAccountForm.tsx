@@ -1,15 +1,16 @@
+import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
+import { classNames, isEthereumAddress, normalizeAddress } from "@talismn/util"
+import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
 import { AccountJsonAny, isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
-import { classNames, isEthereumAddress } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -158,7 +159,7 @@ export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSele
 }
 
 export const CopyAddressAccountForm = () => {
-  const { address, setAddress, chain, evmNetwork } = useCopyAddressWizard()
+  const { address, setAddress, chain, evmNetwork, addresses } = useCopyAddressWizard()
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
@@ -173,8 +174,14 @@ export const CopyAddressAccountForm = () => {
             !chain ||
             (account.type && isAccountCompatibleWithChain(chain, account.type, account.genesisHash))
         )
-        .filter((account) => !evmNetwork || account.type === "ethereum"),
-    [allAccounts, chain, evmNetwork, search]
+        .filter((account) => !evmNetwork || account.type === "ethereum")
+        // if a folder is selected in portfolio, filter to accounts in that folder
+        .filter(
+          (account) =>
+            !addresses?.length ||
+            addresses.map((a) => normalizeAddress(a)).includes(normalizeAddress(account.address))
+        ),
+    [allAccounts, chain, evmNetwork, search, addresses]
   )
 
   return (

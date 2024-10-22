@@ -1,3 +1,7 @@
+import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
+
 import { AnalyticsPage } from "@ui/api/analytics"
 import {
   EvmNetworkForm,
@@ -5,11 +9,8 @@ import {
   SubNetworkFormEdit,
 } from "@ui/domains/Settings/ManageNetworks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardLayout } from "../../layout"
 import { useNetworksType } from "./useNetworksType"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -19,7 +20,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Network",
 }
 
-export const NetworkPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { id } = useParams<"id">()
@@ -41,7 +42,7 @@ export const NetworkPage = () => {
   )
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <>
       {isChain && (
         <>
           {id && <SubNetworkFormEdit chainId={id} onSubmitted={handleSubmitted} />}
@@ -49,6 +50,11 @@ export const NetworkPage = () => {
         </>
       )}
       {isEvmNetwork && <EvmNetworkForm evmNetworkId={id} onSubmitted={handleSubmitted} />}
-    </DashboardLayout>
+    </>
   )
 }
+export const NetworkPage = () => (
+  <DashboardLayout sidebar="settings" width="660">
+    <Content />
+  </DashboardLayout>
+)

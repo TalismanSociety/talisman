@@ -11,7 +11,7 @@ import {
 
 import { accountsByCategoryAtomFamily } from "./accounts"
 import { evmNetworksArrayAtomFamily } from "./chaindata"
-import { NetworkOption, portfolioAccountAtom } from "./portfolio"
+import { NetworkOption, portfolioSelectedAccountsAtom } from "./portfolio"
 import { settingsAtomFamily } from "./settings"
 import { atomWithDebounce } from "./utils/atomWithDebounce"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -74,12 +74,12 @@ export const nftsAtom = atom(async (get) => {
   const sortBy = nftsSortBy as SettingsStoreData["nftsSortBy"]
 
   const visibility = get(nftsVisibilityFilterAtom)
-  const account = get(portfolioAccountAtom)
+  const selectedAccounts = get(portfolioSelectedAccountsAtom)
   const networkFilter = get(nftsNetworkFilterAtom)
   const lowerSearch = get(nftsPortfolioSearchAtom).toLowerCase()
 
-  const addresses = account
-    ? [account.address.toLowerCase()]
+  const addresses = selectedAccounts
+    ? selectedAccounts.map((a) => a.address.toLowerCase())
     : accounts.map((a) => a.address.toLowerCase())
 
   const networkIds = networkFilter

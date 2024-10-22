@@ -31,7 +31,8 @@ type ExtrinsicResult = {
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
   blockNumber: number,
-  extIndex: number
+  extIndex: number,
+  finalized: boolean
 ) => void
 
 const getStorageKeyHash = (...names: string[]) => {
@@ -131,7 +132,7 @@ const watchExtrinsicStatus = async (
   }
 
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizeHeads = await chainConnector.subscribe(
+  const unsubscribeFinalizedHeads = await chainConnector.subscribe(
     chainId,
     "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
@@ -158,10 +159,10 @@ const watchExtrinsicStatus = async (
         if (err) return // err is true if extrinsic is not found in this block
 
         const { result, blockNumber, extIndex } = extResult
-        cb(result, blockNumber, extIndex)
+        cb(result, blockNumber, extIndex, true)
 
         await unsubscribe("finalizedHeads", () =>
-          unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+          unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
         )
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
@@ -199,17 +200,16 @@ const watchExtrinsicStatus = async (
         if (err) return // err is true if extrinsic is not found in this block
 
         const { result, blockNumber, extIndex } = extResult
-        if (result === "success") {
-          foundInBlockHash = blockHash
-          cb("included", blockNumber, extIndex)
-        } else cb(result, blockNumber, extIndex)
+
+        if (result === "success") foundInBlockHash = blockHash
+        cb(result, blockNumber, extIndex, false)
 
         await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
 
         // if error, no need to wait for a confirmation
         if (result === "error") {
           await unsubscribe("finalizedHeads", () =>
-            unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+            unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
           )
           if (timeout !== null) clearTimeout(timeout)
         }
@@ -224,7 +224,7 @@ const watchExtrinsicStatus = async (
     await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
     if (subscriptions.finalizedHeads) {
       await unsubscribe("finalizedHeads", () =>
-        unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+        unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
       )
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
@@ -236,7 +236,7 @@ const watchExtrinsicStatus = async (
         )
         if (!err) {
           const { result, blockNumber, extIndex } = extResult
-          cb(result, blockNumber, extIndex)
+          cb(result, blockNumber, extIndex, true)
         }
       }
     }
@@ -264,14 +264,20 @@ export const watchSubstrateTransaction = async (
 
     await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
 
-    await watchExtrinsicStatus(chain.id, registry, hash, async (result, blockNumber, extIndex) => {
-      const type: NotificationType = result === "included" ? "submitted" : result
-      const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
+    await watchExtrinsicStatus(
+      chain.id,
+      registry,
+      hash,
+      async (result, blockNumber, extIndex, finalized) => {
+        const type: NotificationType = result === "included" ? "submitted" : result
+        const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
-      if (withNotifications) createNotification(type, chain.name ?? "chain", url)
+        if (withNotifications) createNotification(type, chain.name ?? "chain", url)
 
-      if (result !== "included") await updateTransactionStatus(hash, result, blockNumber)
-    })
+        if (result !== "included")
+          await updateTransactionStatus(hash, result, blockNumber, finalized)
+      }
+    )
 
     return hash
   } catch (cause) {

@@ -33,7 +33,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
       <header className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
         <h1
           className={classNames(
-            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base",
+            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base font-bold",
             centerTitle && "text-center"
           )}
         >
