@@ -33,10 +33,10 @@
     "eventemitter3": "^5.0.0"
   },
   "devDependencies": {
-    "@polkadot/rpc-provider": "^10.9.1",
-    "@polkadot/util": "^12.3.2",
-    "@polkadot/x-global": "^12.3.2",
-    "@polkadot/x-ws": "^12.3.2",
+    "@polkadot/rpc-provider": "14.1.1",
+    "@polkadot/util": "13.2.1",
+    "@polkadot/x-global": "13.2.1",
+    "@polkadot/x-ws": "13.2.1",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -46,10 +46,10 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@polkadot/rpc-provider": "10.x",
-    "@polkadot/util": "12.x",
-    "@polkadot/x-global": "12.x",
-    "@polkadot/x-ws": "12.x"
+    "@polkadot/rpc-provider": "12.0.2",
+    "@polkadot/util": "12.6.2",
+    "@polkadot/x-global": "12.6.2",
+    "@polkadot/x-ws": "12.6.2"
   },
   "eslintConfig": {
     "root": true,

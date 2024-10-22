@@ -31,9 +31,9 @@
     "tailwind-merge": "^1.14.0"
   },
   "devDependencies": {
-    "@polkadot/keyring": "^12.3.2",
-    "@polkadot/util": "^12.3.2",
-    "@polkadot/util-crypto": "^12.3.2",
+    "@polkadot/keyring": "13.2.1",
+    "@polkadot/util": "13.2.1",
+    "@polkadot/util-crypto": "13.2.1",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -43,9 +43,9 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@polkadot/keyring": "12.x",
-    "@polkadot/util": "12.x",
-    "@polkadot/util-crypto": "12.x",
+    "@polkadot/keyring": "12.6.2",
+    "@polkadot/util": "12.6.2",
+    "@polkadot/util-crypto": "12.6.2",
     "rxjs": ">= 7.8.1"
   },
   "eslintConfig": {
