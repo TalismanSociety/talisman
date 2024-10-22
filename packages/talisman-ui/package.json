@@ -31,7 +31,7 @@
     "@types/webfontloader": "^1.6.38",
     "autoprefixer": "^10.4.20",
     "color": "4.2.3",
-    "eslint": "^8.52.0",
+    "eslint": "^8.57.1",
     "framer-motion": "10.12.18",
     "lottie-react": "2.4.0",
     "postcss": "^8.4.47",

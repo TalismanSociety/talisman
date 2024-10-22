@@ -8,13 +8,13 @@
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
-    "eslint": "^8.52.0",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-jest": "26.1.5",
     "eslint-plugin-jsx-a11y": "6.5.1",
     "eslint-plugin-react": "7.30.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-testing-library": "5.5.1"
   }
 }
