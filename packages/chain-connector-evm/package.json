@@ -36,7 +36,7 @@
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
-    "@types/lodash": "^4.14.180",
+    "@types/lodash": "^4.17.12",
     "eslint": "^8.52.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
