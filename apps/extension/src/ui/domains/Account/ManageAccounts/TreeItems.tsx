@@ -3,8 +3,16 @@ import { classNames } from "@talismn/util"
 import { AccountJsonAny, AccountsCatalogTree } from "extension-core"
 import { FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  IconButton,
+  useOpenClose,
+} from "talisman-ui"
 
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
@@ -134,6 +142,8 @@ export const TreeItemFolder: FC<{
   const { open: renameFolder } = useRenameFolderModal()
   const { open: deleteFolder } = useDeleteFolderModal()
 
+  const { isOpen, toggle } = useOpenClose(true)
+
   return (
     <div className={classNames("@container bg-grey-800 relative flex flex-col rounded-sm pt-2 ")}>
       <div
@@ -143,7 +153,12 @@ export const TreeItemFolder: FC<{
       >
         <AccountFolderIcon className="shrink-0 text-xl" />
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap">{folder.name}</div>
+          <div className="flex max-w-full items-center gap-4">
+            <div className="truncate">{folder.name}</div>
+            <IconButton onClick={toggle} data-no-dnd="true" className="size-10">
+              <AccordionIcon isOpen={isOpen} className="text-[2rem]" />
+            </IconButton>
+          </div>
           {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
         </div>
         <div className="@2xl:flex hidden flex-col">
@@ -169,23 +184,24 @@ export const TreeItemFolder: FC<{
           </ContextMenu>
         </div>
       </div>
+      <Accordion isOpen={isOpen} className="w-full shrink-0" alwaysRender>
+        {!!folder.tree.length && (
+          <div className={classNames("px-4")}>
+            <TreeItems
+              treeName={treeName}
+              parentId={folder.id}
+              items={folder.tree}
+              accounts={accounts}
+              disableFolderDrop={disableFolderDrop}
+              balanceTotalPerAccount={balanceTotalPerAccount}
+            />
+          </div>
+        )}
 
-      {!!folder.tree.length && (
-        <div className={classNames("px-4")}>
-          <TreeItems
-            treeName={treeName}
-            parentId={folder.id}
-            items={folder.tree}
-            accounts={accounts}
-            disableFolderDrop={disableFolderDrop}
-            balanceTotalPerAccount={balanceTotalPerAccount}
-          />
-        </div>
-      )}
-
-      {!folder.tree.length && (
-        <EmptyFolderDropZone folderId={folder.id} disabled={disableFolderDrop} />
-      )}
+        {!folder.tree.length && (
+          <EmptyFolderDropZone folderId={folder.id} disabled={disableFolderDrop} />
+        )}
+      </Accordion>
     </div>
   )
 }
