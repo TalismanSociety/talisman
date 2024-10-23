@@ -1,8 +1,7 @@
-import { resolveDomainToAddress } from "@azns/resolver-core"
-import { ApiPromise } from "@polkadot/api"
 import { throwAfter } from "@talismn/util"
 
 import log from "../log"
+import { resolveDomainToAddress } from "./aznsRouter"
 import { isPotentialAzns } from "./isPotentialAzns"
 import { isPotentialEns } from "./isPotentialEns"
 import { Config, ResolvedNames } from "./types"
@@ -50,30 +49,21 @@ export const resolveAznsNames = async (config: Config, names: string[]): Promise
   }
 
   const provider = config.chainConnectors.substrate.asProvider(config.chainIdAlephZero)
-  const customApi = new ApiPromise({ provider, registry: config.registryAlephZero })
-  await customApi.isReady
 
   const results = await Promise.allSettled(
     names.map(async (name) => {
       if (!isPotentialAzns(name)) return
 
-      try {
-        const result = await resolveDomainToAddress(name, {
-          chainId: config.aznsSupportedChainIdAlephZero,
-          customApi,
-        })
-        if (result.error) throw result.error
+      const address = await resolveDomainToAddress(name, {
+        chainId: config.aznsSupportedChainIdAlephZero,
+        registry: config.registryAlephZero,
+        provider,
+      })
 
-        const { address } = result
-        address !== null && resolvedNames.set(name, [address, "azns"])
-      } catch (cause) {
-        throw new Error(`Failed to resolve address for azns domain '${name}'`, { cause })
-      }
+      if (address) resolvedNames.set(name, [address, "azns"])
     })
   )
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
-
-  customApi.disconnect()
 
   return resolvedNames
 }

@@ -26,15 +26,15 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@azns/resolver-core": "https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2",
     "@talismn/balances": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11"
   },
   "devDependencies": {
-    "@polkadot/api": "14.1.1",
     "@polkadot/api-contract": "14.1.1",
     "@polkadot/types": "14.1.1",
+    "@polkadot/rpc-provider": "14.1.1",
+    "@polkadot/util": "13.2.1",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -44,9 +44,10 @@
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/api": "14.1.1",
-    "@polkadot/api-contract": "14.1.1",
-    "@polkadot/types": "14.1.1"
+    "@polkadot/api-contract": "10.x",
+    "@polkadot/types": "10.x",
+    "@polkadot/rpc-provider": "10.x",
+    "@polkadot/util": "10.x"
   },
   "eslintConfig": {
     "root": true,
