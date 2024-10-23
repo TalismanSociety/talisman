@@ -1,8 +1,7 @@
-import { resolveAddressToDomain } from "@azns/resolver-core"
-import { ApiPromise } from "@polkadot/api"
 import { isEthereumAddress } from "@talismn/util"
 
 import log from "../log"
+import { resolveAddressToDomain } from "./aznsRouter"
 import { Config, OnChainIds } from "./types"
 
 /**
@@ -45,31 +44,18 @@ export const lookupAznsAddresses = async (
   }
 
   const provider = config.chainConnectors.substrate.asProvider(config.chainIdAlephZero)
-  const customApi = new ApiPromise({ provider, registry: config.registryAlephZero })
-  await customApi.isReady
 
   const results = await Promise.allSettled(
     addresses.map(async (address) => {
       // no need to do AZNS lookup for ethereum addresses
       if (isEthereumAddress(address)) return
 
-      try {
-        const result = await resolveAddressToDomain(address, {
-          chainId: config.aznsSupportedChainIdAlephZero,
-          customApi,
-        })
-        if (result.error) throw result.error
-
-        const { primaryDomain: domain } = result
-        domain !== null && onChainIds.set(address, domain)
-      } catch (cause) {
-        throw new Error(
-          `Failed to resolve AZNS domain for address '${address}': ${String(cause)}`,
-          {
-            cause,
-          }
-        )
-      }
+      const domain = await resolveAddressToDomain(address, {
+        chainId: config.aznsSupportedChainIdAlephZero,
+        registry: config.registryAlephZero,
+        provider,
+      })
+      if (domain) onChainIds.set(address, domain)
     })
   )
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))

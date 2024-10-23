@@ -1508,9 +1508,6 @@ importers:
 
   packages/on-chain-id:
     dependencies:
-      '@azns/resolver-core':
-        specifier: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2
-        version: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2(@polkadot/api-contract@12.0.2)(@polkadot/api@12.0.2)(@polkadot/types@12.0.2)(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
       '@talismn/balances':
         specifier: workspace:*
         version: link:../balances
@@ -1523,13 +1520,19 @@ importers:
     devDependencies:
       '@polkadot/api':
         specifier: 12.0.2
-        version: 12.0.2
+        version: 12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@polkadot/api-contract':
         specifier: 12.0.2
-        version: 12.0.2
+        version: 12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      '@polkadot/rpc-provider':
+        specifier: 12.0.2
+        version: 12.0.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@polkadot/types':
         specifier: 12.0.2
         version: 12.0.2
+      '@polkadot/util':
+        specifier: 12.6.2
+        version: 12.6.2
       '@talismn/eslint-config':
         specifier: workspace:*
         version: link:../../config/eslint-config
@@ -1822,17 +1825,6 @@ packages:
 
   '@azns/resolver-core@1.6.0':
     resolution: {integrity: sha512-3yhZanhezcw5FZLnFb5fPJ34xEmjWy2PtYkKsqbfHrQ8Pn3xql0c0nOqrlXn2P55FzkMvnQJTqEJ5zxzUj48Cg==}
-    engines: {node: '>=16 <=18', pnpm: '8'}
-    peerDependencies:
-      '@polkadot/api': 12.0.2
-      '@polkadot/api-contract': 12.0.2
-      '@polkadot/types': 12.0.2
-      '@polkadot/util': 12.6.2
-      '@polkadot/util-crypto': 12.6.2
-
-  '@azns/resolver-core@https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2':
-    resolution: {tarball: https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2}
-    version: 1.6.0
     engines: {node: '>=16 <=18', pnpm: '8'}
     peerDependencies:
       '@polkadot/api': 12.0.2
@@ -13178,17 +13170,6 @@ snapshots:
       loglevel: 1.8.1
       utf-8-validate: 6.0.3
 
-  '@azns/resolver-core@https://gitpkg.vercel.app/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=1b1857e5f1385c9f40a5d99771445e2a7cd654b2(@polkadot/api-contract@12.0.2)(@polkadot/api@12.0.2)(@polkadot/types@12.0.2)(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)':
-    dependencies:
-      '@polkadot/api': 12.0.2
-      '@polkadot/api-contract': 12.0.2
-      '@polkadot/types': 12.0.2
-      '@polkadot/util': 12.6.2
-      '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)
-      bufferutil: 4.0.8
-      loglevel: 1.8.1
-      utf-8-validate: 6.0.3
-
   '@babel/code-frame@7.12.11':
     dependencies:
       '@babel/highlight': 7.23.4
@@ -16873,22 +16854,6 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@polkadot/api-contract@12.0.2':
-    dependencies:
-      '@polkadot/api': 12.0.2
-      '@polkadot/api-augment': 12.0.2
-      '@polkadot/types': 12.0.2
-      '@polkadot/types-codec': 12.0.2
-      '@polkadot/types-create': 12.0.2
-      '@polkadot/util': 12.6.2
-      '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)
-      rxjs: 7.8.1
-      tslib: 2.6.2
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@polkadot/api-contract@12.0.2(bufferutil@4.0.8)':
     dependencies:
       '@polkadot/api': 12.0.2(bufferutil@4.0.8)
@@ -18840,7 +18805,7 @@ snapshots:
 
   '@types/bn.js@5.1.5':
     dependencies:
-      '@types/node': 20.5.1
+      '@types/node': 17.0.45
 
   '@types/change-case@2.3.1':
     dependencies:
@@ -25150,7 +25115,7 @@ snapshots:
 
   nock@13.5.4:
     dependencies:
-      debug: 4.3.4(supports-color@9.2.2)
+      debug: 4.3.5
       json-stringify-safe: 5.0.1
       propagate: 2.0.1
     transitivePeerDependencies:
