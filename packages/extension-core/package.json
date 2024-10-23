@@ -19,7 +19,7 @@
     "clean": "rm -rf dist background/dist .turbo node_modules"
   },
   "dependencies": {
-    "@metamask/browser-passworder": "4.3.0",
+    "@metamask/browser-passworder": "5.0.1",
     "@metamask/eth-sig-util": "7.0.1",
     "@polkadot-api/merkleize-metadata": "^1.1.7",
     "@polkadot/apps-config": "0.145.1",
@@ -55,7 +55,7 @@
     "i18next": "^22.5.0",
     "lodash": "4.17.21",
     "lz-string": "^1.5.0",
-    "nanoid": "3.3.7",
+    "nanoid": "5.0.7",
     "pako": "^2.1.0",
     "rxjs": "^7.8.1",
     "scale-ts": "^1.6.0",
@@ -63,7 +63,7 @@
     "toml": "^3.0.0",
     "ts-results": "3.3.0",
     "url-join": "^5.0.0",
-    "uuid": "^8.3.2",
+    "uuid": "^10.0.0",
     "viem": "^2.21.32",
     "yup": "0.32.11"
   },

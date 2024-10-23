@@ -1,24 +1,27 @@
-import i18next from "@common/i18nConfig"
-import { bufferToHex, stripHexPrefix } from "@ethereumjs/util"
-import { AccountJsonHardwareEthereum, getTransactionSerializable } from "@extension/core"
-import { EthSignMessageMethod } from "@extension/core"
-import { log } from "@extension/shared"
+import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { classNames } from "@talismn/util"
-import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 import {
-  Signature,
-  TransactionRequest,
   hexToBigInt,
   isHex,
   serializeTransaction,
+  Signature,
   signatureToHex,
+  TransactionRequest,
 } from "viem"
+
+import i18next from "@common/i18nConfig"
+import {
+  AccountJsonHardwareEthereum,
+  EthSignMessageMethod,
+  getTransactionSerializable,
+} from "@extension/core"
+import { log } from "@extension/shared"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 
 import {
   LedgerConnectionStatus,
@@ -92,9 +95,7 @@ const signWithLedger = async (
 
     case "personal_sign": {
       // ensure that it is hex encoded
-      const messageHex = isHex(payload)
-        ? payload
-        : bufferToHex(Buffer.from(payload as string, "utf8"))
+      const messageHex = isHex(payload) ? payload : Buffer.from(payload as string).toString("hex")
 
       const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
 

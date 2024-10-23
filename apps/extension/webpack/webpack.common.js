@@ -131,7 +131,7 @@ const config = (env) => ({
       url: require.resolve("url"),
       crypto: require.resolve("crypto-browserify"),
       zlib: require.resolve("browserify-zlib"),
-      vm: false,
+      vm: require.resolve("vm-browserify"),
     },
   },
   plugins: [
