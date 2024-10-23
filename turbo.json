@@ -21,78 +21,78 @@
     "build:extension:ci": {
       "dependsOn": ["//#build:packages"],
       "env": [
-        "$POSTHOG_AUTH_TOKEN",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:ci:firefox": {
       "dependsOn": ["//#build:packages"],
       "env": [
-        "$POSTHOG_AUTH_TOKEN",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary": {
       "dependsOn": ["//#build:packages"],
       "env": [
-        "$POSTHOG_AUTH_TOKEN",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary:firefox": {
       "dependsOn": ["//#build:packages"],
       "env": [
-        "$POSTHOG_AUTH_TOKEN",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod": {
       "dependsOn": ["//#build:packages"],
       "env": [
-        "$POSTHOG_AUTH_TOKEN",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod:firefox": {
       "dependsOn": ["//#build:packages"],
       "env": [
-        "$POSTHOG_AUTH_TOKEN",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     }
