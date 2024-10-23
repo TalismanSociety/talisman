@@ -430,9 +430,6 @@ importers:
       framer-motion:
         specifier: 10.12.18
         version: 10.12.18(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      fuse.js:
-        specifier: ^6.6.2
-        version: 6.6.2
       highlight.js:
         specifier: 11.8.0
         version: 11.8.0
@@ -8624,10 +8621,6 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
-
-  fuse.js@6.6.2:
-    resolution: {integrity: sha512-cJaJkxCCxC8qIIcPBF9yGxY0W/tVZS3uEISDxhYIdtk8OL93pe+6Zj7LjCqVV4dzbqcriOZ+kQ/NE4RXZHsIGA==}
-    engines: {node: '>=10'}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -17382,7 +17375,7 @@ snapshots:
       '@polkadot/types': 14.1.1
       '@polkadot/util': 13.2.1
       '@polkadot/util-crypto': 13.2.1(@polkadot/util@13.2.1)
-      tslib: 2.6.2
+      tslib: 2.8.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -17396,7 +17389,7 @@ snapshots:
       '@polkadot/types': 14.1.1
       '@polkadot/util': 13.2.1
       '@polkadot/util-crypto': 13.2.1(@polkadot/util@13.2.1)
-      tslib: 2.6.2
+      tslib: 2.8.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -17497,7 +17490,7 @@ snapshots:
       '@polkadot/util': 13.2.1
       '@polkadot/util-crypto': 13.2.1(@polkadot/util@13.2.1)
       '@polkadot/x-fetch': 13.2.1
-      tslib: 2.6.2
+      tslib: 2.8.0
 
   '@polkadot/phishing@0.24.1':
     dependencies:
@@ -17757,14 +17750,14 @@ snapshots:
       '@polkadot/util': 13.2.1
       eventemitter3: 5.0.1
       store: 2.0.12
-      tslib: 2.6.2
+      tslib: 2.8.0
 
   '@polkadot/ui-shared@3.10.1(@polkadot/util-crypto@13.2.1(@polkadot/util@13.2.1))(@polkadot/util@13.2.1)':
     dependencies:
       '@polkadot/util': 13.2.1
       '@polkadot/util-crypto': 13.2.1(@polkadot/util@13.2.1)
       colord: 2.9.3
-      tslib: 2.6.2
+      tslib: 2.8.0
 
   '@polkadot/util-crypto@13.2.1(@polkadot/util@13.2.1)':
     dependencies:
@@ -20504,7 +20497,7 @@ snapshots:
     dependencies:
       pvtsutils: 1.3.5
       pvutils: 1.1.3
-      tslib: 2.6.2
+      tslib: 2.8.0
 
   assert-plus@1.0.0: {}
 
@@ -23115,8 +23108,6 @@ snapshots:
       functions-have-names: 1.2.3
 
   functions-have-names@1.2.3: {}
-
-  fuse.js@6.6.2: {}
 
   gensync@1.0.0-beta.2: {}
 
