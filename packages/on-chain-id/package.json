@@ -32,8 +32,8 @@
   },
   "devDependencies": {
     "@polkadot/api-contract": "14.1.1",
-    "@polkadot/types": "14.1.1",
     "@polkadot/rpc-provider": "14.1.1",
+    "@polkadot/types": "14.1.1",
     "@polkadot/util": "13.2.1",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
@@ -44,10 +44,10 @@
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/api-contract": "10.x",
-    "@polkadot/types": "10.x",
-    "@polkadot/rpc-provider": "10.x",
-    "@polkadot/util": "10.x"
+    "@polkadot/api-contract": "14.1.1",
+    "@polkadot/rpc-provider": "14.1.1",
+    "@polkadot/types": "14.1.1",
+    "@polkadot/util": "13.2.1"
   },
   "eslintConfig": {
     "root": true,

@@ -26,7 +26,7 @@
     "@polkadot/extension-base": "0.54.1",
     "@polkadot/extension-inject": "0.54.1",
     "@polkadot/keyring": "13.2.1",
-    "@polkadot/phishing": "latest",
+    "@polkadot/phishing": "^0.24.1",
     "@polkadot/types": "14.1.1",
     "@polkadot/types-known": "14.1.1",
     "@polkadot/ui-keyring": "3.10.1",
