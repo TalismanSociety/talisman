@@ -18,7 +18,7 @@ describe("privacyRoundCurrency", () => {
       [12_345.67, "12300"],
       [123_456.78, "123000"],
       [1_234_567.89, "1230000"],
-      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision, no-loss-of-precision
       [1_234_567_891_234_567_891_234_567_891_234_567.89, "1230000000000000000000000000000000"],
     ]
 

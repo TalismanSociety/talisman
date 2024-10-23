@@ -7,6 +7,7 @@ const mockGetPolkadotData = jest.fn(async () => ({
   allow: ["goodsite.com", "polkadot.js.org"],
 }))
 const mockGetPhishFortData = jest.fn(async () => ["alsobadsite.com", "really-badsite.io"])
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const mockGetMetamaskData = jest.fn(() => require("eth-phishing-detect/src/config.json"))
 
 jest.spyOn(ParaverseProtector.prototype, "getCommitSha").mockImplementation(mockGetCommitSha)
