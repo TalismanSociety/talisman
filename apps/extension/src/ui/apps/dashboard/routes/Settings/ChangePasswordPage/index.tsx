@@ -33,12 +33,22 @@ const Content = () => {
     () =>
       yup
         .object({
-          currentPw: yup.string().required(""),
-          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
-          newPwConfirm: yup
+          currentPw: yup.string().required(" "),
+          newPw: yup
             .string()
-            .required("")
-            .oneOf([yup.ref("newPw"), null], t("Passwords must match!")),
+            .required(" ")
+            .min(6, t("Password must be at least 6 characters long")),
+          newPwConfirm: yup.string().required(" "),
+        })
+        .test((value, ctx) => {
+          const { newPw, newPwConfirm } = value
+          if (newPw && newPwConfirm && newPw !== newPwConfirm) {
+            return ctx.createError({
+              path: "newPwConfirm",
+              message: t("Passwords must match"),
+            })
+          }
+          return true
         })
         .required(),
     [t]

@@ -99,7 +99,7 @@ const RenameFolder = ({
     () =>
       yup
         .object({
-          name: yup.string().required(""),
+          name: yup.string().required(" "),
         })
         .required(),
     []

@@ -65,11 +65,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const schema = useMemo(
     () =>
       yup.object({
-        name: yup.string().required(""),
-        searchAddress: yup.string().required(""),
+        name: yup.string().required(" "),
+        searchAddress: yup.string().required(" "),
         address: yup
           .string()
-          .required("")
+          .required(" ")
           .transform((value) => value.trim())
           .test("is-valid", t("Address is not valid"), (value, ctx) => {
             const context = ctx.options.context as ValidationContext

@@ -65,7 +65,7 @@
     "url-join": "^5.0.0",
     "uuid": "^10.0.0",
     "viem": "^2.21.34",
-    "yup": "0.32.11"
+    "yup": "1.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.8",

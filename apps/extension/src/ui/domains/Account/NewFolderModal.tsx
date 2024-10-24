@@ -50,7 +50,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
     () =>
       yup
         .object({
-          name: yup.string().required(""),
+          name: yup.string().required(" "),
           followedOnly: yup.boolean(),
         })
         .required(),

@@ -70,10 +70,13 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     () =>
       yup
         .object({
-          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPw: yup
+            .string()
+            .required(" ")
+            .min(6, t("Password must be at least 6 characters long")),
           newPwConfirm: yup
             .string()
-            .required("")
+            .required(" ")
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),

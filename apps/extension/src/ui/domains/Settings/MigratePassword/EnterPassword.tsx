@@ -1,12 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { api } from "@ui/api"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
+
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { api } from "@ui/api"
 
 import { useMigratePassword } from "./context"
 
@@ -16,7 +16,7 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().required(""),
+    password: yup.string().required(" "),
   })
   .required()
 

@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 import { getCoingeckoTokensList } from "@extension/core"
 
-export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
+export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null | undefined) => {
   const { data: tokens } = useQuery({
     queryKey: ["useCoinGeckoTokensList"],
     refetchInterval: false,

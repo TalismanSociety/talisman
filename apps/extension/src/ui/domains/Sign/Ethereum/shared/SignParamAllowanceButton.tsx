@@ -94,7 +94,10 @@ const EditAllowanceForm: FC<{
   const schema = useMemo(
     () =>
       yup.object({
-        limit: yup.string().test("limit", "Invalid amount", isValidAmount(token.decimals)),
+        limit: yup
+          .string()
+          .defined()
+          .test("limit", "Invalid amount", isValidAmount(token.decimals)),
       }),
     [token]
   )

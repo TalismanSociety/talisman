@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountAddressType, AssetDiscoveryMode } from "@extension/core"
+import { AssetDiscoveryMode, UiAccountAddressType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
@@ -16,14 +16,6 @@ import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
-
-type FormData = {
-  name: string
-  searchAddress: string
-  address: string
-  type: AccountAddressType
-  isPortfolio: boolean
-}
 
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
@@ -34,35 +26,35 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     () =>
       yup
         .object({
-          name: yup.string().required("").notOneOf(accountNames, t("Name already in use")),
-          searchAddress: yup.string().trim().required(""),
-          address: yup
-            .string()
-            .trim()
-            .required("")
-            .when("type", {
-              is: "ethereum",
-              then: yup
-                .string()
-                .test(
-                  "is-valid-address-eth",
-                  t("Invalid address"),
-                  (val) => !!val && getAddressType(val) === "ethereum"
-                ),
-              otherwise: yup
-                .string()
-                .test(
-                  "is-valid-address-sub",
-                  t("Invalid address"),
-                  (val) => !!val && getAddressType(val) === "ss58"
-                ),
-            }),
-          type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
+          name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
+          searchAddress: yup.string().trim().required(" "),
+          type: yup.mixed<UiAccountAddressType>().oneOf(["ethereum", "sr25519"]).defined(),
+          address: yup.string().trim().required(" "),
+          isPortfolio: yup.boolean().defined(),
+        })
+        .test("is-valid-address", t("Invalid address"), (val, ctx) => {
+          const { type, address } = val
+
+          if (type === "sr25519" && getAddressType(address) !== "ss58")
+            return ctx.createError({
+              path: "address",
+              message: t("Invalid address"),
+            })
+
+          if (type === "ethereum" && getAddressType(address) !== "ethereum")
+            return ctx.createError({
+              path: "address",
+              message: t("Invalid address"),
+            })
+
+          return true
         })
         .required(),
 
     [accountNames, t]
   )
+
+  type FormData = yup.InferType<typeof schema>
 
   const {
     register,
@@ -131,7 +123,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   )
 
   const handleTypeChange = useCallback(
-    (type: AccountAddressType) => {
+    (type: UiAccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
       trigger()
     },

@@ -1,3 +1,4 @@
+import { HexString } from "@polkadot/util/types"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode, useCallback, useMemo, useState } from "react"
@@ -11,12 +12,13 @@ import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
-import { useSetting } from "@ui/state"
+import { useChain, useSetting, useToken } from "@ui/state"
 
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
 import { EnableNetworkToggle } from "./EnableNetworkToggle"
+import { SubNetworkFormData } from "./schema"
 import { SubNetworkRpcsListField } from "./SubNetworkRpcsListField"
-import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
+import { SubNetworkFormBaseProps } from "./types"
 
 type SubNetworkFormProps = SubNetworkFormBaseProps & {
   formProps: UseFormReturn<SubNetworkFormData>
@@ -34,13 +36,15 @@ export const SubNetworkForm = ({
 }: SubNetworkFormProps) => {
   const { t } = useTranslation("admin")
   const {
-    formState: { errors, isDirty, isValid, isSubmitting, touchedFields, defaultValues },
+    formState: { errors, isDirty, isValid, isSubmitting, touchedFields },
     handleSubmit: submitForm,
     register,
     setValue,
     watch,
   } = formProps
   const { id, accountFormat, nativeTokenCoingeckoId } = watch()
+  const chain = useChain(id)
+  const token = useToken(chain?.nativeToken?.id)
 
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
@@ -48,29 +52,31 @@ export const SubNetworkForm = ({
   const nativeTokenLogoUrl = useMemo(
     // existing icon has priority
     () =>
-      touchedFields?.nativeTokenCoingeckoId
-        ? coingeckoLogoUrl
-        : defaultValues?.nativeTokenLogoUrl ?? coingeckoLogoUrl,
-    [coingeckoLogoUrl, defaultValues?.nativeTokenLogoUrl, touchedFields?.nativeTokenCoingeckoId]
+      touchedFields?.nativeTokenCoingeckoId ? coingeckoLogoUrl : token?.logo ?? coingeckoLogoUrl,
+    [coingeckoLogoUrl, token?.logo, touchedFields?.nativeTokenCoingeckoId]
   )
 
   const [submitError, setSubmitError] = useState<string>()
   const submit = useCallback(
-    async (chain: SubNetworkFormData) => {
+    async (data: SubNetworkFormData) => {
       const requestData: RequestUpsertCustomChain = {
-        ...chain,
-        rpcs: chain.rpcs.map((rpc) => ({ url: rpc.url })),
+        ...data,
+        rpcs: data.rpcs?.map((rpc) => ({ url: rpc.url })) ?? [],
         nativeTokenLogoUrl,
+        genesisHash: data.genesisHash as HexString,
+        nativeTokenCoingeckoId: data.nativeTokenCoingeckoId ?? null,
+        subscanUrl: data.subscanUrl ?? null,
       }
       try {
+        if (!requestData.rpcs.length) throw new Error(t("At least one RPC is required"))
         await api.chainUpsert(requestData)
-        if (chain.isTestnet && !useTestnets) setUseTestnets(true)
+        if (data.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [nativeTokenLogoUrl, onSubmitted, setUseTestnets, useTestnets]
+    [nativeTokenLogoUrl, onSubmitted, setUseTestnets, t, useTestnets]
   )
 
   return (
@@ -89,7 +95,7 @@ export const SubNetworkForm = ({
                 placeholder={t("Paraverse")}
                 before={
                   <ChainLogoBase
-                    logo={defaultValues?.chainLogoUrl ?? null}
+                    logo={chain?.logo ?? null}
                     className={classNames(
                       "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
                       !id && "opacity-50"

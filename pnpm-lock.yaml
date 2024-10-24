@@ -224,8 +224,8 @@ importers:
         specifier: 1.7.17
         version: 1.7.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
-        specifier: 2.9.11
-        version: 2.9.11(react-hook-form@7.49.2(react@18.3.1))
+        specifier: 3.9.0
+        version: 3.9.0(react-hook-form@7.53.1(react@18.3.1))
       '@ledgerhq/hw-app-eth':
         specifier: 6.40.2
         version: 6.40.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
@@ -479,8 +479,8 @@ importers:
         specifier: 14.2.10
         version: 14.2.10(react@18.3.1)
       react-hook-form:
-        specifier: 7.49.2
-        version: 7.49.2(react@18.3.1)
+        specifier: 7.53.1
+        version: 7.53.1(react@18.3.1)
       react-i18next:
         specifier: ^12.3.1
         version: 12.3.1(i18next@22.5.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -518,8 +518,8 @@ importers:
         specifier: ^2.21.34
         version: 2.21.34(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@6.0.4)
       yup:
-        specifier: 0.32.11
-        version: 0.32.11
+        specifier: 1.4.0
+        version: 1.4.0
     devDependencies:
       '@alectalisman/webpack-ext-reloader':
         specifier: ^1.1.9-a
@@ -1369,8 +1369,8 @@ importers:
         specifier: ^2.21.34
         version: 2.21.34(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@6.0.4)
       yup:
-        specifier: 0.32.11
-        version: 0.32.11
+        specifier: 1.4.0
+        version: 1.4.0
     devDependencies:
       '@babel/core':
         specifier: ^7.25.8
@@ -3680,8 +3680,8 @@ packages:
       react: ^16 || ^17 || ^18
       react-dom: ^16 || ^17 || ^18
 
-  '@hookform/resolvers@2.9.11':
-    resolution: {integrity: sha512-bA3aZ79UgcHj7tFV7RlgThzwSSHZgvfbt2wprldRkYBcMopdMvHyO17Wwp/twcJasNFischFfS7oz8Katz8DdQ==}
+  '@hookform/resolvers@3.9.0':
+    resolution: {integrity: sha512-bU0Gr4EepJ/EQsH/IwEzYLsT/PEj5C0ynLQ4m+GSHS+xKH4TfSelhluTgOaoc4kA5s7eCsQbM4wvZLzELmWzUg==}
     peerDependencies:
       react-hook-form: ^7.0.0
 
@@ -9808,9 +9808,6 @@ packages:
     resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  lodash-es@4.17.21:
-    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
 
@@ -10245,9 +10242,6 @@ packages:
     peerDependencies:
       react: '*'
       react-dom: '*'
-
-  nanoclone@0.2.1:
-    resolution: {integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==}
 
   nanoid@3.3.3:
     resolution: {integrity: sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==}
@@ -11040,8 +11034,8 @@ packages:
     resolution: {integrity: sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==}
     engines: {node: '>= 8'}
 
-  property-expr@2.0.5:
-    resolution: {integrity: sha512-IJUkICM5dP5znhCckHSv30Q4b5/JA5enCtkRHYaOVOAocnH/1BQEYTC5NMfT3AVl/iXKdr3aqQbQn9DxyWknwA==}
+  property-expr@2.0.6:
+    resolution: {integrity: sha512-SVtmxhRE/CGkn3eZY1T6pC8Nln6Fr/lu1mKSgRud0eC73whjGfoAogbn78LkD8aFL0zz3bAFerKSnOl7NlErBA==}
 
   proxy-compare@2.5.1:
     resolution: {integrity: sha512-oyfc0Tx87Cpwva5ZXezSp5V9vht1c7dZBhvuV/y3ctkgMVUmiAGDVeeB0dKhGSyT0v1ZTEQYpe/RXlBVBNuCLA==}
@@ -11196,12 +11190,6 @@ packages:
     resolution: {integrity: sha512-GQDxZ5Jd+Aq/qUxbCm1UtzmL/s++V7zKgE8yMktJiCQXCCFZnMZh9ng+6/Ne6PjNSXH0L9CjeOEREfRnq6Duag==}
     peerDependencies:
       react: '>=16.13.1'
-
-  react-hook-form@7.49.2:
-    resolution: {integrity: sha512-TZcnSc17+LPPVpMRIDNVITY6w20deMdNi6iehTFLV1x8SqThXGwu93HjlUVU09pzFgZH7qZOvLMM7UYf2ShAHA==}
-    engines: {node: '>=18', pnpm: '8'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18
 
   react-hook-form@7.53.1:
     resolution: {integrity: sha512-6aiQeBda4zjcuaugWvim9WsGqisoUk+etmFEsSUMm451/Ic8L/UAb7sRtMj3V+Hdzm6mMjU1VhiSzYUZeBm0Vg==}
@@ -12185,6 +12173,9 @@ packages:
   timers-ext@0.1.7:
     resolution: {integrity: sha512-b85NUNzTSdodShTIbky6ZF02e8STtVVfD+fu4aXXShEELpozH+bCpJLYMPZbsABN2wDH7fJpqIoXxJpzbf0NqQ==}
 
+  tiny-case@1.0.3:
+    resolution: {integrity: sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==}
+
   tinyexec@0.3.1:
     resolution: {integrity: sha512-WiCJLEECkO18gwqIp6+hJg0//p23HXp4S+gGtAKu3mI2F2/sXC4FvHvXvB0zJVVaTPhx1/tOwdbRsa1sOBIKqQ==}
 
@@ -12457,8 +12448,12 @@ packages:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
 
-  type-fest@4.25.0:
-    resolution: {integrity: sha512-bRkIGlXsnGBRBQRAY56UXBm//9qH4bmJfFvq83gSz41N282df+fjy8ofcEgc1sM8geNt5cl6mC2g9Fht1cs8Aw==}
+  type-fest@2.19.0:
+    resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
+    engines: {node: '>=12.20'}
+
+  type-fest@4.26.1:
+    resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
     engines: {node: '>=16'}
 
   type@1.2.0:
@@ -13246,9 +13241,8 @@ packages:
     resolution: {integrity: sha512-GQHQqAopRhwU8Kt1DDM8NjibDXHC8eoh1erhGAJPEyveY9qqVeXvVikNKrDz69sHowPMorbPUrH/mx8c50eiBQ==}
     engines: {node: '>=18'}
 
-  yup@0.32.11:
-    resolution: {integrity: sha512-Z2Fe1bn+eLstG8DRR6FTavGD+MeAwyfmouhHsIUgaADz8jvFKbO/fXc2trJKZg+5EBjh4gGm3iU/t3onKlXHIg==}
-    engines: {node: '>=10'}
+  yup@1.4.0:
+    resolution: {integrity: sha512-wPbgkJRCqIf+OHyiTBQoJiP5PFuAXaWiJK6AmYkzQAh5/c2K9hzSApBZG5wV9KoKSePF7sAxmNSvh/13YHkFDg==}
 
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
@@ -15501,9 +15495,9 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@hookform/resolvers@2.9.11(react-hook-form@7.49.2(react@18.3.1))':
+  '@hookform/resolvers@3.9.0(react-hook-form@7.53.1(react@18.3.1))':
     dependencies:
-      react-hook-form: 7.49.2(react@18.3.1)
+      react-hook-form: 7.53.1(react@18.3.1)
 
   '@humanfs/core@0.19.0': {}
 
@@ -16972,7 +16966,7 @@ snapshots:
       '@polkadot/types': 14.1.1
       '@polkadot/util': 13.2.1
       '@polkadot/util-crypto': 13.2.1(@polkadot/util@13.2.1)
-      tslib: 2.8.0
+      tslib: 2.6.2
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -17047,7 +17041,7 @@ snapshots:
       '@polkadot/util': 13.2.1
       '@polkadot/util-crypto': 13.2.1(@polkadot/util@13.2.1)
       '@polkadot/x-fetch': 13.2.1
-      tslib: 2.8.0
+      tslib: 2.6.2
 
   '@polkadot/phishing@0.24.1':
     dependencies:
@@ -17240,7 +17234,7 @@ snapshots:
       '@polkadot/util': 13.2.1
       eventemitter3: 5.0.1
       store: 2.0.12
-      tslib: 2.8.0
+      tslib: 2.6.2
 
   '@polkadot/ui-shared@3.11.1(@polkadot/util-crypto@13.2.1(@polkadot/util@13.2.1))(@polkadot/util@13.2.1)':
     dependencies:
@@ -19776,7 +19770,7 @@ snapshots:
     dependencies:
       pvtsutils: 1.3.5
       pvutils: 1.1.3
-      tslib: 2.8.0
+      tslib: 2.6.2
 
   assert-plus@1.0.0: {}
 
@@ -24133,8 +24127,6 @@ snapshots:
     dependencies:
       p-locate: 6.0.0
 
-  lodash-es@4.17.21: {}
-
   lodash.camelcase@4.3.0: {}
 
   lodash.debounce@4.0.8: {}
@@ -24687,8 +24679,6 @@ snapshots:
       stacktrace-js: 2.0.2
       stylis: 4.3.4
 
-  nanoclone@0.2.1: {}
-
   nanoid@3.3.3: {}
 
   nanoid@3.3.7: {}
@@ -25084,7 +25074,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.25.9
       index-to-position: 0.1.2
-      type-fest: 4.25.0
+      type-fest: 4.26.1
 
   parse-ms@4.0.0: {}
 
@@ -25460,7 +25450,7 @@ snapshots:
 
   propagate@2.0.1: {}
 
-  property-expr@2.0.5: {}
+  property-expr@2.0.6: {}
 
   proxy-compare@2.5.1: {}
 
@@ -25629,10 +25619,6 @@ snapshots:
       '@babel/runtime': 7.24.1
       react: 18.3.1
 
-  react-hook-form@7.49.2(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-
   react-hook-form@7.53.1(react@18.3.1):
     dependencies:
       react: 18.3.1
@@ -25791,7 +25777,7 @@ snapshots:
       '@types/normalize-package-data': 2.4.4
       normalize-package-data: 6.0.2
       parse-json: 8.1.0
-      type-fest: 4.25.0
+      type-fest: 4.26.1
       unicorn-magic: 0.1.0
 
   read-yaml-file@1.1.0:
@@ -26868,6 +26854,8 @@ snapshots:
       es5-ext: 0.10.61
       next-tick: 1.1.0
 
+  tiny-case@1.0.3: {}
+
   tinyexec@0.3.1: {}
 
   tmp@0.0.33:
@@ -27208,7 +27196,9 @@ snapshots:
 
   type-fest@0.8.1: {}
 
-  type-fest@4.25.0: {}
+  type-fest@2.19.0: {}
+
+  type-fest@4.26.1: {}
 
   type@1.2.0: {}
 
@@ -27905,7 +27895,7 @@ snapshots:
       deepmerge-ts: 7.1.0
       read-pkg: 9.0.1
       sort-keys: 5.0.0
-      type-fest: 4.25.0
+      type-fest: 4.26.1
       write-json-file: 6.0.0
 
   ws@6.2.3(bufferutil@4.0.8)(utf-8-validate@6.0.4):
@@ -28041,15 +28031,12 @@ snapshots:
 
   yoctocolors@2.1.1: {}
 
-  yup@0.32.11:
+  yup@1.4.0:
     dependencies:
-      '@babel/runtime': 7.24.1
-      '@types/lodash': 4.17.12
-      lodash: 4.17.21
-      lodash-es: 4.17.21
-      nanoclone: 0.2.1
-      property-expr: 2.0.5
+      property-expr: 2.0.6
+      tiny-case: 1.0.3
       toposort: 2.0.2
+      type-fest: 2.19.0
 
   zip-stream@6.0.1:
     dependencies:

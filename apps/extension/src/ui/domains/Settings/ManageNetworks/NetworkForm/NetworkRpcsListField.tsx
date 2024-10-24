@@ -1,28 +1,27 @@
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { RequestUpsertCustomEvmNetwork } from "@extension/core"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
 import { FieldArrayWithId, useFieldArray, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { SubNetworkFormData } from "./Substrate/types"
+import { SubNetworkFormData } from "./Substrate/schema"
 import {
   ExtraValidationCb,
   useRegisterFieldWithDebouncedValidation,
 } from "./useRegisterFieldWithDebouncedValidation"
 
-type RpcFormData = SubNetworkFormData | RequestUpsertCustomEvmNetwork
+type RpcFormData = SubNetworkFormData
 
 export type SortableRpcItemProps = {
   rpc: FieldArrayWithId<RpcFormData, "rpcs", "id">

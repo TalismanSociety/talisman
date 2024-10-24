@@ -1,37 +1,45 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import imgPassword from "@talisman/theme/images/onboard_password_character.png"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
 
 type FormData = {
-  password?: string
-  passwordConfirm?: string
+  password: string
+  passwordConfirm: string
 }
 
 const INPUT_CONTAINER_PROPS_PASSWORD = { className: "!bg-white/5 h-28" }
 
 const schema = yup
   .object({
-    password: yup.string().required("").min(6, "Password must be at least 6 characters long"), // matches the medium strengh requirement
-    passwordConfirm: yup
-      .string()
-      .required("")
-      .oneOf([yup.ref("password")], "Passwords must match"),
+    password: yup.string().required(" ").min(6, "Password must be at least 6 characters long"), // matches the medium strengh requirement
+    passwordConfirm: yup.string().required(" "),
   })
+  .test((value, ctx) => {
+    const { password, passwordConfirm } = value
+    if (password && passwordConfirm && password !== passwordConfirm) {
+      return ctx.createError({
+        path: "passwordConfirm",
+        message: "Passwords must match",
+      })
+    }
+    return true
+  })
+
   .required()
 
 const ANALYTICS_PAGE: AnalyticsPage = {

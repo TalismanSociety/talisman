@@ -67,10 +67,10 @@ type ValidationContext = {
 
 const schema = yup
   .object({
-    name: yup.string().trim().required(""),
+    name: yup.string().trim().required(" "),
     privateKey: yup
       .string()
-      .required("")
+      .required(" ")
       .trim()
       .lowercase()
       .transform(transformToHex)
