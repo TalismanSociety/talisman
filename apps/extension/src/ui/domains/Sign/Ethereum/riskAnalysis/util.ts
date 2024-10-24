@@ -4,8 +4,6 @@ import {
   EvmCurrencyStateChange,
   EvmExpectedStateChange,
   EvmNftStateChange,
-  EvmStateChangeErc1155ApprovalForAll,
-  EvmStateChangeErc1155Transfer,
   EvmStateChangeErc20Approval,
   EvmStateChangeErc20Transfer,
   EvmStateChangeErc721Approval,
@@ -14,9 +12,13 @@ import {
   EvmStateChangeErc721LockApproval,
   EvmStateChangeErc721LockApprovalForAll,
   EvmStateChangeErc721Transfer,
+  EvmStateChangeErc1155ApprovalForAll,
+  EvmStateChangeErc1155Transfer,
   EvmStateChangeNativeAssetTransfer,
 } from "@blowfishxyz/api-client"
 import Decimal from "decimal.js"
+
+import { log } from "@extension/shared"
 
 // Note: most of this file has been copied from blowfish integration sample project
 
@@ -44,7 +46,7 @@ export const shortenEnsName = (name: string, showFatDots?: boolean): string => {
 }
 
 export const isNftStateChange = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is EvmNftStateChange => {
   return (
     rawInfo.kind === "ERC721_TRANSFER" ||
@@ -60,7 +62,7 @@ export const isNftStateChange = (
 }
 
 export const isCurrencyStateChange = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is EvmCurrencyStateChange => {
   return (
     rawInfo.kind === "ERC20_APPROVAL" ||
@@ -71,7 +73,7 @@ export const isCurrencyStateChange = (
 }
 
 const isApprovalStateChange = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is
   | EvmStateChangeErc20Approval
   | EvmStateChangeErc1155ApprovalForAll
@@ -83,7 +85,7 @@ const isApprovalStateChange = (
 }
 
 const isLockStateChange = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is
   | EvmStateChangeErc721Lock
   | EvmStateChangeErc721LockApproval
@@ -92,7 +94,7 @@ const isLockStateChange = (
 }
 
 export const hasCounterparty = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is
   | EvmStateChangeErc721Transfer
   | EvmStateChangeErc20Transfer
@@ -107,7 +109,7 @@ export const hasCounterparty = (
 }
 
 export const isApprovalForAllStateChange = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is
   | EvmStateChangeErc1155ApprovalForAll
   | EvmStateChangeErc721ApprovalForAll
@@ -116,7 +118,8 @@ export const isApprovalForAllStateChange = (
 }
 
 const getSimulationDiff = (rawInfo: EvmExpectedStateChange["rawInfo"]) => {
-  const { amount } = rawInfo.data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { amount } = rawInfo.data as any
 
   if (!amount) {
     return new Decimal(0)
@@ -126,7 +129,12 @@ const getSimulationDiff = (rawInfo: EvmExpectedStateChange["rawInfo"]) => {
     return new Decimal(amount)
   }
 
-  return new Decimal(amount.before).sub(amount.after)
+  try {
+    return new Decimal(amount.before).sub(amount.after)
+  } catch (e) {
+    log.warn("Failed to parse simulation diff", e)
+    return new Decimal(0)
+  }
 }
 
 export const isPositiveStateChange = (rawInfo: EvmExpectedStateChange["rawInfo"]) => {
@@ -172,7 +180,7 @@ export const getAssetPriceInUsd = (rawInfo: EvmExpectedStateChange["rawInfo"]): 
 }
 
 export const getAssetPricePerToken = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): number | null => {
   if ("asset" in rawInfo.data) {
     return rawInfo.data.asset.price?.dollarValuePerToken || null
@@ -182,7 +190,7 @@ export const getAssetPricePerToken = (
 }
 
 export const isNftStateChangeWithMetadata = (
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  rawInfo: EvmExpectedStateChange["rawInfo"],
 ): rawInfo is
   | EvmStateChangeErc1155Transfer
   | EvmStateChangeErc721Approval
@@ -260,7 +268,7 @@ export function generateCounterpartyBlockExplorerUrl(
   }: {
     chainFamily: EvmChainFamily | undefined
     chainNetwork: EvmChainNetwork | undefined
-  }
+  },
 ): string | undefined {
   if (!chainFamily || !chainNetwork) {
     return undefined

@@ -151,8 +151,8 @@ importers:
         specifier: ^2.10.1
         version: 2.10.1(@types/react@18.3.12)(react@18.3.1)
       jotai-effect:
-        specifier: ^0.6.0
-        version: 0.6.0(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1))
+        specifier: ^1.0.3
+        version: 1.0.3(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1))
       loglevel:
         specifier: ^1.9.2
         version: 1.9.2
@@ -203,8 +203,8 @@ importers:
   apps/extension:
     dependencies:
       '@blowfishxyz/api-client':
-        specifier: 0.1.13
-        version: 0.1.13
+        specifier: 0.1.20
+        version: 0.1.20
       '@dnd-kit/core':
         specifier: 6.1.0
         version: 6.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1007,8 +1007,8 @@ importers:
         specifier: ~2.10.1
         version: 2.10.1(@types/react@18.3.12)(react@18.3.1)
       jotai-effect:
-        specifier: 0.x
-        version: 0.6.0(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1))
+        specifier: ~1.0.3
+        version: 1.0.3(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1))
       lodash:
         specifier: 4.17.21
         version: 4.17.21
@@ -2664,8 +2664,8 @@ packages:
     peerDependencies:
       '@polkadot/api': 14.1.1
 
-  '@blowfishxyz/api-client@0.1.13':
-    resolution: {integrity: sha512-UXM/XvmDL/qArmIAQBd4RgoVzPaXm3bfEz6pqXlDkcqgsjsKiSepxHVucUNsfcwGlAFVVPpVq1VvwHWAxuQgUw==}
+  '@blowfishxyz/api-client@0.1.20':
+    resolution: {integrity: sha512-Xsf7f7vsJi6Dhx6CjLwjyqnNfyMdd9QxraSp45+LKtxie1KIpypCbqi+rkPef8p88C5zhCQ3Z6ihb0wH7TygJg==}
 
   '@changesets/apply-release-plan@7.0.5':
     resolution: {integrity: sha512-1cWCk+ZshEkSVEZrm2fSj1Gz8sYvxgUL4Q78+1ZZqeqfuevPTPk033/yUZ3df8BKMohkqqHfzj0HOOrG0KtXTw==}
@@ -9389,8 +9389,8 @@ packages:
     resolution: {integrity: sha512-EX4oNDwcXSivPrw2qKH2LB5PoFxEvgtv2JgwW0bU858HoLQ+kutSvjLMUqBd0PeJYEinLWhoI9Ol0eYMqj/wNQ==}
     hasBin: true
 
-  jotai-effect@0.6.0:
-    resolution: {integrity: sha512-PCewL5ThH3MXYI6+sQwvkk3o+gje4K1qw2YnyqjRVnZbIxqX3zHZv11JXqXosRkT8p3a51gd3pLv7+cBfyXz7A==}
+  jotai-effect@1.0.3:
+    resolution: {integrity: sha512-Xye6oVMQkhOmkF9G5gdtwlqG2w9GuMcfYdRS0aV/HeoYCj1LfLJ4O8jQRVT/Zb5hPGOLGNll/x6k5wxifn1jYg==}
     peerDependencies:
       jotai: '>=2.5.0'
 
@@ -14267,7 +14267,7 @@ snapshots:
     dependencies:
       '@polkadot/api': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
 
-  '@blowfishxyz/api-client@0.1.13': {}
+  '@blowfishxyz/api-client@0.1.20': {}
 
   '@changesets/apply-release-plan@7.0.5':
     dependencies:
@@ -16385,20 +16385,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@polkadot/api-augment@14.1.1':
-    dependencies:
-      '@polkadot/api-base': 14.1.1
-      '@polkadot/rpc-augment': 14.1.1
-      '@polkadot/types': 14.1.1
-      '@polkadot/types-augment': 14.1.1
-      '@polkadot/types-codec': 14.1.1
-      '@polkadot/util': 13.2.1
-      tslib: 2.8.0
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@polkadot/api-augment@14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@polkadot/api-base': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
@@ -16407,18 +16393,6 @@ snapshots:
       '@polkadot/types-augment': 14.1.1
       '@polkadot/types-codec': 14.1.1
       '@polkadot/util': 13.2.1
-      tslib: 2.8.0
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  '@polkadot/api-base@14.1.1':
-    dependencies:
-      '@polkadot/rpc-core': 14.1.1
-      '@polkadot/types': 14.1.1
-      '@polkadot/util': 13.2.1
-      rxjs: 7.8.1
       tslib: 2.8.0
     transitivePeerDependencies:
       - bufferutil
@@ -16456,9 +16430,9 @@ snapshots:
   '@polkadot/api-derive@14.1.1':
     dependencies:
       '@polkadot/api': 14.1.1
-      '@polkadot/api-augment': 14.1.1
-      '@polkadot/api-base': 14.1.1
-      '@polkadot/rpc-core': 14.1.1
+      '@polkadot/api-augment': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/api-base': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/rpc-core': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/types': 14.1.1
       '@polkadot/types-codec': 14.1.1
       '@polkadot/util': 13.2.1
@@ -16489,12 +16463,12 @@ snapshots:
 
   '@polkadot/api@14.1.1':
     dependencies:
-      '@polkadot/api-augment': 14.1.1
-      '@polkadot/api-base': 14.1.1
+      '@polkadot/api-augment': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/api-base': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/api-derive': 14.1.1
       '@polkadot/keyring': 13.2.1(@polkadot/util-crypto@13.2.1(@polkadot/util@13.2.1))(@polkadot/util@13.2.1)
-      '@polkadot/rpc-augment': 14.1.1
-      '@polkadot/rpc-core': 14.1.1
+      '@polkadot/rpc-augment': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@polkadot/rpc-core': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/rpc-provider': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/types': 14.1.1
       '@polkadot/types-augment': 14.1.1
@@ -16741,37 +16715,12 @@ snapshots:
     transitivePeerDependencies:
       - '@polkadot/networks'
 
-  '@polkadot/rpc-augment@14.1.1':
-    dependencies:
-      '@polkadot/rpc-core': 14.1.1
-      '@polkadot/types': 14.1.1
-      '@polkadot/types-codec': 14.1.1
-      '@polkadot/util': 13.2.1
-      tslib: 2.8.0
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@polkadot/rpc-augment@14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@polkadot/rpc-core': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/types': 14.1.1
       '@polkadot/types-codec': 14.1.1
       '@polkadot/util': 13.2.1
-      tslib: 2.8.0
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  '@polkadot/rpc-core@14.1.1':
-    dependencies:
-      '@polkadot/rpc-augment': 14.1.1
-      '@polkadot/rpc-provider': 14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/types': 14.1.1
-      '@polkadot/util': 13.2.1
-      rxjs: 7.8.1
       tslib: 2.8.0
     transitivePeerDependencies:
       - bufferutil
@@ -23454,7 +23403,7 @@ snapshots:
 
   jiti@2.3.3: {}
 
-  jotai-effect@0.6.0(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1)):
+  jotai-effect@1.0.3(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1)):
     dependencies:
       jotai: 2.10.1(@types/react@18.3.12)(react@18.3.1)
 
