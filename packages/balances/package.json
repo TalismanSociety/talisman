@@ -53,7 +53,7 @@
     "@substrate/txwrapper-core": "7.5.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
-    "@types/jest": "^27.5.1",
+    "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.12",
     "@types/pako": "^2.0.3",
     "eslint": "^8.57.1",
