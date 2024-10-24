@@ -1,12 +1,12 @@
 import { TokenList } from "@talismn/chaindata-provider"
-import { fetchTokenRates } from "@talismn/token-rates"
+import { DbTokenRates, fetchTokenRates } from "@talismn/token-rates"
 import { Subscription } from "dexie"
 import { log } from "extension-shared"
 import debounce from "lodash/debounce"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
 import { db } from "../../db"
-import { unsubscribe } from "../../handlers/subscriptions"
+import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
@@ -16,12 +16,14 @@ import { activeTokensStore, filterActiveTokens } from "../tokens/store.activeTok
 const MIN_REFRESH_INTERVAL = 5 * 60_000
 
 // refresh token rates while sub is active every 10 minutes
-const REFRESH_INTERVAL = 10 * 60_000
+const REFRESH_INTERVAL = 10 * 3000 //60_000
+
+type TokenRatesSubscriptionCallback = (rates: DbTokenRates[]) => void
 
 export class TokenRatesStore {
   #lastUpdateTokenIds = ""
   #lastUpdateAt = Date.now() // will prevent a first empty call if tokens aren't loaded yet
-  #subscriptions = new BehaviorSubject<string[]>([])
+  #subscriptions = new BehaviorSubject<Record<string, TokenRatesSubscriptionCallback>>({})
   #isWatching = false
 
   constructor() {
@@ -35,8 +37,8 @@ export class TokenRatesStore {
     let pollInterval: NodeJS.Timer | null = null
     let subTokenList: Subscription | null = null
 
-    this.#subscriptions.subscribe((subscriptions: string[]) => {
-      if (subscriptions.length) {
+    this.#subscriptions.subscribe((subscriptions) => {
+      if (Object.keys(subscriptions).length) {
         // watching state check
         if (this.#isWatching) return
         this.#isWatching = true
@@ -84,7 +86,6 @@ export class TokenRatesStore {
       ])
 
       const tokensList = filterActiveTokens(tokens, activeTokens)
-
       await this.updateTokenRates(tokensList)
 
       return true
@@ -112,10 +113,13 @@ export class TokenRatesStore {
     try {
       const coingecko = await remoteConfigStore.get("coingecko")
       const tokenRates = await fetchTokenRates(tokens, coingecko)
-      const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
+      const putTokenRates: DbTokenRates[] = Object.entries(tokenRates).map(([tokenId, rates]) => ({
         tokenId,
         rates,
       }))
+
+      // update external subscriptions
+      Object.values(this.#subscriptions.value).map((cb) => cb(putTokenRates))
 
       await db.transaction("rw", db.tokenRates, async () => {
         // override all tokenRates
@@ -134,16 +138,29 @@ export class TokenRatesStore {
     }
   }
 
-  public subscribe(id: string, port: Port): void {
-    this.#subscriptions.next([...this.#subscriptions.value, id])
+  public async subscribe(id: string, port: Port, unsubscribeCallback?: () => void) {
+    const cb = createSubscription<"pri(tokenRates.subscribe)">(id, port)
+    const currentTokenRates = await db.tokenRates.toArray()
+    cb(currentTokenRates)
 
-    this.hydrateStore()
+    const currentSubscriptions = this.#subscriptions.value
+    this.#subscriptions.next({ ...currentSubscriptions, [id]: cb })
 
-    // close subscription
+    if (Object.values(currentSubscriptions).length === 0) {
+      // if there's no subscriptions, hydrate the store. If there are already subscriptions,
+      // the store will be hydrated via the interval anyway
+      this.hydrateStore()
+    }
+
     port.onDisconnect.addListener((): void => {
       unsubscribe(id)
-      this.#subscriptions.next(this.#subscriptions.value.filter((subId) => subId !== id))
+      const newSubscriptions = { ...this.#subscriptions.value }
+      delete newSubscriptions[id]
+      this.#subscriptions.next(newSubscriptions)
+      if (unsubscribeCallback) unsubscribeCallback()
     })
+
+    return true
   }
 }
 
