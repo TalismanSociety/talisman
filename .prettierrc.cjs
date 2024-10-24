@@ -1,9 +1,4 @@
 /** @type {import('prettier').Config} */
-// const pluginsConfig = {
-//   plugins: [require("@ianvs/prettier-plugin-sort-imports"), require("prettier-plugin-tailwindcss")],
-// }
-
-/** @type {import('prettier').Config} */
 const importSortConfig = {
   importOrder: [
     // built-ins like `node:fs`
@@ -34,7 +29,7 @@ const importSortConfig = {
 /** @type {import('prettier').Config} */
 module.exports = {
   plugins: ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
-  
+
   ...importSortConfig,
 
   printWidth: 100,
