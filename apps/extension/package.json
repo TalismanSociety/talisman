@@ -81,7 +81,7 @@
     "extension-shared": "workspace:*",
     "framer-motion": "10.12.18",
     "highlight.js": "11.8.0",
-    "html-react-parser": "1.4.14",
+    "html-react-parser": "5.1.18",
     "i18next": "^22.5.0",
     "i18next-browser-languagedetector": "^7.2.1",
     "i18next-http-backend": "^2.6.2",
