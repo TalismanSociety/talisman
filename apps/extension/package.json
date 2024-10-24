@@ -121,8 +121,6 @@
     "@peculiar/webcrypto": "^1.5.0",
     "@sentry/webpack-plugin": "2.22.6",
     "@svgr/webpack": "^8.1.0",
-    "@swc/core": "^1.7.39",
-    "@swc/helpers": "^0.4.37",
     "@swc/jest": "^0.2.36",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
