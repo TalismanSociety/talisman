@@ -62,11 +62,11 @@
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/api-contract": "14.1.1",
-    "@polkadot/types": "14.1.1",
-    "@polkadot/util": "13.2.1",
-    "@polkadot/util-crypto": "13.2.1",
-    "@substrate/txwrapper-core": "7.5.2"
+    "@polkadot/api-contract": "14.x",
+    "@polkadot/types": "14.x",
+    "@polkadot/util": "13.x",
+    "@polkadot/util-crypto": "13.x",
+    "@substrate/txwrapper-core": "7.x"
   },
   "preconstruct": {
     "entrypoints": [
