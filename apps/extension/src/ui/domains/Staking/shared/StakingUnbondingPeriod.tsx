@@ -1,4 +1,4 @@
-import { formatDuration } from "date-fns"
+import { Duration, formatDuration } from "date-fns"
 import { ChainId } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"

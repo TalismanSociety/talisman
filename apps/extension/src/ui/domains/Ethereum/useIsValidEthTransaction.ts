@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
@@ -65,7 +65,7 @@ export const useIsValidEthTransaction = (
     refetchInterval: false,
     refetchOnWindowFocus: false,
     retry: 0,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     enabled: !!publicClient && !!tx && !!account && balance !== undefined,
   })
 

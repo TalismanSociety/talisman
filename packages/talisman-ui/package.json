@@ -20,13 +20,13 @@
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {
-    "@floating-ui/react": "0.26.9",
+    "@floating-ui/react": "0.26.25",
     "@headlessui/react": "1.7.17",
     "@tailwindcss/forms": "^0.5.9",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@talismn/util": "workspace:*",
-    "@types/react": "18.3.11",
+    "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@types/webfontloader": "^1.6.38",
     "autoprefixer": "^10.4.20",
@@ -38,7 +38,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.14.1",
-    "react-use": "17.4.0",
+    "react-use": "17.5.1",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3"
   },
