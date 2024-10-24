@@ -52,7 +52,7 @@
     "extension-shared": "workspace:*",
     "graphql": "^16.9.0",
     "graphql-tag": "^2.12.6",
-    "i18next": "^22.5.0",
+    "i18next": "^23.16.2",
     "lodash": "4.17.21",
     "lz-string": "^1.5.0",
     "nanoid": "5.0.7",
