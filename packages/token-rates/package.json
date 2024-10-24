@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:*",
-    "dexie": "^3.2.7"
+    "dexie": "^4.0.9"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

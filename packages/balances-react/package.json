@@ -36,7 +36,7 @@
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "blueimp-md5": "2.19.0",
-    "dexie": "^3.2.7",
+    "dexie": "^4.0.9",
     "dexie-react-hooks": "^1.1.7",
     "jotai": "~2.10.1",
     "jotai-effect": "0.x",
