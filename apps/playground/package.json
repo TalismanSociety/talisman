@@ -14,7 +14,7 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@headlessui/react": "1.7.17",
+    "@headlessui/react": "2.1.10",
     "@metamask/eth-sig-util": "8.0.0",
     "@talismn/wagmi-connector": "^0.3.1",
     "@tanstack/react-query": "5.59.16",

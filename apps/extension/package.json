@@ -10,7 +10,7 @@
     "@eth-optimism/contracts-ts": "^0.17.2",
     "@ethereumjs/util": "9.1.0",
     "@floating-ui/react": "0.26.25",
-    "@headlessui/react": "1.7.17",
+    "@headlessui/react": "2.1.10",
     "@hookform/resolvers": "3.9.0",
     "@ledgerhq/hw-app-eth": "6.40.2",
     "@ledgerhq/hw-transport": "6.31.4",

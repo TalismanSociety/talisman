@@ -1,4 +1,4 @@
-import { Transition } from "@headlessui/react"
+import { Transition, TransitionChild } from "@headlessui/react"
 import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { createPortal } from "react-dom"
@@ -83,12 +83,12 @@ export const Drawer: FC<DrawerProps> = ({
       e.stopPropagation()
       onDismiss()
     },
-    [onDismiss]
+    [onDismiss],
   )
 
   const { position, drawer, enterFrom, enterTo, leaveFrom, leaveTo } = useMemo(
     () => getAnchorClasses(anchor, !!containerId),
-    [anchor, containerId]
+    [anchor, containerId],
   )
 
   const container = (containerId && document.getElementById(containerId)) || document.body
@@ -96,11 +96,12 @@ export const Drawer: FC<DrawerProps> = ({
   return createPortal(
     <Transition show={!!isOpen} appear>
       {/* Background overlay */}
-      <Transition.Child
+      <TransitionChild
+        as="div"
         className={classNames(
           "bg-grey-900 left-0 top-0 z-10 h-full w-full bg-opacity-80",
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
-          position
+          position,
         )}
         enter="transition-opacity ease-linear duration-300"
         enterFrom="opacity-0"
@@ -109,10 +110,11 @@ export const Drawer: FC<DrawerProps> = ({
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
         onClick={handleDismiss}
-      ></Transition.Child>
+      ></TransitionChild>
 
       {/* Drawer */}
-      <Transition.Child
+      <TransitionChild
+        as="div"
         className={classNames("z-10 shadow-2xl", position, drawer, className)}
         enter="transition-transform ease-in-out duration-300 transform"
         enterFrom={enterFrom}
@@ -122,8 +124,8 @@ export const Drawer: FC<DrawerProps> = ({
         leaveTo={leaveTo}
       >
         {children}
-      </Transition.Child>
+      </TransitionChild>
     </Transition>,
-    container
+    container,
   )
 }
