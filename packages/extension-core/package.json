@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@metamask/browser-passworder": "5.0.1",
-    "@metamask/eth-sig-util": "7.0.1",
+    "@metamask/eth-sig-util": "8.0.0",
     "@polkadot-api/merkleize-metadata": "^1.1.7",
     "@polkadot/apps-config": "0.145.1",
     "@polkadot/extension-base": "0.54.1",
@@ -64,7 +64,7 @@
     "ts-results": "3.3.0",
     "url-join": "^5.0.0",
     "uuid": "^10.0.0",
-    "viem": "^2.21.32",
+    "viem": "^2.21.34",
     "yup": "0.32.11"
   },
   "devDependencies": {

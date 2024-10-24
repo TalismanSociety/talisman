@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@headlessui/react": "1.7.17",
-    "@metamask/eth-sig-util": "7.0.1",
+    "@metamask/eth-sig-util": "8.0.0",
     "@talismn/wagmi-connector": "^0.3.1",
     "@tanstack/react-query": "4.29.19",
     "buffer": "^6.0.3",
@@ -26,8 +26,8 @@
     "react-router-dom": "6.14.1",
     "react-use": "^17.5.1",
     "talisman-ui": "workspace:*",
-    "viem": "^2.21.32",
-    "wagmi": "^2.12.22"
+    "viem": "^2.21.34",
+    "wagmi": "^2.12.25"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^5.1.0",
