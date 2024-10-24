@@ -1,6 +1,6 @@
 {
   "name": "@talismn/on-chain-id",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -31,7 +31,7 @@
     "anylogger": "^1.0.11"
   },
   "devDependencies": {
-    "@polkadot/api":"12.0.2",
+    "@polkadot/api": "12.0.2",
     "@polkadot/api-contract": "12.0.2",
     "@polkadot/types": "12.0.2",
     "@polkadot/rpc-provider": "12.0.2",
