@@ -12,11 +12,11 @@ import { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { activeTokensStore, filterActiveTokens } from "../tokens/store.activeTokens"
 
-// refresh token rates on subscription start if older than 5 minutes
-const MIN_REFRESH_INTERVAL = 5 * 60_000
+// refresh token rates on subscription start if older than 1 minute
+const MIN_REFRESH_INTERVAL = 1 * 60_000
 
-// refresh token rates every 10 minutes while sub is active
-const REFRESH_INTERVAL = 600_000 // 600_000ms == 10 minutes
+// refresh token rates while sub is active every 2 minutes
+const REFRESH_INTERVAL = 2 * 60_000
 
 type TokenRatesSubscriptionCallback = (rates: DbTokenRates[]) => void
 
