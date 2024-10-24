@@ -4,6 +4,7 @@ import { KeypairType } from "@polkadot/util-crypto/types"
 import { Address, BalanceJson } from "@talismn/balances"
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { NsLookupType } from "@talismn/on-chain-id"
+import { DbTokenRates } from "@talismn/token-rates"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
@@ -219,7 +220,7 @@ export default interface MessageTypes {
   tokens: (cb: () => void) => UnsubscribeFn
 
   // tokenRates message types
-  tokenRates: (cb: () => void) => UnsubscribeFn
+  tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
 
   // custom erc20 token management
   addCustomEvmToken: (token: CustomEvmTokenCreate) => Promise<boolean>
