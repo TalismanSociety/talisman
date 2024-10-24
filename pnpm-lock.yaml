@@ -1596,11 +1596,11 @@ importers:
   packages/scale:
     dependencies:
       '@polkadot-api/metadata-builders':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: ^0.8.2
+        version: 0.8.2
       '@polkadot-api/substrate-bindings':
-        specifier: ^0.6.3
-        version: 0.6.3
+        specifier: ^0.9.2
+        version: 0.9.2
       '@polkadot-api/utils':
         specifier: ^0.1.2
         version: 0.1.2
@@ -4386,9 +4386,6 @@ packages:
   '@polkadot-api/metadata-builders@0.3.2':
     resolution: {integrity: sha512-TKpfoT6vTb+513KDzMBTfCb/ORdgRnsS3TDFpOhAhZ08ikvK+hjHMt5plPiAX/OWkm1Wc9I3+K6W0hX5Ab7MVg==}
 
-  '@polkadot-api/metadata-builders@0.5.0':
-    resolution: {integrity: sha512-hHAEYziHsaf7GFOyrrSrToBtBekEMYSCc0GTU3iZ7vnGHdT8wv0vdo90iHU2lL4Di1sUZJz6Vc+ZUJACf2aeVg==}
-
   '@polkadot-api/metadata-builders@0.8.2':
     resolution: {integrity: sha512-+lasR2B0YXPlUJ7QNfO78MYCiXg/ANWWae7Qp53b9kEif5pe0pjxY/9KzdSu8FBA72s/FelQLn7lN/lhMC9zVg==}
 
@@ -4430,9 +4427,6 @@ packages:
   '@polkadot-api/substrate-bindings@0.6.0':
     resolution: {integrity: sha512-lGuhE74NA1/PqdN7fKFdE5C1gNYX357j1tWzdlPXI0kQ7h3kN0zfxNOpPUN7dIrPcOFZ6C0tRRVrBylXkI6xPw==}
 
-  '@polkadot-api/substrate-bindings@0.6.3':
-    resolution: {integrity: sha512-Z/9B5Rhr478YgFLpo32sr8cY/zUeHj9DZnxX76OTJM+Kiq2rXfyYAONr8vAleJXxP7y1mUDBeII4nS9+uBbFXA==}
-
   '@polkadot-api/substrate-bindings@0.9.2':
     resolution: {integrity: sha512-OzWVPoky/Da50V9jFOywRRs3+RZgl2WxiHG/NDi0ug/upEkH0W1bwepG0hMMhneYhoKm+JgUDhLrM67ZbFTStA==}
 
@@ -4444,9 +4438,6 @@ packages:
 
   '@polkadot-api/utils@0.1.0':
     resolution: {integrity: sha512-MXzWZeuGxKizPx2Xf/47wx9sr/uxKw39bVJUptTJdsaQn/TGq+z310mHzf1RCGvC1diHM8f593KrnDgc9oNbJA==}
-
-  '@polkadot-api/utils@0.1.1':
-    resolution: {integrity: sha512-ho1ORL5jEO96Zl72r/j1YTyX8wfXRD+XXrS8OR2LWdBR24MZqHO96xMboTcFehWK919iMKWAb9rCPNs2NiFS3Q==}
 
   '@polkadot-api/utils@0.1.2':
     resolution: {integrity: sha512-yhs5k2a8N1SBJcz7EthZoazzLQUkZxbf+0271Xzu42C5AEM9K9uFLbsB+ojzHEM72O5X8lPtSwGKNmS7WQyDyg==}
@@ -16549,11 +16540,6 @@ snapshots:
       '@polkadot-api/utils': 0.1.0
     optional: true
 
-  '@polkadot-api/metadata-builders@0.5.0':
-    dependencies:
-      '@polkadot-api/substrate-bindings': 0.6.3
-      '@polkadot-api/utils': 0.1.1
-
   '@polkadot-api/metadata-builders@0.8.2':
     dependencies:
       '@polkadot-api/substrate-bindings': 0.9.2
@@ -16622,13 +16608,6 @@ snapshots:
       scale-ts: 1.6.0
     optional: true
 
-  '@polkadot-api/substrate-bindings@0.6.3':
-    dependencies:
-      '@noble/hashes': 1.5.0
-      '@polkadot-api/utils': 0.1.1
-      '@scure/base': 1.1.9
-      scale-ts: 1.6.0
-
   '@polkadot-api/substrate-bindings@0.9.2':
     dependencies:
       '@noble/hashes': 1.5.0
@@ -16649,8 +16628,6 @@ snapshots:
 
   '@polkadot-api/utils@0.1.0':
     optional: true
-
-  '@polkadot-api/utils@0.1.1': {}
 
   '@polkadot-api/utils@0.1.2': {}
 
