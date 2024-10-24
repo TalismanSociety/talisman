@@ -15,8 +15,8 @@ import { activeTokensStore, filterActiveTokens } from "../tokens/store.activeTok
 // refresh token rates on subscription start if older than 5 minutes
 const MIN_REFRESH_INTERVAL = 5 * 60_000
 
-// refresh token rates while sub is active every 10 minutes
-const REFRESH_INTERVAL = 10 * 3000 //60_000
+// refresh token rates every 30 seconds while sub is active
+const REFRESH_INTERVAL = 30_000 // 30_000ms == 30 seconds
 
 type TokenRatesSubscriptionCallback = (rates: DbTokenRates[]) => void
 
