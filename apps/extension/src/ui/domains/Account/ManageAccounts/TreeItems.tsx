@@ -34,7 +34,7 @@ export const TreeItems: FC<{
   // disallow dropping folders into folders
   const disableDrop = useMemo(
     () => !!disableFolderDrop && parentId !== "root",
-    [disableFolderDrop, parentId]
+    [disableFolderDrop, parentId],
   )
 
   return (
@@ -57,7 +57,7 @@ export const TreeItems: FC<{
                 />
               </TreeDraggable>
             </Fragment>
-          ) : null
+          ) : null,
         )}
       {!!items.length && (
         <SeparatorDropZone parentId={parentId} index={items.length} disabled={disableDrop} />
@@ -136,7 +136,7 @@ export const TreeItemFolder: FC<{
   const addresses = useMemo(() => folder.tree.map((item) => item.address), [folder])
   const balanceTotal = useMemo(
     () => addresses.reduce((sum, address) => sum + (balanceTotalPerAccount[address] ?? 0), 0),
-    [addresses, balanceTotalPerAccount]
+    [addresses, balanceTotalPerAccount],
   )
 
   const { open: renameFolder } = useRenameFolderModal()
@@ -145,10 +145,10 @@ export const TreeItemFolder: FC<{
   const { isOpen, toggle } = useOpenClose(true)
 
   return (
-    <div className={classNames("@container bg-grey-800 relative flex flex-col rounded-sm pt-2 ")}>
+    <div className={classNames("@container bg-grey-800 relative flex flex-col rounded-sm pt-2")}>
       <div
         className={classNames(
-          " flex h-[5.3rem] items-center gap-8 overflow-hidden border-[1px] border-transparent px-8 pb-0"
+          "flex h-[5.3rem] items-center gap-8 overflow-hidden border-[1px] border-transparent px-8 pb-0",
         )}
       >
         <AccountFolderIcon className="shrink-0 text-xl" />
@@ -221,7 +221,7 @@ const EmptyFolderDropZone: FC<{
       index={0}
       disabled={disabled}
     >
-      <div className=" flex size-full flex-col items-center justify-center">
+      <div className="flex size-full flex-col items-center justify-center">
         {t("Drag accounts here")}
       </div>
     </TreeDroppable>

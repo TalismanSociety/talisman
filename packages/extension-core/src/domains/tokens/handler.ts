@@ -23,7 +23,7 @@ export default class TokensHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -123,14 +123,14 @@ export default class TokensHandler extends ExtensionHandler {
             token.type === "evm-uniswapv2"
               ? "UNIV2"
               : token.type === "evm-erc20"
-              ? "ERC20"
-              : "unknown"
+                ? "ERC20"
+                : "unknown"
           } token`,
           {
             evmNetworkId: token.evmNetworkId,
             symbol: token.symbol,
             contractAddress: token.contractAddress,
-          }
+          },
         )
 
         const newTokenId = await chaindataProvider.addCustomToken(newToken)

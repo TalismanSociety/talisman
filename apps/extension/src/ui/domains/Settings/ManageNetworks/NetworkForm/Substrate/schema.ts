@@ -28,7 +28,7 @@ export const subNetworkFormSchema = yup
         (url) =>
           url === undefined ||
           url.length < 1 ||
-          (/^https:\/\//i.test(url) && /\.subscan\.io\/?$/i.test(url))
+          (/^https:\/\//i.test(url) && /\.subscan\.io\/?$/i.test(url)),
       ),
     hasCheckMetadataHash: yup.boolean().required(),
     rpcs: yup
@@ -42,7 +42,7 @@ export const subNetworkFormSchema = yup
             .min(1, i18next.t("RPC URL required"))
             .matches(wsRegEx, i18next.t("Invalid URL")),
           genesisHash: yup.string(),
-        })
+        }),
       )
       .test("rpc-urls-unique", i18next.t("Must be unique"), function (rpcs) {
         if (!rpcs?.length) return true
@@ -71,7 +71,7 @@ export const subNetworkFormSchema = yup
 
           const hashes = rpcs.map(({ genesisHash }) => genesisHash)
           const different = hashes.find(
-            (genesisHash) => genesisHash && genesisHash !== testContext.parent.genesisHash
+            (genesisHash) => genesisHash && genesisHash !== testContext.parent.genesisHash,
           )
 
           if (different)
@@ -80,7 +80,7 @@ export const subNetworkFormSchema = yup
               path: `rpcs[${hashes.lastIndexOf(different)}].url`,
             })
           return true
-        }
+        },
       ),
   })
   .required()

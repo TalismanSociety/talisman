@@ -21,7 +21,7 @@ const useMnemonicDeleteModalProvider = () => {
       setMnemonicId(mnemonicId)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen],
   )
 
   const canDelete = useCallback(
@@ -29,7 +29,7 @@ const useMnemonicDeleteModalProvider = () => {
       const mnemonic = mnemonics.find((m) => m.id === mnemonicId)
       return !!mnemonic?.confirmed
     },
-    [mnemonics]
+    [mnemonics],
   )
 
   return {
@@ -42,7 +42,7 @@ const useMnemonicDeleteModalProvider = () => {
 }
 
 export const [MnemonicDeleteModalProvider, useMnemonicDeleteModal] = provideContext(
-  useMnemonicDeleteModalProvider
+  useMnemonicDeleteModalProvider,
 )
 
 export const MnemonicDeleteModal = () => {
@@ -107,7 +107,7 @@ export const MnemonicDeleteModal = () => {
             primary
             onClick={handleConfirmClick}
             disabled={disableDelete}
-            className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80  enabled:text-white"
+            className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80 enabled:text-white"
           >
             {t("Delete")}
           </Button>

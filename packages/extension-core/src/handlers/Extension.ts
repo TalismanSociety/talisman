@@ -95,7 +95,7 @@ export default class Extension extends ExtensionHandler {
               .filter(
                 ({ json: { meta } }) =>
                   isTalismanHostname(autoAddSite.url) ||
-                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType)
+                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType),
               )
               .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)
@@ -199,7 +199,7 @@ export default class Extension extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     // Reset the auto lock timer on any message, the user is still actively using the extension
     this.stores.password.resetAutoLockTimer(this.#autoLockTimeout)

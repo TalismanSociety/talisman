@@ -60,6 +60,6 @@ export interface BalancesMessages {
   "pri(balances.byparams.subscribe)": [
     RequestBalancesByParamsSubscribe,
     boolean,
-    BalanceSubscriptionResponse
+    BalanceSubscriptionResponse,
   ]
 }

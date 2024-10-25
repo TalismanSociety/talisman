@@ -1,6 +1,5 @@
 import { sleep } from "@talismn/util"
-import { IS_FIREFOX } from "extension-shared"
-import { log } from "extension-shared"
+import { IS_FIREFOX, log } from "extension-shared"
 
 import { appStore } from "../domains/app/store.app"
 import { RequestRoute } from "../domains/app/types"

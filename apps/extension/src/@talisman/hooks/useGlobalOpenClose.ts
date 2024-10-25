@@ -7,8 +7,8 @@ const allOpenCloseState$ = new BehaviorSubject<{ [key: string]: boolean }>({})
 export const [useGlobalOpenCloseValue, getGlobalOpenCloseValue$] = bind((key: string) =>
   allOpenCloseState$.pipe(
     map((state) => state[key] ?? false),
-    distinctUntilChanged<boolean>()
-  )
+    distinctUntilChanged<boolean>(),
+  ),
 )
 
 export const useGlobalOpenClose = (key: string) => {
@@ -19,7 +19,7 @@ export const useGlobalOpenClose = (key: string) => {
       const newValue = typeof value === "function" ? value(allOpenCloseState$.value[key]) : value
       allOpenCloseState$.next({ ...allOpenCloseState$.value, [key]: newValue })
     },
-    [key]
+    [key],
   )
 
   const open = useCallback(() => setIsOpen(true), [setIsOpen])

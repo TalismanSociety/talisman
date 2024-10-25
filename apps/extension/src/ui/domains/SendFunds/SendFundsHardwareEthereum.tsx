@@ -23,7 +23,7 @@ export const SendFundsHardwareEthereum = () => {
         setError(err as Error)
       }
     },
-    [sendWithSignature]
+    [sendWithSignature],
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

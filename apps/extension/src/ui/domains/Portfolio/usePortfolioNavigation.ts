@@ -11,7 +11,7 @@ export const usePortfolioNavigation = () => {
 
   const [accountAddress, folderId] = useMemo(
     () => [searchParams.get("account"), searchParams.get("folder")],
-    [searchParams]
+    [searchParams],
   )
 
   const treeName = useMemo(() => {
@@ -51,7 +51,7 @@ export const usePortfolioNavigation = () => {
       searchParams.set("account", address)
       updateSearchParams(searchParams)
     },
-    [searchParams, updateSearchParams]
+    [searchParams, updateSearchParams],
   )
 
   const setFolderId = useCallback(
@@ -60,7 +60,7 @@ export const usePortfolioNavigation = () => {
       searchParams.delete("account")
       updateSearchParams(searchParams)
     },
-    [searchParams, updateSearchParams]
+    [searchParams, updateSearchParams],
   )
 
   const selectedAccount = useMemo<AccountJsonAny | null>(() => {
@@ -75,7 +75,7 @@ export const usePortfolioNavigation = () => {
     if (selectedFolder)
       return (
         allAccounts.filter((acc) =>
-          selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address))
+          selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address)),
         ) ?? null
       )
     return portfolioAccounts
@@ -100,7 +100,9 @@ const isAddressInTree = (tree: Tree, address: string): boolean => {
       .filter(isTreeAccount)
       .map((account) => account.address)
       .concat(
-        tree.filter(isTreeFolder).flatMap((folder) => folder.tree.map((account) => account.address))
+        tree
+          .filter(isTreeFolder)
+          .flatMap((folder) => folder.tree.map((account) => account.address)),
       )
       .map((address) => normalizeAddress(address))
 

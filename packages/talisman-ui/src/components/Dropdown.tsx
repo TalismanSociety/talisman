@@ -7,7 +7,7 @@ export type DropdownOption = Record<string, unknown>
 
 export type DropdownOptionRender<T extends DropdownOption> = (
   item: T,
-  labelKey?: keyof T
+  labelKey?: keyof T,
 ) => ReactNode
 
 const DEFAULT_RENDER = <T extends DropdownOption>(item: T, labelKey?: keyof T): ReactNode => {
@@ -52,7 +52,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
             className={classNames(
               "bg-grey-800 enabled:hover:text-grey-300 disabled:bg-field disabled:text-body-disabled flex w-full items-center gap-8 p-8 text-left",
               open ? "rounded-t-sm" : "rounded-sm",
-              buttonClassName
+              buttonClassName,
             )}
           >
             <div className="flex flex-grow flex-col justify-center overflow-hidden">
@@ -71,7 +71,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
                       "bg-grey-800 hover:bg-grey-750 hover:text-grey-300 w-full max-w-full cursor-pointer overflow-hidden p-8",
                       "flex-grow flex-col justify-center",
                       i === arr.length - 1 && "rounded-b-sm",
-                      optionClassName
+                      optionClassName,
                     )}
                   >
                     {renderItem(item, propertyLabel)}

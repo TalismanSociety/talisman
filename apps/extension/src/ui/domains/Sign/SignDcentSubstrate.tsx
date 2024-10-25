@@ -93,7 +93,7 @@ const useDcentPayload = (payload?: SignerPayloadRaw | SignerPayloadJSON, fee?: s
             decimals: token.decimals,
           } as DcentSubstratePayload)
         : null,
-    [account, fee, sigHash, token]
+    [account, fee, sigHash, token],
   )
 
   return {

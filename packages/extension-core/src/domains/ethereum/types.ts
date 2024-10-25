@@ -66,7 +66,7 @@ type TalismanRpcSchema = [
     Method: "wallet_requestPermissions"
     Parameters: [permissions: { eth_accounts: Record<string, unknown> }]
     ReturnType: Web3WalletPermission[]
-  }
+  },
 ]
 
 export type FullRpcSchema = [...PublicRpcSchema, ...WalletRpcSchema, ...TalismanRpcSchema]
@@ -74,7 +74,7 @@ export type FullRpcSchema = [...PublicRpcSchema, ...WalletRpcSchema, ...Talisman
 type EthRequestSignaturesMap<TRpcSchema extends RpcSchema> = {
   [K in TRpcSchema[number]["Method"]]: [
     Extract<TRpcSchema[number], { Method: K }>["Parameters"],
-    Extract<TRpcSchema[number], { Method: K }>["ReturnType"]
+    Extract<TRpcSchema[number], { Method: K }>["ReturnType"],
   ]
 }
 

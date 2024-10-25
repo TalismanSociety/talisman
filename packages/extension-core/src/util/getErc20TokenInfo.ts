@@ -8,7 +8,7 @@ import { getErc20ContractData } from "./getErc20ContractData"
 export const getErc20TokenInfo = async (
   client: Client,
   evmNetworkId: EvmNetworkId,
-  contractAddress: EvmAddress
+  contractAddress: EvmAddress,
 ): Promise<CustomEvmErc20TokenCreate> => {
   const [{ decimals, symbol }, coinGeckoData] = await Promise.all([
     getErc20ContractData(client, contractAddress),

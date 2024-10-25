@@ -41,12 +41,12 @@ const handler: ProxyHandler<any> = {
     } else if (typeof target[name] === "object") {
       safeConsoleDebug(
         `[Proxy ${target.constructor.name} - Reading Property: ${String(name)} => `,
-        { result: obj[String(name)] }
+        { result: obj[String(name)] },
       )
     } else
       safeConsoleDebug(
         `[Proxy ${target.constructor.name} - Reading Property: ${String(name)} => %s`,
-        String(name) in obj ? String(obj[String(name)]) : "MISSING PROPERTY"
+        String(name) in obj ? String(obj[String(name)]) : "MISSING PROPERTY",
       )
 
     return Reflect.get(target, name, receiver)

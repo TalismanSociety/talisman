@@ -1,6 +1,7 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
+
+import { WithTooltip } from "@talisman/components/Tooltip"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { useSendFunds } from "./useSendFunds"

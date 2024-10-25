@@ -23,7 +23,7 @@ import { useFeePriorityOptionsUI } from "./common"
 
 const getGasSettings = (
   gasSettingsByPriority: GasSettingsByPriority,
-  priority: EthPriorityOptionName
+  priority: EthPriorityOptionName,
 ) => {
   switch (gasSettingsByPriority.type) {
     case "eip1559":
@@ -106,7 +106,7 @@ const PriorityOption = ({
       gasSettings,
       txDetails.estimatedGas,
       txDetails.baseFeePerGas,
-      txDetails.estimatedL1DataFee ?? 0n
+      txDetails.estimatedL1DataFee ?? 0n,
     )
   }, [
     gasSettingsByPriority,
@@ -124,7 +124,7 @@ const PriorityOption = ({
       type="button"
       className={classNames(
         "hover:bg-grey-700 mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-none hover:text-white",
-        selected ? "bg-grey-700 text-white" : "text-body-secondary bg-grey-750"
+        selected ? "bg-grey-700 text-white" : "text-body-secondary bg-grey-750",
       )}
     >
       <div>
@@ -176,7 +176,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
     (priority: EthPriorityOptionName) => () => {
       if (onChange) onChange(priority)
     },
-    [onChange]
+    [onChange],
   )
 
   return (

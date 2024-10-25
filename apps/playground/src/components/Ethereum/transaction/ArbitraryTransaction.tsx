@@ -37,7 +37,7 @@ const SendTokensInner = () => {
       value: formData.amount ? parseEther(formData.amount) : undefined,
       data: (formData.data as `0x${string}`) || undefined,
     }),
-    [formData.amount, formData.data, formData.to]
+    [formData.amount, formData.data, formData.to],
   )
 
   const { data: gas } = useEstimateGas(request)
@@ -69,7 +69,7 @@ const SendTokensInner = () => {
           To
         </label>
         <input
-          className="h-16 w-[42rem] font-mono "
+          className="h-16 w-[42rem] font-mono"
           id="tx-to"
           type="text"
           autoComplete="off"
@@ -84,7 +84,7 @@ const SendTokensInner = () => {
         <textarea
           id="tx-data"
           placeholder="0x..."
-          className="w-[42rem] font-mono "
+          className="w-[42rem] font-mono"
           rows={3}
           spellCheck={false}
           autoComplete="off"
@@ -110,13 +110,13 @@ const SendTokensInner = () => {
         </Button>
         {isSuccess && (
           <>
-            <pre className="text-alert-success my-8 ">
+            <pre className="text-alert-success my-8">
               Transaction: {JSON.stringify(hash, undefined, 2)}
             </pre>
             <TransactionReceipt hash={hash} />
           </>
         )}
-        {isError && <div className="text-alert-error my-8 ">Error : {errorSend?.message}</div>}
+        {isError && <div className="text-alert-error my-8">Error : {errorSend?.message}</div>}
       </div>
     </form>
   )

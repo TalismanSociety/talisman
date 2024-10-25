@@ -56,7 +56,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
       isCustom && isBuiltInChain.isFetched
         ? [!isBuiltInChain.data, !!isBuiltInChain.data]
         : [false, false],
-    [isCustom, isBuiltInChain.data, isBuiltInChain.isFetched]
+    [isCustom, isBuiltInChain.data, isBuiltInChain.isFetched],
   )
 
   // on edit screen, wait for existing chain to be loaded
@@ -79,7 +79,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
 
 const chainToFormData = (
   chain?: Chain | CustomChain,
-  nativeToken?: SubNativeToken | CustomSubNativeToken
+  nativeToken?: SubNativeToken | CustomSubNativeToken,
 ): SubNetworkFormData | undefined => {
   if (!chain) return undefined
 

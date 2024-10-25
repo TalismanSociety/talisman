@@ -18,7 +18,7 @@ export const watchEthereumTransaction = async (
   evmNetworkId: EvmNetworkId,
   hash: `0x${string}`,
   unsigned: TransactionRequest<string>,
-  options: WatchTransactionOptions = {}
+  options: WatchTransactionOptions = {},
 ) => {
   try {
     const { siteUrl, notifications, transferInfo = {} } = options
@@ -64,7 +64,7 @@ export const watchEthereumTransaction = async (
         updateTransactionStatus(
           hash,
           receipt.status === "success" ? "success" : "error",
-          receipt.blockNumber
+          receipt.blockNumber,
         )
       }
 
@@ -72,7 +72,7 @@ export const watchEthereumTransaction = async (
         await createNotification(
           receipt.status === "success" ? "success" : "error",
           networkName,
-          txUrl
+          txUrl,
         )
 
       // wait 2 confirmations before marking as confirmed
@@ -83,7 +83,7 @@ export const watchEthereumTransaction = async (
             hash,
             receipt.status === "success" ? "success" : "error",
             receipt.blockNumber,
-            true
+            true,
           )
       }
     } catch (err) {
@@ -103,7 +103,7 @@ export const watchEthereumTransaction = async (
           isNotFound ? "not_found" : "error",
           networkName,
           txUrl,
-          err as Error
+          err as Error,
         )
       // eslint-disable-next-line no-console
       else console.error("Failed to watch transaction", { err })

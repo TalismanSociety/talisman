@@ -25,7 +25,7 @@ export const useCelestialArtifact = ({
 }: CelestialArtifactProps) => {
   const duration = useMemo(
     () => Math.round(randBetween(config.durationMin, config.durationMax)),
-    [config.durationMax, config.durationMin]
+    [config.durationMax, config.durationMin],
   )
 
   const refInitialized = useRef(false)
@@ -39,7 +39,7 @@ export const useCelestialArtifact = ({
         duration,
         initialized: refInitialized.current,
       }),
-    [color, config, duration, artifactIndex, parentSize]
+    [color, config, duration, artifactIndex, parentSize],
   )
 
   const [artifact, setArtifact] = useState(generate)

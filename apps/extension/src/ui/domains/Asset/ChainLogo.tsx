@@ -33,7 +33,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) =
 
   const imgClassName = useMemo(
     () => classNames("relative block w-[1em] shrink-0 aspect-square", className),
-    [className]
+    [className],
   )
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
@@ -63,7 +63,7 @@ const ChainLogoInner: FC<ChainLogoProps> = ({ id, className }) => {
 
   const props: ChainLogoBaseProps = useMemo(
     () => chain ?? evmNetworkSubstrateChain ?? evmNetwork ?? {},
-    [chain, evmNetwork, evmNetworkSubstrateChain]
+    [chain, evmNetwork, evmNetworkSubstrateChain],
   )
 
   return <ChainLogoBase {...props} className={className} />
@@ -73,7 +73,7 @@ const ChainLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className
+      className,
     )}
   ></div>
 )

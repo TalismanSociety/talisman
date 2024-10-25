@@ -45,7 +45,7 @@ export const useTalismanOrb = (seed: string) => {
     // the 2 darkest ones will be used as gradient BG
     // the lightest one will be used as gradient circle, to mimic a 3D lighting effect
     const colors = [colorFromHash(hash1), colorFromHash(hash2), colorFromHash(hash3)].sort(
-      (c1, c2) => c1.lightness() - c2.lightness()
+      (c1, c2) => c1.lightness() - c2.lightness(),
     )
 
     // random location in top left corner, avoid beeing to close from the center

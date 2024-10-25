@@ -55,7 +55,7 @@ type Props = {
  */
 export const AccountContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
   { analyticsFrom, address, placement, trigger, hideManageAccounts, disabled },
-  ref
+  ref,
 ) {
   const { t } = useTranslation()
   const propsAccount = useAccountByAddress(address)
@@ -66,10 +66,10 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
       ? // if address prop is null, set account to null
         null
       : address === undefined
-      ? // if address prop is undefined, set account to selectedAccount
-        selectedAccount
-      : // if address prop is a string, set account to propsAccount
-        propsAccount) ??
+        ? // if address prop is undefined, set account to selectedAccount
+          selectedAccount
+        : // if address prop is a string, set account to propsAccount
+          propsAccount) ??
     // make sure account is either an `Account` or undefined
     undefined
 
@@ -96,31 +96,31 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const canRename = !!account
   const openAccountRenameModal = useCallback(
     () => _openAccountRenameModal(account),
-    [_openAccountRenameModal, account]
+    [_openAccountRenameModal, account],
   )
 
   const { canExportAccountFunc, open: _openAccountExportModal } = useAccountExportModal()
   const canExport = useMemo(() => canExportAccountFunc(account), [account, canExportAccountFunc])
   const openAccountExportModal = useCallback(
     () => _openAccountExportModal(account),
-    [_openAccountExportModal, account]
+    [_openAccountExportModal, account],
   )
 
   const { canExportAccountFunc: canExportAccountPkFunc, open: _openAccountExportPkModal } =
     useAccountExportPrivateKeyModal()
   const canExportPk = useMemo(
     () => canExportAccountPkFunc(account),
-    [account, canExportAccountPkFunc]
+    [account, canExportAccountPkFunc],
   )
   const openAccountExportPkModal = useCallback(
     () => _openAccountExportPkModal(account),
-    [_openAccountExportPkModal, account]
+    [_openAccountExportPkModal, account],
   )
 
   const { open: _openAccountRemoveModal } = useAccountRemoveModal()
   const openAccountRemoveModal = useCallback(
     () => _openAccountRemoveModal(account),
-    [_openAccountRemoveModal, account]
+    [_openAccountRemoveModal, account],
   )
 
   const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])

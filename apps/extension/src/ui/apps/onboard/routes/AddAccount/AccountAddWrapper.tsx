@@ -1,7 +1,8 @@
+import { FC } from "react"
+
 import { OnboardDialog } from "@ui/apps/onboard/components/OnboardDialog"
 import { useOnboard } from "@ui/apps/onboard/context"
 import { OnboardLayout } from "@ui/apps/onboard/OnboardLayout"
-import { FC } from "react"
 
 export const AccountAddWrapper: FC<{
   title?: string

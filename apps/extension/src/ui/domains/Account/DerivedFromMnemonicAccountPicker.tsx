@@ -29,7 +29,7 @@ const useDerivedAccounts = (
   type: AccountAddressType,
   selectedAccounts: RequestAccountCreateFromSuri[],
   pageIndex: number,
-  itemsPerPage: number
+  itemsPerPage: number,
 ) => {
   const walletAccounts = useAccounts()
   const [derivedAccounts, setDerivedAccounts] = useState<
@@ -58,7 +58,7 @@ const useDerivedAccounts = (
             type,
             address,
           } as DerivedFromMnemonicAccount
-        })
+        }),
       )
 
       setDerivedAccounts(newAccounts)
@@ -77,7 +77,7 @@ const useDerivedAccounts = (
             .filter((acc): acc is DerivedFromMnemonicAccount & { type: string } => !!acc?.type)
             .map((acc) => ({ address: acc.address, type: acc.type }))
         : [],
-    [itemsPerPage, derivedAccounts]
+    [itemsPerPage, derivedAccounts],
   )
   const balances = useAccountImportBalances(accountImportDefs)
 
@@ -89,11 +89,11 @@ const useDerivedAccounts = (
         const existingAccount = walletAccounts?.find(
           (wa) =>
             convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === wa.genesisHash
+            acc.genesisHash === wa.genesisHash,
         )
 
         const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
+          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
         )
 
         const isBalanceLoading =
@@ -109,7 +109,7 @@ const useDerivedAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts]
+    [balances, derivedAccounts, selectedAccounts, walletAccounts],
   )
 
   useEffect(() => {
@@ -148,7 +148,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
     type,
     selectedAccounts,
     pageIndex,
-    itemsPerPage
+    itemsPerPage,
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -160,7 +160,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
             name,
             suri,
             type,
-          })
+          }),
     )
   }, [])
 

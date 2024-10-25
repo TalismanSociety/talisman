@@ -15,7 +15,7 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
   const evmNetworksTable = tx.table<EvmNetwork, EvmNetworkId>("evmNetworks")
 
   const nativeTokens = (await tokensTable.toArray()).filter((t) =>
-    ["substrate-native", "evm-native"].includes(t.type)
+    ["substrate-native", "evm-native"].includes(t.type),
   )
   const chains = await chainsTable.toArray()
   const evmNetworks = await evmNetworksTable.toArray()
@@ -33,8 +33,8 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
       nativeToken.type === "substrate-native"
         ? subNativeTokenId(networkId)
         : nativeToken.type === "evm-native"
-        ? evmNativeTokenId(networkId)
-        : undefined
+          ? evmNativeTokenId(networkId)
+          : undefined
     if (!id) continue
 
     const chain = chains.find(({ id }) => id === networkId)

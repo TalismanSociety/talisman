@@ -35,8 +35,8 @@ const AccountCreateMethodTypeButton = ({
       className={classNames(
         isSelected
           ? `border-grey-50 bg-opacity-5`
-          : `border-black-secondary  hover:bg-grey-800 hover:text-grey-300 focus:bg-grey-800 focus:text-grey-300 border-opacity-10 bg-opacity-[0.15]`,
-        "bg-black-secondary h-[13.8rem] cursor-pointer rounded border-2 "
+          : `border-black-secondary hover:bg-grey-800 hover:text-grey-300 focus:bg-grey-800 focus:text-grey-300 border-opacity-10 bg-opacity-[0.15]`,
+        "bg-black-secondary h-[13.8rem] cursor-pointer rounded border-2",
       )}
       onClick={() => setMethodType(methodType)}
       onKeyUp={(e) => {

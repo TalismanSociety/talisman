@@ -6,7 +6,7 @@ export type NotificationType = "submitted" | "success" | "error" | "not_found"
 const getNotificationOptions = (
   type: NotificationType,
   networkName: string,
-  error?: Error & { shortMessage?: string; reason?: string }
+  error?: Error & { shortMessage?: string; reason?: string },
 ): chrome.notifications.NotificationOptions<true> => {
   switch (type) {
     case "submitted":
@@ -49,7 +49,7 @@ export const createNotification = async (
   type: NotificationType,
   networkName: string,
   url: string,
-  error?: Error
+  error?: Error,
 ) => {
   try {
     ensureNotificationClickHandler()

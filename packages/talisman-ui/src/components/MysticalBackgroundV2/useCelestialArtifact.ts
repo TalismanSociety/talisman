@@ -1,5 +1,5 @@
 import Color from "color"
-import { AnimationPlaybackControls, animate } from "framer-motion"
+import { animate, AnimationPlaybackControls } from "framer-motion"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
@@ -35,7 +35,7 @@ const generateCharacteristics = (
   parentSize: ParentSize,
   isAcolyte = false,
   cx?: number,
-  cy?: number
+  cy?: number,
 ) => {
   const largerBound = Math.max(parentSize.width, parentSize.height)
   const sizeRatio =
@@ -70,11 +70,11 @@ export const useCelestialArtifact = (
   parentSize: ParentSize,
   isAcolyte?: boolean,
   cx?: number,
-  cy?: number
+  cy?: number,
 ) => {
   const refAnimations = useRef<ArtifactAnimations>({})
   const refResult = useRef<ArtifactCharacteristics>(
-    generateCharacteristics(config, parentSize, isAcolyte, cx, cy)
+    generateCharacteristics(config, parentSize, isAcolyte, cx, cy),
   )
 
   // keep acolyte info as ref to prevent change() to be retriggered when hovering
@@ -100,7 +100,7 @@ export const useCelestialArtifact = (
       duration: isAcolyte ? config.durationAcolyte : config.durationArtifact,
       stiffness: isAcolyte ? config.stiffnessAcolyte : config.stiffnessArtifact,
     }),
-    [config, isAcolyte]
+    [config, isAcolyte],
   )
 
   // sets one property
@@ -115,7 +115,7 @@ export const useCelestialArtifact = (
         },
       })
     },
-    [transition]
+    [transition],
   )
 
   // changes all properties with newly generated values

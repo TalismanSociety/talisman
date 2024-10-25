@@ -72,7 +72,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
-      }))
+      })),
     )
 
     // RESERVED
@@ -88,7 +88,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         meta: reserve.meta,
-      }))
+      })),
     )
 
     // STAKED (NOM POOLS)
@@ -104,7 +104,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         meta: nomPool.meta,
-      }))
+      })),
     )
 
     // CROWDLOANS
@@ -120,7 +120,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         meta: crowdloan.meta,
-      }))
+      })),
     )
 
     // STAKED (SUBTENSOR)
@@ -136,7 +136,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         meta: subtensor.meta,
-      }))
+      })),
     )
 
     return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]

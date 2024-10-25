@@ -23,9 +23,9 @@ const CurrencyButton: FC<{
       type="button"
       className={classNames(
         "text-body-secondary flex h-28 w-full items-center gap-4 rounded-sm px-6",
-        "border-grey-800 border ",
+        "border-grey-800 border",
         selected && "bg-grey-900",
-        "hover:border-grey-700 hover:bg-grey-800 stroke-primary"
+        "hover:border-grey-700 hover:bg-grey-800 stroke-primary",
       )}
       onClick={onClick}
     >
@@ -62,14 +62,14 @@ const CurrenciesList = () => {
         setSelected((selected) =>
           newSelectable.length === 0 || newSelectable.includes(selected)
             ? selected
-            : newSelectable[0]
+            : newSelectable[0],
         )
 
         return newSelectable
       })
     },
 
-    [setFavorites, setSelected]
+    [setFavorites, setSelected],
   )
 
   return (
@@ -101,7 +101,7 @@ const CurrenciesDrawerContent = () => {
       <div className="px-8">
         <p className="text-xs">
           {t(
-            "Choose your favorite currencies. You can toggle between your favorite currencies directly from your portfolio."
+            "Choose your favorite currencies. You can toggle between your favorite currencies directly from your portfolio.",
           )}
         </p>
       </div>

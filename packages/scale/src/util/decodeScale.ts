@@ -7,7 +7,7 @@ type ScaleStorageCoder = ReturnType<ReturnType<typeof getDynamicBuilder>["buildS
 export const decodeScale = <T>(
   scaleCoder: ScaleStorageCoder | undefined,
   change: string | null,
-  error?: string
+  error?: string,
 ): T | null => {
   if (change === null) return null
 

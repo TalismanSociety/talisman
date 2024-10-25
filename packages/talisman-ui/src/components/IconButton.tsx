@@ -9,13 +9,13 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       ref={ref}
       className={classNames(
         "text-body-secondary enabled:hover:text-body inline-block shrink-0 p-0 text-lg disabled:opacity-50",
-        className
+        className,
       )}
       type={type}
       {...rest}
     >
       {children}
     </button>
-  )
+  ),
 )
 IconButton.displayName = "IconButton"

@@ -26,7 +26,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsLoading(true)
       props.onLoadStart?.(e)
     },
-    [isError, props]
+    [isError, props],
   )
 
   const handleLoad: React.ReactEventHandler<HTMLImageElement> = useCallback(
@@ -34,7 +34,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsLoading(false)
       props.onLoad?.(e)
     },
-    [props]
+    [props],
   )
   const handleError: React.ReactEventHandler<HTMLImageElement> = useCallback(
     (e) => {
@@ -42,7 +42,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsError(true)
       props.onError?.(e)
     },
-    [props]
+    [props],
   )
 
   return (
@@ -53,7 +53,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       className={classNames(
         props.className,
         "indent-[-999em] leading-[0]",
-        isLoading && "animate-pulse"
+        isLoading && "animate-pulse",
       )}
       loading="lazy"
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}

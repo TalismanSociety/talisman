@@ -33,7 +33,7 @@ const ViewDetailsContent: FC<{
         <div className="text-body-secondary">{t("Details")}</div>
         <p>
           {t(
-            "You are about to sign in via Ethereum. Please ensure you trust the application before continuing."
+            "You are about to sign in via Ethereum. Please ensure you trust the application before continuing.",
           )}
         </p>
         <ViewDetailsAddress

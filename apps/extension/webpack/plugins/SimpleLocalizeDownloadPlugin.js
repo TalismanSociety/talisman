@@ -19,7 +19,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
        * If true, this plugin will simply substitute `process.env.SUPPORTED_LANGUAGES` for `'{"en":"English"}'`.
        */
       devMode: false,
-    }
+    },
   ) {
     this.options = options
   }
@@ -37,7 +37,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
 
     if (!devMode && !hasKeys)
       console.warn(
-        `No SimpleLocalize API key has been configured. This build will use the existing i18n translations at apps/extension/public/locales`
+        `No SimpleLocalize API key has been configured. This build will use the existing i18n translations at apps/extension/public/locales`,
       )
 
     // only fetch translations for prod builds,
@@ -57,7 +57,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
       if (!hasDownloaded) {
         console.log("Fetching languages from SimpleLocalize")
         const languages = await simpleLocalizeFetch(
-          "https://api.simplelocalize.io/api/v1/languages"
+          "https://api.simplelocalize.io/api/v1/languages",
         )
           .catch((error) => {
             console.error("Failed to fetch languages list:", error)
@@ -70,7 +70,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
 
         setSupportedLanguages(
           options,
-          Object.keys(languages).length > 0 ? languages : fallbackLanguages
+          Object.keys(languages).length > 0 ? languages : fallbackLanguages,
         )
       }
       callback()
@@ -93,15 +93,15 @@ module.exports = class SimpleLocalizeDownloadPlugin {
               .catch((error) => {
                 console.error(`Unable to get ${language} file for namespace ${namespace}:`, error)
                 return []
-              })
-          )
+              }),
+          ),
         )
 
         namespaceJson.forEach(({ namespace, language, json }) =>
           compilation.emitAsset(
             `locales/${language}/${namespace}.json`,
-            new RawSource(JSON.stringify(json))
-          )
+            new RawSource(JSON.stringify(json)),
+          ),
         )
 
         const languages = namespaceJson
@@ -141,13 +141,13 @@ module.exports = class SimpleLocalizeDownloadPlugin {
 const setSupportedLanguages = (
   options,
   supportedLanguages = fallbackLanguages,
-  devMode = false
+  devMode = false,
 ) => {
   const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
   const esbuildPlugin = options.plugins.find((plugin) => plugin instanceof EsbuildPlugin)
   if (!definePlugin && !esbuildPlugin)
     return console.warn(
-      `No DefinePlugin found - process.env.SUPPORTED_LANGUAGES will not be substituted`
+      `No DefinePlugin found - process.env.SUPPORTED_LANGUAGES will not be substituted`,
     )
 
   // we only need to know `supportedLanguages` is correct when we're building a production release
@@ -169,12 +169,12 @@ const setSupportedLanguages = (
   // > or by using JSON.stringify('production').
   if (definePlugin)
     definePlugin.definitions["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
-      JSON.stringify(supportedLanguages)
+      JSON.stringify(supportedLanguages),
     )
 
   if (esbuildPlugin)
     esbuildPlugin.options.define["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
-      JSON.stringify(supportedLanguages)
+      JSON.stringify(supportedLanguages),
     )
 }
 

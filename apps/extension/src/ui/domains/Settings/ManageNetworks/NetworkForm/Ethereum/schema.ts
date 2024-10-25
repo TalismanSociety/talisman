@@ -53,8 +53,8 @@ export const evmNetworkFormSchema = yup
                 })
               }
               return true
-            }
-          )
+            },
+          ),
       )
       .required(i18next.t("Required"))
       .min(1, i18next.t("RPC URL required"))

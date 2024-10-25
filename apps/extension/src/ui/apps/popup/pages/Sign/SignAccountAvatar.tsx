@@ -1,8 +1,9 @@
-import { AccountJsonAny } from "@extension/core"
 import { encodeAnyAddress } from "@talismn/util"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 
 export const SignAccountAvatar: FC<{ account?: AccountJsonAny; ss58Format?: number | null }> = ({
   account,

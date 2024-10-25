@@ -73,7 +73,7 @@ export default interface MessageTypes {
     currentPw: string,
     newPw: string,
     newPwConfirm: string,
-    cb: (val: ChangePasswordStatusUpdate) => void
+    cb: (val: ChangePasswordStatusUpdate) => void,
   ) => Promise<boolean>
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
@@ -90,17 +90,17 @@ export default interface MessageTypes {
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSign: (
     id: SigningRequestID<"substrate-sign">,
-    payload?: SignerPayloadJSON
+    payload?: SignerPayloadJSON,
   ) => Promise<boolean>
   approveSignHardware: (
     id: SigningRequestID<"substrate-sign">,
     signature: HexString,
-    payload?: SignerPayloadJSON
+    payload?: SignerPayloadJSON,
   ) => Promise<boolean>
   approveSignQr: (
     id: SigningRequestID<"substrate-sign">,
     signature: HexString,
-    payload?: SignerPayloadJSON
+    payload?: SignerPayloadJSON,
   ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
 
@@ -129,7 +129,7 @@ export default interface MessageTypes {
   accountCreate: (
     name: string,
     type: AccountAddressType,
-    options: RequestAccountCreateOptions
+    options: RequestAccountCreateOptions,
   ) => Promise<string>
   accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
@@ -140,7 +140,7 @@ export default interface MessageTypes {
     address: string,
     type: KeypairType,
     path: string,
-    tokenIds: TokenId[]
+    tokenIds: TokenId[],
   ) => Promise<string>
   accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
@@ -148,21 +148,21 @@ export default interface MessageTypes {
     name: string,
     address: string,
     genesisHash: `0x${string}`,
-    signetUrl: string
+    signetUrl: string,
   ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
   accountsOnChainIdsResolveNames: (
-    names: string[]
+    names: string[],
   ) => Promise<Record<string, [string, NsLookupType] | null>>
   accountsOnChainIdsLookupAddresses: (addresses: string[]) => Promise<Record<string, string | null>>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
     address: string,
     password: string,
-    exportPw: string
+    exportPw: string,
   ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
@@ -182,7 +182,7 @@ export default interface MessageTypes {
     addressesByChain: AddressesByChain,
     addressesAndEvmNetworks: AddressesAndEvmNetwork,
     addressesAndTokens: AddressesAndTokens,
-    cb: (balances: BalanceSubscriptionResponse) => void
+    cb: (balances: BalanceSubscriptionResponse) => void,
   ) => UnsubscribeFn
 
   // authorized sites message types ------------------------------------------
@@ -202,7 +202,7 @@ export default interface MessageTypes {
 
   metadataUpdatesSubscribe: (
     genesisHash: HexString,
-    cb: (status: MetadataUpdateStatus) => void
+    cb: (status: MetadataUpdateStatus) => void,
   ) => UnsubscribeFn
 
   // chain message types
@@ -213,7 +213,7 @@ export default interface MessageTypes {
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
-    specVersion?: number
+    specVersion?: number,
   ) => Promise<HexString>
 
   // token message types
@@ -234,7 +234,7 @@ export default interface MessageTypes {
     toAddress: string,
     amount?: string,
     tip?: string,
-    method?: AssetTransferMethod
+    method?: AssetTransferMethod,
   ) => Promise<ResponseAssetTransfer>
   assetTransferEth: (
     evmNetworkId: EvmNetworkId,
@@ -242,7 +242,7 @@ export default interface MessageTypes {
     fromAddress: EvmAddress,
     toAddress: EvmAddress,
     amount: string,
-    gasSettings: EthGasSettings<string>
+    gasSettings: EthGasSettings<string>,
   ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
     evmNetworkId: EvmNetworkId,
@@ -250,7 +250,7 @@ export default interface MessageTypes {
     amount: string,
     to: EvmAddress,
     unsigned: TransactionRequest<string>,
-    signedTransaction: HexString
+    signedTransaction: HexString,
   ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
     chainId: ChainId,
@@ -259,39 +259,39 @@ export default interface MessageTypes {
     toAddress: string,
     amount?: string,
     tip?: string,
-    method?: AssetTransferMethod
+    method?: AssetTransferMethod,
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
     unsigned: SignerPayloadJSON,
     signature: `0x${string}`,
-    transferInfo: WalletTransactionTransferInfo
+    transferInfo: WalletTransactionTransferInfo,
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages
   ethSignAndSend: (
     evmNetworkId: EvmNetworkId,
     unsigned: TransactionRequest<string>,
-    transferInfo?: WalletTransactionTransferInfo
+    transferInfo?: WalletTransactionTransferInfo,
   ) => Promise<HexString>
   ethSendSigned: (
     evmNetworkId: EvmNetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
-    transferInfo?: WalletTransactionTransferInfo
+    transferInfo?: WalletTransactionTransferInfo,
   ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (
     id: SigningRequestID<"eth-sign">,
-    signature: HexString
+    signature: HexString,
   ) => Promise<boolean>
   ethApproveSignAndSend: (
     id: SigningRequestID<"eth-send">,
-    transaction: TransactionRequest<string>
+    transaction: TransactionRequest<string>,
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
     id: SigningRequestID<"eth-send">,
     unsigned: TransactionRequest<string>,
-    signedTransaction: HexString
+    signedTransaction: HexString,
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
@@ -315,7 +315,7 @@ export default interface MessageTypes {
     chainId: ChainId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean
+    isCacheable?: boolean,
   ) => Promise<T>
   subSubmit: (payload: SignerPayloadJSON, signature?: HexString) => Promise<{ hash: HexString }>
 
@@ -323,7 +323,7 @@ export default interface MessageTypes {
   subChainMetadata: (
     genesisHash: HexString,
     specVersion?: number,
-    blockHash?: HexString
+    blockHash?: HexString,
   ) => Promise<MetadataDef | undefined>
 
   assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>

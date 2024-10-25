@@ -18,7 +18,7 @@ export const indexedDbBalancesPersistBackend: BalancesPersistBackend = {
   persist: persistData,
   retrieve: () =>
     retrieveData().then((balances) =>
-      balances.map((b) => ({ ...b, status: "cache" } as BalanceJson))
+      balances.map((b) => ({ ...b, status: "cache" }) as BalanceJson),
     ),
 }
 
@@ -42,7 +42,7 @@ const localStorageRetrieve: RetrieveFn = async () => {
     const deflatedArray = deflated.split(",").map((n) => parseInt(n, 10))
     const deflatedBytes = new Uint8Array(deflatedArray.length)
     deflatedArray.forEach((n, i) => (deflatedBytes[i] = n))
-    return decompress(deflatedBytes).map((b) => ({ ...b, status: "cache" } as BalanceJson))
+    return decompress(deflatedBytes).map((b) => ({ ...b, status: "cache" }) as BalanceJson)
   }
   return []
 }

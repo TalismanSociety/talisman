@@ -52,7 +52,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
         <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
       ) : (
         <AccountIcon
-          className="shrink-0 text-xl "
+          className="shrink-0 text-xl"
           address={format.address}
           type="polkadot-identicon"
         />
@@ -113,7 +113,7 @@ export const CopyAddressChainForm = () => {
   const account = useAccountByAddress(address)
   const accountChain = useMemo(
     () => account?.genesisHash && chains.find((c) => account?.genesisHash === c.genesisHash),
-    [account?.genesisHash, chains]
+    [account?.genesisHash, chains],
   )
 
   const balances = useBalancesByAddress(address)
@@ -126,7 +126,7 @@ export const CopyAddressChainForm = () => {
       prefix: null,
       name: t("Substrate (Generic)"),
     }),
-    [t]
+    [t],
   )
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
@@ -135,7 +135,7 @@ export const CopyAddressChainForm = () => {
       .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
       .filter(
         // if ledger generic account, restrict to compatible chains
-        (c) => account?.ledgerApp !== SubstrateLedgerAppType.Generic || c.hasCheckMetadataHash
+        (c) => account?.ledgerApp !== SubstrateLedgerAppType.Generic || c.hasCheckMetadataHash,
       )
       .sort((a, b) => {
         if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])

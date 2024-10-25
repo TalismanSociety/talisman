@@ -5,6 +5,6 @@ import { isLoggedIn$, isOnboarded$ } from "@ui/state"
 
 export const [useLoginCheck] = bind(
   combineLatest([isLoggedIn$, isOnboarded$]).pipe(
-    map(([isLoggedIn, isOnboarded]) => ({ isLoggedIn, isOnboarded }))
-  )
+    map(([isLoggedIn, isOnboarded]) => ({ isLoggedIn, isOnboarded })),
+  ),
 )

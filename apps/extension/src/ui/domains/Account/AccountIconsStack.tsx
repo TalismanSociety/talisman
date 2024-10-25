@@ -14,7 +14,7 @@ export const AccountsStack: FC<{ accounts: AccountJsonAny[]; className?: string 
     <div
       className={classNames(
         "ml-[0.4em] inline-block h-9 pl-0.5 leading-none [&>div]:ml-[-0.4em]",
-        className
+        className,
       )}
     >
       {accounts.slice(0, 3).map((account) => (

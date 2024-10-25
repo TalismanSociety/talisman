@@ -1,5 +1,6 @@
-import { log } from "@extension/shared"
 import DcentWebConnector from "dcent-web-connector"
+
+import { log } from "@extension/shared"
 
 import {
   DcentAccountAddress,
@@ -48,7 +49,7 @@ type DcentResponseError = {
 type DcentResponse<T> = DcentResponseSuccess<T> | DcentResponseError
 
 const isDcentResponseError = <T>(
-  response: DcentResponse<T> | unknown
+  response: DcentResponse<T> | unknown,
 ): response is DcentResponseError => {
   try {
     return (response as DcentResponse<T>).header.status === "error"
@@ -58,7 +59,7 @@ const isDcentResponseError = <T>(
 }
 
 const isDcentResponseSuccess = <T>(
-  response: DcentResponse<T>
+  response: DcentResponse<T>,
 ): response is DcentResponseSuccess<T> => {
   return response.header.status === "success"
 }
@@ -89,24 +90,24 @@ export const dcent = {
 
   getEthereumSignedData: (accountPath: string, version: string, payload: unknown) =>
     dcentCall<DcentEthereumSignedData>(() =>
-      DcentWebConnector.getSignedData(accountPath, { version, payload })
+      DcentWebConnector.getSignedData(accountPath, { version, payload }),
     ),
 
   getEthereumSignedMessage: (accountPath: string, text: string) =>
     dcentCall<DcentEthereumSignedMessage>(() =>
-      DcentWebConnector.getEthereumSignedMessage(text, accountPath)
+      DcentWebConnector.getEthereumSignedMessage(text, accountPath),
     ),
 
   getEthereumSignedTransaction: (...args: unknown[]) =>
     dcentCall<DcentEthereumSignedTransaction>(() =>
-      DcentWebConnector.getEthereumSignedTransaction(...args)
+      DcentWebConnector.getEthereumSignedTransaction(...args),
     ),
 
   getInfo: () => dcentCall<DcentInfo>(DcentWebConnector.info),
 
   getPolkadotSignedTransaction: (payload: DcentSubstratePayload) =>
     dcentCall<DcentSubstrateSignature>(() =>
-      DcentWebConnector.getPolkadotSignedTransaction(payload)
+      DcentWebConnector.getPolkadotSignedTransaction(payload),
     ),
 
   popupWindowClose: () => {

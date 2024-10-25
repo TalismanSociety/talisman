@@ -2,8 +2,8 @@ import { classNames } from "@talismn/util"
 import {
   CSSProperties,
   FC,
-  ReactNode,
   forwardRef,
+  ReactNode,
   useCallback,
   useEffect,
   useRef,
@@ -21,7 +21,7 @@ const Button = forwardRef<
     disabled={selected}
     className={classNames(
       "z-10 px-[0.5em] transition-colors duration-150",
-      selected && "text-body-black"
+      selected && "text-body-black",
     )}
     onClick={onClick}
   >
@@ -69,14 +69,14 @@ export const MnemonicWordCountSwitch: FC<{
       setSelected(newValue)
       if (onChange) onChange(newValue)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
     <div
       className={classNames(
         "bg-grey-800 text-body-secondary leading-paragraph inline-block rounded-full p-[0.2em] text-xs",
-        className
+        className,
       )}
     >
       <div className="relative z-0 flex items-center gap-[-0.5em]">
@@ -88,7 +88,7 @@ export const MnemonicWordCountSwitch: FC<{
         </Button>
         <div
           className={classNames(
-            "bg-primary absolute top-0 h-full rounded-full transition-all ease-in-out"
+            "bg-primary absolute top-0 h-full rounded-full transition-all ease-in-out",
           )}
           style={selectionOverlay}
         />

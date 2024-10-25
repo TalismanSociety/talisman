@@ -47,7 +47,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result]
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result],
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -117,7 +117,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
       genericEvent,
       network?.id,
       origin,
-    ]
+    ],
   )
 
   const isValid = useMemo(() => {
@@ -148,5 +148,5 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 }
 
 export const [EthSignMessageRequestProvider, useEthSignMessageRequest] = provideContext(
-  useEthSignMessageRequestProvider
+  useEthSignMessageRequestProvider,
 )

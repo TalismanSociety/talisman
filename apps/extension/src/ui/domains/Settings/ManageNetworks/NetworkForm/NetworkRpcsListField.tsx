@@ -62,7 +62,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
     `rpcs.${index}.url`,
     250,
     register,
-    extraValidationCb
+    extraValidationCb,
   )
 
   return (
@@ -125,7 +125,7 @@ export const NetworkRpcsListField = ({
     (index: number) => () => {
       remove(index)
     },
-    [remove]
+    [remove],
   )
 
   const handleAddRpc = useCallback(() => {
@@ -136,14 +136,14 @@ export const NetworkRpcsListField = ({
   const formData = watch()
   const canDelete = useMemo(
     () => !!(formData?.rpcs && (formData.rpcs.length > 1 || formData.rpcs?.[0]?.url)),
-    [formData]
+    [formData],
   )
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   )
 
   // order management
@@ -154,7 +154,7 @@ export const NetworkRpcsListField = ({
       const indexOver = rpcIds.indexOf(e.over?.id as string)
       move(indexActive, indexOver)
     },
-    [move, rpcIds]
+    [move, rpcIds],
   )
 
   return (

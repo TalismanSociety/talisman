@@ -22,7 +22,7 @@ export const BackupWarningDrawer = () => {
           <span className="font-bold text-white">{t("Backup Wallet")}</span>
           <span className="text-body-secondary">
             {t(
-              "You have funds! Now is a great time to back up your wallet. If you don’t back up your recovery phrase you may lose access to your funds."
+              "You have funds! Now is a great time to back up your wallet. If you don’t back up your recovery phrase you may lose access to your funds.",
             )}
           </span>
         </div>

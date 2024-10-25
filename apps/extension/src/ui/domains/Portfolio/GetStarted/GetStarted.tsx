@@ -200,7 +200,7 @@ const GetStartedActionButton: FC<{
     className={classNames(
       "border-disabled bg-grey-800 border-grey-700/40 hover:bg-grey-750 leading-paragraph enabled:focus-visible:bg-grey-750 @2xl:text-md rounded-sm border px-8 py-4 text-left text-base",
       "flex w-full items-center gap-8",
-      className
+      className,
     )}
     onClick={onClick}
   >

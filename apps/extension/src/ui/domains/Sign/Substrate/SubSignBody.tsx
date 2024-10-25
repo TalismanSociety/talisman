@@ -1,7 +1,8 @@
-import { log } from "@extension/shared"
 import { GenericExtrinsic } from "@polkadot/types"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
+
+import { log } from "@extension/shared"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { SubSignConvictionVotingDelegate } from "./convictionVoting/SubSignConvictionVotingDelegate"

@@ -150,34 +150,34 @@ const config = (env) => ({
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
       "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
       "process.env.API_KEY_ONFINALITY": JSON.stringify(
-        env.build === "production" ? process.env.API_KEY_ONFINALITY || "" : ""
+        env.build === "production" ? process.env.API_KEY_ONFINALITY || "" : "",
       ),
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
       "process.env.SIMPLE_LOCALIZE_API_KEY": JSON.stringify(
-        process.env.SIMPLE_LOCALIZE_API_KEY || ""
+        process.env.SIMPLE_LOCALIZE_API_KEY || "",
       ),
       "process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE": JSON.stringify(60 * 1000),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(env.build === "dev" ? process.env.PASSWORD || "" : ""),
       "process.env.TEST_MNEMONIC": JSON.stringify(
-        env.build === "dev" ? process.env.TEST_MNEMONIC || "" : ""
+        env.build === "dev" ? process.env.TEST_MNEMONIC || "" : "",
       ),
       "process.env.EVM_LOGPROXY": JSON.stringify(
-        env.build === "dev" ? process.env.EVM_LOGPROXY || "" : ""
+        env.build === "dev" ? process.env.EVM_LOGPROXY || "" : "",
       ),
       "process.env.COINGECKO_API_URL": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_URL || "" : ""
+        env.build === "dev" ? process.env.COINGECKO_API_URL || "" : "",
       ),
       "process.env.COINGECKO_API_KEY_NAME": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_NAME || "" : ""
+        env.build === "dev" ? process.env.COINGECKO_API_KEY_NAME || "" : "",
       ),
       "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : ""
+        env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : "",
       ),
       "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
-        env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : ""
+        env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : "",
       ),
       // prod build doesn't need an api key
       // dev builds need one that should not change often
@@ -186,18 +186,18 @@ const config = (env) => ({
         env.build === "dev"
           ? process.env.BLOWFISH_API_KEY || ""
           : ["canary", "ci", "qa"].includes(env.build)
-          ? process.env.BLOWFISH_QA_API_KEY || ""
-          : ""
+            ? process.env.BLOWFISH_QA_API_KEY || ""
+            : "",
       ),
       "process.env.NFTS_API_KEY": JSON.stringify(
         env.build === undefined
           ? process.env.NFTS_API_KEY || ""
           : ["canary", "ci", "qa"].includes(env.build)
-          ? process.env.NFTS_QA_API_KEY || ""
-          : ""
+            ? process.env.NFTS_QA_API_KEY || ""
+            : "",
       ),
       "process.env.NFTS_API_BASE_PATH": JSON.stringify(
-        env.build === undefined ? process.env.NFTS_API_BASE_PATH || "" : ""
+        env.build === undefined ? process.env.NFTS_API_BASE_PATH || "" : "",
       ),
       // computed values
       "process.env.DEBUG": JSON.stringify(String(!dropConsole(env))),
@@ -220,7 +220,7 @@ const config = (env) => ({
           title,
           inject: "body",
           minify: false,
-        })
+        }),
     ),
     new CaseSensitivePathsPlugin(),
     new ForkTsCheckerWebpackPlugin(),

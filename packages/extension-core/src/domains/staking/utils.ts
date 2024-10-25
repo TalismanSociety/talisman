@@ -60,7 +60,7 @@ const shouldShowSubstrateNomPoolBanners = async ({
           const staked = balance.reserves
             .filter(
               (reserve) =>
-                reserve.label === "nompools-staking" || reserve.label === "nompools-unbonding"
+                reserve.label === "nompools-staking" || reserve.label === "nompools-unbonding",
             )
             .reduce((balanceSum, { amount }) => {
               return balanceSum + amount.planck
@@ -68,7 +68,7 @@ const shouldShowSubstrateNomPoolBanners = async ({
 
           return { staked: staked + result.staked, available: available + result.available }
         },
-        { available: 0n, staked: 0n } as { available: bigint; staked: bigint }
+        { available: 0n, staked: 0n } as { available: bigint; staked: bigint },
       )
       acc[address] = balancesForAddress.available > 0n && balancesForAddress.staked === 0n
       return acc

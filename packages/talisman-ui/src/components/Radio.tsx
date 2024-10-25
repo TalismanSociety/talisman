@@ -15,7 +15,7 @@ export const Radio: FC<{
         "cursor-pointer p-0.5",
         "hover:text-grey-300",
         "has-[:checked]:text-body has-[:checked]:cursor-default",
-        className
+        className,
       )}
     >
       <input
@@ -27,7 +27,7 @@ export const Radio: FC<{
         className={classNames(
           "bg-body-disabled h-[0.8em] w-[0.8em] appearance-none rounded-full",
           "checked:bg-primary checked:border-body-disabled checked:border-[0.15em]",
-          "ring-body focus-visible:ring-1"
+          "ring-body focus-visible:ring-1",
         )}
       />
       {!!label && <span className="ml-3">{label}</span>}

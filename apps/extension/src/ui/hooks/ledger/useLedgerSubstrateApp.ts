@@ -7,7 +7,7 @@ import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"
 export const useLedgerSubstrateAppByChain = (chain: Chain | null | undefined) => {
   return useMemo(
     () => supportedApps.find((app) => chain && app.name === CHAIN_ID_TO_LEDGER_APP_NAME[chain.id]),
-    [chain]
+    [chain],
   )
 }
 

@@ -6,7 +6,7 @@ import {
   triggerIndexedDbUnavailablePopup,
 } from "extension-core"
 import { DEBUG } from "extension-shared"
-import { ReplaySubject, firstValueFrom } from "rxjs"
+import { firstValueFrom, ReplaySubject } from "rxjs"
 
 const normalizeUrl = (url: string) => {
   return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")

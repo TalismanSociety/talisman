@@ -8,10 +8,10 @@ export const addOnfinalityApiKey = (rpcUrl: string, onfinalityApiKey?: string) =
   return rpcUrl
     .replace(
       /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
-      `https://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`
+      `https://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`,
     )
     .replace(
       /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/rpc\/?$/,
-      `https://$1.api.onfinality.io/rpc?apikey=${onfinalityApiKey}`
+      `https://$1.api.onfinality.io/rpc?apikey=${onfinalityApiKey}`,
     )
 }

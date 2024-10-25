@@ -51,7 +51,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
         .required(),
 
-    [accountNames, t]
+    [accountNames, t],
   )
 
   type FormData = yup.InferType<typeof schema>
@@ -95,7 +95,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
           title: t("Adding account"),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
 
       // pause to prevent double notification
@@ -119,7 +119,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, t]
+    [onSuccess, t],
   )
 
   const handleTypeChange = useCallback(
@@ -127,7 +127,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
       setValue("type", type, { shouldValidate: true })
       trigger()
     },
-    [setValue, trigger]
+    [setValue, trigger],
   )
 
   const hasSetFocus = useRef(false)
@@ -149,7 +149,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             </p>
             <p className="text-body-disabled text-xs">
               {t(
-                "Note that the address will be watch-only and will not be able to sign transactions."
+                "Note that the address will be watch-only and will not be able to sign transactions.",
               )}
             </p>
           </div>
@@ -185,7 +185,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 <div className="text-body leading-none">{t("Include in my portfolio")}</div>
                 <div className="text-body-disabled text-sm leading-none">
                   {t(
-                    "If toggled on, this account's balances will be included in your Total Portfolio"
+                    "If toggled on, this account's balances will be included in your Total Portfolio",
                   )}
                 </div>
               </div>

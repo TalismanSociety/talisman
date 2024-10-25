@@ -24,7 +24,7 @@ export const useExplorerNetworkPickerModal = () => {
       setInputs(opts)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen],
   )
 
   return {

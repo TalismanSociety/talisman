@@ -1,13 +1,13 @@
 import {
   BehaviorSubject,
-  ReplaySubject,
-  Subject,
   bufferWhen,
   combineLatest,
   concatMap,
   filter,
   map,
+  ReplaySubject,
   share,
+  Subject,
   tap,
   zip,
 } from "rxjs"
@@ -85,8 +85,8 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       bufferWhen(
         () =>
           // emit the buffer once we've fetched the current value from the store
-          currentValueReady
-      )
+          currentValueReady,
+      ),
     )
 
     // an observable which, if:
@@ -109,7 +109,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       tap(() => hasPendingMutations.next(false)),
 
       // multicast the currentValue to all subscribers
-      share()
+      share(),
     )
 
     // for each batch of mutations, get the current value we retrieved from the store and the mutations to run
@@ -138,7 +138,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
         }),
 
         // set isMutating to false
-        tap(() => isMutating.next(false))
+        tap(() => isMutating.next(false)),
       )
       .subscribe()
   }
@@ -203,9 +203,9 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 
   /** Clear all stored data. */
   async clear(): Promise<boolean> {
-    const mutation = () => ({} as T)
+    const mutation = () => ({}) as T
     return await new Promise((resolve) =>
-      this.#mutationQueue.next({ mutation, callback: () => resolve(true) })
+      this.#mutationQueue.next({ mutation, callback: () => resolve(true) }),
     )
   }
 
@@ -237,7 +237,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 class SubscribableStorageProvider<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends { [index: string]: any },
-  SubscribeAllMessage extends MessageTypesWithSubscriptions
+  SubscribeAllMessage extends MessageTypesWithSubscriptions,
 > extends StorageProvider<T> {
   public subscribe(id: string, port: Port, unsubscribeCallback?: () => void): boolean {
     const cb = createSubscription<SubscribeAllMessage>(id, port)
@@ -258,13 +258,13 @@ class SubscribableByIdStorageProvider<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions,
-  SubscribeByIdMessage extends MessageTypesWithSubscriptionsById
+  SubscribeByIdMessage extends MessageTypesWithSubscriptionsById,
 > extends SubscribableStorageProvider<T, SubscribeAllMessage> {
   public subscribeById(
     id: string,
     port: Port,
     request: RequestIdOnly,
-    unsubscribeCallback?: () => void
+    unsubscribeCallback?: () => void,
   ): boolean {
     const cb = createSubscription<SubscribeByIdMessage>(id, port)
 

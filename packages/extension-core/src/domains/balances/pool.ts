@@ -71,32 +71,32 @@ const NEW_BALANCE_MODULES = ["substrate-native", "evm-native", "evm-erc20"]
 const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<string, boolean>>(
   dataObservable: Observable<Array<T>>,
   activeStoreObservable: Observable<A>,
-  isActiveFn: (item: T, activeMap: A) => boolean
+  isActiveFn: (item: T, activeMap: A) => boolean,
 ) => {
   return combineLatest([dataObservable, activeStoreObservable, settingsStore.observable]).pipe(
     map(([data, active, { useTestnets }]) => {
       return data
         .filter((item) => isActiveFn(item, active))
         .filter((item) => (useTestnets ? true : !item.isTestnet))
-    })
+    }),
   )
 }
 export const activeChainsObservable = getActiveStuff(
   chaindataProvider.chainsObservable,
   activeChainsStore.observable,
-  isChainActive
+  isChainActive,
 )
 
 export const activeEvmNetworksObservable = getActiveStuff(
   chaindataProvider.evmNetworksObservable,
   activeEvmNetworksStore.observable,
-  isEvmNetworkActive
+  isEvmNetworkActive,
 )
 
 export const activeTokensObservable = getActiveStuff(
   chaindataProvider.tokensObservable,
   activeTokensStore.observable,
-  isTokenActive
+  isTokenActive,
 )
 
 // todo: This can be configured with a different indexedDB table
@@ -151,21 +151,21 @@ abstract class BalancePool {
     isBackgroundPage().then((backgroundPage) => {
       if (backgroundPage) return
       throw new Error(
-        `Balances pool should only be used in the background page - used in: ${window.location.href}`
+        `Balances pool should only be used in the background page - used in: ${window.location.href}`,
       )
     })
 
     this.#balances = combineLatest([
       combineLatest([this.#initialising, this.#isRestartPending]).pipe(
         map(([initialising, isRestartPending]) =>
-          initialising.length || isRestartPending ? "initialising" : "live"
+          initialising.length || isRestartPending ? "initialising" : "live",
         ),
-        distinctUntilChanged()
+        distinctUntilChanged(),
       ),
       this.#pool.pipe(
         firstThenDebounce(50),
         distinctUntilChanged<Record<string, BalanceJson>>(isEqual),
-        map((balances) => Object.values(balances))
+        map((balances) => Object.values(balances)),
       ),
     ]).pipe(map(([status, data]) => ({ status, data })))
 
@@ -182,7 +182,7 @@ abstract class BalancePool {
 
     retrieveFn()
       .then((balances) => {
-        const initialBalances = balances.map((b) => ({ ...b, status: "cache" } as BalanceJson))
+        const initialBalances = balances.map((b) => ({ ...b, status: "cache" }) as BalanceJson)
         this.setPool(initialBalances)
       })
       .catch((e) => {
@@ -198,7 +198,7 @@ abstract class BalancePool {
       debounceTime(10_000),
       map(() => {
         this.persist()
-      })
+      }),
     )
   }
 
@@ -207,7 +207,7 @@ abstract class BalancePool {
    */
   destroy() {
     return Promise.all(
-      this.#cleanupSubs.map((p) => p.then((subscription) => subscription.unsubscribe()))
+      this.#cleanupSubs.map((p) => p.then((subscription) => subscription.unsubscribe())),
     )
   }
 
@@ -236,7 +236,7 @@ abstract class BalancePool {
   subscribe(
     id: string,
     onDisconnected: Promise<void>,
-    cb: (val: BalanceSubscriptionResponse) => void
+    cb: (val: BalanceSubscriptionResponse) => void,
   ) {
     this.hasInitialised.promise.then(() => {
       // create subscription to pool
@@ -277,7 +277,7 @@ abstract class BalancePool {
       ([id, b]) => ({
         id,
         ...omit(b, "status"),
-      })
+      }),
     )
     try {
       persistData(balancesToPersist)
@@ -329,13 +329,13 @@ abstract class BalancePool {
           // Keep changed balances, which are not known zeros
           return hasChanged && !isZero
         })
-        .map((b) => [b.id, b.toJSON()])
+        .map((b) => [b.id, b.toJSON()]),
     )
 
     const nonZeroBalances =
       newlyZeroBalances.length > 0
         ? Object.fromEntries(
-            Object.entries(existing).filter(([id]) => !newlyZeroBalances.includes(id))
+            Object.entries(existing).filter(([id]) => !newlyZeroBalances.includes(id)),
           )
         : existing
     const newBalancesState = { ...nonZeroBalances, ...changedBalances }
@@ -429,12 +429,12 @@ abstract class BalancePool {
     chains: Chain[],
     evmNetworks: EvmNetwork[],
     tokens: Token[],
-    miniMetadatas: MiniMetadata[]
+    miniMetadatas: MiniMetadata[],
   ) {
     // Check for changes since the last call to this.setChains
     // compare chains
     const newChains = Object.fromEntries(
-      chains.map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])])
+      chains.map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])]),
     )
     const noChainChanges =
       Object.keys(newChains).length === Object.keys(this.chains).length &&
@@ -445,7 +445,7 @@ abstract class BalancePool {
       evmNetworks.map((evmNetwork) => [
         evmNetwork.id,
         pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-      ])
+      ]),
     )
 
     const noEvmNetworkChanges =
@@ -520,7 +520,7 @@ abstract class BalancePool {
 
         // For accounts locked to a single chain, only query balances on that chain
         return [address, [genesisHash]]
-      })
+      }),
     )
     this.addresses.next(addresses)
 
@@ -571,7 +571,7 @@ abstract class BalancePool {
 
     const existingBalances = this.balances
     const existingBalancesKeys = Object.values(existingBalances).map(
-      (b) => `${b.tokenId}:${b.address}`
+      (b) => `${b.tokenId}:${b.address}`,
     )
 
     const initializingKeys = balanceModules
@@ -584,7 +584,7 @@ abstract class BalancePool {
       .flatMap((balanceModule) => {
         const addressesByToken = subscriptionParameters[balanceModule.type] ?? {}
         return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
-          addresses.map((address) => `${tokenId}:${address}`)
+          addresses.map((address) => `${tokenId}:${address}`),
         )
       })
 
@@ -599,7 +599,7 @@ abstract class BalancePool {
       // set all currently cached balances to stale
       const staleBalances = Object.values(this.balances)
         .filter(({ status }) => status === "cache")
-        .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
+        .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson)
 
       this.updatePool(staleBalances)
     }, 30_000)
@@ -631,15 +631,15 @@ abstract class BalancePool {
                 const chainComparison = error.chainId
                   ? error.chainId === locationId
                   : error.evmNetworkId
-                  ? error.evmNetworkId === locationId
-                  : true
+                    ? error.evmNetworkId === locationId
+                    : true
                 return (
                   chainComparison &&
                   addressesByModuleToken[tokenId]?.includes(address) &&
                   source === balanceModule.type
                 )
               })
-              .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
+              .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson)
 
             if (staleBalances.length) this.updatePool(staleBalances)
           } else if (error) {
@@ -656,7 +656,7 @@ abstract class BalancePool {
                 ])
               else
                 this.#initialising.next(
-                  this.#initialising.value.filter((key) => key !== balanceModule.type)
+                  this.#initialising.value.filter((key) => key !== balanceModule.type),
                 )
               this.updatePool(result.data)
             } else {
@@ -664,12 +664,12 @@ abstract class BalancePool {
               this.updatePool(Object.values(result.toJSON()))
             }
           }
-        }
+        },
       )
     })
 
     this.#closeSubscriptionCallbacks = this.#closeSubscriptionCallbacks.concat(
-      closeSubscriptionCallbacks
+      closeSubscriptionCallbacks,
     )
   }
 
@@ -740,7 +740,7 @@ class KeyringBalancePool extends BalancePool {
         tap(() => {
           this.setIsRestartPending()
         }),
-        firstThenDebounce(DEBOUNCE_TIMEOUT)
+        firstThenDebounce(DEBOUNCE_TIMEOUT),
       )
       .subscribe({
         next: (accounts) => this.setAccounts(accounts),
@@ -757,7 +757,7 @@ class KeyringBalancePool extends BalancePool {
       .filter(
         (token) =>
           (token.chain?.id && (this.chains[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-          (token.evmNetwork?.id && (this.evmNetworks[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+          (token.evmNetwork?.id && (this.evmNetworks[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0),
       )
       .forEach((token) => {
         if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
@@ -767,7 +767,7 @@ class KeyringBalancePool extends BalancePool {
           .filter(
             // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
             ([, genesisHashes]) =>
-              !token.chain || !genesisHashes || genesisHashes.includes(chain?.genesisHash ?? "")
+              !token.chain || !genesisHashes || genesisHashes.includes(chain?.genesisHash ?? ""),
           )
           .filter(([address]) => {
             // for each address, fetch balances only from compatible chains
@@ -804,7 +804,7 @@ export class ExternalBalancePool extends BalancePool {
       addressesAndTokens,
       this.chains,
       this.evmNetworks,
-      this.tokens
+      this.tokens,
     )
 
     this.#subscriptionParameters = subscriptionParameters
@@ -821,7 +821,7 @@ const getSubscriptionParams = (
   addressesAndTokens: AddressesAndTokens,
   activeChains: Record<string, ChainIdAndRpcs>,
   activeEvmNetworks: Record<string, EvmNetworkIdAndRpcs>,
-  activeTokens: TokenIdAndType[]
+  activeTokens: TokenIdAndType[],
 ) => {
   //
   // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need
@@ -834,7 +834,7 @@ const getSubscriptionParams = (
 
   // typeguard
   const isNetworkFilter = <T extends ChainIdAndRpcs | EvmNetworkIdAndRpcs>(
-    chainOrNetwork: T | undefined
+    chainOrNetwork: T | undefined,
   ): chainOrNetwork is T => chainOrNetwork !== undefined
 
   const chains = Object.keys(addressesByChain)
@@ -858,7 +858,7 @@ const getSubscriptionParams = (
     .flatMap(([chainOrNetwork, addresses]) =>
       activeTokens
         .filter((t) => t.chain?.id === chainOrNetwork.id || t.evmNetwork?.id === chainOrNetwork.id)
-        .map((t) => [t.id, addresses] as const)
+        .map((t) => [t.id, addresses] as const),
     )
 
     // collect all of the addresses for each tokenId into a map of { [tokenId]: addresses }
@@ -871,7 +871,7 @@ const getSubscriptionParams = (
   for (const tokenId of addressesAndTokens.tokenIds) {
     if (!addressesByToken[tokenId]) addressesByToken[tokenId] = []
     addressesByToken[tokenId].push(
-      ...addressesAndTokens.addresses.filter((a) => !addressesByToken[tokenId].includes(a))
+      ...addressesAndTokens.addresses.filter((a) => !addressesByToken[tokenId].includes(a)),
     )
   }
 
@@ -891,11 +891,14 @@ const getSubscriptionParams = (
     .filter(([token]) => Boolean(token))
 
     // group each `{ [token.id]: addresses }` by token.type
-    .reduce((byModule, [token, addresses]) => {
-      if (!byModule[token.type]) byModule[token.type] = {}
-      byModule[token.type][token.id] = addresses
-      return byModule
-    }, {} as Record<string, AddressesByToken<Token>>)
+    .reduce(
+      (byModule, [token, addresses]) => {
+        if (!byModule[token.type]) byModule[token.type] = {}
+        byModule[token.type][token.id] = addresses
+        return byModule
+      },
+      {} as Record<string, AddressesByToken<Token>>,
+    )
 
   return addressesByTokenByModule
 }

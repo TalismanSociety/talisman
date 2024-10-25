@@ -66,7 +66,7 @@ const isBaseLock = (lock: Pick<LockedAmount<string>, "label">) =>
   baseLockLabels.includes(lock.label)
 const isNonBaseLock = (lock: Pick<LockedAmount<string>, "label">) => !isBaseLock(lock)
 export const filterBaseLocks = (
-  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>
+  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>,
 ) => {
   const hasNonBaseLocks = locks.some(isNonBaseLock)
   if (!hasNonBaseLocks) return locks
@@ -77,7 +77,7 @@ export const filterBaseLocks = (
 // TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
-  { balance }: { balance?: Balance } = {}
+  { balance }: { balance?: Balance } = {},
 ) => {
   if (!lock.label) return lock.label
 
@@ -88,7 +88,7 @@ export const getLockTitle = (
     if (!paraId) return "Crowdloan"
 
     const name = balance?.chain?.parathreads?.find(
-      (parathread) => parathread?.paraId === paraId
+      (parathread) => parathread?.paraId === paraId,
     )?.name
 
     return `${name ? name : `Parachain ${paraId}`} Crowdloan`

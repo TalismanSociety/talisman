@@ -1,4 +1,3 @@
-import { AccountType } from "@extension/core"
 import {
   DcentIcon,
   EyeIcon,
@@ -11,6 +10,8 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountType } from "@extension/core"
 
 type AccountTypeIconProps = {
   origin?: AccountType | null

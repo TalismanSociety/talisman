@@ -29,7 +29,7 @@ export const useAccountRenameModal = () => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen],
   )
 
   useEffect(() => {

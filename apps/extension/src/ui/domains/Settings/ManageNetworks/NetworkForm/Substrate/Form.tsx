@@ -52,8 +52,8 @@ export const SubNetworkForm = ({
   const nativeTokenLogoUrl = useMemo(
     // existing icon has priority
     () =>
-      touchedFields?.nativeTokenCoingeckoId ? coingeckoLogoUrl : token?.logo ?? coingeckoLogoUrl,
-    [coingeckoLogoUrl, token?.logo, touchedFields?.nativeTokenCoingeckoId]
+      touchedFields?.nativeTokenCoingeckoId ? coingeckoLogoUrl : (token?.logo ?? coingeckoLogoUrl),
+    [coingeckoLogoUrl, token?.logo, touchedFields?.nativeTokenCoingeckoId],
   )
 
   const [submitError, setSubmitError] = useState<string>()
@@ -76,7 +76,7 @@ export const SubNetworkForm = ({
         setSubmitError((err as Error).message)
       }
     },
-    [nativeTokenLogoUrl, onSubmitted, setUseTestnets, t, useTestnets]
+    [nativeTokenLogoUrl, onSubmitted, setUseTestnets, t, useTestnets],
   )
 
   return (
@@ -98,7 +98,7 @@ export const SubNetworkForm = ({
                     logo={chain?.logo ?? null}
                     className={classNames(
                       "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
-                      !id && "opacity-50"
+                      !id && "opacity-50",
                     )}
                   />
                 }

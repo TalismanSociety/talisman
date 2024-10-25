@@ -26,7 +26,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
       id={id}
       className={classNames(
         "border-grey-850 flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border bg-black",
-        className
+        className,
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
@@ -34,7 +34,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
         <h1
           className={classNames(
             "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base font-bold",
-            centerTitle && "text-center"
+            centerTitle && "text-center",
           )}
         >
           {title}

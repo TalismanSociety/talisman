@@ -26,7 +26,7 @@ export type CustomEvmErc20Token = Extract<Token, { type: ModuleType; isCustom: t
 
 export const evmErc20TokenId = (
   chainId: EvmNetworkId,
-  tokenContractAddress: EvmErc20Token["contractAddress"]
+  tokenContractAddress: EvmErc20Token["contractAddress"],
 ) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
 
 export type EvmErc20ChainMeta = {
@@ -70,11 +70,11 @@ export const EvmErc20Module: NewBalanceModule<
 
   const prepareFetchParameters = async (
     addressesByToken: AddressesByToken<EvmErc20Token>,
-    allTokens: Record<string, EvmErc20Token>
+    allTokens: Record<string, EvmErc20Token>,
   ): Promise<EvmErc20NetworkParams> => {
     const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
       addressesByToken,
-      allTokens
+      allTokens,
     )
     return Object.entries(addressesByTokenByEvmNetwork).reduce(
       (result, [evmNetworkId, addressesByToken]) => {
@@ -90,7 +90,7 @@ export const EvmErc20Module: NewBalanceModule<
         result[evmNetworkId] = networkParams
         return result
       },
-      {} as EvmErc20NetworkParams
+      {} as EvmErc20NetworkParams,
     )
   }
 
@@ -101,7 +101,7 @@ export const EvmErc20Module: NewBalanceModule<
   const getErc20Aggregators = async () => {
     const evmNetworks = await chaindataProvider.evmNetworks()
     return Object.fromEntries(
-      evmNetworks.filter((n) => n.erc20aggregator).map((n) => [n.id, n.erc20aggregator!])
+      evmNetworks.filter((n) => n.erc20aggregator).map((n) => [n.id, n.erc20aggregator!]),
     )
   }
 
@@ -139,8 +139,8 @@ export const EvmErc20Module: NewBalanceModule<
           typeof tokenConfig?.decimals === "number"
             ? tokenConfig.decimals
             : typeof contractDecimals === "number"
-            ? contractDecimals
-            : 18
+              ? contractDecimals
+              : 18
 
         if (!symbol || typeof decimals !== "number") continue
 
@@ -174,7 +174,7 @@ export const EvmErc20Module: NewBalanceModule<
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
       const initialisingBalances = new Set<string>()
       const positiveBalanceNetworks = new Set<string>(
-        (initialBalances as EvmErc20Balance[])?.map((b) => b.evmNetworkId)
+        (initialBalances as EvmErc20Balance[])?.map((b) => b.evmNetworkId),
       )
       const tokens = await getModuleTokens()
 
@@ -193,7 +193,7 @@ export const EvmErc20Module: NewBalanceModule<
             if (!evmNetworkId) return null
             return [tokenId, ethAddresses]
           })
-          .filter((x): x is [string, Address[]] => Boolean(x))
+          .filter((x): x is [string, Address[]] => Boolean(x)),
       )
 
       const fetchesPerNetwork = await prepareFetchParameters(ethAddressesByToken, tokens)
@@ -217,7 +217,7 @@ export const EvmErc20Module: NewBalanceModule<
             const initialisingNetworkBalances = new Set(
               Array.from(initialisingBalances)
                 .filter((id) => id.startsWith(`${evmNetworkId}-`))
-                .map((id) => id.split("-")[0])
+                .map((id) => id.split("-")[0]),
             )
 
             // a zero balance network is one that has initialised and does not have a positive balance
@@ -241,14 +241,14 @@ export const EvmErc20Module: NewBalanceModule<
               const { errors, results } = await fetchBalances(
                 chainConnectors.evm,
                 fetchesPerNetwork,
-                aggregators
+                aggregators,
               )
               // handle errors first
               errors.forEach((error) => {
                 if (error instanceof EvmErc20BalanceError) {
                   log.error(
                     `Error fetching balance for token ${error.balanceId} on chain ${evmNetworkId}`,
-                    error
+                    error,
                   )
                   initialisingBalances.delete(error.balanceId)
                 } else if (error instanceof EvmErc20NetworkError) {
@@ -342,7 +342,7 @@ type EvmErc20TokenBalanceResponse = {
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
   tokenAddressesByNetwork: EvmErc20NetworkParams,
-  erc20Aggregators: Record<EvmNetworkId, Hex> = {}
+  erc20Aggregators: Record<EvmNetworkId, Hex> = {},
 ): Promise<EvmErc20TokenBalanceResponse> => {
   const result = {
     results: [] as EvmErc20Balance[],
@@ -354,14 +354,14 @@ const fetchBalances = async (
       if (!publicClient)
         throw new EvmErc20NetworkError(
           `Could not get rpc provider for evm network ${evmNetworkId}`,
-          evmNetworkId
+          evmNetworkId,
         )
 
       const balances = await getEvmTokenBalances(
         publicClient,
         networkParams as BalanceDef[],
         result.errors,
-        erc20Aggregators[evmNetworkId]
+        erc20Aggregators[evmNetworkId],
       )
 
       // consider only non null balances in the results
@@ -376,10 +376,10 @@ const fetchBalances = async (
               evmNetworkId,
               tokenId: networkParams[i].token.id,
               value: free!,
-            } as EvmErc20Balance)
-        )
+            }) as EvmErc20Balance,
+        ),
       )
-    })
+    }),
   )
 
   return result
@@ -391,7 +391,7 @@ const getEvmTokenBalances = (
   client: PublicClient,
   balanceDefs: BalanceDef[],
   errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>,
-  aggregatorAddress: Hex | undefined
+  aggregatorAddress: Hex | undefined,
 ) => {
   return aggregatorAddress
     ? getEvmTokenBalancesWithAggregator(client, balanceDefs, errors, aggregatorAddress)
@@ -401,7 +401,7 @@ const getEvmTokenBalances = (
 const getEvmTokenBalancesWithoutAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef[],
-  errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>
+  errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>,
 ) => {
   if (balanceDefs.length === 0) return []
 
@@ -420,12 +420,12 @@ const getEvmTokenBalancesWithoutAggregator = async (
           new EvmErc20BalanceError(
             `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
             getErc20BalanceId({ token, address, evmNetworkId: String(client.chain!.id) }),
-            err as Error
-          )
+            err as Error,
+          ),
         )
         return null
       }
-    })
+    }),
   )
 }
 
@@ -433,7 +433,7 @@ const getEvmTokenBalancesWithAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef[],
   errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>,
-  aggregatorAddress: Hex
+  aggregatorAddress: Hex,
 ) => {
   if (balanceDefs.length === 0) return []
 
@@ -455,8 +455,8 @@ const getEvmTokenBalancesWithAggregator = async (
     errors.push(
       new EvmErc20NetworkError(
         `Failed to get balance for token ${balanceDefs[0].token.id} on chain ${client.chain?.id}`,
-        String(client.chain?.id)
-      )
+        String(client.chain?.id),
+      ),
     )
     return balanceDefs.map(() => null)
   }
@@ -480,24 +480,27 @@ const getErc20BalanceId = ({
 
 function groupAddressesByTokenByEvmNetwork(
   addressesByToken: AddressesByToken<EvmErc20Token>,
-  tokens: TokenList
+  tokens: TokenList,
 ): Record<string, AddressesByToken<EvmErc20Token>> {
-  return Object.entries(addressesByToken).reduce((byChain, [tokenId, addresses]) => {
-    const token = tokens[tokenId]
-    if (!token) {
-      log.error(`Token ${tokenId} not found`)
+  return Object.entries(addressesByToken).reduce(
+    (byChain, [tokenId, addresses]) => {
+      const token = tokens[tokenId]
+      if (!token) {
+        log.error(`Token ${tokenId} not found`)
+        return byChain
+      }
+
+      const chainId = token.evmNetwork?.id
+      if (!chainId) {
+        log.error(`Token ${tokenId} has no evm network`)
+        return byChain
+      }
+
+      if (!byChain[chainId]) byChain[chainId] = {}
+      byChain[chainId][tokenId] = addresses
+
       return byChain
-    }
-
-    const chainId = token.evmNetwork?.id
-    if (!chainId) {
-      log.error(`Token ${tokenId} has no evm network`)
-      return byChain
-    }
-
-    if (!byChain[chainId]) byChain[chainId] = {}
-    byChain[chainId][tokenId] = addresses
-
-    return byChain
-  }, {} as Record<string, AddressesByToken<EvmErc20Token>>)
+    },
+    {} as Record<string, AddressesByToken<EvmErc20Token>>,
+  )
 }

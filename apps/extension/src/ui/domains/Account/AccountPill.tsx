@@ -1,7 +1,8 @@
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback, useMemo } from "react"
+
+import { copyAddress } from "@ui/util/copyAddress"
 
 import { FormattedAddress } from "./FormattedAddress"
 
@@ -17,7 +18,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, prefix, className }
       !!account && prefix !== undefined
         ? encodeAnyAddress(account.address, prefix)
         : account?.address,
-    [account, prefix]
+    [account, prefix],
   )
 
   const handleClick = useCallback(() => {
@@ -32,7 +33,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, prefix, className }
       onClick={handleClick}
       className={classNames(
         "bg-grey-800 inline max-w-full rounded-3xl px-4 align-middle",
-        className
+        className,
       )}
     >
       <FormattedAddress address={encodedAddress} />

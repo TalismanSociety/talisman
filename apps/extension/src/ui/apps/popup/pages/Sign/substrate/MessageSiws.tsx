@@ -1,15 +1,15 @@
-import { Chain } from "@extension/core"
-import { AccountJsonAny } from "@extension/core"
 import { UserRightIcon } from "@talismn/icons"
 import { SiwsMessage } from "@talismn/siws"
+import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer, useOpenClose } from "talisman-ui"
+
+import { AccountJsonAny, Chain } from "@extension/core"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { ViewDetailsAddress } from "@ui/domains/Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "@ui/domains/Sign/ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "@ui/domains/Sign/ViewDetails/ViewDetailsField"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 export type Props = {
   account: AccountJsonAny
@@ -38,7 +38,7 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
           </div>
         </div>
         {!!request.statement && (
-          <div className="bg-grey-850  mb-16 w-full rounded-sm p-4 text-sm">
+          <div className="bg-grey-850 mb-16 w-full rounded-sm p-4 text-sm">
             <div className="text-body-disabled text-xs">{t("Statement")}</div>
             <div className="text-body leading-paragraph mt-2">{request.statement}</div>
           </div>
@@ -72,7 +72,7 @@ const ViewDetailsContent: FC<{
         <div className="text-body-secondary">{t("Details")}</div>
         <p>
           {t(
-            "You are about to sign in via Substrate. Please ensure you trust the application before continuing."
+            "You are about to sign in via Substrate. Please ensure you trust the application before continuing.",
           )}
         </p>
         <ViewDetailsAddress label={t("From")} address={account.address} />

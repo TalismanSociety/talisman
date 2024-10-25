@@ -97,7 +97,7 @@ const useRpcInfo = (rpcUrl: string | null | undefined) => {
       setDebouncedRpcUrl(rpcUrl)
     },
     250,
-    [rpcUrl]
+    [rpcUrl],
   )
 
   return useQuery({

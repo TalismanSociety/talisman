@@ -54,7 +54,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
           followedOnly: yup.boolean(),
         })
         .required(),
-    []
+    [],
   )
 
   const defaultValues = useMemo(
@@ -62,7 +62,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       name: "",
       followedOnly: false,
     }),
-    []
+    [],
   )
 
   const {
@@ -92,7 +92,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         })
       }
     },
-    [onConfirm, setError]
+    [onConfirm, setError],
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -114,7 +114,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       refName(e)
       refNameRef.current = e
     },
-    [refName]
+    [refName],
   )
 
   useEffect(() => {

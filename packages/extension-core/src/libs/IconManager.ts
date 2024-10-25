@@ -14,18 +14,18 @@ class IconManager {
     const text = counts.get("auth")
       ? "Sites"
       : counts.get("metadata")
-      ? "Meta"
-      : signingCount
-      ? `${signingCount}`
-      : counts.get("eth-network-add")
-      ? "Network"
-      : counts.get("eth-watchasset")
-      ? "Assets"
-      : counts.get("encrypt")
-      ? "Encrypt"
-      : counts.get("decrypt")
-      ? "Decrypt"
-      : ""
+        ? "Meta"
+        : signingCount
+          ? `${signingCount}`
+          : counts.get("eth-network-add")
+            ? "Network"
+            : counts.get("eth-watchasset")
+              ? "Assets"
+              : counts.get("encrypt")
+                ? "Encrypt"
+                : counts.get("decrypt")
+                  ? "Decrypt"
+                  : ""
 
     chrome.action.setBadgeText({ text })
   }

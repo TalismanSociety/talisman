@@ -75,7 +75,7 @@ const schema = yup
       .lowercase()
       .transform(transformToHex)
       .test("is-valid-mnemonic-ethereum", i18next.t("Invalid private key"), async (val) =>
-        isValidEthPrivateKey(val as `0x${string}`)
+        isValidEthPrivateKey(val as `0x${string}`),
       )
       .test("account-exists", i18next.t("Account exists"), async (privateKey, ctx) => {
         const context = ctx.options.context as ValidationContext
@@ -106,7 +106,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
   const allAccounts = useAccounts()
   const accountEthAddresses = useMemo(
     () => allAccounts.filter(({ type }) => type === "ethereum").map((a) => a.address),
-    [allAccounts]
+    [allAccounts],
   )
 
   const {
@@ -146,7 +146,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           title: t("Importing account"),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
       try {
         const address = await api.accountCreateFromSuri(name, privateKey, "ethereum")
@@ -167,7 +167,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         })
       }
     },
-    [t, onSuccess]
+    [t, onSuccess],
   )
 
   useEffect(() => {

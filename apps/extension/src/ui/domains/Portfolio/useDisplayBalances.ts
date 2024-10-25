@@ -54,8 +54,8 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
           case "search":
             return searchBalances.find(shouldDisplayBalance(accounts, searchBalances))
         }
-      })
-    )
+      }),
+    ),
 )
 
 /**
@@ -66,6 +66,6 @@ export const useDisplayBalances = (balances: Balances) => {
 
   return useMemo(
     () => balances.find(shouldDisplayBalance(accounts, balances)),
-    [accounts, balances]
+    [accounts, balances],
   )
 }

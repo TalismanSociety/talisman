@@ -120,7 +120,7 @@ describe("Extension", () => {
         password,
         exportPw,
       },
-      {} as chrome.runtime.Port
+      {} as chrome.runtime.Port,
     )
 
     expect(result.exportedJson.address).toBe(address)
@@ -174,7 +174,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -251,7 +251,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -260,7 +260,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        })
+        }),
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -321,7 +321,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -330,7 +330,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        })
+        }),
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -411,7 +411,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -420,7 +420,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        })
+        }),
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -444,7 +444,7 @@ describe("Extension", () => {
       await Promise.all([
         messageSender("pri(chains.subscribe)", null),
         messageSender("pri(eth.networks.subscribe)", null),
-      ])
+      ]),
     ).toStrictEqual([true, true])
 
     // the hydrated chaindata provier should now have chains, evmNetworks and tokens!

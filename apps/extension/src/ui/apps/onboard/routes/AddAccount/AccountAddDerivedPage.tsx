@@ -1,5 +1,6 @@
-import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
 import { useTranslation } from "react-i18next"
+
+import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
 
 import { AccountAddWrapper } from "./AccountAddWrapper"
 

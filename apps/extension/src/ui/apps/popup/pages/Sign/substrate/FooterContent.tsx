@@ -28,7 +28,7 @@ const EstimatedFeesRow: FC = () => {
             </TooltipTrigger>
             <TooltipContent>
               {t(
-                "We are unable to detect which currency will be used for fees in this transaction."
+                "We are unable to detect which currency will be used for fees in this transaction.",
               )}
             </TooltipContent>
           </Tooltip>

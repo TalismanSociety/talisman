@@ -32,7 +32,7 @@ export class RpcStateQueryHelper<T> {
     timeout: number | false = false,
     subscribeMethod = "state_subscribeStorage",
     responseMethod = "state_storage",
-    unsubscribeMethod = "state_unsubscribeStorage"
+    unsubscribeMethod = "state_unsubscribeStorage",
   ): Promise<UnsubscribeFn> {
     const queriesByChain = groupBy(this.#queries, "chainId")
     const subscriptions = Object.entries(queriesByChain).map(([chainId, queries]) => {
@@ -48,7 +48,7 @@ export class RpcStateQueryHelper<T> {
             ? callback(error)
             : callback(null, this.#distributeChangesToQueryDecoders.call(this, chainId, result))
         },
-        timeout
+        timeout,
       )
 
       return () => unsub.then((unsubscribe) => unsubscribe(unsubscribeMethod))
@@ -66,7 +66,7 @@ export class RpcStateQueryHelper<T> {
 
         const result = (await this.#chainConnector.send(chainId, method, params))[0]
         return this.#distributeChangesToQueryDecoders.call(this, chainId, result)
-      })
+      }),
     )
 
     return resultsByChain.flatMap((result) => result)
@@ -89,11 +89,11 @@ export class RpcStateQueryHelper<T> {
       }
 
       const query = this.#queries.find(
-        ({ chainId: cId, stateKey }) => cId === chainId && stateKey === reference
+        ({ chainId: cId, stateKey }) => cId === chainId && stateKey === reference,
       )
       if (!query) {
         log.warn(
-          `Failed to find query:\n${reference} in\n${this.#queries.map(({ stateKey }) => stateKey)}`
+          `Failed to find query:\n${reference} in\n${this.#queries.map(({ stateKey }) => stateKey)}`,
         )
         return []
       }

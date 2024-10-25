@@ -4,17 +4,7 @@ import { sleep } from "@talismn/util"
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "extension-shared"
 import { BehaviorSubject, Subject } from "rxjs"
 
-import { genericSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
-import { ExtensionHandler } from "../../libs/Handler"
-import { requestStore } from "../../libs/requests/store"
-import { windowManager } from "../../libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
-import { authenticateLegacyMethod } from "../accounts/legacy"
-import { changePassword } from "./helpers"
-import { protector } from "./protector"
-import { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
@@ -26,6 +16,16 @@ import type {
   RequestRoute,
   SendFundsOpenRequest,
 } from "./types"
+import { genericSubscription } from "../../handlers/subscriptions"
+import { talismanAnalytics } from "../../libs/Analytics"
+import { ExtensionHandler } from "../../libs/Handler"
+import { requestStore } from "../../libs/requests/store"
+import { windowManager } from "../../libs/WindowManager"
+import { Port } from "../../types/base"
+import { authenticateLegacyMethod } from "../accounts/legacy"
+import { changePassword } from "./helpers"
+import { protector } from "./protector"
+import { PasswordStoreData } from "./store.password"
 import { ChangePasswordStatusUpdateStatus } from "./types"
 
 export default class AppHandler extends ExtensionHandler {
@@ -108,7 +108,7 @@ export default class AppHandler extends ExtensionHandler {
   private async changePassword(
     id: string,
     port: Port,
-    { currentPw, newPw, newPwConfirm }: RequestTypes["pri(app.changePassword)"]
+    { currentPw, newPw, newPwConfirm }: RequestTypes["pri(app.changePassword)"],
   ) {
     const progressObservable = new BehaviorSubject<ChangePasswordStatusUpdate>({
       status: ChangePasswordStatusUpdateStatus.VALIDATING,
@@ -123,7 +123,7 @@ export default class AppHandler extends ExtensionHandler {
       const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
       assert(
         !mnemonicsUnconfirmed,
-        "Please backup all recovery phrases before attempting to change your password."
+        "Please backup all recovery phrases before attempting to change your password.",
       )
 
       // check given PW
@@ -147,7 +147,7 @@ export default class AppHandler extends ExtensionHandler {
       const transformedPw = await this.stores.password.transformPassword(currentPw)
       const result = await changePassword(
         { currentPw: transformedPw, newPw: hashedNewPw },
-        updateProgress
+        updateProgress,
       )
       if (!result.ok) throw new Error(result.val)
 
@@ -246,7 +246,7 @@ export default class AppHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -265,7 +265,7 @@ export default class AppHandler extends ExtensionHandler {
         return genericSubscription<"pri(app.authStatus.subscribe)">(
           id,
           port,
-          this.stores.password.isLoggedIn
+          this.stores.password.isLoggedIn,
         )
 
       case "pri(app.lock)":
@@ -276,7 +276,7 @@ export default class AppHandler extends ExtensionHandler {
         return await this.changePassword(
           id,
           port,
-          request as RequestTypes["pri(app.changePassword)"]
+          request as RequestTypes["pri(app.changePassword)"],
         )
 
       case "pri(app.checkPassword)":
@@ -311,7 +311,7 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.phishing.addException)": {
         return protector.addException(
-          (request as RequestTypes["pri(app.phishing.addException)"]).url
+          (request as RequestTypes["pri(app.phishing.addException)"]).url,
         )
       }
 

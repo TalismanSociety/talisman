@@ -60,7 +60,7 @@ const [usePreload] = bind(
     balancesHydrate$,
     activeChainsState$,
     activeEvmNetworksState$,
-  ])
+  ]),
 )
 
 const Content = () => {

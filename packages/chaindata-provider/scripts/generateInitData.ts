@@ -45,32 +45,32 @@ async function generateInitData() {
     `export const chains = ${JSON.stringify(
       initDataFilter.filterChains(await fetchChains()),
       null,
-      2
-    )}`
+      2,
+    )}`,
   )
   fs.writeFileSync(
     path.resolve(__dirname, "../src/init/evm-networks.ts"),
     `export const evmNetworks = ${JSON.stringify(
       initDataFilter.filterEvmNetworks(await fetchEvmNetworks()),
       null,
-      2
-    )}`
+      2,
+    )}`,
   )
   fs.writeFileSync(
     path.resolve(__dirname, "../src/init/tokens.ts"),
     `export const tokens = ${JSON.stringify(
       initDataFilter.filterTokens(await fetchSubstrateTokens()),
       null,
-      2
-    )}`
+      2,
+    )}`,
   )
   fs.writeFileSync(
     path.resolve(__dirname, "../src/init/mini-metadatas.ts"),
     `export const miniMetadatas = ${JSON.stringify(
       initDataFilter.filterMiniMetadatas(await fetchMiniMetadatas()),
       null,
-      2
-    )}`
+      2,
+    )}`,
   )
 
   execSync(`prettier --write '${path.resolve(__dirname, "../src/init")}'`, { stdio: "inherit" })
@@ -103,11 +103,11 @@ class InitDataFilter {
       chains.flatMap(({ nativeToken, tokens }) => [
         ...(nativeToken?.id ? [nativeToken.id] : []),
         ...(tokens ?? []).map(({ id }) => id),
-      ])
+      ]),
     )
 
     this.#wantedMiniMetadataIds = new Set(
-      [...this.wantedIdsByChain(chains).values()].flatMap((ids) => ids)
+      [...this.wantedIdsByChain(chains).values()].flatMap((ids) => ids),
     )
 
     return chains
@@ -123,7 +123,7 @@ class InitDataFilter {
       erc20Config.tokens = erc20Config.tokens.filter(
         (token) =>
           token.contractAddress &&
-          ETHEREUM_MAINNET_ERC20_ALLOWLIST.includes(token.contractAddress.toLowerCase())
+          ETHEREUM_MAINNET_ERC20_ALLOWLIST.includes(token.contractAddress.toLowerCase()),
       )
 
     const univ2Config = ethereum?.balancesConfig?.find?.((c) => c.moduleType === "evm-uniswapv2")
@@ -155,13 +155,13 @@ class InitDataFilter {
                 specVersion: specVersion,
                 balancesConfig: JSON.stringify(
                   (balancesConfig ?? []).find(({ moduleType }) => moduleType === source)
-                    ?.moduleConfig ?? {}
+                    ?.moduleConfig ?? {},
                 ),
-              })
+              }),
             ),
           ],
         ]
-      })
+      }),
     )
 }
 

@@ -86,7 +86,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   if (chainId === null)
     return (
       <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-        <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
+        <div className="text-body flex flex-nowrap items-center gap-4 text-base">
           <div className="flex shrink-0 flex-col justify-center">
             <AccountIcon type="polkadot-identicon" className="!text-lg" address={address} />
           </div>
@@ -99,7 +99,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
 
   return (
     <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-      <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
+      <div className="text-body flex flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
           <ChainLogo className="!text-lg" id={chain.id} />
         </div>
@@ -176,7 +176,7 @@ export const CopyAddressCopyForm = () => {
 
   const isEthereum = useMemo(
     () => !chain && formattedAddress && isEthereumAddress(formattedAddress),
-    [chain, formattedAddress]
+    [chain, formattedAddress],
   )
   const genesisHash = chain?.genesisHash
 
@@ -212,7 +212,7 @@ export const CopyAddressCopyForm = () => {
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
-          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8 ">
+          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8">
             {isLogoLoaded && (
               <FadeIn>
                 <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
@@ -238,7 +238,7 @@ export const CopyAddressCopyForm = () => {
                             "Only use this address for receiving assets on the {{name}} network.",
                             {
                               name: chain.name,
-                            }
+                            },
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -308,7 +308,7 @@ export const CopyAddressCopyForm = () => {
                         </TooltipTrigger>
                         <TooltipContent>
                           {t(
-                            "Use this address for receiving assets on Ethereum and EVM compatible networks"
+                            "Use this address for receiving assets on Ethereum and EVM compatible networks",
                           )}
                         </TooltipContent>
                       </Tooltip>

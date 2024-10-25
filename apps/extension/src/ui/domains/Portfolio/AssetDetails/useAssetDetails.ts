@@ -8,7 +8,7 @@ export const useAssetDetails = (balances: Balances) => {
 
   const chainIds = useMemo<Array<ChainId | EvmNetworkId>>(
     () => [...new Set(balances.each.flatMap((b) => b.chainId ?? b.evmNetworkId ?? []))],
-    [balances.each]
+    [balances.each],
   )
 
   const balancesByChain = useMemo(
@@ -18,7 +18,7 @@ export const useAssetDetails = (balances: Balances) => {
           chainId,
           new Balances(
             balances.find((b) => b.chainId === chainId || b.evmNetworkId === chainId),
-            hydrate
+            hydrate,
           ),
         ])
         .sort(([aChainId, aBalances], [bChainId, bBalances]) => {
@@ -41,7 +41,7 @@ export const useAssetDetails = (balances: Balances) => {
           // keep alphabetical sort
           return 0
         }),
-    [balances, chainIds, hydrate]
+    [balances, chainIds, hydrate],
   )
 
   return { balancesByChain }

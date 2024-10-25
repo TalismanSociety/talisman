@@ -16,7 +16,7 @@ export const formatDecimals = (
   num?: string | number | null | BigNumber,
   digits = MIN_DIGITS,
   options: Partial<Intl.NumberFormatOptions> = {},
-  locale = "en-US"
+  locale = "en-US",
 ): string => {
   if (num === null || num === undefined) return ""
   if (digits < MIN_DIGITS) digits = MIN_DIGITS
@@ -36,7 +36,7 @@ export const formatDecimals = (
   let truncatedValue = value
   //remove insignificant fraction digits
   const excessFractionDigitsPow10 = new BigNumber(10).pow(
-    digits > intDigits ? digits - intDigits : 0
+    digits > intDigits ? digits - intDigits : 0,
   )
 
   truncatedValue = truncatedValue

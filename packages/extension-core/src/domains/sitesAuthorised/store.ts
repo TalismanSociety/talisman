@@ -45,7 +45,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   public async ensureUrlAuthorized(
     url: string,
     ethereum: boolean,
-    address?: string
+    address?: string,
   ): Promise<boolean> {
     const entry = await this.getSiteFromUrl(url)
     const addresses = ethereum ? entry?.ethAddresses : entry?.addresses
@@ -56,7 +56,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     if (address)
       assert(
         addresses.some((addr) => isAddressEqual(addr, address)),
-        `The source ${url} is not allowed to interact with this account.`
+        `The source ${url} is not allowed to interact with this account.`,
       )
     return true
   }

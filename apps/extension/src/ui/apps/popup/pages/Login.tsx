@@ -36,7 +36,7 @@ const HideBalancesToggle = () => {
           htmlFor="showBalances"
           className={classNames(
             "absolute right-10 top-10 z-20",
-            "inline-flex cursor-pointer items-center"
+            "inline-flex cursor-pointer items-center",
           )}
         >
           <input
@@ -49,28 +49,28 @@ const HideBalancesToggle = () => {
           <div
             className={classNames(
               "bg-grey-600 peer h-14 w-28 shrink-0 rounded-full",
-              "peer-focus-visible:ring-body peer-focus:outline-none peer-focus-visible:ring-2"
+              "peer-focus-visible:ring-body peer-focus:outline-none peer-focus-visible:ring-2",
             )}
           ></div>
           <div
             className={classNames(
-              "absolute left-1 top-1 flex h-12 w-12 ",
+              "absolute left-1 top-1 flex h-12 w-12",
               "bg-grey-800 rounded-full",
-              "peer-checked:bg-primary transition peer-checked:translate-x-14"
+              "peer-checked:bg-primary transition peer-checked:translate-x-14",
             )}
           >
             <EyeIcon
               className={classNames(
                 "absolute left-2 top-2 h-8 w-8",
                 "text-body-black transition-opacity",
-                hideBalances ? "opacity-0" : "opacity-100"
+                hideBalances ? "opacity-0" : "opacity-100",
               )}
             />
             <EyeOffIcon
               className={classNames(
                 "absolute left-2 top-2 h-8 w-8",
                 "text-body transition-opacity",
-                !hideBalances ? "opacity-0" : "opacity-100"
+                !hideBalances ? "opacity-0" : "opacity-100",
               )}
             />
           </div>
@@ -135,7 +135,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         setFocus("password", { shouldSelect: true })
       }
     },
-    [setError, setFocus, t]
+    [setError, setFocus, t],
   )
 
   useEffect(() => {

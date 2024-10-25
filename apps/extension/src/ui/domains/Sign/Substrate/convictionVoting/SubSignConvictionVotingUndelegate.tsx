@@ -1,6 +1,7 @@
-import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"

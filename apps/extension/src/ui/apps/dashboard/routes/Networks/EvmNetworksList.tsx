@@ -68,7 +68,7 @@ const DeactivateNetworksModalContent: FC<{
       <div className="text-body-secondary mb-8 text-sm">
         {t("It is recommended to deactivate unused networks to improve Talisman performance.")}
       </div>
-      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm ">
+      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm">
         {isBalancesInitializing ? (
           <>
             <LoaderIcon className="text-md shrink-0 animate-spin" />
@@ -153,7 +153,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
       lowerSearch.trim() === network.name?.toLowerCase().trim() ||
       lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
         ? [network.id]
-        : []
+        : [],
     )
 
     return [filtered, exactMatches] as const
@@ -177,17 +177,17 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     (network: EvmNetwork) => (enable: boolean) => {
       activeEvmNetworksStore.setActive(network.id, enable)
     },
-    []
+    [],
   )
 
   const enableAll = useCallback(
     (enable = false) =>
       () => {
         activeEvmNetworksStore.set(
-          Object.fromEntries(filteredEvmNetworks.map((n) => [n.id, enable]))
+          Object.fromEntries(filteredEvmNetworks.map((n) => [n.id, enable])),
         )
       },
-    [filteredEvmNetworks]
+    [filteredEvmNetworks],
   )
 
   const ocDeactivateAllModal = useOpenClose()
@@ -199,7 +199,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
       <div
         className={classNames(
           "flex w-full items-center justify-end gap-4",
-          !filteredEvmNetworks.length && "invisible"
+          !filteredEvmNetworks.length && "invisible",
         )}
       >
         <button
@@ -268,7 +268,7 @@ const EvmNetworksListItem = ({
     (e) => {
       onEnableChanged(e.target.checked)
     },
-    [onEnableChanged]
+    [onEnableChanged],
   )
 
   const rowContent = intersection?.isIntersecting ? (

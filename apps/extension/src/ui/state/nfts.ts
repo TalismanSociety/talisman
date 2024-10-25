@@ -50,7 +50,7 @@ const nftData$ = new Observable<NftData>((subscriber) => {
 
 const evmNetworks$ = getSettingValue$("useTestnets").pipe(
   switchMap((includeTestnets) => getEvmNetworks$({ activeOnly: true, includeTestnets })),
-  shareReplay(1)
+  shareReplay(1),
 )
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
@@ -58,7 +58,7 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
     map(([evmNetworks, { nfts, collections }]) => {
       const networkIdsWithNfts = [
         ...new Set(
-          nfts.map((nft) => nft.evmNetworkId).concat(...collections.map((c) => c.evmNetworkIds))
+          nfts.map((nft) => nft.evmNetworkId).concat(...collections.map((c) => c.evmNetworkIds)),
         ),
       ]
 
@@ -72,8 +72,8 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
             sortIndex: evmNetwork.sortIndex,
           }
         })
-    })
-  )
+    }),
+  ),
 )
 
 export const [useNfts, nfts$] = bind(
@@ -117,7 +117,7 @@ export const [useNfts, nfts$] = bind(
         const nfts = allNfts
           // account filter
           .filter((nft) =>
-            nft.owners.some(({ address }) => addresses.includes(address.toLowerCase()))
+            nft.owners.some(({ address }) => addresses.includes(address.toLowerCase())),
           )
 
           // visibility mode
@@ -244,9 +244,9 @@ export const [useNfts, nfts$] = bind(
           })
 
         return { status, nfts, collections, favoriteNftIds, hiddenNftCollectionIds } as NftData
-      }
-    )
-  )
+      },
+    ),
+  ),
 )
 
 export const [useNft, nft$] = bind((id: string | null) =>
@@ -261,16 +261,16 @@ export const [useNft, nft$] = bind((id: string | null) =>
       if (!collection) return null
 
       return { nft, collection }
-    })
-  )
+    }),
+  ),
 )
 
 export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind((id: string) =>
-  nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id)))
+  nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
 )
 
 export const [useIsFavoriteNft, getIsFavoriteNft$] = bind((id: string) =>
-  nfts$.pipe(map((data) => data.favoriteNftIds.includes(id)))
+  nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
 )
 
 export const [useNftCollection, getNftCollection$] = bind(
@@ -279,6 +279,6 @@ export const [useNftCollection, getNftCollection$] = bind(
       map(({ collections, nfts: allNfts }) => ({
         collection: collections.find((c) => c.id === collectionId) ?? null,
         nfts: allNfts.filter((nft) => nft.collectionId === collectionId) ?? [],
-      }))
-    )
+      })),
+    ),
 )

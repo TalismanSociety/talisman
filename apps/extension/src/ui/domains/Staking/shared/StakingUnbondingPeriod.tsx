@@ -21,7 +21,7 @@ export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }>
             locale,
           })
         : t("N/A"),
-    [duration, locale, t]
+    [duration, locale, t],
   )
 
   if (isLoading)

@@ -25,7 +25,7 @@ export const DerivationModeDropdown: FC<{
       { mode: "multi", label: t("Import Multiple Accounts") },
       { mode: "custom", label: t("Custom Derivation Path"), extra: t("Advanced") },
     ],
-    [t]
+    [t],
   )
 
   const [current, setCurrent] = useState<DropdownOption | null>(() => items[0])
@@ -51,7 +51,7 @@ export const DerivationModeDropdown: FC<{
       optionClassName="h-28 bg-field px-12"
       value={current}
       renderItem={(o) => (
-        <div className=" flex h-full items-center gap-6 overflow-hidden">
+        <div className="flex h-full items-center gap-6 overflow-hidden">
           <div>{o.label}</div>
           <div className="text-body-disabled">{o.extra}</div>
         </div>

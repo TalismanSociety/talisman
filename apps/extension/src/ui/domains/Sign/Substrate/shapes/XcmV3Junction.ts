@@ -17,7 +17,7 @@ const $xcmV3NetworkId: $.Shape<XcmV3NetworkId> = $.taggedUnion("type", {
   1: $.variant(
     "ByFork",
     $.field("blockNumber", $.u64),
-    $.field("blockHash", $.sizedUint8Array(32))
+    $.field("blockHash", $.sizedUint8Array(32)),
   ),
   2: $.variant("Polkadot"),
   3: $.variant("Kusama"),
@@ -73,12 +73,12 @@ const $xcmV3BodyPart: $.Shape<XcmV3BodyPart> = $.taggedUnion("type", {
   3: $.variant(
     "AtLeastProportion",
     $.field("nom", $.compact($.u32)),
-    $.field("denom", $.compact($.u32))
+    $.field("denom", $.compact($.u32)),
   ),
   4: $.variant(
     "MoreThanProportion",
     $.field("nom", $.compact($.u32)),
-    $.field("denom", $.compact($.u32))
+    $.field("denom", $.compact($.u32)),
   ),
 })
 
@@ -100,23 +100,23 @@ export const $xcmV3Junction: $.Shape<XcmV3Junction> = $.taggedUnion("type", {
   1: $.variant(
     "AccountId32",
     $.field("network", $.option($xcmV3NetworkId)),
-    $.field("id", $.sizedUint8Array(32))
+    $.field("id", $.sizedUint8Array(32)),
   ),
   2: $.variant(
     "AccountIndex64",
     $.field(
       "network",
-      $.deferred(() => $option78)
+      $.deferred(() => $option78),
     ),
-    $.field("index", $.compact($.u64))
+    $.field("index", $.compact($.u64)),
   ),
   3: $.variant(
     "AccountKey20",
     $.field(
       "network",
-      $.deferred(() => $option78)
+      $.deferred(() => $option78),
     ),
-    $.field("key", $.sizedUint8Array(20))
+    $.field("key", $.sizedUint8Array(20)),
   ),
   4: $.variant("PalletInstance", $.field("value", $.u8)),
   5: $.variant("GeneralIndex", $.field("value", $.compact($.u128))),
@@ -127,7 +127,7 @@ export const $xcmV3Junction: $.Shape<XcmV3Junction> = $.taggedUnion("type", {
     "GlobalConsensus",
     $.field(
       "value",
-      $.deferred(() => $xcmV3NetworkId)
-    )
+      $.deferred(() => $xcmV3NetworkId),
+    ),
   ),
 })

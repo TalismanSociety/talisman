@@ -27,7 +27,7 @@ export const addEvmTransaction = async (
   evmNetworkId: EvmNetworkId,
   hash: Hex,
   unsigned: TransactionRequest<string>,
-  options: AddTransactionOptions = {}
+  options: AddTransactionOptions = {},
 ) => {
   const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
@@ -41,7 +41,7 @@ export const addEvmTransaction = async (
           (row) =>
             row.networkType === "evm" &&
             row.evmNetworkId === evmNetworkId &&
-            row.nonce === unsigned.nonce
+            row.nonce === unsigned.nonce,
         )
         .count()) > 0
 
@@ -71,7 +71,7 @@ export const addEvmTransaction = async (
 export const addSubstrateTransaction = async (
   hash: string,
   payload: SignerPayloadJSON,
-  options: AddTransactionOptions = {}
+  options: AddTransactionOptions = {},
 ) => {
   const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
@@ -125,7 +125,7 @@ export const updateTransactionStatus = async (
   hash: string,
   status: TransactionStatus,
   blockNumber?: bigint | number,
-  confirmed?: boolean
+  confirmed?: boolean,
 ) => {
   try {
     // this can be called after the tx has been overriden/replaced, check status first
@@ -176,7 +176,7 @@ export const updateTransactionsRestart = async () => {
       await db.transactions
         .filter(filterIsSameNetworkAndAddressTx(successfulTx))
         .filter(
-          (row) => row.nonce === successfulTx.nonce && ["pending", "unknown"].includes(row.status)
+          (row) => row.nonce === successfulTx.nonce && ["pending", "unknown"].includes(row.status),
         )
         .modify({ status: "error" })
     }
@@ -199,12 +199,12 @@ export const updateTransactionsRestart = async () => {
 export const getExtrinsicHash = (
   registry: TypeRegistry,
   payload: SignerPayloadJSON,
-  signature: HexString
+  signature: HexString,
 ) => {
   const tx = registry.createType(
     "Extrinsic",
     { method: payload.method },
-    { version: payload.version }
+    { version: payload.version },
   )
   tx.addSignature(payload.address, signature, payload)
   return tx.hash.toHex()

@@ -22,7 +22,7 @@ const viemRequest =
 
 export const getExtensionPublicClient = (
   evmNetwork: EvmNetwork,
-  nativeToken: EvmNativeToken
+  nativeToken: EvmNativeToken,
 ): PublicClient => {
   const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`
 
@@ -49,7 +49,7 @@ export const getExtensionPublicClient = (
       {
         // backend will retry, at it's own transport level
         retryCount: 0,
-      }
+      },
     ),
   })
 }

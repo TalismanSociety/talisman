@@ -24,7 +24,7 @@ export const Content = () => {
       { value: 1800, label: t("{{count}} minutes", { count: 30 }) },
       { value: 3600, label: t("{{count}} minutes", { count: 60 }) },
     ],
-    [t]
+    [t],
   )
 
   const handleChange = useCallback(
@@ -32,12 +32,12 @@ export const Content = () => {
       const newVal = val?.value || 0
       if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)
     },
-    [autoLockTimeout, setAutoLockTimeout]
+    [autoLockTimeout, setAutoLockTimeout],
   )
 
   const value = useMemo(
     () => options.find((o) => o.value === (autoLockTimeout ?? 0)),
-    [autoLockTimeout, options]
+    [autoLockTimeout, options],
   )
 
   return (

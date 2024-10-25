@@ -72,7 +72,7 @@ describe("Signing requests store", () => {
         address,
         ...meta,
       },
-      {} as chrome.runtime.Port
+      {} as chrome.runtime.Port,
     )
 
     await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))

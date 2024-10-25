@@ -8,7 +8,7 @@ export const useFormattedAddress = (address: string | undefined, genesisHash?: s
   const chain = useChainByGenesisHash(genesisHash)
   const formattedAddress = useMemo(
     () => (address ? encodeAnyAddress(address, chain?.prefix ?? undefined) : undefined),
-    [address, chain?.prefix]
+    [address, chain?.prefix],
   )
 
   return formattedAddress

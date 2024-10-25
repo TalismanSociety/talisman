@@ -102,7 +102,7 @@ export const BottomNav = () => {
         <QuickSettingsModal />
         <div
           className={classNames(
-            "border-grey-800 flex h-[5.2rem] w-full items-center justify-between rounded border bg-black/90 px-7 backdrop-blur-[2px]"
+            "border-grey-800 flex h-[5.2rem] w-full items-center justify-between rounded border bg-black/90 px-7 backdrop-blur-[2px]",
           )}
         >
           <NavButton
@@ -162,14 +162,14 @@ const NavButton: FC<{
         "enabled:hover:text-body-secondary",
         "enabled:focus-visible:border",
         routeMatch && "!text-body",
-        className
+        className,
       )}
       onClick={onClick}
     >
       <div
         className={classNames(
           "flex size-full flex-col items-center justify-center gap-[0.15rem]",
-          "translate-y-4 transition-transform group-hover:translate-y-0"
+          "translate-y-4 transition-transform group-hover:translate-y-0",
         )}
       >
         {withBadge ? (
@@ -183,7 +183,7 @@ const NavButton: FC<{
         <div
           className={classNames(
             "leading-paragraph text-[1rem]",
-            "opacity-0 transition-opacity group-hover:opacity-100"
+            "opacity-0 transition-opacity group-hover:opacity-100",
           )}
         >
           {label}

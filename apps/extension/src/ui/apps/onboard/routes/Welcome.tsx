@@ -1,12 +1,13 @@
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { ArrowRightIcon } from "@talismn/icons"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
+
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
@@ -44,7 +45,7 @@ export const WelcomePage = () => {
       })
       navigate("/password")
     },
-    [navigate, reset, updateData]
+    [navigate, reset, updateData],
   )
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export const WelcomePage = () => {
 
   return (
     <OnboardLayout analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[54rem]">
-      <div className="my-[8rem] flex flex-col items-center justify-center gap-32 ">
+      <div className="my-[8rem] flex flex-col items-center justify-center gap-32">
         <div className="welcome-text flex flex-col items-center gap-14 text-center xl:w-[76rem]">
           <div className="flex flex-col items-center gap-10 text-white xl:w-[65.2rem]">
             <TalismanWhiteLogo className="h-auto w-96" />

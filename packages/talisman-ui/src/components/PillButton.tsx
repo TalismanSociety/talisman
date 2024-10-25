@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, SVGProps, forwardRef } from "react"
+import { FC, forwardRef, SVGProps } from "react"
 
 export type PillButtonSize = "tiny" | "xs" | "sm" | "base"
 
@@ -39,7 +39,7 @@ export const PillButton = forwardRef<HTMLButtonElement, PillButtonProps>(
           "gap-3 rounded-[1em] px-[1em] py-[0.666em]",
           "hover:bg-grey-700 disabled:bg-grey-800 disabled:opacity-50",
           "allow-focus outline-offset-0 focus-visible:outline-current",
-          className
+          className,
         )}
         {...props}
       >
@@ -51,6 +51,6 @@ export const PillButton = forwardRef<HTMLButtonElement, PillButtonProps>(
         <div className="max-w-full">{children}</div>
       </button>
     )
-  }
+  },
 )
 PillButton.displayName = "PillButton"

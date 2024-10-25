@@ -20,7 +20,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
@@ -31,7 +31,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   // show testnets only if initial network was a testnet when opening the drawer, or if testnets are enabled in settings
   const showTestnets = useMemo(
     () => isTestnet || settingUseTestnets,
-    [isTestnet, settingUseTestnets]
+    [isTestnet, settingUseTestnets],
   )
 
   const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
@@ -56,7 +56,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()
     },
-    [currentSite.id, onClose]
+    [currentSite.id, onClose],
   )
 
   return (
@@ -93,7 +93,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             <div
               className={classNames(
                 "mx-4 h-4 w-4 shrink-0 rounded-full",
-                network.id === currentNetwork?.id ? "bg-primary" : "bg-grey-700"
+                network.id === currentNetwork?.id ? "bg-primary" : "bg-grey-700",
               )}
             ></div>
           </button>

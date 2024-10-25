@@ -77,7 +77,7 @@ export const AccountAddMnemonicForm = () => {
           type: yup.mixed(isUiAccountAddressType).defined(),
           mode: yup
             .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
-              ["first", "custom", "multi"].includes(v)
+              ["first", "custom", "multi"].includes(v),
             )
             .defined(),
           derivationPath: yup.string().defined().trim(),
@@ -87,7 +87,7 @@ export const AccountAddMnemonicForm = () => {
             .required(" ")
             .transform(cleanupMnemonic)
             .test("is-valid-mnemonic", t("Invalid recovery phrase"), async (val) =>
-              api.validateMnemonic(val as string)
+              api.validateMnemonic(val as string),
             ),
         })
         .required()
@@ -116,7 +116,7 @@ export const AccountAddMnemonicForm = () => {
 
           return true
         }),
-    [accountAddresses, t]
+    [accountAddresses, t],
   )
 
   const {
@@ -135,7 +135,7 @@ export const AccountAddMnemonicForm = () => {
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
-    [mnemonic]
+    [mnemonic],
   )
 
   const [targetAddress, setTargetAddress] = useState<string>()
@@ -168,7 +168,7 @@ export const AccountAddMnemonicForm = () => {
             title: t("Importing account"),
             subtitle: t("Please wait"),
           },
-          { autoClose: false }
+          { autoClose: false },
         )
         try {
           const address = await api.accountCreateFromSuri(name, suri, type)
@@ -190,7 +190,7 @@ export const AccountAddMnemonicForm = () => {
         }
       }
     },
-    [t, navigate, onSuccess, updateData]
+    [t, navigate, onSuccess, updateData],
   )
 
   const handleTypeChange = useCallback(
@@ -200,7 +200,7 @@ export const AccountAddMnemonicForm = () => {
         shouldValidate: true,
       })
     },
-    [setValue]
+    [setValue],
   )
 
   const handleModeChange = useCallback(
@@ -211,7 +211,7 @@ export const AccountAddMnemonicForm = () => {
           shouldValidate: true,
         })
     },
-    [setValue, type]
+    [setValue, type],
   )
 
   useEffect(() => {

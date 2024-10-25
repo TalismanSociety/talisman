@@ -18,7 +18,7 @@ export class MigrationFunction {
 
   constructor(
     migration: (context: MigrationContext) => Promise<void>,
-    onError: (error: Error) => Promise<void> = async () => {}
+    onError: (error: Error) => Promise<void> = async () => {},
   ) {
     this._migration = migration
     this._onError = onError

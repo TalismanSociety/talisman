@@ -25,7 +25,7 @@ const useTxHistoryProvider = () => {
       Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Partial<
         Record<HexString, Chain>
       >,
-    [chains]
+    [chains],
   )
 
   const allTransactions = useTransactions()
@@ -42,18 +42,18 @@ const useTxHistoryProvider = () => {
 
   const networks = useMemo(() => {
     const accountTransactions = allTransactions?.filter(
-      (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account))
+      (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
     )
 
     const evmNetworks = uniq(
-      accountTransactions?.map((tx) => (tx.networkType === "evm" ? tx.evmNetworkId : null))
+      accountTransactions?.map((tx) => (tx.networkType === "evm" ? tx.evmNetworkId : null)),
     )
       .filter((evmNetworkId): evmNetworkId is string => !!evmNetworkId)
       .map((evmNetworkId) => evmNetworksMap[evmNetworkId])
       .filter<EvmNetwork>((n): n is EvmNetwork => !!n)
 
     const chains = uniq(
-      accountTransactions?.map((tx) => (tx.networkType === "substrate" ? tx.genesisHash : null))
+      accountTransactions?.map((tx) => (tx.networkType === "substrate" ? tx.genesisHash : null)),
     )
       .filter((genesisHash): genesisHash is HexString => !!genesisHash)
       .map((genesisHash) => chainsByGenesisHash[genesisHash])
@@ -67,12 +67,12 @@ const useTxHistoryProvider = () => {
       chainsByGenesisHash[(networkId ?? "") as HexString] ??
       evmNetworksMap[networkId ?? ""] ??
       null,
-    [chainsByGenesisHash, evmNetworksMap, networkId]
+    [chainsByGenesisHash, evmNetworksMap, networkId],
   )
 
   const transactions = useMemo(
     () => getTransactions(encodedAddresses, networkId, allTransactions),
-    [encodedAddresses, allTransactions, networkId]
+    [encodedAddresses, allTransactions, networkId],
   )
 
   const setAddress = useCallback(
@@ -83,12 +83,12 @@ const useTxHistoryProvider = () => {
         return { addresses, networkId: txs.length ? state.networkId : null }
       })
     },
-    [allTransactions]
+    [allTransactions],
   )
 
   const setNetworkId = useCallback(
     (networkId: HexString | EvmNetworkId | null) => setState((state) => ({ ...state, networkId })),
-    []
+    [],
   )
 
   // only for popup, where we can only select 1 account
@@ -111,20 +111,20 @@ export const [TxHistoryProvider, useTxHistory] = provideContext(useTxHistoryProv
 const getTransactions = (
   addresses: string[] | null,
   networkId: HexString | EvmNetworkId | null,
-  allTransactions: WalletTransaction[] | undefined
+  allTransactions: WalletTransaction[] | undefined,
 ) => {
   const encodedAddresses = addresses?.map(normalizeAddress) ?? []
 
   return (
     allTransactions
       ?.filter(
-        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account))
+        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
       )
       .filter(
         (tx) =>
           !networkId ||
           (tx.networkType === "evm" && tx.evmNetworkId === networkId) ||
-          (tx.networkType === "substrate" && tx.genesisHash === networkId)
+          (tx.networkType === "substrate" && tx.genesisHash === networkId),
       ) ?? []
   )
 }

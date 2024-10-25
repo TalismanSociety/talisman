@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
 
 import { StorageProvider } from "../../../libs/Store"
-import { LegacySeedObj, decryptLegacyMnemonicObject } from "./helpers"
+import { decryptLegacyMnemonicObject, LegacySeedObj } from "./helpers"
 
 const storageKey = "nursery"
 
@@ -26,7 +26,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
   public async add(
     seed: string,
     password: string,
-    confirmed = false
+    confirmed = false,
   ): Promise<Result<boolean, "Seed already exists in SeedPhraseStore">> {
     const storedCipher = await this.get("cipher")
     if (storedCipher) return Err("Seed already exists in SeedPhraseStore")
@@ -42,7 +42,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
   }
 
   public async getSeed(
-    password: string
+    password: string,
   ): Promise<
     Result<string | undefined, "Incorrect password" | "Unable to decrypt seed" | "No seed present">
   > {

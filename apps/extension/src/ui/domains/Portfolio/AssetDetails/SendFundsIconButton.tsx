@@ -26,12 +26,12 @@ export const SendFundsButton = ({
     (t) =>
       t.symbol === symbol &&
       isTransferableToken(t) &&
-      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
+      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId),
   )
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     selectedAccount,
-    token?.id
+    token?.id,
   )
 
   const handleClick = useCallback(() => {

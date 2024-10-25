@@ -36,7 +36,7 @@ export const getScaleApi = (
   token: { symbol: string; decimals: number },
   hasCheckMetadataHash?: boolean,
   signedExtensions?: ExtDef,
-  registryTypes?: unknown
+  registryTypes?: unknown,
 ) => {
   const lookup = getLookupFn(metadata)
   const builder = getDynamicBuilder(lookup)
@@ -86,7 +86,7 @@ export const getScaleApi = (
       pallet: string,
       method: string,
       args: unknown,
-      config: PayloadSignerConfig
+      config: PayloadSignerConfig,
     ) => getSignerPayloadJSON(chainId, metadata, builder, pallet, method, args, config, chainInfo),
 
     getFeeEstimate: (payload: SignerPayloadJSON) =>
@@ -116,7 +116,7 @@ type ChainInfo = {
 const getTypeRegistry = (
   metadata: ScaleMetadata,
   payload: SignerPayloadJSON,
-  chainInfo: ChainInfo
+  chainInfo: ChainInfo,
 ) => {
   const stop = log.timer("[sapi] getTypeRegistry")
   const fullMetadata = {
@@ -141,7 +141,7 @@ const getPayloadWithMetadataHash = (
   metadata: ScaleMetadata,
   builder: ScaleBuilder,
   chainInfo: ChainInfo,
-  payload: SignerPayloadJSON
+  payload: SignerPayloadJSON,
 ): { payload: SignerPayloadJSON; txMetadata?: Uint8Array } => {
   if (!chainInfo.hasCheckMetadataHash || !payload.signedExtensions.includes("CheckMetadataHash"))
     return {
@@ -219,7 +219,7 @@ const getSignerPayloadJSON = async (
   methodName: string,
   args: unknown,
   signerConfig: PayloadSignerConfig,
-  chainInfo: ChainInfo
+  chainInfo: ChainInfo,
 ): Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array }> => {
   const { codec, location } = builder.buildCall(palletName, methodName)
   const method = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
@@ -240,7 +240,7 @@ const getSignerPayloadJSON = async (
   const nonce = account ? account.nonce : 0
   const era = mortal({ period: 16, phase: blockNumber % 16 })
   const signedExtensions = metadata.extrinsic.signedExtensions.map((ext) =>
-    ext.identifier.toString()
+    ext.identifier.toString(),
   )
 
   const basePayload: SignerPayloadJSON = {
@@ -263,7 +263,7 @@ const getSignerPayloadJSON = async (
     metadata,
     builder,
     chainInfo,
-    basePayload
+    basePayload,
   )
 
   // Avail support
@@ -280,7 +280,7 @@ const getFeeEstimate = async (
   metadata: ScaleMetadata,
   builder: ScaleBuilder,
   payload: SignerPayloadJSON,
-  chainInfo: ChainInfo
+  chainInfo: ChainInfo,
 ) => {
   // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
   const registry = getTypeRegistry(metadata, payload, chainInfo)
@@ -308,7 +308,7 @@ const getFeeEstimate = async (
       builder,
       "TransactionPaymentApi",
       "query_info",
-      [binary, bytes.length]
+      [binary, bytes.length],
     )
     if (!result?.partial_fee) {
       throw new Error("partialFee is not found")
@@ -330,7 +330,7 @@ const getRuntimeCallValue = async <T>(
   scaleBuilder: ScaleBuilder,
   apiName: string,
   method: string,
-  args: unknown[]
+  args: unknown[],
 ) => {
   const stop = log.timer("[sapi] getRuntimeCallValue")
   const call = scaleBuilder.buildRuntimeCall(apiName, method)
@@ -351,7 +351,7 @@ const getConstantValue = <T>(
   metadata: ScaleMetadata,
   scaleBuilder: ScaleBuilder,
   pallet: string,
-  constant: string
+  constant: string,
 ) => {
   try {
     const storageCodec = scaleBuilder.buildConstant(pallet, constant)
@@ -374,7 +374,7 @@ const getStorageValue = async <T>(
   scaleBuilder: ScaleBuilder,
   pallet: string,
   entry: string,
-  keys: unknown[]
+  keys: unknown[],
 ) => {
   const storageCodec = scaleBuilder.buildStorage(pallet, entry)
   const stateKey = storageCodec.enc(...keys)

@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
-import { Hex, erc20Abi, formatUnits, hexToBigInt, parseUnits } from "viem"
+import { erc20Abi, formatUnits, Hex, hexToBigInt, parseUnits } from "viem"
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from "wagmi"
 
 import { TransactionReceipt } from "../shared/TransactionReceipt"
@@ -17,7 +17,7 @@ const DEFAULT_VALUE: FormData = {
 }
 
 const ALLOWANCE_UNLIMITED = hexToBigInt(
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 )
 
 export const ERC20Approve = () => {
@@ -92,7 +92,7 @@ export const ERC20Approve = () => {
       <h3 className="text-lg">Approve</h3>
       {contractAddress ? (
         <>
-          <form className="text-body-secondary space-y-1 " onSubmit={handleSubmit(onSubmit)}>
+          <form className="text-body-secondary space-y-1" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex items-center">
               <label className="w-48" htmlFor="send-tokens-to">
                 Spender :
@@ -125,8 +125,8 @@ export const ERC20Approve = () => {
               {allowance === undefined
                 ? "N/A"
                 : allowance === ALLOWANCE_UNLIMITED
-                ? "Infinite"
-                : formatUnits(allowance, decimals)}
+                  ? "Infinite"
+                  : formatUnits(allowance, decimals)}
             </div>
             <div className="flex gap-4 pt-4">
               <Button
@@ -140,14 +140,14 @@ export const ERC20Approve = () => {
             </div>
             {sendIsSuccess && (
               <>
-                <pre className="text-alert-success my-8 ">
+                <pre className="text-alert-success my-8">
                   Transaction: {JSON.stringify(hash, undefined, 2)}
                 </pre>
                 <TransactionReceipt hash={hash} />
               </>
             )}
             {sendIsError && (
-              <div className="text-alert-error my-8 ">Error : {sendError?.message}</div>
+              <div className="text-alert-error my-8">Error : {sendError?.message}</div>
             )}
           </form>
         </>

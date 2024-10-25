@@ -12,7 +12,7 @@ export const useAssetDiscoveryAlert = () => {
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
     useAppState("showAssetDiscoveryAlert")
   const [, setDismissedAssetDiscoveryAlertScanId] = useAppState(
-    "dismissedAssetDiscoveryAlertScanId"
+    "dismissedAssetDiscoveryAlertScanId",
   )
   const { currentScanId } = useAssetDiscoveryScan()
   const { isInProgress, percent, balances } = useAssetDiscoveryScanProgress()

@@ -10,7 +10,7 @@ export const formatFiat = (
   amount = 0,
   currency: Intl.NumberFormatOptions["currency"] | undefined,
   currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"],
-  minimumDecimalPlaces?: number
+  minimumDecimalPlaces?: number,
 ) => {
   const formatOptions: Intl.NumberFormatOptions = {
     ...(currency !== undefined && {

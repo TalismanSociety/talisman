@@ -1,8 +1,11 @@
-import { SignerPayloadRaw } from "@extension/core"
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
-import { AppPill } from "@talisman/components/AppPill"
 import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
 import { encodeAnyAddress } from "@talismn/util"
+import { useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { SignerPayloadRaw } from "@extension/core"
+import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,
   PopupFooter,
@@ -12,8 +15,6 @@ import {
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
@@ -32,13 +33,13 @@ export const PolkadotSignMessageRequest = () => {
 
   const errorMessage = useMemo(
     () => (status === "ERROR" ? statusMessage : ""),
-    [status, statusMessage]
+    [status, statusMessage],
   )
 
   const bytes = (request?.payload as SignerPayloadRaw).data
   const messageText = useMemo(
     () => (isAscii(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
-    [bytes]
+    [bytes],
   )
 
   useEffect(() => {

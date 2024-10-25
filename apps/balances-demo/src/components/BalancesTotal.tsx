@@ -13,12 +13,12 @@ export const BalancesTotal = () => {
   const total = (balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, currencyParams)
   const available = (balances.sum.fiat("usd").transferable ?? 0).toLocaleString(
     undefined,
-    currencyParams
+    currencyParams,
   )
 
   const locked = (balances.sum.fiat("usd").unavailable ?? 0).toLocaleString(
     undefined,
-    currencyParams
+    currencyParams,
   )
 
   return (

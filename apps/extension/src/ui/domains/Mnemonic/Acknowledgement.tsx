@@ -1,7 +1,8 @@
-import { MNEMONIC_BACKUP_DOCS_URL } from "@extension/shared"
 import { LockIcon, ShieldIcon, XIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { MNEMONIC_BACKUP_DOCS_URL } from "@extension/shared"
 
 export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => void }) => {
   const { t } = useTranslation("admin")
@@ -16,7 +17,7 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
             </span>
             <span>
               {t(
-                "Protect your recovery phrase. Anyone who has it can access your wallet and funds."
+                "Protect your recovery phrase. Anyone who has it can access your wallet and funds.",
               )}
             </span>
           </div>

@@ -1,10 +1,10 @@
 import { assert } from "@polkadot/util"
 import { log } from "extension-shared"
 
+import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { db } from "../../db"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
-import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { metadataUpdatesStore } from "./metadataUpdates"
 import { RequestMetadataApprove, RequestMetadataReject } from "./types"
@@ -45,7 +45,7 @@ export default class MetadataHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     // Then try remaining which are present in this class
     switch (type) {

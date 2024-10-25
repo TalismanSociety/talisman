@@ -3,7 +3,7 @@ import { MutableRefObject, useEffect, useRef, useState } from "react"
 export const useImageLoaded = (): [
   MutableRefObject<HTMLImageElement | null>,
   boolean,
-  () => void
+  () => void,
 ] => {
   const [loaded, setLoaded] = useState(false)
   const ref = useRef<HTMLImageElement | null>(null)

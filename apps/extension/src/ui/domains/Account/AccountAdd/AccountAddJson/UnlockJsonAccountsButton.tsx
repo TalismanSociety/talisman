@@ -72,7 +72,7 @@ export const UnlockJsonAccountsButton: FC = () => {
         setError("password", { message: t("Incorrect password") }, { shouldFocus: true })
       }
     },
-    [clearErrors, resetField, setError, t, unlockAccounts]
+    [clearErrors, resetField, setError, t, unlockAccounts],
   )
 
   const { unlockedCount, selectedCount, progressStyle, unlockAttemptProgressStyle } =
@@ -146,7 +146,7 @@ export const UnlockJsonAccountsButton: FC = () => {
           </div>
           <div className="text-body-secondary my-16">
             {t(
-              "Enter the passwords for each of the selected accounts, until all accounts unlocked."
+              "Enter the passwords for each of the selected accounts, until all accounts unlocked.",
             )}
           </div>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">

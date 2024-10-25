@@ -35,13 +35,13 @@ const isCustomToken = (token: Token | CustomToken): token is CustomToken => {
 
 export const isTokenActive = (
   token: Token | CustomEvmErc20Token | CustomSubNativeToken | CustomEvmNativeToken,
-  activeTokens: ActiveTokens
+  activeTokens: ActiveTokens,
 ) => {
   return activeTokens[token.id] ?? (isCustomToken(token) || token.isDefault)
 }
 
 export const filterActiveTokens = (tokens: TokenList, activeTokens: ActiveTokens) => {
   return Object.fromEntries(
-    Object.entries(tokens).filter(([, token]) => isTokenActive(token as Token, activeTokens))
+    Object.entries(tokens).filter(([, token]) => isTokenActive(token as Token, activeTokens)),
   ) as TokenList
 }

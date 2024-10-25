@@ -10,6 +10,6 @@ export const getMessageSenderFn =
   <M extends MessageTypes>(
     messageType: M,
     request: RequestType<M> = null,
-    id = v4()
+    id = v4(),
   ): Promise<ResponseType<M>> =>
     extension.handle(id, messageType, request, port)

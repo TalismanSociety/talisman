@@ -46,7 +46,7 @@ export const encryptMnemonic = async (mnemonic: string, password: string) => {
 
 export const decryptMnemonic = async (
   cipher: string,
-  password: string
+  password: string,
 ): Promise<Result<string, MnemonicErrors.IncorrectPassword>> => {
   try {
     const mnemonic = (await decrypt(password, cipher)) as string
@@ -68,7 +68,7 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
     mnemonic: string,
     password: string,
     source: MnemonicSource = MnemonicSource.Imported,
-    confirmed = false
+    confirmed = false,
   ): Promise<Result<MnemonicId, MnemonicErrors.AlreadyExists | MnemonicErrors.InvalidMnemonic>> {
     if (!mnemonicValidate(mnemonic)) return Err(MnemonicErrors.InvalidMnemonic)
 
@@ -108,7 +108,7 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
 
   public async getMnemonic(
     id: string,
-    password: string
+    password: string,
   ): Promise<
     Result<
       string | undefined,

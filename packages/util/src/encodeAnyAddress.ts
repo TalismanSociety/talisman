@@ -3,7 +3,7 @@ import { ethereumEncode, isEthereumAddress } from "@polkadot/util-crypto"
 
 export function encodeAnyAddress(
   key: string | Uint8Array,
-  ss58Format?: number | undefined
+  ss58Format?: number | undefined,
 ): string {
   try {
     return encodeAddress(key, ss58Format)

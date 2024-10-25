@@ -52,7 +52,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [onSubmitted, payload, sapi]
+    [onSubmitted, payload, sapi],
   )
 
   return (
@@ -88,7 +88,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, on
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [onSubmitted, payload, sapi]
+    [onSubmitted, payload, sapi],
   )
 
   if (!account) return null

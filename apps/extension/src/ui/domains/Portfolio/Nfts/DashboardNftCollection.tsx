@@ -47,9 +47,9 @@ const NoNftFound = () => {
       selectedAccount
         ? t("No NFTs found for this account")
         : selectedFolder
-        ? t("No NFTs found for this folder")
-        : t("No NFTs found"),
-    [selectedAccount, selectedFolder, t]
+          ? t("No NFTs found for this folder")
+          : t("No NFTs found"),
+    [selectedAccount, selectedFolder, t],
   )
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
@@ -72,7 +72,7 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
       onClick={onClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
-      <div className=" flex items-center gap-6 overflow-hidden">
+      <div className="flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>

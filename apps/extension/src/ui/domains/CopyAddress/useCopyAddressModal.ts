@@ -50,7 +50,7 @@ export const useCopyAddressModal = () => {
       setCopyAddressInputs(opts)
       innerOpen()
     },
-    [chainsMap, innerOpen]
+    [chainsMap, innerOpen],
   )
 
   return {

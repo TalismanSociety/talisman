@@ -20,9 +20,9 @@ export const tokenRates$ = new Observable<DbTokenRates[]>((subscriber) => {
 export const [useTokenRatesMap, tokenRatesMap$] = bind(
   tokenRates$.pipe(
     map((tokenRates) =>
-      Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
-    )
-  )
+      Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates])),
+    ),
+  ),
 )
 
 export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | undefined) =>
@@ -30,6 +30,6 @@ export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | u
     map((tokenRatesMap) => {
       if (!tokenId) return null
       return tokenRatesMap[tokenId] ?? null
-    })
-  )
+    }),
+  ),
 )

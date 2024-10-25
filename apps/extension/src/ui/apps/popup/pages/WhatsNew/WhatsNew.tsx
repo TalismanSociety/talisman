@@ -52,7 +52,7 @@ const PortfolioWhatsNewSection = ({
   const whatsNewHtml = useMemo(
     () =>
       DOMPurify.sanitize(marked(whatsNewLocalizedContent, { gfm: true, async: false }) as string),
-    [whatsNewLocalizedContent]
+    [whatsNewLocalizedContent],
   )
 
   const whatsNewHtmlRef = useWhatsNewNodes(whatsNewHtml)
@@ -64,7 +64,7 @@ const PortfolioWhatsNewSection = ({
           className={classNames(
             "relative",
             heroUrl && "h-[119px]",
-            !heroUrl && "flex items-center justify-between overflow-hidden rounded-sm p-5"
+            !heroUrl && "flex items-center justify-between overflow-hidden rounded-sm p-5",
           )}
         >
           {heroUrl && (

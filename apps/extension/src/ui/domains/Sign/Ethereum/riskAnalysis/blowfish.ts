@@ -1,4 +1,4 @@
-import { Languages, createEvmClient } from "@blowfishxyz/api-client/v20230605"
+import { createEvmClient, Languages } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, BLOWFISH_BASE_PATH } from "extension-shared"
 import i18next from "i18next"

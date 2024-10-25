@@ -69,7 +69,7 @@ const useCoingeckoUrl = (token: Token) => {
   return useMemo(
     () =>
       token.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
-    [token]
+    [token],
   )
 }
 
@@ -191,7 +191,7 @@ const NetworkSelect = ({
   onChange: (evmNetworkId: EvmNetworkId) => void
 }) => {
   const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
-    networks.find((n) => n.id === selectedId)
+    networks.find((n) => n.id === selectedId),
   )
 
   useEffect(() => {
@@ -209,7 +209,7 @@ const NetworkSelect = ({
       setSelected(item)
       if (onChange) onChange(item.id)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
@@ -276,7 +276,7 @@ const Content = () => {
     return sortBy(
       result,
       (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
-      (t) => t.symbol
+      (t) => t.symbol,
     )
   }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])
 
@@ -289,7 +289,7 @@ const Content = () => {
           t.isDefault ||
           isCustomErc20Token(t) ||
           isCustomUniswapV2Token(t) ||
-          knownTokens.includes(t.id)
+          knownTokens.includes(t.id),
       )
 
     return filteredTokens.filter(
@@ -299,7 +299,7 @@ const Content = () => {
         (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
         t.symbol.toLowerCase().includes(lowerSearch) ||
         (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
-        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch))
+        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)),
     )
   }, [activeTokens, evmNetworkId, filteredTokens, search])
 

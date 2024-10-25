@@ -154,7 +154,7 @@ const ContractTestBasicsInner = () => {
                 </>
               )}
               {writeIsError && (
-                <div className="text-alert-error my-8 ">Error : {writeError?.message}</div>
+                <div className="text-alert-error my-8">Error : {writeError?.message}</div>
               )}
             </div>
           </>

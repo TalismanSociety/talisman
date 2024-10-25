@@ -20,32 +20,32 @@ export async function balances<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
-  addressesByToken: AddressesByToken<TTokenType>
+  addressesByToken: AddressesByToken<TTokenType>,
 ): Promise<Balances>
 export async function balances<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
-  callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
+  callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>,
 ): Promise<UnsubscribeFn>
 export async function balances<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
-  callback?: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
+  callback?: SubscriptionCallback<Balances | SubscriptionResultWithStatus>,
 ): Promise<Balances | UnsubscribeFn> {
   // subscription request
   if (callback !== undefined)

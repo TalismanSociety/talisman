@@ -20,7 +20,7 @@ const lastSelected = new (class {
   set = (genesisHash: string, lastSelected: QrCodeSource) =>
     localStorage.setItem(
       this.#key,
-      JSON.stringify(Array.from(this.#map().set(genesisHash, lastSelected)))
+      JSON.stringify(Array.from(this.#map().set(genesisHash, lastSelected))),
     )
 })()
 
@@ -28,10 +28,10 @@ export const qrCodeLogoForSource = (source: QrCodeSource) =>
   source === "talisman"
     ? talismanRedHandSvg
     : source === "parity"
-    ? parityLogoSvg
-    : source === "novasama"
-    ? novaLogoSvg
-    : undefined
+      ? parityLogoSvg
+      : source === "novasama"
+        ? novaLogoSvg
+        : undefined
 
 export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
   // calculate the list of available sources
@@ -52,7 +52,7 @@ export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
         if (isNovasama(chainspecQrUrl) && isNovasama(latestMetadataQrUrl)) return ["novasama"]
 
         return ["other"]
-      })()
+      })(),
     )
   }, [chainspecQrUrl, latestMetadataQrUrl, verifierCertificateMnemonic])
 
@@ -69,8 +69,8 @@ export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
     sources.includes("parity") && parityDefaultChains.includes(genesisHash ?? "0x")
       ? "parity"
       : sources.includes("talisman")
-      ? "talisman"
-      : undefined
+        ? "talisman"
+        : undefined
 
   // remember the last selected source for each chain
   const lastSourceForChain = lastSelected.get(genesisHash)
@@ -83,7 +83,7 @@ export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
   const [source, _setSource] = useState<QrCodeSource | undefined>(
     lastSourceForChain && sources.includes(lastSourceForChain)
       ? lastSourceForChain
-      : defaultSourceForChain
+      : defaultSourceForChain,
   )
   const setSource = (source: QrCodeSource) => {
     _setSource(source)
@@ -132,7 +132,7 @@ export const QrCodeSourceSelector = ({
       <PopoverContent
         className={classNames(
           "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-          showPopover ? "visible opacity-100" : "invisible opacity-0"
+          showPopover ? "visible opacity-100" : "invisible opacity-0",
         )}
       >
         {sources.map((source) => (

@@ -107,24 +107,24 @@ export const PasswordPage = () => {
       })
       navigateNext()
     },
-    [setError, createPassword, navigateNext]
+    [setError, createPassword, navigateNext],
   )
 
   return (
     <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[60rem]">
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <img src={imgPassword} width="960" className="fixed left-32 top-[25rem] opacity-30 " />
+      <img src={imgPassword} width="960" className="fixed left-32 top-[25rem] opacity-30" />
       {passwordExists && (
         <OnboardDialog title={t("You've already set your password")}>
           <div className="text-body-secondary flex flex-col gap-8">
             <p>
               {t(
-                "You can change your password in the settings at any time after you've onboarded."
+                "You can change your password in the settings at any time after you've onboarded.",
               )}
             </p>
             <p>
               {t(
-                "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process."
+                "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process.",
               )}
             </p>
             <Button fullWidth primary className="mt-16" type="button" onClick={navigateNext}>
@@ -137,7 +137,7 @@ export const PasswordPage = () => {
         <OnboardDialog title={t("First, let's set a password")}>
           <p>
             {t(
-              "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
+              "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.",
             )}
           </p>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
@@ -184,7 +184,7 @@ export const PasswordPage = () => {
               primary
               type="submit"
               className={classNames(
-                !isValid && "bg-body/5 transform-gpu cursor-not-allowed backdrop-blur-xl"
+                !isValid && "bg-body/5 transform-gpu cursor-not-allowed backdrop-blur-xl",
               )}
               disabled={!isValid}
               processing={isSubmitting}

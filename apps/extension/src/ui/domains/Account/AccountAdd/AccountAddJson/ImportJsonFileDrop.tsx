@@ -40,7 +40,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       setFile(file)
       onChange?.(file)
     },
-    [onChange]
+    [onChange],
   )
 
   const options = useMemo<DropzoneOptions>(() => {
@@ -57,7 +57,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       setFile(undefined)
       onChange?.(undefined)
     },
-    [onChange]
+    [onChange],
   )
 
   const { getRootProps, getInputProps, isDragAccept, isDragReject } = useDropzone(options)
@@ -68,7 +68,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       className={classNames(
         "border-grey-700 hover:bg-grey-900 flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-dashed p-8",
         isDragAccept && "bg-primary/10",
-        (isInvalid || isDragReject) && "bg-alert-warn/10"
+        (isInvalid || isDragReject) && "bg-alert-warn/10",
       )}
     >
       <input {...getInputProps()} />
@@ -77,8 +77,8 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
           (file && !isInvalid) || isDragAccept
             ? "ok"
             : isInvalid || isDragReject
-            ? "nok"
-            : "unknown"
+              ? "nok"
+              : "unknown"
         }
       />
       <div className="flex grow flex-col items-center justify-center gap-6">
@@ -104,8 +104,8 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
           {isInvalid || isDragReject
             ? t("File not supported")
             : file
-            ? t("Replace File")
-            : t("Talisman supports the import of multiple accounts")}
+              ? t("Replace File")
+              : t("Talisman supports the import of multiple accounts")}
         </div>
       </div>
     </div>
@@ -157,7 +157,7 @@ export const ImportJsonFileDrop = () => {
         setJson(undefined)
       }
     },
-    [setJson]
+    [setJson],
   )
 
   return <JsonFileDrop onChange={handleFileChange} isInvalid={!isValid} />

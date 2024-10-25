@@ -1,9 +1,10 @@
-import { IdenticonType } from "@extension/core"
 import Identicon from "@polkadot/react-identicon"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
 import { renderToString } from "react-dom/server"
+
+import { IdenticonType } from "@extension/core"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
   try {
@@ -42,7 +43,7 @@ const cache: Record<string, string | null> = {}
 
 export const getAccountAvatarDataUri = (
   address: string,
-  iconType: IdenticonType = "talisman-orb"
+  iconType: IdenticonType = "talisman-orb",
 ) => {
   const cacheKey = `${address}-${iconType}`
   if (cache[cacheKey] === undefined)

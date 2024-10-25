@@ -74,7 +74,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
         shouldTouch: true,
         shouldValidate: true,
       }),
-    [setValue]
+    [setValue],
   )
   useGenesisHashEffects(chains, genesisHash, setGenesisHash)
   const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
@@ -99,7 +99,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
         setError("name", error as Error)
       }
     },
-    [close, contact, edit, setError]
+    [close, contact, edit, setError],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

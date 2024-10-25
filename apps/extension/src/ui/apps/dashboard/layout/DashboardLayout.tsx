@@ -47,7 +47,7 @@ export const DashboardLayout: FC<{
                   // minimum width is automatically set by the horizontal nav bar which never shrinks
                   "animate-fade-in w-full grow",
                   width === "660" && "max-w-[66rem]",
-                  width === "800" && "max-w-[80rem]"
+                  width === "800" && "max-w-[80rem]",
                 )}
               >
                 <LayoutBreadcrumb />
@@ -83,7 +83,7 @@ const NavButton: FC<{
       className={classNames(
         "text-body-inactive hover:text-body-secondary flex items-center gap-4",
         routeMatch && "!text-body",
-        className
+        className,
       )}
       onClick={onClick}
     >

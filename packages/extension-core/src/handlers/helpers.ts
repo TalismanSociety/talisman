@@ -3,9 +3,9 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
+import type { Address } from "../types/base"
 import { hasPrivateKey } from "../domains/accounts/helpers"
 import { passwordStore } from "../domains/app/store.password"
-import type { Address } from "../types/base"
 
 export const getPairFromAddress = (address: Address) => {
   const pair = keyring.getPair(address)
@@ -27,7 +27,7 @@ const getUnlockedPairFromAddress = async (address: Address) => {
 
 export const getPairForAddressSafely = async <T>(
   address: Address,
-  cb: (pair: KeyringPair) => T | Promise<T>
+  cb: (pair: KeyringPair) => T | Promise<T>,
 ): Promise<Result<T, "Unauthorised" | Error>> => {
   let pair: KeyringPair | null = null
   try {

@@ -43,7 +43,7 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token | null; balance
     <div
       className={classNames(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        balance.status === "cache" && "animate-pulse"
+        balance.status === "cache" && "animate-pulse",
       )}
     >
       <div>
@@ -74,12 +74,12 @@ const AccountRow: FC<AccountRowProps> = ({
 }) => {
   const formattedAddress = useFormattedAddress(
     account?.address,
-    genesisHash ?? account?.genesisHash
+    genesisHash ?? account?.genesisHash,
   )
 
   const displayAddress = useMemo(
     () => (noFormat ? account?.address : formattedAddress),
-    [noFormat, account?.address, formattedAddress]
+    [noFormat, account?.address, formattedAddress],
   )
 
   return (
@@ -90,7 +90,7 @@ const AccountRow: FC<AccountRowProps> = ({
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50"
+        "disabled:cursor-not-allowed disabled:opacity-50",
       )}
       disabled={disabled}
     >
@@ -148,7 +148,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
     (address: string) => () => {
       onSelect?.(address)
     },
-    [onSelect]
+    [onSelect],
   )
 
   const token = useToken(tokenId)

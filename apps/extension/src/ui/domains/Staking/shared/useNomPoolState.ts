@@ -5,7 +5,7 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 export const useNomPoolState = (
   chainId: ChainId | null | undefined,
-  poolId: number | null | undefined
+  poolId: number | null | undefined,
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 
@@ -19,7 +19,7 @@ export const useNomPoolState = (
         sapi.getStorage<{ member_counter: number; state: { type: string } }>(
           "NominationPools",
           "BondedPools",
-          [poolId]
+          [poolId],
         ),
       ])
 

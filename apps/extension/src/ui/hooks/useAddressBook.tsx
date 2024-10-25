@@ -11,12 +11,12 @@ export const useAddressBook = () => {
   const add = useCallback(
     ({ address, ...rest }: AddressBookContact) =>
       addressBookStore.set({ [address]: { address, ...rest } }),
-    []
+    [],
   )
 
   const deleteContact = useCallback(
     ({ address }: { address: string }) => addressBookStore.delete(address),
-    []
+    [],
   )
 
   const edit = useCallback(
@@ -30,7 +30,7 @@ export const useAddressBook = () => {
         throw new Error(t(`Contact with address {{address}} doesn't exist`, { address }))
       return await addressBookStore.set({ [address]: { ...existing, name, genesisHash } })
     },
-    [t]
+    [t],
   )
 
   return {

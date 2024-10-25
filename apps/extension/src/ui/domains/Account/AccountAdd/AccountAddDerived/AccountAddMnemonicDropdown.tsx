@@ -29,12 +29,15 @@ export const AccountAddMnemonicDropdown: FC<{
 
   const mnemonics = useMnemonics()
   const mnemonicOptions: MnemonicOption[] = useMemo(() => {
-    const accountsByMnemonic = allAccounts.reduce((result, acc) => {
-      if (!acc.derivedMnemonicId) return result
-      if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
-      result[acc.derivedMnemonicId].push(acc)
-      return result
-    }, {} as Record<string, AccountJsonAny[]>)
+    const accountsByMnemonic = allAccounts.reduce(
+      (result, acc) => {
+        if (!acc.derivedMnemonicId) return result
+        if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
+        result[acc.derivedMnemonicId].push(acc)
+        return result
+      },
+      {} as Record<string, AccountJsonAny[]>,
+    )
     return [
       ...mnemonics
         .map((m) => ({
@@ -49,7 +52,7 @@ export const AccountAddMnemonicDropdown: FC<{
 
   const selected = useMemo(
     () => mnemonicOptions.find((o) => o.value === value) ?? GENERATE_MNEMONIC_OPTION,
-    [mnemonicOptions, value]
+    [mnemonicOptions, value],
   )
 
   const handleChange = useCallback(
@@ -57,7 +60,7 @@ export const AccountAddMnemonicDropdown: FC<{
       if (!o) return // shouldn't happen
       onChange(o.value === "new" ? null : o.value)
     },
-    [onChange]
+    [onChange],
   )
 
   return (

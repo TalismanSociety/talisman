@@ -7,7 +7,7 @@ import { debugObservable } from "./util/debugObservable"
 export const balanceTotals$ = balanceTotalsStore.observable.pipe(
   map((v) => Object.values(v)),
   debugObservable("balanceTotals$"),
-  shareReplay(1)
+  shareReplay(1),
 )
 
 export const [useBalanceTotals] = bind(balanceTotals$)

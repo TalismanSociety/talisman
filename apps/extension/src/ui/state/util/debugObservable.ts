@@ -8,7 +8,7 @@ const ACTIVE = true
 
 export const debugObservable = <T>(
   label: string,
-  outputData?: boolean
+  outputData?: boolean,
 ): MonoTypeOperatorFunction<T> =>
   tap((data) => {
     if (!ACTIVE || !label) return

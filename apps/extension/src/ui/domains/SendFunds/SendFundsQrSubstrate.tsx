@@ -56,14 +56,14 @@ const SendFundsQrSubstrate = () => {
         setError(err as Error)
       }
     },
-    [sendWithSignature, to, token, amount, tokenId, knownAddress]
+    [sendWithSignature, to, token, amount, tokenId, knownAddress],
   )
 
   const showQrApproval = useCallback(
     (send: boolean) => () => {
       setIsLocked(send)
     },
-    [setIsLocked]
+    [setIsLocked],
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

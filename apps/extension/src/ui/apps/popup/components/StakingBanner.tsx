@@ -1,10 +1,11 @@
-import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
-import { useStakingBanner } from "@ui/domains/Staking/useStakingBanner"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { MouseEventHandler, Suspense, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+
+import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useStakingBanner } from "@ui/domains/Staking/useStakingBanner"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 export const StakingBannerInner = ({ addresses }: { addresses: string[] }) => {
   const { showStakingBanner, dismissStakingBanner } = useStakingBanner()
@@ -13,7 +14,7 @@ export const StakingBannerInner = ({ addresses }: { addresses: string[] }) => {
 
   const showNomPoolStakingBanner = useMemo(
     () => showStakingBanner({ addresses }),
-    [addresses, showStakingBanner]
+    [addresses, showStakingBanner],
   )
 
   const handleClickStakingBanner = useCallback(() => {
@@ -28,7 +29,7 @@ export const StakingBannerInner = ({ addresses }: { addresses: string[] }) => {
       dismissStakingBanner()
       genericEvent("dismiss staking banner", { from: "popup" })
     },
-    [genericEvent, dismissStakingBanner]
+    [genericEvent, dismissStakingBanner],
   )
 
   return (

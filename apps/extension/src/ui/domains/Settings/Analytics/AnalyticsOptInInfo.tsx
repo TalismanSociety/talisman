@@ -20,7 +20,7 @@ export const AnalyticsOptInInfo: FC<{
       <h1 className="mb-4">{t("Help us improve Talisman")}</h1>
       <p className="text-body-secondary">
         {t(
-          "We want to build simple tools that empower our users and allow them navigate web3 applications with ease. To help improve our product and features we'd like to collect anonymous usage information. This is optional, and you can opt-out at any time."
+          "We want to build simple tools that empower our users and allow them navigate web3 applications with ease. To help improve our product and features we'd like to collect anonymous usage information. This is optional, and you can opt-out at any time.",
         )}
       </p>
       <div>

@@ -43,7 +43,7 @@ export class WebsocketAllocationExhaustedError extends Error {
   constructor(chainId: string, options?: ErrorOptions) {
     super(
       `No websockets are available from the browser pool to connect to chain ${chainId}`,
-      options
+      options,
     )
 
     this.type = "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
@@ -87,7 +87,7 @@ export class ChainConnector {
 
   constructor(
     chaindataChainProvider: IChaindataChainProvider,
-    connectionMetaDb?: TalismanConnectionMetaDatabase
+    connectionMetaDb?: TalismanConnectionMetaDatabase,
   ) {
     this.#chaindataChainProvider = chaindataChainProvider
     this.#connectionMetaDb = connectionMetaDb
@@ -127,12 +127,12 @@ export class ChainConnector {
         type: string,
         method: string,
         params: unknown[],
-        cb: ProviderInterfaceCallback
+        cb: ProviderInterfaceCallback,
       ): Promise<string> => {
         const unsubscribe = await this.subscribe(chainId, method, type, params, cb)
 
         const subscriptionId = this.getExclusiveRandomId(
-          [...unsubHandler.keys()].map(Number)
+          [...unsubHandler.keys()].map(Number),
         ).toString()
         unsubHandler.set(subscriptionId, unsubscribe)
 
@@ -155,7 +155,7 @@ export class ChainConnector {
     chainId: ChainId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean | undefined
+    isCacheable?: boolean | undefined,
   ): Promise<T> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
@@ -171,7 +171,7 @@ export class ChainConnector {
       } catch (error) {
         log.warn(
           `Failed to make wallet-proxied send request for chain ${chainId}. Falling back to plain websocket`,
-          error
+          error,
         )
       }
     }
@@ -237,7 +237,7 @@ export class ChainConnector {
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout: number | false = 30_000 // 30 seconds in milliseconds
+    timeout: number | false = 30_000, // 30 seconds in milliseconds
   ): Promise<(unsubscribeMethod: string) => void> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
@@ -255,7 +255,7 @@ export class ChainConnector {
           responseMethod,
           params,
           callback,
-          timeout
+          timeout,
         )
 
         return (unsubscribeMethod: string) =>
@@ -263,7 +263,7 @@ export class ChainConnector {
       } catch (error) {
         log.warn(
           `Failed to create wallet-proxied subscription for chain ${chainId}. Falling back to plain websocket`,
-          error
+          error,
         )
       }
     }
@@ -309,10 +309,10 @@ export class ChainConnector {
               const id = chainId
               this.#connectionMetaDb.chainBackoffInterval.put(
                 { id, interval: nextBackoffInterval },
-                id
+                id,
               )
             }
-          }
+          },
         )
         const unsubConnected = ws.on("connected", () => {
           if (this.#connectionMetaDb) this.#connectionMetaDb.chainBackoffInterval.delete(chainId)
@@ -324,7 +324,7 @@ export class ChainConnector {
 
         noMoreSocketsTimeout = setTimeout(
           () => callback(new WebsocketAllocationExhaustedError(chainId), null),
-          30_000 // 30 seconds in ms
+          30_000, // 30 seconds in ms
         )
 
         if (timeout) await Promise.race([this.waitForWs(ws, timeout), callerUnsubscribed])
@@ -411,7 +411,7 @@ export class ChainConnector {
    */
   private async waitForWs(
     ws: Websocket,
-    timeout: number | false = 30_000 // 30 seconds in milliseconds
+    timeout: number | false = 30_000, // 30 seconds in milliseconds
   ): Promise<void> {
     const timer = timeout
       ? sleep(timeout).then(() => {
@@ -451,7 +451,7 @@ export class ChainConnector {
         rpcs,
         undefined,
         undefined,
-        nextBackoffInterval
+        nextBackoffInterval,
       )
     else {
       throw new Error(`No healthy RPCs available for chain ${chainId}`)
@@ -467,7 +467,7 @@ export class ChainConnector {
         if (!url) return
 
         this.updateRpcPriority(id, url, "first").catch((err) =>
-          log.warn(`updateRpcPriority failed`, err)
+          log.warn(`updateRpcPriority failed`, err),
         )
       })
     }
@@ -528,7 +528,7 @@ export class ChainConnector {
       throw new Error(
         `Can't remove user ${socketUserId} from socket ${chainId}: user not in list ${this.#socketUsers[
           chainId
-        ].join(", ")}`
+        ].join(", ")}`,
       )
     this.#socketUsers[chainId].splice(userIndex, 1)
   }
@@ -571,7 +571,7 @@ export class ChainConnector {
         responseMethod: string,
         params: unknown[],
         callback: ProviderInterfaceCallback,
-        timeout: number | false
+        timeout: number | false,
       ): Promise<string> =>
         rpcByGenesisHashSubscribe(
           genesisHash,
@@ -579,7 +579,7 @@ export class ChainConnector {
           responseMethod,
           params,
           callback,
-          timeout
+          timeout,
         ),
 
       unsubscribe: (subscriptionId: string, unsubscribeMethod: string): Promise<void> =>

@@ -1,5 +1,6 @@
-import { AddressBookContact, addressBookStore } from "@extension/core"
 import { act, renderHook, waitFor } from "@testing-library/react"
+
+import { AddressBookContact, addressBookStore } from "@extension/core"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
@@ -59,7 +60,7 @@ test("Editing an address book contact which doesn't exist throws an error", asyn
     await result.current
       .edit({ address: ADDRESSES.GAV, name: "Gav" })
       .catch((error) =>
-        expect(error.message).toBe(`Contact with address ${ADDRESSES.GAV} doesn't exist`)
+        expect(error.message).toBe(`Contact with address ${ADDRESSES.GAV} doesn't exist`),
       )
   })
 })

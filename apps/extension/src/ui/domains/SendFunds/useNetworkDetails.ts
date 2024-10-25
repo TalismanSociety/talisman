@@ -22,9 +22,9 @@ export const useFormatNetworkName = () => {
       chain?.name
         ? `${chain.name}${chain.evmNetworks?.length > 0 ? ` (${t("Substrate")})` : ""}`
         : evmNetwork
-        ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
-        : `${t("Chain")} ${(chain ?? evmNetwork)?.id}`,
-    [t]
+          ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
+          : `${t("Chain")} ${(chain ?? evmNetwork)?.id}`,
+    [t],
   )
 }
 
@@ -36,7 +36,7 @@ export const useNetworkDetails = () => {
       networkId: (chain ?? evmNetwork)?.id,
       networkName: formatNetworkName(chain, evmNetwork),
     }),
-    [chain, evmNetwork, formatNetworkName]
+    [chain, evmNetwork, formatNetworkName],
   )
   return { networkId, networkName }
 }

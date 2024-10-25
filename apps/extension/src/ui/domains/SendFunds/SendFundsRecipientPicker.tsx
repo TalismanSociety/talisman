@@ -67,7 +67,7 @@ const UnknownAddressDrawer = ({
           <p className="font-bold text-white">{t("Sending to external address")}</p>
           <p className="text-body-secondary text-sm">
             {t(
-              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network."
+              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network.",
             )}
           </p>
           <div className="flex items-center justify-between gap-8 text-xs">
@@ -135,7 +135,7 @@ export const SendFundsRecipientPicker = () => {
         return null
       }
     },
-    [isFromEthereum]
+    [isFromEthereum],
   )
   const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
   const normalizedTo = useMemo(() => normalize(to), [to, normalize])
@@ -151,7 +151,7 @@ export const SendFundsRecipientPicker = () => {
             !search ||
             contact.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address))
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address)),
         )
         .filter((contact) => !contact.genesisHash || contact.genesisHash === chain?.genesisHash),
     [
@@ -165,7 +165,7 @@ export const SendFundsRecipientPicker = () => {
       nsLookup,
       normalizedNsLookup,
       chain?.genesisHash,
-    ]
+    ],
   )
 
   const newAddresses = useMemo(() => {
@@ -222,7 +222,7 @@ export const SendFundsRecipientPicker = () => {
             !search ||
             account.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address))
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address)),
         )
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash)
         .filter(
@@ -230,7 +230,7 @@ export const SendFundsRecipientPicker = () => {
             isFromEthereum ||
             // do not send funds to ledger generic accounts on incompatible chains
             chain?.hasCheckMetadataHash ||
-            account.ledgerApp !== SubstrateLedgerAppType.Generic
+            account.ledgerApp !== SubstrateLedgerAppType.Generic,
         ),
     [
       allAccounts,
@@ -245,7 +245,7 @@ export const SendFundsRecipientPicker = () => {
       normalizedNsLookup,
       chain?.genesisHash,
       chain?.hasCheckMetadataHash,
-    ]
+    ],
   )
 
   const { myAccounts, watchedAccounts } = useMemo(
@@ -253,15 +253,15 @@ export const SendFundsRecipientPicker = () => {
       myAccounts: accounts.filter(
         (account) =>
           (account.origin !== AccountType.Watched || account.isPortfolio) &&
-          account.origin !== AccountType.Dcent
+          account.origin !== AccountType.Dcent,
       ),
       watchedAccounts: accounts.filter(
         (account) =>
           (account.origin === AccountType.Watched && !account.isPortfolio) ||
-          account.origin === AccountType.Dcent
+          account.origin === AccountType.Dcent,
       ),
     }),
-    [accounts]
+    [accounts],
   )
 
   const handleSelect = useCallback(
@@ -275,7 +275,7 @@ export const SendFundsRecipientPicker = () => {
       set("to", address, true)
       setRecipientWarning(toWarning)
     },
-    [chain?.id, nsLookup, set, setRecipientWarning]
+    [chain?.id, nsLookup, set, setRecipientWarning],
   )
 
   const [unknownAddress, setUnknownAddress] = useState<string>()
@@ -286,7 +286,7 @@ export const SendFundsRecipientPicker = () => {
       setUnknownAddress(address)
       open()
     },
-    [handleSelect, open]
+    [handleSelect, open],
   )
 
   const handleSubmitSearch = useCallback(() => {
@@ -312,7 +312,7 @@ export const SendFundsRecipientPicker = () => {
           />
         </div>
       </div>
-      <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         {!isValidSubstrateNetworkAddressInput && <AddressFormatError chain={chain ?? undefined} />}
         {isValidSubstrateNetworkAddressInput && (
           <>

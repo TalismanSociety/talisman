@@ -40,6 +40,6 @@ export interface ChainsMessages {
   "pri(chains.generateQr.addNetworkSpecs)": [RequestChainGenerateQrAddNetworkSpecs, HexString]
   "pri(chains.generateQr.updateNetworkMetadata)": [
     RequestChainGenerateQrUpdateNetworkMetadata,
-    HexString
+    HexString,
   ]
 }

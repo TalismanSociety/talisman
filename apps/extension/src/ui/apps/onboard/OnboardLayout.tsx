@@ -22,7 +22,7 @@ export const OnboardLayout: FC<LayoutProps> = ({
   <div
     className={classNames(
       "sm:pt-auto flex h-full w-full items-center justify-center pt-12",
-      className
+      className,
     )}
   >
     {!!withBack && (

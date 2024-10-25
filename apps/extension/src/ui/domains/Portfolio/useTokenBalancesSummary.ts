@@ -36,7 +36,7 @@ const getBestTokenForSymbol = (balances: Balances, tokens?: Token[], chains?: Ch
       (t) =>
         !t.isTestnet &&
         ["substrate-native", "evm-native"].includes(t.type) &&
-        chains?.find((c) => !c.relay && c.id === t.chain?.id)
+        chains?.find((c) => !c.relay && c.id === t.chain?.id),
     ) ??
     // mainnet solo/para native
     matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
@@ -47,7 +47,7 @@ const getBestTokenForSymbol = (balances: Balances, tokens?: Token[], chains?: Ch
       (t) =>
         t.isTestnet &&
         ["substrate-native", "evm-native"].includes(t.type) &&
-        chains?.find((c) => !c.relay && c.id === t.chain?.id)
+        chains?.find((c) => !c.relay && c.id === t.chain?.id),
     ) ??
     // testnet solo/para native
     matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
@@ -64,7 +64,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
   // find the most appropriate token (for the icon)
   const token = useMemo(
     () => getBestTokenForSymbol(tokenBalances, tokens, chains),
-    [chains, tokenBalances, tokens]
+    [chains, tokenBalances, tokens],
   )
   const currency = useSelectedCurrency()
 
@@ -74,14 +74,14 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         if (balance.rates) tokenBalanceRates[balance.tokenId] = balance.rates
         return tokenBalanceRates
       }, {}),
-    [tokenBalances]
+    [tokenBalances],
   )
 
   const summary = useMemo(() => {
     if (tokenBalances.count < 1) return DEFAULT_SUMMARY
 
     const fiatDefaultValue = tokenBalances.each.some(
-      (b) => b.token && tokenBalanceRates[b.token.id]
+      (b) => b.token && tokenBalanceRates[b.token.id],
     )
       ? 0
       : null
@@ -90,7 +90,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     const summary = tokenBalances.each.reduce<BalanceSummary>(
       (
         { totalTokens, totalFiat, lockedTokens, lockedFiat, availableTokens, availableFiat },
-        b
+        b,
       ) => ({
         totalTokens: totalTokens.plus(b.total.tokens),
         totalFiat:
@@ -115,7 +115,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         lockedFiat: fiatDefaultValue,
         availableTokens: BigNumber(0),
         availableFiat: fiatDefaultValue,
-      }
+      },
     )
 
     return summary

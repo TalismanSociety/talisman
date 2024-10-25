@@ -1,11 +1,12 @@
-import { Card } from "@talisman/components/Card"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
+
+import { Card } from "@talisman/components/Card"
+import { api } from "@ui/api"
+import { sendAnalyticsEvent } from "@ui/api/analytics"
 
 import { useMigratePasswordModal } from "../Settings/MigratePassword/useMigratePasswordModal"
 
@@ -29,7 +30,7 @@ export const AlertCard = ({ className, onAccept }: Props) => {
         <>
           <p className="text-sm">
             {t(
-              "We’ve upgraded our security measures, including enhanced password encryption. You must upgrade now to continue using Talisman."
+              "We’ve upgraded our security measures, including enhanced password encryption. You must upgrade now to continue using Talisman.",
             )}
           </p>
 

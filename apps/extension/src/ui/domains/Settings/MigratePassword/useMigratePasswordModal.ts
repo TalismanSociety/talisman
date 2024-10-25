@@ -15,7 +15,7 @@ export const dismissMigratePasswordModal = () => {
 const [useDismiss] = bind(dismiss$)
 
 export const [useShouldMigratePassword, shouldMigratePassword$] = bind(
-  passwordStore.observable.pipe(map(({ isHashed }) => !isHashed))
+  passwordStore.observable.pipe(map(({ isHashed }) => !isHashed)),
 )
 
 export const useMigratePasswordModal = () => {

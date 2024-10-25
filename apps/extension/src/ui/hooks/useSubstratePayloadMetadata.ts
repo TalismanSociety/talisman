@@ -55,7 +55,7 @@ const getSubstratePayloadMetadata = async ({
       chain.id,
       payload.specVersion,
       payload.blockHash,
-      payload.signedExtensions
+      payload.signedExtensions,
     )
     assert(metadataRpc, "Unable to get metadata rpc")
 
@@ -67,7 +67,7 @@ const getSubstratePayloadMetadata = async ({
       chain.hasCheckMetadataHash && // this can be toggled off from chaindata
       metadata.version >= 15 &&
       metadata.asLatest.extrinsic.signedExtensions.some(
-        (ext) => ext.identifier.toString() === "CheckMetadataHash"
+        (ext) => ext.identifier.toString() === "CheckMetadataHash",
       )
 
     // it is not possible to generate a valid metadata hash for dev chains as they are missing symbol and decimals in their chain spec

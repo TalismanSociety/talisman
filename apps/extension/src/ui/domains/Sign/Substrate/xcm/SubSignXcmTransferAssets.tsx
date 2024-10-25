@@ -20,7 +20,7 @@ import { $versionedMultiLocation, VersionedMultiLocation } from "../shapes/Versi
 const getMultiAssetTokenId = (
   multiAsset: VersionedMultiAssets | undefined,
   chain: Chain | null | undefined,
-  tokens: TokenList
+  tokens: TokenList,
 ): { tokenId: TokenId; value: bigint } => {
   if (multiAsset?.type === "V3") {
     // our view only support displaying one asset
@@ -62,7 +62,7 @@ const getMultiAssetTokenId = (
 const getTargetChain = (
   multiLocation: VersionedMultiLocation,
   chain: Chain | null | undefined,
-  chains: Chain[]
+  chains: Chain[],
 ): Chain => {
   if (multiLocation.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()
@@ -98,7 +98,7 @@ const isPrefixMatch = (bytes: Uint8Array, prefix: Uint8Array) => {
 
 const getTargetAccount = (
   multiLocation: VersionedMultiLocation | undefined,
-  account: AccountJsonAny
+  account: AccountJsonAny,
 ): Address => {
   if (multiLocation?.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()

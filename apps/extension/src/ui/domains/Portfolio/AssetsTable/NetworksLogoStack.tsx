@@ -1,15 +1,16 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useMemo } from "react"
+
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 
 import { PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
 export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
   const tooltip = useMemo(
     () => `${network?.label} (${network?.type})`,
-    [network?.label, network?.type]
+    [network?.label, network?.type],
   )
 
   if (!network) return null

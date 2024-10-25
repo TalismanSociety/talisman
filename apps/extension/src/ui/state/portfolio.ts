@@ -118,10 +118,10 @@ const getNetworkOptions = ({
     .filter(
       ({ chainId, evmNetworkId }) =>
         (!!chainId && chainIdsWithBalances.has(chainId)) ||
-        (!!evmNetworkId && evmNetworkIdsWithBalances.has(evmNetworkId))
+        (!!evmNetworkId && evmNetworkIdsWithBalances.has(evmNetworkId)),
     )
     .sort(
-      (a, b) => (a.sortIndex ?? Number.MAX_SAFE_INTEGER) - (b.sortIndex ?? Number.MAX_SAFE_INTEGER)
+      (a, b) => (a.sortIndex ?? Number.MAX_SAFE_INTEGER) - (b.sortIndex ?? Number.MAX_SAFE_INTEGER),
     )
 }
 
@@ -144,7 +144,7 @@ const getFilteredBalances = ({
       (b) =>
         !networkFilter ||
         (chainId && b.chainId === chainId) ||
-        (evmNetworkId && b.evmNetworkId === evmNetworkId)
+        (evmNetworkId && b.evmNetworkId === evmNetworkId),
     )
     .filter((b) => {
       if (!lowerSearch) return true
@@ -159,7 +159,7 @@ const getFilteredBalances = ({
 
 // TODO review this, we may want to use usePortfolioNavigation instead
 export const portfolioSelectedAccounts$ = new BehaviorSubject<AccountJsonAny[] | undefined>(
-  undefined
+  undefined,
 )
 
 export const [usePortfolioSelectedAccounts] = bind(portfolioSelectedAccounts$)
@@ -204,10 +204,10 @@ export const [usePortfolioGlobalData, portfolioGlobalData$] = bind(
               portfolioBalances,
               isInitialising,
               isProvisioned: true,
-            } as PortfolioGlobalData)
-        )
-      )
-    )
+            }) as PortfolioGlobalData,
+        ),
+      ),
+    ),
   ),
   {
     chains: [],
@@ -218,7 +218,7 @@ export const [usePortfolioGlobalData, portfolioGlobalData$] = bind(
     portfolioBalances: new Balances([]),
     isProvisioned: false,
     isInitialising: false,
-  } as PortfolioGlobalData
+  } as PortfolioGlobalData,
 )
 
 const portfolioForSelectedNetwork$ = combineLatest([
@@ -243,7 +243,7 @@ const portfolioForSelectedNetwork$ = combineLatest([
     ]) => {
       const allBalances = selectedAccounts
         ? allAccountsBalances.find((b) =>
-            selectedAccounts.some((a) => isAddressEqual(a.address, b.address))
+            selectedAccounts.some((a) => isAddressEqual(a.address, b.address)),
           )
         : portfolioBalances
 
@@ -271,9 +271,9 @@ const portfolioForSelectedNetwork$ = combineLatest([
         isInitialising,
         isProvisioned,
       }
-    }
+    },
   ),
-  shareReplay(1)
+  shareReplay(1),
 )
 
 export const [usePortfolio, portfolio$] = bind(
@@ -294,6 +294,6 @@ export const [usePortfolio, portfolio$] = bind(
         setNetworkFilter,
         setSearch,
       }
-    })
-  )
+    }),
+  ),
 )

@@ -4,7 +4,7 @@ import { ChaindataProvider } from "@talismn/chaindata-provider"
 /** Pulls the latest chaindata from https://github.com/TalismanSociety/chaindata */
 export const hydrateChaindataAndMiniMetadata = async (
   chaindataProvider: ChaindataProvider,
-  miniMetadataUpdater: MiniMetadataUpdater
+  miniMetadataUpdater: MiniMetadataUpdater,
 ) => {
   // need chains to be provisioned first, or substrate balances won't fetch on first subscription
   await chaindataProvider.hydrateChains()
@@ -17,7 +17,7 @@ export const hydrateChaindataAndMiniMetadata = async (
   const chains = await chaindataProvider.chains()
   const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
   const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
-    status === "good" ? chainId : []
+    status === "good" ? chainId : [],
   )
   await chaindataProvider.hydrateSubstrateTokens(goodChains)
 }
@@ -25,7 +25,7 @@ export const hydrateChaindataAndMiniMetadata = async (
 /** Builds any missing miniMetadatas (e.g. for the user's custom substrate chains) */
 export const updateCustomMiniMetadata = async (
   chaindataProvider: ChaindataProvider,
-  miniMetadataUpdater: MiniMetadataUpdater
+  miniMetadataUpdater: MiniMetadataUpdater,
 ) => {
   const chainIds = await chaindataProvider.chainIds()
   await miniMetadataUpdater.update(chainIds)
@@ -34,7 +34,7 @@ export const updateCustomMiniMetadata = async (
 /** Fetches any missing Evm Tokens */
 export const updateEvmTokens = async (
   chaindataProvider: ChaindataProvider,
-  evmTokenFetcher: EvmTokenFetcher
+  evmTokenFetcher: EvmTokenFetcher,
 ) => {
   await chaindataProvider.hydrateEvmNetworks()
   const evmNetworkIds = await chaindataProvider.evmNetworkIds()

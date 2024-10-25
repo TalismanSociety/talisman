@@ -153,7 +153,7 @@ export const LayoutBreadcrumb: FC<{
     <div
       className={classNames(
         "text-body-inactive mb-6 flex max-w-full items-center gap-1 overflow-hidden text-xs",
-        className
+        className,
       )}
     >
       {items.map(({ label, to }, index) => {
@@ -183,7 +183,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps & { selected: boolean }> = ({
       to={to}
       className={classNames(
         "hover:text-body-secondary flex items-center gap-4 truncate font-normal",
-        selected && "!text-body-secondary font-medium"
+        selected && "!text-body-secondary font-medium",
       )}
     >
       {label}

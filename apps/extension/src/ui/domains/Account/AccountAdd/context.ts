@@ -1,6 +1,7 @@
-import { provideContext } from "@talisman/util/provideContext"
 import { useState } from "react"
 import { useSearchParams } from "react-router-dom"
+
+import { provideContext } from "@talisman/util/provideContext"
 
 const allMethodTypes = ["new", "import", "connect", "watched"] as const
 export type MethodTypes = (typeof allMethodTypes)[number]

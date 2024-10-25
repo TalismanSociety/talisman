@@ -6,7 +6,7 @@ const Pill = ({ className, children }: { className?: string; children?: ReactNod
   <div
     className={classNames(
       "bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light",
-      className
+      className,
     )}
   >
     {children}

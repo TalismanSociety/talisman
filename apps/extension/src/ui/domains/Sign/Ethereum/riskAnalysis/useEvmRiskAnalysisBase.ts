@@ -19,7 +19,7 @@ import { useRisksReview } from "./useRisksReview"
 type UseEvmRiskAnalysisBaseProps<
   Type extends PayloadType,
   Key extends QueryKey,
-  Func = QueryFunction<ResponseType<Type>, Key>
+  Func = QueryFunction<ResponseType<Type>, Key>,
 > = {
   type: Type
   evmNetworkId: EvmNetworkId | undefined
@@ -57,12 +57,12 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
 
   const effectiveAutoRiskScan = useMemo(
     () => !disableAutoRiskScan && !!autoRiskScan,
-    [autoRiskScan, disableAutoRiskScan]
+    [autoRiskScan, disableAutoRiskScan],
   )
 
   const chainInfo = useMemo(
     () => (evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null),
-    [evmNetworkId]
+    [evmNetworkId],
   )
 
   const [isAvailable, unavailableReason] = useMemo(() => {
@@ -74,12 +74,12 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
   // if undefined, user has never used the feature
   const shouldPromptAutoRiskScan = useMemo(
     () => isAvailable && !disableAutoRiskScan && autoRiskScan === undefined,
-    [autoRiskScan, disableAutoRiskScan, isAvailable]
+    [autoRiskScan, disableAutoRiskScan, isAvailable],
   )
 
   const shouldValidate = useMemo(
     () => isAvailable && (effectiveAutoRiskScan || isScanRequested),
-    [effectiveAutoRiskScan, isAvailable, isScanRequested]
+    [effectiveAutoRiskScan, isAvailable, isScanRequested],
   )
 
   const {
@@ -103,13 +103,14 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
 
   const scanError = useMemo(
     () => (result ? getRiskAnalysisScanError(type, result, t) : null),
-    [type, result, t]
+    [type, result, t],
   )
 
   const launchScan = useCallback(() => {
     if (isAvailable) {
       if (result) review.drawer.open()
-      else if (error) refetch() // manual retry
+      else if (error)
+        refetch() // manual retry
       else setIsScanRequested(true) // first manual attempt, enables useQuery hook
     }
   }, [error, isAvailable, refetch, result, review.drawer, setIsScanRequested])
@@ -125,7 +126,7 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
 
   const isValidating = useMemo(
     () => isAvailable && shouldValidate && isLoading && enabled,
-    [enabled, isAvailable, isLoading, shouldValidate]
+    [enabled, isAvailable, isLoading, shouldValidate],
   )
 
   return {

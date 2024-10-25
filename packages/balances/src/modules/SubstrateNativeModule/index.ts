@@ -156,7 +156,7 @@ export const SubNativeModule: NewBalanceModule<
       const hasFreezesItem = Boolean(
         metadata.pallets
           .find(({ name }) => name === "Balances")
-          ?.storage?.items.find(({ name }) => name === "Freezes")
+          ?.storage?.items.find(({ name }) => name === "Freezes"),
       )
       const useLegacyTransferableCalculation = !hasFreezesItem
 
@@ -211,18 +211,18 @@ export const SubNativeModule: NewBalanceModule<
       // full record of balances for this module
       const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>(
         Object.fromEntries(
-          (initialBalances as SubNativeBalance[])?.map((b) => [getBalanceId(b), b]) ?? []
-        )
+          (initialBalances as SubNativeBalance[])?.map((b) => [getBalanceId(b), b]) ?? [],
+        ),
       )
       // tokens which have a known positive balance
       const positiveBalanceTokens = subNativeBalances.pipe(
         map((balances) => Array.from(new Set(Object.values(balances).map((b) => b.tokenId)))),
-        share()
+        share(),
       )
 
       // tokens that will be subscribed to, simply a slice of the positive balance tokens of size MAX_SUBSCRIPTION_SIZE
       const subscriptionTokens = positiveBalanceTokens.pipe(
-        map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE))
+        map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE)),
       )
 
       // an initialised balance is one where we have received a response for any type of 'subsource',
@@ -321,7 +321,7 @@ export const SubNativeModule: NewBalanceModule<
             tokenIds.reduce<AddressesByToken<SubNativeToken>>((acc, tokenId) => {
               acc[tokenId] = addressesByToken[tokenId]
               return acc
-            }, {})
+            }, {}),
           ),
           distinctUntilChanged(isEqual),
           switchMap((newAddressesByToken) => {
@@ -334,33 +334,33 @@ export const SubNativeModule: NewBalanceModule<
                     chaindataProvider,
                     chainConnectors.substrate,
                     newAddressesByToken,
-                    handleUpdateForSource("subtensor-staking")
+                    handleUpdateForSource("subtensor-staking"),
                   )
                   const unsubNompoolStaking = subscribeNompoolStaking(
                     chaindataProvider,
                     chainConnectors.substrate,
                     newAddressesByToken,
-                    handleUpdateForSource("nompools-staking")
+                    handleUpdateForSource("nompools-staking"),
                   )
                   const unsubCrowdloans = subscribeCrowdloans(
                     chaindataProvider,
                     chainConnectors.substrate,
                     newAddressesByToken,
-                    handleUpdateForSource("crowdloan")
+                    handleUpdateForSource("crowdloan"),
                   )
                   const unsubBase = subscribeBase(
                     baseQueries,
                     chainConnectors.substrate,
-                    handleUpdateForSource("base")
+                    handleUpdateForSource("base"),
                   )
                   subscriber.add(async () => (await unsubSubtensorStaking)())
                   subscriber.add(async () => (await unsubNompoolStaking)())
                   subscriber.add(async () => (await unsubCrowdloans)())
                   subscriber.add(async () => (await unsubBase)())
                 })
-              })
+              }),
             )
-          })
+          }),
         )
         .subscribe()
 
@@ -379,7 +379,7 @@ export const SubNativeModule: NewBalanceModule<
               .forEach(([tokenId]) => {
                 const wrappedError = new SubNativeBalanceError(
                   tokenId,
-                  (error as ChainConnectionError).message
+                  (error as ChainConnectionError).message,
                 )
                 handleUpdate(wrappedError)
               })
@@ -402,7 +402,7 @@ export const SubNativeModule: NewBalanceModule<
         .for(nonCurrentTokens)
         .process(
           async (nonCurrentTokenId) =>
-            await poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] })
+            await poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] }),
         )
 
       // now poll every 30s on chains which are not subscriptionTokens
@@ -413,20 +413,22 @@ export const SubNativeModule: NewBalanceModule<
           withLatestFrom(subscriptionTokens), // Combine latest value from subscriptionTokens with each interval tick
           map(([, subscribedTokenIds]) =>
             // Filter out tokens that are not subscribed
-            Object.keys(addressesByToken).filter((tokenId) => !subscribedTokenIds.includes(tokenId))
+            Object.keys(addressesByToken).filter(
+              (tokenId) => !subscribedTokenIds.includes(tokenId),
+            ),
           ),
           exhaustMap((tokenIds) =>
             from(arrayChunk(tokenIds, POLLING_WINDOW_SIZE)).pipe(
               concatMap(async (tokenChunk) => {
                 // tokenChunk is a chunk of tokenIds with size POLLING_WINDOW_SIZE
                 const pollingTokenAddresses = Object.fromEntries(
-                  tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]])
+                  tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]]),
                 )
                 await poll(pollingTokenAddresses)
                 return true
-              })
-            )
-          )
+              }),
+            ),
+          ),
         )
         .subscribe()
 
@@ -487,8 +489,8 @@ export const SubNativeModule: NewBalanceModule<
           log.debug(
             new Error(
               `An error occured while detecting the presence of the deprecated Balances::transfer call on chain ${chainId}`,
-              { cause }
-            )
+              { cause },
+            ),
           )
         }
       }
@@ -514,7 +516,7 @@ export const SubNativeModule: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry, userExtensions }
+        { metadataRpc, registry, userExtensions },
       )
 
       return { type: "substrate", callData: unsigned.method }

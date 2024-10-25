@@ -1,5 +1,6 @@
-import { Acknowledgement as BaseAcknowledgement } from "@ui/domains/Mnemonic/Acknowledgement"
 import { useTranslation } from "react-i18next"
+
+import { Acknowledgement as BaseAcknowledgement } from "@ui/domains/Mnemonic/Acknowledgement"
 
 import { Stages, useMnemonicBackupModal } from "./context"
 import { MnemonicBackupModalBase } from "./MnemonicBackupModalBase"

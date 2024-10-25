@@ -1,6 +1,7 @@
 import { mnemonicGenerate } from "@polkadot/util-crypto"
-import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
+
+import { provideContext } from "@talisman/util/provideContext"
 
 type BackupCreateResult = { mnemonic: string; confirmed: boolean } | null
 type BackupCreateResultCallback = { resolve: (result: BackupCreateResult) => void }

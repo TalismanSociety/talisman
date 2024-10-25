@@ -17,7 +17,7 @@ const AccountTypeButton: FC<{
     onClick={onClick}
     className={classNames(
       "bg-field hover:bg-grey-800 allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
-      className
+      className,
     )}
   >
     <div className="text-xl">{icon}</div>
@@ -56,7 +56,7 @@ export const AccountTypeSelector = ({
         title={t("Ethereum")}
         className={classNames(
           type === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border"
+          "border",
         )}
         icon={<EthereumCircleLogo />}
         subtitle={t("Ethereum, Arbitrum, Moonbeam etc.")}
@@ -65,8 +65,8 @@ export const AccountTypeSelector = ({
       <AccountTypeButton
         title={t("Polkadot")}
         className={classNames(
-          type === "sr25519" ? "border-body " : "border-body-secondary  border-opacity-20",
-          "border"
+          type === "sr25519" ? "border-body" : "border-body-secondary border-opacity-20",
+          "border",
         )}
         icon={<PolkadotCircleLogo />}
         subtitle={t(`Polkadot, Kusama & Parachains`)}

@@ -2,12 +2,12 @@ import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
 import { log } from "extension-shared"
 
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
-import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getPrivateKey } from "../../util/getPrivateKey"
 import { sr25519Decrypt } from "../../util/sr25519decrypt"
@@ -36,7 +36,7 @@ export default class EncryptHandler extends ExtensionHandler {
       const encryptResult = sr25519Encrypt(
         u8aToU8a(payload.message),
         u8aToU8a(payload.recipient),
-        kp
+        kp,
       )
 
       talismanAnalytics.capture("encrypt message approve")
@@ -105,7 +105,7 @@ export default class EncryptHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(encrypt.approveEncrypt)":

@@ -50,7 +50,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
           // This may never be called in practice due to Phantom's injection method
           if (newValue.isPhantom)
             throw new Error(
-              "Prevent Phantom window.ethereum abuse - see https://github.com/TalismanSociety/talisman/issues/819"
+              "Prevent Phantom window.ethereum abuse - see https://github.com/TalismanSociety/talisman/issues/819",
             )
 
           // allow all other wallets to override window.ethereum

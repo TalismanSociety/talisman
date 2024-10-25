@@ -132,7 +132,7 @@ export class ChainsHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType]
+    request: RequestTypes[TMessageType],
     // port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {

@@ -1,13 +1,14 @@
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@extension/shared"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
-import { signet } from "@ui/util/signet"
 import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+
+import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@extension/shared"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { signet } from "@ui/util/signet"
 
 import { useSignetConnect } from "./context"
 
@@ -18,7 +19,7 @@ const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
 }) => (
   <div className="text-body-secondary leading-paragraph">
     <div className="flex w-full">
-      <div className="w-20 shrink-0 text-center ">{step}</div>
+      <div className="w-20 shrink-0 text-center">{step}</div>
       <div className="text-body grow">{title}</div>
     </div>
     <div className="mt-2 pl-20 text-sm">{children}</div>
@@ -52,8 +53,8 @@ export const ConnectSignetPage = () => {
             err instanceof Error
               ? err.message
               : typeof err === "string"
-              ? err
-              : "Please try again.",
+                ? err
+                : "Please try again.",
         })
 
         // eslint-disable-next-line no-console
@@ -62,7 +63,7 @@ export const ConnectSignetPage = () => {
         setIsConnecting(false)
       }
     },
-    [navigate, setVaults, signetUrlOrigin, t]
+    [navigate, setVaults, signetUrlOrigin, t],
   )
 
   // clean up vaults when user clicks "Back" on confirmation page
@@ -77,7 +78,7 @@ export const ConnectSignetPage = () => {
         text={
           <>
             {t(
-              "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at "
+              "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at ",
             )}
             <Link to={SIGNET_LANDING_URL} target="_blank" className="text-primary-500">
               {SIGNET_LANDING_URL}

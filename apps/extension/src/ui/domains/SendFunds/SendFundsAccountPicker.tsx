@@ -33,7 +33,7 @@ export const SendFundsAccountPicker = () => {
           else return chain && chain?.account !== "secp256k1"
         })
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
-    [allAccounts, chain, search, token]
+    [allAccounts, chain, search, token],
   )
 
   const handleSelect = useCallback(
@@ -41,7 +41,7 @@ export const SendFundsAccountPicker = () => {
       if (to && encodeAnyAddress(to) === encodeAnyAddress(address)) remove("to")
       set("from", address, true)
     },
-    [remove, set, to]
+    [remove, set, to],
   )
 
   return (
@@ -52,7 +52,7 @@ export const SendFundsAccountPicker = () => {
           <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
         </div>
       </div>
-      <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <SendFundsAccountsList
           accounts={accounts}
           genesisHash={chain?.genesisHash}

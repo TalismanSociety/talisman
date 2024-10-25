@@ -1,9 +1,9 @@
-import { isEthereumRequest } from "@extension/core"
-import { AnySigningRequest, SigningRequests } from "@extension/core"
+import { useCallback } from "react"
+
+import { AnySigningRequest, isEthereumRequest, SigningRequests } from "@extension/core"
 import { KnownRespondableRequest } from "@extension/core/libs/requests/types"
 import { log } from "@extension/shared"
 import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"
-import { useCallback } from "react"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,11 +47,11 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
         setStatus.error(
           isEthereumRequest(currentRequest)
             ? (err as Error).message
-            : "Failed to approve sign request"
+            : "Failed to approve sign request",
         )
       }
     },
-    [approveSignFn, currentRequest, setStatus]
+    [approveSignFn, currentRequest, setStatus],
   )
 
   // handle request rejection

@@ -21,7 +21,7 @@ const NetworkFilterButton = () => {
       setNetworkId(networkId)
       close()
     },
-    [close, setNetworkId]
+    [close, setNetworkId],
   )
 
   return (
@@ -38,7 +38,7 @@ const NetworkFilterButton = () => {
             <GlobeIcon className="text-md shrink-0" />
           )}
           <div className="grow truncate">
-            {network ? network?.name ?? t("Unknown Network") : t("All Networks")}
+            {network ? (network?.name ?? t("Unknown Network")) : t("All Networks")}
           </div>
           <ChevronDownIcon className="shrink-0 text-base" />
         </div>

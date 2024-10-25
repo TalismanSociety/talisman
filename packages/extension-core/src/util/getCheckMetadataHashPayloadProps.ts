@@ -9,7 +9,7 @@ export const getCheckMetadataHashPayloadProps = (
   metadataRpc: string,
   specName: string,
   specVersion: number,
-  token: SubNativeToken
+  token: SubNativeToken,
 ) => {
   const registry = new TypeRegistry()
   const metadata = registry.createType("Metadata", metadataRpc)
@@ -19,7 +19,7 @@ export const getCheckMetadataHashPayloadProps = (
     chain.hasCheckMetadataHash && // can be toggled off from chaindata
     metadata.version >= 15 &&
     metadata.asLatest.extrinsic.signedExtensions.some(
-      (ext) => ext.identifier.toString() === "CheckMetadataHash"
+      (ext) => ext.identifier.toString() === "CheckMetadataHash",
     )
   if (!hasCheckMetadataHash) return {}
 

@@ -50,7 +50,7 @@ const config = (env) =>
             to: ({ absoluteFilename }) =>
               path.join(
                 distDir,
-                path.basename(absoluteFilename).replace(/-(?:prod|canary|dev)/, "")
+                path.basename(absoluteFilename).replace(/-(?:prod|canary|dev)/, ""),
               ),
             context: "public",
           },
@@ -62,7 +62,7 @@ const config = (env) =>
             globOptions: {
               ignore: [manifestDir, faviconsSrcPath].concat(
                 // service worker should be excluded for firefox
-                browser === "firefox" ? ["service_worker.js"] : []
+                browser === "firefox" ? ["service_worker.js"] : [],
               ),
             },
           },

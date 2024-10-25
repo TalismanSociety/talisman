@@ -57,7 +57,7 @@ const useNextAvailableDerivationPath = (mnemonicId: string | null, type: Account
 const useLookupAddress = (
   mnemonicId: string | null,
   type: AccountAddressType,
-  derivationPath: string | null | undefined
+  derivationPath: string | null | undefined,
 ) => {
   return useQuery({
     queryKey: ["useLookupAddress", mnemonicId, derivationPath],
@@ -141,7 +141,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           }
           return true
         }),
-    [accountNames, t, allAccounts]
+    [accountNames, t, allAccounts],
   )
 
   type FormData = yup.InferType<typeof schema>
@@ -189,7 +189,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           title: t("Creating account"),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
 
       try {
@@ -216,7 +216,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         })
       }
     },
-    [generateMnemonic, onSuccess, t]
+    [generateMnemonic, onSuccess, t],
   )
 
   const handleTypeChange = useCallback(
@@ -224,14 +224,14 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       setValue("type", type, { shouldValidate: true })
       setFocus("name")
     },
-    [setFocus, setValue]
+    [setFocus, setValue],
   )
 
   const handleMnemonicChange = useCallback(
     (mnemonicId: string | null) => {
       setValue("mnemonicId", mnemonicId, { shouldValidate: true })
     },
-    [setValue]
+    [setValue],
   )
 
   const { type, mnemonicId, isCustomDerivationPath, derivationPath } = watch()
@@ -239,7 +239,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const { data: address } = useLookupAddress(
     mnemonicId,
     type,
-    isCustomDerivationPath ? derivationPath : nextDerivationPath
+    isCustomDerivationPath ? derivationPath : nextDerivationPath,
   )
 
   useEffect(() => {
@@ -292,7 +292,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           <FormFieldContainer
             className={classNames(
               "mt-2",
-              !isCustomDerivationPath && "block cursor-not-allowed select-none opacity-50"
+              !isCustomDerivationPath && "block cursor-not-allowed select-none opacity-50",
             )}
             error={errors.derivationPath?.message}
           >

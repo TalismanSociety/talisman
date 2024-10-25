@@ -21,7 +21,7 @@ const FormattedAddress = ({ address, className }: { address: string; className?:
 
   const label = useMemo(
     () => (isKnown && isKnown.value.name) ?? shortenAddress(address),
-    [address, isKnown]
+    [address, isKnown],
   )
 
   return (
@@ -83,16 +83,16 @@ export const SignViewXTokensTransfer: FC<{
 
   const fromNetworkName = useMemo(
     () => fromChain?.name ?? fromEvmNetwork?.name ?? t("Unknown"),
-    [fromChain, fromEvmNetwork, t]
+    [fromChain, fromEvmNetwork, t],
   )
   const toNetworkName = useMemo(
     () => toChain?.name ?? toEvmNetwork?.name ?? t("Unknown"),
-    [toChain, toEvmNetwork, t]
+    [toChain, toEvmNetwork, t],
   )
 
   const amount = useMemo(
     () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
-    [tokenDecimals, tokenRates, value]
+    [tokenDecimals, tokenRates, value],
   )
 
   const currency = useSelectedCurrency()

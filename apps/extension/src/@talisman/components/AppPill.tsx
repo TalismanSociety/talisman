@@ -21,7 +21,7 @@ export const AppPill: FC<{ url?: string }> = ({ url }) => {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div className="text-body-secondary bg-grey-800 flex max-w-[22rem] items-center gap-2  rounded-3xl px-4 py-2 text-sm font-light">
+        <div className="text-body-secondary bg-grey-800 flex max-w-[22rem] items-center gap-2 rounded-3xl px-4 py-2 text-sm font-light">
           <Favicon url={url} className="text-base" />
           <span className="overflow-hidden text-ellipsis whitespace-nowrap">{host}</span>
         </div>

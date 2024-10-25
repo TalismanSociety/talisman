@@ -45,7 +45,7 @@ const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
     (item: Option | null) => {
       if (item) onChange(item.key)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
@@ -76,7 +76,7 @@ export const AddLedgerSelectAccount = () => {
           accounts: yup.array().of(yup.mixed<LedgerAccountDef>().defined()).min(1).defined(),
         })
         .required(),
-    []
+    [],
   )
 
   const {
@@ -97,7 +97,7 @@ export const AddLedgerSelectAccount = () => {
           title: t("Connecting account", { count: accounts.length }),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
 
       // pause to prevent double notification
@@ -119,14 +119,14 @@ export const AddLedgerSelectAccount = () => {
         })
       }
     },
-    [importAccounts, onSuccess, t]
+    [importAccounts, onSuccess, t],
   )
 
   const handleAccountsChange = useCallback(
     (accounts: LedgerAccountDef[]) => {
       setValue("accounts", accounts, { shouldValidate: true })
     },
-    [setValue]
+    [setValue],
   )
 
   const [derivationPathType, setDerivationPathType] =
@@ -154,7 +154,7 @@ export const AddLedgerSelectAccount = () => {
           <>
             <p className="text-body-secondary mb-12 mt-[1em]">
               {t(
-                "The derivation path will be different based on which application you used to initialise your Ledger account."
+                "The derivation path will be different based on which application you used to initialise your Ledger account.",
               )}
             </p>
             <div>
@@ -172,7 +172,7 @@ export const AddLedgerSelectAccount = () => {
             <>
               <br />
               {t(
-                "Amounts displayed for each account only include the most popular tokens on major networks."
+                "Amounts displayed for each account only include the most popular tokens on major networks.",
               )}
             </>
           )}

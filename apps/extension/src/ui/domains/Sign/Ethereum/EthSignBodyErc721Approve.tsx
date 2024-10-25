@@ -1,10 +1,11 @@
-import { TOKEN_APPROVALS_URL } from "@extension/shared"
 import { useQuery } from "@tanstack/react-query"
-import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { getNftMetadata } from "@ui/util/getNftMetadata"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
+
+import { TOKEN_APPROVALS_URL } from "@extension/shared"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { getNftMetadata } from "@ui/util/getNftMetadata"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
@@ -39,7 +40,7 @@ export const EthSignBodyErc721Approve: FC = () => {
       name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name]
+    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name],
   )
 
   if (qMetadata.isLoading || !operator || !account || !network || !decodedTx.targetAddress)
@@ -54,7 +55,7 @@ export const EthSignBodyErc721Approve: FC = () => {
           <SignAlertMessage>
             <span className="text-body-secondary">
               {t(
-                "This contract will have permission to transfer this NFT on your behalf until manually revoked."
+                "This contract will have permission to transfer this NFT on your behalf until manually revoked.",
               )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">

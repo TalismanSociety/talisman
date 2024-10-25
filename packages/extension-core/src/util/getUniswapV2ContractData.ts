@@ -19,7 +19,7 @@ export type UniswapV2ContractData = {
 
 export const getUniswapV2ContractData = async (
   client: Client,
-  contractAddress: `0x${string}`
+  contractAddress: `0x${string}`,
 ): Promise<UniswapV2ContractData> => {
   const getUniswapV2ContractFn = getUniswapV2Contract(client, contractAddress)
 

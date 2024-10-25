@@ -1,5 +1,5 @@
-import { useChaindataProvider } from "@talismn/balances-react"
 import type { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
+import { useChaindataProvider } from "@talismn/balances-react"
 import { useEffect } from "react"
 
 const windowInject = globalThis as typeof globalThis & {

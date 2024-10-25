@@ -89,7 +89,7 @@ export class EthTabsHandler extends TabsHandler {
 
   private async getSiteDetails(
     url: string,
-    authorisedAddress?: string
+    authorisedAddress?: string,
   ): Promise<EthAuthorizedSite> {
     let site
 
@@ -118,7 +118,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError(
         `No provider for network ${ethereumNetwork.id} (${ethereumNetwork.name})`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
       )
 
     return provider
@@ -127,7 +127,7 @@ export class EthTabsHandler extends TabsHandler {
   private async authoriseEth(
     url: string,
     request: RequestAuthorizeTab,
-    port: Port
+    port: Port,
   ): Promise<boolean> {
     let siteFromUrl
     try {
@@ -136,7 +136,8 @@ export class EthTabsHandler extends TabsHandler {
       return false
     }
     if (siteFromUrl?.ethAddresses) {
-      if (siteFromUrl.ethAddresses.length) return true //already authorized
+      if (siteFromUrl.ethAddresses.length)
+        return true //already authorized
       else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected : 4100	Unauthorized
     }
 
@@ -170,7 +171,7 @@ export class EthTabsHandler extends TabsHandler {
       getPublicAccounts(
         Object.values(accountsObservable.subject.getValue()),
         filterAccountsByAddresses(site.ethAddresses),
-        { includeWatchedAccounts: await this.stores.settings.get("developerMode") }
+        { includeWatchedAccounts: await this.stores.settings.get("developerMode") },
       )
         .filter(({ type }) => type === "ethereum")
         // send as
@@ -306,7 +307,7 @@ export class EthTabsHandler extends TabsHandler {
   private addEthereumChain = async (
     url: string,
     request: EthRequestArguments<"wallet_addEthereumChain">,
-    port: Port
+    port: Port,
   ): Promise<EthRequestResult<"wallet_addEthereumChain">> => {
     const {
       params: [network],
@@ -350,7 +351,7 @@ export class EthTabsHandler extends TabsHandler {
           log.error({ err })
           throw new EthProviderRpcError("Invalid rpc " + rpcUrl, ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
-      })
+      }),
     )
 
     await requestAddNetwork(url, network, port)
@@ -368,7 +369,7 @@ export class EthTabsHandler extends TabsHandler {
 
   private switchEthereumChain = async (
     url: string,
-    request: EthRequestArguments<"wallet_switchEthereumChain">
+    request: EthRequestArguments<"wallet_switchEthereumChain">,
   ): Promise<EthRequestResult<"wallet_switchEthereumChain">> => {
     const {
       params: [{ chainId: hexChainId }],
@@ -382,14 +383,14 @@ export class EthTabsHandler extends TabsHandler {
     if (!ethereumNetwork || !isEvmNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(
         `Unknown network ${ethChainId}, try adding the chain using wallet_addEthereumChain first`,
-        ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
+        ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
       )
 
     const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(ethereumNetwork.id)
     if (!provider)
       throw new EthProviderRpcError(
         `Failed to connect to network ${ethChainId}`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
       )
 
     const { err, val } = urlToDomain(url)
@@ -420,7 +421,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!publicClient)
       throw new EthProviderRpcError(
         `Unknown network ${chainId}`,
-        ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
+        ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
       )
 
     return publicClient.request({
@@ -432,7 +433,7 @@ export class EthTabsHandler extends TabsHandler {
   private signMessage = async (
     url: string,
     { params, method }: EthRequestSignArguments,
-    port: Port
+    port: Port,
   ) => {
     // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
     if (method === "eth_signTypedData") {
@@ -441,7 +442,7 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     let isMessageFirst = ["personal_sign", "eth_signTypedData", "eth_signTypedData_v1"].includes(
-      method
+      method,
     )
     // on https://astar.network, params are in reverse order
     if (
@@ -468,7 +469,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!address || !pair || getAddress(address) !== getAddress(from)) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
-        ETH_ERROR_EIP1993_UNAUTHORIZED
+        ETH_ERROR_EIP1993_UNAUTHORIZED,
       )
     }
 
@@ -481,14 +482,14 @@ export class EthTabsHandler extends TabsHandler {
         address: getAddress(address),
         ...pair.meta,
       },
-      port
+      port,
     )
   }
 
   private addWatchAssetRequest = async (
     url: string,
     request: EthRequestArguments<"wallet_watchAsset">,
-    port: Port
+    port: Port,
   ): Promise<EthRequestResult<"wallet_watchAsset">> => {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -512,7 +513,7 @@ export class EthTabsHandler extends TabsHandler {
         if (!client)
           throw new EthProviderRpcError(
             "Network not supported",
-            ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+            ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
           )
 
         try {
@@ -528,7 +529,7 @@ export class EthTabsHandler extends TabsHandler {
             token.type === "evm-erc20" &&
             token.evmNetwork?.id === ethChainId.toString() &&
             token.symbol === symbol &&
-            token.contractAddress.toLowerCase() !== address.toLowerCase()
+            token.contractAddress.toLowerCase() !== address.toLowerCase(),
         )
 
         const warnings: string[] = []
@@ -539,15 +540,15 @@ export class EthTabsHandler extends TabsHandler {
             warnings.push(
               i18next.t(
                 "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
-                { symbol, contractSymbol: tokenInfo.symbol }
-              )
+                { symbol, contractSymbol: tokenInfo.symbol },
+              ),
             )
           if (!tokenInfo.coingeckoId)
             warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
         }
         if (symbolFound)
           warnings.push(
-            i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
+            i18next.t(`Another {{symbol}} token already exists on this network`, { symbol }),
           )
 
         const token: CustomEvmErc20Token = {
@@ -580,7 +581,7 @@ export class EthTabsHandler extends TabsHandler {
   private async sendTransaction(
     url: string,
     { params: [txRequest] }: EthRequestArguments<"eth_sendTransaction">,
-    port: Port
+    port: Port,
   ) {
     const site = await this.getSiteDetails(url, txRequest.from)
 
@@ -615,7 +616,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!address || !pair) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
-        ETH_ERROR_EIP1993_UNAUTHORIZED
+        ETH_ERROR_EIP1993_UNAUTHORIZED,
       )
     }
 
@@ -627,7 +628,7 @@ export class EthTabsHandler extends TabsHandler {
         address,
         ...pair.meta,
       },
-      port
+      port,
     )
   }
 
@@ -644,7 +645,7 @@ export class EthTabsHandler extends TabsHandler {
       ? Object.entries(site.ethPermissions).reduce<Web3WalletPermission[]>(
           (permissions, [parentCapability, otherProps]) =>
             permissions.concat({ parentCapability, ...otherProps } as Web3WalletPermission),
-          []
+          [],
         )
       : []
   }
@@ -652,12 +653,12 @@ export class EthTabsHandler extends TabsHandler {
   private async requestPermissions(
     url: string,
     request: EthRequestArguments<"wallet_requestPermissions">,
-    port: Port
+    port: Port,
   ): Promise<EthRequestResult<"wallet_requestPermissions">> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
         "This method expects an array with only 1 entry",
-        ETH_ERROR_EIP1474_INVALID_PARAMS
+        ETH_ERROR_EIP1474_INVALID_PARAMS,
       )
 
     const [requestedPerms] = request.params
@@ -709,7 +710,7 @@ export class EthTabsHandler extends TabsHandler {
     id: string,
     url: string,
     request: EthRequestArgs,
-    port: Port
+    port: Port,
   ): Promise<unknown> {
     if (
       ![
@@ -735,7 +736,7 @@ export class EthTabsHandler extends TabsHandler {
             method: "wallet_requestPermissions",
             params: [{ eth_accounts: {} }],
           },
-          port
+          port,
         )
         return this.accountsList(url)
 
@@ -805,7 +806,7 @@ export class EthTabsHandler extends TabsHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     port: Port,
-    url: string
+    url: string,
   ): Promise<ResponseType<TMessageType>> {
     // Always check for onboarding before doing anything else
     // Because of chrome extensions can be synchronised on multiple computers,
@@ -836,7 +837,7 @@ export class EthTabsHandler extends TabsHandler {
             shortMessage ?? message ?? "Internal error",
             code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
             // assume if data property is present, it's an EVM revert => dapp expects that underlying error object
-            cause.data ? cause : details
+            cause.data ? cause : details,
           )
 
           throw myError

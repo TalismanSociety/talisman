@@ -32,7 +32,7 @@ export const fetchMiniMetadatas = async () =>
 export const availableTokenLogoFilenames = async (): Promise<string[]> =>
   (
     await fetch(
-      `${githubApi}/repos/${githubChaindataOrg}/${githubChaindataRepo}/contents/${githubChaindataTokensAssetsDir}`
+      `${githubApi}/repos/${githubChaindataOrg}/${githubChaindataRepo}/contents/${githubChaindataTokensAssetsDir}`,
     ).then((response) => response.json())
   )?.flatMap?.((entry: unknown) => {
     if (typeof entry !== "object" || entry === null) return []

@@ -9,7 +9,7 @@ export const useRisksReview = (action?: ActionEnum) => {
 
   const isRiskAcknowledgementRequired = useMemo(
     () => action === ActionEnum.Block || action === ActionEnum.Warn,
-    [action]
+    [action],
   )
 
   // open review drawer automatically if risk is required

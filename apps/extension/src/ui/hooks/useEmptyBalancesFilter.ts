@@ -1,17 +1,17 @@
-import { AccountJson } from "@extension/core"
-import { Balance, Balances } from "@extension/core"
 import { useEffect, useMemo, useState } from "react"
+
+import { AccountJson, Balance, Balances } from "@extension/core"
 
 export default function useEmptyBalancesFilter(
   balances: Balances,
-  account: AccountJson | null
+  account: AccountJson | null,
 ): Balances {
   const balanceFilter = useMemo(
     () =>
       account?.type === "ethereum"
         ? moonbeamFilter
         : polkadotFilter(account?.isHardware ? account?.genesisHash : null),
-    [account?.type, account?.genesisHash, account?.isHardware]
+    [account?.type, account?.genesisHash, account?.isHardware],
   )
 
   const [filteredBalances, setFilteredBalances] = useState<Balances>(new Balances([]))

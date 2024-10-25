@@ -7,5 +7,5 @@ import { u32 } from "scale-ts"
  */
 export const crowdloanFundContributionsChildKey = (fundIndex: number) =>
   u8aToHex(
-    u8aConcat(":child_storage:default:", blake2AsU8a(u8aConcat("crowdloan", u32.enc(fundIndex))))
+    u8aConcat(":child_storage:default:", blake2AsU8a(u8aConcat("crowdloan", u32.enc(fundIndex)))),
   )

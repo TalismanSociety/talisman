@@ -44,8 +44,8 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
     () =>
       metadataRequest?.url
         ? new URL(metadataRequest?.url || "").origin // use origin to keep the prefixed protocol
-        : metadataRequest?.url ?? "",
-    [metadataRequest?.url]
+        : (metadataRequest?.url ?? ""),
+    [metadataRequest?.url],
   )
 
   if (!metadataRequest) return null

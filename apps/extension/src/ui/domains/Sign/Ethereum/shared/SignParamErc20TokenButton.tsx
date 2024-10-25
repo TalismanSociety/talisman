@@ -1,7 +1,8 @@
+import { FC } from "react"
+
 import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "@extension/core"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
 

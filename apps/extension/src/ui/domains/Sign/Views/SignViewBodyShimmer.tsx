@@ -10,7 +10,7 @@ export const SignViewBodyShimmer = () => {
       <div className="mt-4 text-base font-bold text-white opacity-70">
         {t("Analysing transaction")}
       </div>
-      <div className="text-sm font-normal  opacity-70">{t("This shouldn't take long...")}</div>
+      <div className="text-sm font-normal opacity-70">{t("This shouldn't take long...")}</div>
     </div>
   )
 }

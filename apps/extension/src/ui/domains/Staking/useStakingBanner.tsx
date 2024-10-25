@@ -18,7 +18,7 @@ const useEvmLsdStakingEligibility = () => {
   const accounts = useAccounts("owned")
   const ownedAddresses = useMemo(
     () => accounts.filter(({ type }) => type === "ethereum").map(({ address }) => address),
-    [accounts]
+    [accounts],
   )
 
   const evmLsdStakingAddressesEligible = useCallback(
@@ -26,26 +26,29 @@ const useEvmLsdStakingEligibility = () => {
       const eligibleAddresses = Object.values(chainAddressEligibility)
         .map((chainData) => Object.entries(chainData))
         .flat()
-        .reduce((acc, [address, showBanner]) => {
-          acc[address] = acc[address] || showBanner
-          return acc
-        }, {} as Record<Address, boolean>)
+        .reduce(
+          (acc, [address, showBanner]) => {
+            acc[address] = acc[address] || showBanner
+            return acc
+          },
+          {} as Record<Address, boolean>,
+        )
 
       return addresses.some(
-        (address) => ownedAddresses.includes(address) && eligibleAddresses[address]
+        (address) => ownedAddresses.includes(address) && eligibleAddresses[address],
       )
     },
-    [chainAddressEligibility, ownedAddresses]
+    [chainAddressEligibility, ownedAddresses],
   )
 
   const evmLsdStakingTokenEligible = useCallback(
     ({ token, addresses }: { token: Token; addresses: Address[] }) => {
       const addressesEligible = chainAddressEligibility[token.id]
       return addresses.some(
-        (address) => ownedAddresses.includes(address) && addressesEligible[address]
+        (address) => ownedAddresses.includes(address) && addressesEligible[address],
       )
     },
-    [chainAddressEligibility, ownedAddresses]
+    [chainAddressEligibility, ownedAddresses],
   )
 
   return { evmLsdStakingAddressesEligible, evmLsdStakingTokenEligible }
@@ -67,7 +70,7 @@ export const useStakingBanner = () => {
           hideStakingBanner: Array.from(new Set([...existing.hideStakingBanner, ...newValue])),
         }
       }),
-    []
+    [],
   )
 
   const showTokenStakingBanner = useCallback(
@@ -84,18 +87,18 @@ export const useStakingBanner = () => {
       return (
         result &&
         !hideBannerSetting.includes(
-          (token?.chain?.id || token?.evmNetwork?.id) as StakingSupportedChain
+          (token?.chain?.id || token?.evmNetwork?.id) as StakingSupportedChain,
         )
       )
     },
-    [evmLsdStakingTokenEligible, hideBannerSetting]
+    [evmLsdStakingTokenEligible, hideBannerSetting],
   )
 
   const showStakingBanner = useCallback(
     ({ addresses }: { addresses: Address[] }) =>
       evmLsdStakingAddressesEligible({ addresses }) &&
       hideBannerSetting.length < STAKING_BANNER_CHAINS.length,
-    [evmLsdStakingAddressesEligible, hideBannerSetting]
+    [evmLsdStakingAddressesEligible, hideBannerSetting],
   )
 
   const getStakingMessage = useCallback(
@@ -111,7 +114,7 @@ export const useStakingBanner = () => {
         return t("This balance is eligible for Nomination Pool Staking via the Talisman Portal.")
       return
     },
-    [t]
+    [t],
   )
 
   const getBannerColours = useCallback(({ token }: { token?: Token }) => {

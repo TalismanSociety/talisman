@@ -31,7 +31,7 @@ export const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
 // export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}
 export async function fetchTokenRates(
   tokens: Record<TokenId, Token>,
-  config: CoingeckoConfig = DEFAULT_COINGECKO_CONFIG
+  config: CoingeckoConfig = DEFAULT_COINGECKO_CONFIG,
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
@@ -68,11 +68,14 @@ export async function fetchTokenRates(
     })
 
     // get each token's coingeckoId
-    .reduce((coingeckoIdToTokenIds, { id, coingeckoId }) => {
-      if (!coingeckoIdToTokenIds[coingeckoId]) coingeckoIdToTokenIds[coingeckoId] = []
-      coingeckoIdToTokenIds[coingeckoId].push(id)
-      return coingeckoIdToTokenIds
-    }, {} as Record<string, string[]>)
+    .reduce(
+      (coingeckoIdToTokenIds, { id, coingeckoId }) => {
+        if (!coingeckoIdToTokenIds[coingeckoId]) coingeckoIdToTokenIds[coingeckoId] = []
+        coingeckoIdToTokenIds[coingeckoId].push(id)
+        return coingeckoIdToTokenIds
+      },
+      {} as Record<string, string[]>,
+    )
 
   // create a list of coingeckoIds we want to fetch
   const coingeckoIds = Object.keys(coingeckoIdToTokenIds).sort()
@@ -117,8 +120,8 @@ export async function fetchTokenRates(
           if (response.status !== 200)
             throw new TokenRatesError(`Failed to fetch token rates`, response)
           return response.json()
-        })
-    )
+        }),
+    ),
   ).then((responses): Record<string, Record<string, number>> => Object.assign({}, ...responses))
 
   // build a TokenRatesList from the token prices result
@@ -132,7 +135,7 @@ export async function fetchTokenRates(
       }
 
       return tokenIds.map((tokenId) => [tokenId, rates])
-    })
+    }),
   )
 
   // return the TokenRatesList

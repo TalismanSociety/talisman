@@ -1,5 +1,6 @@
-import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { useMemo } from "react"
+
+import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 
 export const usePortfolioNetworkIds = (balances: Balances) => {
   return useMemo(
@@ -8,9 +9,9 @@ export const usePortfolioNetworkIds = (balances: Balances) => {
         ...new Set(
           balances.each
             .filter((b) => b.total.planck > 0)
-            .map((b) => b.chain?.id ?? b.evmNetwork?.id)
+            .map((b) => b.chain?.id ?? b.evmNetwork?.id),
         ),
       ].filter(Boolean) as (ChainId | EvmNetworkId)[],
-    [balances]
+    [balances],
   )
 }

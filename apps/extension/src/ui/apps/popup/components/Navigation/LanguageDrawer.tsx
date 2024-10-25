@@ -22,9 +22,9 @@ const LanguageButton: FC<{
       type="button"
       className={classNames(
         "text-body-secondary flex h-28 w-full items-center justify-between gap-4 rounded-sm px-6",
-        "border-grey-800 border ",
+        "border-grey-800 border",
         selected && "bg-grey-900 text-body",
-        "hover:border-grey-700 hover:bg-grey-800 stroke-primary"
+        "hover:border-grey-700 hover:bg-grey-800 stroke-primary",
       )}
       onClick={onClick}
     >
@@ -45,7 +45,7 @@ const LanguagesList = () => {
       i18n.changeLanguage(lang ?? "en")
       close()
     },
-    [close, i18n]
+    [close, i18n],
   )
 
   return (

@@ -18,7 +18,7 @@ function App() {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <div className="container mx-auto max-w-screen-xl p-4">
-          <div className="space-y-4 text-center ">
+          <div className="space-y-4 text-center">
             <a href="https://talisman.xyz" target="_blank">
               <img src={talismanLogo} className="logo talisman" alt="Talisman logo" />
             </a>

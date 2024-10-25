@@ -63,7 +63,7 @@ export const CtaButton: FC<CtaButton> = ({
       else if (to) navigate(to)
       else if (onClick) onClick(e)
     },
-    [navigate, onClick, to]
+    [navigate, onClick, to],
   )
 
   const {
@@ -81,7 +81,7 @@ export const CtaButton: FC<CtaButton> = ({
       className={classNames(
         "bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
         containerClassName,
-        className
+        className,
       )}
       onClick={handleClick}
     >

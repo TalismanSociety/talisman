@@ -68,7 +68,7 @@ describe("App handler when password is not trimmed", () => {
 
     accountsJson = await keyring.backupAccounts(
       keyring.getPairs().map((pair) => pair.address),
-      await extensionStores.password.transformPassword(password)
+      await extensionStores.password.transformPassword(password),
     )
   })
 
@@ -79,7 +79,7 @@ describe("App handler when password is not trimmed", () => {
 
     keyring.restoreAccounts(
       accountsJson,
-      await extensionStores.password.transformPassword(password)
+      await extensionStores.password.transformPassword(password),
     )
     await messageSender("pri(app.authenticate)", {
       pass: password,
@@ -93,7 +93,7 @@ describe("App handler when password is not trimmed", () => {
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
 
     expect(await extensionStores.password.getPassword()).toBe(
-      await extensionStores.password.getHashedPassword(password)
+      await extensionStores.password.getHashedPassword(password),
     )
 
     // logout then log in again
@@ -221,7 +221,7 @@ describe("App handler when password is trimmed", () => {
 
     accountsJson = await keyring.backupAccounts(
       keyring.getPairs().map((pair) => pair.address),
-      await extensionStores.password.transformPassword(password)
+      await extensionStores.password.transformPassword(password),
     )
   })
 
@@ -233,7 +233,7 @@ describe("App handler when password is trimmed", () => {
 
     keyring.restoreAccounts(
       accountsJson,
-      await extensionStores.password.transformPassword(password)
+      await extensionStores.password.transformPassword(password),
     )
     await messageSender("pri(app.authenticate)", {
       pass: password,

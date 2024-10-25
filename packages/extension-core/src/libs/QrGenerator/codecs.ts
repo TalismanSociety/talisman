@@ -1,4 +1,4 @@
-import { Bytes, Struct, str, u16, u8 } from "scale-ts"
+import { Bytes, str, Struct, u8, u16 } from "scale-ts"
 
 export const $networkSpecs = Struct({
   base58prefix: u16,

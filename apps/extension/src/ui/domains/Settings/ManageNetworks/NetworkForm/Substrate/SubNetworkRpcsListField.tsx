@@ -20,7 +20,7 @@ const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
   const getGenesisHash = useCallback(
     async (
       name: `rpcs.${number}.url`,
-      value: FieldPathValue<SubNetworkFormData, `rpcs.${number}.url`>
+      value: FieldPathValue<SubNetworkFormData, `rpcs.${number}.url`>,
     ) => {
       await (async () => {
         try {
@@ -47,7 +47,7 @@ const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
       })()
       setFetchingGenesisHash(false)
     },
-    [index, setError, setValue, t]
+    [index, setError, setValue, t],
   )
 
   return (

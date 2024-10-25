@@ -150,7 +150,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           const decimals = DEFAULT_DECIMALS
 
           const tokenConfig = (moduleConfig?.tokens ?? []).find(
-            (token) => token.assetId === assetId
+            (token) => token.assetId === assetId,
           )
 
           const token: SubEquilibriumToken = {
@@ -182,7 +182,7 @@ export const SubEquilibriumModule: NewBalanceModule<
       } catch (error) {
         log.error(
           `Failed to build substrate-equilibrium tokens on ${chainId}`,
-          (error as Error)?.message ?? error
+          (error as Error)?.message ?? error,
         )
         return {}
       }
@@ -196,7 +196,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           if (error) return callback(error)
           const balances = result?.flatMap((balances) => balances) ?? []
           if (balances.length > 0) callback(null, new Balances(balances))
-        }
+        },
       )
 
       return unsubscribe
@@ -248,9 +248,9 @@ export const SubEquilibriumModule: NewBalanceModule<
           ? // the eqBalances pallet has no transfer_all method
             "transfer"
           : transferMethod === "transfer_keep_alive"
-          ? // the eqBalances pallet has no transfer_keep_alive method
-            "transfer"
-          : "transfer"
+            ? // the eqBalances pallet has no transfer_keep_alive method
+              "transfer"
+            : "transfer"
       const args = { asset: assetId, to, value: amount }
 
       const unsigned = defineMethod(
@@ -271,7 +271,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry, userExtensions }
+        { metadataRpc, registry, userExtensions },
       )
 
       return { type: "substrate", callData: unsigned.method }
@@ -281,7 +281,7 @@ export const SubEquilibriumModule: NewBalanceModule<
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  addressesByToken: AddressesByToken<SubEquilibriumToken>
+  addressesByToken: AddressesByToken<SubEquilibriumToken>,
 ): Promise<Array<RpcStateQuery<SubEquilibriumBalance[]>>> {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -289,7 +289,7 @@ async function buildQueries(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
       miniMetadata,
-    ])
+    ]),
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
@@ -335,7 +335,7 @@ async function buildQueries(
       const stateKey = encodeStateKey(
         scaleCoder,
         `Invalid address in ${chainId} storage query ${address}`,
-        address
+        address,
       )
       if (!stateKey) return []
 
@@ -352,7 +352,7 @@ async function buildQueries(
               balance?: Array<
                 [
                   bigint,
-                  { type?: "Positive"; value?: bigint } | { type?: "Negative"; value?: bigint }
+                  { type?: "Positive"; value?: bigint } | { type?: "Negative"; value?: bigint },
                 ]
               >
               lock?: bigint
@@ -363,7 +363,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode eqBalances on chain ${chainId}`
+          `Failed to decode eqBalances on chain ${chainId}`,
         )
 
         const tokenBalances = Object.fromEntries(
@@ -374,8 +374,8 @@ async function buildQueries(
                 balance?.[1]?.type === "Positive"
                   ? (balance?.[1]?.value ?? 0n).toString()
                   : balance?.[1]?.type === "Negative"
-                  ? ((balance?.[1]?.value ?? 0n) * -1n).toString()
-                  : "0",
+                    ? ((balance?.[1]?.value ?? 0n) * -1n).toString()
+                    : "0",
             }))
             .map(
               ({
@@ -384,9 +384,9 @@ async function buildQueries(
               }: {
                 id?: string
                 free?: string
-              }): [string | undefined, string | undefined] => [id, free]
+              }): [string | undefined, string | undefined] => [id, free],
             )
-            .filter(([id, free]) => id !== undefined && free !== undefined)
+            .filter(([id, free]) => id !== undefined && free !== undefined),
         )
 
         const result = Array.from(tokensByAddress.get(address) ?? [])

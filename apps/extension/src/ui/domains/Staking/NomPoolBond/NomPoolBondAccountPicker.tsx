@@ -35,7 +35,7 @@ export const NomPoolBondAccountPicker = () => {
           else return chain && chain?.account !== "secp256k1"
         })
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
-    [allAccounts, chain, search, token]
+    [allAccounts, chain, search, token],
   )
 
   const handleSelect = useCallback(
@@ -43,7 +43,7 @@ export const NomPoolBondAccountPicker = () => {
       setAddress(address)
       accountPicker.close()
     },
-    [accountPicker, setAddress]
+    [accountPicker, setAddress],
   )
 
   return (
@@ -70,7 +70,7 @@ export const NomPoolBondAccountPicker = () => {
               <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
             </div>
           </div>
-          <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+          <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
             <NomPoolBondAccountsList
               accounts={accounts}
               genesisHash={chain?.genesisHash}

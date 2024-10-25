@@ -100,7 +100,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         genesisHash: yup.string(),
         limitToNetwork: yup.bool(),
       }),
-    [t]
+    [t],
   )
 
   const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
@@ -110,10 +110,10 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         address: normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType),
       })),
       existingAccountAddresses: accounts.map((acc) =>
-        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58")
+        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58"),
       ),
     }),
-    [contacts, accounts]
+    [contacts, accounts],
   )
 
   const {
@@ -172,7 +172,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         shouldTouch: true,
         shouldValidate: true,
       }),
-    [setValue]
+    [setValue],
   )
   useGenesisHashEffects(chains, genesisHash, setGenesisHash)
   const setLimitToNetwork = useCallback(
@@ -182,7 +182,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         shouldTouch: true,
         shouldValidate: true,
       }),
-    [setValue]
+    [setValue],
   )
   useAddressEffects(address, setLimitToNetwork)
   const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
@@ -212,7 +212,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         setError("name", error as Error)
       }
     },
-    [close, add, setError, t]
+    [close, add, setError, t],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

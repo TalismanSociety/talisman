@@ -1,9 +1,10 @@
-import { DEBUG } from "@extension/shared"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
-import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import { DexieError } from "dexie"
 import { FC, ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
+
+import { DEBUG } from "@extension/shared"
+import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 
 const ErrorMessage: FC<{ error: unknown }> = ({ error }) => {
   const isDbVersionError = (error as DexieError)?.inner?.name === "VersionError"
@@ -18,7 +19,7 @@ const ErrorMessage: FC<{ error: unknown }> = ({ error }) => {
   }, [])
 
   return (
-    <section className="max-w-screen  text-body-secondary mx-auto flex h-[60rem] max-h-screen w-[40rem] flex-col overflow-hidden p-10 text-center">
+    <section className="max-w-screen text-body-secondary mx-auto flex h-[60rem] max-h-screen w-[40rem] flex-col overflow-hidden p-10 text-center">
       <div className="flex flex-grow flex-col justify-center">
         <h1 className="m-0 text-3xl font-bold">Oops !</h1>
         <div>

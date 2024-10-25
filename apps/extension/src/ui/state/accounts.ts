@@ -25,8 +25,8 @@ export const [useAccountsCatalog] = bind(accountsCatalog$)
 
 export const accountsMap$ = accounts$.pipe(
   map((accounts) =>
-    Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account]))
-  )
+    Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account])),
+  ),
 )
 
 export const [useAccountsMap] = bind(accountsMap$)
@@ -38,8 +38,8 @@ export const [useAccountByAddress, getAccountByAddress$] = bind(
         if (!address) return null
         const normalizedAddress = normalizeAddress(address)
         return accountsMap[normalizedAddress] ?? null
-      })
-    )
+      }),
+    ),
 )
 
 export type AccountCategory = "all" | "watched" | "owned" | "portfolio" | "signet"
@@ -56,7 +56,7 @@ export const [useAccounts, getAccountsByCategory$] = bind((category: AccountCate
       switch (category) {
         case "portfolio":
           return accounts.filter(
-            ({ origin, isPortfolio }) => !origin || !IS_EXTERNAL[origin] || isPortfolio
+            ({ origin, isPortfolio }) => !origin || !IS_EXTERNAL[origin] || isPortfolio,
           )
         case "watched":
           return accounts.filter(({ origin }) => origin === AccountType.Watched)
@@ -67,6 +67,6 @@ export const [useAccounts, getAccountsByCategory$] = bind((category: AccountCate
         case "all":
           return accounts
       }
-    })
-  )
+    }),
+  ),
 )

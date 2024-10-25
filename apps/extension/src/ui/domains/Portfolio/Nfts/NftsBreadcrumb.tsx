@@ -16,7 +16,7 @@ export const NftsBreadcrumb = () => {
   const { collections } = useNfts()
   const collection = useMemo(
     () => collections.find((c) => c.id === collectionId),
-    [collections, collectionId]
+    [collections, collectionId],
   )
 
   const items = useMemo(() => {

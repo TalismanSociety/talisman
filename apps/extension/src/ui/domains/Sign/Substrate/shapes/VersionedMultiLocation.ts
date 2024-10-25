@@ -58,12 +58,12 @@ const $xcmV2BodyPart: $.Shape<XcmV2BodyPart> = $.taggedUnion("type", {
   3: $.variant(
     "AtLeastProportion",
     $.field("nom", $.compact($.u32)),
-    $.field("denom", $.compact($.u32))
+    $.field("denom", $.compact($.u32)),
   ),
   4: $.variant(
     "MoreThanProportion",
     $.field("nom", $.compact($.u32)),
-    $.field("denom", $.compact($.u32))
+    $.field("denom", $.compact($.u32)),
   ),
 })
 
@@ -86,23 +86,23 @@ const $xcmV2Junction: $.Shape<XcmV2Junction> = $.taggedUnion("type", {
   1: $.variant(
     "AccountId32",
     $.field("network", $xcmV2NetworkId),
-    $.field("id", $.sizedUint8Array(32))
+    $.field("id", $.sizedUint8Array(32)),
   ),
   2: $.variant(
     "AccountIndex64",
     $.field(
       "network",
-      $.deferred(() => $xcmV2NetworkId)
+      $.deferred(() => $xcmV2NetworkId),
     ),
-    $.field("index", $.compact($.u64))
+    $.field("index", $.compact($.u64)),
   ),
   3: $.variant(
     "AccountKey20",
     $.field(
       "network",
-      $.deferred(() => $xcmV2NetworkId)
+      $.deferred(() => $xcmV2NetworkId),
     ),
-    $.field("key", $.sizedUint8Array(20))
+    $.field("key", $.sizedUint8Array(20)),
   ),
   4: $.variant("PalletInstance", $.field("value", $.u8)),
   5: $.variant("GeneralIndex", $.field("value", $.compact($.u128))),
@@ -133,7 +133,7 @@ type XcmV2Junctions =
         XcmV2Junction,
         XcmV2Junction,
         XcmV2Junction,
-        XcmV2Junction
+        XcmV2Junction,
       ]
     }
   | {
@@ -145,7 +145,7 @@ type XcmV2Junctions =
         XcmV2Junction,
         XcmV2Junction,
         XcmV2Junction,
-        XcmV2Junction
+        XcmV2Junction,
       ]
     }
   | {
@@ -158,7 +158,7 @@ type XcmV2Junctions =
         XcmV2Junction,
         XcmV2Junction,
         XcmV2Junction,
-        XcmV2Junction
+        XcmV2Junction,
       ]
     }
 const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
@@ -170,9 +170,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
       "value",
       $.tuple(
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
   3: $.variant(
     "X3",
@@ -181,9 +181,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
       $.tuple(
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
   4: $.variant(
     "X4",
@@ -193,9 +193,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
   5: $.variant(
     "X5",
@@ -206,9 +206,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
   6: $.variant(
     "X6",
@@ -220,9 +220,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
   7: $.variant(
     "X7",
@@ -235,9 +235,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
   8: $.variant(
     "X8",
@@ -251,9 +251,9 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
         $.deferred(() => $xcmV2Junction),
-        $.deferred(() => $xcmV2Junction)
-      )
-    )
+        $.deferred(() => $xcmV2Junction),
+      ),
+    ),
   ),
 })
 
@@ -261,7 +261,7 @@ const $xcmV2Junctions: $.Shape<XcmV2Junctions> = $.taggedUnion("type", {
 type XcmV2MultiLocation = { parents: number; interior: XcmV2Junctions }
 const $xcmV2MultiLocation: $.Shape<XcmV2MultiLocation> = $.object(
   $.field("parents", $.u8),
-  $.field("interior", $xcmV2Junctions)
+  $.field("interior", $xcmV2Junctions),
 )
 
 // Type 79 - xcm::v3::junction::NetworkId
@@ -281,7 +281,7 @@ const $xcmV3NetworkId: $.Shape<XcmV3NetworkId> = $.taggedUnion("type", {
   1: $.variant(
     "ByFork",
     $.field("blockNumber", $.u64),
-    $.field("blockHash", $.sizedUint8Array(32))
+    $.field("blockHash", $.sizedUint8Array(32)),
   ),
   2: $.variant("Polkadot"),
   3: $.variant("Kusama"),
@@ -337,12 +337,12 @@ const $xcmV3BodyPart: $.Shape<XcmV3BodyPart> = $.taggedUnion("type", {
   3: $.variant(
     "AtLeastProportion",
     $.field("nom", $.compact($.u32)),
-    $.field("denom", $.compact($.u32))
+    $.field("denom", $.compact($.u32)),
   ),
   4: $.variant(
     "MoreThanProportion",
     $.field("nom", $.compact($.u32)),
-    $.field("denom", $.compact($.u32))
+    $.field("denom", $.compact($.u32)),
   ),
 })
 
@@ -363,23 +363,23 @@ const $xcmV3Junction: $.Shape<XcmV3Junction> = $.taggedUnion("type", {
   1: $.variant(
     "AccountId32",
     $.field("network", $.option($xcmV3NetworkId)),
-    $.field("id", $.sizedUint8Array(32))
+    $.field("id", $.sizedUint8Array(32)),
   ),
   2: $.variant(
     "AccountIndex64",
     $.field(
       "network",
-      $.deferred(() => $option78)
+      $.deferred(() => $option78),
     ),
-    $.field("index", $.compact($.u64))
+    $.field("index", $.compact($.u64)),
   ),
   3: $.variant(
     "AccountKey20",
     $.field(
       "network",
-      $.deferred(() => $option78)
+      $.deferred(() => $option78),
     ),
-    $.field("key", $.sizedUint8Array(20))
+    $.field("key", $.sizedUint8Array(20)),
   ),
   4: $.variant("PalletInstance", $.field("value", $.u8)),
   5: $.variant("GeneralIndex", $.field("value", $.compact($.u128))),
@@ -390,8 +390,8 @@ const $xcmV3Junction: $.Shape<XcmV3Junction> = $.taggedUnion("type", {
     "GlobalConsensus",
     $.field(
       "value",
-      $.deferred(() => $xcmV3NetworkId)
-    )
+      $.deferred(() => $xcmV3NetworkId),
+    ),
   ),
 })
 
@@ -417,7 +417,7 @@ type XcmV3Junctions =
         XcmV3Junction,
         XcmV3Junction,
         XcmV3Junction,
-        XcmV3Junction
+        XcmV3Junction,
       ]
     }
   | {
@@ -429,7 +429,7 @@ type XcmV3Junctions =
         XcmV3Junction,
         XcmV3Junction,
         XcmV3Junction,
-        XcmV3Junction
+        XcmV3Junction,
       ]
     }
   | {
@@ -442,7 +442,7 @@ type XcmV3Junctions =
         XcmV3Junction,
         XcmV3Junction,
         XcmV3Junction,
-        XcmV3Junction
+        XcmV3Junction,
       ]
     }
 const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
@@ -454,9 +454,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
       "value",
       $.tuple(
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
   3: $.variant(
     "X3",
@@ -465,9 +465,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
       $.tuple(
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
   4: $.variant(
     "X4",
@@ -477,9 +477,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
   5: $.variant(
     "X5",
@@ -490,9 +490,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
   6: $.variant(
     "X6",
@@ -504,9 +504,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
   7: $.variant(
     "X7",
@@ -519,9 +519,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
   8: $.variant(
     "X8",
@@ -535,9 +535,9 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
         $.deferred(() => $xcmV3Junction),
-        $.deferred(() => $xcmV3Junction)
-      )
-    )
+        $.deferred(() => $xcmV3Junction),
+      ),
+    ),
   ),
 })
 
@@ -545,7 +545,7 @@ const $xcmV3Junctions: $.Shape<XcmV3Junctions> = $.taggedUnion("type", {
 type XcmV3MultiLocation = { parents: number; interior: XcmV3Junctions }
 const $xcmV3MultiLocation: $.Shape<XcmV3MultiLocation> = $.object(
   $.field("parents", $.u8),
-  $.field("interior", $xcmV3Junctions)
+  $.field("interior", $xcmV3Junctions),
 )
 
 // Type 124 - xcm::VersionedMultiLocation

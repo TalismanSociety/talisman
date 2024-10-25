@@ -7,7 +7,7 @@ import { NomPoolsClaimPermission } from "../types"
 
 export const useNomPoolsClaimPermission = (
   chainId: ChainId | null | undefined,
-  address: string | null | undefined
+  address: string | null | undefined,
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 
@@ -18,7 +18,7 @@ export const useNomPoolsClaimPermission = (
       const result = await sapi.getStorage<NomPoolsClaimPermission>(
         "NominationPools",
         "ClaimPermissions",
-        [address]
+        [address],
       )
 
       return result?.type ?? "Permissioned"

@@ -45,7 +45,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
             // account is undefined for contacts
             (account
               ? isAccountCompatibleWithChain(chain, account.type ?? "sr25519", account.genesisHash)
-              : isAddressCompatibleWithChain(chain, address))
+              : isAddressCompatibleWithChain(chain, address)),
         )
         .map(
           (chain): NetworkWithExplorer => ({
@@ -53,9 +53,9 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
             type: "substrate",
             name: chain.name!,
             explorerUrl: chain.subscanUrl!,
-          })
+          }),
         ),
-    [account, address, chains]
+    [account, address, chains],
   )
 
   const compatibleEvmNetworks = useMemo<NetworkWithExplorer[]>(
@@ -69,10 +69,10 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
                 type: "substrate",
                 name: chain.name!,
                 explorerUrl: chain.explorerUrl!,
-              })
+              }),
             )
         : [],
-    [address, evmNetworks]
+    [address, evmNetworks],
   )
 
   const sortedNetworks = useMemo(
@@ -82,7 +82,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
           return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
         return (a.name ?? "").localeCompare(b.name ?? "")
       }),
-    [balancesPerNetwork, compatibleChains, compatibleEvmNetworks]
+    [balancesPerNetwork, compatibleChains, compatibleEvmNetworks],
   )
 
   return useMemo(() => {
@@ -126,7 +126,7 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
       window.open(urlJoin(network.explorerUrl, "address", address), "_blank")
       onClose()
     },
-    [address, onClose]
+    [address, onClose],
   )
 
   return (

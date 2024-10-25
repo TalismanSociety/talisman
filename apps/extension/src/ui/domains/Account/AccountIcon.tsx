@@ -69,7 +69,7 @@ const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className
+      className,
     )}
   ></div>
 )

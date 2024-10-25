@@ -20,7 +20,7 @@ export const TxStatusPage = () => {
         </Button>
       </div>
       <div>
-        <ProcessAnimation status={status} className="h-96 " />
+        <ProcessAnimation status={status} className="h-96" />
       </div>
     </Layout>
   )

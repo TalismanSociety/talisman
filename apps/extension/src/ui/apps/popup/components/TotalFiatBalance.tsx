@@ -43,18 +43,18 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
       genericEvent("toggle hide balance")
       setHideBalances((prev) => !prev)
     },
-    [genericEvent, setHideBalances]
+    [genericEvent, setHideBalances],
   )
 
   return (
     <div className={classNames("flex flex-col items-start justify-between", className)}>
       <div className="font-inter flex flex-col gap-2">
-        <div className="text-body  flex gap-4 text-xs">
+        <div className="text-body flex gap-4 text-xs">
           <div className="leading-10 tracking-[0.06px]">{t("Total Portfolio")}</div>
           <button
             className={classNames(
               "focus:text-body text-grey-200 hover:text-body pointer-events-auto opacity-0 transition-opacity",
-              (hideBalances || mouseOver) && "opacity-100"
+              (hideBalances || mouseOver) && "opacity-100",
             )}
             onClick={toggleHideBalance}
           >
@@ -66,7 +66,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
             className={classNames(
               "bg-grey-700/20 text-grey-200 hover:text-body hover:bg-body/10 pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full text-center shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
+              currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]",
             )}
             onClick={(event) => {
               event.stopPropagation()
@@ -78,7 +78,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           <Fiat
             className={classNames(
               "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[3.2rem] font-bold leading-[3.6rem] tracking-[0.016px]",
-              disabled && "text-body-secondary"
+              disabled && "text-body-secondary",
             )}
             amount={portfolioTotal}
             isBalance
@@ -122,7 +122,7 @@ const Action: FC<ActionProps> = ({
       })
       onClick()
     },
-    [onClick, analyticsAction, analyticsName]
+    [onClick, analyticsAction, analyticsName],
   )
 
   return (
@@ -211,7 +211,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, handleSwapClick, openCopyAddressModal, t]
+    [canBuy, disableActions, disabledReason, handleSwapClick, openCopyAddressModal, t],
   )
 
   return (

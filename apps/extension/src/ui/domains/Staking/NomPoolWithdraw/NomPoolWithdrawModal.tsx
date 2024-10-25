@@ -21,7 +21,7 @@ const ModalHeader = () => {
     <div
       className={classNames(
         "text-body-secondary flex h-32 w-full shrink-0 items-center justify-between px-10",
-        step === "follow-up" ? "invisible" : "visible"
+        step === "follow-up" ? "invisible" : "visible",
       )}
     >
       <div>{step === "review" && t("Withdraw")}</div>
@@ -48,7 +48,7 @@ const Content = () => (
     id="StakingModalDialog" // acts as containerId for sub modals
     className={classNames(
       "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
-      !IS_POPUP && "border-grey-850 rounded border"
+      !IS_POPUP && "border-grey-850 rounded border",
     )}
   >
     <ModalHeader />

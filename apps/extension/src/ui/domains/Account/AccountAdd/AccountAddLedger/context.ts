@@ -76,7 +76,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
       if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
         assert(
           accounts.every((acc) => "genesisHash" in acc && acc.genesisHash === chain?.genesisHash),
-          "Chain mismatch"
+          "Chain mismatch",
         )
 
       setData((prev) => ({ ...prev, accounts }))
@@ -86,20 +86,20 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
         addresses.push(
           await createAccount(
             account,
-            data.substrateAppType ? getSubstrateLedgerAppType(data.substrateAppType) : undefined
-          )
+            data.substrateAppType ? getSubstrateLedgerAppType(data.substrateAppType) : undefined,
+          ),
         )
 
       api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
       return addresses
     },
-    [chain?.genesisHash, data.substrateAppType, data.type]
+    [chain?.genesisHash, data.substrateAppType, data.type],
   )
 
   return { data, updateData, connectAccounts, onSuccess }
 }
 
 export const [AddLedgerAccountProvider, useAddLedgerAccount] = provideContext(
-  useAddLedgerAccountProvider
+  useAddLedgerAccountProvider,
 )

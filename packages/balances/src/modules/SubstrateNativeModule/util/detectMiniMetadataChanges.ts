@@ -30,6 +30,6 @@ export const detectMiniMetadataChanges = () => {
       return changes.size > 0 ? changes : null
     }),
     // Filter out null emissions (no changes)
-    filter<Set<string> | null, Set<string>>((changes): changes is Set<string> => changes !== null)
+    filter<Set<string> | null, Set<string>>((changes): changes is Set<string> => changes !== null),
   )
 }

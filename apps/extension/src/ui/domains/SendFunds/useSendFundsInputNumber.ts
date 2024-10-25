@@ -7,7 +7,7 @@ const getInputFilter = (inputFilter: (text: string) => boolean) =>
       oldValue: string
       oldSelectionStart: number | null
       oldSelectionEnd: number | null
-    }
+    },
   ) {
     if (inputFilter(this.value)) {
       this.oldValue = this.value
@@ -31,7 +31,7 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
 
     const handler = getInputFilter((value: string) =>
       // eslint-disable-next-line no-useless-escape
-      new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value)
+      new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value),
     )
 
     const events = [

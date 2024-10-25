@@ -68,7 +68,7 @@ const useRecipientBalance = (token?: Token | null, address?: Address | null) => 
 const useIsSendingEnough = (
   recipientBalance?: Balance | null,
   token?: Token | null,
-  transfer?: BalanceFormatter | null
+  transfer?: BalanceFormatter | null,
 ) => {
   return useMemo(() => {
     try {
@@ -86,7 +86,7 @@ const useIsSendingEnough = (
         case "substrate-tokens": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
-            token.decimals
+            token.decimals,
           )
 
           return (
@@ -108,7 +108,7 @@ const useEvmTransaction = (
   from?: string,
   to?: string,
   planck?: string,
-  isLocked?: boolean
+  isLocked?: boolean,
 ) => {
   const token = useToken(tokenId)
 
@@ -156,7 +156,7 @@ const useSubTransaction = (
   amount?: string,
   tip?: string,
   method?: AssetTransferMethod,
-  isLocked?: boolean
+  isLocked?: boolean,
 ) => {
   const token = useToken(tokenId)
 
@@ -171,7 +171,7 @@ const useSubTransaction = (
         to,
         amount,
         tip ?? "0",
-        method
+        method,
       )
       return { partialFee, unsigned }
     },
@@ -180,7 +180,7 @@ const useSubTransaction = (
   })
 
   const qPayloadMetadata = useSubstratePayloadMetadata(
-    qSubstrateEstimateFee?.data?.unsigned ?? null
+    qSubstrateEstimateFee?.data?.unsigned ?? null,
   )
 
   return useMemo(() => {
@@ -248,27 +248,27 @@ const useSendFundsProvider = () => {
 
   const transfer = useMemo(
     () => (token && amount ? new BalanceFormatter(amount, token.decimals, tokenRates) : null),
-    [amount, token, tokenRates]
+    [amount, token, tokenRates],
   )
 
   const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id, !isLocked)
   const tip = useMemo(
     () => (tipPlanck ? new BalanceFormatter(tipPlanck, tipToken?.decimals, tipTokenRates) : null),
-    [tipPlanck, tipToken?.decimals, tipTokenRates]
+    [tipPlanck, tipToken?.decimals, tipTokenRates],
   )
 
   const method: AssetTransferMethod = sendMax
     ? "transfer_all"
     : allowReap
-    ? "transfer_allow_death"
-    : "transfer_keep_alive"
+      ? "transfer_allow_death"
+      : "transfer_keep_alive"
 
   const { evmTransaction, evmInvalidTxError } = useEvmTransaction(
     tokenId,
     from,
     to,
     amount ?? "0",
-    isLocked
+    isLocked,
   )
   const subTransaction = useSubTransaction(
     tokenId,
@@ -277,14 +277,14 @@ const useSendFundsProvider = () => {
     amount ?? "0",
     tip?.planck.toString(),
     method,
-    isLocked
+    isLocked,
   )
 
   const maxAmount = useMemo(() => {
     if (!balance || !token) return null
 
     try {
-      const tipPlanck = tipToken?.id === token.id ? tip?.planck ?? 0n : 0n
+      const tipPlanck = tipToken?.id === token.id ? (tip?.planck ?? 0n) : 0n
 
       switch (token.type) {
         case "substrate-native": {
@@ -303,7 +303,7 @@ const useSendFundsProvider = () => {
           return new BalanceFormatter(
             balance.transferable.planck ?? "0",
             token.decimals,
-            tokenRates
+            tokenRates,
           )
       }
     } catch (err) {
@@ -326,7 +326,7 @@ const useSendFundsProvider = () => {
         new BalanceFormatter(
           evmTransaction.txDetails.estimatedFee,
           feeToken?.decimals,
-          feeTokenRates
+          feeTokenRates,
         ),
         new BalanceFormatter(evmTransaction.txDetails.maxFee, feeToken?.decimals, feeTokenRates),
       ]
@@ -335,7 +335,7 @@ const useSendFundsProvider = () => {
       const fee = new BalanceFormatter(
         BigInt(subTransaction.partialFee),
         feeToken?.decimals,
-        feeTokenRates
+        feeTokenRates,
       )
       return [fee, fee]
     }
@@ -366,7 +366,7 @@ const useSendFundsProvider = () => {
         balance: new BalanceFormatter(
           balances.find({ tokenId }).sorted[0]?.transferable.planck,
           tokensMap[tokenId].decimals,
-          tokenRatesMap[tokenId]
+          tokenRatesMap[tokenId],
         ),
       }))
 
@@ -401,7 +401,7 @@ const useSendFundsProvider = () => {
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
           token.decimals,
-          tokenRatesMap[token.id]
+          tokenRatesMap[token.id],
         )
 
         return remaining < existentialDeposit.planck
@@ -606,7 +606,7 @@ const useSendFundsProvider = () => {
           to,
           value.planck.toString(),
           tip?.planck.toString(),
-          method
+          method,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
@@ -622,7 +622,7 @@ const useSendFundsProvider = () => {
           from,
           to,
           value.planck.toString(),
-          gasSettings
+          gasSettings,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
@@ -660,7 +660,7 @@ const useSendFundsProvider = () => {
               tokenId: token.id,
               value: amount,
               to,
-            }
+            },
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
@@ -679,7 +679,7 @@ const useSendFundsProvider = () => {
             amount,
             to,
             serialized,
-            signature
+            signature,
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
           gotoProgress({ hash, networkIdOrHash: token.evmNetwork.id })
@@ -691,7 +691,7 @@ const useSendFundsProvider = () => {
         setIsProcessing(false)
       }
     },
-    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain]
+    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain],
   )
 
   // reset send error if route or params changes

@@ -50,7 +50,7 @@ export const EnterPasswordForm = () => {
         })
       }
     },
-    [setPassword, setMnemonic, setError, t, mnemonicId]
+    [setPassword, setMnemonic, setError, t, mnemonicId],
   )
 
   useEffect(() => {

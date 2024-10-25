@@ -32,7 +32,7 @@ const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number, blockHa
 export const getMetadataDef = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
   const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion, blockHash)
 
@@ -42,7 +42,7 @@ export const getMetadataDef = async (
       cacheKey,
       getMetadataDefInner(chainIdOrHash, specVersion, blockHash).finally(() => {
         CACHE_PROMISES.delete(cacheKey)
-      })
+      }),
     )
 
   return CACHE_PROMISES.get(cacheKey)
@@ -51,7 +51,7 @@ export const getMetadataDef = async (
 const getMetadataDefInner = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
 
@@ -102,7 +102,7 @@ const getMetadataDefInner = async (
       chain,
       genesisHash,
       runtimeSpecVersion,
-      blockHash
+      blockHash,
     )
     if (!newData) return // unable to get data from rpc, return nothing
 
@@ -147,8 +147,8 @@ export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: s
   const chain = chainId
     ? await chaindataProvider.chainById(chainId)
     : hash
-    ? await chaindataProvider.chainByGenesisHash(hash)
-    : null
+      ? await chaindataProvider.chainByGenesisHash(hash)
+      : null
 
   const genesisHash = hash ?? chain?.genesisHash
   // throw if neither a known chainId or genesisHash
@@ -166,8 +166,8 @@ export const fetchMetadataDefFromChain = async (
   /** defaults to `getLatestMetadataRpc`, but can be overridden */
   fetchMethod: (
     chainId: ChainId,
-    blockHash?: string
-  ) => Promise<`0x${string}`> = getLatestMetadataRpc
+    blockHash?: string,
+  ) => Promise<`0x${string}`> = getLatestMetadataRpc,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [metadataRpc, chainProperties] = await Promise.all([
     fetchMethod(chain.id, blockHash),
@@ -221,7 +221,7 @@ if (DEBUG) {
 
 export const getLatestMetadataRpc = async (
   chainId: ChainId,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<`0x${string}`> => {
   const stop = log.timer(`getLatestMetadataRpc(${chainId})`)
   try {
@@ -231,7 +231,7 @@ export const getLatestMetadataRpc = async (
       "Vec<u32>",
       [],
       blockHash as HexString,
-      true
+      true,
     )
     if (versions.err) versions.unwrap()
 
@@ -245,7 +245,7 @@ export const getLatestMetadataRpc = async (
       "OpaqueMetadata",
       [version],
       blockHash as HexString,
-      true
+      true,
     )
 
     if (maybeOpaqueMetadata.err) maybeOpaqueMetadata.unwrap()
@@ -270,13 +270,13 @@ export const getLatestMetadataRpc = async (
 
 export const getLegacyMetadataRpc = async (
   chainId: ChainId,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<`0x${string}`> => {
   return await chainConnector.send<HexString>(
     chainId,
     "state_getMetadata",
     [blockHash],
-    !!blockHash
+    !!blockHash,
   )
 }
 

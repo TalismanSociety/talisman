@@ -17,7 +17,7 @@ export const LedgerPolkadotUpgradeAlertDrawer = () => {
     window.open(
       "https://wiki.polkadot.network/docs/ledger#polkadot-ledger-generic-app",
       "_blank",
-      "noopener noreferrer"
+      "noopener noreferrer",
     )
   }, [])
 
@@ -33,17 +33,17 @@ export const LedgerPolkadotUpgradeAlertDrawer = () => {
           <p className="font-bold text-white">{t("The Ledger Polkadot Generic app is here!")}</p>
           <p className="text-body-secondary mt-4 text-sm">
             {t(
-              "Your Ledger Polkadot account(s) were upgraded to be compatible with the new Polkadot Generic Ledger app."
+              "Your Ledger Polkadot account(s) were upgraded to be compatible with the new Polkadot Generic Ledger app.",
             )}
           </p>
           <p className="text-body-secondary text-sm">
             {t(
-              "Make sure to update your Ledger device with the latest Polkadot app to access your accounts."
+              "Make sure to update your Ledger device with the latest Polkadot app to access your accounts.",
             )}
           </p>
           <p className="text-body-secondary text-sm">
             {t(
-              "For Ledger accounts for other Polkadot network chains, please use the Ledger Migration app to upgrade."
+              "For Ledger accounts for other Polkadot network chains, please use the Ledger Migration app to upgrade.",
             )}
           </p>
         </div>

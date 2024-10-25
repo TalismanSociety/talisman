@@ -36,7 +36,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
     <div
       className={classNames(
         "bg-black-secondary flex h-28 items-center gap-6 rounded-sm px-6",
-        className
+        className,
       )}
     >
       <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full px-6 text-xl"></div>
@@ -133,7 +133,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div
             className={classNames(
               "flex shrink-0 flex-col items-end gap-2 text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
             <>
@@ -141,7 +141,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 className={classNames(
                   "whitespace-nowrap text-sm font-bold",
                   locked ? "text-body-secondary" : "text-white",
-                  showStakingButton && "group-hover:hidden"
+                  showStakingButton && "group-hover:hidden",
                 )}
               >
                 <Tokens
@@ -158,7 +158,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               <div
                 className={classNames(
                   "text-body-secondary leading-base text-xs",
-                  showStakingButton && "group-hover:hidden"
+                  showStakingButton && "group-hover:hidden",
                 )}
               >
                 {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}

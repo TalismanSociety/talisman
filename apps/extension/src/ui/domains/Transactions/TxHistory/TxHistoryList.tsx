@@ -68,7 +68,7 @@ export const TxHistoryList = () => {
       if (activeTxHash) return
       setActiveTxHash(hash)
     },
-    [activeTxHash]
+    [activeTxHash],
   )
 
   const handleContextMenuClose = useCallback(
@@ -76,7 +76,7 @@ export const TxHistoryList = () => {
       if (hash !== activeTxHash) return
       setActiveTxHash(undefined)
     },
-    [activeTxHash]
+    [activeTxHash],
   )
 
   return (
@@ -184,7 +184,7 @@ const ActionButton = forwardRef<
       ref={ref}
       className={classNames(
         "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
-        className
+        className,
       )}
       {...props}
     />
@@ -217,7 +217,7 @@ const EvmTxActions: FC<{
       if (action === "cancel") setReplaceType("cancel")
       if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
     },
-    [onContextMenuClose, tx.hash]
+    [onContextMenuClose, tx.hash],
   )
 
   const handleOpenChange = useCallback(
@@ -225,13 +225,13 @@ const EvmTxActions: FC<{
       if (open) onContextMenuOpen?.()
       else onContextMenuClose?.()
     },
-    [onContextMenuClose, onContextMenuOpen]
+    [onContextMenuClose, onContextMenuOpen],
   )
 
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
   const hrefBlockExplorer = useMemo(
     () => (evmNetwork?.explorerUrl ? urlJoin(evmNetwork.explorerUrl, "tx", tx.hash) : null),
-    [evmNetwork?.explorerUrl, tx.hash]
+    [evmNetwork?.explorerUrl, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -244,10 +244,10 @@ const EvmTxActions: FC<{
   return (
     <div
       className={classNames(
-        " absolute right-0 top-0 z-10 flex items-center",
+        "absolute right-0 top-0 z-10 flex items-center",
         IS_POPUP ? "h-[36px]" : "h-[42px]",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
-        enabled && "group-hover:visible group-hover:opacity-100"
+        enabled && "group-hover:visible group-hover:opacity-100",
       )}
     >
       <div className="relative">
@@ -280,7 +280,7 @@ const EvmTxActions: FC<{
             <TooltipTrigger asChild>
               <PopoverTrigger asChild>
                 <ActionButton
-                  className={classNames(isOpen && " !bg-grey-700 !text-body")}
+                  className={classNames(isOpen && "!bg-grey-700 !text-body")}
                   onClick={() => handleOpenChange(true)}
                 >
                   <MoreHorizontalIcon className="inline" />
@@ -294,7 +294,7 @@ const EvmTxActions: FC<{
           <PopoverContent
             className={classNames(
               "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-              isOpen ? "visible opacity-100" : "invisible opacity-0"
+              isOpen ? "visible opacity-100" : "invisible opacity-0",
             )}
           >
             {canReplace && (
@@ -382,7 +382,7 @@ const TransactionRowBase: FC<{
         "bg-grey-850 group z-0 flex w-full grow items-center rounded-sm",
         IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
         isCtxMenuOpen && "bg-grey-800",
-        enabled && "hover:bg-grey-800"
+        enabled && "hover:bg-grey-800",
       )}
     >
       {logo}
@@ -391,7 +391,7 @@ const TransactionRowBase: FC<{
           <div
             className={classNames(
               "text-body flex h-10 items-center gap-2 font-bold",
-              IS_POPUP ? "text-sm" : "text-base"
+              IS_POPUP ? "text-sm" : "text-base",
             )}
           >
             {status}
@@ -405,7 +405,7 @@ const TransactionRowBase: FC<{
             className={classNames(
               "text-right",
               isCtxMenuOpen ? "opacity-0" : "opacity-100",
-              enabled && "group-hover:opacity-0"
+              enabled && "group-hover:opacity-0",
             )}
           >
             <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>
@@ -451,7 +451,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
   const amount = useMemo(
     () => (token && value ? new BalanceFormatter(value, token.decimals, tokenRates) : null),
-    [token, tokenRates, value]
+    [token, tokenRates, value],
   )
 
   const handleOpenCtxMenu = useCallback(() => {
@@ -544,7 +544,7 @@ const SubTxActions: FC<{
       onContextMenuClose?.()
       if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
     },
-    [onContextMenuClose, tx.hash]
+    [onContextMenuClose, tx.hash],
   )
 
   const handleOpenChange = useCallback(
@@ -552,13 +552,13 @@ const SubTxActions: FC<{
       if (open) onContextMenuOpen?.()
       else onContextMenuClose?.()
     },
-    [onContextMenuClose, onContextMenuOpen]
+    [onContextMenuClose, onContextMenuOpen],
   )
 
   const chain = useChainByGenesisHash(tx.genesisHash)
   const hrefBlockExplorer = useMemo(
     () => (chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : null),
-    [chain?.subscanUrl, tx.hash]
+    [chain?.subscanUrl, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -573,7 +573,7 @@ const SubTxActions: FC<{
       className={classNames(
         "absolute right-0 top-0 z-10 flex h-[36px] items-center",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
-        enabled && "group-hover:visible group-hover:opacity-100"
+        enabled && "group-hover:visible group-hover:opacity-100",
       )}
     >
       <div className="relative">
@@ -582,7 +582,7 @@ const SubTxActions: FC<{
             <TooltipTrigger asChild>
               <PopoverTrigger asChild>
                 <ActionButton
-                  className={classNames(isOpen && " !bg-grey-700 !text-body")}
+                  className={classNames(isOpen && "!bg-grey-700 !text-body")}
                   onClick={() => handleOpenChange(true)}
                 >
                   <MoreHorizontalIcon className="inline" />
@@ -596,7 +596,7 @@ const SubTxActions: FC<{
           <PopoverContent
             className={classNames(
               "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-              isOpen ? "visible opacity-100" : "invisible opacity-0"
+              isOpen ? "visible opacity-100" : "invisible opacity-0",
             )}
           >
             {hrefBlockExplorer && (

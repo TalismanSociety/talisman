@@ -75,7 +75,7 @@ chrome.runtime.onConnect.addListener((_port): void => {
   // only listen to what we know about
   assert(
     [PORT_CONTENT, PORT_EXTENSION].includes(_port.name),
-    `Unknown connection from ${_port.name}`
+    `Unknown connection from ${_port.name}`,
   )
   let port: chrome.runtime.Port | undefined = _port
 

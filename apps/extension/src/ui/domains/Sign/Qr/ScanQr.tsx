@@ -36,8 +36,8 @@ type SignatureProps = {
 type Props<T> = T extends "address"
   ? CommonProps<T> & AddressProps
   : T extends "signature"
-  ? CommonProps<T> & SignatureProps
-  : never
+    ? CommonProps<T> & SignatureProps
+    : never
 
 export const ScanQr = <T extends Types>({
   type,
@@ -62,7 +62,7 @@ export const ScanQr = <T extends Types>({
         onError?.(error)
       }
     },
-    [onError, onScan, type]
+    [onError, onScan, type],
   )
 
   return (
@@ -147,7 +147,7 @@ const Scanner = ({
     <div className="absolute h-full w-full">
       <video
         ref={preview}
-        className={`absolute h-full w-full -scale-x-100 object-cover${blur ? " blur-sm" : ""}`}
+        className={`absolute h-full w-full -scale-x-100 object-cover${blur ? "blur-sm" : ""}`}
       />
       {inputDevices.length > 1 ? (
         <div className="absolute left-1/2 top-10 -translate-x-1/2">
@@ -172,7 +172,7 @@ const Scanner = ({
               <div
                 className={classNames(
                   "h-4 w-4 shrink-0 rounded-full",
-                  device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700"
+                  device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700",
                 )}
               />
               <span className="truncate">{device.label}</span>
@@ -197,7 +197,7 @@ const parseAddress = (data: string) => {
   const isValidPrefix = validPrefixes.includes(prefix)
   if (!isValidPrefix)
     throw new Error(
-      `Invalid prefix received, expected '${validPrefixes.join("' or '")}', found '${prefix}'`
+      `Invalid prefix received, expected '${validPrefixes.join("' or '")}', found '${prefix}'`,
     )
 
   const isSubstrateAddress = prefix === "substrate"

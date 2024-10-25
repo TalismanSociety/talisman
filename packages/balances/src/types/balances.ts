@@ -26,7 +26,7 @@ export function excludeFromTransferableAmount(
   locks:
     | Amount
     | FormattedAmount<LockedAmount<string>, string>
-    | Array<FormattedAmount<LockedAmount<string>, string>>
+    | Array<FormattedAmount<LockedAmount<string>, string>>,
 ): bigint {
   if (typeof locks === "string") return BigInt(locks)
   if (!Array.isArray(locks)) locks = [locks]
@@ -38,7 +38,7 @@ export function excludeFromTransferableAmount(
 }
 
 export function excludeFromFeePayableLocks(
-  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
+  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>,
 ): Array<LockedAmount<string>> {
   if (typeof locks === "string") return []
   if (!Array.isArray(locks)) locks = [locks]
@@ -49,7 +49,7 @@ export function excludeFromFeePayableLocks(
 export function includeInTotalExtraAmount(
   extra?:
     | FormattedAmount<ExtraAmount<string>, string>
-    | Array<FormattedAmount<ExtraAmount<string>, string>>
+    | Array<FormattedAmount<ExtraAmount<string>, string>>,
 ): bigint {
   if (!extra) return 0n
   if (!Array.isArray(extra)) extra = [extra]
@@ -97,7 +97,7 @@ export class Balances {
 
   constructor(
     balances: Balances | BalanceJsonList | Balance[] | BalanceJson[] | Balance,
-    hydrate?: HydrateDb
+    hydrate?: HydrateDb,
   ) {
     // handle Balances (convert to Balance[])
     if (balances instanceof Balances) return new Balances(balances.each, hydrate)
@@ -115,7 +115,7 @@ export class Balances {
     if (!isArrayOf(balances, Balance))
       return new Balances(
         balances.map((storage) => new Balance(storage)),
-        hydrate
+        hydrate,
       )
 
     // handle Balance[]
@@ -137,7 +137,7 @@ export class Balances {
             return null
           }
         })
-        .filter(Array.isArray)
+        .filter(Array.isArray),
     );
 
   /**
@@ -182,7 +182,7 @@ export class Balances {
     // construct filter
     const queryArray: BalanceSearchQuery[] = Array.isArray(query) ? query : [query]
     const orQueries = queryArray.map((query) =>
-      typeof query === "function" ? query : Object.entries(query)
+      typeof query === "function" ? query : Object.entries(query),
     )
 
     // filter balances
@@ -190,7 +190,7 @@ export class Balances {
       orQueries.some((query) =>
         typeof query === "function"
           ? query(balance)
-          : query.every(([key, value]) => balance[key as keyof BalanceSearchQuery] === value)
+          : query.every(([key, value]) => balance[key as keyof BalanceSearchQuery] === value),
       )
 
     // return filter matches
@@ -216,7 +216,7 @@ export class Balances {
       | "transferable"
       | "unavailable"
       | "feePayable",
-    currency: TokenRateCurrency
+    currency: TokenRateCurrency,
   ): Balances => {
     const filter = (balance: Balance) => (balance[type].fiat(currency) ?? 0) > 0
     return this.find(filter)
@@ -237,7 +237,7 @@ export class Balances {
 
     // merge balances
     const mergedBalances = Object.fromEntries(
-      this.#balances.map((balance) => [balance.id, balance])
+      this.#balances.map((balance) => [balance.id, balance]),
     )
     balances.each.forEach((balance) => (mergedBalances[balance.id] = balance))
 
@@ -276,7 +276,7 @@ export class Balances {
     return [...this].sort(
       (a, b) =>
         ((a.chain || a.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER) -
-        ((b.chain || b.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER)
+        ((b.chain || b.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER),
     )
   }
 
@@ -361,7 +361,7 @@ export class Balance {
     new BalanceFormatter(
       isBigInt(balance) ? balance.toString() : balance,
       this.decimals || undefined,
-      this.rates
+      this.rates,
     )
 
   //
@@ -458,9 +458,9 @@ export class Balance {
             // tvl (in a given currency) == reserve0*currencyRate0 + reserve1*currencyRate1
             BigNumber.sum(
               reserve0Tokens.times(rates0[currency] ?? 0),
-              reserve1Tokens.times(rates1[currency] ?? 0)
+              reserve1Tokens.times(rates1[currency] ?? 0),
             ),
-          ] as const
+          ] as const,
       )
 
       const lpTokenRates = NewTokenRates()
@@ -482,7 +482,7 @@ export class Balance {
    * @returns An array of the values matching the type with formatted amounts.
    */
   private getValue(
-    valueType: BalanceStatusTypes
+    valueType: BalanceStatusTypes,
   ): Array<FormattedAmount<AmountWithLabel<string>, string>> {
     return this.getRawValue(valueType).map((value) => ({
       ...value,
@@ -521,7 +521,7 @@ export class Balance {
         this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         this.crowdloans.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
-        includeInTotalExtraAmount(extra)
+        includeInTotalExtraAmount(extra),
     )
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
@@ -540,7 +540,7 @@ export class Balance {
     if (reservedValues.length === 0) return this.#format(0n)
 
     return this.#format(
-      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
+      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n),
     )
   }
   get reserves() {
@@ -549,7 +549,7 @@ export class Balance {
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     return this.#format(
-      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
+      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n),
     )
   }
 
@@ -619,7 +619,7 @@ export class Balance {
       // subtract the reserved amount, because locks now act upon the total balance - not just the free balance
       const untouchableAmount = BigMath.max(
         excludeFromTransferableAmount(this.locks) - this.reserved.planck,
-        0n
+        0n,
       )
 
       // subtract the untouchable amount from the free amount (but don't go below 0)
@@ -689,9 +689,9 @@ export class BalanceFormatter {
   constructor(
     planck: string | bigint | undefined,
     decimals?: number | undefined,
-    fiatRatios?: TokenRates | null
+    fiatRatios?: TokenRates | null,
   ) {
-    this.#planck = isBigInt(planck) ? planck.toString() : planck ?? "0"
+    this.#planck = isBigInt(planck) ? planck.toString() : (planck ?? "0")
     this.#decimals = decimals || 0
     this.#fiatRatios = fiatRatios || null
   }
@@ -726,7 +726,7 @@ export class PlanckSumBalancesFormatter {
   #sum = (
     balanceField: {
       [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
-    }[keyof Balance]
+    }[keyof Balance],
   ) => {
     // a function to get a planck amount from a balance
     const planck = (balance: Balance) => balance[balanceField].planck ?? 0n
@@ -735,7 +735,7 @@ export class PlanckSumBalancesFormatter {
       // add the total amount to the planck amount of each balance
       (total, balance) => total + planck(balance),
       // start with a total of 0
-      0n
+      0n,
     )
   }
 
@@ -788,7 +788,7 @@ export class FiatSumBalancesFormatter {
   #sum = (
     balanceField: {
       [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
-    }[keyof Balance]
+    }[keyof Balance],
   ) => {
     // a function to get a fiat amount from a balance
     const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) ?? 0
@@ -797,7 +797,7 @@ export class FiatSumBalancesFormatter {
       // add the total amount to the fiat amount of each balance
       (total, balance) => total + fiat(balance),
       // start with a total of 0
-      0
+      0,
     )
   }
 

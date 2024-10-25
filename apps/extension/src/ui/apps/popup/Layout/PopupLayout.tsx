@@ -35,7 +35,7 @@ export const PopupHeader: FC<ContainerProps & { right?: ReactNode }> = ({
       {...props}
       className={classNames(
         "flex h-32 w-full shrink-0 items-center justify-between px-12",
-        className
+        className,
       )}
     >
       <div className="w-16 shrink-0 text-xl">

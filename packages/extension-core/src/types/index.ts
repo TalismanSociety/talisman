@@ -118,13 +118,13 @@ export declare type MessageTypesWithNoSubscriptions = Exclude<
 export type MessageHandler<
   TMessageType extends MessageTypesWithNoSubscriptions,
   Req = RequestType<TMessageType>,
-  Res = ResponseType<TMessageType>
+  Res = ResponseType<TMessageType>,
 > = (req: Req) => Res | Promise<Res>
 
 export type SubscriptionHandler<
   TMessageType extends MessageTypesWithSubscriptions,
   Req = RequestType<TMessageType>,
-  Res = ResponseType<TMessageType>
+  Res = ResponseType<TMessageType>,
 > = (id: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
 
 // TODO cooldown
@@ -151,8 +151,8 @@ export declare type TransportResponseMessage<TMessageType extends MessageTypes> 
   TMessageType extends MessageTypesWithNoSubscriptions
     ? TransportResponseMessageNoSub<TMessageType>
     : TMessageType extends MessageTypesWithSubscriptions
-    ? TransportResponseMessageSub<TMessageType>
-    : never
+      ? TransportResponseMessageSub<TMessageType>
+      : never
 
 export declare type RequestType<TMessageType extends keyof RequestSignatures> =
   RequestSignatures[TMessageType][0]
@@ -175,17 +175,17 @@ export interface SubscriptionCallback<Result> {
 export type UnsubscribeFn = () => void
 
 export interface SendRequest {
-  <TMessageType extends MessageTypesWithNullRequest>(message: TMessageType): Promise<
-    ResponseTypes[TMessageType]
-  >
+  <TMessageType extends MessageTypesWithNullRequest>(
+    message: TMessageType,
+  ): Promise<ResponseTypes[TMessageType]>
   <TMessageType extends MessageTypesWithNoSubscriptions>(
     message: TMessageType,
-    request: RequestTypes[TMessageType]
+    request: RequestTypes[TMessageType],
   ): Promise<ResponseTypes[TMessageType]>
   <TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
   ): Promise<ResponseTypes[TMessageType]>
 }
 

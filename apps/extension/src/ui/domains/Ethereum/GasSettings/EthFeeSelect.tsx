@@ -1,3 +1,9 @@
+import { TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import { FC, useCallback, useEffect, useState } from "react"
+import { Drawer, PillButton } from "talisman-ui"
+import { TransactionRequest } from "viem"
+
 import {
   EthGasSettings,
   EthPriorityOptionName,
@@ -5,12 +11,7 @@ import {
   GasSettingsByPriority,
 } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { FC, useCallback, useEffect, useState } from "react"
-import { Drawer, PillButton } from "talisman-ui"
-import { TransactionRequest } from "viem"
 
 import { useFeePriorityOptionsUI } from "./common"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
@@ -70,7 +71,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       if (onChange) onChange(priority)
       close()
     },
-    [close, genericEvent, onChange]
+    [close, genericEvent, onChange],
   )
 
   const handleSelect = useCallback(
@@ -78,7 +79,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       if (priority === "custom") setShowCustomSettings(true)
       else setPriority(priority)
     },
-    [setPriority]
+    [setPriority],
   )
 
   const handleSetCustomSettings = useCallback(
@@ -86,7 +87,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       setCustomSettings(gasSettings)
       setPriority("custom")
     },
-    [setCustomSettings, setPriority]
+    [setCustomSettings, setPriority],
   )
 
   const handleCancelCustomSettings = useCallback(() => {

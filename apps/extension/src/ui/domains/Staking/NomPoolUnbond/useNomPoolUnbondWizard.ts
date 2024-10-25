@@ -46,7 +46,7 @@ export const useResetNomPoolUnbondWizard = () => {
   return useCallback(
     (init: Pick<WizardState, "address" | "tokenId">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
-    []
+    [],
   )
 }
 
@@ -70,7 +70,7 @@ export const useNomPoolUnbondWizard = () => {
       genericEvent("NomPool Unbond", { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId]
+    [genericEvent, tokenId],
   )
 
   const { data: plancksToUnbond } = useQuery({
@@ -89,7 +89,7 @@ export const useNomPoolUnbondWizard = () => {
       typeof plancksToUnbond === "bigint"
         ? new BalanceFormatter(plancksToUnbond, token?.decimals, tokenRates)
         : null,
-    [plancksToUnbond, token?.decimals, tokenRates]
+    [plancksToUnbond, token?.decimals, tokenRates],
   )
 
   const {
@@ -114,7 +114,7 @@ export const useNomPoolUnbondWizard = () => {
           member_account: Enum("Id", address),
           unbonding_points: pool.points,
         },
-        { address }
+        { address },
       )
     },
   })

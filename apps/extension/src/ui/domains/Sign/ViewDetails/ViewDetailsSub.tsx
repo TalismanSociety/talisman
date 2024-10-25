@@ -42,7 +42,7 @@ const ViewDetailsContent: FC<{
       nativeToken && tipRaw
         ? new BalanceFormatter(tipRaw, nativeToken?.decimals, nativeTokenRates)
         : undefined,
-    [nativeToken, nativeTokenRates, tipRaw]
+    [nativeToken, nativeTokenRates, tipRaw],
   )
 
   const { estimatedFee, estimatedFeeError } = useMemo(
@@ -53,7 +53,7 @@ const ViewDetailsContent: FC<{
           : undefined,
       estimatedFeeError: errorFee ? t("Failed to calculate fee.") : "",
     }),
-    [fee, errorFee, nativeToken?.decimals, nativeTokenRates, t]
+    [fee, errorFee, nativeToken?.decimals, nativeTokenRates, t],
   )
 
   const decodedPayload = useMemo(() => {

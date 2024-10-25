@@ -112,7 +112,7 @@ const EvmDrawerContent: FC<{
       evmNetworkId: tx.evmNetworkId,
       networkType: "ethereum",
     }),
-    [tx.evmNetworkId]
+    [tx.evmNetworkId],
   )
   useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
 
@@ -174,7 +174,7 @@ const EvmDrawerContent: FC<{
           tx.evmNetworkId,
           serialized,
           signature,
-          transferInfo
+          transferInfo,
         )
         api.analyticsCapture({
           eventName: `transaction ${type}`,
@@ -198,7 +198,7 @@ const EvmDrawerContent: FC<{
       }
       setIsProcessing(false)
     },
-    [onClose, t, transaction, tx, type]
+    [onClose, t, transaction, tx, type],
   )
 
   const handleSentToDevice = useCallback(() => {
@@ -215,7 +215,7 @@ const EvmDrawerContent: FC<{
         iconClassName: "text-primary",
         title: t("Speed Up Transaction"),
         description: t(
-          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority."
+          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority.",
         ),
         approveText: t("Speed Up"),
       }
@@ -227,7 +227,7 @@ const EvmDrawerContent: FC<{
         iconClassName: "text-brand-orange",
         title: t("Cancel Transaction"),
         description: t(
-          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority."
+          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority.",
         ),
         approveText: t("Try to Cancel"),
       }
@@ -251,7 +251,7 @@ const EvmDrawerContent: FC<{
       <div
         className={classNames(
           "text-body-secondary mt-16 w-full space-y-2 text-xs",
-          !canReplace && "pointer-events-none opacity-50"
+          !canReplace && "pointer-events-none opacity-50",
         )}
       >
         <div className="flex w-full items-center justify-between">
@@ -309,8 +309,8 @@ const EvmDrawerContent: FC<{
         ) : (
           <div
             className={classNames(
-              "mt-8 grid w-full  gap-4",
-              canReplace ? "grid-cols-2" : "grid-cols-1"
+              "mt-8 grid w-full gap-4",
+              canReplace ? "grid-cols-2" : "grid-cols-1",
             )}
           >
             <Button className="h-24" onClick={() => onClose?.()}>

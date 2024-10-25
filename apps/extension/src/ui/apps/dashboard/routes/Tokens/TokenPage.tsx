@@ -111,13 +111,13 @@ const Content = () => {
   const token = useToken(id)
   const erc20Token = useMemo(
     () => (isErc20Token(token) ? token : isUniswapV2Token(token) ? token : undefined),
-    [token]
+    [token],
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
 
   const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownEvmToken(
     erc20Token?.evmNetwork?.id,
-    erc20Token?.contractAddress
+    erc20Token?.contractAddress,
   )
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const Content = () => {
           </div>
         }
         text={t(
-          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token.",
         )}
       />
       <form className="my-20 space-y-4">

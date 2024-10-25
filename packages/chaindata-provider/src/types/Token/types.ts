@@ -30,5 +30,5 @@ export type TokenBase = {
 /** Used by plugins to help define their custom `TokenType` */
 export type NewTokenType<
   ModuleType extends string,
-  TokenParams extends Record<string, unknown>
+  TokenParams extends Record<string, unknown>,
 > = TokenBase & { type: ModuleType } & TokenParams

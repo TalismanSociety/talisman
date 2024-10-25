@@ -58,8 +58,8 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
       const item = nsNamesCache.get(name)
       if (!item?.result) return null
 
-      const address = Array.isArray(item.result) ? item.result[0] ?? null : null
-      const nsLookupType = Array.isArray(item.result) ? item.result[1] ?? null : null
+      const address = Array.isArray(item.result) ? (item.result[0] ?? null) : null
+      const nsLookupType = Array.isArray(item.result) ? (item.result[1] ?? null) : null
       if (!address || !nsLookupType) return null
 
       return [address, nsLookupType]
@@ -85,7 +85,7 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
 const cacheKey = "TalismanNsNamesCache"
 const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
 const nsNamesCache = new Map<string, { result?: [string, NsLookupType] | null; updated?: number }>(
-  JSON.parse(localStorage.getItem(cacheKey) ?? "[]")
+  JSON.parse(localStorage.getItem(cacheKey) ?? "[]"),
 )
 const persistNsNamesCache = () =>
   localStorage.setItem(
@@ -98,9 +98,9 @@ const persistNsNamesCache = () =>
             // check that the updated field exists
             item?.updated &&
             // check that the item has been updated within the persistItemDuration
-            Date.now() - item.updated <= persistItemDuration
-        )
-    )
+            Date.now() - item.updated <= persistItemDuration,
+        ),
+    ),
   )
 
 /** Removes any data left over in the @deprecated cache */

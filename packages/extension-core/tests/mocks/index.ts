@@ -12,10 +12,10 @@ try {
     "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js",
     () => ({
       ...jest.requireActual(
-        "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js"
+        "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js",
       ),
       ...jest.requireActual("@talismn/chaindata-provider/src/__mocks__/net.ts"),
-    })
+    }),
   )
 } catch {} // eslint-disable-line no-empty
 
@@ -25,7 +25,7 @@ jest.mock("bcryptjs", () => {
     genSalt: jest.fn((rounds: number) => `salt-${rounds}`),
     hash: jest.fn((password: string, salt: string) => `${password}.${salt}`),
     compare: jest.fn(
-      (password: string, hash: string) => password === hash.slice(0, hash.lastIndexOf("."))
+      (password: string, hash: string) => password === hash.slice(0, hash.lastIndexOf(".")),
     ),
   }
 })
@@ -37,7 +37,7 @@ jest.mock("../../src/util/fetchRemoteConfig", () => ({
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component
         LINK_STAKING: true,
       },
-    })
+    }),
   ),
 }))
 

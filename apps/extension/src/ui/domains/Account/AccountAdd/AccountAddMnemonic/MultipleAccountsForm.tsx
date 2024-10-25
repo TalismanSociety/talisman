@@ -24,7 +24,7 @@ export const AccountAddMnemonicAccountsForm = () => {
 
   const name = useMemo(
     () => data.name ?? (data.type === "ethereum" ? t("Ethereum Account") : t("Polkadot Account")),
-    [data.name, data.type, t]
+    [data.name, data.type, t],
   )
 
   const schema = useMemo(
@@ -38,7 +38,7 @@ export const AccountAddMnemonicAccountsForm = () => {
             .defined(),
         })
         .required(),
-    []
+    [],
   )
 
   const {
@@ -60,7 +60,7 @@ export const AccountAddMnemonicAccountsForm = () => {
           title: t("Importing {{count}} accounts", { count: accounts.length }),
           subtitle: "Please wait",
         },
-        { autoClose: false }
+        { autoClose: false },
       )
       try {
         const addresses = await importAccounts(accounts)
@@ -80,14 +80,14 @@ export const AccountAddMnemonicAccountsForm = () => {
         })
       }
     },
-    [importAccounts, onSuccess, t]
+    [importAccounts, onSuccess, t],
   )
 
   const handleAccountsChange = useCallback(
     (accounts: RequestAccountCreateFromSuri[]) => {
       setValue("accounts", accounts, { shouldValidate: true })
     },
-    [setValue]
+    [setValue],
   )
 
   useEffect(() => {

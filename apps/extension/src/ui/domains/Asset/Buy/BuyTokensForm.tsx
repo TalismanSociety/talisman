@@ -55,7 +55,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
 
   const supportedTokens = useMemo(
     () => tokens?.filter((t) => config.buyTokens.tokenIds?.includes(t.id)) ?? [],
-    [config.buyTokens.tokenIds, tokens]
+    [config.buyTokens.tokenIds, tokens],
   )
 
   const { substrateTokenIds, ethereumTokenIds } = useMemo(() => {
@@ -86,7 +86,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       const allowedTokens = isEthereumAddress(address) ? ethereumTokenIds : substrateTokenIds
       return allowedTokens.includes(token.id)
     },
-    [address, config.buyTokens.tokenIds, ethereumTokenIds, substrateTokenIds]
+    [address, config.buyTokens.tokenIds, ethereumTokenIds, substrateTokenIds],
   )
 
   return { substrateTokenIds, ethereumTokenIds, filterTokens }
@@ -123,7 +123,7 @@ export const BuyTokensForm = () => {
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,
     tokens,
-    address
+    address,
   )
 
   const autoSelectFirstAccountInit = useRef(false)
@@ -192,7 +192,7 @@ export const BuyTokensForm = () => {
       const redirectUrl = `${BANXA_URL}?${qs}`
       window.open(redirectUrl, "_blank")
     },
-    [t, accounts, tokensMap, chainsMap, evmNetworksMap, close]
+    [t, accounts, tokensMap, chainsMap, evmNetworksMap, close],
   )
 
   const handleAccountChange = useCallback(
@@ -214,7 +214,7 @@ export const BuyTokensForm = () => {
 
       setValue("address", acc?.address, { shouldValidate: true })
     },
-    [ethereumTokenIds, setValue, substrateTokenIds, tokenId]
+    [ethereumTokenIds, setValue, substrateTokenIds, tokenId],
   )
 
   const handleTokenChanged = useCallback(
@@ -238,12 +238,12 @@ export const BuyTokensForm = () => {
 
       setValue("tokenId", tokenId, { shouldValidate: true })
     },
-    [accounts, address, ethereumTokenIds, setValue, substrateTokenIds]
+    [accounts, address, ethereumTokenIds, setValue, substrateTokenIds],
   )
 
   const selectedAccount = useMemo(
     () => accounts.find((acc) => acc.address === address),
-    [accounts, address]
+    [accounts, address],
   )
 
   const handleTokenButtonClick = useCallback(() => {

@@ -120,7 +120,7 @@ export const ExternalRecipientWarning = () => {
       <AlertCircleIcon className="shrink-0 text-[1.4rem]" />
       <div>
         {t(
-          "You are sending to an external account. To prevent loss of funds, make sure you are sending on the right network."
+          "You are sending to an external account. To prevent loss of funds, make sure you are sending on the right network.",
         )}
       </div>
     </div>
@@ -260,7 +260,7 @@ const SubFeeSummary = () => {
           <div
             className={classNames(
               "inline-flex h-[1.7rem] items-center",
-              isRefetching && "animate-pulse"
+              isRefetching && "animate-pulse",
             )}
           >
             <>

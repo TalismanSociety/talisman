@@ -85,7 +85,7 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     account,
     undefined,
-    symbol
+    symbol,
   )
 
   return (
@@ -159,7 +159,7 @@ export const PortfolioAsset = () => {
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
     () => allBalances.find((b) => b.token?.symbol === symbol && (!b.token?.isTestnet || isTestnet)),
-    [allBalances, isTestnet, symbol]
+    [allBalances, isTestnet, symbol],
   )
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)

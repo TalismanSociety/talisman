@@ -40,7 +40,7 @@ function usePasswordUnlockContext(): PasswordUnlockContext {
     async (password: string) => {
       if (await api.checkPassword(password)) setPassword(password)
     },
-    [setPassword]
+    [setPassword],
   )
 
   return {
@@ -79,7 +79,7 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
         })
       }
     },
-    [checkPassword, setError]
+    [checkPassword, setError],
   )
 
   useEffect(() => {

@@ -23,7 +23,7 @@ export const AccountRename: FC<{
   const allAccounts = useAccounts()
   const otherAccountNames = useMemo(
     () => allAccounts.filter((a) => a.address !== address).map((a) => a.name),
-    [address, allAccounts]
+    [address, allAccounts],
   )
 
   const schema = useMemo(
@@ -33,14 +33,14 @@ export const AccountRename: FC<{
           name: yup.string().required(" ").notOneOf(otherAccountNames, t("Name already in use")),
         })
         .required(),
-    [otherAccountNames, t]
+    [otherAccountNames, t],
   )
 
   const defaultValues = useMemo(
     () => ({
       name: account?.name,
     }),
-    [account]
+    [account],
   )
 
   const {
@@ -66,7 +66,7 @@ export const AccountRename: FC<{
         })
       }
     },
-    [address, onConfirm, setError]
+    [address, onConfirm, setError],
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -88,7 +88,7 @@ export const AccountRename: FC<{
       refName(e)
       refNameRef.current = e
     },
-    [refName]
+    [refName],
   )
 
   return (

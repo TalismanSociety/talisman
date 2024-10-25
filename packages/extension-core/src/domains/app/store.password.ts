@@ -170,7 +170,7 @@ export const generateSalt = () => genSalt(13)
 
 export const getHashedPassword = async (
   password: string,
-  salt: string
+  salt: string,
 ): Promise<Result<string, string>> => {
   try {
     const derivedHash = await hash(password, salt)

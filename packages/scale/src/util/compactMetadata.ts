@@ -24,12 +24,12 @@ export const compactMetadata = (
     pallet: string
     items: string[]
   }>,
-  extraKeepTypes?: number[]
+  extraKeepTypes?: number[],
 ) => {
   // remove pallets we don't care about
   metadata.pallets = metadata.pallets.filter((pallet) =>
     // keep this pallet if it's listed in `palletsAndItems`
-    palletsAndItems.some(({ pallet: palletName }) => pallet.name === palletName)
+    palletsAndItems.some(({ pallet: palletName }) => pallet.name === palletName),
   )
 
   // remove fields we don't care about from each pallet, and extract types for each storage item we care about
@@ -52,7 +52,7 @@ export const compactMetadata = (
 
     // filter and extract storage items we care about
     pallet.storage.items = pallet.storage.items.filter((item) =>
-      itemNames.some((itemName) => item.name === itemName)
+      itemNames.some((itemName) => item.name === itemName),
     )
 
     return pallet.storage.items
@@ -73,7 +73,7 @@ export const compactMetadata = (
         item.type.tag === "map" && item.type.value.key,
         item.type.tag === "map" && item.type.value.value,
       ])
-      .filter((type): type is number => typeof type === "number")
+      .filter((type): type is number => typeof type === "number"),
   )
   extraKeepTypes?.forEach((type) => keepTypes.add(type))
 
@@ -120,7 +120,7 @@ const addDependentTypes = (
   keepTypes: Set<number>,
   types: number[],
   // Prevent stack overflow when a type references itself
-  addedTypes: Set<number> = new Set()
+  addedTypes: Set<number> = new Set(),
 ) => {
   const addDependentSubTypes = (subTypes: number[]) =>
     addDependentTypes(metadataTysMap, keepTypes, subTypes, addedTypes)
@@ -158,7 +158,7 @@ const addDependentTypes = (
         addDependentSubTypes(
           type.def.value
             .map((field) => field.type)
-            .filter((type): type is number => typeof type === "number")
+            .filter((type): type is number => typeof type === "number"),
         )
         break
 
@@ -171,7 +171,7 @@ const addDependentTypes = (
 
       case "tuple":
         addDependentSubTypes(
-          type.def.value.filter((type): type is number => typeof type === "number")
+          type.def.value.filter((type): type is number => typeof type === "number"),
         )
         break
 
@@ -179,7 +179,7 @@ const addDependentTypes = (
         addDependentSubTypes(
           type.def.value
             .flatMap((member) => member.fields.map((field) => field.type))
-            .filter((type): type is number => typeof type === "number")
+            .filter((type): type is number => typeof type === "number"),
         )
         break
 

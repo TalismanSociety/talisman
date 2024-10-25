@@ -36,7 +36,7 @@ export const Button: FC<ButtonProps> = ({
     if (disabled)
       return classNames(
         "bg-black-tertiary text-body-disabled",
-        effectiveColor === "default" ? " border" : ""
+        effectiveColor === "default" ? " border" : "",
       )
 
     switch (effectiveColor) {
@@ -63,7 +63,7 @@ export const Button: FC<ButtonProps> = ({
         small ? "h-20 px-8 text-sm" : "text-md h-28 px-12",
         fullWidth ? "w-full" : "",
         colors,
-        className
+        className,
       )}
       {...props}
     >
@@ -87,7 +87,7 @@ export const Button: FC<ButtonProps> = ({
       {!disabled && processing && (
         <div
           className={classNames(
-            "absolute left-0 top-0 flex h-full w-full flex-col items-center justify-center"
+            "absolute left-0 top-0 flex h-full w-full flex-col items-center justify-center",
           )}
         >
           <LoaderIcon className="animate-spin-slow text-lg" />

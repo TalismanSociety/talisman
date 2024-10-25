@@ -1,8 +1,9 @@
 import { EvmSignTypedDataData, ScanMessageEvm200Response } from "@blowfishxyz/api-client/v20230605"
-import { EthSignMessageMethod } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, log } from "extension-shared"
 import urlJoin from "url-join"
+
+import { EthSignMessageMethod } from "@extension/core"
 
 import { getBlowfishApiUrl, getBlowfishClient, getBlowfishLanguage } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
@@ -32,7 +33,7 @@ const fetchPersonalSignMessageScan = async (
   evmNetworkId: EvmNetworkId,
   message: string,
   account: string,
-  origin: string
+  origin: string,
 ) => {
   try {
     const apiUrl = getBlowfishApiUrl(evmNetworkId)

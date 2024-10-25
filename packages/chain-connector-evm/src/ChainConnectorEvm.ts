@@ -18,7 +18,7 @@ export class ChainConnectorEvm {
 
   constructor(
     chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider,
-    options?: ChainConnectorEvmOptions
+    options?: ChainConnectorEvmOptions,
   ) {
     this.#chaindataProvider = chaindataProvider
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
@@ -42,7 +42,7 @@ export class ChainConnectorEvm {
 
   async getWalletClientForEvmNetwork(
     evmNetworkId: EvmNetworkId,
-    account?: `0x${string}` | Account
+    account?: `0x${string}` | Account,
   ): Promise<WalletClient | null> {
     const network = await this.#chaindataProvider.evmNetworkById(evmNetworkId)
     if (!network?.nativeToken?.id) return null

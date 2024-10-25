@@ -44,7 +44,7 @@ export const BuyTokensAmountField = ({
       onTokenChanged?.(id)
       close()
     },
-    [close, onTokenChanged]
+    [close, onTokenChanged],
   )
 
   const handleTokenButtonClick = useCallback(() => {
@@ -64,7 +64,7 @@ export const BuyTokensAmountField = ({
           onClick={handleTokenButtonClick}
           className={classNames(
             "bg-primary/10 text-primary flex h-20 shrink-0 items-center whitespace-nowrap rounded-sm px-4 text-sm opacity-80 hover:opacity-100",
-            token && "!bg-grey-750 !text-body-secondary hover:!bg-grey-700 gap-4 !text-base"
+            token && "!bg-grey-750 !text-body-secondary hover:!bg-grey-700 gap-4 !text-base",
           )}
         >
           {token ? (
@@ -84,7 +84,7 @@ export const BuyTokensAmountField = ({
           autoComplete="off"
           {...fieldProps}
           className={classNames(
-            "text-secondary peer min-w-0 appearance-none border-none bg-transparent text-xl leading-none"
+            "text-secondary peer min-w-0 appearance-none border-none bg-transparent text-xl leading-none",
           )}
         />
         {!!prefix && (
@@ -94,7 +94,7 @@ export const BuyTokensAmountField = ({
         )}
       </div>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <div className=" text-body-secondary bg-grey-850 border-grey-800 flex h-[50rem] w-[42rem] flex-col overflow-hidden rounded border">
+        <div className="text-body-secondary bg-grey-850 border-grey-800 flex h-[50rem] w-[42rem] flex-col overflow-hidden rounded border">
           <div className="flex w-full items-center p-10">
             <div className="w-12"></div>
             <div className="flex-grow text-center">{t("Select a token")}</div>

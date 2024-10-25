@@ -61,7 +61,7 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
             analyticsFrom="dashboard portfolio"
             placement="bottom-end"
             trigger={
-              <IconButton className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0  items-center justify-center overflow-hidden rounded-sm">
+              <IconButton className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm">
                 <MoreHorizontalIcon className="text-base" />
               </IconButton>
             }
@@ -75,7 +75,7 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
       <div className="flex h-14 w-full items-center gap-6 text-base">
         <div className="flex grow items-center gap-3 overflow-hidden text-base">
           <div className="bg-grey-800 rounded-xs flex size-10 shrink-0 items-center justify-center">
-            <FolderIcon className=" text-primary shrink-0 text-xs" />
+            <FolderIcon className="text-primary shrink-0 text-xs" />
           </div>
           <div className="truncate">{folder.name}</div>
         </div>
@@ -84,7 +84,7 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
             folderId={folder.id}
             placement="bottom-end"
             trigger={
-              <ContextMenuTrigger className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0  items-center justify-center overflow-hidden rounded-sm">
+              <ContextMenuTrigger className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm">
                 <MoreHorizontalIcon className="text-base" />
               </ContextMenuTrigger>
             }
@@ -121,7 +121,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
     <div
       className={classNames(
         "bg-grey-900 relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg p-10",
-        className
+        className,
       )}
     >
       {!!selectedAccounts.length && (
@@ -137,7 +137,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
             className={classNames(
               "bg-grey-700/20 text-grey-200 hover:text-body hover:bg-body/10 pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full text-center text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-base"
+              currencyConfig[currency]?.symbol?.length > 2 && "text-base",
             )}
             onClick={(event) => {
               event.stopPropagation()
@@ -148,7 +148,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           </button>
           <Fiat
             className={classNames(
-              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[4.8rem] font-bold leading-[4.8rem]"
+              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[4.8rem] font-bold leading-[4.8rem]",
             )}
             amount={selectedTotal}
             isBalance
@@ -192,7 +192,7 @@ const Action: FC<ActionProps> = ({
       })
       onClick()
     },
-    [onClick, analyticsAction, analyticsName]
+    [onClick, analyticsAction, analyticsName],
   )
 
   return (
@@ -293,7 +293,7 @@ const TopActions: FC = () => {
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, selectedAddress, openCopyAddressModal, symbol, t]
+    [canBuy, disableActions, disabledReason, selectedAddress, openCopyAddressModal, symbol, t],
   )
 
   return (

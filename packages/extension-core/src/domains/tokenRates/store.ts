@@ -58,7 +58,7 @@ export class TokenRatesStore {
               const tokensList = filterActiveTokens(tokens, activeTokens)
               await this.updateTokenRates(tokensList)
             }
-          }, 500)
+          }, 500),
         )
       } else {
         // watching state check

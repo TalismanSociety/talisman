@@ -1,7 +1,6 @@
 # Common
 # apiKey: API_KEY // Stored in GH secrets
 
-
 #################################
 # 'simplelocalize upload' command
 #################################
@@ -20,7 +19,6 @@ uploadFormat: single-language-json
 # uploadOptions:
 # #  - 'REPLACE_TRANSLATION_IF_FOUND' # overwrite translation for given a key and namespace if found
 
-
 ###################################
 # 'simplelocalize download' command
 ###################################
@@ -38,7 +36,6 @@ downloadFormat: multi-language-json
 downloadOptions:
 #  - 'WRITE_NESTED' # write nested JSON
 
-
 #########################################
 # 'simplelocalize auto-translate' command
 #########################################
@@ -47,7 +44,7 @@ downloadOptions:
 # Leave empty to auto-translate all project languages.
 autoTranslation:
   languageKeys:
-    - 'en'
+    - "en"
 
 ##################################
 # 'simplelocalize extract' command
@@ -59,6 +56,3 @@ searchDir: ./apps/extension/src
 # Project type is a type of the project. It is used to extract i18n keys from the source code.
 # Supported project types: https://simplelocalize.io/docs/cli/i18n-keys-extraction/
 projectType: i18next/i18next
-
-
-

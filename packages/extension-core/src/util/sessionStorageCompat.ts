@@ -9,7 +9,7 @@ type MapSessionStorageData = Map<
 
 abstract class TalismanSessionStorage {
   abstract get<K extends keyof SessionStorageData>(
-    key: K
+    key: K,
   ): Promise<SessionStorageData[K] | undefined>
   abstract set(data: Partial<SessionStorageData>): Promise<void>
   abstract clear(): Promise<void>

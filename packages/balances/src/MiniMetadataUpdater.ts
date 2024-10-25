@@ -58,7 +58,7 @@ export class MiniMetadataUpdater {
   constructor(
     chainConnectors: ChainConnectors,
     chaindataProvider: ChaindataProvider,
-    balanceModules: Array<AnyBalanceModule>
+    balanceModules: Array<AnyBalanceModule>,
   ) {
     this.#chainConnectors = chainConnectors
     this.#chaindataProvider = chaindataProvider
@@ -72,8 +72,8 @@ export class MiniMetadataUpdater {
         balancesDb.miniMetadatas
           .filter((m) => m.chainId === chainId)
           .toArray()
-          .then((array) => array[0])
-      )
+          .then((array) => array[0]),
+      ),
     )
   }
 
@@ -102,20 +102,20 @@ export class MiniMetadataUpdater {
                   specVersion: specVersion,
                   balancesConfig: JSON.stringify(
                     (balancesConfig ?? []).find(({ moduleType }) => moduleType === source)
-                      ?.moduleConfig ?? {}
+                      ?.moduleConfig ?? {},
                   ),
-                })
+                }),
               ),
           ],
         ]
-      })
+      }),
     )
 
     const statusesByChain = new Map<string, MiniMetadataStatus>(
       Array.from(wantedIdsByChain.entries()).map(([chainId, wantedIds]) => [
         chainId,
         wantedIds.every((wantedId) => ids.includes(wantedId)) ? "good" : "none",
-      ])
+      ]),
     )
 
     return { wantedIdsByChain, statusesByChain }
@@ -155,7 +155,7 @@ export class MiniMetadataUpdater {
 
     const chains = await this.#chaindataProvider.chains()
     const customChains = chains.filter(
-      (chain): chain is CustomChain => "isCustom" in chain && chain.isCustom
+      (chain): chain is CustomChain => "isCustom" in chain && chain.isCustom,
     )
 
     const updatedCustomChains: Array<CustomChain> = []
@@ -215,7 +215,7 @@ export class MiniMetadataUpdater {
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
     const chains = new Map(
-      (await this.#chaindataProvider.chains()).map((chain) => [chain.id, chain])
+      (await this.#chaindataProvider.chains()).map((chain) => [chain.id, chain]),
     )
     const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
 
@@ -228,7 +228,7 @@ export class MiniMetadataUpdater {
 
     if (unwantedIds.length > 0) {
       const chainIds = Array.from(
-        new Set((await balancesDb.miniMetadatas.bulkGet(unwantedIds)).map((m) => m?.chainId))
+        new Set((await balancesDb.miniMetadatas.bulkGet(unwantedIds)).map((m) => m?.chainId)),
       )
       log.info(`Pruning ${unwantedIds.length} miniMetadatas on chains ${chainIds.join(", ")}`)
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
@@ -277,7 +277,7 @@ export class MiniMetadataUpdater {
               const response = await this.#chainConnectors.substrate?.send(
                 chainId,
                 "state_getMetadata",
-                []
+                [],
               )
               if (response) return response
             } catch (v14Cause) {
@@ -287,7 +287,7 @@ export class MiniMetadataUpdater {
             log.warn(
               `Failed to fetch both metadata v15 and v14 for chain ${chainId}`,
               errors.v15,
-              errors.v14
+              errors.v14,
             )
             return null
           }
@@ -299,7 +299,7 @@ export class MiniMetadataUpdater {
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
             const balancesConfig = (chain.balancesConfig ?? []).find(
-              ({ moduleType }) => moduleType === mod.type
+              ({ moduleType }) => moduleType === mod.type,
             )
             const moduleConfig = balancesConfig?.moduleConfig ?? {}
 
@@ -307,7 +307,7 @@ export class MiniMetadataUpdater {
               chainId,
               moduleConfig,
               metadataRpc,
-              systemProperties
+              systemProperties,
             )
             const tokens = await mod.fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig)
 
@@ -316,7 +316,7 @@ export class MiniMetadataUpdater {
               chainId,
               mod.type,
               Object.values(tokens),
-              availableTokenLogos
+              availableTokenLogos,
             )
 
             // update miniMetadatas

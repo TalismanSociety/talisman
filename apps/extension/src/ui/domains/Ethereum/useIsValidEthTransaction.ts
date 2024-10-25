@@ -17,7 +17,7 @@ export const useIsValidEthTransaction = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
   priority: EthPriorityOptionName | undefined,
-  isReplacement = false
+  isReplacement = false,
 ) => {
   const { t } = useTranslation("request")
   const account = useAccountByAddress(tx?.from)

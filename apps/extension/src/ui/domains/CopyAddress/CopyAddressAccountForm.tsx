@@ -31,10 +31,10 @@ const AccountRowContainer: FC<
       classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         isSelected && "bg-grey-800 ",
-        "text-body-secondary hover:text-body"
+        "text-body-secondary hover:text-body",
       ),
 
-    [isSelected]
+    [isSelected],
   )
 
   return onClick ? (
@@ -53,12 +53,12 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
 
   const formatted = useMemo(
     () => convertAddress(account.address, accountChain?.prefix ?? null),
-    [account.address, accountChain?.prefix]
+    [account.address, accountChain?.prefix],
   )
 
   const canCopySpecific = useMemo(
     () => isEthereumAddress(account.address) || !!accountChain || !!chain,
-    [account.address, accountChain, chain]
+    [account.address, accountChain, chain],
   )
 
   const handleCopyClick = useCallback(() => {
@@ -134,7 +134,7 @@ export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSele
     (address: string) => () => {
       onSelect?.(address)
     },
-    [onSelect]
+    [onSelect],
   )
 
   return (
@@ -171,16 +171,17 @@ export const CopyAddressAccountForm = () => {
         .filter(
           (account) =>
             !chain ||
-            (account.type && isAccountCompatibleWithChain(chain, account.type, account.genesisHash))
+            (account.type &&
+              isAccountCompatibleWithChain(chain, account.type, account.genesisHash)),
         )
         .filter((account) => !evmNetwork || account.type === "ethereum")
         // if a folder is selected in portfolio, filter to accounts in that folder
         .filter(
           (account) =>
             !addresses?.length ||
-            addresses.map((a) => normalizeAddress(a)).includes(normalizeAddress(account.address))
+            addresses.map((a) => normalizeAddress(a)).includes(normalizeAddress(account.address)),
         ),
-    [allAccounts, chain, evmNetwork, search, addresses]
+    [allAccounts, chain, evmNetwork, search, addresses],
   )
 
   return (
@@ -191,7 +192,7 @@ export const CopyAddressAccountForm = () => {
             <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
           </div>
         </div>
-        <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+        <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
           <AccountsList accounts={accounts} selected={address} onSelect={setAddress} />
         </ScrollContainer>
       </div>

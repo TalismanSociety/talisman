@@ -35,7 +35,7 @@ function useMnemonicUnlockContext({ mnemonicId }: { mnemonicId: string }): Mnemo
       const secret = await api.mnemonicUnlock(mnemonicId, password)
       setMnemonic(secret)
     },
-    [mnemonicId, setMnemonic]
+    [mnemonicId, setMnemonic],
   )
 
   return {
@@ -82,7 +82,7 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
         })
       }
     },
-    [unlock, setError]
+    [unlock, setError],
   )
 
   useEffect(() => {

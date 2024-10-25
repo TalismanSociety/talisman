@@ -1,11 +1,11 @@
-import { CustomEvmTokenCreate } from "@extension/core"
-import { EvmAddress } from "@extension/core"
-import { getErc20TokenInfo } from "@extension/core/util/getErc20TokenInfo"
-import { getUniswapV2TokenInfo } from "@extension/core/util/getUniswapV2TokenInfo"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEffect, useState } from "react"
 import { ContractFunctionExecutionError } from "viem"
+
+import { CustomEvmTokenCreate, EvmAddress } from "@extension/core"
+import { getErc20TokenInfo } from "@extension/core/util/getErc20TokenInfo"
+import { getUniswapV2TokenInfo } from "@extension/core/util/getUniswapV2TokenInfo"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 
 export const useEvmTokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?: EvmAddress) => {
   const [isLoading, setIsLoading] = useState(false)

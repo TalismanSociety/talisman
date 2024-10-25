@@ -30,7 +30,7 @@ const goToSettingsAccounts = newGoToFn("Manage accounts", "/settings/accounts")
 const goToSettingsCurrency = newGoToFn("Change currencies", "/settings/general/currency")
 const goToAddHardwareAccounts = newGoToFn(
   "Add hardware accounts",
-  "/accounts/add?methodType=connect"
+  "/accounts/add?methodType=connect",
 )
 const goToSettingsMnemonics = newGoToFn("Manage mnemonics", "/settings/mnemonics")
 

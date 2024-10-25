@@ -46,7 +46,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry, t]
+    [refresh, status, message, requiresManualRetry, t],
   )
 
   useEffect(() => {
@@ -94,13 +94,13 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
             LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
             LEDGER_HARDENED_OFFSET + 0,
             LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
-            Buffer.from(unsigned)
+            Buffer.from(unsigned),
           )
         : ledger.sign(
             LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
             LEDGER_HARDENED_OFFSET + 0,
             LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
-            Buffer.from(unsigned)
+            Buffer.from(unsigned),
           ))
 
       if (return_code !== LEDGER_SUCCESS_CODE)
@@ -122,15 +122,15 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
         case "Txn version not supported":
           return setError(
             t(
-              "This type of transaction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
-            )
+              "This type of transaction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again.",
+            ),
           )
 
         case "Instruction not supported":
           return setError(
             t(
-              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
-            )
+              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again.",
+            ),
           )
 
         default:

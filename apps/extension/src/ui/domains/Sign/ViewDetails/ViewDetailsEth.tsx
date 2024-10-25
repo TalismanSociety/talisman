@@ -67,7 +67,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     (value: bigint = 0n) => {
       return value ? `${formatEther(value)} ${nativeToken?.symbol ?? ""}` : null
     },
-    [nativeToken?.symbol]
+    [nativeToken?.symbol],
   )
 
   const nativeTokenRates = useTokenRates(nativeToken?.id)
@@ -86,19 +86,19 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
               ? new BalanceFormatter(
                   txDetails.estimatedL1DataFee,
                   nativeToken.decimals,
-                  nativeTokenRates
+                  nativeTokenRates,
                 )
               : null,
             txDetails.estimatedL1DataFee
               ? new BalanceFormatter(
                   txDetails.estimatedFee - txDetails.estimatedL1DataFee,
                   nativeToken.decimals,
-                  nativeTokenRates
+                  nativeTokenRates,
                 )
               : null,
           ]
         : [null, null, null, null],
-    [nativeToken, nativeTokenRates, txDetails]
+    [nativeToken, nativeTokenRates, txDetails],
   )
 
   const handleCopyByteCode = useCallback(async () => {
@@ -109,7 +109,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         {
           type: "success",
           title: t("Byte code copied"),
-        }
+        },
         // set an id to prevent multiple clicks to display multiple notifications
       )
     } catch (err) {

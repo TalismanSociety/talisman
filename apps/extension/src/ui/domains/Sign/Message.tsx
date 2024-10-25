@@ -27,7 +27,7 @@ export const Message: FC<MessageProps> = ({ text, rows, className }) => {
         className={classNames(
           "text-body-secondary bg-grey-800 scrollable scrollable-600",
           "rounded p-6 text-left font-mono",
-          className
+          className,
         )}
         value={value}
       />

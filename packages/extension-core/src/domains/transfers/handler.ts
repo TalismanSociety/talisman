@@ -63,7 +63,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             pair,
             toAddress,
             tip,
-            method
+            method,
           )
           return { hash } as ResponseAssetTransfer
         } catch (err) {
@@ -73,13 +73,13 @@ export default class AssetTransferHandler extends ExtensionHandler {
       }
       if (tokenType === "evm-native")
         throw new Error(
-          "Evm native token transfers are not implemented in this version of Talisman."
+          "Evm native token transfers are not implemented in this version of Talisman.",
         )
       if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
       if (tokenType === "evm-uniswapv2")
         throw new Error(
-          "Uniswap V2 token transfers are not implemented in this version of Talisman."
+          "Uniswap V2 token transfers are not implemented in this version of Talisman.",
         )
 
       // force compilation error if any token types don't have a case
@@ -130,7 +130,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
           pair,
           toAddress,
           tip,
-          method
+          method,
         )
       } catch (error) {
         log.error("Error checking substrate transaction fees: ", { cause: error })
@@ -215,7 +215,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       fromAddress,
       toAddress,
       token,
-      BigInt(amount ?? 0)
+      BigInt(amount ?? 0),
     )
 
     const parsedGasSettings = parseGasSettings(gasSettings)
@@ -285,7 +285,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(assets.transfer)":

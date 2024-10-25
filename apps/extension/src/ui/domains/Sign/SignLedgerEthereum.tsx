@@ -54,7 +54,7 @@ const signWithLedger = async (
   chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
   payload: unknown,
-  accountPath: string
+  accountPath: string,
 ): Promise<`0x${string}`> => {
   switch (method) {
     case "eth_signTypedData_v3":
@@ -74,19 +74,19 @@ const signWithLedger = async (
           "EIP712Domain",
           domain,
           types,
-          SignTypedDataVersion.V4
+          SignTypedDataVersion.V4,
         ).toString("hex")
         const hashStructMessageHex = TypedDataUtils.hashStruct(
           primaryType as string,
           message,
           types,
-          SignTypedDataVersion.V4
+          SignTypedDataVersion.V4,
         ).toString("hex")
 
         sig = await ledger.signEIP712HashedMessage(
           accountPath,
           domainSeparatorHex,
-          hashStructMessageHex
+          hashStructMessageHex,
         )
       }
 
@@ -156,7 +156,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
 
   const inputsReady = useMemo(
     () => !!payload && (method !== "eth_sendTransaction" || !!evmNetworkId),
-    [evmNetworkId, method, payload]
+    [evmNetworkId, method, payload],
   )
 
   // reset
@@ -171,7 +171,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry, t]
+    [refresh, status, message, requiresManualRetry, t],
   )
 
   const _onRefresh = useCallback(() => {
@@ -189,7 +189,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
         Number(evmNetworkId),
         method,
         payload,
-        (account as AccountJsonHardwareEthereum).path
+        (account as AccountJsonHardwareEthereum).path,
       )
       setIsSigned(true)
 
@@ -208,7 +208,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       // ETH ledger app requires EIP-1559 type 2 transactions
       if (error.reason === "invalid object key - maxPriorityFeePerGas")
         setError(
-          t("Sorry, Talisman doesn't support signing transactions with Ledger on this network.")
+          t("Sorry, Talisman doesn't support signing transactions with Ledger on this network."),
         )
       else setError(error.reason ?? error.message)
     }

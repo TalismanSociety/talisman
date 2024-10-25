@@ -17,18 +17,18 @@ export type { BalanceLockType } from "./balanceLockTypes"
 export const mergeBalances = (
   balance1: SubNativeBalance | undefined,
   balance2: SubNativeBalance,
-  source: string
+  source: string,
 ) => {
   if (balance1 === undefined) return balance2
   assert(
     getBalanceId(balance1) === getBalanceId(balance2),
-    "Balances with different IDs should not be merged"
+    "Balances with different IDs should not be merged",
   )
   // locks and freezes should completely replace the previous rather than merging together
   const existingValues = Object.fromEntries(
     balance1.values
       .filter((v) => !v.source || v.source !== source)
-      .map((value) => [getValueId(value), value])
+      .map((value) => [getValueId(value), value]),
   )
   const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
   const mergedValues = { ...existingValues, ...newValues }

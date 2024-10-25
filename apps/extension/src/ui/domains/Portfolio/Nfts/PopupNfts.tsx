@@ -27,8 +27,8 @@ const NoNftFound = () => {
     return selectedAccount
       ? t("No NFTs found for this account")
       : selectedFolder
-      ? t("No NFTs found for this folder")
-      : t("No NFTs found")
+        ? t("No NFTs found for this folder")
+        : t("No NFTs found")
   }, [selectedAccount, selectedFolder, status, t])
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
@@ -61,7 +61,7 @@ const NftCollectionRowInner: FC<{
 }> = ({ collection, data, onNftClick }) => {
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts]
+    [collection.id, data.nfts],
   )
 
   const imageUrl = useMemo(() => {
@@ -94,9 +94,9 @@ const NftCollectionRowInner: FC<{
     <button
       type="button"
       onClick={handleClick}
-      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full  items-center gap-8 rounded-sm px-8 text-left"
+      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left"
     >
-      <div className="flex grow items-center gap-6 overflow-hidden ">
+      <div className="flex grow items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="flex w-full gap-2 overflow-hidden text-base">
@@ -115,8 +115,8 @@ const NftCollectionRowInner: FC<{
         </div>
         <div
           className={classNames(
-            "text-body-secondary ",
-            floorUsdValue === null && "select-none text-transparent"
+            "text-body-secondary",
+            floorUsdValue === null && "select-none text-transparent",
           )}
         >
           {floorUsdValue !== null ? (
@@ -173,7 +173,7 @@ const NftCollectionTileInner: FC<{
 }> = ({ collection, data, onNftClick }) => {
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts]
+    [collection.id, data.nfts],
   )
 
   // favorites are the first ones in the list, can check just the first one

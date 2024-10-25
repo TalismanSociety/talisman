@@ -38,7 +38,7 @@ const sign = async (
   account: AccountJsonHardwareSubstrate,
   app?: SubstrateAppParams | null,
   registry?: TypeRegistry | null,
-  txMetadata?: string | null
+  txMetadata?: string | null,
 ) => {
   const path = getPolkadotLedgerDerivationPath({ ...account, app })
 
@@ -97,7 +97,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry, t]
+    [refresh, status, message, requiresManualRetry, t],
   )
 
   const signLedger = useCallback(async () => {
@@ -109,7 +109,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       if (!registry) return setError(t("Missing registry"))
 
       const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
-        (ext) => ext.identifier.toString() === "CheckMetadataHash"
+        (ext) => ext.identifier.toString() === "CheckMetadataHash",
       )
       if (!hasCheckMetadataHash)
         return setError(t("This network doesn't support Ledger Polkadot Generic App."))
@@ -126,7 +126,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
         account as AccountJsonHardwareSubstrate,
         app,
         registry,
-        shortMetadata
+        shortMetadata,
       )
 
       // await to keep loader spinning until popup closes
@@ -141,8 +141,8 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
         case "Instruction not supported":
           return setError(
             t(
-              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
-            )
+              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again.",
+            ),
           )
 
         default:

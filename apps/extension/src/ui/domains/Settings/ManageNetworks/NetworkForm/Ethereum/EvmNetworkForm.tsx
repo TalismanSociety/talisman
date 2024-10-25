@@ -156,7 +156,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const tokenLogoUrl = useMemo(
     // existing icon has priority
     () => coingeckoLogoUrl ?? existingToken?.logo ?? null,
-    [coingeckoLogoUrl, existingToken?.logo]
+    [coingeckoLogoUrl, existingToken?.logo],
   )
 
   // attempt an autofill once chain id is detected
@@ -176,7 +176,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
       isCustom && isBuiltInEvmNetwork.isFetched
         ? [!isBuiltInEvmNetwork.data, !!isBuiltInEvmNetwork.data]
         : [false, false],
-    [isCustom, isBuiltInEvmNetwork.data, isBuiltInEvmNetwork.isFetched]
+    [isCustom, isBuiltInEvmNetwork.data, isBuiltInEvmNetwork.isFetched],
   )
 
   const [submitError, setSubmitError] = useState<string>()
@@ -197,7 +197,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
         setSubmitError((err as Error).message)
       }
     },
-    [tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets]
+    [tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets],
   )
 
   // on edit screen, wait for existing network to be loaded
@@ -231,7 +231,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
                     logo={existingEvmNetwork?.logo}
                     className={classNames(
                       "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
-                      !id && "opacity-50"
+                      !id && "opacity-50",
                     )}
                   />
                 }
@@ -331,7 +331,7 @@ const useRpcChainId = (rpcUrl: string) => {
       setDebouncedRpcUrl(rpcUrl)
     },
     250,
-    [rpcUrl]
+    [rpcUrl],
   )
 
   return useQuery({
@@ -363,7 +363,7 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 
 const evmNetworkToFormData = (
   network?: EvmNetwork | CustomEvmNetwork,
-  nativeToken?: CustomSubNativeToken
+  nativeToken?: CustomSubNativeToken,
 ): EvmNetworkFormData | undefined => {
   if (!network || !nativeToken) return undefined
 

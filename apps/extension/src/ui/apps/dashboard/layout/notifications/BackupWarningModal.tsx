@@ -22,7 +22,7 @@ const ModalContent: FC<{ snooze: () => void }> = ({ snooze }) => {
       </div>
       <div className="text-body-secondary w-[40.5rem]">
         {t(
-          "You have funds! Now is a great time to back up your wallet. If you don’t back up your recovery phrase, you may lose access to your funds."
+          "You have funds! Now is a great time to back up your wallet. If you don’t back up your recovery phrase, you may lose access to your funds.",
         )}
       </div>
       <div className="flex flex-col items-center gap-8">

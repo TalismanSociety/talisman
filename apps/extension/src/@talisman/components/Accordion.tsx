@@ -17,7 +17,7 @@ export const AccordionIcon: FC<{ isOpen: boolean; className?: string }> = ({
     className={classNames(
       "transition-transform duration-300 ease-in-out",
       isOpen ? "rotate-0" : "rotate-[-90deg]",
-      className
+      className,
     )}
   >
     <ChevronDownIcon />
@@ -44,7 +44,7 @@ export const Accordion: FC<{
         if (container.scrollHeight !== contentHeight) setContentHeight(container.scrollHeight)
       },
       50,
-      { trailing: true }
+      { trailing: true },
     ) // prevent multiple re-renders in case of batch
 
     const observer = new MutationObserver(updateContentHeight)
@@ -63,7 +63,7 @@ export const Accordion: FC<{
     () => ({
       height: contentHeight,
     }),
-    [contentHeight]
+    [contentHeight],
   )
 
   const animate: TargetAndTransition = useMemo(
@@ -72,7 +72,7 @@ export const Accordion: FC<{
 
       transitionEnd: { height: isOpen ? "auto" : 0 },
     }),
-    [contentHeight, isOpen]
+    [contentHeight, isOpen],
   )
 
   useEffect(() => {

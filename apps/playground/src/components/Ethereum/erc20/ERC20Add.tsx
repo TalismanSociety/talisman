@@ -57,7 +57,7 @@ export const ERC20Add = () => {
         setOutput((err as any)?.toString?.() ?? "Error")
       }
     },
-    [walletClient]
+    [walletClient],
   )
 
   if (!isConnected) return null

@@ -22,8 +22,8 @@ export const useBalancesFiatTotalPerNetwork = (balances: Balances) => {
           [...evmNetworkIds].map((id) => [
             id,
             balances.find({ evmNetworkId: id }).sum.fiat(currency).total,
-          ])
-        )
+          ]),
+        ),
     )
   }, [balances, currency])
 }

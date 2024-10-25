@@ -52,7 +52,7 @@ const safelyGetAddress = async (
   ledger: PolkadotGenericApp,
   bip44path: string,
   ss58prefix = 42,
-  attempt = 1
+  attempt = 1,
 ): Promise<{ address: string }> => {
   if (!ledger) throw new Error("Ledger not connected")
 
@@ -103,7 +103,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
         throwAfter(5_000, "Timeout on Ledger Substrate Generic getAddress"),
       ])
     },
-    [ledger]
+    [ledger],
   )
 
   const connectLedger = useCallback(
@@ -158,7 +158,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
       refConnecting.current = false
       setIsLoading(false)
     },
-    [app]
+    [app],
   )
 
   const { status, message, requiresManualRetry } = useMemo<{

@@ -1,7 +1,8 @@
-import { Chain, EvmNetwork } from "@extension/core"
 import { TFunction } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { Chain, EvmNetwork } from "@extension/core"
 
 export type NetworkInfoProps = {
   chain?: Chain | null
@@ -39,6 +40,6 @@ export const useNetworkInfo = ({ chain, evmNetwork, relay }: NetworkInfoProps) =
 
   return useMemo(
     () => getNetworkInfo(t, { chain, evmNetwork, relay }),
-    [chain, evmNetwork, relay, t]
+    [chain, evmNetwork, relay, t],
   )
 }
