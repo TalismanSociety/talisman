@@ -62,6 +62,9 @@
     "onlyBuiltDependencies": [
       "@sentry/cli"
     ],
+    "peerDependencyRules": {
+      "ignoreMissing": ["react-native", "eciesjs"]
+    },
     "overrides": {
       "@polkadot/apps-config": "0.145.1",
       "@polkadot/api-augment": "14.1.1",
