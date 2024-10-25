@@ -52,6 +52,7 @@ export type FeatureFlags = Partial<{
   BUY_CRYPTO: boolean
   LINK_STAKING: boolean
   USE_ONFINALITY_API_KEY: boolean
+  RISK_ANALYSIS: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

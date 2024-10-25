@@ -1,8 +1,10 @@
 import { EvmSignTypedDataData, ScanMessageEvm200Response } from "@blowfishxyz/api-client/v20230605"
-import { EthSignMessageMethod } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, log } from "extension-shared"
 import urlJoin from "url-join"
+
+import { EthSignMessageMethod } from "@extension/core"
+import { useFeatureFlag } from "@ui/state"
 
 import { getBlowfishApiUrl, getBlowfishClient, getBlowfishLanguage } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
@@ -78,6 +80,8 @@ export const useEvmMessageRiskAnalysis = ({
   origin,
   disableAutoRiskScan,
 }: UseEvmMessageRiskAnalysisProps) => {
+  const enabled = useFeatureFlag("RISK_ANALYSIS")
+
   return useEvmRiskAnalysisBase({
     type: "message",
     evmNetworkId,
@@ -107,6 +111,6 @@ export const useEvmMessageRiskAnalysis = ({
           throw new Error("Unsupported message type. Proceed with caution")
       }
     },
-    enabled: !!method && !!message && !!account && !!evmNetworkId,
+    enabled: enabled && !!method && !!message && !!account && !!evmNetworkId,
   })
 }

@@ -3,6 +3,8 @@ import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
+import { useFeatureFlag } from "@ui/state"
+
 import { getBlowfishClient } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 
@@ -18,6 +20,8 @@ export const useEvmTransactionRiskAnalysis = ({
   tx,
   disableAutoRiskScan,
 }: UseEvmTransactionRiskAnalysisProps) => {
+  const enabled = useFeatureFlag("RISK_ANALYSIS")
+
   const txData = useMemo<EvmTxData | null>(() => {
     if (!tx?.from) return null
 
@@ -43,6 +47,6 @@ export const useEvmTransactionRiskAnalysis = ({
 
       return client.scanTransactions([txData], txData.from, { origin })
     },
-    enabled: !!txData && !!evmNetworkId,
+    enabled: enabled && !!txData && !!evmNetworkId,
   })
 }
