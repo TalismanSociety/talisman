@@ -32,7 +32,7 @@ const SettingsSourceSelector: FC<{
     (e) => {
       onChange(e.target.value as SettingsSource)
     },
-    [onChange]
+    [onChange],
   )
 
   const knownNetworkDetails = useMemo<AddEthereumChainParameter | null>(() => {

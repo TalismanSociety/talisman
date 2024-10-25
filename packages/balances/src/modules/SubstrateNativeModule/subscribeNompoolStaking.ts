@@ -23,7 +23,7 @@ export async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   addressesByToken: AddressesByToken<SubNativeToken>,
-  callback: SubscriptionCallback<SubNativeBalance[]>
+  callback: SubscriptionCallback<SubNativeBalance[]>,
 ) {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -31,7 +31,7 @@ export async function subscribeNompoolStaking(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
       miniMetadata,
-    ])
+    ]),
   )
   const nomPoolTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
@@ -41,7 +41,7 @@ export async function subscribeNompoolStaking(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        allChains[token.chain.id]
+        allChains[token.chain.id],
       )
       return typeof chainMeta?.nominationPoolsPalletId === "string"
     })
@@ -56,12 +56,12 @@ export async function subscribeNompoolStaking(
         addresses.filter((address) => !isEthereumAddress(address)),
       ])
       // remove tokens which aren't nom pool tokens
-      .filter(([tokenId]) => nomPoolTokenIds.includes(tokenId))
+      .filter(([tokenId]) => nomPoolTokenIds.includes(tokenId)),
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByNomPoolToken, tokens)
   const chains = Object.fromEntries(
-    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId))
+    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId)),
   )
   const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
@@ -101,7 +101,7 @@ export async function subscribeNompoolStaking(
     const [chainMeta] = findChainMeta<typeof SubNativeModule>(
       miniMetadatas,
       "substrate-native",
-      chain
+      chain,
     )
     const { nominationPoolsPalletId } = chainMeta ?? {}
 
@@ -114,14 +114,14 @@ export async function subscribeNompoolStaking(
     }
     const subscribePoolMembers = (
       addresses: string[],
-      callback: SubscriptionCallback<PoolMembers[]>
+      callback: SubscriptionCallback<PoolMembers[]>,
     ) => {
       const scaleCoder = chainStorageCoders.get(chainId)?.poolMembers
       const queries = addresses.flatMap((address): RpcStateQuery<PoolMembers> | [] => {
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid address in ${chainId} poolMembers query ${address}`,
-          address
+          address,
         )
         if (!stateKey) return []
 
@@ -138,13 +138,13 @@ export async function subscribeNompoolStaking(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode poolMembers on chain ${chainId}`
+            `Failed to decode poolMembers on chain ${chainId}`,
           )
 
           const poolId: string | undefined = decoded?.pool_id?.toString?.()
           const points: string | undefined = decoded?.points?.toString?.()
           const unbondingEras: Array<{ era: string; amount: string }> = Array.from(
-            decoded?.unbonding_eras ?? []
+            decoded?.unbonding_eras ?? [],
           ).flatMap((entry) => {
             if (entry === undefined) return []
             const [key, value] = Array.from(entry)
@@ -169,7 +169,7 @@ export async function subscribeNompoolStaking(
     type PoolPoints = { poolId: string; points?: string }
     const subscribePoolPoints = (
       poolIds: string[],
-      callback: SubscriptionCallback<PoolPoints[]>
+      callback: SubscriptionCallback<PoolPoints[]>,
     ) => {
       if (poolIds.length === 0) callback(null, [])
 
@@ -178,7 +178,7 @@ export async function subscribeNompoolStaking(
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid poolId in ${chainId} bondedPools query ${poolId}`,
-          poolId
+          poolId,
         )
         if (!stateKey) return []
 
@@ -195,7 +195,7 @@ export async function subscribeNompoolStaking(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode bondedPools on chain ${chainId}`
+            `Failed to decode bondedPools on chain ${chainId}`,
           )
 
           const points: string | undefined = decoded?.points?.toString?.()
@@ -221,7 +221,7 @@ export async function subscribeNompoolStaking(
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid address in ${chainId} ledger query ${stashAddress}`,
-          stashAddress
+          stashAddress,
         )
         if (!stateKey) return []
 
@@ -238,7 +238,7 @@ export async function subscribeNompoolStaking(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode ledger on chain ${chainId}`
+            `Failed to decode ledger on chain ${chainId}`,
           )
 
           const activeStake: string | undefined = decoded?.active?.toString?.()
@@ -256,7 +256,7 @@ export async function subscribeNompoolStaking(
     type PoolMetadata = { poolId: string; metadata?: string }
     const subscribePoolMetadata = (
       poolIds: string[],
-      callback: SubscriptionCallback<PoolMetadata[]>
+      callback: SubscriptionCallback<PoolMetadata[]>,
     ) => {
       if (poolIds.length === 0) callback(null, [])
 
@@ -266,7 +266,7 @@ export async function subscribeNompoolStaking(
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid poolId in ${chainId} metadata query ${poolId}`,
-          poolId
+          poolId,
         )
         if (!stateKey) return []
 
@@ -277,7 +277,7 @@ export async function subscribeNompoolStaking(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode metadata on chain ${chainId}`
+            `Failed to decode metadata on chain ${chainId}`,
           )
 
           const metadata = decoded?.asText?.()
@@ -302,24 +302,25 @@ export async function subscribeNompoolStaking(
         }
         return state
       }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points" | "unbondingEras">> | null>()),
-      share()
+      share(),
     )
 
     const poolIdByAddress$ = poolMembersByAddress$.pipe(
-      map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.poolId ?? null])))
+      map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.poolId ?? null]))),
     )
     const pointsByAddress$ = poolMembersByAddress$.pipe(
-      map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.points ?? null])))
+      map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.points ?? null]))),
     )
     const unbondingErasByAddress$ = poolMembersByAddress$.pipe(
       map(
-        (pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.unbondingEras ?? null]))
-      )
+        (pm) =>
+          new Map(Array.from(pm).map(([address, pm]) => [address, pm?.unbondingEras ?? null])),
+      ),
     )
     const poolIds$ = poolIdByAddress$.pipe(
       map((byAddress) => [
         ...new Set(Array.from(byAddress.values()).flatMap((poolId) => poolId ?? [])),
-      ])
+      ]),
     )
 
     const pointsByPool$ = poolIds$.pipe(
@@ -332,7 +333,7 @@ export async function subscribeNompoolStaking(
           else state.delete(poolId)
         }
         return state
-      }, new Map<string, string>())
+      }, new Map<string, string>()),
     )
     const stakeByPool$ = poolIds$.pipe(
       map((poolIds) => asObservable(subscribePoolStake)(poolIds)),
@@ -344,7 +345,7 @@ export async function subscribeNompoolStaking(
           else state.delete(poolId)
         }
         return state
-      }, new Map<string, string>())
+      }, new Map<string, string>()),
     )
     const metadataByPool$ = poolIds$.pipe(
       map((poolIds) => asObservable(subscribePoolMetadata)(poolIds)),
@@ -356,7 +357,7 @@ export async function subscribeNompoolStaking(
           else state.delete(poolId)
         }
         return state
-      }, new Map<string, string>())
+      }, new Map<string, string>()),
     )
 
     const subscription = combineLatest([
@@ -381,7 +382,9 @@ export async function subscribeNompoolStaking(
             const points = pointsByAddress.get(address) ?? "0"
             const poolPoints = pointsByPool.get(poolId ?? "") ?? "0"
             const poolStake = stakeByPool.get(poolId ?? "") ?? "0"
-            const poolMetadata = poolId ? metadataByPool.get(poolId) ?? `Pool ${poolId}` : undefined
+            const poolMetadata = poolId
+              ? (metadataByPool.get(poolId) ?? `Pool ${poolId}`)
+              : undefined
 
             const amount =
               points === "0" || poolPoints === "0" || poolStake === "0"
@@ -390,7 +393,7 @@ export async function subscribeNompoolStaking(
 
             const unbondingAmount = (unbondingErasByAddress.get(address) ?? []).reduce(
               (total, { amount }) => total + BigInt(amount ?? "0"),
-              0n
+              0n,
             )
 
             return {

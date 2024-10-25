@@ -1,8 +1,9 @@
-import { CodeBlock } from "@talisman/components/CodeBlock"
 import { classNames } from "@talismn/util"
 import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { CodeBlock } from "@talisman/components/CodeBlock"
 
 import { ViewDetailsField } from "./ViewDetailsField"
 
@@ -22,7 +23,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
         onClick={() => setDisplayAsJson(false)}
         className={classNames(
           "cursor-pointer",
-          !displayAsJson ? "text-body" : "hover:text-grey-300 underline"
+          !displayAsJson ? "text-body" : "hover:text-grey-300 underline",
         )}
       >
         YAML
@@ -33,7 +34,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
         onClick={() => setDisplayAsJson(true)}
         className={classNames(
           "cursor-pointer",
-          displayAsJson ? "text-body" : "hover:text-grey-300 underline"
+          displayAsJson ? "text-body" : "hover:text-grey-300 underline",
         )}
       >
         JSON

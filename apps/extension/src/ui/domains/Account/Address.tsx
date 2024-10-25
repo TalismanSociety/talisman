@@ -51,7 +51,7 @@ export const Address: FC<AddressProps> = ({
       className={classNames(
         // don't wrap shortenedAddresses onto two lines when low on space
         // e.g. `0x00…0000` -> `0x00…\n0000`
-        !onChainId && "whitespace-nowrap"
+        !onChainId && "whitespace-nowrap",
       )}
     >
       {formatted}

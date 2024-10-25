@@ -26,7 +26,7 @@ export default class MnemonicHandler extends ExtensionHandler {
           mnemonic,
           password,
           type === "import" ? MnemonicSource.Imported : MnemonicSource.Generated,
-          type === "import" ? true : confirmed
+          type === "import" ? true : confirmed,
         )
         if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
         await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
@@ -47,7 +47,7 @@ export default class MnemonicHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestType<TMessageType>
+    request: RequestType<TMessageType>,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(mnemonic.unlock)": {

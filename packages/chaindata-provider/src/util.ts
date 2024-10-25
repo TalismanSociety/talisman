@@ -18,7 +18,7 @@ export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): 
       .map((rpc) => {
         rpc.url = rpc.url.replace(
           /^wss:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
-          `wss://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`
+          `wss://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`,
         )
         return rpc
       })
@@ -80,7 +80,7 @@ export const itemsToMapById = <T extends { id: string }>(items: T[]): Record<str
   Object.fromEntries(items.map((item) => [item.id, item]))
 
 export const itemsToMapByGenesisHash = <T extends { genesisHash: string | null }>(
-  items: T[]
+  items: T[],
 ): Record<string, T> =>
   Object.fromEntries(items.flatMap((item) => (item.genesisHash ? [[item.genesisHash, item]] : [])))
 
@@ -93,7 +93,7 @@ export const customChainsFilter = (chains: Array<Chain | CustomChain>) =>
 
 export const customEvmNetworksFilter = (evmNetworks: Array<EvmNetwork | CustomEvmNetwork>) =>
   evmNetworks.filter(
-    (evmNetwork): evmNetwork is CustomEvmNetwork => "isCustom" in evmNetwork && evmNetwork.isCustom
+    (evmNetwork): evmNetwork is CustomEvmNetwork => "isCustom" in evmNetwork && evmNetwork.isCustom,
   )
 
 export const customTokensFilter = (tokens: Token[]) =>
@@ -108,7 +108,7 @@ type ObservableReturnType<O> = O extends Observable<infer T> ? T : O
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const wrapObservableWithGetter = async <O extends Observable<any>>(
   errorReason: string,
-  observable: O
+  observable: O,
 ): Promise<ObservableReturnType<O>> => {
   return await withErrorReason(errorReason, () => firstValueFrom(observable))
 }
@@ -130,7 +130,7 @@ export const isCustomChain = (chain: Chain | CustomChain): chain is CustomChain 
 }
 
 export const isCustomEvmNetwork = (
-  evmNetwork: EvmNetwork | CustomEvmNetwork
+  evmNetwork: EvmNetwork | CustomEvmNetwork,
 ): evmNetwork is CustomEvmNetwork => {
   return "isCustom" in evmNetwork && evmNetwork.isCustom === true
 }

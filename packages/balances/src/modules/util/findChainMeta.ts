@@ -10,7 +10,7 @@ import { AnyNewBalanceModule, InferChainMeta, InferModuleType } from "./InferBal
 export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
   miniMetadatas: Map<string, MiniMetadata>,
   moduleType: InferModuleType<TBalanceModule>,
-  chain?: Chain
+  chain?: Chain,
 ): [InferChainMeta<TBalanceModule> | undefined, MiniMetadata | undefined] => {
   if (!chain) return [undefined, undefined]
   if (!chain.specName) return [undefined, undefined]
@@ -23,7 +23,7 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
     specName: chain.specName,
     specVersion: chain.specVersion,
     balancesConfig: JSON.stringify(
-      chain.balancesConfig?.find((config) => config.moduleType === moduleType)?.moduleConfig ?? {}
+      chain.balancesConfig?.find((config) => config.moduleType === moduleType)?.moduleConfig ?? {},
     ),
   })
 

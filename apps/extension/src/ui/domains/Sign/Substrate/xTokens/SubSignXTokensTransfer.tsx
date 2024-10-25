@@ -24,10 +24,13 @@ const normalizeTokenId = (tokenId: unknown) => {
     tokenId = JSON.parse(tokenId)
   if (typeof tokenId === "object") {
     // some property names don't have the same case in chaindata. ex: vsKSM
-    return Object.entries(tokenId as Record<string, unknown>).reduce((acc, [key, value]) => {
-      acc[key.toLowerCase()] = typeof value === "string" ? value.toLowerCase() : value
-      return acc
-    }, {} as Record<string, unknown>)
+    return Object.entries(tokenId as Record<string, unknown>).reduce(
+      (acc, [key, value]) => {
+        acc[key.toLowerCase()] = typeof value === "string" ? value.toLowerCase() : value
+        return acc
+      },
+      {} as Record<string, unknown>,
+    )
   }
   return tokenId
 }
@@ -62,7 +65,7 @@ const getTokenFromCurrency = (currency: Codec, chain: Chain, tokens: Token[]): T
         // ex: vsKSM
         (isSameTokenId(t.onChainId, jsonCurrency) ||
           // ex: aUSD
-          t.onChainId?.toString()?.toLowerCase() === jsonCurrency?.toString().toLowerCase()))
+          t.onChainId?.toString()?.toLowerCase() === jsonCurrency?.toString().toLowerCase())),
   )
   if (token) return token
 
@@ -74,7 +77,7 @@ const getTokenFromCurrency = (currency: Codec, chain: Chain, tokens: Token[]): T
 const getTargetFromInterior = (
   interior: XcmV3Junction,
   chain: Chain,
-  chains: Chain[]
+  chains: Chain[],
 ): { chain?: Chain; address?: Address } => {
   if (interior.type === "Parachain") {
     const paraId = interior.value
@@ -94,7 +97,7 @@ const getTarget = (
   multiLocation: VersionedMultiLocation | undefined,
   chain: Chain,
   chains: Chain[],
-  address: Address
+  address: Address,
 ): { chain?: Chain; address?: Address } => {
   if (multiLocation?.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()
@@ -157,7 +160,7 @@ export const SubSignXTokensTransfer = () => {
     const token = getTokenFromCurrency(
       currency,
       chain,
-      tokens.filter((c) => c.chain?.id === chain.id)
+      tokens.filter((c) => c.chain?.id === chain.id),
     )
 
     const target = getTarget(dest, chain, chains, account.address)

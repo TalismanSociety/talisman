@@ -1,6 +1,7 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
+
+import { WithTooltip } from "@talisman/components/Tooltip"
 
 export const LimitToNetworkTooltip = () => {
   const { t } = useTranslation("send-funds")

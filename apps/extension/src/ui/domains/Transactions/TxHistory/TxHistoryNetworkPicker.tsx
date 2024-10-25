@@ -37,7 +37,7 @@ export const TxHistoryNetworkPicker: FC<{
 
   const networks = useMemo(
     () => allNetworks.filter((network) => !search || network.name?.toLowerCase().includes(search)),
-    [allNetworks, search]
+    [allNetworks, search],
   )
 
   return (
@@ -61,7 +61,7 @@ export const TxHistoryNetworkPicker: FC<{
           <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
             <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
           </div>
-          <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable grow border-t">
+          <ScrollContainer className="bg-black-secondary border-grey-700 scrollable grow border-t">
             <NetworksList
               networks={networks}
               selectedNetworkId={selectedNetworkId}
@@ -111,7 +111,7 @@ const NetworkRow: FC<{
   const { t } = useTranslation()
 
   const chain = useChainByGenesisHash(
-    network && "genesisHash" in network ? network.genesisHash : null
+    network && "genesisHash" in network ? network.genesisHash : null,
   )
   const relay = useChain(chain?.relay?.id ?? null)
   const evmNetwork = useEvmNetwork(network?.id ?? null)
@@ -124,7 +124,7 @@ const NetworkRow: FC<{
       className={classNames(
         "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
         "focus-visible:bg-grey-800",
-        selected && "!bg-grey-700"
+        selected && "!bg-grey-700",
       )}
     >
       {network ? (
@@ -132,7 +132,7 @@ const NetworkRow: FC<{
       ) : (
         <GlobeIcon className="shrink-0 text-xl" />
       )}
-      <div className="text-body flex grow flex-col  truncate text-left">
+      <div className="text-body flex grow flex-col truncate text-left">
         <div>{network ? network.name : t("All Networks")}</div>
         {networkInfo.type && <div className="text-body-disabled text-xs">{networkInfo.type}</div>}
       </div>

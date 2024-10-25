@@ -10,7 +10,7 @@ export const useKnownChain = (chainId: string | null | undefined) => {
 
   const isActive = useMemo(
     () => !!chain && isChainActive(chain, activeChains),
-    [activeChains, chain]
+    [activeChains, chain],
   )
   const isKnown = useMemo(() => !!chain && !isCustomChain(chain), [chain])
 
@@ -19,12 +19,12 @@ export const useKnownChain = (chainId: string | null | undefined) => {
       if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
       activeChainsStore.setActive(chainId, enable)
     },
-    [chain, chainId]
+    [chain, chainId],
   )
 
   const isActiveSetByUser = useMemo(
     () => chainId !== null && chainId !== undefined && chainId in activeChains,
-    [chainId, activeChains]
+    [chainId, activeChains],
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)

@@ -36,14 +36,14 @@ export const AuthorisedSites = () => {
       hasPolkadotSites: Object.values(sites).some((site) => !!site.addresses),
       hasEthereumSites: Object.values(sites).some((site) => !!site.ethAddresses),
     }),
-    [sites]
+    [sites],
   )
 
   const showBatchActions = useMemo(
     () =>
       (providerType === "polkadot" && hasPolkadotSites) ||
       (providerType === "ethereum" && hasEthereumSites),
-    [hasEthereumSites, hasPolkadotSites, providerType]
+    [hasEthereumSites, hasPolkadotSites, providerType],
   )
 
   useEffect(() => {

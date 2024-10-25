@@ -45,26 +45,26 @@ export const useBalancesByParams = ({
         addressesAndTokens,
         async (update) => {
           return subject.next(update)
-        }
+        },
       )
     },
-    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens],
   )
 
   // subscription must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
     () =>
       `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
-        JSON.stringify(addressesAndEvmNetworks)
+        JSON.stringify(addressesAndEvmNetworks),
       )}-${md5(JSON.stringify(addressesAndTokens))}`,
-    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens],
   )
 
   const data = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
   // debounce every 100ms to prevent hammering UI with updates
   const [debouncedBalances, setDebouncedBalances] = useState<BalanceSubscriptionResponse>(
-    () => data
+    () => data,
   )
   useDebounce(() => setDebouncedBalances(data), 100, [data])
 
@@ -73,6 +73,6 @@ export const useBalancesByParams = ({
       status: debouncedBalances.status,
       balances: new Balances(debouncedBalances.data, hydrate),
     }),
-    [debouncedBalances, hydrate]
+    [debouncedBalances, hydrate],
   )
 }

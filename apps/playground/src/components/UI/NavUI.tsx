@@ -27,7 +27,7 @@ export const NavUI = () => {
       <Link
         to="/ui/mystical-background"
         className={classNames(
-          location.pathname === "/ui/mystical-background" && "text-primary-500"
+          location.pathname === "/ui/mystical-background" && "text-primary-500",
         )}
       >
         Mystical Background

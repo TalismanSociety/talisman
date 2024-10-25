@@ -31,7 +31,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
         })
       }
     },
-    [mnemonicInfo, t]
+    [mnemonicInfo, t],
   )
 
   const handleMnemonicReveal = useCallback(() => {

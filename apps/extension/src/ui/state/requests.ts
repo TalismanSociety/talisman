@@ -12,16 +12,16 @@ export const [useRequests, requests$] = bind(
       subscriber.next(requests)
     })
     return () => unsubscribe()
-  }).pipe(debugObservable("requests$"))
+  }).pipe(debugObservable("requests$")),
 )
 
 const [useRequestInner] = bind(<T extends KnownRequestTypes>(id: KnownRequestId<T>) =>
   requests$.pipe(
-    map((requests) => requests.find((req) => req.id === id) as KnownRequest<T> | undefined)
-  )
+    map((requests) => requests.find((req) => req.id === id) as KnownRequest<T> | undefined),
+  ),
 )
 
 // just to fix typings
 export const useRequest = <T extends KnownRequestTypes>(
-  id: KnownRequestId<T>
+  id: KnownRequestId<T>,
 ): KnownRequest<T> | undefined => useRequestInner(id)

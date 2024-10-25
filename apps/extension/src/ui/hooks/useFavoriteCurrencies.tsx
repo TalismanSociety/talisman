@@ -14,7 +14,7 @@ export const useFavoriteCurrencies = () => {
       }
       await setFavoritesInner(value)
     },
-    [setFavoritesInner, favorites]
+    [setFavoritesInner, favorites],
   )
 
   return [favorites, setFavorites] as const

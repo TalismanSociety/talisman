@@ -33,15 +33,25 @@ const Content = () => {
     () =>
       yup
         .object({
-          currentPw: yup.string().required(""),
-          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
-          newPwConfirm: yup
+          currentPw: yup.string().required(" "),
+          newPw: yup
             .string()
-            .required("")
-            .oneOf([yup.ref("newPw"), null], t("Passwords must match!")),
+            .required(" ")
+            .min(6, t("Password must be at least 6 characters long")),
+          newPwConfirm: yup.string().required(" "),
+        })
+        .test((value, ctx) => {
+          const { newPw, newPwConfirm } = value
+          if (newPw && newPwConfirm && newPw !== newPwConfirm) {
+            return ctx.createError({
+              path: "newPwConfirm",
+              message: t("Passwords must match"),
+            })
+          }
+          return true
         })
         .required(),
-    [t]
+    [t],
   )
 
   const {
@@ -91,7 +101,7 @@ const Content = () => {
           if (status === ChangePasswordStatusUpdateStatus.DONE) {
             resolve()
           }
-        })
+        }),
       ).catch((err) => {
         switch (err.message) {
           case "Incorrect password":
@@ -109,7 +119,7 @@ const Content = () => {
         }
       })
     },
-    [setError, t]
+    [setError, t],
   )
 
   const handleBackupClick = useCallback(() => {
@@ -129,7 +139,7 @@ const Content = () => {
       <HeaderBlock title={t("Change your password")} />
       <p className="text-body-secondary my-10">
         {t(
-          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
+          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers.",
         )}
       </p>
       {!allBackedUp && (
@@ -137,7 +147,7 @@ const Content = () => {
           <div className="flex items-center justify-between">
             <InfoIcon className="text-primary mr-10 text-3xl" />
             {t(
-              "You'll need to confirm your recovery phrase is backed up before you change your password."
+              "You'll need to confirm your recovery phrase is backed up before you change your password.",
             )}
           </div>
           <div className="flex justify-end">

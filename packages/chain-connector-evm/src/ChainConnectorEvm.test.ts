@@ -1,4 +1,4 @@
-import {} from "./ChainConnectorEvm"
+import "./ChainConnectorEvm"
 
 describe("ChainConnectorEvm", () => {
   it("Can be tested", () => {})

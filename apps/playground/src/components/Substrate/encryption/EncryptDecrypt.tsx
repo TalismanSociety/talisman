@@ -1,5 +1,5 @@
-import { web3FromSource } from "@polkadot/extension-dapp"
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
+import { web3FromSource } from "@polkadot/extension-dapp"
 import { hexToString, u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
@@ -21,12 +21,12 @@ const AccountPicker: FC<{
 }> = ({ accounts, selectedAccount, onChange }) => {
   const accountsWithIds = useMemo(
     () => accounts.map((account) => ({ id: `${account.address}-${account.meta.source}`, account })),
-    [accounts]
+    [accounts],
   )
 
   const selected = useMemo(
     () => accountsWithIds.find((account) => account.account === selectedAccount)?.id ?? "select",
-    [accountsWithIds, selectedAccount]
+    [accountsWithIds, selectedAccount],
   )
 
   const handleAccountChange: ChangeEventHandler<HTMLSelectElement> = useCallback(
@@ -34,7 +34,7 @@ const AccountPicker: FC<{
       const account = accountsWithIds.find((account) => account.id === e.target.value)?.account
       onChange?.(account)
     },
-    [accountsWithIds, onChange]
+    [accountsWithIds, onChange],
   )
 
   return (
@@ -80,14 +80,14 @@ export const EncryptDecrypt = () => {
             address: senderAccount.address,
             recipient: getPublicKeyFromAddress(recipientAccount.address), // DECRYPTER_PUB_KEY,
             message: data,
-          })
+          }),
         )
       } catch (err) {
         setError(err as Error)
       }
       setIsProcessing(false)
     },
-    [recipientAccount, senderAccount]
+    [recipientAccount, senderAccount],
   )
 
   const handleDecrypt = useCallback(
@@ -106,14 +106,14 @@ export const EncryptDecrypt = () => {
             address: recipientAccount.address,
             sender: getPublicKeyFromAddress(senderAccount.address),
             message: data,
-          })
+          }),
         )
       } catch (err) {
         setError(err as Error)
       }
       setIsProcessing(false)
     },
-    [recipientAccount, senderAccount]
+    [recipientAccount, senderAccount],
   )
 
   return (
@@ -152,7 +152,7 @@ export const EncryptDecrypt = () => {
       >
         Encrypt Message
       </Button>
-      {encryptResult && <pre className="my-8 ">{JSON.stringify(encryptResult, undefined, 2)}</pre>}
+      {encryptResult && <pre className="my-8">{JSON.stringify(encryptResult, undefined, 2)}</pre>}
       <br />
       <br />
       <Button
@@ -165,7 +165,7 @@ export const EncryptDecrypt = () => {
       </Button>
       {decryptResult?.result && (
         <>
-          <pre className="my-8 ">{JSON.stringify(decryptResult, undefined, 2)}</pre>
+          <pre className="my-8">{JSON.stringify(decryptResult, undefined, 2)}</pre>
           <div>Decrypted hex : {hexToString(decryptResult.result)}</div>
         </>
       )}

@@ -8,7 +8,7 @@ import { isErc20Token } from "@ui/util/isErc20Token"
 // TODO leverage a selectorFamily (waiting for jotai migration)
 export const useErc20Token = (
   evmNetworkId: EvmNetworkId | null | undefined,
-  contractAddress: EvmAddress | null | undefined
+  contractAddress: EvmAddress | null | undefined,
 ) => {
   const tokens = useTokens()
 
@@ -21,9 +21,9 @@ export const useErc20Token = (
           .find(
             (t) =>
               t.evmNetwork?.id === evmNetworkId &&
-              t.contractAddress.toLowerCase() === contractAddress.toLowerCase()
+              t.contractAddress.toLowerCase() === contractAddress.toLowerCase(),
           )) ||
       null,
-    [evmNetworkId, contractAddress, tokens]
+    [evmNetworkId, contractAddress, tokens],
   )
 }

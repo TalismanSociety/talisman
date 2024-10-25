@@ -5,5 +5,5 @@ import { map } from "rxjs"
 import { debugObservable } from "./util/debugObservable"
 
 export const [useContacts, contacts$] = bind(
-  addressBookStore.observable.pipe(map(Object.values), debugObservable("contacts$"))
+  addressBookStore.observable.pipe(map(Object.values), debugObservable("contacts$")),
 )

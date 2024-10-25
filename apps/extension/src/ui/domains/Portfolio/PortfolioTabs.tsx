@@ -33,14 +33,14 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
 
   const selected = useMemo(
     () => tabs.find((tab) => location.pathname.startsWith(tab.value)),
-    [location.pathname, tabs]
+    [location.pathname, tabs],
   )
 
   const handleChange = useCallback(
     (value: string) => {
       navigate(`${value}`)
     },
-    [navigate]
+    [navigate],
   )
 
   return (

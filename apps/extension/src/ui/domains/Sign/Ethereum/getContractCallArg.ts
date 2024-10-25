@@ -1,9 +1,10 @@
-import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 import { getAbiItem } from "viem"
+
+import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 
 export const getContractCallArg = <TResult>(
   decodedTx: DecodedEvmTransaction,
-  argName: string
+  argName: string,
 ): TResult => {
   if (!decodedTx.contractCall || !decodedTx.abi) throw new Error("Missing contract call or abi")
 

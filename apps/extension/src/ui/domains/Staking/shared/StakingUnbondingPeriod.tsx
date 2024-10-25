@@ -1,4 +1,4 @@
-import { formatDuration } from "date-fns"
+import { Duration, formatDuration } from "date-fns"
 import { ChainId } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,7 +21,7 @@ export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }>
             locale,
           })
         : t("N/A"),
-    [duration, locale, t]
+    [duration, locale, t],
   )
 
   if (isLoading)

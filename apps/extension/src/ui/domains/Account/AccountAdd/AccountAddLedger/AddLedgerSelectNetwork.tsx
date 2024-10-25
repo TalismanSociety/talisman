@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountAddressType, Chain } from "@extension/core"
+import { Chain, UiAccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
@@ -18,17 +18,12 @@ import {
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
+import { isAddSubstrateLedgerAppType, isUiAccountAddressType } from "@ui/util/typeCheckers"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
-
-type FormData = {
-  chainId: string
-  type: AccountAddressType
-  substrateAppType: AddSubstrateLedgerAppType
-}
 
 const AppVersionButton: FC<{
   title: ReactNode
@@ -47,14 +42,14 @@ const AppVersionButton: FC<{
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected
           ? "border-body bg-grey-800"
-          : "border-body-disabled enabled:hover:border-body-secondary enabled:hover:bg-grey-800"
+          : "border-body-disabled enabled:hover:border-body-secondary enabled:hover:bg-grey-800",
       )}
       disabled={disabled}
     >
       <div
         className={classNames(
           "group-enabled:group-hover:text-body text-base",
-          selected && "text-body"
+          selected && "text-body",
         )}
       >
         {title}
@@ -102,7 +97,9 @@ export const AddLedgerSelectNetwork = () => {
     () =>
       yup
         .object({
-          type: yup.string().oneOf(["sr25519", "ethereum"], ""),
+          type: yup.mixed(isUiAccountAddressType).defined(),
+          chainId: yup.string(),
+          substrateAppType: yup.mixed(isAddSubstrateLedgerAppType),
         })
         .required()
         .test("validateFormData", t("Invalid parameters"), async (val, ctx) => {
@@ -128,7 +125,7 @@ export const AddLedgerSelectNetwork = () => {
           }
           return true
         }),
-    [chains, t]
+    [chains, t],
   )
 
   const {
@@ -139,9 +136,11 @@ export const AddLedgerSelectNetwork = () => {
     formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
-    defaultValues,
+    defaultValues: defaultValues as FormData,
     resolver: yupResolver(schema),
   })
+
+  type FormData = yup.InferType<typeof schema>
 
   const [accountType, chainId, substrateAppType] = watch(["type", "chainId", "substrateAppType"])
 
@@ -152,7 +151,7 @@ export const AddLedgerSelectNetwork = () => {
       updateData({ type, chainId, substrateAppType })
       navigate("account")
     },
-    [navigate, updateData]
+    [navigate, updateData],
   )
 
   const handleNetworkChange = useCallback(
@@ -162,14 +161,14 @@ export const AddLedgerSelectNetwork = () => {
         chainId: chain?.id,
       })
     },
-    [reset]
+    [reset],
   )
 
   const handleTypeChange = useCallback(
-    (type: AccountAddressType) => {
+    (type: UiAccountAddressType) => {
       reset({ type })
     },
-    [reset]
+    [reset],
   )
 
   const handleSubstrateAppTypeClick = useCallback(
@@ -178,7 +177,7 @@ export const AddLedgerSelectNetwork = () => {
         shouldValidate: true,
       })
     },
-    [setValue]
+    [setValue],
   )
 
   const [isLedgerReady, setIsLedgerReady] = useState(false)
@@ -218,7 +217,7 @@ export const AddLedgerSelectNetwork = () => {
                         <span
                           className={classNames(
                             "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
-                            chain?.hasCheckMetadataHash ? "visible" : "invisible"
+                            chain?.hasCheckMetadataHash ? "visible" : "invisible",
                           )}
                         >
                           {t("Recommended")}
@@ -252,7 +251,7 @@ export const AddLedgerSelectNetwork = () => {
           </>
         )}
         <div className={classNames("mt-16 h-[20rem]", showConnect ? "visible" : "invisible")}>
-          {showConnect && accountType === "sr25519" && (
+          {showConnect && accountType === "sr25519" && chainId && (
             <>
               {substrateAppType === AddSubstrateLedgerAppType.Legacy && (
                 <ConnectLedgerSubstrateLegacy

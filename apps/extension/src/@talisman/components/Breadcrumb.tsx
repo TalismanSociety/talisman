@@ -22,7 +22,7 @@ export const Breadcrumb: FC<{
                 onClick={onClick}
                 className={classNames(
                   "bg-grey-900 hover:bg-grey-800 hover:text-grey-300 h-[3.2rem] truncate rounded-sm px-4",
-                  className
+                  className,
                 )}
               >
                 {label}

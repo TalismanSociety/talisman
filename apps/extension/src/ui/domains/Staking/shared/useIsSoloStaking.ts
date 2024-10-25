@@ -5,7 +5,7 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 export const useIsSoloStaking = (
   chainId: ChainId | null | undefined,
-  address: string | null | undefined
+  address: string | null | undefined,
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 

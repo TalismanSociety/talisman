@@ -61,7 +61,7 @@ export const resolveAznsNames = async (config: Config, names: string[]): Promise
       })
 
       if (address) resolvedNames.set(name, [address, "azns"])
-    })
+    }),
   )
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 
@@ -77,7 +77,7 @@ export const resolveEnsNames = async (config: Config, names: string[]): Promise<
   if (names.every((name) => !isPotentialEns(name))) return resolvedNames
 
   const client = await config.chainConnectors.evm?.getPublicClientForEvmNetwork(
-    config.networkIdEthereum
+    config.networkIdEthereum,
   )
   if (!client) {
     log.warn(`Could not find Ethereum client in OnChainId::resolveNames`)
@@ -98,7 +98,7 @@ export const resolveEnsNames = async (config: Config, names: string[]): Promise<
       } catch (cause) {
         throw new Error(`Failed to resolve address for ens domain '${name}'`, { cause })
       }
-    })
+    }),
   )
 
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))

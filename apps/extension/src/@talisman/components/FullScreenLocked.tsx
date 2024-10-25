@@ -16,7 +16,7 @@ export const FullScreenLocked = ({ className, title, subtitle }: Props) => (
     <section
       className={classNames(
         "text-body-secondary flex select-none flex-col items-center",
-        className
+        className,
       )}
     >
       <div className="relative">

@@ -38,7 +38,7 @@ export const OnboardingToast = () => {
         </div>
       </div>
     ),
-    [t]
+    [t],
   )
 
   useEffect(() => {

@@ -7,7 +7,7 @@ import { AccountCategory, useAccounts } from "@ui/state"
  */
 export const useAccountAddresses = (
   ethereumOnly?: boolean,
-  accountFilter?: AccountCategory
+  accountFilter?: AccountCategory,
 ): string[] => {
   const accounts = useAccounts(accountFilter)
   return accounts

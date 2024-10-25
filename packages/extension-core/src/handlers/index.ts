@@ -49,7 +49,7 @@ const PORT_DISCONNECTED_MESSAGES = [
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
   port: chrome.runtime.Port,
-  extensionPortName = PORT_EXTENSION
+  extensionPortName = PORT_EXTENSION,
 ): void => {
   const { id, message, request } = data
   const isExtension = port.name === extensionPortName
@@ -116,7 +116,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           id,
           error: cleanupEvmErrorMessage(
             (message === "pri(eth.request)" && evmError.details) ||
-              (evmError.shortMessage ?? evmError.message ?? "Unknown error")
+              (evmError.shortMessage ?? evmError.message ?? "Unknown error"),
           ),
           code: error.code,
           rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently

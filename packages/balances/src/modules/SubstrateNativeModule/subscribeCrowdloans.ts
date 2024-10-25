@@ -26,7 +26,7 @@ export async function subscribeCrowdloans(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<SubNativeBalance[]>
+  callback: SubscriptionCallback<SubNativeBalance[]>,
 ) {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -35,7 +35,7 @@ export async function subscribeCrowdloans(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
       miniMetadata,
-    ])
+    ]),
   )
   const crowdloanTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
@@ -45,7 +45,7 @@ export async function subscribeCrowdloans(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        allChains[token.chain.id]
+        allChains[token.chain.id],
       )
       return typeof chainMeta?.crowdloanPalletId === "string"
     })
@@ -60,12 +60,12 @@ export async function subscribeCrowdloans(
         addresses.filter((address) => !isEthereumAddress(address)),
       ])
       // remove tokens which aren't crowdloan tokens
-      .filter(([tokenId]) => crowdloanTokenIds.includes(tokenId))
+      .filter(([tokenId]) => crowdloanTokenIds.includes(tokenId)),
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByCrowdloanToken, tokens)
   const chains = Object.fromEntries(
-    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId))
+    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId)),
   )
   const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
@@ -112,7 +112,7 @@ export async function subscribeCrowdloans(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode parachains on chain ${chainId}`
+            `Failed to decode parachains on chain ${chainId}`,
           )
 
           const paraIds = decoded ?? []
@@ -134,14 +134,14 @@ export async function subscribeCrowdloans(
     }
     const subscribeParaFundIndexes = (
       paraIds: number[],
-      callback: SubscriptionCallback<ParaFundIndex[]>
+      callback: SubscriptionCallback<ParaFundIndex[]>,
     ) => {
       const scaleCoder = chainStorageCoders.get(chainId)?.funds
       const queries = paraIds.flatMap((paraId): RpcStateQuery<ParaFundIndex> | [] => {
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid paraId in ${chainId} funds query ${paraId}`,
-          paraId
+          paraId,
         )
         if (!stateKey) return []
 
@@ -164,7 +164,7 @@ export async function subscribeCrowdloans(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode paras on chain ${chainId}`
+            `Failed to decode paras on chain ${chainId}`,
           )
 
           const firstPeriod = decoded?.first_period?.toString?.() ?? ""
@@ -191,7 +191,7 @@ export async function subscribeCrowdloans(
     const subscribeFundContributions = (
       funds: Array<{ paraId: number; fundIndex: number }>,
       addresses: string[],
-      callback: SubscriptionCallback<FundContribution[]>
+      callback: SubscriptionCallback<FundContribution[]>,
     ) => {
       // TODO: Watch system_events in order to subscribe to changes, then redo the contributions query when changes are detected:
       // https://github.com/polkadot-js/api/blob/8fe02a14345b57e6abb8f7f2c2b624cf70c51b23/packages/api-derive/src/crowdloan/ownContributions.ts#L32-L47
@@ -220,9 +220,9 @@ export async function subscribeCrowdloans(
               result: await chainConnector.send<Array<string | null> | undefined>(
                 chainId,
                 "childstate_getStorageEntries",
-                [childKey, storageKeys]
+                [childKey, storageKeys],
               ),
-            }))
+            })),
           )
 
           const contributions = results.flatMap((queryResult) => {
@@ -231,7 +231,7 @@ export async function subscribeCrowdloans(
             return (Array.isArray(result) ? result : []).flatMap((encoded, index) => {
               const amount = (() => {
                 try {
-                  return typeof encoded === "string" ? u128.dec(encoded) ?? 0n : 0n
+                  return typeof encoded === "string" ? (u128.dec(encoded) ?? 0n) : 0n
                 } catch {
                   return 0n
                 }
@@ -286,7 +286,7 @@ export async function subscribeCrowdloans(
 
     const paraIds$ = asObservable(subscribeParaIds)().pipe(
       scan((_, next) => Array.from(new Set(next.flatMap((paraIds) => paraIds))), [] as number[]),
-      share()
+      share(),
     )
 
     const fundIndexesByParaId$ = paraIds$.pipe(
@@ -300,14 +300,14 @@ export async function subscribeCrowdloans(
           }
         }
         return state
-      }, new Map<number, Set<number>>())
+      }, new Map<number, Set<number>>()),
     )
 
     const contributionsByAddress$ = fundIndexesByParaId$.pipe(
       map((fundIndexesByParaId) =>
         Array.from(fundIndexesByParaId).flatMap(([paraId, fundIndexes]) =>
-          Array.from(fundIndexes).map((fundIndex) => ({ paraId, fundIndex }))
-        )
+          Array.from(fundIndexes).map((fundIndex) => ({ paraId, fundIndex })),
+        ),
       ),
       map((funds) => asObservable(subscribeFundContributions)(funds, addresses)),
       switchAll(),
@@ -317,7 +317,7 @@ export async function subscribeCrowdloans(
           state.set(address, (state.get(address) ?? new Set()).add(contribution))
         }
         return state
-      }, new Map<string, Set<FundContribution>>())
+      }, new Map<string, Set<FundContribution>>()),
     )
 
     const subscription = contributionsByAddress$.subscribe({
@@ -339,7 +339,7 @@ export async function subscribeCrowdloans(
                 meta: { paraId },
               })),
             }
-          }
+          },
         )
         if (balances.length > 0) callback(null, balances)
       },

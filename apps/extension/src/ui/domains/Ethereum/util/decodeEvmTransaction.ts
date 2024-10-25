@@ -1,16 +1,16 @@
 import {
-  PublicClient,
-  TransactionRequestBase,
   decodeFunctionData,
   getAbiItem,
   getContract,
   parseAbi,
+  PublicClient,
+  TransactionRequestBase,
 } from "viem"
 
 import {
-  abiErc1155,
   abiErc20,
   abiErc721,
+  abiErc1155,
   abiMoonStaking,
 } from "../../../../../../../packages/extension-core/src/util/abi"
 import { abiMoonConvictionVoting } from "../../../../../../../packages/extension-core/src/util/abi/abiMoonConvictionVoting"
@@ -52,7 +52,7 @@ const STANDARD_CONTRACTS = [
 
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
-  tx: TransactionRequestBase
+  tx: TransactionRequestBase,
 ) => {
   // transactions that provision a contract have an empty 'to' field
   const { to: targetAddress, value, data } = tx

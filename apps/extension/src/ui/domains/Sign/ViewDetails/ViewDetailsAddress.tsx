@@ -22,7 +22,7 @@ export const ViewDetailsAddress: FC<
 
   const formatted = useMemo(
     () => (address ? encodeAnyAddress(address, chainPrefix ?? undefined) : ""),
-    [address, chainPrefix]
+    [address, chainPrefix],
   )
 
   const handleClick = useCallback(() => {

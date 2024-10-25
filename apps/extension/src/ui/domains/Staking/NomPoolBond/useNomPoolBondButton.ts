@@ -74,7 +74,7 @@ export const useNomPoolBondButton = ({
       open(openArgs)
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [genericEvent, open, openArgs]
+    [genericEvent, open, openArgs],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }

@@ -50,7 +50,7 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
       onClick?.(e)
       setOpen(false)
     },
-    [setOpen, onClick]
+    [setOpen, onClick],
   )
 
   return (
@@ -60,7 +60,7 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
       onClick={handleClick}
       className={classNames(
         "enabled:hover:bg-grey-800 focus-visible:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 text-left",
-        className
+        className,
       )}
     />
   )
@@ -74,7 +74,7 @@ export const ContextMenuOptionItem: FC<{
   <ContextMenuItem
     className={classNames(
       "flex items-center justify-between gap-16",
-      selected ? "text-body" : "text-body-secondary"
+      selected ? "text-body" : "text-body-secondary",
     )}
     onClick={onClick}
   >

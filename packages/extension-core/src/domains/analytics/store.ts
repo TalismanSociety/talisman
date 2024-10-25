@@ -63,7 +63,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
   async capture(
     eventName: string,
     rawProperties?: PostHogCaptureProperties,
-    eventTimestamp?: number
+    eventTimestamp?: number,
   ) {
     log.debug("AnalyticsStore.capture", { eventName, rawProperties, eventTimestamp })
     const timestamp = eventTimestamp ?? Date.now()
@@ -115,7 +115,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
           else result.toKeep.push(item)
           return result
         },
-        { toSend: [], toKeep: [] }
+        { toSend: [], toKeep: [] },
       )
       if (toSend.length === 0) return true
 

@@ -32,7 +32,7 @@ const AssetRowStakingReminder = (props: ReturnType<typeof useShowStakingBanner>)
       className={classNames(
         colours?.["text"],
         colours?.["background"],
-        `flex h-[4.1rem] w-full cursor-pointer items-center justify-between rounded-t px-8 text-sm`
+        `flex h-[4.1rem] w-full cursor-pointer items-center justify-between rounded-t px-8 text-sm`,
       )}
     >
       <button type="button" className="flex items-center gap-4" onClick={handleClickStakingBanner}>
@@ -96,7 +96,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
         type="button"
         className={classNames(
           "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden text-left text-base",
-          stakingReminder.showBanner ? "rounded-b" : "rounded"
+          stakingReminder.showBanner ? "rounded-b" : "rounded",
         )}
         onClick={handleClick}
       >
@@ -140,7 +140,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             balancesStatus={status}
             className={classNames(
               "noPadRight",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           />
         </div>
@@ -167,7 +167,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             balancesStatus={status}
             className={classNames(
               canBondNomPool && "group-hover:hidden",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           />
         </div>

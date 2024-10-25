@@ -63,7 +63,7 @@ export const ConfigureAccount = () => {
   }, [chains, state])
   const balances = useBalancesByParams({ addressesByChain })
   const chain = useChainByGenesisHash(
-    (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined
+    (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined,
   )
   const totalFiat = useBalancesFiatTotal(balances.balances)
 
@@ -82,7 +82,7 @@ export const ConfigureAccount = () => {
         className="mb-12"
         title={t("Name your account")}
         text={t(
-          "Help distinguish your account by giving it a name. This would ideally be the same as the name on your Polkadot Vault device to make it easy to identify when signing."
+          "Help distinguish your account by giving it a name. This would ideally be the same as the name on your Polkadot Vault device to make it easy to identify when signing.",
         )}
       />
       <form className="my-20 space-y-10" onSubmit={submitConfigure}>

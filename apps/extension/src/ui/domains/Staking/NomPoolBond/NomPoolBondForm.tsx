@@ -119,7 +119,7 @@ const TokenInput = () => {
 
       return setPlancks(null)
     },
-    [setPlancks, token]
+    [setPlancks, token],
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -183,7 +183,7 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [currency, setPlancks, token, tokenRates]
+    [currency, setPlancks, token, tokenRates],
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)

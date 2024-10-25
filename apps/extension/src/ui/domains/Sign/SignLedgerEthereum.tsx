@@ -1,24 +1,27 @@
-import i18next from "@common/i18nConfig"
-import { bufferToHex, stripHexPrefix } from "@ethereumjs/util"
-import { AccountJsonHardwareEthereum, getTransactionSerializable } from "@extension/core"
-import { EthSignMessageMethod } from "@extension/core"
-import { log } from "@extension/shared"
+import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { classNames } from "@talismn/util"
-import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 import {
-  Signature,
-  TransactionRequest,
   hexToBigInt,
   isHex,
   serializeTransaction,
+  Signature,
   signatureToHex,
+  TransactionRequest,
 } from "viem"
+
+import i18next from "@common/i18nConfig"
+import {
+  AccountJsonHardwareEthereum,
+  EthSignMessageMethod,
+  getTransactionSerializable,
+} from "@extension/core"
+import { log } from "@extension/shared"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 
 import {
   LedgerConnectionStatus,
@@ -51,7 +54,7 @@ const signWithLedger = async (
   chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
   payload: unknown,
-  accountPath: string
+  accountPath: string,
 ): Promise<`0x${string}`> => {
   switch (method) {
     case "eth_signTypedData_v3":
@@ -71,19 +74,19 @@ const signWithLedger = async (
           "EIP712Domain",
           domain,
           types,
-          SignTypedDataVersion.V4
+          SignTypedDataVersion.V4,
         ).toString("hex")
         const hashStructMessageHex = TypedDataUtils.hashStruct(
           primaryType as string,
           message,
           types,
-          SignTypedDataVersion.V4
+          SignTypedDataVersion.V4,
         ).toString("hex")
 
         sig = await ledger.signEIP712HashedMessage(
           accountPath,
           domainSeparatorHex,
-          hashStructMessageHex
+          hashStructMessageHex,
         )
       }
 
@@ -92,9 +95,7 @@ const signWithLedger = async (
 
     case "personal_sign": {
       // ensure that it is hex encoded
-      const messageHex = isHex(payload)
-        ? payload
-        : bufferToHex(Buffer.from(payload as string, "utf8"))
+      const messageHex = isHex(payload) ? payload : Buffer.from(payload as string).toString("hex")
 
       const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
 
@@ -155,7 +156,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
 
   const inputsReady = useMemo(
     () => !!payload && (method !== "eth_sendTransaction" || !!evmNetworkId),
-    [evmNetworkId, method, payload]
+    [evmNetworkId, method, payload],
   )
 
   // reset
@@ -170,7 +171,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry, t]
+    [refresh, status, message, requiresManualRetry, t],
   )
 
   const _onRefresh = useCallback(() => {
@@ -188,7 +189,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
         Number(evmNetworkId),
         method,
         payload,
-        (account as AccountJsonHardwareEthereum).path
+        (account as AccountJsonHardwareEthereum).path,
       )
       setIsSigned(true)
 
@@ -207,7 +208,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       // ETH ledger app requires EIP-1559 type 2 transactions
       if (error.reason === "invalid object key - maxPriorityFeePerGas")
         setError(
-          t("Sorry, Talisman doesn't support signing transactions with Ledger on this network.")
+          t("Sorry, Talisman doesn't support signing transactions with Ledger on this network."),
         )
       else setError(error.reason ?? error.message)
     }

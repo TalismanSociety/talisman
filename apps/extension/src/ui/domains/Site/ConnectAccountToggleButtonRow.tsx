@@ -1,7 +1,8 @@
-import { AccountJsonAny } from "@extension/core"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -18,7 +19,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     onClick={onClick}
     className={classNames(
       "hover:bg-field flex h-24 w-full shrink-0 items-center gap-6 px-6",
-      !isConnected && "text-body-secondary"
+      !isConnected && "text-body-secondary",
     )}
   >
     <AccountIcon
@@ -55,7 +56,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     <div
       className={classNames(
         "mx-2 h-4 w-4 shrink-0 rounded-full",
-        isConnected ? "bg-primary" : "bg-grey-700"
+        isConnected ? "bg-primary" : "bg-grey-700",
       )}
     ></div>
   </button>

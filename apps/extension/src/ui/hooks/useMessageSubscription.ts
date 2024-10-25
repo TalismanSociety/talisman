@@ -1,8 +1,9 @@
-import { UnsubscribeFn } from "@extension/core"
-import { DEBUG } from "@extension/shared"
 import { isFunction } from "@polkadot/util"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
+
+import { UnsubscribeFn } from "@extension/core"
+import { DEBUG } from "@extension/shared"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscription = { subject: BehaviorSubject<any>; unsubscribe?: () => void }
@@ -17,7 +18,7 @@ export const useMessageSubscription = <S, R = S>(
   key: string,
   initialSubjectValue: S,
   subscribe: InitSubscriptionCallback<S>,
-  transform: MapSubjectToResult<S, R> = DEFAULT_TRANSFORM
+  transform: MapSubjectToResult<S, R> = DEFAULT_TRANSFORM,
 ): R => {
   // create the rxJS subject if it doesn't exist
   if (!subscriptions[key])

@@ -91,7 +91,7 @@ export function useTooltip({
       ...interactions,
       ...data,
     }),
-    [open, setOpen, interactions, data]
+    [open, setOpen, interactions, data],
   )
 }
 
@@ -134,7 +134,7 @@ export const TooltipTrigger = forwardRef<
         ...props,
         ...children.props,
         "data-state": context.open ? "open" : "closed",
-      })
+      }),
     )
   }
 
@@ -157,7 +157,7 @@ export const TooltipContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
       className = "rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-xs shadow",
       ...props
     },
-    propRef
+    propRef,
   ) {
     const context = useTooltipContext()
     const ref = useMergeRefs([context.refs.setFloating, propRef])
@@ -181,5 +181,5 @@ export const TooltipContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
         )}
       </FloatingPortal>
     )
-  }
+  },
 )

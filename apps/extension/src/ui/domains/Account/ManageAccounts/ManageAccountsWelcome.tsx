@@ -15,7 +15,7 @@ export const ManageAccountsWelcome = () => {
   const catalog = useAccountsCatalog()
   const hasFolders = useMemo(
     () => [...catalog.portfolio, ...catalog.watched].some((a) => a.type === "folder"),
-    [catalog]
+    [catalog],
   )
 
   const handleClose = useCallback(
@@ -23,7 +23,7 @@ export const ManageAccountsWelcome = () => {
       if (dontShowAgain) setHideWelcome(true)
       close()
     },
-    [close, setHideWelcome]
+    [close, setHideWelcome],
   )
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const Content: FC<{
       <img src={imgWelcome} alt="welcome" className="aspect-[705/232]" />
       <p className="text-body-secondary text-sm">
         {t(
-          "Talisman lets you neatly organise and group your accounts into folders. Keep everything in one place for easy access and enhanced control over your assets."
+          "Talisman lets you neatly organise and group your accounts into folders. Keep everything in one place for easy access and enhanced control over your assets.",
         )}
       </p>
       <div className="text-right">

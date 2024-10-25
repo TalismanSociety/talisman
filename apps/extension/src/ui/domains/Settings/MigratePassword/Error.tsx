@@ -51,7 +51,7 @@ export const MigratePasswordError = () => {
       </p>
       <p className="text-body-secondary text-sm">
         {t(
-          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted."
+          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted.",
         )}
         {useErrorTracking && (
           <Trans t={t}>

@@ -51,7 +51,7 @@ const safelyGetAddress = async (
   ledger: SubstrateApp,
   accountIndex: number,
   addressIndex: number,
-  attempt = 1
+  attempt = 1,
 ): Promise<{ address: string }> => {
   if (!ledger) throw new Error("Ledger not connected")
 
@@ -64,7 +64,7 @@ const safelyGetAddress = async (
       LEDGER_HARDENED_OFFSET + accountIndex,
       LEDGER_HARDENED_OFFSET + change,
       LEDGER_HARDENED_OFFSET + addressOffset,
-      false
+      false,
     )
     if (!address) throw new LedgerError(error_message, "GetAddressError", return_code)
     return { address }
@@ -114,7 +114,7 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null, persist = fals
         throwAfter(5_000, "Timeout on Ledger Substrate Legacy getAddress"),
       ])
     },
-    [ledger]
+    [ledger],
   )
 
   const connectLedger = useCallback(
@@ -170,7 +170,7 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null, persist = fals
       refConnecting.current = false
       setIsLoading(false)
     },
-    [app, chain, t]
+    [app, chain, t],
   )
 
   const { status, message, requiresManualRetry } = useMemo<{

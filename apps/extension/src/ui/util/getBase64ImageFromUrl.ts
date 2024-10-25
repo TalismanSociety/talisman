@@ -33,7 +33,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
   size: {
     width: number
     height: number
-  }
+  },
 ) => {
   try {
     const response = await fetch(url)
@@ -84,7 +84,7 @@ export const getBase64ImageFromUrl = async (
   defaultSvgSize?: {
     width: number
     height: number
-  }
+  },
 ) => {
   return defaultSvgSize && isSvgUrl(url)
     ? getBase64ImageFromUrlSvgDefaultSize(url, defaultSvgSize)

@@ -41,8 +41,8 @@ const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) =
       <TooltipTrigger
         onClick={canSendFunds ? sendFunds : undefined}
         className={classNames(
-          " text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
-          canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
+          "text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
+          canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50",
         )}
       >
         <SendIcon />
@@ -106,15 +106,15 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
       account
         ? new Balances(balancesByAddress.get(account.address) ?? [])
         : folder
-        ? new Balances(
-            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          )
-        : // only show networkBalances when no account / folder selected
-          // networkBalances is basically the full portfolio, without any watch-only accounts
-          // i.e. `Total Portfolio`
-          // on the other hand, allBalances includes watch-only accounts
-          networkBalances,
-    [account, balancesByAddress, folder, networkBalances]
+          ? new Balances(
+              folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? []),
+            )
+          : // only show networkBalances when no account / folder selected
+            // networkBalances is basically the full portfolio, without any watch-only accounts
+            // i.e. `Total Portfolio`
+            // on the other hand, allBalances includes watch-only accounts
+            networkBalances,
+    [account, balancesByAddress, folder, networkBalances],
   )
 
   const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
@@ -139,10 +139,10 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
           <div className="flex items-center gap-3">
             <div className={classNames("truncate", account ? "" : "text-body-secondary")}>
               {account
-                ? account.name ?? t("Unnamed Account")
+                ? (account.name ?? t("Unnamed Account"))
                 : folder
-                ? folder.name
-                : t("Total Portfolio")}
+                  ? folder.name
+                  : t("Total Portfolio")}
             </div>
             <AccountTypeIcon
               className="text-primary"

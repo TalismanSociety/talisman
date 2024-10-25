@@ -43,7 +43,7 @@ export const NftViewModeToggleButton = () => {
 
   const handleViewModeClick = useCallback(
     () => setViewMode((prev) => (prev === "list" ? "tiles" : "list")),
-    [setViewMode]
+    [setViewMode],
   )
 
   return (
@@ -73,7 +73,7 @@ const NetworkFilterButton = () => {
       setNftNetworkFilter(networks.find((n) => n.id === networkId))
       close()
     },
-    [close, networks]
+    [close, networks],
   )
 
   return (
@@ -116,7 +116,7 @@ const PortfolioSearch = () => {
         "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4",
         "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
         "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
-        IS_POPUP ? "w-full" : "max-w-[37.4rem]"
+        IS_POPUP ? "w-full" : "max-w-[37.4rem]",
       )}
       placeholder={t("Search")}
       onChange={setNftSearch}
@@ -137,7 +137,7 @@ const VisibilityFilterButton = () => {
             <ContextMenuTrigger asChild>
               <PortfolioToolbarButton
                 className={classNames(
-                  nftsVisibilityFilter !== NftVisibilityFilter.Default && "text-primary"
+                  nftsVisibilityFilter !== NftVisibilityFilter.Default && "text-primary",
                 )}
               >
                 <ToolbarFilterIcon />

@@ -1,6 +1,7 @@
-import { SignerPayloadGenesisHash } from "@extension/core"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { sleep } from "@talismn/util"
+
+import { SignerPayloadGenesisHash } from "@extension/core"
 
 // because of validation the same query is done 3 times minimum per url, make all await same promise
 const rpcInfoCache = new Map<string, Promise<SubstrateRpcInfo | null>>()

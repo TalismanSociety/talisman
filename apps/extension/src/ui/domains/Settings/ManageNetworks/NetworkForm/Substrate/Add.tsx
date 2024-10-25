@@ -9,8 +9,8 @@ import { useChains } from "@ui/state"
 
 import { SubNetworkForm } from "./Form"
 import { getSubstrateRpcInfo } from "./helpers"
-import { subNetworkFormSchema } from "./schema"
-import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
+import { SubNetworkFormData, subNetworkFormSchema } from "./schema"
+import { SubNetworkFormBaseProps } from "./types"
 
 const DEFAULT_VALUES: Partial<SubNetworkFormData> = {
   accountFormat: "*25519",
@@ -90,14 +90,14 @@ export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
   )
 }
 
-const useRpcInfo = (rpcUrl: string) => {
+const useRpcInfo = (rpcUrl: string | null | undefined) => {
   const [debouncedRpcUrl, setDebouncedRpcUrl] = useState(rpcUrl)
   useDebounce(
     () => {
       setDebouncedRpcUrl(rpcUrl)
     },
     250,
-    [rpcUrl]
+    [rpcUrl],
   )
 
   return useQuery({

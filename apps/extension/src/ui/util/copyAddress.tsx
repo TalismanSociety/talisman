@@ -1,7 +1,8 @@
-import { notify } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { QrIcon } from "@talismn/icons"
 import { IconButton } from "talisman-ui"
+
+import { notify } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 
 import i18next from "../../common/i18nConfig"
 
@@ -24,7 +25,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
         ) : undefined,
       },
       // set an id to prevent multiple clicks to display multiple notifications
-      { toastId }
+      { toastId },
     )
     return true
   } catch (err) {
@@ -34,7 +35,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
         title: i18next.t(`Copy failed`),
         subtitle: shortenAddress(address),
       },
-      { toastId }
+      { toastId },
     )
     return false
   }

@@ -1,11 +1,11 @@
+import { FC, useCallback, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
+
 import { ProviderType } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { Favicon } from "@talisman/components/Favicon"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
-import { FC, useCallback, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, ModalDialog } from "talisman-ui"
-import { Modal, useOpenClose } from "talisman-ui"
 
 import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
 
@@ -70,7 +70,7 @@ export const AuthorizedSite: FC<{
     <div>
       <button
         type="button"
-        className=" text-body-secondary hover:text-body bg-grey-850 hover:bg-grey-800 flex h-24 w-full items-center gap-3 rounded-sm px-8 text-left"
+        className="text-body-secondary hover:text-body bg-grey-850 hover:bg-grey-800 flex h-24 w-full items-center gap-3 rounded-sm px-8 text-left"
         onClick={toggle}
       >
         <div className="text-body">

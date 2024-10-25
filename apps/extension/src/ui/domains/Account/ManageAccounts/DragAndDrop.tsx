@@ -31,7 +31,7 @@ export const TreeDraggable: FC<{
     () => ({
       transform: CSS.Transform.toString(transform),
     }),
-    [transform]
+    [transform],
   )
 
   return (
@@ -40,7 +40,7 @@ export const TreeDraggable: FC<{
         className={classNames(
           "absolute left-0 top-0 size-full",
           "bg-grey-850/50 border-grey-800 rounded-sm border border-dashed",
-          isDragging ? "visible" : "invisible"
+          isDragging ? "visible" : "invisible",
         )}
       ></div>
       <div ref={setNodeRef} style={style} className={className} {...attributes} {...listeners}>
@@ -61,7 +61,7 @@ export const TreeDroppable: FC<{
 }> = ({ children, className, isOverClassName, hasOverClassName, disabled, parentId, index }) => {
   const [id, data] = useMemo<[string, UiTreePosition]>(
     () => [`${parentId}::${index}`, { parentId, index }],
-    [parentId, index]
+    [parentId, index],
   )
 
   const { setNodeRef, isOver, over } = useDroppable({ id, data, disabled })
@@ -72,7 +72,7 @@ export const TreeDroppable: FC<{
       className={classNames(
         className,
         !disabled && !!over && hasOverClassName,
-        !disabled && isOver && isOverClassName
+        !disabled && isOver && isOverClassName,
       )}
     >
       {children}

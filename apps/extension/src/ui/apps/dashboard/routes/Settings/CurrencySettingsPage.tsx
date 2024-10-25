@@ -19,7 +19,7 @@ const Content = () => {
       <HeaderBlock
         title={t("Currency")}
         text={t(
-          "Choose your preferred currency. You can toggle between the currencies you’ve selected directly from your portfolio."
+          "Choose your preferred currency. You can toggle between the currencies you’ve selected directly from your portfolio.",
         )}
       />
       <Spacer />
@@ -41,7 +41,7 @@ const Content = () => {
                 setSelected((selected) =>
                   newSelectable.length === 0 || newSelectable.includes(selected)
                     ? selected
-                    : newSelectable[0]
+                    : newSelectable[0],
                 )
 
                 return newSelectable

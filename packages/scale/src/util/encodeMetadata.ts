@@ -10,5 +10,5 @@ export const encodeMetadata = ({
     scaleMetadata.enc({
       magicNumber,
       metadata: tag === "v15" ? { tag, value: metadata } : { tag, value: metadata },
-    })
+    }),
   )

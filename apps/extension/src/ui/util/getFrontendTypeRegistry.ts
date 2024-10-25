@@ -16,7 +16,7 @@ export const getFrontendTypeRegistry = async (
   chainIdOrHash: string,
   specVersion?: number | string,
   blockHash?: string,
-  signedExtensions?: string[]
+  signedExtensions?: string[],
 ) => {
   const registry = new TypeRegistry()
 
@@ -49,8 +49,8 @@ export const getFrontendTypeRegistry = async (
             registry,
             chain.chainName,
             chain.specName,
-            parseInt(chain.specVersion ?? "0", 10) ?? 0
-          )
+            parseInt(chain.specVersion ?? "0", 10) ?? 0,
+          ),
         )
         registry.knownTypes.typesAlias = getSpecAlias(registry, chain.chainName, chain.specName)
       }
@@ -65,7 +65,7 @@ export const getFrontendTypeRegistry = async (
   const metadataDef = await api.subChainMetadata(
     genesisHash,
     numSpecVersion,
-    blockHash as HexString
+    blockHash as HexString,
   )
 
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined

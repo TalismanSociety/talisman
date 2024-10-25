@@ -31,7 +31,7 @@ export const StakingFeeEstimate: FC<{
         <div
           className={classNames(
             "text-body-disabled bg-body-disabled rounded-xs animate-pulse",
-            className
+            className,
           )}
         >
           0.0000 TKN ($0.00)

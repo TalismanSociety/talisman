@@ -5,10 +5,6 @@
 
 import { log } from "extension-shared"
 
-import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  WrappedEthProviderRpcError,
-} from "../domains/ethereum/EthProviderRpcError"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,
@@ -23,6 +19,10 @@ import type {
   UnsubscribeFn,
 } from "../types"
 import type { Port } from "../types/base"
+import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  WrappedEthProviderRpcError,
+} from "../domains/ethereum/EthProviderRpcError"
 
 export interface Handler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +48,7 @@ export default class MessageService {
   constructor({ origin, messageSource }: MessageServiceConstructorArgs) {
     if (origin === "talisman-extension" && !messageSource) {
       throw Error(
-        "An instance of chrome.runtime.Port must be provided as 'messageSource' when used with extension as origin"
+        "An instance of chrome.runtime.Port must be provided as 'messageSource' when used with extension as origin",
       )
     } else if (messageSource) {
       this.messageSource = messageSource
@@ -61,22 +61,22 @@ export default class MessageService {
   // a generic message sender that creates an event, returning a promise that will
   // resolve once the event is resolved (by the response listener just below this)
   sendMessage<TMessageType extends MessageTypesWithNullRequest>(
-    message: TMessageType
+    message: TMessageType,
   ): Promise<ResponseTypes[TMessageType]>
   sendMessage<TMessageType extends MessageTypesWithNoSubscriptions>(
     message: TMessageType,
-    request: RequestTypes[TMessageType]
+    request: RequestTypes[TMessageType],
   ): Promise<ResponseTypes[TMessageType]>
   sendMessage<TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
   ): Promise<ResponseTypes[TMessageType]>
 
   sendMessage<TMessageType extends MessageTypes>(
     message: TMessageType,
     request?: RequestTypes[TMessageType],
-    subscriber?: (data: unknown) => void
+    subscriber?: (data: unknown) => void,
   ): Promise<ResponseTypes[TMessageType]> {
     return new Promise((resolve, reject): void => {
       const id = crypto.randomUUID()
@@ -103,7 +103,7 @@ export default class MessageService {
   subscribe<TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
   ): UnsubscribeFn {
     const id = crypto.randomUUID()
 
@@ -135,7 +135,7 @@ export default class MessageService {
       code?: number
       rpcData?: unknown
       isEthProviderRpcError?: boolean
-    }
+    },
   ): void {
     const handler = this.handlers[data.id]
 
@@ -153,7 +153,7 @@ export default class MessageService {
     // lost 4 hours on this, a warning would have helped :)
     if (typeof data.subscription === "boolean")
       log.warn(
-        "MessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans"
+        "MessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans",
       )
 
     if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
@@ -163,8 +163,8 @@ export default class MessageService {
           new WrappedEthProviderRpcError(
             data.error,
             data.code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
-            data.rpcData
-          )
+            data.rpcData,
+          ),
         )
       } else handler.reject(new Error(data.error))
     } else handler.resolve(data.response)

@@ -20,7 +20,7 @@ export function genericSubscription<TMessageType extends MessageTypesWithSubscri
   id: string,
   port: Port,
   observable: Observable<any>,
-  transformFn: (value: any) => KnownSubscriptionDataTypes<TMessageType> = (value) => value
+  transformFn: (value: any) => KnownSubscriptionDataTypes<TMessageType> = (value) => value,
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => cb(transformFn(data)))
@@ -41,7 +41,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
   port: Port,
   observable: Observable<any>,
   transformFn: (value: any) => Promise<KnownSubscriptionDataTypes<TMessageType>> = async (value) =>
-    value
+    value,
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => transformFn(data).then(cb))
@@ -57,7 +57,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
 // return a subscription callback, that will send the data to the caller via the port
 export function createSubscription<TMessageType extends MessageTypesWithSubscriptions>(
   id: string,
-  port: Port
+  port: Port,
 ): (data: KnownSubscriptionDataTypes<TMessageType>) => void {
   subscriptions[id] = port
   return (data): void => {
@@ -71,7 +71,7 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
             "Error on posting message for subscription - subscription might be closed. ",
             { error },
             { id, subscription: subscriptions[id] },
-            { data }
+            { data },
           )
         unsubscribe(id)
       }
@@ -96,7 +96,7 @@ export class ObservableSubscriptions {
   public readonly subscribe = <
     TMessageType extends MessageTypesWithSubscriptions,
     TObservableValue,
-    TReturn extends KnownSubscriptionDataTypes<TMessageType>
+    TReturn extends KnownSubscriptionDataTypes<TMessageType>,
   >(
     _message: TMessageType,
     id: string,
@@ -113,7 +113,7 @@ export class ObservableSubscriptions {
     const cb = createSubscription<TMessageType>(id, port)
 
     const subscription = observable.subscribe((data) =>
-      cb(transform?.(data) ?? (data as any as TReturn))
+      cb(transform?.(data) ?? (data as any as TReturn)),
     )
 
     const teardown = () => this.unsubscribe(id)

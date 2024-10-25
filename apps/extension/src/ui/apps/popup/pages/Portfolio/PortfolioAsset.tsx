@@ -25,7 +25,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   const total = useMemo(
     () => balancesToDisplay.sum.fiat(currency).total,
-    [balancesToDisplay.sum, currency]
+    [balancesToDisplay.sum, currency],
   )
 
   const { t } = useTranslation()
@@ -77,7 +77,7 @@ export const PortfolioAsset = () => {
 
   const accountBalances = useMemo(
     () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
-    [account, allBalances, networkBalances]
+    [account, allBalances, networkBalances],
   )
 
   const balances = useMemo(
@@ -86,9 +86,10 @@ export const PortfolioAsset = () => {
     () =>
       accountBalances.find(
         (b) =>
-          b.token?.symbol === symbol && (!b.token?.isTestnet || b.token?.isTestnet === withTestnets)
+          b.token?.symbol === symbol &&
+          (!b.token?.isTestnet || b.token?.isTestnet === withTestnets),
       ),
-    [accountBalances, symbol, withTestnets]
+    [accountBalances, symbol, withTestnets],
   )
 
   useEffect(() => {

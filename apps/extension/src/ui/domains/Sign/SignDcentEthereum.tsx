@@ -1,18 +1,18 @@
-import i18next from "@common/i18nConfig"
 import { isHexString } from "@ethereumjs/util"
-import { EthSignMessageMethod, getTransactionSerializable } from "@extension/core"
-import { AccountJsonDcent } from "@extension/core"
-import { log } from "@extension/shared"
 import { hexToString } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { classNames } from "@talismn/util"
-import { DcentError, dcent } from "@ui/util/dcent"
-import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
 import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 import { TransactionRequest } from "viem"
+
+import i18next from "@common/i18nConfig"
+import { AccountJsonDcent, EthSignMessageMethod, getTransactionSerializable } from "@extension/core"
+import { log } from "@extension/shared"
+import { dcent, DcentError } from "@ui/util/dcent"
+import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignApproveButton } from "./SignApproveButton"
@@ -23,7 +23,7 @@ const signWithDcent = async (
   method: EthSignMessageMethod | "eth_sendTransaction",
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
-  accountPath: string
+  accountPath: string,
 ): Promise<HexString> => {
   switch (method) {
     case "eth_signTypedData_v3":
@@ -118,7 +118,7 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
         Number(evmNetworkId),
         method,
         payload,
-        (account as AccountJsonDcent).path
+        (account as AccountJsonDcent).path,
       )
       stopListening()
 

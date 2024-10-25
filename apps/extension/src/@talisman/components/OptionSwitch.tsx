@@ -1,4 +1,3 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
 import {
   CSSProperties,
@@ -9,6 +8,8 @@ import {
   useRef,
   useState,
 } from "react"
+
+import { FadeIn } from "@talisman/components/FadeIn"
 
 const OptionButton = <O extends string>({
   selected,
@@ -37,7 +38,7 @@ const OptionButton = <O extends string>({
       disabled={selected}
       className={classNames(
         "z-10 h-full px-7 py-2 transition-colors duration-150",
-        selected && "text-body-black"
+        selected && "text-body-black",
       )}
       onClick={() => onClick(option, buttonRef)}
     >
@@ -71,14 +72,14 @@ export const OptionSwitch = <O extends string>({
       })
       if (onChange) onChange(option)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
     <div
       className={classNames(
         "text-body-secondary inline-block h-14 rounded-full p-[0.25em]",
-        className
+        className,
       )}
     >
       <div className="relative z-0 flex h-full items-center gap-2">

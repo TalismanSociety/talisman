@@ -57,7 +57,7 @@ export async function buildQueries(
     freezes: ["Balances", "Freezes"]
   }>,
   miniMetadatas: Map<string, MiniMetadata>,
-  addressesByToken: AddressesByToken<SubNativeToken>
+  addressesByToken: AddressesByToken<SubNativeToken>,
 ): Promise<Record<QueryKey, Array<RpcStateQuery<SubNativeBalance>>>> {
   return Object.entries(addressesByToken).reduce<
     Record<QueryKey, Array<RpcStateQuery<SubNativeBalance>>>
@@ -121,7 +121,7 @@ export async function buildQueries(
           ? encodeStateKey(
               scaleCoder,
               `Invalid address in ${chainId} base query ${address}`,
-              address
+              address,
             )
           : getFallbackStateKey()
         if (!stateKey) return
@@ -135,7 +135,7 @@ export async function buildQueries(
               // chain metadata version is < 15 and we also don't have an override hardcoded in
               // the best way to handle this case: log a warning and return an empty balance
               log.debug(
-                `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
+                `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`,
               )
               return balanceJson
             }
@@ -145,7 +145,7 @@ export async function buildQueries(
               oldChainBalance = change === null ? null : scaleAccountInfo.dec(change)
             } catch (error) {
               log.warn(
-                `Failed to create pre-metadataV14 balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
+                `Failed to create pre-metadataV14 balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`,
               )
               return balanceJson
             }
@@ -169,7 +169,7 @@ export async function buildQueries(
             decodeScale<DecodedType>(
               scaleCoder,
               change,
-              `Failed to decode balance on chain ${chainId}`
+              `Failed to decode balance on chain ${chainId}`,
             ) ?? oldChainBalance
 
           const free = (decoded?.data?.free ?? 0n).toString()
@@ -185,7 +185,7 @@ export async function buildQueries(
           // even if these values are 0, we still need to add them to the balanceJson.values array
           // so that the balance pool can handle newly zeroed balances
           const existingValues = Object.fromEntries(
-            balanceJson.values.map((v) => [getValueId(v), v])
+            balanceJson.values.map((v) => [getValueId(v), v]),
           )
           const newValues: AmountWithLabel<string>[] = [
             { type: "free", label: "free", amount: free.toString() },
@@ -209,7 +209,7 @@ export async function buildQueries(
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid address in ${chainId} locks query ${address}`,
-          address
+          address,
         )
         if (!stateKey) return
 
@@ -223,7 +223,7 @@ export async function buildQueries(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode lock on chain ${chainId}`
+            `Failed to decode lock on chain ${chainId}`,
           )
 
           locksQueryLocks =
@@ -237,7 +237,7 @@ export async function buildQueries(
 
           // locked values should be replaced entirely, not merged or appended
           const nonLockValues = balanceJson.values.filter(
-            (v) => v.source !== "substrate-native-locks"
+            (v) => v.source !== "substrate-native-locks",
           )
           balanceJson.values = nonLockValues.concat(locksQueryLocks)
 
@@ -255,7 +255,7 @@ export async function buildQueries(
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid address in ${chainId} freezes query ${address}`,
-          address
+          address,
         )
         if (!stateKey) return
 
@@ -269,7 +269,7 @@ export async function buildQueries(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode freeze on chain ${chainId}`
+            `Failed to decode freeze on chain ${chainId}`,
           )
 
           freezesQueryLocks =
@@ -282,7 +282,7 @@ export async function buildQueries(
 
           // freezes values should be replaced entirely, not merged or appended
           const nonFreezesValues = balanceJson.values.filter(
-            (v) => v.source !== "substrate-native-freezes"
+            (v) => v.source !== "substrate-native-freezes",
           )
           balanceJson.values = nonFreezesValues.concat(freezesQueryLocks)
 
@@ -297,7 +297,7 @@ export async function buildQueries(
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid address in ${chainId} unbonding query ${address}`,
-          address
+          address,
         )
         if (!stateKey) return
 
@@ -318,7 +318,7 @@ export async function buildQueries(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode unbonding query on chain ${chainId}`
+            `Failed to decode unbonding query on chain ${chainId}`,
           )
 
           const totalUnlocking =
@@ -337,7 +337,7 @@ export async function buildQueries(
 
           // unbonding values should be replaced entirely, not merged or appended
           const nonUnbondingValues = balanceJson.values.filter(
-            (v) => v.source !== "substrate-native-unbonding"
+            (v) => v.source !== "substrate-native-unbonding",
           )
           balanceJson.values = nonUnbondingValues.concat(unbondingQueryLocks)
 
@@ -351,7 +351,7 @@ export async function buildQueries(
       })()
 
       const queries = [baseQuery, locksQuery, freezesQuery, unbondingQuery].filter(
-        (query): query is RpcStateQuery<SubNativeBalance> => Boolean(query)
+        (query): query is RpcStateQuery<SubNativeBalance> => Boolean(query),
       )
 
       outerResult[queryKey] = queries
@@ -379,7 +379,7 @@ export async function buildQueries(
  * As such, this function is idempotent. You can call it many times on the same data and the result will be correct.
  */
 const updateStakingLocksUsingUnbondingLocks = (
-  values: AmountWithLabel<string>[]
+  values: AmountWithLabel<string>[],
 ): AmountWithLabel<string>[] => {
   const stakingLocks: AmountWithLabel<string>[] = []
   const otherValues: AmountWithLabel<string>[] = []
@@ -392,7 +392,7 @@ const updateStakingLocksUsingUnbondingLocks = (
   })
 
   const unbondingLocks = values.filter(
-    (value) => value.type === "locked" && value.source === "substrate-native-unbonding"
+    (value) => value.type === "locked" && value.source === "substrate-native-unbonding",
   )
 
   // step 1: reset all staking locks to their original amounts, to make this function idempotent

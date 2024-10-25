@@ -20,7 +20,7 @@ import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 const getBlockExplorerUrl = (
   network: EvmNetwork | undefined | null,
   chain: Chain | undefined | null,
-  hash: string
+  hash: string,
 ) => {
   if (network?.explorerUrl) return urlJoin(network.explorerUrl, "tx", hash)
   if (chain?.subscanUrl) return urlJoin(chain.subscanUrl, "tx", hash)
@@ -42,7 +42,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
         if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
       }
     },
-    [gotoProgress, tx]
+    [gotoProgress, tx],
   )
 
   if (tx.networkType === "evm" && isAcalaEvmPlus(tx.evmNetworkId)) return null
@@ -188,7 +188,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
         <div className="h-[3.6rem]">
           {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
           {tx?.status === "success" && !tx?.confirmed && (
-            <div className="text-secondary h-[3.6rem] animate-pulse ">
+            <div className="text-secondary h-[3.6rem] animate-pulse">
               {t("You may close this window or wait for the transaction to be confirmed")}
             </div>
           )}

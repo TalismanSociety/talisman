@@ -78,7 +78,7 @@ const useMnemonicAccounts = (mnemonicId: string) => {
       accounts
         .filter((account) => account.derivedMnemonicId === mnemonicId)
         .sort((a1, a2) => (a1.derivationPath ?? "")?.localeCompare(a2.derivationPath ?? "")),
-    [accounts, mnemonicId]
+    [accounts, mnemonicId],
   )
 }
 
@@ -140,10 +140,10 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
         type="button"
         onClick={toggle}
         className={classNames(
-          "  hover:text-body text-body-secondary flex h-[6.5rem] w-full items-center gap-6 rounded-sm px-8 text-left",
+          "hover:text-body text-body-secondary flex h-[6.5rem] w-full items-center gap-6 rounded-sm px-8 text-left",
           mnemonic.confirmed
             ? "bg-grey-850 hover:bg-grey-800"
-            : "bg-alert-warn/5 hover:bg-alert-warn/10"
+            : "bg-alert-warn/5 hover:bg-alert-warn/10",
         )}
       >
         <div className="bg-body-secondary/10 flex h-[4rem] w-[4rem] shrink-0 items-center justify-center rounded-full">
@@ -180,7 +180,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
             </button>
           )}
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className=" hover:bg-grey-800 active:hover:bg-grey-800 hover:text-body text-body-secondary rounded p-2">
+            <ContextMenuTrigger className="hover:bg-grey-800 active:hover:bg-grey-800 hover:text-body text-body-secondary rounded p-2">
               <MoreHorizontalIcon className="text-lg" />
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -232,7 +232,7 @@ const BackupReminder: FC = () => {
 
   const count = useMemo(
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).length,
-    [mnemonics]
+    [mnemonics],
   )
 
   if (!count) return null
@@ -240,7 +240,7 @@ const BackupReminder: FC = () => {
   return (
     <div
       className={classNames(
-        "border-grey-500 mb-8 flex w-full items-center gap-4 rounded-sm border p-4"
+        "border-grey-500 mb-8 flex w-full items-center gap-4 rounded-sm border p-4",
       )}
     >
       <div className="bg-primary/10 rounded-full p-3">
@@ -258,12 +258,12 @@ const MnemonicsList = () => {
 
   const sortedMnemonics = useMemo(
     () => [...mnemonics].sort((m1, m2) => m1.name.localeCompare(m2.name)),
-    [mnemonics]
+    [mnemonics],
   )
 
   const notBackedUp = useMemo(
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed),
-    [mnemonics]
+    [mnemonics],
   )
   const { open: openBackup } = useMnemonicBackupModal()
   const [searchParams, updateSearchParams] = useSearchParams()

@@ -1,13 +1,12 @@
-import { UseQueryOptions, UseQueryResult, useQuery } from "@tanstack/react-query"
+import { useQuery, UseQueryResult } from "@tanstack/react-query"
 
 import { dcent } from "./dcent"
 import { DcentDeviceInfo, DcentError } from "./types"
 
-export const useDcentDeviceInfo = (options: UseQueryOptions = {}) => {
+export const useDcentDeviceInfo = () => {
   const result = useQuery({
     queryKey: ["useDcentDeviceInfo"],
     queryFn: dcent.getDeviceInfo,
-    ...options,
   }) as UseQueryResult<DcentDeviceInfo | null, DcentError>
 
   return result

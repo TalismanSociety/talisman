@@ -61,7 +61,7 @@ export const BackupNotification = () => {
           : t("{{ count }} recovery phrases not backed up", { count: notBackedUpCount })
       }
       description={t(
-        "If you don't backup your recovery phrases, you may lose access to all your funds."
+        "If you don't backup your recovery phrases, you may lose access to all your funds.",
       )}
     >
       <span className="flex flex-col gap-4 md:flex-row">

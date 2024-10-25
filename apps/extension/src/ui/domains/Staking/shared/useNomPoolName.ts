@@ -8,7 +8,7 @@ import { cleanupNomPoolName } from "../helpers"
 
 export const useNomPoolName = (
   chainId: ChainId | null | undefined,
-  poolId: number | null | undefined
+  poolId: number | null | undefined,
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 

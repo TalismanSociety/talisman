@@ -13,7 +13,7 @@ const ModalContent: FC<{ className?: string; children?: ReactNode; close?: () =>
     <div
       className={classNames(
         "bg-brand-blue flex h-full flex-col items-center justify-center",
-        className
+        className,
       )}
     >
       {children ?? <p>content</p>}
@@ -68,7 +68,7 @@ export const ModalPage = () => {
       <div>
         <div
           id="container"
-          className="bg-brand-pink relative h-[600px] w-[400px] overflow-hidden border "
+          className="bg-brand-pink relative h-[600px] w-[400px] overflow-hidden border"
         ></div>
       </div>
     </Layout>

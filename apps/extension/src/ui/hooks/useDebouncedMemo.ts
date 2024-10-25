@@ -5,7 +5,7 @@ import { useDebouncedState } from "./useDebouncedState"
 export const useDebouncedMemo = <T>(
   factory: () => T,
   delay = 200,
-  deps: DependencyList | undefined
+  deps: DependencyList | undefined,
 ) => {
   const [value, setValue] = useDebouncedState<T>(() => factory(), delay)
 

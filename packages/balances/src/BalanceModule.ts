@@ -46,9 +46,9 @@ export type NewBalanceModule<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > = (
-  hydrate: Hydrate
+  hydrate: Hydrate,
 ) => BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>
 
 export interface BalanceModule<
@@ -56,7 +56,7 @@ export interface BalanceModule<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleSubstrate<
       TModuleType,
       TTokenType,
@@ -72,9 +72,9 @@ export const DefaultBalanceModule = <
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 >(
-  type: TModuleType
+  type: TModuleType,
 ): BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> => ({
   get type() {
     return type
@@ -118,21 +118,21 @@ interface BalanceModuleSubstrate<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
     chainId: ChainId,
     moduleConfig?: TModuleConfig,
     metadataRpc?: `0x${string}`,
-    systemProperties?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+    systemProperties?: Record<string, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */
   fetchSubstrateChainTokens(
     chainId: ChainId,
     chainMeta: TChainMeta,
-    moduleConfig?: TModuleConfig
+    moduleConfig?: TModuleConfig,
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
@@ -141,7 +141,7 @@ interface BalanceModuleEvm<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
   fetchEvmChainMeta(chainId: ChainId, moduleConfig?: TModuleConfig): Promise<TChainMeta | null>
@@ -150,7 +150,7 @@ interface BalanceModuleEvm<
   fetchEvmChainTokens(
     chainId: ChainId,
     chainMeta: TChainMeta,
-    moduleConfig?: TModuleConfig
+    moduleConfig?: TModuleConfig,
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
@@ -162,7 +162,7 @@ export type SubscriptionResultWithStatus = {
 interface BalanceModuleCommon<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
-  TTransferParams extends ExtendableTransferParams
+  TTransferParams extends ExtendableTransferParams,
 > {
   get type(): TModuleType
 
@@ -179,7 +179,7 @@ interface BalanceModuleCommon<
       addressesByToken: AddressesByToken<TTokenType>
       initialBalances?: BalanceJson[]
     },
-    callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
+    callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>,
   ): Promise<UnsubscribeFn>
 
   /** Fetch balances for this module with optional filtering */

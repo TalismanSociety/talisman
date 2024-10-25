@@ -66,7 +66,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
 
   const text = useMemo(
     () => account?.name ?? (address ? shortenAddress(address, 6, 6) : null),
-    [account?.name, address]
+    [account?.name, address],
   )
 
   if (!address || !resolvedAddress || !text) return null
@@ -84,7 +84,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
       <TooltipTrigger
         className={classNames(
           "text-body inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base",
-          className
+          className,
         )}
       >
         <AccountIcon

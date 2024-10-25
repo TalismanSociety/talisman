@@ -22,20 +22,23 @@ export const useAccountImportBalances = (accounts: AccountImportDef[]) => {
         type,
         genesisHash: genesisHash ? validateHexString(genesisHash) : null,
       })),
-    [accounts]
+    [accounts],
   )
 
   const chains = useChains({ includeTestnets: false, activeOnly: true })
   const evmNetworks = useEvmNetworks({ includeTestnets: false, activeOnly: true })
 
   const balanceParams = useMemo(() => {
-    const addressesByChain: AddressesByChain = chains.reduce((prev, chain) => {
-      const addresses = safeAccounts
-        .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
-        .map(({ address }) => address)
-      if (addresses.length) prev[chain.id] = addresses
-      return prev
-    }, {} as Record<ChainId, Address[]>)
+    const addressesByChain: AddressesByChain = chains.reduce(
+      (prev, chain) => {
+        const addresses = safeAccounts
+          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
+          .map(({ address }) => address)
+        if (addresses.length) prev[chain.id] = addresses
+        return prev
+      },
+      {} as Record<ChainId, Address[]>,
+    )
 
     const addressesAndEvmNetworks: AddressesAndEvmNetwork = {
       addresses: safeAccounts.filter(({ type }) => type === "ethereum").map((acc) => acc.address),

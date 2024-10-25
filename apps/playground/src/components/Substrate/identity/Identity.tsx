@@ -75,7 +75,7 @@ const IdentityInner = () => {
         : "",
       {
         shouldValidate: true,
-      }
+      },
     )
   }, [identityRegistration, identityRegistration?.value?.info?.display, setValue])
 
@@ -108,7 +108,7 @@ const IdentityInner = () => {
         setTxProcessing(false)
       }
     },
-    [account, api, refresh]
+    [account, api, refresh],
   )
 
   const handleClearIdentityClick = useCallback(async () => {

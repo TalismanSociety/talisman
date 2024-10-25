@@ -169,7 +169,7 @@ export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
 export type NewBalanceType<
   TModuleType extends string,
   TBalanceValueType extends "simple" | "complex",
-  TNetworkType extends "ethereum" | "substrate"
+  TNetworkType extends "ethereum" | "substrate",
 > = IBalanceBase &
   (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) &
   (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate) & {

@@ -25,7 +25,7 @@ const readContract = async (
   registry: TypeRegistry,
   from: string,
   contractAddress: string,
-  data: Uint8Array
+  data: Uint8Array,
 ) => {
   const rawResult = await provider.send("state_call", [
     "ContractsApi_call",
@@ -43,7 +43,7 @@ const readContract = async (
         registry.createType("Option<Balance>").toU8a(),
         // inputData
         data,
-      ])
+      ]),
     ),
   ])
 
@@ -52,7 +52,7 @@ const readContract = async (
 
 export const resolveDomainToAddress = async (
   domain: string,
-  { provider, registry, chainId }: ProviderOptions
+  { provider, registry, chainId }: ProviderOptions,
 ) => {
   try {
     const routerAddress = ROUTER_ADDRESS[chainId]
@@ -66,7 +66,7 @@ export const resolveDomainToAddress = async (
       registry,
       routerAddress,
       routerAddress,
-      message.toU8a([domain])
+      message.toU8a([domain]),
     )
 
     if (!result.isOk) throw result.asErr
@@ -90,7 +90,7 @@ export const resolveDomainToAddress = async (
 
 export const resolveAddressToDomain = async (
   address: string,
-  { provider, registry, chainId }: ProviderOptions
+  { provider, registry, chainId }: ProviderOptions,
 ) => {
   try {
     const routerAddress = ROUTER_ADDRESS[chainId]
@@ -104,7 +104,7 @@ export const resolveAddressToDomain = async (
       registry,
       routerAddress,
       routerAddress,
-      message.toU8a([address, undefined])
+      message.toU8a([address, undefined]),
     )
 
     if (!result.isOk) throw result.asErr

@@ -20,7 +20,7 @@ export class SubHandler extends ExtensionHandler {
       payload.genesisHash,
       payload.specVersion,
       payload.blockHash,
-      payload.signedExtensions
+      payload.signedExtensions,
     )
 
     if (!signature) {
@@ -39,7 +39,7 @@ export class SubHandler extends ExtensionHandler {
               signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
                 // use chaindata override value of `withType`
                 withType: chain.hasExtrinsicSignatureTypePrefix,
-              })
+              }),
             )
       })
 
@@ -51,7 +51,7 @@ export class SubHandler extends ExtensionHandler {
     const tx = registry.createType(
       "Extrinsic",
       { method: payload.method },
-      { version: payload.version }
+      { version: payload.version },
     )
 
     // apply signature to the modified payload
@@ -91,7 +91,7 @@ export class SubHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------

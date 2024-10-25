@@ -79,7 +79,7 @@ const PersonalSignInner = () => {
             Message
           </label>
           <textarea
-            className="w-[60rem] "
+            className="w-[60rem]"
             id="send-tokens-to"
             autoComplete="off"
             spellCheck={false}
@@ -99,14 +99,14 @@ const PersonalSignInner = () => {
             Signature : <span className="font-mono">{signature}</span>
           </div>
         )}
-        {isError && <div className="text-alert-error my-8 ">Error : {error?.message}</div>}
+        {isError && <div className="text-alert-error my-8">Error : {error?.message}</div>}
         {signature && (
           <div>
             Signed by :{" "}
             <span
               className={classNames(
                 "font-mono",
-                signedBy === address ? "text-alert-success" : "text-alert-error"
+                signedBy === address ? "text-alert-success" : "text-alert-error",
               )}
             >
               {signedBy}

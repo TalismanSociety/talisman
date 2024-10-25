@@ -17,7 +17,7 @@ export type StorageCoders<TCoders extends { [key: string]: [string, string] }> =
 
 export const buildStorageCoders = <
   TBalanceModule extends AnyNewBalanceModule,
-  TCoders extends { [key: string]: [string, string] }
+  TCoders extends { [key: string]: [string, string] },
 >({
   chainIds,
   chains,
@@ -53,12 +53,12 @@ export const buildStorageCoders = <
               } catch (cause) {
                 log.trace(
                   `Failed to build SCALE coder for chain ${chainId} (${module}::${method})`,
-                  cause
+                  cause,
                 )
                 return []
               }
-            }
-          )
+            },
+          ),
         ) as {
           [Property in keyof TCoders]: ReturnType<(typeof scaleBuilder)["buildStorage"]> | undefined
         }
@@ -67,9 +67,9 @@ export const buildStorageCoders = <
       } catch (cause) {
         log.error(
           `Failed to build SCALE coders for chain ${chainId} (${JSON.stringify(coders)})`,
-          cause
+          cause,
         )
         return []
       }
-    })
+    }),
   )

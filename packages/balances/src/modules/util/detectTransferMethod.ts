@@ -22,7 +22,7 @@ export const detectTransferMethod = (metadataRpc: `0x${string}`) => {
       : undefined
   const hasDeprecatedTransferCall =
     balancesCallsType?.type.def.asVariant?.variants.find((variant) =>
-      variant.name.eq("transfer")
+      variant.name.eq("transfer"),
     ) !== undefined
 
   return hasDeprecatedTransferCall ? "transfer" : "transfer_allow_death"

@@ -19,17 +19,10 @@ export type RequestUpsertCustomChain = {
   id: ChainId
   isTestnet: boolean
   genesisHash: HexString | null
-  // prefix: number | null
   name: string
-  // themeColor: string | null
-  chainLogoUrl: string | null
-  // chainName: string
-  // implName: string
-  // specName: string
-  // specVersion: string
+
   nativeTokenSymbol: string
   nativeTokenDecimals: number
-  // nativeTokenED: string
   nativeTokenCoingeckoId: string | null
   nativeTokenLogoUrl: string | null
   accountFormat: string | null
@@ -47,6 +40,6 @@ export interface ChainsMessages {
   "pri(chains.generateQr.addNetworkSpecs)": [RequestChainGenerateQrAddNetworkSpecs, HexString]
   "pri(chains.generateQr.updateNetworkMetadata)": [
     RequestChainGenerateQrUpdateNetworkMetadata,
-    HexString
+    HexString,
   ]
 }

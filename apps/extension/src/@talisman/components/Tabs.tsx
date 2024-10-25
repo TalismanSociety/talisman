@@ -49,7 +49,7 @@ export const Tabs: FC<{
       className={classNames(
         "border-grey-700 relative flex h-12 w-full shrink-0 gap-12 border-b text-sm font-light",
         indicatorStyle ? "visible" : "invisible", // wait for indicator's style to be ready, prevents flickering
-        className
+        className,
       )}
     >
       {tabs.map((tab) => (
@@ -60,7 +60,7 @@ export const Tabs: FC<{
           className={classNames(
             "text-body-secondary -mb-0.5 flex h-full select-none flex-col justify-between",
             tab.value === selected && "text-primary selected",
-            tab.disabled && "text-body-disabled pointer-events-none cursor-default"
+            tab.disabled && "text-body-disabled pointer-events-none cursor-default",
           )}
         >
           {tab.label}

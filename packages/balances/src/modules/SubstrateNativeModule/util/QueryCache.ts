@@ -25,11 +25,11 @@ type QueryCacheResults = {
 
 // NOTE: `liveQuery` is not initialized until commonMetadataObservable is subscribed to.
 const commonMetadataObservable = from(
-  liveQuery(() => balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray())
+  liveQuery(() => balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()),
 ).pipe(
   map((items) => new Map(items.map((item) => [item.id, item]))),
   // `refCount: true` will unsubscribe from the DB when commonMetadataObservable has no more subscribers
-  shareReplay({ bufferSize: 1, refCount: true })
+  shareReplay({ bufferSize: 1, refCount: true }),
 )
 
 export class QueryCache {
@@ -46,7 +46,7 @@ export class QueryCache {
         firstThenDebounce(500),
         detectMiniMetadataChanges(),
         combineLatestWith(this.chaindataProvider.tokensObservable),
-        distinctUntilChanged()
+        distinctUntilChanged(),
       )
       .subscribe(([miniMetadataChanges, tokens]) => {
         // invalidate cache entries for any chains with new metadata
@@ -101,7 +101,7 @@ export class QueryCache {
 
         return result
       },
-      { existing: [], newAddressesByToken: {} }
+      { existing: [], newAddressesByToken: {} },
     )
 
     // build queries for token/address pairs which have not been queried before
@@ -126,7 +126,7 @@ export class QueryCache {
       tokens,
       chainStorageCoders,
       miniMetadatas,
-      queryResults.newAddressesByToken
+      queryResults.newAddressesByToken,
     )
     // now update the cache
     Object.entries(queries).forEach(([key, query]) => {

@@ -48,7 +48,7 @@ export const getNftCollectionFloorUsd = (collection: NftCollection): number | nu
 export const getNftCollectionLastAcquiredAt = (
   collection: NftCollection,
   nfts: Nft[],
-  owner?: string
+  owner?: string,
 ) => {
   const collectionNfts = nfts.filter((nft) => nft.collectionId === collection.id)
   if (!collectionNfts.length) return null

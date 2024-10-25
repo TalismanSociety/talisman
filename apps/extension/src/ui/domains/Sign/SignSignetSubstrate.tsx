@@ -1,9 +1,10 @@
-import { AccountJsonSignet, SignerPayloadRaw } from "@extension/core"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { AccountJsonSignet, SignerPayloadRaw } from "@extension/core"
 
 type Props = {
   account: AccountJsonSignet
@@ -21,8 +22,8 @@ const SignetSignetError: React.FC<{ call: boolean; network: boolean }> = ({ call
         {call
           ? "This request is not supported on Signet."
           : network
-          ? "Network not supported for the selected Signet account."
-          : null}
+            ? "Network not supported for the selected Signet account."
+            : null}
       </p>
     </div>
   )

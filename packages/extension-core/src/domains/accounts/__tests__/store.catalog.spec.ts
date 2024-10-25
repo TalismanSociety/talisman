@@ -1,11 +1,11 @@
 import {
+  addAccount,
+  folderFilter,
   RequestAccountsCatalogAction,
+  runActionsOnTrees,
   Tree,
   TreeAccount,
   TreeFolder,
-  addAccount,
-  folderFilter,
-  runActionsOnTrees,
 } from "../helpers.catalog"
 import { accountsCatalogStore } from "../store.catalog"
 import { AccountJsonAny } from "../types"
@@ -224,7 +224,7 @@ describe("runActionOnTrees", () => {
     expect(status).toStrictEqual(true)
 
     expect(tree.filter(folderFilter).find((folder) => folder.id === "folder-1")?.name).toBe(
-      "Renamed folder 1"
+      "Renamed folder 1",
     )
   })
 

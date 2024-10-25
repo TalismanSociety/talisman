@@ -29,7 +29,7 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
   return !["BrowserApiErrors", "TryCatch", "Breadcrumbs", "GlobalHandlers"].includes(
-    defaultIntegration.name
+    defaultIntegration.name,
   )
 })
 

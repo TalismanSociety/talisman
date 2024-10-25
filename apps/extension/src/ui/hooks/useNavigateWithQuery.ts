@@ -10,6 +10,6 @@ export const useNavigateWithQuery = () => {
       const to = searchParams.size ? `${url}?${searchParams}` : url
       navigate(to, { replace })
     },
-    [navigate, searchParams]
+    [navigate, searchParams],
   )
 }

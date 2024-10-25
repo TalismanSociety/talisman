@@ -17,7 +17,7 @@ const useMnemonicSetPvVerifierModalProvider = () => {
 
   const isVerifier = useCallback(
     (mnemonicId: string) => currentVerifierMnemonicId === mnemonicId,
-    [currentVerifierMnemonicId]
+    [currentVerifierMnemonicId],
   )
 
   const open = useCallback(
@@ -25,7 +25,7 @@ const useMnemonicSetPvVerifierModalProvider = () => {
       setMnemonicId(mnemonicId)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen],
   )
 
   return {
@@ -38,7 +38,7 @@ const useMnemonicSetPvVerifierModalProvider = () => {
 }
 
 export const [MnemonicSetPvVerifierModalProvider, useMnemonicSetPvVerifierModal] = provideContext(
-  useMnemonicSetPvVerifierModalProvider
+  useMnemonicSetPvVerifierModalProvider,
 )
 
 export const MnemonicSetPvVerifierModal = () => {

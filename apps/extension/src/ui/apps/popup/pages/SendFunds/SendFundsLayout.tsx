@@ -1,8 +1,9 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { FC, ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
+
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 type SendFundsLayoutProps = {
   title?: ReactNode

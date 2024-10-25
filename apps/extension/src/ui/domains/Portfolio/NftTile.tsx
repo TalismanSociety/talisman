@@ -20,7 +20,7 @@ export const NftTile: FC<{
       onClick={onClick}
       className={classNames(
         "text-body-secondary group relative flex size-full flex-col gap-4 overflow-hidden text-left",
-        className
+        className,
       )}
     >
       <div className="relative w-full grow overflow-hidden rounded-sm">

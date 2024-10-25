@@ -11,15 +11,15 @@ import { api } from "@ui/api"
 import { useBalancesHydrate, useChainByGenesisHash } from "@ui/state"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 
-import { useSubstratePayloadMetadata } from "../../../hooks/useSubstratePayloadMetadata"
+import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  extrinsic: GenericExtrinsic | null | undefined
+  extrinsic: GenericExtrinsic | null | undefined,
 ) => {
   const chain = useChainByGenesisHash(
-    payload && isJsonPayload(payload) ? payload.genesisHash : undefined
+    payload && isJsonPayload(payload) ? payload.genesisHash : undefined,
   )
 
   return useQuery({
@@ -64,7 +64,7 @@ const usePolkadotSigningRequestProvider = ({
     ? signingRequest.request.payload
     : null
 
-  const { data: payloadMetadata } = useSubstratePayloadMetadata(jsonPayload, true)
+  const { data: payloadMetadata } = useSubstratePayloadMetadataSuspense(jsonPayload)
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
   const [modifiedPayload, registry, shortMetadata] = useMemo(() => {
@@ -79,7 +79,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const payload = useMemo(
     () => modifiedPayload || signingRequest.request.payload,
-    [modifiedPayload, signingRequest.request.payload]
+    [modifiedPayload, signingRequest.request.payload],
   )
 
   const [extrinsic, errorDecodingExtrinsic] = useMemo(() => {
@@ -115,7 +115,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload]
+    [baseRequest, modifiedPayload],
   )
 
   const approveQr = useCallback(
@@ -130,7 +130,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload]
+    [baseRequest, modifiedPayload],
   )
 
   const approveSignet = useCallback(async () => {
@@ -177,5 +177,5 @@ const usePolkadotSigningRequestProvider = ({
 }
 
 export const [PolkadotSigningRequestProvider, usePolkadotSigningRequest] = provideContext(
-  usePolkadotSigningRequestProvider
+  usePolkadotSigningRequestProvider,
 )

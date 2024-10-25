@@ -12,7 +12,7 @@ import { getScaleApi, ScaleApi } from "@ui/util/scaleApi"
 export const useScaleApi = (
   chainIdOrHash: ChainId | HexString | null | undefined,
   specVersion?: number,
-  blockHash?: HexString
+  blockHash?: HexString,
 ) => {
   const chainById = useChain(chainIdOrHash)
   const chainByGenesisHash = useChainByGenesisHash(chainIdOrHash)
@@ -37,7 +37,7 @@ export const useScaleApi = (
         token,
         chain.hasCheckMetadataHash,
         chain.signedExtensions,
-        chain.registryTypes
+        chain.registryTypes,
       ) as ScaleApi
     },
     refetchInterval: false,

@@ -36,8 +36,8 @@ export const AssetDiscoveryPopupAlert = () => {
             {isInProgress
               ? t(`Progress {{percent}}%`, { percent })
               : hasDetectedNewTokens
-              ? t("Review")
-              : null}
+                ? t("Review")
+                : null}
           </button>
         </div>
         <IconButton className="p-4" onClick={dismissAlert}>

@@ -23,7 +23,7 @@ export const useChainsFilteredByAddressPrefix = (address?: string) => {
 export const useGenesisHashEffects = (
   chains: (Chain | CustomChain)[],
   genesisHash: string | undefined,
-  setGenesisHash: (genesisHash?: string) => void
+  setGenesisHash: (genesisHash?: string) => void,
 ) => {
   useEffect(() => {
     // If there's only 1 chain to pick from, immediately pick it
@@ -38,7 +38,7 @@ export const useGenesisHashEffects = (
 
 export const useAddressEffects = (
   address: string,
-  setLimitToNetwork: (limitToNetwork?: boolean) => void
+  setLimitToNetwork: (limitToNetwork?: boolean) => void,
 ) => {
   useEffect(() => {
     try {

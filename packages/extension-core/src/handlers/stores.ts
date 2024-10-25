@@ -1,10 +1,10 @@
 import { accountsCatalogStore } from "../domains/accounts"
 import { AccountsCatalogData } from "../domains/accounts/store.catalog"
-import { AppStoreData, appStore } from "../domains/app/store.app"
-import { ErrorsStoreData, errorsStore } from "../domains/app/store.errors"
-import { PasswordStoreData, passwordStore } from "../domains/app/store.password"
+import { appStore, AppStoreData } from "../domains/app/store.app"
+import { errorsStore, ErrorsStoreData } from "../domains/app/store.errors"
+import { passwordStore, PasswordStoreData } from "../domains/app/store.password"
 import { remoteConfigStore } from "../domains/app/store.remoteConfig"
-import { SettingsStoreData, settingsStore } from "../domains/app/store.settings"
+import { settingsStore, SettingsStoreData } from "../domains/app/store.settings"
 import { RemoteConfigStoreData } from "../domains/app/types"
 import { MnemonicData, mnemonicsStore } from "../domains/mnemonics/store"
 import { sitesAuthorisationStore } from "../domains/sitesAuthorised"
@@ -72,7 +72,7 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
 // utility functions used in tests
 const getStoreData = async <K extends GettableStoreKeys>([storeName, store]: [
   K,
-  GettableStores[K][0]
+  GettableStores[K][0],
 ]) => {
   return [storeName, await store.get()]
 }
@@ -81,20 +81,20 @@ export const getLocalStorage = async (): Promise<GettableStoreData> =>
   Object.fromEntries(
     await Promise.all(
       Object.entries(localStorageStores).map(([storeName, store]) =>
-        getStoreData([storeName as GettableStoreKeys, store])
-      )
-    )
+        getStoreData([storeName as GettableStoreKeys, store]),
+      ),
+    ),
   )
 
 export const setLocalStorage = async <T extends GettableStoreKeys>(
   data: Partial<{
     [K in GettableStoreKeys]: Partial<GettableStoreData[K]>
-  }>
+  }>,
 ) => {
   return Promise.all(
     (Object.entries(data) as Array<[T, Partial<GettableStoreData[T]>]>).map(
-      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never)
-    )
+      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never),
+    ),
   )
 }
 

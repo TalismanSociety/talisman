@@ -50,7 +50,7 @@ export const getEthTransferTransactionBase = async (
   from: EvmAddress,
   to: EvmAddress,
   token: Token,
-  planck: bigint
+  planck: bigint,
 ) => {
   assert(evmNetworkId, "evmNetworkId is required")
   assert(token, "token is required")
@@ -84,7 +84,7 @@ export const getEthTransferTransactionBase = async (
 }
 
 export const serializeTransactionRequest = (
-  tx: TransactionRequest<bigint | string>
+  tx: TransactionRequest<bigint | string>,
 ): TransactionRequest<string> => {
   if (tx.type === "eip4844") throw new Error("Unsupported transaction type")
 
@@ -108,7 +108,7 @@ export const serializeTransactionRequest = (
 }
 
 export const serializeTransactionRequestBase = (
-  txb: TransactionRequestBase
+  txb: TransactionRequestBase,
 ): TransactionRequestBase<string> => {
   const serialized: TransactionRequestBase<string> = {
     from: txb.from,
@@ -139,7 +139,7 @@ export const parseGasSettings = (gasSettings: EthGasSettings<string>): EthGasSet
 }
 
 export const serializeGasSettings = (
-  gasSettings: EthGasSettings<bigint>
+  gasSettings: EthGasSettings<bigint>,
 ): EthGasSettings<string> => {
   return gasSettings.type === "eip1559"
     ? {
@@ -157,7 +157,7 @@ export const serializeGasSettings = (
 
 // BigNumbers need to be reconstructed if they are serialized then deserialized
 export const parseTransactionRequest = (
-  tx: TransactionRequest<string>
+  tx: TransactionRequest<string>,
 ): TransactionRequest<bigint> => {
   if (tx.type === "eip4844") throw new Error("Unsupported transaction type")
 
@@ -181,7 +181,7 @@ export const parseTransactionRequest = (
 }
 
 export const parseRpcTransactionRequestBase = (
-  rtx: TransactionRequestBase<Hex, Hex>
+  rtx: TransactionRequestBase<Hex, Hex>,
 ): TransactionRequest => {
   const txBase: TransactionRequest = { from: rtx.from }
 
@@ -196,7 +196,7 @@ export const parseRpcTransactionRequestBase = (
 
 export const getTransactionSerializable = (
   txRequest: TransactionRequest,
-  chainId: number
+  chainId: number,
 ): TransactionSerializable => {
   switch (txRequest.type) {
     case "eip1559": {
@@ -254,7 +254,7 @@ export const getGasLimit = (
   blockGasLimit: bigint,
   estimatedGas: bigint,
   tx: TransactionRequestBase | undefined,
-  isContractCall?: boolean
+  isContractCall?: boolean,
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const suggestedGasLimit = tx?.gas ?? 0n
@@ -285,7 +285,7 @@ export const getMaxFeePerGas = (
   baseFeePerGas: bigint,
   maxPriorityFeePerGas: bigint,
   maxBlocksWait = 8,
-  increase = true
+  increase = true,
 ) => {
   let base = baseFeePerGas
 
@@ -300,7 +300,7 @@ export const getGasSettingsEip1559 = (
   baseFee: bigint,
   maxPriorityFeePerGas: bigint,
   gas: bigint,
-  maxBlocksWait?: number
+  maxBlocksWait?: number,
 ): EthGasSettingsEip1559 => ({
   type: "eip1559",
   maxPriorityFeePerGas,
@@ -312,7 +312,7 @@ export const getTotalFeesFromGasSettings = (
   gasSettings: EthGasSettings,
   estimatedGas: bigint,
   baseFeePerGas: bigint | null | undefined,
-  l1Fee: bigint
+  l1Fee: bigint,
 ) => {
   // L1 fee needs to be included in estimatedFee and maxFee to keep the same UX behavior whether or not the chain is a L2
   const estimatedL1DataFee = l1Fee > 0n ? l1Fee : null
@@ -364,7 +364,7 @@ export const getMaxTransactionCost = (transaction: TransactionRequest) => {
 export const prepareTransaction = (
   txBase: TransactionRequestBase,
   gasSettings: EthGasSettings,
-  nonce: number
+  nonce: number,
 ): TransactionRequest => ({
   ...txBase,
   ...gasSettings,

@@ -111,7 +111,7 @@ const SidebarNavItem: FC<{
         "hover:bg-grey-750 [&.active]:bg-grey-800",
         "h-28 px-6",
         forceActive && "active",
-        className
+        className,
       )}
     >
       <span className="size-12 shrink-0 text-lg">{icon}</span>

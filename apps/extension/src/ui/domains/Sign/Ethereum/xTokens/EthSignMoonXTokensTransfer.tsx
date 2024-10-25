@@ -76,7 +76,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       getContractCallArg<bigint>(decodedTx, "amount"),
       getContractCallArg<EvmAddress>(decodedTx, "currency_address"),
     ],
-    [decodedTx]
+    [decodedTx],
   )
 
   const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
@@ -94,7 +94,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       (t) =>
         t.type === "evm-erc20" &&
         t.evmNetwork?.id === network?.id &&
-        t.contractAddress === currencyAddress
+        t.contractAddress === currencyAddress,
     )
 
     if (token) {
@@ -119,11 +119,11 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       target
         ? target.paraId !== undefined // if no paraId, target is the relay chain
           ? chains.find(
-              (c) => c.relay?.id === substrateChain?.relay?.id && c.paraId === target.paraId
+              (c) => c.relay?.id === substrateChain?.relay?.id && c.paraId === target.paraId,
             )
           : chains.find((c) => c.id === substrateChain?.relay?.id)
         : undefined,
-    [chains, substrateChain?.relay?.id, target]
+    [chains, substrateChain?.relay?.id, target],
   )
 
   const targetAddress = useMemo(
@@ -131,7 +131,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       targetChain && target?.address
         ? encodeAnyAddress(target.address, targetChain?.prefix ?? undefined)
         : undefined,
-    [target, targetChain]
+    [target, targetChain],
   )
 
   const { data: tokenRates } = useCoinGeckoTokenRates(coingeckoId)

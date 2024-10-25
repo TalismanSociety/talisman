@@ -19,7 +19,7 @@ export function useAssetLinkFromRawInfo(
   }: {
     chainFamily: EvmChainFamily | undefined
     chainNetwork: EvmChainNetwork | undefined
-  }
+  },
 ) {
   if (!chainFamily || !chainNetwork) {
     return undefined

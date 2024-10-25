@@ -76,14 +76,14 @@ export const FeesSummary = () => {
     >
       <NetworkRow />
       <EvmFeeSettingsRow />
-      <div className="flex w-full items-center justify-between gap-4 ">
+      <div className="flex w-full items-center justify-between gap-4">
         <div className="whitespace-nowrap">
           {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div
           className={classNames(
             "flex grow items-center justify-end gap-2 truncate",
-            isLoading && estimatedFee && "animate-pulse"
+            isLoading && estimatedFee && "animate-pulse",
           )}
         >
           {isLoading && !estimatedFee && (

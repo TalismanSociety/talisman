@@ -1,8 +1,8 @@
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
 import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
 } from "@polkadot/extension-base/background/types"
-import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
 import { RpcTransactionRequest } from "viem"
 
 import { BaseRequest, BaseRequestId } from "../../types/base"

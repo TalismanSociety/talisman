@@ -19,7 +19,7 @@ export const TreeItemAccount: FC<{
 }> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip }) => {
   const account = useMemo(
     () => accounts.find((account) => account.address === address),
-    [accounts, address]
+    [accounts, address],
   )
   const balanceTotal = balanceTotalPerAccount[account?.address ?? ""] ?? 0
   const formattedAddress = useFormattedAddressForAccount(account)
@@ -31,7 +31,7 @@ export const TreeItemAccount: FC<{
       <div
         className={classNames(
           "bg-grey-850 flex h-[5.9rem] flex-grow items-center gap-8 overflow-hidden rounded-sm border-[1px] border-transparent px-8",
-          isInFolder && "pr-4"
+          isInFolder && "pr-4",
         )}
       >
         <AccountIcon className="text-xl" address={address} genesisHash={account?.genesisHash} />
@@ -48,7 +48,7 @@ export const TreeItemAccount: FC<{
             <Address address={formattedAddress} noTooltip={noTooltip} />
           </div>
         </div>
-        <div className="@2xl:flex hidden flex-col gap-2 ">
+        <div className="@2xl:flex hidden flex-col gap-2">
           <Fiat amount={balanceTotal} isBalance noCountUp />
         </div>
 

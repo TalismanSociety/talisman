@@ -1,7 +1,8 @@
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import i18n from "i18next"
 import { useCallback, useMemo } from "react"
 import { Dropdown } from "talisman-ui"
+
+import { shortenAddress } from "@talisman/util/shortenAddress"
 
 type AccountFormatOptionProps = {
   title: string
@@ -50,12 +51,12 @@ export const AccountFormatDropdown = ({
       selectedFormat
         ? accountFormatOptions.find((option) => selectedFormat === option.value)
         : accountFormatOptions[0],
-    [selectedFormat]
+    [selectedFormat],
   )
 
   const handleAccountFormatChange = useCallback(
     (option: { label: JSX.Element; value: string } | null) => onChange(option?.value ?? "*25519"),
-    [onChange]
+    [onChange],
   )
 
   return (

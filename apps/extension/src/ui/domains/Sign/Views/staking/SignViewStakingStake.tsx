@@ -1,8 +1,9 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
+
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 
 export const SignViewStakingStake: FC<{
   planck: bigint

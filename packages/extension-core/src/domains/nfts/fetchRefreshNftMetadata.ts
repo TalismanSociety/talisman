@@ -6,7 +6,7 @@ import { RefreshNftMetadataRequestBody } from "./types"
 export const fetchRefreshNftMetadata = async (
   evmNetworkId: string,
   contractAddress: string,
-  tokenId: string
+  tokenId: string,
 ) => {
   const body: RefreshNftMetadataRequestBody = { evmNetworkId, contractAddress, tokenId }
 

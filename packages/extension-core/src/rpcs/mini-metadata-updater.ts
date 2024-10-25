@@ -1,8 +1,8 @@
 import * as Sentry from "@sentry/browser"
 import {
   EvmTokenFetcher,
-  MiniMetadataUpdater,
   hydrateChaindataAndMiniMetadata,
+  MiniMetadataUpdater,
   updateCustomMiniMetadata,
   updateEvmTokens,
 } from "@talismn/balances"
@@ -13,7 +13,7 @@ import { chaindataProvider } from "./chaindata"
 const miniMetadataUpdater = new MiniMetadataUpdater(
   chainConnectors,
   chaindataProvider,
-  balanceModules
+  balanceModules,
 )
 const evmTokenFetcher = new EvmTokenFetcher(chaindataProvider, balanceModules)
 
@@ -52,7 +52,7 @@ export const updateAndWaitForUpdatedChaindata = async ({
     }
   } catch (cause) {
     Sentry.captureException(
-      new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
+      new Error("Failed to hydrate chaindata & update miniMetadata", { cause }),
     )
   }
 }

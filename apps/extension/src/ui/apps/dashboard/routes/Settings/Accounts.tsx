@@ -26,7 +26,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const [usePreload] = bind(
-  combineLatest([accounts$, accountsCatalog$, balanceTotals$, balancesHydrate$])
+  combineLatest([accounts$, accountsCatalog$, balanceTotals$, balancesHydrate$]),
 )
 
 const Content = () => {

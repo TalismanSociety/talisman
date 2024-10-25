@@ -16,7 +16,7 @@ const useLedgerEthereumAccounts = (
   derivationPathType: LedgerEthDerivationPathType,
   selectedAccounts: LedgerAccountDefEthereum[],
   pageIndex: number,
-  itemsPerPage: number
+  itemsPerPage: number,
 ) => {
   const { t } = useTranslation()
   const walletAccounts = useAccounts()
@@ -76,7 +76,7 @@ const useLedgerEthereumAccounts = (
             .filter((acc): acc is LedgerEthereumAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ethereum" }))
         : [],
-    [derivedAccounts]
+    [derivedAccounts],
   )
   const balances = useAccountImportBalances(accountImportDefs)
 
@@ -86,11 +86,11 @@ const useLedgerEthereumAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
+          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null),
         )
 
         const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
+          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
         )
         const isBalanceLoading =
           accountBalances.each.some((b) => b.status === "cache") ||
@@ -105,7 +105,7 @@ const useLedgerEthereumAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts]
+    [balances, derivedAccounts, selectedAccounts, walletAccounts],
   )
 
   useEffect(() => {
@@ -143,7 +143,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     derivationPathType,
     selectedAccounts,
     pageIndex,
-    itemsPerPage
+    itemsPerPage,
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -151,7 +151,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     setSelectedAccounts((prev) =>
       prev.some((pa) => pa.path === path)
         ? prev.filter((pa) => pa.path !== path)
-        : prev.concat({ name, address, path })
+        : prev.concat({ name, address, path }),
     )
   }, [])
 

@@ -23,7 +23,7 @@ export const TransactionReceipt = ({ hash }: { hash?: string }) => {
               : undefined,
           }
         : null,
-    [data]
+    [data],
   )
 
   if (!hash) return null

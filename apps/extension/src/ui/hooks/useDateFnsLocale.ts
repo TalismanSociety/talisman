@@ -1,4 +1,4 @@
-import { enUS, ko, ru, zhCN } from "date-fns/locale"
+import { enUS, ko, Locale, ru, zhCN } from "date-fns/locale"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

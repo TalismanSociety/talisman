@@ -1,5 +1,6 @@
-import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useTranslation } from "react-i18next"
+
+import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 
 import { AccountAddWrapper } from "./AccountAddWrapper"
 

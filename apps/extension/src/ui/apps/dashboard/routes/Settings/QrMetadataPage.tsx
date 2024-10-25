@@ -52,7 +52,7 @@ const SetVerifierCertificateContentInner = () => {
           title: t("Error"),
           subtitle: t("Failed to set verifier certificate."),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
     }
   }, [generateMnemonic, mnemonicId, t])
@@ -64,7 +64,7 @@ const SetVerifierCertificateContentInner = () => {
       </h3>
       <p>
         {t(
-          "Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate."
+          "Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate.",
         )}
       </p>
       <p>{t("Select the recovery phrase to use a verifier certificate, or generate a new one.")}</p>
@@ -151,14 +151,14 @@ const MetadataPortalContent = () => {
       chains
         .filter((c) => c.rpcs?.length)
         .sort((c1, c2) => c1.name?.localeCompare(c2.name ?? "") ?? 0),
-    [chains]
+    [chains],
   )
 
   const handleSetTab = useCallback(
     (tab: Tab) => () => {
       setTab(tab)
     },
-    []
+    [],
   )
 
   return (
@@ -174,7 +174,7 @@ const MetadataPortalContent = () => {
 
       {chain?.genesisHash && (
         <>
-          <p className=" mt-4">
+          <p className="mt-4">
             <Trans
               t={t}
               components={{

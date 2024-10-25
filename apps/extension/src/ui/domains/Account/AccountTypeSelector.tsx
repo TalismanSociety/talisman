@@ -1,8 +1,9 @@
-import { AccountAddressType } from "@extension/core"
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
+import { UiAccountAddressType } from "extension-core"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 
 const AccountTypeButton: FC<{
   title: ReactNode
@@ -16,7 +17,7 @@ const AccountTypeButton: FC<{
     onClick={onClick}
     className={classNames(
       "bg-field hover:bg-grey-800 allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
-      className
+      className,
     )}
   >
     <div className="text-xl">{icon}</div>
@@ -28,8 +29,8 @@ const AccountTypeButton: FC<{
 )
 
 type AccountTypeSelectorProps = {
-  defaultType?: AccountAddressType
-  onChange: (type: AccountAddressType) => void
+  defaultType?: UiAccountAddressType
+  onChange: (type: UiAccountAddressType) => void
   className?: string
 }
 
@@ -39,9 +40,9 @@ export const AccountTypeSelector = ({
   className,
 }: AccountTypeSelectorProps) => {
   const { t } = useTranslation()
-  const [type, setType] = useState<AccountAddressType | undefined>(defaultType)
+  const [type, setType] = useState<UiAccountAddressType | undefined>(defaultType)
 
-  const handleClick = (type: AccountAddressType) => () => {
+  const handleClick = (type: UiAccountAddressType) => () => {
     setType(type)
   }
 
@@ -55,7 +56,7 @@ export const AccountTypeSelector = ({
         title={t("Ethereum")}
         className={classNames(
           type === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border"
+          "border",
         )}
         icon={<EthereumCircleLogo />}
         subtitle={t("Ethereum, Arbitrum, Moonbeam etc.")}
@@ -64,8 +65,8 @@ export const AccountTypeSelector = ({
       <AccountTypeButton
         title={t("Polkadot")}
         className={classNames(
-          type === "sr25519" ? "border-body " : "border-body-secondary  border-opacity-20",
-          "border"
+          type === "sr25519" ? "border-body" : "border-body-secondary border-opacity-20",
+          "border",
         )}
         icon={<PolkadotCircleLogo />}
         subtitle={t(`Polkadot, Kusama & Parachains`)}

@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next"
+
 import { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsRecipientPicker } from "@ui/domains/SendFunds/SendFundsRecipientPicker"
-import { useTranslation } from "react-i18next"
 
 import { SendFundsLayout } from "./SendFundsLayout"
 

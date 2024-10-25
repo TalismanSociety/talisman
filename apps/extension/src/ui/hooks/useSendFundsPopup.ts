@@ -17,14 +17,14 @@ export const useSendFundsPopup = (
   account: AccountJsonAny | null | undefined,
   tokenId?: TokenId,
   tokenSymbol?: string,
-  to?: Address
+  to?: Address,
 ) => {
   const { t } = useTranslation()
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
   const transferableBalances = useMemo(
     () => new Balances(balances.each.filter((b) => !tokenId || b.tokenId === tokenId)),
-    [balances, tokenId]
+    [balances, tokenId],
   )
 
   const { canSendFunds, cannotSendFundsReason } = useMemo<{

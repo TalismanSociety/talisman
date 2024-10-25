@@ -1,9 +1,10 @@
-import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
-import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
-import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
+
+import { FadeIn } from "@talisman/components/FadeIn"
+import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
+import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 
 import { RiskAnalysisPillButton } from "./Ethereum/riskAnalysis"
 

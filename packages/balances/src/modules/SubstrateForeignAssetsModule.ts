@@ -192,7 +192,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
         } catch (error) {
           log.error(
             `Failed to build substrate-foreignassets token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
-            (error as Error)?.message ?? error
+            (error as Error)?.message ?? error,
           )
           continue
         }
@@ -209,7 +209,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
           if (error) return callback(error)
           const balances = result?.filter((b): b is SubForeignAssetsBalance => b !== null) ?? []
           if (balances.length > 0) callback(null, new Balances(balances))
-        }
+        },
       )
 
       return unsubscribe
@@ -270,7 +270,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  addressesByToken: AddressesByToken<SubForeignAssetsToken>
+  addressesByToken: AddressesByToken<SubForeignAssetsToken>,
 ): Promise<Array<RpcStateQuery<SubForeignAssetsBalance | null>>> {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -278,7 +278,7 @@ async function buildQueries(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
       miniMetadata,
-    ])
+    ]),
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
@@ -326,7 +326,7 @@ async function buildQueries(
         scaleCoder,
         `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
         onChainId,
-        address
+        address,
       )
       if (!stateKey) return []
 
@@ -343,7 +343,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-foreignassets balance on chain ${chainId}`
+          `Failed to decode substrate-foreignassets balance on chain ${chainId}`,
         ) ?? {
           balance: 0n,
           is_frozen: false,

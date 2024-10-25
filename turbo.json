@@ -1,6 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["//#build:packages", "^build"],
       "outputs": ["dist/**"],
@@ -19,80 +19,80 @@
       "outputs": ["dist/**"]
     },
     "build:extension:ci": {
-      "dependsOn": [
-        "//#build:packages",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+      "dependsOn": ["//#build:packages"],
+      "env": [
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:ci:firefox": {
-      "dependsOn": [
-        "//#build:packages",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+      "dependsOn": ["//#build:packages"],
+      "env": [
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary": {
-      "dependsOn": [
-        "//#build:packages",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+      "dependsOn": ["//#build:packages"],
+      "env": [
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary:firefox": {
-      "dependsOn": [
-        "//#build:packages",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+      "dependsOn": ["//#build:packages"],
+      "env": [
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod": {
-      "dependsOn": [
-        "//#build:packages",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+      "dependsOn": ["//#build:packages"],
+      "env": [
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod:firefox": {
-      "dependsOn": [
-        "//#build:packages",
-        "$SIMPLE_LOCALIZE_API_KEY",
-        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "$SENTRY_DSN",
-        "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN",
-        "$BLOWFISH_BASE_PATH",
-        "$BLOWFISH_API_KEY"
+      "dependsOn": ["//#build:packages"],
+      "env": [
+        "POSTHOG_AUTH_TOKEN",
+        "SIMPLE_LOCALIZE_API_KEY",
+        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN",
+        "BLOWFISH_BASE_PATH",
+        "BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     }

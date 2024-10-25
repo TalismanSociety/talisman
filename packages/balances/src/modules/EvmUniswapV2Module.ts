@@ -36,7 +36,7 @@ export type CustomEvmUniswapV2Token = Extract<Token, { type: ModuleType; isCusto
 
 export const evmUniswapV2TokenId = (
   chainId: EvmNetworkId,
-  contractAddress: EvmUniswapV2Token["contractAddress"]
+  contractAddress: EvmUniswapV2Token["contractAddress"],
 ) => `${chainId}-evm-uniswapv2-${contractAddress}`.toLowerCase()
 
 export type EvmUniswapV2ChainMeta = {
@@ -165,7 +165,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
         return result
       }, {})
       const cache = new Map<EvmNetworkId, BalanceJsonList>(
-        Object.entries(initialBalancesByNetwork ?? {})
+        Object.entries(initialBalancesByNetwork ?? {}),
       )
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
@@ -183,11 +183,11 @@ export const EvmUniswapV2Module: NewBalanceModule<
           // regroup tokens by network
           const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
             addressesByToken,
-            tokens
+            tokens,
           )
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
           for (const [evmNetworkId, addressesByToken] of Object.entries(
-            addressesByTokenByEvmNetwork
+            addressesByTokenByEvmNetwork,
           )) {
             const cached = cache.get(evmNetworkId)
             if (
@@ -206,7 +206,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
                 chainConnectors.evm,
                 evmNetworks,
                 tokens,
-                addressesByToken
+                addressesByToken,
               )
 
               // Don't call callback with balances which have not changed since the last poll.
@@ -215,7 +215,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
                 cache.set(evmNetworkId, json)
                 // cache contains all balances for a given network, filter out balances that didn't change
                 const changes = Object.entries(json).filter(
-                  ([id, balance]) => !isEqual(cached?.[id], balance)
+                  ([id, balance]) => !isEqual(cached?.[id], balance),
                 )
                 if (changes.length) callback(null, new Balances(Object.fromEntries(changes)))
               }
@@ -252,11 +252,11 @@ const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
   evmNetworks: EvmNetworkList,
   tokens: TokenList,
-  addressesByToken: AddressesByToken<EvmUniswapV2Token>
+  addressesByToken: AddressesByToken<EvmUniswapV2Token>,
 ) => {
   const addressesByTokenGroupedByEvmNetwork = groupAddressesByTokenByEvmNetwork(
     addressesByToken,
-    tokens
+    tokens,
   )
 
   const balances = (
@@ -293,7 +293,7 @@ const fetchBalances = async (
 
               return [...tokensAndAddresses, tokenAndAddresses]
             },
-            [] as Array<[EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]]>
+            [] as Array<[EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]]>,
           )
           // fetch all balances
           const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
@@ -307,7 +307,7 @@ const fetchBalances = async (
               values: await getPoolBalance(
                 publicClient,
                 token.contractAddress as `0x${string}`,
-                address as `0x${string}`
+                address as `0x${string}`,
               ),
             }))
           })
@@ -328,8 +328,8 @@ const fetchBalances = async (
 
           // return to caller
           return new Balances(balances)
-        }
-      )
+        },
+      ),
     )
   )
     .map((result) => {
@@ -346,32 +346,35 @@ const fetchBalances = async (
 
 function groupAddressesByTokenByEvmNetwork(
   addressesByToken: AddressesByToken<EvmUniswapV2Token>,
-  tokens: TokenList
+  tokens: TokenList,
 ): Record<string, AddressesByToken<EvmUniswapV2Token>> {
-  return Object.entries(addressesByToken).reduce((byChain, [tokenId, addresses]) => {
-    const token = tokens[tokenId]
-    if (!token) {
-      log.error(`Token ${tokenId} not found`)
+  return Object.entries(addressesByToken).reduce(
+    (byChain, [tokenId, addresses]) => {
+      const token = tokens[tokenId]
+      if (!token) {
+        log.error(`Token ${tokenId} not found`)
+        return byChain
+      }
+
+      const chainId = token.evmNetwork?.id
+      if (!chainId) {
+        log.error(`Token ${tokenId} has no evm network`)
+        return byChain
+      }
+
+      if (!byChain[chainId]) byChain[chainId] = {}
+      byChain[chainId][tokenId] = addresses
+
       return byChain
-    }
-
-    const chainId = token.evmNetwork?.id
-    if (!chainId) {
-      log.error(`Token ${tokenId} has no evm network`)
-      return byChain
-    }
-
-    if (!byChain[chainId]) byChain[chainId] = {}
-    byChain[chainId][tokenId] = addresses
-
-    return byChain
-  }, {} as Record<string, AddressesByToken<EvmUniswapV2Token>>)
+    },
+    {} as Record<string, AddressesByToken<EvmUniswapV2Token>>,
+  )
 }
 
 async function getPoolBalance(
   publicClient: PublicClient,
   contractAddress: `0x${string}`,
-  accountAddress: `0x${string}`
+  accountAddress: `0x${string}`,
 ): Promise<Array<AmountWithLabel<string> | ExtraAmount<string>>> {
   if (!isEthereumAddress(accountAddress)) return [{ type: "free", label: "free", amount: "0" }]
 
@@ -422,14 +425,14 @@ async function getPoolBalance(
     const errorMessage = hasOwnProperty(error, "shortMessage")
       ? error.shortMessage
       : hasOwnProperty(error, "message")
-      ? error.message
-      : error
+        ? error.message
+        : error
     log.warn(
-      `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}: ${errorMessage}`
+      `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}: ${errorMessage}`,
     )
     throw new Error(
       `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}`,
-      { cause: error as Error }
+      { cause: error as Error },
     )
   }
 }

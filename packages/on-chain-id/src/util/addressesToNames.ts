@@ -34,7 +34,7 @@ export const lookupAddresses = async (config: Config, addresses: string[]): Prom
  */
 export const lookupAznsAddresses = async (
   config: Config,
-  addresses: string[]
+  addresses: string[],
 ): Promise<OnChainIds> => {
   const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))
 
@@ -56,7 +56,7 @@ export const lookupAznsAddresses = async (
         provider,
       })
       if (domain) onChainIds.set(address, domain)
-    })
+    }),
   )
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 
@@ -68,12 +68,12 @@ export const lookupAznsAddresses = async (
  */
 export const lookupEnsAddresses = async (
   config: Config,
-  addresses: string[]
+  addresses: string[],
 ): Promise<OnChainIds> => {
   const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))
 
   const client = await config.chainConnectors.evm?.getPublicClientForEvmNetwork(
-    config.networkIdEthereum
+    config.networkIdEthereum,
   )
   if (!client) {
     log.warn(`Could not find Ethereum client in OnChainId::lookupEnsAddresses`)
@@ -93,7 +93,7 @@ export const lookupEnsAddresses = async (
           cause,
         })
       }
-    })
+    }),
   )
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 

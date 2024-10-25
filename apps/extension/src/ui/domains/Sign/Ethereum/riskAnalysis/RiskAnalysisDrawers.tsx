@@ -1,5 +1,5 @@
 import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
-import { Transition } from "@headlessui/react"
+import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useEffect } from "react"
@@ -18,7 +18,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ risk
 
   return (
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 rounded-t-xl p-12">
-      <div className="scrollable scrollable-700  flex-grow overflow-y-auto pr-4 text-xs  leading-[2rem]">
+      <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-xs leading-[2rem]">
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-12">
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
@@ -43,12 +43,12 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
     (enable: boolean) => () => {
       setAutoRiskScan(enable)
     },
-    [setAutoRiskScan]
+    [setAutoRiskScan],
   )
 
   return (
     <div className="animate-fade-in bg-grey-850 flex w-full flex-col gap-12 rounded-t-xl p-12">
-      <div className="scrollable scrollable-700  flex-grow overflow-y-auto pr-4 text-xs  leading-[2rem]">
+      <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-xs leading-[2rem]">
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-8">
           <div className="text-body text-md text-center font-bold">
             {t("Automatic risk assessments")}
@@ -56,7 +56,7 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
           <div className="text-body-secondary text-center text-sm">
             <p>
               {t(
-                "Ethereum transactions and messages can be simulated on a secure server to assess their risk. Would you like to enable this feature?"
+                "Ethereum transactions and messages can be simulated on a secure server to assess their risk. Would you like to enable this feature?",
               )}
             </p>
             <p className="mt-4 text-center">
@@ -89,11 +89,12 @@ const RiskAnalysisCriticalPane: FC<{
 
   return (
     <Transition show={isOpen}>
-      <Transition.Child
+      <TransitionChild
+        as="div"
         className={classNames(
           "fixed left-0 top-0 z-10 h-[60rem] w-[40rem]",
           "flex flex-col items-center gap-8 p-12",
-          "to-black-primary bg-gradient-to-b from-[#411D1D]"
+          "to-black-primary bg-gradient-to-b from-[#411D1D]",
         )}
         enter="opacity-100" // no fade in (other drawer is opening to under it)
         leave="transition-opacity ease-linear duration-200"
@@ -101,7 +102,7 @@ const RiskAnalysisCriticalPane: FC<{
         leaveTo="opacity-0"
       >
         <div className="flex grow flex-col items-center justify-center gap-8 text-center">
-          <div className=" text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
+          <div className="text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
             <ShieldNotOkIcon className="size-36" />
           </div>
           <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
@@ -123,7 +124,7 @@ const RiskAnalysisCriticalPane: FC<{
         <Button fullWidth onClick={onReject}>
           {t("Cancel")}
         </Button>
-      </Transition.Child>
+      </TransitionChild>
     </Transition>
   )
 }

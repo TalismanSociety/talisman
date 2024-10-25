@@ -15,7 +15,7 @@ export type TransportOptions = {
 
 export const getTransportForEvmNetwork = (
   evmNetwork: EvmNetwork,
-  options: TransportOptions = {}
+  options: TransportOptions = {},
 ) => {
   if (!evmNetwork.rpcs?.length) throw new Error("No RPCs found for EVM network")
 
@@ -26,8 +26,8 @@ export const getTransportForEvmNetwork = (
       http(addOnfinalityApiKey(rpc.url, onFinalityApiKey), {
         batch,
         retryCount: 0,
-      })
+      }),
     ),
-    { retryCount: 0 }
+    { retryCount: 0 },
   )
 }

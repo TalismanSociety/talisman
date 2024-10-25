@@ -6,7 +6,7 @@ export const NavigateWithQuery: FC<{ url: string; replace?: boolean }> = ({ url,
 
   const to = useMemo(
     () => (searchParams.size ? `${url}?${searchParams}` : url),
-    [url, searchParams]
+    [url, searchParams],
   )
 
   return <Navigate to={to} replace={replace} />

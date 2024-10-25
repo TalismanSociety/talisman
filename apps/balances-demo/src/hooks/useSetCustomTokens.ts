@@ -34,7 +34,7 @@ export const useSetCustomTokens = (customTokensConfig: CustomTokensConfig) => {
   const chaindataProvider = useChaindataProvider()
   const customTokensConfigMemoised = useMemo(
     () => customTokensConfig,
-    [JSON.stringify(customTokensConfig)] // eslint-disable-line react-hooks/exhaustive-deps
+    [JSON.stringify(customTokensConfig)], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const evmNetworks = useEvmNetworks()
@@ -52,7 +52,7 @@ export const useSetCustomTokens = (customTokensConfig: CustomTokensConfig) => {
         contractAddress,
         evmNetwork: { id: evmChainId },
         isCustom: true,
-      })
+      }),
     )
 
     chaindataProvider.setCustomTokens(customTokens)

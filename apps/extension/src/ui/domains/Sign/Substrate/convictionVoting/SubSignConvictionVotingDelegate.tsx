@@ -1,6 +1,7 @@
-import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -18,7 +19,7 @@ export const SubSignConvictionVotingDelegate = () => {
     const representative = extrinsic.registry.createType("MultiAddress", extrinsic?.method?.args[1])
     const conviction = extrinsic.registry.createType(
       "PalletConvictionVotingConviction",
-      extrinsic?.method?.args[2]
+      extrinsic?.method?.args[2],
     )
     const balance = extrinsic.registry.createType("u128", extrinsic?.method?.args[3])
 

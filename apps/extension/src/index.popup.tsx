@@ -2,8 +2,7 @@ import "@common/enableAnyloggerLogsInDevelopment"
 import "@common/i18nConfig"
 
 import { appStore } from "@extension/core"
-import { log } from "@extension/shared"
-import { IS_FIREFOX } from "@extension/shared"
+import { IS_FIREFOX, log } from "@extension/shared"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
 

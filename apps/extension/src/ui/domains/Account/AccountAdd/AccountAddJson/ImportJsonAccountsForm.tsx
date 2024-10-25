@@ -51,7 +51,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               genesisHash={account.genesisHash}
             />
             <div className="flex grow flex-col gap-2 overflow-hidden">
-              <div className=" overflow-hidden text-ellipsis whitespace-nowrap text-base">
+              <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base">
                 {account.name} <AccountTypeIcon origin={account.origin as AccountType} />
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>
@@ -142,7 +142,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     (id: string) => (select: boolean) => {
       selectAccount(id, select)
     },
-    [selectAccount]
+    [selectAccount],
   )
 
   const [isImporting, setIsImporting] = useState(false)
@@ -158,7 +158,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
         title: t("Importing {{count}} accounts", { count }),
         subtitle: t("Please wait"),
       },
-      { autoClose: false }
+      { autoClose: false },
     )
 
     // ensure notification has time to display
@@ -225,7 +225,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
       <div
         className={classNames(
           "scrollable scrollable-800 mt-6 flex max-h-[28rem] flex-col gap-4 overflow-y-auto",
-          accounts.length > 4 && "pr-4"
+          accounts.length > 4 && "pr-4",
         )}
       >
         {accounts.map((acc, i) => (

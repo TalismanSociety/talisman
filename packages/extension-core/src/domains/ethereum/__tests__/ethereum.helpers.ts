@@ -35,7 +35,7 @@ describe("Test ethereum helpers", () => {
       },
       21000n,
       baseFeePerGas,
-      0n
+      0n,
     )
 
     expect(estimatedFee).toEqual(42000000000000n)
@@ -52,7 +52,7 @@ describe("Test ethereum helpers", () => {
       },
       21000n,
       baseFeePerGas,
-      0n
+      0n,
     )
 
     expect(estimatedFee).toEqual(52500000000000n)
@@ -68,7 +68,7 @@ describe("Test ethereum helpers", () => {
       },
       21000n,
       baseFeePerGas,
-      0n
+      0n,
     )
 
     expect(estimatedFee).toEqual(parseGwei("210000"))

@@ -15,7 +15,7 @@ export const isSubToken = <T extends Token>(
     | SubEquilibriumToken
     | SubNativeToken
     | SubPsp22Token
-    | SubTokensToken
+    | SubTokensToken,
 ): token is
   | SubAssetsToken
   | SubEquilibriumToken

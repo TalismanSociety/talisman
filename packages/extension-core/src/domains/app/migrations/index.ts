@@ -31,7 +31,7 @@ export const cleanBadContacts: Migration = {
           log.log("Error normalising address", error)
           return false
         }
-      })
+      }),
     )
     await addressBookStore.replace(cleanContacts)
   }),
@@ -57,7 +57,7 @@ export const hideGetStartedIfFunded: Migration = {
       ...new Set(
         Object.values(balanceTotals)
           .filter((b) => !!b.total)
-          .map((b) => normalizeAddress(b.address))
+          .map((b) => normalizeAddress(b.address)),
       ),
     ]
 

@@ -82,7 +82,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
       <div
         className={classNames(
           "bg-grey-800 grid grid-cols-[40%_30%_30%]",
-          detailRows.length ? "rounded-t" : "rounded"
+          detailRows.length ? "rounded-t" : "rounded",
         )}
       >
         <div className="flex">
@@ -118,7 +118,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             tooltip={t("Total Locked Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           />
         </div>
@@ -132,7 +132,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             tooltip={t("Total Available Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           />
         </div>
@@ -187,7 +187,7 @@ const ChainTokenBalancesUniswapV2Row = ({
     <div
       className={classNames(
         "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
-        isLastBalance && "rounded-b-sm"
+        isLastBalance && "rounded-b-sm",
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
@@ -205,7 +205,7 @@ const ChainTokenBalancesUniswapV2Row = ({
           <div
             className={classNames(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
             <div className={"font-bold text-white"}>
@@ -289,12 +289,12 @@ const LockedExtra: FC<{
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, address]
+    [selectedAccount?.address, address],
   )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
-    [data?.accounts, rowAddress]
+    [data?.accounts, rowAddress],
   )
 
   const withdrawIn = useMemo(
@@ -302,7 +302,7 @@ const LockedExtra: FC<{
       !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
         ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding]
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
   )
 
   if (!rowAddress || !accountStatus) return null

@@ -39,7 +39,7 @@ const CloseButton = () => {
       e.stopPropagation()
       dismissAlert()
     },
-    [dismissAlert]
+    [dismissAlert],
   )
 
   return (
@@ -79,7 +79,7 @@ export const AssetDiscoveryDashboardAlert = () => {
               <CloseButton />
             </Suspense>
           ),
-        }
+        },
       )
     }
   }, [location, navigate, showAlert, t])

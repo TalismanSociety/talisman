@@ -51,7 +51,7 @@ export const SendFundsHardwareSubstrate = () => {
         log.error("handleSigned", { err })
       }
     },
-    [sendWithSignature, to, token, amount, tokenId, knownAddress]
+    [sendWithSignature, to, token, amount, tokenId, knownAddress],
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

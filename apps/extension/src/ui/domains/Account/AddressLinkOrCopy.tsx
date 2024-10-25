@@ -67,7 +67,7 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
         <button
           type="button"
           onClick={handleClick}
-          className="shrink-0 opacity-80 hover:opacity-100 "
+          className="shrink-0 opacity-80 hover:opacity-100"
         >
           <CopyIcon />
         </button>

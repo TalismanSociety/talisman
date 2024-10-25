@@ -39,7 +39,7 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
       const tokenIds = sortBy(
         Object.keys(balancesByTokenId).filter((id) => !!tokensMap[id]), // some tokens may have been deleted since the scan finished
         (tokenId) => Number(tokensMap[tokenId]?.evmNetwork?.id ?? 0),
-        (tokenId) => tokensMap[tokenId]?.symbol
+        (tokenId) => tokensMap[tokenId]?.symbol,
       )
 
       const isInProgress = !!currentScanId
@@ -57,6 +57,6 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
         tokenIds,
       }
     }),
-    shareReplay(1)
-  )
+    shareReplay(1),
+  ),
 )

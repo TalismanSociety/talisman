@@ -26,7 +26,7 @@ const useMnemonicBackupModalProvider = () => {
       setStage(Stages.Acknowledgement)
       innerOpen()
     },
-    [innerOpen, setStage]
+    [innerOpen, setStage],
   )
 
   const isBackupConfirmed = useCallback(
@@ -34,7 +34,7 @@ const useMnemonicBackupModalProvider = () => {
       const mnemonic = mnemonics.find((m) => m.id === mnemonicId)
       return !!mnemonic?.confirmed
     },
-    [mnemonics]
+    [mnemonics],
   )
 
   return {
@@ -49,5 +49,5 @@ const useMnemonicBackupModalProvider = () => {
 }
 
 export const [MnemonicBackupModalProviderWrapper, useMnemonicBackupModal] = provideContext(
-  useMnemonicBackupModalProvider
+  useMnemonicBackupModalProvider,
 )

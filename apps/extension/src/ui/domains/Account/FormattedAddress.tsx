@@ -37,7 +37,7 @@ export const FormattedAddress: FC<{
         <span
           className={classNames(
             "flex max-w-full items-center gap-[0.5em] overflow-hidden",
-            className
+            className,
           )}
         >
           <AccountIcon

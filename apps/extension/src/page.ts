@@ -1,16 +1,17 @@
 // Copyright 2019-2021 @polkadot/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { DEBUG, isTalismanHostname } from "@extension/shared"
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 
+import { DEBUG, isTalismanHostname } from "@extension/shared"
+
+import type { Injected } from "./inject/substrate/types"
 import WindowMessageService from "./common/WindowMessageService"
 import { injectEthereum } from "./inject/ethereum/injectEthereum"
 import TalismanInjected from "./inject/substrate/Injected"
 import { injectExtension } from "./inject/substrate/injectExtension"
 import { injectSubstrate } from "./inject/substrate/injectSubstrate"
-import type { Injected } from "./inject/substrate/types"
 
 const messageService = new WindowMessageService()
 

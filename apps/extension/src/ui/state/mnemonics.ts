@@ -21,11 +21,11 @@ export const [useMnemonics, mnemonics$] = bind(
             name,
             confirmed,
             source,
-          } as Mnemonic)
-      )
+          }) as Mnemonic,
+      ),
     ),
-    debugObservable("mnemonics$")
-  )
+    debugObservable("mnemonics$"),
+  ),
 )
 
 export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) =>
@@ -33,6 +33,6 @@ export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) 
     map((mnemonics) => {
       if (!id) return null
       return mnemonics.find((m) => m.id === id) ?? null
-    })
-  )
+    }),
+  ),
 )

@@ -21,7 +21,7 @@ export const api: MessageTypes = {
     messageService.sendMessage(
       "pri(app.changePassword.subscribe)",
       { currentPw, newPw, newPwConfirm },
-      cb
+      cb,
     ),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
@@ -170,7 +170,7 @@ export const api: MessageTypes = {
         addressesAndEvmNetworks,
         addressesAndTokens,
       },
-      cb
+      cb,
     ),
 
   // authorized sites messages ------------------------------------------

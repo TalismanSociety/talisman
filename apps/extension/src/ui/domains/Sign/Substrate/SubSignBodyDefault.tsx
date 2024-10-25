@@ -1,7 +1,8 @@
-import { AccountPill } from "@ui/domains/Account/AccountPill"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+
+import { AccountPill } from "@ui/domains/Account/AccountPill"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsSub } from "../ViewDetails/ViewDetailsSub"

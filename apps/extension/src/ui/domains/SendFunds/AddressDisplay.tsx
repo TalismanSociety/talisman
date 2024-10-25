@@ -21,7 +21,7 @@ const useBlockExplorerUrl = (
   address?: TAddress | null,
   chainId?: ChainId | null,
   evmNetworkId?: EvmNetworkId | null,
-  shouldFormatAddress = true
+  shouldFormatAddress = true,
 ) => {
   const chain = useChain(chainId as string)
   const evmNetwork = useEvmNetwork(evmNetworkId as string)
@@ -94,7 +94,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
     address,
     chainId,
     evmNetworkId,
-    !!account || !!contact
+    !!account || !!contact,
   )
 
   const resolvedAddress = useMemo(() => {
@@ -105,7 +105,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
 
   const text = useMemo(
     () => account?.name ?? contact?.name ?? (address ? shortenAddress(address, 6, 6) : null),
-    [account?.name, address, contact?.name]
+    [account?.name, address, contact?.name],
   )
 
   const handleCopyAddress = useCallback(() => {
@@ -127,7 +127,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
       <TooltipTrigger
         className={classNames(
           "text-body inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base",
-          className
+          className,
         )}
       >
         <AccountIcon

@@ -10,7 +10,7 @@ export const AuthorisedSiteToolbar = () => {
   const authorisedSites = useAuthorisedSites()
   const isAuthorised = useMemo(
     () => Boolean(currentSite?.id && authorisedSites[currentSite?.id]),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
 
   if (!isAuthorised) return null

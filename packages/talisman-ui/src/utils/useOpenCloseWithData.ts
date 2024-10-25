@@ -15,7 +15,7 @@ type OpenCloseWithData<T> = { isOpenReady: boolean; data: T | undefined; onUnmou
  */
 export const useOpenCloseWithData = <T, Result = OpenCloseWithData<T>>(
   isOpen: boolean | undefined,
-  data: T | undefined
+  data: T | undefined,
 ): Result => {
   const [previousData, setPreviousData] = useState<T>()
   useEffect(() => {

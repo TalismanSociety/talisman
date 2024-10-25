@@ -97,7 +97,7 @@ export const getStakingAPR = async (sapi: ScaleApi) => {
 
   const [eraRewards, eraTotalStakes] = await Promise.all([
     Promise.all(
-      eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasValidatorReward", [era]))
+      eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasValidatorReward", [era])),
     ),
     Promise.all(eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasTotalStake", [era]))),
   ])
@@ -119,7 +119,7 @@ export const getNomPoolStakingPayload = async (
   poolId: number,
   amount: bigint,
   isBondExtra: boolean,
-  withSetClaimPermission: boolean
+  withSetClaimPermission: boolean,
 ) => {
   if (withSetClaimPermission)
     return sapi.getExtrinsicPayload(
@@ -137,7 +137,7 @@ export const getNomPoolStakingPayload = async (
           }),
         ],
       },
-      { address }
+      { address },
     )
 
   return isBondExtra
@@ -147,7 +147,7 @@ export const getNomPoolStakingPayload = async (
         {
           extra: Enum("FreeBalance", amount),
         },
-        { address }
+        { address },
       )
     : sapi.getExtrinsicPayload(
         "NominationPools",
@@ -156,7 +156,7 @@ export const getNomPoolStakingPayload = async (
           amount,
           pool_id: poolId,
         },
-        { address }
+        { address },
       )
 }
 export const cleanupNomPoolName = (name: string | null | undefined) =>

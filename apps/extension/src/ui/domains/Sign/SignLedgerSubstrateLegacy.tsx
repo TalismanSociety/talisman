@@ -46,7 +46,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry, t]
+    [refresh, status, message, requiresManualRetry, t],
   )
 
   useEffect(() => {
@@ -94,20 +94,22 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
             LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
             LEDGER_HARDENED_OFFSET + 0,
             LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
-            Buffer.from(unsigned)
+            Buffer.from(unsigned),
           )
         : ledger.sign(
             LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
             LEDGER_HARDENED_OFFSET + 0,
             LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
-            Buffer.from(unsigned)
+            Buffer.from(unsigned),
           ))
 
       if (return_code !== LEDGER_SUCCESS_CODE)
         throw new LedgerError(error_message, "SignError", return_code)
 
       // remove first byte which stores the signature type (0 here, as 0 = ed25519)
-      const signature = isRaw ? u8aToHex(signatureBuffer.slice(1)) : u8aToHex(signatureBuffer)
+      const signature = isRaw
+        ? u8aToHex(new Uint8Array(signatureBuffer.slice(1)))
+        : u8aToHex(new Uint8Array(signatureBuffer))
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })
@@ -120,15 +122,15 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
         case "Txn version not supported":
           return setError(
             t(
-              "This type of transaction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
-            )
+              "This type of transaction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again.",
+            ),
           )
 
         case "Instruction not supported":
           return setError(
             t(
-              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
-            )
+              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again.",
+            ),
           )
 
         default:

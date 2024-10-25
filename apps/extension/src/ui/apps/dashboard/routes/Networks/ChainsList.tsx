@@ -67,7 +67,7 @@ const DeactivateNetworksModalContent: FC<{
       <div className="text-body-secondary mb-8 text-sm">
         {t("It is recommended to deactivate unused networks to improve Talisman performance.")}
       </div>
-      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm ">
+      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm">
         {isBalancesInitializing ? (
           <>
             <LoaderIcon className="text-md shrink-0 animate-spin" />
@@ -122,7 +122,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
   const networksActiveState = useActiveChainsState()
   const chains = useMemo(
     () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),
-    [allChains, useTestnets]
+    [allChains, useTestnets],
   )
 
   const [filteredChains, exactMatches] = useMemo(() => {
@@ -138,7 +138,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
       lowerSearch.trim() === chain.name?.toLowerCase().trim() ||
       lowerSearch.trim() === chain.nativeToken?.id.toLowerCase().trim()
         ? [chain.id]
-        : []
+        : [],
     )
 
     return [filtered, exactMatches] as const
@@ -162,7 +162,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
     (network: Chain) => (enable: boolean) => {
       activeChainsStore.setActive(network.id, enable)
     },
-    []
+    [],
   )
 
   const activateAll = useCallback(
@@ -170,7 +170,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
       () => {
         activeChainsStore.set(Object.fromEntries(filteredChains.map((n) => [n.id, activate])))
       },
-    [filteredChains]
+    [filteredChains],
   )
 
   const ocDeactivateAllModal = useOpenClose()
@@ -182,7 +182,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
       <div
         className={classNames(
           "flex w-full items-center justify-end gap-4",
-          !filteredChains.length && "invisible"
+          !filteredChains.length && "invisible",
         )}
       >
         <button
@@ -252,7 +252,7 @@ const ChainsListItem = ({
     (e) => {
       onEnableChanged(e.target.checked)
     },
-    [onEnableChanged]
+    [onEnableChanged],
   )
 
   const rowContent = intersection?.isIntersecting ? (

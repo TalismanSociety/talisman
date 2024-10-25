@@ -36,7 +36,7 @@ export const useAccountExportModal = () => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen],
   )
 
   const canExportAccountFunc = (account?: AccountJsonAny | null) =>
@@ -50,7 +50,7 @@ export const useAccountExportModal = () => {
       const { exportedJson } = await api.accountExport(account.address, password, newPw)
       downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
     },
-    [account]
+    [account],
   )
 
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
@@ -70,14 +70,17 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     () =>
       yup
         .object({
-          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPw: yup
+            .string()
+            .required(" ")
+            .min(6, t("Password must be at least 6 characters long")),
           newPwConfirm: yup
             .string()
-            .required("")
+            .required(" ")
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),
-    [t]
+    [t],
   )
 
   const {
@@ -106,7 +109,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         })
       }
     },
-    [exportAccount, setError, onSuccess, password]
+    [exportAccount, setError, onSuccess, password],
   )
 
   useEffect(() => {

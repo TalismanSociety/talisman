@@ -37,9 +37,9 @@ export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoB
       classNames(
         "relative block aspect-square w-[1em] shrink-0",
         rounded && "rounded-full",
-        className
+        className,
       ),
-    [className, rounded]
+    [className, rounded],
   )
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
@@ -111,7 +111,7 @@ const AssetLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className
+      className,
     )}
   ></div>
 )

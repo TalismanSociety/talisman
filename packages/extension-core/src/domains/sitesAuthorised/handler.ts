@@ -1,16 +1,16 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 
+import type { MessageTypes, RequestType, ResponseType } from "../../types"
+import type { Port, RequestIdOnly } from "../../types/base"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { KnownRequestIdOnly } from "../../libs/requests/types"
-import type { MessageTypes, RequestType, ResponseType } from "../../types"
-import type { Port, RequestIdOnly } from "../../types/base"
 import { ignoreRequest } from "./requests"
 import {
-  AuthRequestApprove,
   AuthorizedSite,
+  AuthRequestApprove,
   RequestAuthorizedSiteBatchOp,
   RequestAuthorizedSiteForget,
   RequestAuthorizedSiteUpdate,
@@ -76,7 +76,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------

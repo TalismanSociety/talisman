@@ -1,5 +1,5 @@
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import {
@@ -16,7 +16,7 @@ import { useEvmNetwork } from "@ui/state"
 
 const getOpStackEthL1DataFee = async (
   publicClient: PublicClient,
-  serializedTx: Hex
+  serializedTx: Hex,
 ): Promise<bigint> => {
   try {
     const contract = getContract({
@@ -34,7 +34,7 @@ const getOpStackEthL1DataFee = async (
 const getScrollStackEthL1DataFee = async (
   publicClient: PublicClient,
   serializedTx: Hex,
-  l1PriceOracleAddress: `0x${string}`
+  l1PriceOracleAddress: `0x${string}`,
 ): Promise<bigint> => {
   try {
     const contract = getContract({
@@ -51,7 +51,7 @@ const getScrollStackEthL1DataFee = async (
 
 export const useEthEstimateL1DataFee = (
   publicClient: PublicClient | undefined,
-  tx: TransactionRequest | undefined
+  tx: TransactionRequest | undefined,
 ) => {
   const evmNetwork = useEvmNetwork(publicClient?.chain?.id?.toString())
 
@@ -60,7 +60,7 @@ export const useEthEstimateL1DataFee = (
       tx && publicClient?.chain?.id
         ? serializeTransaction(getTransactionSerializable(tx, publicClient.chain.id))
         : null,
-    [publicClient?.chain?.id, tx]
+    [publicClient?.chain?.id, tx],
   )
 
   return useQuery({
@@ -75,13 +75,13 @@ export const useEthEstimateL1DataFee = (
           return getScrollStackEthL1DataFee(
             publicClient,
             serialized,
-            evmNetwork.l2FeeType.l1GasPriceOracle
+            evmNetwork.l2FeeType.l1GasPriceOracle,
           )
         default:
           return 0n
       }
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchInterval: 6_000,
     refetchOnMount: false,
     refetchOnReconnect: false,

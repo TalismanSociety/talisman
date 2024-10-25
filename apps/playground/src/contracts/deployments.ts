@@ -34,7 +34,7 @@ const getContract = (contract: PgContractType) => {
 export const useDeployment = (contract: PgContractType, chainId?: number) => {
   const [deployments = DEFAULT_DEPLOYMENTS, setDeployments] = useLocalStorage(
     "pg:deployments",
-    DEFAULT_DEPLOYMENTS
+    DEFAULT_DEPLOYMENTS,
   )
 
   const setAddress = useCallback(
@@ -46,7 +46,7 @@ export const useDeployment = (contract: PgContractType, chainId?: number) => {
         return newVal
       })
     },
-    [chainId, contract, setDeployments]
+    [chainId, contract, setDeployments],
   )
 
   const forgetAddress = useCallback(() => {
@@ -60,7 +60,7 @@ export const useDeployment = (contract: PgContractType, chainId?: number) => {
 
   const address = useMemo(
     () => (chainId ? deployments[contract][chainId] : undefined),
-    [chainId, contract, deployments]
+    [chainId, contract, deployments],
   )
 
   const { abi, bytecode } = useMemo(() => getContract(contract), [contract])

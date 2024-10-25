@@ -23,7 +23,7 @@ export const EvmNetworkSelectPill = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
 
   const { isOpen, open, close } = useOpenClose()

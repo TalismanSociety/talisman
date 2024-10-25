@@ -1,10 +1,13 @@
-import { EthPriorityOptionName } from "@extension/core"
-import { EvmAddress } from "@extension/core"
-import { AppPill } from "@talisman/components/AppPill"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { EthPriorityOptionName, EvmAddress } from "@extension/core"
+import { AppPill } from "@talisman/components/AppPill"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import {
   PopupContent,
   PopupFooter,
@@ -22,9 +25,6 @@ import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
-import { useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 
@@ -120,7 +120,7 @@ export const EthSignTransactionRequest = () => {
   const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
-      errorMessage: status === "ERROR" ? message : error ?? "",
+      errorMessage: status === "ERROR" ? message : (error ?? ""),
     }
   }, [status, message, error])
 
@@ -134,7 +134,7 @@ export const EthSignTransactionRequest = () => {
       setPriority(priority)
       setReady() // clear error from previous submit attempt
     },
-    [setPriority, setReady]
+    [setPriority, setReady],
   )
 
   return (

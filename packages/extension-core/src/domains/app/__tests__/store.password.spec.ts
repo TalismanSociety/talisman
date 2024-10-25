@@ -1,4 +1,4 @@
-import { PasswordStore, generateSalt, getHashedPassword } from "../../../domains/app/store.password"
+import { generateSalt, getHashedPassword, PasswordStore } from "../../../domains/app/store.password"
 
 const spaceyPw = "  passWord  "
 const pwStoreInitial = { isTrimmed: true, isHashed: false }

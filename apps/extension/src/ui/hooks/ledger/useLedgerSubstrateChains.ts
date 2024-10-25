@@ -45,6 +45,6 @@ export const useLedgerSubstrateChain = (chainId: string | null | undefined) => {
 
   return useMemo(
     () => (chainId && chains.find((chain) => chain.id === chainId)) || null,
-    [chains, chainId]
+    [chains, chainId],
   )
 }

@@ -39,7 +39,7 @@ export const PrivacyPage = () => {
       updateData({ allowTracking })
       isLoggedIn ? navigate("/accounts/add") : setOnboarded()
     },
-    [navigate, updateData, isLoggedIn, setOnboarded]
+    [navigate, updateData, isLoggedIn, setOnboarded],
   )
 
   const handleLearnMoreClick = useCallback(() => {

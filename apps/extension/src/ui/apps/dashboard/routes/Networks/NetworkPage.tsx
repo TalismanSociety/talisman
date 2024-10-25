@@ -38,7 +38,7 @@ const Content = () => {
 
   const handleSubmitted = useCallback(
     () => navigate(`/settings/networks-tokens/networks/${networksType}`),
-    [navigate, networksType]
+    [navigate, networksType],
   )
 
   return (

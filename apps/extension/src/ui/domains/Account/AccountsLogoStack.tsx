@@ -13,14 +13,14 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
 
   const filteredAccounts = useMemo(
     () => accounts.filter((account) => addresses?.includes(account.address)),
-    [accounts, addresses]
+    [accounts, addresses],
   )
   const { visibleAccounts, moreAccounts } = useMemo(
     () => ({
       visibleAccounts: filteredAccounts?.slice(0, max) ?? [],
       moreAccounts: filteredAccounts?.slice(max) ?? [],
     }),
-    [filteredAccounts, max]
+    [filteredAccounts, max],
   )
 
   return (

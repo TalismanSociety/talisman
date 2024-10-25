@@ -17,9 +17,9 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const activeAccounts = useMemo(
     () =>
       accounts.map(
-        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]
+        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean],
       ),
-    [accounts, site?.addresses]
+    [accounts, site?.addresses],
   )
 
   const handleUpdateAccounts = useCallback(
@@ -29,7 +29,7 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
         addresses,
       })
     },
-    [site?.id]
+    [site?.id],
   )
 
   return (
@@ -49,9 +49,9 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       accounts
         .filter((acc) => acc.type === "ethereum")
         .map(
-          (acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [AccountJsonAny, boolean]
+          (acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [AccountJsonAny, boolean],
         ),
-    [accounts, site?.ethAddresses]
+    [accounts, site?.ethAddresses],
   )
 
   const handleAccountClick = useCallback(
@@ -61,7 +61,7 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       const ethAddresses = isConnected ? [] : [address]
       await api.authorizedSiteUpdate(site?.id, { ethAddresses })
     },
-    [site?.ethAddresses, site?.id]
+    [site?.ethAddresses, site?.id],
   )
 
   return (
@@ -88,7 +88,7 @@ export const ConnectedAccounts: FC = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
 
   return (

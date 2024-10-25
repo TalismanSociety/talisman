@@ -22,8 +22,8 @@ const sortSymbolBalancesBy =
       type === "total"
         ? b.total.planck
         : type === "available"
-        ? b.transferable.planck
-        : b.unavailable.planck
+          ? b.transferable.planck
+          : b.unavailable.planck
 
     const fiatAmount = (b: FiatSumBalancesFormatter | Balance) => {
       const getAmount = (b: FiatSumBalancesFormatter | Balance, type: keyof typeof b) => {
@@ -34,14 +34,14 @@ const sortSymbolBalancesBy =
       return type === "total"
         ? getAmount(b, "total")
         : type === "available"
-        ? getAmount(b, "transferable")
-        : type === "locked"
-        ? getAmount(b, "unavailable") !== null
-          ? // return unavailable if not null
-            getAmount(b, "unavailable") ?? 0
-          : // return null if unavailable is null
-            null
-        : null
+          ? getAmount(b, "transferable")
+          : type === "locked"
+            ? getAmount(b, "unavailable") !== null
+              ? // return unavailable if not null
+                (getAmount(b, "unavailable") ?? 0)
+              : // return null if unavailable is null
+                null
+            : null
     }
 
     // sort by fiat balance
@@ -70,10 +70,10 @@ const sortSymbolBalancesBy =
     //
     // this effectively groups the `$0.00` tokens above the `-` tokens
     const aHasCoingeckoId = !!aBalances.each.find(
-      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet
+      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet,
     )
     const bHasCoingeckoId = !!bBalances.each.find(
-      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet
+      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet,
     )
     if (aHasCoingeckoId && !bHasCoingeckoId) return -1
     if (!aHasCoingeckoId && bHasCoingeckoId) return 1
@@ -129,7 +129,7 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
               ? ([, balances]) =>
                   balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
                   balances.sum.fiat("usd").total >= 1
-              : () => true
+              : () => true,
           )
 
         const available = symbolBalances
@@ -161,8 +161,8 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
           .sort(sortSymbolBalancesBy("locked", currency))
 
         return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
-      })
-    )
+      }),
+    ),
 )
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
@@ -191,7 +191,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
           ? ([, balances]) =>
               balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
               balances.sum.fiat("usd").total >= 1
-          : () => true
+          : () => true,
       )
   }, [balances.each, currency, hideDust])
 
@@ -225,7 +225,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
         ])
         .filter(([, balances]) => balances.count > 0)
         .sort(sortSymbolBalancesBy("locked", currency)),
-    [currency, symbolBalances]
+    [currency, symbolBalances],
   )
 
   return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }

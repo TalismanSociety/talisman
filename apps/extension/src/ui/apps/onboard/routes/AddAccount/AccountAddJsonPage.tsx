@@ -1,5 +1,6 @@
-import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 import { useTranslation } from "react-i18next"
+
+import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 
 import { AccountAddWrapper } from "./AccountAddWrapper"
 

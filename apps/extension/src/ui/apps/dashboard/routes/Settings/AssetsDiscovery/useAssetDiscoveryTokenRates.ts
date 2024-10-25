@@ -17,7 +17,7 @@ const setTokenRates = (state: SetStateAction<TokenRatesList>) => {
 }
 
 export const [useAssetDiscoveryTokenRates] = bind((tokenId: TokenId | null | undefined) =>
-  assetDiscoveryAllTokenRates$.pipe(map((rates) => (tokenId && rates[tokenId]) || null))
+  assetDiscoveryAllTokenRates$.pipe(map((rates) => (tokenId && rates[tokenId]) || null)),
 )
 
 const [useMissingTokenRates] = bind(
@@ -28,10 +28,10 @@ const [useMissingTokenRates] = bind(
   ]).pipe(
     map(([scanProgress, tokens, tokenRates]) =>
       tokens.filter(
-        (t) => !!t.coingeckoId && !tokenRates[t.id] && scanProgress.tokenIds.includes(t.id)
-      )
-    )
-  )
+        (t) => !!t.coingeckoId && !tokenRates[t.id] && scanProgress.tokenIds.includes(t.id),
+      ),
+    ),
+  ),
 )
 
 const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
@@ -67,12 +67,12 @@ export const useAssetDiscoveryFetchTokenRates = () => {
 
       // 50 max at a time
       const tokensList = Object.fromEntries(
-        missingTokenRatesList.slice(0, 100).map((t) => [t.id, t])
+        missingTokenRatesList.slice(0, 100).map((t) => [t.id, t]),
       )
       log.debug(
         "fetching %d token rates out of %d",
         Object.keys(tokensList).length,
-        missingTokenRatesList.length
+        missingTokenRatesList.length,
       )
       setCanFetch(false)
       safeFetchTokenRates(tokensList)

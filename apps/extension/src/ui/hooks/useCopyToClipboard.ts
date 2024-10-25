@@ -19,7 +19,7 @@ export const useCopyToClipboard = () => {
             subtitle: text,
           },
           // set an id to prevent multiple clicks to display multiple notifications
-          { toastId }
+          { toastId },
         )
         return true
       } catch (err) {
@@ -28,11 +28,11 @@ export const useCopyToClipboard = () => {
             type: "error",
             title: t(`Copy failed`),
           },
-          { toastId }
+          { toastId },
         )
         return false
       }
     },
-    [t, toastId]
+    [t, toastId],
   )
 }

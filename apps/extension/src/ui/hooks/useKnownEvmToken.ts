@@ -11,12 +11,12 @@ import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
  */
 export const useKnownEvmToken = (
   evmNetworkId: string | undefined | null,
-  contractAddress: string | undefined | null
+  contractAddress: string | undefined | null,
 ) => {
   const allTokens = useTokens()
   const allErc20Tokens = useMemo(
     () => allTokens.filter((t) => isErc20Token(t) || isUniswapV2Token(t)),
-    [allTokens]
+    [allTokens],
   )
 
   const activeTokens = useActiveTokensState()
@@ -41,7 +41,7 @@ export const useKnownEvmToken = (
       if (!token) throw new Error("Token not found")
       await activeTokensStore.setActive(token.id, active)
     },
-    [token]
+    [token],
   )
 
   const toggleActive = useCallback(async () => {

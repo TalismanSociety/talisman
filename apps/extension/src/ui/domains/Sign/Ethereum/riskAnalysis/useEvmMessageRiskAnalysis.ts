@@ -34,7 +34,7 @@ const fetchPersonalSignMessageScan = async (
   evmNetworkId: EvmNetworkId,
   message: string,
   account: string,
-  origin: string
+  origin: string,
 ) => {
   try {
     const apiUrl = getBlowfishApiUrl(evmNetworkId)

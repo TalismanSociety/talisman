@@ -28,7 +28,7 @@ type PublicClientOptions = {
 export const getEvmNetworkPublicClient = (
   evmNetwork: EvmNetwork,
   nativeToken: Token | null,
-  options: PublicClientOptions = {}
+  options: PublicClientOptions = {},
 ): PublicClient => {
   const chain = getChainFromEvmNetwork(evmNetwork, nativeToken)
 
@@ -57,7 +57,7 @@ export const getEvmNetworkPublicClient = (
         chain,
         transport,
         batch,
-      })
+      }),
     )
   }
 

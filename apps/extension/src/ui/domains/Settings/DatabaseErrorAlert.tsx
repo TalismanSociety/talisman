@@ -36,11 +36,11 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
   const isOpen = databaseUnavailable || databaseQuotaExceeded
 
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(
-    useMemo(() => ANALYTICS_PAGES[container], [container])
+    useMemo(() => ANALYTICS_PAGES[container], [container]),
   )
   const dismiss = useCallback(
     () => errorsStore.set({ databaseUnavailable: false, databaseQuotaExceeded: false }),
-    []
+    [],
   )
 
   if (!isOpen) return null
@@ -62,10 +62,10 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
             <div className="mb-4 text-sm">
               {hasRuntimeReloadFn
                 ? t(
-                    "Please make sure there is free space on your disk (at least 1GB) and then reload Talisman."
+                    "Please make sure there is free space on your disk (at least 1GB) and then reload Talisman.",
                   )
                 : t(
-                    "Please make sure there is free space on your disk (at least 1GB) and then restart your browser."
+                    "Please make sure there is free space on your disk (at least 1GB) and then restart your browser.",
                   )}
             </div>
             <div className="text-sm">

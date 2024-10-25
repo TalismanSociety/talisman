@@ -1,6 +1,7 @@
-import { Verify as BaseVerify } from "@ui/domains/Mnemonic/Verify"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
+
+import { Verify as BaseVerify } from "@ui/domains/Mnemonic/Verify"
 
 import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"

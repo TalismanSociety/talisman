@@ -159,7 +159,7 @@ export const ERC721Send = () => {
       <h3 className="text-lg">Send</h3>
       {contractAddress ? (
         <>
-          <form className="text-body-secondary space-y-1 " onSubmit={handleSubmit(onSubmit)}>
+          <form className="text-body-secondary space-y-1" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex items-center">
               <label className="w-48" htmlFor="send-tokens-to">
                 Recipient :
@@ -221,14 +221,14 @@ export const ERC721Send = () => {
             </div>
             {sendIsSuccess && (
               <>
-                <pre className="text-alert-success my-8 ">
+                <pre className="text-alert-success my-8">
                   Transaction: {JSON.stringify(hash, undefined, 2)}
                 </pre>
                 <TransactionReceipt hash={hash} />
               </>
             )}
             {sendIsError && (
-              <div className="text-alert-error my-8 ">Error : {sendError?.message}</div>
+              <div className="text-alert-error my-8">Error : {sendError?.message}</div>
             )}
           </form>
         </>

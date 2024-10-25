@@ -10,7 +10,7 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
 
   const isActive = useMemo(
     () => !!evmNetwork && isEvmNetworkActive(evmNetwork, activeEvmNetworks),
-    [activeEvmNetworks, evmNetwork]
+    [activeEvmNetworks, evmNetwork],
   )
   const isKnown = useMemo(() => !!evmNetwork && !isCustomEvmNetwork(evmNetwork), [evmNetwork])
 
@@ -19,12 +19,12 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
       if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
       activeEvmNetworksStore.setActive(evmNetworkId, enable)
     },
-    [evmNetwork, evmNetworkId]
+    [evmNetwork, evmNetworkId],
   )
 
   const isActiveSetByUser = useMemo(
     () => evmNetworkId !== null && evmNetworkId !== undefined && evmNetworkId in activeEvmNetworks,
-    [evmNetworkId, activeEvmNetworks]
+    [evmNetworkId, activeEvmNetworks],
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)

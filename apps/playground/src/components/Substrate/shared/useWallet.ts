@@ -1,9 +1,9 @@
-import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import type {
   InjectedAccountWithMeta,
   InjectedExtension,
   Web3AccountsOptions,
 } from "@polkadot/extension-inject/types"
+import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocalStorage } from "react-use"
 
@@ -32,7 +32,7 @@ const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }
   const { api } = useApi()
   const [data, setData, reset] = useLocalStorage<WalletStorageData>(
     storageKey,
-    DEFAULT_STORAGE_DATA
+    DEFAULT_STORAGE_DATA,
   )
   const [extensions, setExtensions] = useState<InjectedExtension[]>()
   const [error, setError] = useState<unknown>()
@@ -75,9 +75,9 @@ const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }
   const account = useMemo(
     () =>
       accounts?.find(
-        (acc) => acc.address === data?.selectedAddress && acc.meta.source === data?.selectedSource
+        (acc) => acc.address === data?.selectedAddress && acc.meta.source === data?.selectedSource,
       ),
-    [accounts, data]
+    [accounts, data],
   )
 
   useEffect(() => {
@@ -100,7 +100,7 @@ const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }
         selectedSource: acc ? acc.meta.source : null,
       }))
     },
-    [data, setData]
+    [data, setData],
   )
 
   return {

@@ -126,7 +126,7 @@ export const EvmNativeModule: NewBalanceModule<
             if (!evmNetworkId) return null
             return [tokenId, ethAddresses] as [string, Address[]]
           })
-          .filter((x): x is [string, Address[]] => Boolean(x))
+          .filter((x): x is [string, Address[]] => Boolean(x)),
       )
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
@@ -137,7 +137,7 @@ export const EvmNativeModule: NewBalanceModule<
       const activeEvmNetworkIds = Object.keys(ethAddressesByToken).map(getEvmNetworkIdFromTokenId)
       const initialisingBalances = new Set<string>(activeEvmNetworkIds)
       const positiveBalanceNetworks = new Set<string>(
-        (initialBalances as EvmNativeBalance[])?.map((b) => b.evmNetworkId)
+        (initialBalances as EvmNativeBalance[])?.map((b) => b.evmNetworkId),
       )
 
       const poll = async () => {
@@ -167,7 +167,7 @@ export const EvmNativeModule: NewBalanceModule<
               const balances = await fetchBalances(
                 chainConnectors.evm,
                 { [tokenId]: addresses },
-                tokens
+                tokens,
               )
               const resultBalances: EvmNativeBalance[] = []
               balances.flat().forEach((balance) => {
@@ -218,7 +218,7 @@ export const EvmNativeModule: NewBalanceModule<
         .flat()
         .filter(
           (b): b is EvmNativeBalance =>
-            !(b instanceof EvmNativeBalanceError) && BigInt(b.value) > 0n
+            !(b instanceof EvmNativeBalanceError) && BigInt(b.value) > 0n,
         )
 
       return new Balances(pureBalances)
@@ -242,7 +242,7 @@ class EvmNativeBalanceError extends Error {
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
   addressesByToken: AddressesByToken<EvmNativeToken | CustomEvmNativeToken>,
-  tokens: TokenList
+  tokens: TokenList,
 ) => {
   if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
   return Promise.all(
@@ -274,13 +274,13 @@ const fetchBalances = async (
       })
 
       return balanceResults
-    })
+    }),
   )
 }
 
 async function getFreeBalance(
   publicClient: PublicClient,
-  address: Address
+  address: Address,
 ): Promise<bigint | "error"> {
   if (!isEthereumAddress(address)) return 0n
 
@@ -290,10 +290,10 @@ async function getFreeBalance(
     const errorMessage = hasOwnProperty(error, "shortMessage")
       ? error.shortMessage
       : hasOwnProperty(error, "message")
-      ? error.message
-      : error
+        ? error.message
+        : error
     log.warn(
-      `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`
+      `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`,
     )
     return "error"
   }
@@ -301,7 +301,7 @@ async function getFreeBalance(
 
 async function getFreeBalances(
   publicClient: PublicClient,
-  addresses: Address[]
+  addresses: Address[],
 ): Promise<(bigint | "error")[]> {
   const ethAddresses = addresses.filter(isEthereumAddress)
   if (ethAddresses.length === 0) return []
@@ -327,15 +327,15 @@ async function getFreeBalances(
             const errorMessage = hasOwnProperty(error, "shortMessage")
               ? error.shortMessage
               : hasOwnProperty(error, "message")
-              ? error.message
-              : error
+                ? error.message
+                : error
             log.warn(
-              `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`
+              `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`,
             )
           }
 
           return [address, callResults[i].result ?? ("error" as const)]
-        })
+        }),
       )
 
       return ethAddresses.map((address) => {
@@ -347,10 +347,10 @@ async function getFreeBalances(
       const errorMessage = hasOwnProperty(err, "shortMessage")
         ? err.shortMessage
         : hasOwnProperty(err, "message")
-        ? err.message
-        : err
+          ? err.message
+          : err
       log.warn(
-        `Failed to get balance from chain ${publicClient.chain?.id} for ${ethAddresses.length} addresses: ${errorMessage}`
+        `Failed to get balance from chain ${publicClient.chain?.id} for ${ethAddresses.length} addresses: ${errorMessage}`,
       )
       return ethAddresses.map(() => "error")
     }

@@ -19,7 +19,7 @@ const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onCl
       type="button"
       className={classNames(
         "h-[3.8rem] w-[3.8rem] rounded-full p-[0.3rem]",
-        selected && "bg-primary"
+        selected && "bg-primary",
       )}
       onClick={onClick}
     >
@@ -43,14 +43,14 @@ export const AvatarTypeSelect: FC<AvatarTypeSelectProps> = ({
   const address = useMemo(
     // fallbacks to a demo address picked from https://guide.kusama.network/docs/learn-accounts/#seed-generation
     () => allAccounts?.[0]?.address ?? "5F3sa2TJAWMqDhXG6jhV4N8ko9SxwGy8TpaNS1repo5EYjQX",
-    [allAccounts]
+    [allAccounts],
   )
 
   const handleSelect = useCallback(
     (type: IdenticonType) => () => {
       onChange(type)
     },
-    [onChange]
+    [onChange],
   )
 
   return (

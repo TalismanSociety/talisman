@@ -38,6 +38,7 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
           src={chainspecQrUrl}
           ref={ref}
           onLoad={onLoad}
+          // eslint-disable-next-line react/no-unknown-property
           onLoadedData={onLoad}
           alt=""
           crossOrigin={IS_FIREFOX ? undefined : "anonymous"}

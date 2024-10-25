@@ -34,7 +34,7 @@ export const EthSignMoonVotingVote: FC = () => {
       getContractCallArg<bigint>(decodedTx, "voteAmount"),
       getContractCallArg<number>(decodedTx, "conviction"),
     ],
-    [decodedTx]
+    [decodedTx],
   )
 
   if (

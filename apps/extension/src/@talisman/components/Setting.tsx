@@ -32,7 +32,7 @@ export const Setting: FC<{
       className={classNames(
         "text-body-secondary bg-grey-850 flex w-full items-center gap-8 rounded-sm px-8",
         containerClassName,
-        className
+        className,
       )}
     >
       {IconLeft && <IconLeft className={classNames("text-body shrink-0", iconLeftClassName)} />}

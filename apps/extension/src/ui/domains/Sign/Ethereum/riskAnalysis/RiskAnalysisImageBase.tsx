@@ -1,7 +1,8 @@
 import { ImageIcon, QuestionCircleIcon } from "@talismn/icons"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { IPFS_GATEWAY } from "extension-shared"
 import React, { CSSProperties, memo, useCallback, useMemo, useState } from "react"
+
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 
 export const RiskAnalysisImageBase: React.FC<{
   src?: string | null | undefined
@@ -51,7 +52,7 @@ export const RiskAnalysisPlaceholderImage: React.FC<{
 }> = ({ width, height, borderRadius, type }) => {
   const style = useMemo<CSSProperties>(
     () => ({ width, height, borderRadius }),
-    [borderRadius, height, width]
+    [borderRadius, height, width],
   )
 
   return (

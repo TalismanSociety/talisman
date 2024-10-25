@@ -1,9 +1,10 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 import { AddEthereumChainParameter } from "viem"
+
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
@@ -23,7 +24,7 @@ const NetworkDetailsDrawer: FC<{
         return t("N/A")
       }
     },
-    [t]
+    [t],
   )
 
   const { name, rpcs, chainId, tokenSymbol, blockExplorers } = useMemo(() => {
@@ -89,7 +90,7 @@ export const NetworkDetailsLink: FC<{
         onClick={open}
         className={classNames(
           "text-body-secondary hover:text-grey-300 active:text-body ring-body underline focus-visible:ring-1",
-          className
+          className,
         )}
       >
         {label ?? t("View Details")}

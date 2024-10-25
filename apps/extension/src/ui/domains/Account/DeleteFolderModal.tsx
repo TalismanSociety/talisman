@@ -35,7 +35,7 @@ export const useDeleteFolderModal = () => {
       setLocalFolder({ id, name, treeName })
       _open()
     },
-    [_open]
+    [_open],
   )
 
   return {

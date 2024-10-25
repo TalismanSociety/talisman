@@ -6,5 +6,5 @@ import { chaindataProvider } from "./chaindata"
 
 export const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 export const balanceModules = defaultBalanceModules.map((mod) =>
-  mod({ chainConnectors, chaindataProvider })
+  mod({ chainConnectors, chaindataProvider }),
 )

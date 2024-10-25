@@ -18,7 +18,7 @@ type IsKnownContact = {
 }
 
 export const useIsKnownAddress = (
-  address?: string | null
+  address?: string | null,
 ): IsKnownAccount | IsKnownContact | false => {
   const localAccount = useAccountByAddress(address)
   const { contacts } = useAddressBook()
@@ -28,7 +28,7 @@ export const useIsKnownAddress = (
         address &&
         contacts.find((contact) => isAddressEqual(contact.address, address))) ||
       null,
-    [address, contacts, localAccount]
+    [address, contacts, localAccount],
   )
   if (localAccount)
     return {

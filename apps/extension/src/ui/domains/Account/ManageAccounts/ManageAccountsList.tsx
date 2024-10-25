@@ -42,12 +42,12 @@ export const ManageAccountsList: FC<{
 
   const draggedItem = useMemo(
     () => (draggedItemId ? itemsMap[draggedItemId] : null),
-    [draggedItemId, itemsMap]
+    [draggedItemId, itemsMap],
   )
 
   const isDraggedItemInFolder = useMemo(
     () => !!draggedItem && !items.some((i) => i.id === draggedItem.id),
-    [draggedItem, items]
+    [draggedItem, items],
   )
 
   const isDraggingFolder = useMemo(() => draggedItem?.type === "folder", [draggedItem?.type])
@@ -66,7 +66,7 @@ export const ManageAccountsList: FC<{
           const newItems = moveTreeItem(
             items,
             active.id as string,
-            over.data.current as UiTreePosition
+            over.data.current as UiTreePosition,
           )
           // asynchronously update backend
           api.accountsCatalogRunActions([
@@ -78,7 +78,7 @@ export const ManageAccountsList: FC<{
 
       return setDraggedItemId(null)
     },
-    [treeName]
+    [treeName],
   )
 
   return (
@@ -106,7 +106,7 @@ export const ManageAccountsList: FC<{
                   balanceTotalPerAccount={balanceTotalPerAccount}
                 />
               </DragOverlay>,
-              document.getElementById("main") ?? document.body
+              document.getElementById("main") ?? document.body,
             )
           : null}
       </DndContext>

@@ -32,7 +32,7 @@ type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
   blockNumber: number,
   extIndex: number,
-  finalized: boolean
+  finalized: boolean,
 ) => void
 
 const getStorageKeyHash = (...names: string[]) => {
@@ -43,7 +43,7 @@ const getExtrinsincResult = async (
   registry: TypeRegistry,
   blockHash: Hash,
   chainId: ChainId,
-  extrinsicHash: string
+  extrinsicHash: string,
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
     const blockData = await chainConnector.send(chainId, "chain_getBlock", [blockHash])
@@ -62,7 +62,7 @@ const getExtrinsincResult = async (
         return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
       } catch (error) {
         log.warn(
-          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
+          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains",
         )
         return registry.createType("Vec<EventRecord>", eventsFrame)
       }
@@ -74,7 +74,7 @@ const getExtrinsincResult = async (
           ({ phase, event }) =>
             phase.isApplyExtrinsic &&
             phase.asApplyExtrinsic.eqn(txIndex) &&
-            ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method)
+            ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method),
         )
         if (relevantEvent)
           if (relevantEvent?.event.method === "ExtrinsicSuccess") {
@@ -111,7 +111,7 @@ const watchExtrinsicStatus = async (
   chainId: ChainId,
   registry: TypeRegistry,
   extrinsicHash: string,
-  cb: ExtrinsicStatusChangeHandler
+  cb: ExtrinsicStatusChangeHandler,
 ) => {
   let foundInBlockHash: Hash
   let timeout: NodeJS.Timeout | null = null
@@ -124,7 +124,7 @@ const watchExtrinsicStatus = async (
 
   const unsubscribe = async (
     key: "finalizedHeads" | "allHeads",
-    unsubscribeHandler: () => void
+    unsubscribeHandler: () => void,
   ) => {
     if (!subscriptions[key]) return
     subscriptions[key] = false
@@ -153,7 +153,7 @@ const watchExtrinsicStatus = async (
           registry,
           blockHash,
           chainId,
-          extrinsicHash
+          extrinsicHash,
         )
 
         if (err) return // err is true if extrinsic is not found in this block
@@ -162,13 +162,13 @@ const watchExtrinsicStatus = async (
         cb(result, blockNumber, extIndex, true)
 
         await unsubscribe("finalizedHeads", () =>
-          unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
+          unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads"),
         )
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
         sentry.captureException(error, { extra: { chainId } })
       }
-    }
+    },
   )
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
@@ -194,7 +194,7 @@ const watchExtrinsicStatus = async (
           registry,
           blockHash,
           chainId,
-          extrinsicHash
+          extrinsicHash,
         )
 
         if (err) return // err is true if extrinsic is not found in this block
@@ -209,14 +209,14 @@ const watchExtrinsicStatus = async (
         // if error, no need to wait for a confirmation
         if (result === "error") {
           await unsubscribe("finalizedHeads", () =>
-            unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
+            unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads"),
           )
           if (timeout !== null) clearTimeout(timeout)
         }
       } catch (error) {
         sentry.captureException(error, { extra: { chainId } })
       }
-    }
+    },
   )
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
@@ -224,7 +224,7 @@ const watchExtrinsicStatus = async (
     await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
     if (subscriptions.finalizedHeads) {
       await unsubscribe("finalizedHeads", () =>
-        unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads")
+        unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads"),
       )
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
@@ -232,7 +232,7 @@ const watchExtrinsicStatus = async (
           registry,
           foundInBlockHash,
           chainId,
-          extrinsicHash
+          extrinsicHash,
         )
         if (!err) {
           const { result, blockNumber, extIndex } = extResult
@@ -252,7 +252,7 @@ export const watchSubstrateTransaction = async (
   registry: TypeRegistry,
   payload: SignerPayloadJSON,
   signature: HexString,
-  options: WatchTransactionOptions = {}
+  options: WatchTransactionOptions = {},
 ) => {
   const { siteUrl, notifications, transferInfo = {} } = options
   const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
@@ -276,7 +276,7 @@ export const watchSubstrateTransaction = async (
 
         if (result !== "included")
           await updateTransactionStatus(hash, result, blockNumber, finalized)
-      }
+      },
     )
 
     return hash

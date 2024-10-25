@@ -60,7 +60,7 @@ const useInnerOpenClose = (key: "isAccountPickerOpen") => {
 
   const setIsOpen = useCallback(
     (value: boolean) => setWizardState((prev) => ({ ...prev, [key]: value })),
-    [key]
+    [key],
   )
 
   const open = useCallback(() => setIsOpen(true), [setIsOpen])
@@ -68,7 +68,7 @@ const useInnerOpenClose = (key: "isAccountPickerOpen") => {
 
   const toggle = useCallback(
     () => setWizardState((prev) => ({ ...prev, [key]: !prev[key] })),
-    [key]
+    [key],
   )
 
   return { isOpen, setIsOpen, open, close, toggle }
@@ -78,7 +78,7 @@ export const useResetNomPoolBondWizard = () => {
   const reset = useCallback(
     (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
-    []
+    [],
   )
 
   return reset
@@ -110,27 +110,27 @@ export const useNomPoolBondWizard = () => {
       typeof plancks === "bigint"
         ? new BalanceFormatter(plancks, token?.decimals, tokenRates)
         : null,
-    [plancks, token?.decimals, tokenRates]
+    [plancks, token?.decimals, tokenRates],
   )
 
   const setAddress = useCallback(
     (address: Address) => setWizardState((prev) => ({ ...prev, address })),
-    []
+    [],
   )
 
   const setTokenId = useCallback(
     (tokenId: TokenId) => setWizardState((prev) => ({ ...prev, tokenId })),
-    []
+    [],
   )
 
   const setPoolId = useCallback(
     (poolId: number) => setWizardState((prev) => ({ ...prev, poolId })),
-    []
+    [],
   )
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, plancks })),
-    []
+    [],
   )
 
   const toggleDisplayMode = useCallback(() => {
@@ -148,7 +148,7 @@ export const useNomPoolBondWizard = () => {
 
   const isFormValid = useMemo(
     () => !!account && !!token && !!poolId && !!formatter && typeof minJoinBond === "bigint",
-    [account, formatter, minJoinBond, poolId, token]
+    [account, formatter, minJoinBond, poolId, token],
   )
 
   const setStep = useCallback(
@@ -159,7 +159,7 @@ export const useNomPoolBondWizard = () => {
         return { ...prev, step }
       })
     },
-    [isFormValid]
+    [isFormValid],
   )
 
   // we must craft a different extrinsic if the user is already staking in a pool
@@ -203,7 +203,7 @@ export const useNomPoolBondWizard = () => {
         poolId,
         plancks,
         hasJoinedNomPool,
-        withSetClaimPermission
+        withSetClaimPermission,
       )
     },
     enabled: !!sapi,
@@ -233,7 +233,7 @@ export const useNomPoolBondWizard = () => {
         poolId,
         minJoinBond,
         hasJoinedNomPool,
-        withSetClaimPermission
+        withSetClaimPermission,
       )
       return sapi.getFeeEstimate(payload)
     },
@@ -257,7 +257,7 @@ export const useNomPoolBondWizard = () => {
       genericEvent("NomPool Bond", { tokenId, isBondExtra: hasJoinedNomPool })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, hasJoinedNomPool, tokenId]
+    [genericEvent, hasJoinedNomPool, tokenId],
   )
 
   const maxPlancks = useMemo(() => {
@@ -303,7 +303,7 @@ export const useNomPoolBondWizard = () => {
       existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
-        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
+        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
       )
 
     if (!hasJoinedNomPool && formatter.planck < minJoinBond)

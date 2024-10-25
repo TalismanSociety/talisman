@@ -1,7 +1,8 @@
-import { SignViewVotingVote } from "@ui/domains/Sign/Views/convictionVoting/SignViewVotingVote"
-import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { SignViewVotingVote } from "@ui/domains/Sign/Views/convictionVoting/SignViewVotingVote"
+import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -14,7 +15,7 @@ export const SubSignConvictionVotingVote = () => {
   const { title, ...props } = useMemo(() => {
     const vote = extrinsic?.registry.createType(
       "PalletConvictionVotingVoteAccountVote",
-      extrinsic?.method?.args[1]
+      extrinsic?.method?.args[1],
     )
 
     return {

@@ -105,12 +105,12 @@ export const SubPsp22Module: NewBalanceModule<
               contractCall(
                 contractAddress,
                 contractAddress,
-                Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
+                Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([]),
               ),
               contractCall(
                 contractAddress,
                 contractAddress,
-                Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
+                Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([]),
               ),
             ])
 
@@ -122,8 +122,8 @@ export const SubPsp22Module: NewBalanceModule<
                     registry.createType(
                       "Option<Vec<u8>>",
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (symbolResult.toJSON()?.result as any)?.ok?.data
-                    )?.value
+                      (symbolResult.toJSON()?.result as any)?.ok?.data,
+                    )?.value,
                   )?.replace(/\p{C}/gu, "")
                 : symbol
 
@@ -161,7 +161,7 @@ export const SubPsp22Module: NewBalanceModule<
         } catch (error) {
           log.error(
             `Failed to build substrate-psp22 token ${tokenConfig.contractAddress} (${tokenConfig.symbol}) on ${chainId}`,
-            (error as Error)?.message ?? error
+            (error as Error)?.message ?? error,
           )
           continue
         }
@@ -194,7 +194,7 @@ export const SubPsp22Module: NewBalanceModule<
 
               cache.set(b.id, b.toJSON())
               return true
-            })
+            }),
           )
 
           callback(null, updatedBalances)
@@ -295,7 +295,7 @@ export const SubPsp22Module: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry, userExtensions }
+        { metadataRpc, registry, userExtensions },
       )
 
       return { type: "substrate", callData: unsigned.method }
@@ -306,7 +306,7 @@ export const SubPsp22Module: NewBalanceModule<
 const fetchBalances = async (
   chainConnector: ChainConnector,
   tokens: TokenList,
-  addressesByToken: AddressesByToken<SubPsp22Token>
+  addressesByToken: AddressesByToken<SubPsp22Token>,
 ) => {
   const registry = new TypeRegistry()
   const Psp22Abi = new Abi(psp22Abi)
@@ -343,7 +343,7 @@ const fetchBalances = async (
         Psp22Abi.findMessage("PSP22::balance_of").toU8a([
           // ACCOUNT
           address,
-        ])
+        ]),
       )
 
       const balance = registry

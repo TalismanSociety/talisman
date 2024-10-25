@@ -1,4 +1,4 @@
-import { Transition } from "@headlessui/react"
+import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowUpRightIcon } from "@talismn/icons"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -29,7 +29,8 @@ export const QuickSettingsOverlay: FC = () => {
 
   return (
     <Transition show={isOpen} appear>
-      <Transition.Child
+      <TransitionChild
+        as="div"
         className="absolute left-0 top-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
         role="presentation"
         onClick={close}
@@ -39,7 +40,7 @@ export const QuickSettingsOverlay: FC = () => {
         leave="ease-in duration-300"
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
-      ></Transition.Child>
+      ></TransitionChild>
     </Transition>
   )
 }
@@ -50,7 +51,8 @@ export const QuickSettingsModal: FC = () => {
 
   return (
     <Transition show={isOpen} appear>
-      <Transition.Child
+      <TransitionChild
+        as="div"
         className="border-grey-800 flex w-full flex-col gap-8 rounded border bg-black/90 px-12 py-8"
         enter="ease-out duration-200"
         enterFrom="opacity-0 scale-90"
@@ -71,7 +73,7 @@ export const QuickSettingsModal: FC = () => {
           <HideSmallBalancesRow />
           <ShowTestnetsRow />
         </div>
-      </Transition.Child>
+      </TransitionChild>
     </Transition>
   )
 }
@@ -121,7 +123,7 @@ const CurrenciesRow = () => {
         {favorites.slice(0, 3).map((currency) => (
           <img
             key={currency}
-            className="border-0.5 border-grey-800 -ml-2 inline-block size-10 shrink-0 rounded-full border  align-middle"
+            className="border-0.5 border-grey-800 -ml-2 inline-block size-10 shrink-0 rounded-full border align-middle"
             alt={currency}
             src={currencyConfig[currency]?.icon}
           />

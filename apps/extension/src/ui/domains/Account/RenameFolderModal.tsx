@@ -38,7 +38,7 @@ export const useRenameFolderModal = () => {
       setLocalFolder({ id, name, treeName })
       _open()
     },
-    [_open]
+    [_open],
   )
 
   return {
@@ -99,10 +99,10 @@ const RenameFolder = ({
     () =>
       yup
         .object({
-          name: yup.string().required(""),
+          name: yup.string().required(" "),
         })
         .required(),
-    []
+    [],
   )
   const defaultValues = useMemo(() => ({ name }), [name])
 
@@ -130,7 +130,7 @@ const RenameFolder = ({
         })
       }
     },
-    [id, onConfirm, setError, treeName]
+    [id, onConfirm, setError, treeName],
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -152,7 +152,7 @@ const RenameFolder = ({
       refName(e)
       refNameRef.current = e
     },
-    [refName]
+    [refName],
   )
 
   useEffect(() => {

@@ -1,9 +1,10 @@
-import { appStore } from "@extension/core"
-import { useIsBrave } from "@talisman/hooks/useIsBrave"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, Modal, ModalDialog } from "talisman-ui"
+
+import { appStore } from "@extension/core"
+import { useIsBrave } from "@talisman/hooks/useIsBrave"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 
 import { BraveWarningCard } from "./BraveWarningCard"
 import { BraveWarningModal } from "./BraveWarningModal"
@@ -17,7 +18,7 @@ const BraveWarningPopupBanner = () => {
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean | undefined>(true)
   // we should display the warning only once in the popup
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean | undefined>(
-    true
+    true,
   )
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const BraveWarningPopupBanner = () => {
 
   const showWarning = useMemo(
     () => isBrave && !hideBraveWarning && !hasBraveWarningBeenShown,
-    [hasBraveWarningBeenShown, hideBraveWarning, isBrave]
+    [hasBraveWarningBeenShown, hideBraveWarning, isBrave],
   )
 
   if (!showWarning && !isOpen) return null

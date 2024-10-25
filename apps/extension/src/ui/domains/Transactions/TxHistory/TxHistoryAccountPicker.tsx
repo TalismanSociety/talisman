@@ -26,7 +26,7 @@ export const TxHistoryAccountPicker: FC<{
 
   const accounts = useMemo(
     () => allAccounts.filter((account) => !search || account.name?.toLowerCase().includes(search)),
-    [allAccounts, search]
+    [allAccounts, search],
   )
 
   return (
@@ -50,7 +50,7 @@ export const TxHistoryAccountPicker: FC<{
           <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
             <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
           </div>
-          <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable grow border-t">
+          <ScrollContainer className="bg-black-secondary border-grey-700 scrollable grow border-t">
             <AccountsList
               accounts={accounts}
               selectedAddress={selectedAddress}
@@ -107,8 +107,8 @@ const AccountRow: FC<{
       tabIndex={0}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 text-body-secondary hover:text-body flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 ",
-        "disabled:cursor-not-allowed disabled:opacity-50"
+        selected && "bg-grey-800",
+        "disabled:cursor-not-allowed disabled:opacity-50",
       )}
     >
       {account ? (
@@ -125,14 +125,14 @@ const AccountRow: FC<{
           <div className="flex items-center gap-2">
             <div className="text-body truncate">
               {account
-                ? account.name ?? (
+                ? (account.name ?? (
                     <Address
                       address={formattedAddress}
                       startCharCount={6}
                       endCharCount={6}
                       noTooltip
                     />
-                  )
+                  ))
                 : t("All Accounts")}
             </div>
             {account && <AccountTypeIcon origin={account.origin} className="text-primary" />}

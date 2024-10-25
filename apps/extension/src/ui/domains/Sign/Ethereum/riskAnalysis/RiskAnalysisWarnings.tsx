@@ -132,7 +132,7 @@ const RiskAnalysisWarning: React.FC<{ warning: UIWarning }> = ({ warning }) => {
       className={classNames(
         "leading-paragraph flex w-full gap-8 rounded p-4",
         bgClassName,
-        textClassName
+        textClassName,
       )}
     >
       <div className="flex flex-col justify-center">

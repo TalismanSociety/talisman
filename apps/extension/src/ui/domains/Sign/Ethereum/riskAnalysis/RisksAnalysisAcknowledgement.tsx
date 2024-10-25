@@ -11,7 +11,7 @@ export const RisksAnalysisAcknowledgement: FC<{ riskAnalysis: EvmRiskAnalysis }>
     (e) => {
       riskAnalysis.review.setIsRiskAcknowledged(e.target.checked)
     },
-    [riskAnalysis.review]
+    [riskAnalysis.review],
   )
 
   if (!riskAnalysis.review.isRiskAcknowledgementRequired) return null

@@ -33,7 +33,7 @@ const TokensAndFiat = ({
   tokenAmount?: BigNumber
   fiat: number | null
   token?: Token
-  currencyDisplay?: string
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   className?: string
 }) => (
   <div className={classNames("flex flex-col gap-2 whitespace-nowrap", className)}>
@@ -51,7 +51,13 @@ const TokensAndFiat = ({
   </div>
 )
 
-const FiatOnly = ({ fiat, currencyDisplay }: { fiat: number | null; currencyDisplay?: string }) => (
+const FiatOnly = ({
+  fiat,
+  currencyDisplay,
+}: {
+  fiat: number | null
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
+}) => (
   <div className="textbase text-white">
     {fiat === null ? "-" : <Fiat amount={fiat} isBalance currencyDisplay={currencyDisplay} />}
   </div>
@@ -76,7 +82,7 @@ export const Statistics = ({
       className={classNames(
         "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8",
         align === "right" ? "items-end" : "items-start",
-        className
+        className,
       )}
     >
       <div className="text-body-secondary flex items-center gap-2 text-sm">
@@ -89,7 +95,7 @@ export const Statistics = ({
             className={classNames(
               "border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center text-sm transition-colors duration-100 ease-out",
               currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]"
+              currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]",
             )}
             onClick={(event) => {
               event.stopPropagation()

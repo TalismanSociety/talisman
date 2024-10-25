@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { RefObject, forwardRef, useEffect, useMemo, useRef, useState } from "react"
+import { forwardRef, RefObject, useEffect, useMemo, useRef, useState } from "react"
 
 type ScrollContainerProps = {
   className?: string
@@ -13,7 +13,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
     const localRef = useRef<HTMLDivElement>(null)
     const refDiv = useMemo(
       () => (forwardedRef || localRef) as RefObject<HTMLDivElement>,
-      [forwardedRef, localRef]
+      [forwardedRef, localRef],
     )
     const [more, setMore] = useState<{ top: boolean; bottom: boolean }>({
       top: false,
@@ -57,14 +57,14 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
           "relative z-0 overflow-hidden",
           more.top && "more-top",
           more.bottom && "more-bottom",
-          className
+          className,
         )}
       >
         <div
           ref={refDiv}
           className={classNames(
             "no-scrollbar h-full w-full overflow-y-auto overflow-x-hidden",
-            innerClassName
+            innerClassName,
           )}
         >
           {children}
@@ -72,17 +72,17 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
         <div
           className={classNames(
             "pointer-events-none absolute left-0 top-0 h-12 w-full bg-gradient-to-b from-black to-transparent",
-            more.top ? "opacity-100" : "opacity-0"
+            more.top ? "opacity-100" : "opacity-0",
           )}
         ></div>
         <div
           className={classNames(
             "pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-gradient-to-t from-black to-transparent",
-            more.bottom ? "opacity-100" : "opacity-0"
+            more.bottom ? "opacity-100" : "opacity-0",
           )}
         ></div>
       </div>
     )
-  }
+  },
 )
 ScrollContainer.displayName = "ScrollContainer"

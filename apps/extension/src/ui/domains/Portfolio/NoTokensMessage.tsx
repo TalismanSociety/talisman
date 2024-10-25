@@ -37,8 +37,8 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
         {selectedAccount
           ? t("You don't have any {{symbol}} in this account", { symbol })
           : selectedFolder
-          ? t("You don't have any {{symbol}} in this folder", { symbol })
-          : t("You don't have any {{symbol}} in Talisman", { symbol })}
+            ? t("You don't have any {{symbol}} in this folder", { symbol })
+            : t("You don't have any {{symbol}} in Talisman", { symbol })}
       </div>
       <div className="mt-12 flex justify-center gap-4">
         <PillButton size="sm" icon={CopyIcon} onClick={handleCopy}>

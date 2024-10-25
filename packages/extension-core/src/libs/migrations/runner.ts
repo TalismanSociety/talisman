@@ -127,7 +127,7 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
     const lastToApply = this.migrations.length - 1
     const pending = Array.from(
       { length: lastToApply - latestApplied },
-      (_, i) => latestApplied + 1 + i
+      (_, i) => latestApplied + 1 + i,
     )
 
     log.debug(`${pending.length} pending migrations`)

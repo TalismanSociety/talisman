@@ -32,16 +32,16 @@ const isAccountCompatibleWithChain = (
   contacts: AddressBookContact[],
   chainsMap: ChainList,
   address: Address | undefined | null,
-  chainId: ChainId | undefined | null
+  chainId: ChainId | undefined | null,
 ) => {
   if (!address || !chainId) return true
 
   const chain = chainId ? chainsMap[chainId] : null
   const account = accounts.find(
-    (a) => address && convertAddress(a.address, null) === convertAddress(address, null)
+    (a) => address && convertAddress(a.address, null) === convertAddress(address, null),
   )
   const contact = contacts.find(
-    (c) => address && convertAddress(c.address, null) === convertAddress(address, null)
+    (c) => address && convertAddress(c.address, null) === convertAddress(address, null),
   )
 
   if (!(account || contact) || !chain) {
@@ -84,7 +84,7 @@ const getQrLogo = async (
   address: string | null,
   isGeneric: boolean,
   ethereum?: Token | null,
-  chain?: Chain | null
+  chain?: Chain | null,
 ) => {
   if (!address) {
     return undefined
@@ -125,7 +125,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   const formattedAddress = useMemo(
     () => getFormattedAddress(state.address, chain),
-    [state.address, chain]
+    [state.address, chain],
   )
 
   const [isLogoLoaded, setIsLogoLoaded] = useState(false)
@@ -156,14 +156,14 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
         contacts,
         chainsMap,
         state.address,
-        chainId
+        chainId,
       )
         ? state.address
         : undefined
 
       setStateAndUpdateRoute({ networkId: chainId, address })
     },
-    [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.address]
+    [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.address],
   )
 
   const setAddress = useCallback(
@@ -174,14 +174,14 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
           contacts,
           chainsMap,
           address,
-          state.networkId
+          state.networkId,
         )
           ? state.networkId
           : undefined
         setStateAndUpdateRoute({ address, networkId: chainId })
       } else setStateAndUpdateRoute({ address })
     },
-    [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.networkId]
+    [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.networkId],
   )
 
   const goToAddressPage = useCallback(() => {
@@ -221,7 +221,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
     },
-    [chainsMap, close, open]
+    [chainsMap, close, open],
   )
 
   const ctx = {
@@ -244,5 +244,5 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 }
 
 export const [CopyAddressWizardProvider, useCopyAddressWizard] = provideContext(
-  useCopyAddressWizardProvider
+  useCopyAddressWizardProvider,
 )

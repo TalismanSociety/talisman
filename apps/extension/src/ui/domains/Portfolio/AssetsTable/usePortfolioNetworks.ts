@@ -17,7 +17,7 @@ const getPortfolioNetwork = (
   t: TFunction,
   id: ChainId | EvmNetworkId,
   chains?: Chain[],
-  evmNetworks?: EvmNetwork[]
+  evmNetworks?: EvmNetwork[],
 ): PortfolioNetwork => {
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)
@@ -33,7 +33,7 @@ export const usePortfolioNetworks = (ids: (ChainId | EvmNetworkId)[] | undefined
 
   const networks = useMemo(
     () => ids?.map((id) => getPortfolioNetwork(t, id, chains, evmNetworks)) ?? [],
-    [chains, evmNetworks, ids, t]
+    [chains, evmNetworks, ids, t],
   )
 
   const sorted = useMemo(() => sortBy(networks, ["label", "type"]), [networks])

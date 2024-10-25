@@ -108,7 +108,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       } else reject()
       window.close()
     },
-    [ignore, reject]
+    [ignore, reject],
   )
 
   if (!authRequest) return null
@@ -150,7 +150,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   const activeAccounts = useMemo(
     () =>
       accounts.map((acc) => [acc, connected.includes(acc.address)] as [AccountJsonAny, boolean]),
-    [accounts, connected]
+    [accounts, connected],
   )
 
   return (

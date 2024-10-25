@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next"
+
 import { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsAmountForm } from "@ui/domains/SendFunds/SendFundsAmountForm"
-import { useTranslation } from "react-i18next"
 
 import { SendFundsLayout } from "./SendFundsLayout"
 

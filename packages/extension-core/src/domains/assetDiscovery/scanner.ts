@@ -157,7 +157,7 @@ class AssetDiscoveryScanner {
 
     const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
       tokensToScan,
-      (t) => t.evmNetwork?.id
+      (t) => t.evmNetwork?.id,
     )
 
     const totalChecks = tokensToScan.length * addresses.length
@@ -168,7 +168,7 @@ class AssetDiscoveryScanner {
     const erc20aggregators = Object.fromEntries(
       Object.values(evmNetworks)
         .filter((n) => n.erc20aggregator)
-        .map((n) => [n.id, n.erc20aggregator] as const)
+        .map((n) => [n.id, n.erc20aggregator] as const),
     )
 
     // process multiple networks at a time
@@ -187,7 +187,7 @@ class AssetDiscoveryScanner {
             tokensByNetwork[networkId]
               .map((t) => addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a })))
               .flat(),
-            (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap)
+            (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap),
           )
           let startIndex = 0
 
@@ -213,7 +213,7 @@ class AssetDiscoveryScanner {
                 token: tokensMap[c.tokenId],
                 address: c.address as EvmAddress,
               })),
-              erc20aggregators[networkId]
+              erc20aggregators[networkId],
             )
 
             // stop if scan was cancelled
@@ -247,11 +247,12 @@ class AssetDiscoveryScanner {
               // => use the min of both ratios as current progress
               const totalScanned = Object.values(currentScanCursors).reduce(
                 (acc, cur) => acc + cur.scanned,
-                0
+                0,
               )
               const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
               const networksProgress = Math.round(
-                (100 * Object.keys(currentScanCursors).length) / Object.keys(tokensByNetwork).length
+                (100 * Object.keys(currentScanCursors).length) /
+                  Object.keys(tokensByNetwork).length,
               )
               const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
 
@@ -355,7 +356,7 @@ type BalanceDef = { token: Token; address: EvmAddress }
 
 const getEvmTokenBalancesWithoutAggregator = async (
   client: PublicClient,
-  balanceDefs: BalanceDef[]
+  balanceDefs: BalanceDef[],
 ) => {
   if (balanceDefs.length === 0) return []
 
@@ -381,24 +382,24 @@ const getEvmTokenBalancesWithoutAggregator = async (
         log.error(`Failed to scan ${token.id} for ${address}: `, { err })
         return "0"
       }
-    })
+    }),
   )
 }
 
 const getEvmTokenBalancesWithAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef[],
-  aggregatorAddress: EvmAddress
+  aggregatorAddress: EvmAddress,
 ) => {
   if (balanceDefs.length === 0) return []
 
   // keep track of index so we can split queries and rebuild the original order afterwards
   const indexedBalanceDefs = balanceDefs.map((bd, index) => ({ ...bd, index }))
   const erc20BalanceDefs = indexedBalanceDefs.filter(
-    (b) => b.token.type === "evm-erc20" || b.token.type === "evm-uniswapv2"
+    (b) => b.token.type === "evm-erc20" || b.token.type === "evm-uniswapv2",
   )
   const otherBalanceDefs = indexedBalanceDefs.filter(
-    (b) => b.token.type !== "evm-erc20" && b.token.type !== "evm-uniswapv2"
+    (b) => b.token.type !== "evm-erc20" && b.token.type !== "evm-uniswapv2",
   )
 
   const [erc20Balances, otherBalances] = await Promise.all([
@@ -419,7 +420,7 @@ const getEvmTokenBalancesWithAggregator = async (
   const resByIndex: Record<number, string> = Object.fromEntries(
     erc20Balances
       .map((res, i) => [i, String(res)])
-      .concat(otherBalances.map((res, i) => [i, String(res)]))
+      .concat(otherBalances.map((res, i) => [i, String(res)])),
   )
 
   return indexedBalanceDefs.map((bd) => resByIndex[bd.index])
@@ -428,7 +429,7 @@ const getEvmTokenBalancesWithAggregator = async (
 const getEvmTokenBalances = (
   client: PublicClient,
   balanceDefs: BalanceDef[],
-  aggregatorAddress: EvmAddress | undefined
+  aggregatorAddress: EvmAddress | undefined,
 ) => {
   return aggregatorAddress
     ? getEvmTokenBalancesWithAggregator(client, balanceDefs, aggregatorAddress)

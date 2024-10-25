@@ -18,7 +18,7 @@ export const AvailableBalanceRow = () => {
           <div
             className={classNames(
               "flex items-center gap-2",
-              balance?.status === "cache" && "animate-pulse"
+              balance?.status === "cache" && "animate-pulse",
             )}
           >
             <Tokens

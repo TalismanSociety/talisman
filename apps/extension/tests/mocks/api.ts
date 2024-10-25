@@ -45,7 +45,7 @@ export const api = {
     analyticsCapture: jest
       .fn()
       .mockImplementation(
-        (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true))
+        (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true)),
       ),
     accountsSubscribe: jest.fn().mockImplementation((cb: (accounts: AccountJsonAny[]) => void) => {
       cb([
@@ -99,7 +99,7 @@ export const api = {
     authorizedSiteUpdate: jest
       .fn()
       .mockImplementation((id: string, update: Partial<AuthorizedSite>) =>
-        sitesStore.updateSite(id, update)
+        sitesStore.updateSite(id, update),
       ),
     authorizedSiteForget: jest
       .fn()

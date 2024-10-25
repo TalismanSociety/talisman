@@ -1,7 +1,7 @@
 import {
   EvmTokenFetcher,
-  MiniMetadataUpdater,
   hydrateChaindataAndMiniMetadata,
+  MiniMetadataUpdater,
   updateCustomMiniMetadata,
   updateEvmTokens,
 } from "@talismn/balances"
@@ -49,7 +49,7 @@ const chaindataHydrateAtomEffect = atomEffect((get, set) => {
     } catch (error) {
       log.error(
         `Failed to hydrate chaindata, retrying in ${Math.round(retryTimeout / 1000)} seconds`,
-        error
+        error,
       )
       timeout = setTimeout(hydrate, retryTimeout)
     }

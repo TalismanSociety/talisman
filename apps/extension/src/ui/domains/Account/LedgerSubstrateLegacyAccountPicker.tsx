@@ -21,7 +21,7 @@ const useLedgerChainAccounts = (
   chainId: string,
   selectedAccounts: LedgerAccountDefSubstrate[],
   pageIndex: number,
-  itemsPerPage: number
+  itemsPerPage: number,
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -30,7 +30,7 @@ const useLedgerChainAccounts = (
   const activeChains = useActiveChainsState()
   const withBalances = useMemo(
     () => !!chain && isChainActive(chain, activeChains),
-    [chain, activeChains]
+    [chain, activeChains],
   )
 
   const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
@@ -61,7 +61,7 @@ const useLedgerChainAccounts = (
           LEDGER_HARDENED_OFFSET + accountIndex,
           LEDGER_HARDENED_OFFSET + change,
           LEDGER_HARDENED_OFFSET + addressOffset,
-          false
+          false,
         )
 
         newAccounts[i] = {
@@ -93,7 +93,7 @@ const useLedgerChainAccounts = (
             .filter((acc): acc is LedgerSubstrateAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ed25519", genesisHash: acc.genesisHash }))
         : [],
-    [itemsPerPage, ledgerAccounts]
+    [itemsPerPage, ledgerAccounts],
   )
   const balances = useAccountImportBalances(accountImportDefs)
 
@@ -105,13 +105,13 @@ const useLedgerChainAccounts = (
         const existingAccount = walletAccounts?.find(
           (wa) =>
             convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === wa.genesisHash
+            acc.genesisHash === wa.genesisHash,
         )
 
         const accountBalances = balances.balances.find(
           (b) =>
             convertAddress(b.address, null) === convertAddress(acc.address, null) &&
-            b.chainId === chain?.id
+            b.chainId === chain?.id,
         )
 
         const isBalanceLoading =
@@ -126,7 +126,7 @@ const useLedgerChainAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts]
+    [balances, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts],
   )
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
     chainId,
     selectedAccounts,
     pageIndex,
-    itemsPerPage
+    itemsPerPage,
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -180,7 +180,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
             addressOffset,
             genesisHash: validateHexString(genesisHash as string),
             name,
-          })
+          }),
     )
   }, [])
 

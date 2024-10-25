@@ -94,7 +94,7 @@ const Content = () => {
         const resultAddress = await api.accountCreateWatched(
           isNsLookup ? searchAddress : shortenAddress(address),
           address,
-          isPortfolio
+          isPortfolio,
         )
 
         api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [resultAddress])
@@ -107,7 +107,7 @@ const Content = () => {
         setError(t("Please enter a valid Polkadot or Ethereum address"))
       }
     },
-    [address, isNsLookup, searchAddress, navigate, t]
+    [address, isNsLookup, searchAddress, navigate, t],
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
     setSearchAddress(event.target.value)
@@ -132,7 +132,7 @@ const Content = () => {
                 type="text"
                 className={classNames(
                   "bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6",
-                  isNsLookup && "pr-16"
+                  isNsLookup && "pr-16",
                 )}
                 placeholder={t("Enter any wallet address")}
                 value={searchAddress}
@@ -152,7 +152,7 @@ const Content = () => {
             <button
               className={classNames(
                 "text-body-disabled border-body-disabled rounded border px-8 py-6",
-                address.length && "bg-primary border-primary hover:bg-primary/95 text-black"
+                address.length && "bg-primary border-primary hover:bg-primary/95 text-black",
               )}
               disabled={!address.length}
             >
@@ -165,7 +165,7 @@ const Content = () => {
 
       <div className="flex w-full items-center gap-10">
         <div className="bg-grey-700 h-[1px] flex-1" />
-        <div className="text-grey-500 text-tiny ">
+        <div className="text-grey-500 text-tiny">
           {t("Or follow some of the most popular accounts")}
         </div>
         <div className="bg-grey-700 h-[1px] flex-1" />
@@ -221,7 +221,7 @@ const FollowAccountButton = ({
     const resultAddress = await api.accountCreateWatched(
       name ?? shortenAddress(address),
       address,
-      isPortfolio
+      isPortfolio,
     )
 
     api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [resultAddress])
@@ -229,7 +229,7 @@ const FollowAccountButton = ({
 
   const isAdded = useMemo(
     () => allAccounts.some((a) => encodeAnyAddress(a.address) === encodeAnyAddress(address)),
-    [allAccounts, address]
+    [allAccounts, address],
   )
 
   const content = (

@@ -1,9 +1,10 @@
 import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { shortenAddress } from "@talisman/util/shortenAddress"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
 import { BlowfishEvmChainInfo, EvmRiskAnalysis } from "./types"
@@ -75,8 +76,8 @@ const AssetImage = (props: AssetImageProps) => {
 
       <div
         className={classNames(
-          "absolute -right-4 -top-4 h-10  w-10 rounded-full p-1",
-          props.isPositiveEffect ? "bg-[#16541D]" : "bg-[#262C54]"
+          "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
+          props.isPositiveEffect ? "bg-[#16541D]" : "bg-[#262C54]",
         )}
       >
         {props.isPositiveEffect ? (

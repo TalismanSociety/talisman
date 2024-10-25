@@ -12,7 +12,7 @@ type ExtrinsicDispatchInfo = {
 export const getExtrinsicDispatchInfo = async (
   chainId: string,
   signedExtrinsic: GenericExtrinsic,
-  blockHash?: HexString
+  blockHash?: HexString,
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
@@ -23,7 +23,7 @@ export const getExtrinsicDispatchInfo = async (
     "TransactionPaymentApi_query_info",
     "RuntimeDispatchInfo",
     [signedExtrinsic, len],
-    blockHash
+    blockHash,
   )
 
   if (err) throw new Error(dispatchInfo)

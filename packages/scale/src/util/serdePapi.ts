@@ -43,7 +43,7 @@ export const papiParse = <T = unknown>(text: string | T): T => {
 
 export const papiStringify = (
   value: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  space?: string | number
+  space?: string | number,
 ): string => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const replacer = (_key: string, value: any) => {

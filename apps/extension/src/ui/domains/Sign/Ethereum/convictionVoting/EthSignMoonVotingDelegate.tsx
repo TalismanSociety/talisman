@@ -18,7 +18,7 @@ export const EthSignMoonVotingDelegate: FC = () => {
       getContractCallArg<number>(decodedTx, "conviction"),
       getContractCallArg<number>(decodedTx, "trackId"),
     ],
-    [decodedTx]
+    [decodedTx],
   )
 
   if (

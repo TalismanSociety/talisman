@@ -41,13 +41,13 @@ type PrivateKeyFormat = "u8a" | "hex" | "buffer"
 type PrivateKeyOutput<T = PrivateKeyFormat> = T extends "u8a"
   ? Uint8Array
   : T extends "hex"
-  ? `0x${string}`
-  : Buffer
+    ? `0x${string}`
+    : Buffer
 
 export const getPrivateKey = <F extends PrivateKeyFormat>(
   pair: KeyringPair,
   password: string,
-  format: F
+  format: F,
 ): PrivateKeyOutput<F> => {
   const privateKey = getU8aPrivateKey(pair, password)
 

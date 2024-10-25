@@ -18,7 +18,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const isDevMode = useSettingValue("developerMode")
   const availableOwnedOrAllAddresses = useAccountAddresses(
     type === "ethereum",
-    isSiteTalismanUrl || isDevMode ? "all" : "owned"
+    isSiteTalismanUrl || isDevMode ? "all" : "owned",
   )
   const signetAddresses = useAccountAddresses(type === "ethereum", "signet")
 
@@ -27,7 +27,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       isSiteTalismanUrl
         ? availableOwnedOrAllAddresses
         : [...availableOwnedOrAllAddresses, ...signetAddresses],
-    [availableOwnedOrAllAddresses, isSiteTalismanUrl, signetAddresses]
+    [availableOwnedOrAllAddresses, isSiteTalismanUrl, signetAddresses],
   )
 
   const connected = useMemo(() => {
@@ -59,7 +59,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       }
       api.authorizedSiteUpdate(id, update)
     },
-    [id, type]
+    [id, type],
   )
 
   const toggleOne = useCallback(
@@ -79,12 +79,12 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       }
       return handleUpdate(newAddresses)
     },
-    [connected, handleUpdate, type]
+    [connected, handleUpdate, type],
   )
 
   const toggleAll = useCallback(
     (on: boolean) => handleUpdate(on ? availableAddresses : []),
-    [availableAddresses, handleUpdate]
+    [availableAddresses, handleUpdate],
   )
 
   const forget = useCallback(() => {
@@ -103,7 +103,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       setEthChainId(chainId)
       api.authorizedSiteUpdate(id, { ethChainId: chainId })
     },
-    [id]
+    [id],
   )
 
   return {

@@ -1,9 +1,10 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
+
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
 import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
@@ -36,13 +37,13 @@ export const AssetBalanceCellValue = ({
       <div
         className={classNames(
           "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
-          className
+          className,
         )}
       >
         <div
           className={classNames(
             "flex items-center justify-end gap-2",
-            locked ? "text-body-secondary" : "text-body"
+            locked ? "text-body-secondary" : "text-body",
           )}
         >
           <div>

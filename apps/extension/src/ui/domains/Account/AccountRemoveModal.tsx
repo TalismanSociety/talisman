@@ -15,7 +15,7 @@ import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 const accountToRemove$ = new BehaviorSubject<AccountJsonAny | null>(null)
 const [useAccount] = bind(
   accountToRemove$.pipe(distinctUntilChanged<AccountJsonAny | null>(isEqual)),
-  null
+  null,
 )
 
 export const useAccountRemoveModal = () => {
@@ -29,7 +29,7 @@ export const useAccountRemoveModal = () => {
       accountToRemove$.next(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen],
   )
 
   useEffect(() => {

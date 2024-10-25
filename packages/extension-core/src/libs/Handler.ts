@@ -1,6 +1,6 @@
-import { ExtensionStore, Store, TabStore } from "../handlers/stores"
 import type { MessageTypes, RequestSignatures, RequestType, ResponseType } from "../types"
 import type { Port } from "../types/base"
+import { ExtensionStore, Store, TabStore } from "../handlers/stores"
 
 interface THandler {
   handle<TMessageType extends MessageTypes>(
@@ -8,7 +8,7 @@ interface THandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    url?: string
+    url?: string,
   ): Promise<ResponseType<TMessageType>>
 }
 
@@ -28,7 +28,7 @@ abstract class BaseHandler<TStore extends Store> implements THandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    url?: string
+    url?: string,
   ): Promise<ResponseType<TMessageType>>
 }
 
@@ -38,7 +38,7 @@ export abstract class TabsHandler extends BaseHandler<TabStore> {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    url: string
+    url: string,
   ): Promise<ResponseType<TMessageType>>
 }
 
@@ -51,6 +51,6 @@ export abstract class ExtensionHandler extends BaseHandler<ExtensionStore> {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>>
 }

@@ -38,7 +38,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
       sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Interact", action: "Dismiss What's New" })
       setDismissedVersion(versions[0])
     },
-    [setDismissedVersion, versions]
+    [setDismissedVersion, versions],
   )
 
   if (dismissedVersion === versions[0]) return null
@@ -49,7 +49,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
       role="button"
       className={classNames(
         "text-body-secondary bg-grey-500 relative flex w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 py-8 hover:bg-[rgb(120,120,120)] hover:text-white",
-        className
+        className,
       )}
       onClick={handleClick}
       onKeyDown={(e) => ["Enter", " "].includes(e.key) && handleClick?.()}

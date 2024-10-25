@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { CustomEvmErc20TokenCreate } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -21,11 +20,6 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
 import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
-
-type FormData = Pick<
-  CustomEvmErc20TokenCreate,
-  "evmNetworkId" | "contractAddress" | "symbol" | "decimals"
->
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -48,20 +42,23 @@ const Content = () => {
       yup
         .object({
           evmNetworkId: yup
-            .string()
-            .required()
-            .oneOf(
-              networks.map(({ id }) => id),
-              t("Invalid network")
-            ),
+            .mixed<EvmNetworkId>(
+              (value): value is EvmNetworkId =>
+                typeof value === "string" && networks.some(({ id }) => id === value),
+            )
+            .required(),
           contractAddress: yup
             .string()
             .required()
             .matches(/^0x[0-9a-fA-F]{40}$/, t("Invalid address")),
+          symbol: yup.string().required(),
+          decimals: yup.number().required(),
         })
         .required(),
-    [networks, t]
+    [networks, t],
   )
+
+  type FormData = yup.InferType<typeof schema>
 
   const {
     register,
@@ -89,7 +86,7 @@ const Content = () => {
     (id: EvmNetworkId) => {
       setValue("evmNetworkId", id, { shouldValidate: true })
     },
-    [setValue]
+    [setValue],
   )
 
   // Keeping symbol and decimal fields bound to the form in case we want to make them editable later
@@ -121,7 +118,7 @@ const Content = () => {
         setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
       }
     },
-    [isActive, knownToken, navigate, setActive, tokenInfo]
+    [isActive, knownToken, navigate, setActive, tokenInfo],
   )
 
   const addressErrorMessage = useMemo(() => {
@@ -138,7 +135,7 @@ const Content = () => {
       <HeaderBlock
         title={t("Add custom token")}
         text={t(
-          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token.",
         )}
       />
       <form className="my-20 space-y-4" onSubmit={handleSubmit(submit)}>
@@ -165,7 +162,7 @@ const Content = () => {
               <LoaderIcon
                 className={classNames(
                   "animate-spin-slow text-lg opacity-50",
-                  isLoading ? "visible" : "invisible"
+                  isLoading ? "visible" : "invisible",
                 )}
               />
             }

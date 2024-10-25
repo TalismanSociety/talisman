@@ -8,7 +8,7 @@ const DEFAULT_PROPERTIES: PostHogCaptureProperties = {}
 // using this hook prevents multiple page view captures from a given component
 export const useAnalyticsPageView = (
   page: AnalyticsPage,
-  properties: PostHogCaptureProperties = DEFAULT_PROPERTIES
+  properties: PostHogCaptureProperties = DEFAULT_PROPERTIES,
 ) => {
   const refCaptured = useRef(false)
 

@@ -57,14 +57,14 @@ const SendBalanceInner = () => {
                 unsub()
                 setTxProcessing(false)
               }
-            }
+            },
           )
       } catch (err) {
         setTxError(err as Error)
         setTxProcessing(false)
       }
     },
-    [account, api]
+    [account, api],
   )
 
   if (!api || !account) return null

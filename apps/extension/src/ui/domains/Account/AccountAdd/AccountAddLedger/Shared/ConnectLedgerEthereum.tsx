@@ -1,8 +1,9 @@
+import { useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
+
 import { Spacer } from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
-import { useEffect } from "react"
-import { Trans, useTranslation } from "react-i18next"
 
 export const ConnectLedgerEthereum = ({
   onReadyChanged,

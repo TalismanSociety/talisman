@@ -171,12 +171,12 @@ async function getGeneralReport() {
       db.tokenRates
         .toArray()
         .then((dbTokenRates) =>
-          Object.fromEntries((dbTokenRates ?? []).map(({ tokenId, rates }) => [tokenId, rates]))
+          Object.fromEntries((dbTokenRates ?? []).map(({ tokenId, rates }) => [tokenId, rates])),
         ),
     ])
 
     const balanceJsons = Object.values(balancePool.balances).filter((balance) =>
-      ownedAddresses.includes(balance.address)
+      ownedAddresses.includes(balance.address),
     )
     /* eslint-disable-next-line no-var */
     var balances = new Balances(balanceJsons, { chains, evmNetworks, tokens, tokenRates })
@@ -194,9 +194,9 @@ async function getGeneralReport() {
       (balance) =>
         balance &&
         (balance.chain === null || !("isCustom" in balance.chain && balance.chain.isCustom)) &&
-        (balance.token === null || !("isCustom" in balance.token && balance.token.isCustom))
+        (balance.token === null || !("isCustom" in balance.token && balance.token.isCustom)),
     ),
-    (balance) => `${balance.chainId ?? balance.evmNetworkId}-${balance.tokenId}`
+    (balance) => `${balance.chainId ?? balance.evmNetworkId}-${balance.tokenId}`,
   )
 
   // get fiat sum object for those arrays of balances
@@ -235,10 +235,10 @@ async function getGeneralReport() {
   const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
 
   const ownedNfts = nftsStore$.value.nfts.filter((nft) =>
-    nft.owners.some((o) => ownedAddressesLower.includes(o.address.toLowerCase()))
+    nft.owners.some((o) => ownedAddressesLower.includes(o.address.toLowerCase())),
   )
   const ownedCollections = nftsStore$.value.collections.filter((c) =>
-    ownedNfts.some((n) => n.collectionId === c.id)
+    ownedNfts.some((n) => n.collectionId === c.id),
   )
 
   const TOP_NFT_COLLECTIONS_COUNT = 20
@@ -246,11 +246,11 @@ async function getGeneralReport() {
   const floorByCollectionId = Object.fromEntries(
     ownedCollections
       .map((collection) => [collection.id, getNftCollectionFloorUsd(collection)] as const)
-      .filter(([, floor]) => !!floor)
+      .filter(([, floor]) => !!floor),
   )
   const nftsTotalValue = ownedNfts.reduce(
     (total, nft) => total + (floorByCollectionId[nft.collectionId] ?? 0),
-    0
+    0,
   )
   const topNftCollections = Object.entries(floorByCollectionId)
     .sort((c1, c2) => (c2[1] ?? 0) - (c1[1] ?? 0))

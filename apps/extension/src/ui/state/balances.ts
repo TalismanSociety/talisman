@@ -34,8 +34,8 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
       tokens,
       tokenRates,
     })),
-    debugObservable("balancesHydrate$")
-  )
+    debugObservable("balancesHydrate$"),
+  ),
 )
 
 // Reading this atom triggers the balances backend subscription
@@ -48,14 +48,14 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
   debugObservable("rawBalances$"),
-  shareReplay(1)
+  shareReplay(1),
 )
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   rawBalances$.pipe(
     map((balances) => balances.status === "initialising"),
-    distinctUntilChanged()
-  )
+    distinctUntilChanged(),
+  ),
 )
 
 const validBalances$ = combineLatest([
@@ -77,12 +77,12 @@ const validBalances$ = combineLatest([
         return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
       if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
       return false
-    })
-  )
+    }),
+  ),
 )
 
 const allBalances$ = combineLatest([validBalances$, balancesHydrate$]).pipe(
-  map(([rawBalances, hydrate]) => new Balances(rawBalances, hydrate))
+  map(([rawBalances, hydrate]) => new Balances(rawBalances, hydrate)),
 )
 
 type BalanceQueryParams = {
@@ -94,10 +94,10 @@ const getBalancesByQuery$ = ({ address, tokenId }: BalanceQueryParams) =>
   combineLatest([allBalances$, balancesHydrate$]).pipe(
     map(([allBalances, hydrate]) => {
       const filteredBalances = allBalances.each.filter(
-        (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId)
+        (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId),
       )
       return new Balances(filteredBalances, hydrate)
-    })
+    }),
   )
 
 const getBalancesByCategory$ = (category: AccountCategory = "all") =>
@@ -105,20 +105,20 @@ const getBalancesByCategory$ = (category: AccountCategory = "all") =>
     map(([allBalances, accounts]) => {
       const accountIds = accounts.map((a) => a.address)
       return new Balances(allBalances.each.filter((b) => accountIds.includes(b.address)))
-    })
+    }),
   )
 
 export const [useBalance, getBalance$] = bind(
   (address: Address | null | undefined, tokenId: TokenId | null | undefined) =>
-    getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null))
+    getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
 )
 
 type BalancesFilter = AccountCategory | BalanceQueryParams
 
 export const [useBalances, getBalances$] = bind((arg: BalancesFilter = "all") =>
-  typeof arg === "object" ? getBalancesByQuery$(arg) : getBalancesByCategory$(arg)
+  typeof arg === "object" ? getBalancesByQuery$(arg) : getBalancesByCategory$(arg),
 )
 
 export const [useBalancesByAddress] = bind((address: Address | null | undefined) =>
-  getBalances$({ address })
+  getBalances$({ address }),
 )

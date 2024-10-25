@@ -97,7 +97,7 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
       type="button"
       tabIndex={0}
       className={classNames(
-        "text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+        "text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white",
       )}
       onClick={handleClick}
     >
@@ -133,14 +133,14 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
     <div
       className={classNames(
         "group",
-        "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm"
+        "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm",
       )}
     >
       <button
         type="button"
         tabIndex={0}
         className={classNames(
-          "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+          "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white",
         )}
         onClick={handleClick}
       >
@@ -225,7 +225,7 @@ const AccountsToolbar = () => {
         <SearchInput
           containerClassName={classNames(
             "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.2rem] w-full border border-field text-sm !px-4",
-            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
+            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
           )}
           placeholder={t("Search account or folder")}
           onChange={setPortfolioAccountsSearch}
@@ -268,7 +268,7 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
           <FolderButton key={option.id} option={option} />
         ) : (
           <AccountButton key={`account-${option.address}`} option={option} />
-        )
+        ),
       )}
     </div>
   )
@@ -294,7 +294,7 @@ const Accounts = ({
 
   const addresses = useMemo(
     () => portfolioOptions.filter(accountTypeGuard).map(({ address }) => address),
-    [portfolioOptions]
+    [portfolioOptions],
   )
 
   return (
@@ -369,7 +369,7 @@ export const PortfolioAccounts = () => {
 
   const [allPortfolioOptions, allWatchedOptions] = useMemo((): [
     AccountOption[],
-    AccountOption[]
+    AccountOption[],
   ] => {
     const [portfolioTree, watchedTree] = (() => {
       if (folder && treeName === "portfolio") return [folder.tree, []]
@@ -409,7 +409,7 @@ export const PortfolioAccounts = () => {
               name: item.name,
               total: item.tree.reduce(
                 (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
-                0
+                0,
               ),
               addresses: item.tree.map((account) => account.address),
               searchContent: item.tree
@@ -434,12 +434,12 @@ export const PortfolioAccounts = () => {
     (option: AccountOption): boolean => {
       return !search || option.searchContent.includes(ls)
     },
-    [ls, search]
+    [ls, search],
   )
 
   const [portfolioOptions, watchedOptions] = useMemo(
     () => [allPortfolioOptions.filter(searchFilter), allWatchedOptions.filter(searchFilter)],
-    [allPortfolioOptions, allWatchedOptions, searchFilter]
+    [allPortfolioOptions, allWatchedOptions, searchFilter],
   )
 
   const folderTotal = useMemo(
@@ -447,10 +447,10 @@ export const PortfolioAccounts = () => {
       folder
         ? folder.tree.reduce(
             (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
-            0
+            0,
           )
         : undefined,
-    [balanceTotalPerAccount, folder]
+    [balanceTotalPerAccount, folder],
   )
 
   useEffect(() => {

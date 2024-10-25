@@ -32,7 +32,7 @@ import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 )
 
 const INPUT_PROPS: FormFieldInputContainerProps = {
@@ -94,16 +94,19 @@ const EditAllowanceForm: FC<{
   const schema = useMemo(
     () =>
       yup.object({
-        limit: yup.string().test("limit", "Invalid amount", isValidAmount(token.decimals)),
+        limit: yup
+          .string()
+          .defined()
+          .test("limit", "Invalid amount", isValidAmount(token.decimals)),
       }),
-    [token]
+    [token],
   )
 
   const defaultValues = useMemo(
     () => ({
       limit: allowance === ERC20_UNLIMITED_ALLOWANCE ? "" : formatUnits(allowance, token.decimals),
     }),
-    [allowance, token.decimals]
+    [allowance, token.decimals],
   )
 
   const {
@@ -128,7 +131,7 @@ const EditAllowanceForm: FC<{
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onSubmit, token.decimals]
+    [genericEvent, onSubmit, token.decimals],
   )
 
   // don't bubble up submit event to the parent approval form
@@ -138,13 +141,13 @@ const EditAllowanceForm: FC<{
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit]
+    [handleSubmit, submit],
   )
 
   const { data: balance } = useFetchErc20Balance(account, token)
   const max = useMemo(
     () => (balance ? formatUnits(balance, token.decimals) : ""),
-    [balance, token.decimals]
+    [balance, token.decimals],
   )
 
   const handleMaxClick = useCallback(() => {
@@ -152,7 +155,7 @@ const EditAllowanceForm: FC<{
   }, [max, setValue])
 
   return (
-    <form onSubmit={submitWithoutBubbleUp} className="bg-grey-800 rounded-t-xl p-12 ">
+    <form onSubmit={submitWithoutBubbleUp} className="bg-grey-800 rounded-t-xl p-12">
       <div className="text-center font-bold">{t("Edit spending limit")}</div>
       <p className="text-body-secondary my-12 text-sm">
         <Trans
@@ -226,7 +229,7 @@ export const SignParamAllowanceButton: FC<{
       onChange(limit)
       close()
     },
-    [close, onChange]
+    [close, onChange],
   )
 
   return (

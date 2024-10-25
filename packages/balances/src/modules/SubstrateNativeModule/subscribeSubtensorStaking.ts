@@ -22,7 +22,7 @@ export async function subscribeSubtensorStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   addressesByToken: AddressesByToken<SubNativeToken>,
-  callback: SubscriptionCallback<SubNativeBalance[]>
+  callback: SubscriptionCallback<SubNativeBalance[]>,
 ) {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -30,7 +30,7 @@ export async function subscribeSubtensorStaking(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
       miniMetadata,
-    ])
+    ]),
   )
   const subtensorTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
@@ -40,7 +40,7 @@ export async function subscribeSubtensorStaking(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        allChains[token.chain.id]
+        allChains[token.chain.id],
       )
       return chainMeta?.hasSubtensorPallet === true
     })
@@ -55,12 +55,12 @@ export async function subscribeSubtensorStaking(
         addresses.filter((address) => !isEthereumAddress(address)),
       ])
       // remove tokens which aren't subtensor staking tokens
-      .filter(([tokenId]) => subtensorTokenIds.includes(tokenId))
+      .filter(([tokenId]) => subtensorTokenIds.includes(tokenId)),
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesBySubtensorToken, tokens)
   const chains = Object.fromEntries(
-    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId))
+    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId)),
   )
   const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
@@ -101,14 +101,14 @@ export async function subscribeSubtensorStaking(
     }
     const subscribeTotalColdkeyStake = (
       addresses: string[],
-      callback: SubscriptionCallback<TotalColdkeyStake[]>
+      callback: SubscriptionCallback<TotalColdkeyStake[]>,
     ) => {
       const scaleCoder = chainStorageCoders.get(chainId)?.totalColdkeyStake
       const queries = addresses.flatMap((address): RpcStateQuery<TotalColdkeyStake> | [] => {
         const stateKey = encodeStateKey(
           scaleCoder,
           `Invalid address in ${chainId} totalColdkeyStake query ${address}`,
-          address
+          address,
         )
         if (!stateKey) return []
 
@@ -119,7 +119,7 @@ export async function subscribeSubtensorStaking(
           const decoded = decodeScale<DecodedType>(
             scaleCoder,
             change,
-            `Failed to decode totalColdkeyStake on chain ${chainId}`
+            `Failed to decode totalColdkeyStake on chain ${chainId}`,
           )
 
           const stake: bigint | undefined = decoded ?? undefined
@@ -143,7 +143,7 @@ export async function subscribeSubtensorStaking(
         }
         return state
       }, new Map<string, bigint>()),
-      share()
+      share(),
     )
 
     const subscription = combineLatest([totalColdkeyStakeByAddress$]).subscribe({

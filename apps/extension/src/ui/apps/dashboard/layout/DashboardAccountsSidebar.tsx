@@ -34,7 +34,7 @@ const Accounts = () => {
 
   const [allPortfolioOptions, allWatchedOptions] = useMemo((): [
     AccountOption[],
-    AccountOption[]
+    AccountOption[],
   ] => {
     const [portfolioTree, watchedTree] = (() => {
       if (currentFolder && treeName === "portfolio")
@@ -70,7 +70,7 @@ const Accounts = () => {
               name: item.name,
               total: item.tree.reduce(
                 (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
-                0
+                0,
               ),
               addresses: item.tree.map((account) => account.address),
             }
@@ -308,7 +308,7 @@ const SidebarButtonBase: FC<{
       type="button"
       className={classNames(
         "hover:bg-grey-750 flex h-28 w-full items-center gap-4 rounded-[12px] px-4 text-left",
-        isSelected && "bg-grey-800"
+        isSelected && "bg-grey-800",
       )}
       onClick={onClick}
     >

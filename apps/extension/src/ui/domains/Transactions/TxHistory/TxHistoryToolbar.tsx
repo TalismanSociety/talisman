@@ -31,7 +31,7 @@ const AccountFilterButton = () => {
       setAddress(address ? [address] : null)
       close()
     },
-    [close, setAddress]
+    [close, setAddress],
   )
 
   return (
@@ -52,7 +52,7 @@ const AccountFilterButton = () => {
             <AllAccountsIcon className="text-md shrink-0" />
           )}
           <div className="grow truncate">
-            {account ? account?.name ?? shortenAddress(account.address) : t("All Accounts")}
+            {account ? (account?.name ?? shortenAddress(account.address)) : t("All Accounts")}
           </div>
           <ChevronDownIcon className="shrink-0 text-base" />
         </div>
@@ -78,7 +78,7 @@ const NetworkFilterButton = () => {
       setNetworkId(networkId)
       close()
     },
-    [close, setNetworkId]
+    [close, setNetworkId],
   )
 
   return (
@@ -95,7 +95,7 @@ const NetworkFilterButton = () => {
             <GlobeIcon className="text-md shrink-0" />
           )}
           <div className="grow truncate">
-            {network ? network?.name ?? t("Unknown Network") : t("All Networks")}
+            {network ? (network?.name ?? t("Unknown Network")) : t("All Networks")}
           </div>
           <ChevronDownIcon className="shrink-0 text-base" />
         </div>

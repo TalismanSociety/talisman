@@ -67,7 +67,7 @@ export const LedgerConnectionStatus = ({
         "text-body-secondary bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm p-8",
         hide && "invisible",
         requiresManualRetry && "hover:bg-grey-800",
-        className
+        className,
       )}
       onClick={requiresManualRetry ? refresh : undefined}
     >

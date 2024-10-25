@@ -15,7 +15,7 @@ export const makeContractCaller =
   async <T extends Uint8Array | { toU8a: () => Uint8Array }>(
     callFrom: string,
     contractAddress: string,
-    inputData: T
+    inputData: T,
   ) =>
     registry.createType(
       "ContractExecResult",
@@ -35,7 +35,7 @@ export const makeContractCaller =
             registry.createType("Option<Balance>").toU8a(),
             // inputData
             inputData instanceof Uint8Array ? inputData : inputData.toU8a(),
-          ])
+          ]),
         ),
-      ])
+      ]),
     )

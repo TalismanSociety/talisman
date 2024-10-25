@@ -23,11 +23,14 @@ export const dataTreeToUiTree = (items: Tree): UiTree =>
   items.map((item) => (item.type === "account" ? accountWithId(item) : folderWithId(item)))
 
 export const getTreeItemsMap = (items: UiTreeItem[]) => {
-  return items.reduce((acc, item) => {
-    acc[item.id] = item
-    if (item.type === "folder") for (const child of item.tree) acc[child.id] = child
-    return acc
-  }, {} as Record<string, UiTreeItem>)
+  return items.reduce(
+    (acc, item) => {
+      acc[item.id] = item
+      if (item.type === "folder") for (const child of item.tree) acc[child.id] = child
+      return acc
+    },
+    {} as Record<string, UiTreeItem>,
+  )
 }
 
 export const moveTreeItem = (items: UiTreeItem[], itemId: string, target: UiTreePosition) => {

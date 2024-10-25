@@ -114,7 +114,7 @@ const TokenRow: FC<TokenRowProps> = ({
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        selected && "bg-grey-800 text-body-secondary"
+        selected && "bg-grey-800 text-body-secondary",
       )}
     >
       {intersection?.isIntersecting && (
@@ -126,7 +126,7 @@ const TokenRow: FC<TokenRowProps> = ({
             <div
               className={classNames(
                 "flex w-full justify-between text-sm font-bold",
-                selected ? "text-body-secondary" : "text-body"
+                selected ? "text-body-secondary" : "text-body",
               )}
             >
               <div className="flex items-center">
@@ -206,12 +206,12 @@ const TokensList: FC<TokensListProps> = ({
 
   const accountBalances = useMemo(
     () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),
-    [address, selected, balances]
+    [address, selected, balances],
   )
 
   const accountChain = useMemo(
     () => account?.genesisHash && chains.find((c) => c.genesisHash === account?.genesisHash),
-    [account?.genesisHash, chains]
+    [account?.genesisHash, chains],
   )
 
   const filterAccountCompatibleTokens = useCallback(
@@ -228,7 +228,7 @@ const TokensList: FC<TokensListProps> = ({
       // non ledger ethereum accounts may also sign on substrate chains (MOVR, GLMR, ..)
       return !!chainsMap[token.chain?.id ?? ""] || !!token.evmNetwork
     },
-    [account, accountChain, selected, address, chainsMap]
+    [account, accountChain, selected, address, chainsMap],
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -309,7 +309,7 @@ const TokensList: FC<TokensListProps> = ({
 
         // keep alphabetical sort
         return 0
-      }
+      },
     )
 
     return results
@@ -322,7 +322,7 @@ const TokensList: FC<TokensListProps> = ({
       (t) =>
         !ls ||
         t.token.symbol.toLowerCase().includes(ls) ||
-        t.chainNameSearch?.toLowerCase().includes(ls)
+        t.chainNameSearch?.toLowerCase().includes(ls),
     )
   }, [search, tokensWithBalances])
 
@@ -330,7 +330,7 @@ const TokensList: FC<TokensListProps> = ({
     (address: string) => () => {
       onSelect?.(address)
     },
-    [onSelect]
+    [onSelect],
   )
 
   return (

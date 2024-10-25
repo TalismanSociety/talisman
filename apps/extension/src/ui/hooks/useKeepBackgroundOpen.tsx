@@ -1,6 +1,8 @@
-import { api } from "@ui/api"
 import { IS_FIREFOX } from "extension-shared"
 import { useEffect } from "react"
+
+import { api } from "@ui/api"
+
 /**
  * Used to keep the background page open on Firefox
  * @returns void

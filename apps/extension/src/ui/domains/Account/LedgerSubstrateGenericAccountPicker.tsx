@@ -34,7 +34,7 @@ const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
   pageIndex: number,
   itemsPerPage: number,
-  app?: SubstrateAppParams | null
+  app?: SubstrateAppParams | null,
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -96,7 +96,7 @@ const useLedgerSubstrateGenericAccounts = (
             .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ed25519" }))
         : [],
-    [itemsPerPage, ledgerAccounts]
+    [itemsPerPage, ledgerAccounts],
   )
   const balances = useAccountImportBalances(accountImportDefs)
 
@@ -107,11 +107,11 @@ const useLedgerSubstrateGenericAccounts = (
 
         const address = convertAddress(acc.address, null)
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === address
+          (wa) => convertAddress(wa.address, null) === address,
         )
 
         const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === address
+          (b) => convertAddress(b.address, null) === address,
         )
 
         return {
@@ -123,7 +123,7 @@ const useLedgerSubstrateGenericAccounts = (
           isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
         }
       }),
-    [ledgerAccounts, walletAccounts, balances, selectedAccounts]
+    [ledgerAccounts, walletAccounts, balances, selectedAccounts],
   )
 
   useEffect(() => {
@@ -159,7 +159,7 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
     selectedAccounts,
     pageIndex,
     itemsPerPage,
-    app
+    app,
   )
 
   // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
@@ -185,10 +185,10 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
               accountIndex,
               addressOffset,
               migrationAppName: app?.name,
-            })
+            }),
       )
     },
-    [app?.name]
+    [app?.name],
   )
 
   useEffect(() => {
@@ -225,7 +225,7 @@ type CustomAccountDetails = { accountIndex: number; addressOffset: number; name:
 
 const getNextAccountDetails = (
   accounts: AccountJsonAny[],
-  app: SubstrateAppParams | null | undefined
+  app: SubstrateAppParams | null | undefined,
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
@@ -233,7 +233,7 @@ const getNextAccountDetails = (
       (a) =>
         a.ledgerApp === SubstrateLedgerAppType.Generic &&
         a.migrationAppName === app?.name &&
-        a.addressOffset === 0
+        a.addressOffset === 0,
     )
     .filter((a) => typeof a.accountIndex === "number")
     .map((a) => a.accountIndex as number)
@@ -254,7 +254,7 @@ const getNextAccountDetails = (
 
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
-  app: SubstrateAppParams | null | undefined
+  app: SubstrateAppParams | null | undefined,
 ) => {
   const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
 
@@ -322,7 +322,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
 
   const walletAccounts = useAccounts()
   const [accountDetails, setAccountDetails] = useState<CustomAccountDetails>(() =>
-    getNextAccountDetails(walletAccounts, app)
+    getNextAccountDetails(walletAccounts, app),
   )
 
   const handleAccountIndexChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -350,7 +350,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
             },
           ]
         : [],
-    [address]
+    [address],
   )
 
   const balances = useAccountImportBalances(accountImportDefs)
@@ -376,13 +376,13 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
   return (
     <div className="mt-8">
       <div className="mb-8 flex flex-col gap-4">
-        <div className="text-alert-warn bg-alert-warn/5  flex items-center gap-6 rounded-sm p-8 text-sm">
+        <div className="text-alert-warn bg-alert-warn/5 flex items-center gap-6 rounded-sm p-8 text-sm">
           <div className="bg-alert-warn/10 rounded-full p-4">
             <InfoIcon className="shrink-0 text-lg" />
           </div>
           <div className="leading-paragraph">
             {t(
-              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live."
+              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live.",
             )}
           </div>
         </div>
@@ -421,7 +421,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
 
         <div className="col-span-2">
           <FormFieldContainer label={t("Preview")}>
-            <div className="bg-black-tertiary flex h-32 w-full items-center gap-8 rounded-sm px-8  py-4">
+            <div className="bg-black-tertiary flex h-32 w-full items-center gap-8 rounded-sm px-8 py-4">
               {accountDef ? (
                 <>
                   <AccountIcon address={accountDef.address} className="text-xl" />
@@ -515,7 +515,7 @@ export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccou
       onChange?.([])
       setMode(newMode)
     },
-    [mode, onChange]
+    [mode, onChange],
   )
 
   return (

@@ -1,8 +1,8 @@
 import type { CustomEvmErc20Token } from "@talismn/balances"
 import { AddEthereumChainParameter } from "viem"
 
-import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
+import { requestStore } from "../../libs/requests/store"
 import { urlToDomain } from "../../util/urlToDomain"
 import {
   ETH_NETWORK_ADD_PREFIX,
@@ -16,7 +16,7 @@ class AddNetworkError extends Error {}
 export const requestAddNetwork = async (
   url: string,
   network: AddEthereumChainParameter,
-  port: Port
+  port: Port,
 ) => {
   const { err, val: urlVal } = urlToDomain(url)
   if (err) throw new AddNetworkError(urlVal)
@@ -28,12 +28,12 @@ export const requestAddNetwork = async (
 
   if (isDuplicate) {
     throw new AddNetworkError(
-      "Pending add network already exists for this site. Please accept or reject the request."
+      "Pending add network already exists for this site. Please accept or reject the request.",
     )
   }
   await requestStore.createRequest(
     { url, network, idStr: urlVal, type: ETH_NETWORK_ADD_PREFIX },
-    port
+    port,
   )
 }
 
@@ -49,7 +49,7 @@ export const requestWatchAsset = async (
   request: WatchAssetBase,
   token: CustomEvmErc20Token,
   warnings: string[],
-  port: Port
+  port: Port,
 ) => {
   const address = request.options.address
   const isDuplicate = requestStore
@@ -58,12 +58,12 @@ export const requestWatchAsset = async (
 
   if (isDuplicate) {
     throw new WatchAssetError(
-      "Pending watch asset request already exists. Please accept or reject the request."
+      "Pending watch asset request already exists. Please accept or reject the request.",
     )
   }
   await requestStore.createRequest(
     { type: WATCH_ASSET_PREFIX, url, request, token, warnings },
-    port
+    port,
   )
   return true
 }

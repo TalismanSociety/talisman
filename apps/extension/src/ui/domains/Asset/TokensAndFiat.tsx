@@ -38,7 +38,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
       token && planck !== undefined
         ? new BalanceFormatter(planck, token.decimals, tokenRates)
         : null,
-    [planck, token, tokenRates]
+    [planck, token, tokenRates],
   )
   const currency = useSelectedCurrency()
 

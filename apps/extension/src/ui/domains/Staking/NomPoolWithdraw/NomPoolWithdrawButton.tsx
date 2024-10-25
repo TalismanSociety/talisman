@@ -23,7 +23,7 @@ export const NomPoolWithdrawButton: FC<{
 
   const canWithdraw = useMemo(
     () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canWithdraw),
-    [address, stakingStatus]
+    [address, stakingStatus],
   )
 
   const handleClick = useCallback(() => {
@@ -39,17 +39,17 @@ export const NomPoolWithdrawButton: FC<{
         "text-primary/80 hover:text-primary bg-primary/10 hover:bg-primary/20 font-light",
         variant === "small" && "h-10 rounded-sm px-3 text-xs",
         variant === "large" && "h-14 rounded px-4 text-sm",
-        className
+        className,
       )}
       type="button"
       onClick={handleClick}
     >
-      <div className="flex items-center gap-2 ">
+      <div className="flex items-center gap-2">
         <ZapMinusIcon
           className={classNames(
             "shrink-0",
             variant === "small" && "text-xs",
-            variant === "large" && "text-base"
+            variant === "large" && "text-base",
           )}
         />
         <div>{t("Withdraw")}</div>

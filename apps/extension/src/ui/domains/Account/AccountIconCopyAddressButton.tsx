@@ -33,7 +33,7 @@ export const AccountIconCopyAddressButton: FC<
           "text-body size-[1em] shrink-0 rounded-full",
           "[&:hover>.copy-overlay]:opacity-100", // show overlay while hovering
           "[&:hover_.orb-type]:hidden", // hide orb type svg while showing overlay
-          className
+          className,
         )}
       >
         <AccountIcon type={type} address={address} genesisHash={genesisHash} />
@@ -41,7 +41,7 @@ export const AccountIconCopyAddressButton: FC<
           className={classNames(
             "copy-overlay",
             "absolute left-0 top-0 flex size-full items-center justify-center rounded-full opacity-0",
-            "bg-[radial-gradient(rgba(90,90,90,0.6),rgba(90,90,90,0.6),rgba(90,90,90,0.1))]"
+            "bg-[radial-gradient(rgba(90,90,90,0.6),rgba(90,90,90,0.6),rgba(90,90,90,0.1))]",
           )}
         >
           <CopyIcon className="text-[0.5em]" />

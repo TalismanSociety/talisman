@@ -52,7 +52,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
       <div
         className={classNames(
           "bg-grey-800 flex w-full items-center gap-6 border-transparent px-7 py-6",
-          detailRows.length ? "rounded-t-sm" : "rounded"
+          detailRows.length ? "rounded-t-sm" : "rounded",
         )}
       >
         <div className="text-xl">
@@ -137,7 +137,7 @@ const ChainTokenBalancesUniswapV2Row = ({
     <div
       className={classNames(
         "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
-        isLastBalance && "rounded-b-sm"
+        isLastBalance && "rounded-b-sm",
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
@@ -155,7 +155,7 @@ const ChainTokenBalancesUniswapV2Row = ({
           <div
             className={classNames(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
             <div className={"font-bold text-white"}>
@@ -200,7 +200,7 @@ const ChainTokenBalancesDetailRow = ({
   <div
     className={classNames(
       "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-      isLastRow && "rounded-b-sm"
+      isLastRow && "rounded-b-sm",
     )}
   >
     <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
@@ -229,13 +229,13 @@ const ChainTokenBalancesDetailRow = ({
     <div
       className={classNames(
         "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
-        status.status === "fetching" && "animate-pulse transition-opacity"
+        status.status === "fetching" && "animate-pulse transition-opacity",
       )}
     >
       <div
         className={classNames(
           "flex h-10 items-center gap-2 font-bold",
-          row.locked ? "text-body-secondary" : "text-white"
+          row.locked ? "text-body-secondary" : "text-white",
         )}
       >
         <Tokens amount={row.tokens} symbol={symbol} isBalance />
@@ -263,12 +263,12 @@ const LockedExtra: FC<{
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, address]
+    [selectedAccount?.address, address],
   )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
-    [rowAddress, data?.accounts]
+    [rowAddress, data?.accounts],
   )
 
   const withdrawIn = useMemo(
@@ -276,7 +276,7 @@ const LockedExtra: FC<{
       !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
         ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding]
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
   )
 
   if (!rowAddress || !accountStatus) return null
@@ -291,10 +291,10 @@ const LockedExtra: FC<{
             <TooltipTrigger
               className={classNames(
                 "text-body-secondary bg-body/10 h-10 rounded-sm px-3 text-xs opacity-60",
-                isLoading && "animate-pulse"
+                isLoading && "animate-pulse",
               )}
             >
-              <div className="flex items-center gap-2 ">
+              <div className="flex items-center gap-2">
                 <ZapOffIcon className="shrink-0 text-xs" />
                 <div>{t("Unbonding")}</div>
               </div>
@@ -344,8 +344,8 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
           {selectedAccount
             ? t("You don't have any {{symbol}} in this account", { symbol })
             : selectedFolder
-            ? t("You don't have any {{symbol}} in this folder", { symbol })
-            : t("You don't have any {{symbol}}", { symbol })}
+              ? t("You don't have any {{symbol}} in this folder", { symbol })
+              : t("You don't have any {{symbol}}", { symbol })}
         </div>
         <div className="mt-6 flex justify-center gap-4">
           <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
@@ -366,7 +366,7 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const { balancesByChain: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
-    [rows]
+    [rows],
   )
 
   if (!hasBalance) return <NoTokens symbol={symbol} />

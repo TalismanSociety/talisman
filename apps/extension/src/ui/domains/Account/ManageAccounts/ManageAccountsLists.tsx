@@ -17,7 +17,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 
   const accountsMap = useMemo(
     () => Object.fromEntries(accounts.map((account) => [account.address, account])),
-    [accounts]
+    [accounts],
   )
   const { search } = useManageAccounts()
 
@@ -26,7 +26,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
       dataTreeToUiTree(catalog.portfolio),
       dataTreeToUiTree(catalog.watched),
     ],
-    [catalog]
+    [catalog],
   )
 
   const [portfolioTree, watchedTree] = useMemo(() => {
@@ -65,7 +65,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 const searchTree = (
   tree: UiTree,
   lowerSearch: string,
-  accountsMap: Record<string, AccountJsonAny>
+  accountsMap: Record<string, AccountJsonAny>,
 ): UiTree => {
   const workTree = structuredClone(tree)
 
