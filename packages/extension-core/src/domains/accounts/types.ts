@@ -123,6 +123,8 @@ export interface Account {
 
 export type AccountsList = Account[]
 
+export type UiAccountAddressType = "sr25519" | "ethereum" // TODO someday: change this to ethereum/substrate, because this is what it means for the UI
+
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
 export enum SubstrateLedgerAppType {

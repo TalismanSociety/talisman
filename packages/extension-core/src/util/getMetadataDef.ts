@@ -115,7 +115,7 @@ const getMetadataDefInner = async (
     if (storeMetadata && runtimeSpecVersion < storeMetadata.specVersion) return newData
 
     // persist in store
-    if (storeMetadata) await db.metadata.update(genesisHash, newData)
+    if (storeMetadata) await db.metadata.put(newData)
     else {
       // could be a race condition caused by multiple calls to this function, in the meantime storeMetadata could be out of date
       const latestStoreMetadata = await db.metadata.get(genesisHash)

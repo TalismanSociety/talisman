@@ -1,18 +1,25 @@
-import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { KeyIcon } from "@talismn/icons"
 import { CSSProperties, FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, useOpenClose } from "talisman-ui"
+import {
+  Button,
+  FormFieldContainer,
+  FormFieldInputText,
+  Modal,
+  ModalDialog,
+  useOpenClose,
+} from "talisman-ui"
 import * as yup from "yup"
+
+import { log } from "@extension/shared"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 
 import { useJsonAccountImport } from "./context"
 
 type FormData = {
-  password?: string
+  password: string
 }
 
 export const UnlockJsonAccountsButton: FC = () => {
@@ -29,7 +36,7 @@ export const UnlockJsonAccountsButton: FC = () => {
 
   const schema = yup
     .object({
-      password: yup.string().required(""), // matches the medium strengh requirement
+      password: yup.string().required(" "),
     })
     .required()
 

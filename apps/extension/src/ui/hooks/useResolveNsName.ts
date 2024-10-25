@@ -1,7 +1,7 @@
 import { isPotentialAzns, isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
 import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDebounce } from "react-use"
 
 import { api } from "@ui/api"
@@ -51,7 +51,7 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
       return (await api.accountsOnChainIdsResolveNames([name]))[name] ?? null
     },
     enabled: isNsLookup,
-    cacheTime: Infinity,
+    gcTime: Infinity,
     initialData: (): [string, NsLookupType] | null => {
       if (!name) return null
 
@@ -64,17 +64,18 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
 
       return [address, nsLookupType]
     },
-    onSuccess: (result) => {
-      if (!name) return
-
-      // update cache
-      if (result === undefined) nsNamesCache.delete(name)
-      else nsNamesCache.set(name, { result, updated: Date.now() })
-
-      // persist cache to local storage
-      persistNsNamesCache()
-    },
   })
+
+  useEffect(() => {
+    if (!name || !result) return
+
+    // update cache
+    if (result === undefined) nsNamesCache.delete(name)
+    else nsNamesCache.set(name, { result, updated: Date.now() })
+
+    // persist cache to local storage
+    persistNsNamesCache()
+  }, [name, result])
 
   const [address, nsLookupType] = result ?? [null, null]
 

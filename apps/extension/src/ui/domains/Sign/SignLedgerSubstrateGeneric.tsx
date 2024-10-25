@@ -52,7 +52,8 @@ const sign = async (
     const metadata = Buffer.from(hexToU8a(txMetadata))
 
     const { signature } = await ledger.signWithMetadata(path, blob, metadata)
-    return u8aToHex(signature)
+
+    return u8aToHex(new Uint8Array(signature))
   } else {
     // raw payload
     const unsigned = u8aWrapBytes(payload.data)
@@ -60,7 +61,7 @@ const sign = async (
     const { signature } = await ledger.signRaw(path, Buffer.from(unsigned))
 
     // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
-    return u8aToHex(signature.slice(1))
+    return u8aToHex(new Uint8Array(signature.slice(1)))
   }
 }
 

@@ -57,6 +57,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       )}
       loading="lazy"
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
+      // eslint-disable-next-line react/no-unknown-property
       onLoadStart={handleLoadStart}
       onLoad={handleLoad}
       onError={handleError}

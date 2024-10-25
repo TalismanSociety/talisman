@@ -11,7 +11,7 @@ import { api } from "@ui/api"
 import { useBalancesHydrate, useChainByGenesisHash } from "@ui/state"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 
-import { useSubstratePayloadMetadata } from "../../../hooks/useSubstratePayloadMetadata"
+import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
@@ -64,7 +64,7 @@ const usePolkadotSigningRequestProvider = ({
     ? signingRequest.request.payload
     : null
 
-  const { data: payloadMetadata } = useSubstratePayloadMetadata(jsonPayload, true)
+  const { data: payloadMetadata } = useSubstratePayloadMetadataSuspense(jsonPayload)
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
   const [modifiedPayload, registry, shortMetadata] = useMemo(() => {

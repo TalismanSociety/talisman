@@ -1,6 +1,6 @@
 import { assert, u8aToHex } from "@polkadot/util"
 import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
-import { CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { Chain, CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import Dexie from "dexie"
 
@@ -24,7 +24,7 @@ export class ChainsHandler extends ExtensionHandler {
 
   private chainUpsert: MessageHandler<"pri(chains.upsert)"> = async (chain) => {
     await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
-      const existingChain = await chaindataProvider.chainById(chain.id)
+      const existingChain = (await chaindataProvider.chainById(chain.id)) as Chain | undefined
       const existingToken = existingChain?.nativeToken?.id
         ? await chaindataProvider.tokenById(existingChain.nativeToken.id)
         : null
@@ -55,7 +55,7 @@ export class ChainsHandler extends ExtensionHandler {
         prefix: existingChain?.prefix ?? 42, // TODO: query this for custom chains
         name: chain.name,
         themeColor: existingChain?.themeColor ?? "#505050",
-        logo: chain.chainLogoUrl ?? null,
+        logo: existingChain?.logo ?? null,
         chainName: existingChain?.chainName ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
         chainType: existingChain?.chainType ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
         implName: existingChain?.implName ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains

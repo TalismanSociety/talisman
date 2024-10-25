@@ -27,8 +27,8 @@
     "clean": "rm -rf dist plugins/dist .turbo node_modules"
   },
   "dependencies": {
-    "@polkadot-api/utils": "^0.1.1",
-    "@supercharge/promise-pool": "^3.1.0",
+    "@polkadot-api/utils": "^0.1.2",
+    "@supercharge/promise-pool": "^3.2.0",
     "@talismn/chain-connector": "workspace:*",
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
@@ -37,36 +37,36 @@
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "bignumber.js": "^9.1.2",
-    "dexie": "^3.2.4",
+    "dexie": "^4.0.9",
     "lodash": "4.17.21",
     "pako": "^2.1.0",
-    "polkadot-api": "^1.0.1",
+    "polkadot-api": "^1.6.4",
     "rxjs": "^7.8.1",
     "scale-ts": "^1.6.0",
-    "viem": "^2.21.28"
+    "viem": "^2.21.34"
   },
   "devDependencies": {
-    "@polkadot/api-contract": "^10.9.1",
-    "@polkadot/types": "^10.9.1",
-    "@polkadot/util": "^12.3.2",
-    "@polkadot/util-crypto": "^12.3.2",
-    "@substrate/txwrapper-core": "*",
+    "@polkadot/api-contract": "14.1.1",
+    "@polkadot/types": "14.1.1",
+    "@polkadot/util": "13.2.1",
+    "@polkadot/util-crypto": "13.2.1",
+    "@substrate/txwrapper-core": "7.5.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
-    "@types/jest": "^27.5.1",
-    "@types/lodash": "^4.14.180",
+    "@types/jest": "^29.5.14",
+    "@types/lodash": "^4.17.12",
     "@types/pako": "^2.0.3",
-    "eslint": "^8.52.0",
+    "eslint": "^8.57.1",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.2.2"
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/api-contract": "10.x",
-    "@polkadot/types": "10.x",
-    "@polkadot/util": "12.x",
-    "@polkadot/util-crypto": "12.x",
-    "@substrate/txwrapper-core": "4.x"
+    "@polkadot/api-contract": "*",
+    "@polkadot/types": "*",
+    "@polkadot/util": "*",
+    "@polkadot/util-crypto": "*",
+    "@substrate/txwrapper-core": "*"
   },
   "preconstruct": {
     "entrypoints": [

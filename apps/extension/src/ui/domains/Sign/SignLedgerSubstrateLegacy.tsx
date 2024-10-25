@@ -107,7 +107,9 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
         throw new LedgerError(error_message, "SignError", return_code)
 
       // remove first byte which stores the signature type (0 here, as 0 = ed25519)
-      const signature = isRaw ? u8aToHex(signatureBuffer.slice(1)) : u8aToHex(signatureBuffer)
+      const signature = isRaw
+        ? u8aToHex(new Uint8Array(signatureBuffer.slice(1)))
+        : u8aToHex(new Uint8Array(signatureBuffer))
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })

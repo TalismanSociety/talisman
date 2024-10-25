@@ -550,7 +550,7 @@ export class ChainConnector {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const talismanSub = typeof window !== "undefined" && (window as any).talismanSub
 
-    /* eslint-disable @typescript-eslint/ban-types */
+    /* eslint-disable @typescript-eslint/no-unsafe-function-type */
     const rpcByGenesisHashSend: Function | undefined = talismanSub?.rpcByGenesisHashSend
     const rpcByGenesisHashSubscribe: Function | undefined = talismanSub?.rpcByGenesisHashSubscribe
     const rpcByGenesisHashUnsubscribe: Function | undefined =

@@ -1,6 +1,3 @@
-import { getEthLedgerDerivationPath } from "@extension/core"
-import { log } from "@extension/shared"
-import { LEDGER_ETHEREUM_MIN_VERSION } from "@extension/shared"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
@@ -9,8 +6,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { gte } from "semver"
 
+import { getEthLedgerDerivationPath } from "@extension/core"
+import { LEDGER_ETHEREUM_MIN_VERSION, log } from "@extension/shared"
+
 import { useSetInterval } from "../useSetInterval"
-import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
+import { getLedgerErrorProps, LedgerError, LedgerStatus } from "./common"
 
 export const useLedgerEthereum = (persist = false) => {
   const { t } = useTranslation()

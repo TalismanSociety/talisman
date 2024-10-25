@@ -34,7 +34,7 @@ export class TokenRatesStore {
    * Toggles on & off the price updates, based on if there are any active subscriptions
    */
   private watchSubscriptions = (): void => {
-    let pollInterval: NodeJS.Timer | null = null
+    let pollInterval: ReturnType<typeof setInterval> | null = null
     let subTokenList: Subscription | null = null
 
     this.#subscriptions.subscribe((subscriptions) => {

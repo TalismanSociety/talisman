@@ -30,7 +30,7 @@ type FormValues = {
 }
 
 const schema = yup.object({
-  name: yup.string().trim().required(""),
+  name: yup.string().trim().required(" "),
   limitToNetwork: yup.bool(),
 })
 

@@ -28,24 +28,24 @@
   "dependencies": {
     "bignumber.js": "^9.1.2",
     "rxjs": "^7.8.1",
-    "tailwind-merge": "^1.14.0"
+    "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
-    "@polkadot/keyring": "^12.3.2",
-    "@polkadot/util": "^12.3.2",
-    "@polkadot/util-crypto": "^12.3.2",
+    "@polkadot/keyring": "13.2.1",
+    "@polkadot/util": "13.2.1",
+    "@polkadot/util-crypto": "13.2.1",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
-    "@types/jest": "^27.5.1",
-    "eslint": "^8.52.0",
+    "@types/jest": "^29.5.14",
+    "eslint": "^8.57.1",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.2.2"
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/keyring": "12.x",
-    "@polkadot/util": "12.x",
-    "@polkadot/util-crypto": "12.x",
+    "@polkadot/keyring": "*",
+    "@polkadot/util": "*",
+    "@polkadot/util-crypto": "*",
     "rxjs": ">= 7.8.1"
   },
   "eslintConfig": {

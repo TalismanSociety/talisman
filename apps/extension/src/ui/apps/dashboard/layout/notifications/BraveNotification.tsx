@@ -30,7 +30,7 @@ export const BraveWarningNotification = () => {
         icon={<BraveIcon className="icon" />}
         title={t("Attention Brave users.")}
         description={t(
-          "Due to a recent Brave update, users may be experiencing issues loading balances."
+          "Due to a recent Brave update, users may be experiencing issues loading balances.",
         )}
         action={t("Learn more")}
         onActionClick={open}

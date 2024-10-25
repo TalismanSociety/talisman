@@ -8,7 +8,7 @@ import {
   SortableRpcItemProps,
 } from "../NetworkRpcsListField"
 import { getSubstrateRpcInfo, wsRegEx } from "./helpers"
-import { SubNetworkFormData } from "./types"
+import { SubNetworkFormData } from "./schema"
 
 const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
   const [fetchingGenesisHash, setFetchingGenesisHash] = useState(false)

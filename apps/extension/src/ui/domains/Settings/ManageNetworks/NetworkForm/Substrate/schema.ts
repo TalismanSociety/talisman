@@ -1,13 +1,14 @@
-import i18next from "@common/i18nConfig"
 import * as yup from "yup"
+
+import i18next from "@common/i18nConfig"
 
 import { wsRegEx } from "./helpers"
 
 export const subNetworkFormSchema = yup
   .object({
-    id: yup.string().required(""),
+    id: yup.string().required(" "),
     isTestnet: yup.boolean().required(),
-    genesisHash: yup.string().required(""),
+    genesisHash: yup.string().required(" "),
     name: yup.string().required(i18next.t("Required")),
     nativeTokenSymbol: yup.string().trim().required(i18next.t("Required")),
     nativeTokenDecimals: yup
@@ -15,7 +16,7 @@ export const subNetworkFormSchema = yup
       .typeError(i18next.t("Must be a number"))
       .required(i18next.t("Required"))
       .integer(i18next.t("Must be a number")),
-    nativeTokenCoingeckoId: yup.string().trim(),
+    nativeTokenCoingeckoId: yup.string().nullable().trim(),
     accountFormat: yup.string().trim().required(i18next.t("Required")),
     subscanUrl: yup
       .string()
@@ -29,6 +30,7 @@ export const subNetworkFormSchema = yup
           url.length < 1 ||
           (/^https:\/\//i.test(url) && /\.subscan\.io\/?$/i.test(url))
       ),
+    hasCheckMetadataHash: yup.boolean().required(),
     rpcs: yup
       .array()
       .of(
@@ -82,3 +84,5 @@ export const subNetworkFormSchema = yup
       ),
   })
   .required()
+
+export type SubNetworkFormData = yup.InferType<typeof subNetworkFormSchema>

@@ -1,5 +1,5 @@
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import {
@@ -81,7 +81,7 @@ export const useEthEstimateL1DataFee = (
           return 0n
       }
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchInterval: 6_000,
     refetchOnMount: false,
     refetchOnReconnect: false,

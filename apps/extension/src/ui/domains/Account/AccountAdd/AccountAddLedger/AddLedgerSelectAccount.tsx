@@ -73,7 +73,7 @@ export const AddLedgerSelectAccount = () => {
     () =>
       yup
         .object({
-          accounts: yup.array().min(1),
+          accounts: yup.array().of(yup.mixed<LedgerAccountDef>().defined()).min(1).defined(),
         })
         .required(),
     []

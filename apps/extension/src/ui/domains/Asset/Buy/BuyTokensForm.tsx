@@ -38,9 +38,9 @@ type FormData = {
 }
 
 const schema = yup.object({
-  address: yup.string().required(""),
-  amountUSD: yup.number().required("").min(0),
-  tokenId: yup.string().required(""),
+  address: yup.string().required(" "),
+  amountUSD: yup.number().required(" ").min(0),
+  tokenId: yup.string().required(" "),
 })
 
 const ANALYTICS_PAGE: AnalyticsPage = {

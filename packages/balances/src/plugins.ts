@@ -13,4 +13,4 @@
  * As a result, consumers of this api will have type information for the `BalanceJson` type
  * based on the selection of plugins they are using in their app.
  */
-export interface PluginBalanceTypes {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface PluginBalanceTypes {} // eslint-disable-line @typescript-eslint/no-empty-object-type

@@ -1,13 +1,15 @@
-import i18next from "@common/i18nConfig"
 import * as yup from "yup"
+
+import i18next from "@common/i18nConfig"
 
 import { getEvmRpcChainId } from "./helpers"
 
 export const evmNetworkFormSchema = yup
   .object({
-    id: yup.string().required(""),
+    id: yup.string().required(" "),
     isTestnet: yup.boolean().required(),
     name: yup.string().required(i18next.t("Required")),
+    tokenCoingeckoId: yup.string().trim(),
     tokenSymbol: yup
       .string()
       .trim()
@@ -75,3 +77,5 @@ export const evmNetworkFormSchema = yup
       }),
   })
   .required()
+
+export type EvmNetworkFormData = yup.InferType<typeof evmNetworkFormSchema>

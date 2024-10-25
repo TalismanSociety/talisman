@@ -123,11 +123,11 @@ const getFileContent = (file?: File) =>
   })
 
 const schema = yup.object({
-  encoded: yup.string().required(""),
+  encoded: yup.string().required(" "),
   encoding: yup
     .object({
-      content: yup.array(yup.string()).required(""),
-      type: yup.array(yup.string()).required(""),
+      content: yup.array(yup.string()).required(" "),
+      type: yup.array(yup.string()).required(" "),
       version: yup.string().required(),
     })
     .required(),

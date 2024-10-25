@@ -11,8 +11,8 @@ import { useChain, useToken } from "@ui/state"
 import { SubNetworkForm } from "./Form"
 import { RemoveSubNetworkButton } from "./RemoveSubNetworkButton"
 import { ResetSubNetworkButton } from "./ResetSubNetworkButton"
-import { subNetworkFormSchema } from "./schema"
-import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
+import { SubNetworkFormData, subNetworkFormSchema } from "./schema"
+import { SubNetworkFormBaseProps } from "./types"
 
 export type SubNetworkFormEditProps = SubNetworkFormBaseProps & {
   chainId?: ChainId
@@ -86,14 +86,12 @@ const chainToFormData = (
   return {
     id: chain.id,
     isTestnet: chain.isTestnet,
-    genesisHash: chain.genesisHash,
+    genesisHash: chain.genesisHash!,
     name: chain.name ?? "",
-    chainLogoUrl: chain.logo ?? null,
     nativeTokenSymbol: nativeToken?.symbol ?? "Unit",
     nativeTokenDecimals: nativeToken?.decimals ?? 0,
     nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? "",
-    nativeTokenLogoUrl: nativeToken?.logo ?? null,
-    accountFormat: chain.account,
+    accountFormat: chain.account!,
     subscanUrl: chain.subscanUrl ?? "",
     rpcs:
       chain?.rpcs?.map((rpc) => ({ url: rpc.url, genesisHash: chain.genesisHash ?? undefined })) ??

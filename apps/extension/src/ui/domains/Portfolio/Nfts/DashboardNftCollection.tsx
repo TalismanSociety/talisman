@@ -1,5 +1,5 @@
 import { StarIcon } from "@talismn/icons"
-import format from "date-fns/format"
+import { format } from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"

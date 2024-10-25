@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { CustomEvmErc20TokenCreate } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -21,11 +20,6 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
 import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
-
-type FormData = Pick<
-  CustomEvmErc20TokenCreate,
-  "evmNetworkId" | "contractAddress" | "symbol" | "decimals"
->
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -48,20 +42,23 @@ const Content = () => {
       yup
         .object({
           evmNetworkId: yup
-            .string()
-            .required()
-            .oneOf(
-              networks.map(({ id }) => id),
-              t("Invalid network")
-            ),
+            .mixed<EvmNetworkId>(
+              (value): value is EvmNetworkId =>
+                typeof value === "string" && networks.some(({ id }) => id === value)
+            )
+            .required(),
           contractAddress: yup
             .string()
             .required()
             .matches(/^0x[0-9a-fA-F]{40}$/, t("Invalid address")),
+          symbol: yup.string().required(),
+          decimals: yup.number().required(),
         })
         .required(),
     [networks, t]
   )
+
+  type FormData = yup.InferType<typeof schema>
 
   const {
     register,

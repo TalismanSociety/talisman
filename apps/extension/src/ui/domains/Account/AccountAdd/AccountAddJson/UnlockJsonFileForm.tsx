@@ -1,7 +1,4 @@
-import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { KeyIcon } from "@talismn/icons"
 import { FC, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
@@ -9,10 +6,14 @@ import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { log } from "@extension/shared"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { FadeIn } from "@talisman/components/FadeIn"
+
 import { useJsonAccountImport } from "./context"
 
 type FormData = {
-  password?: string
+  password: string
 }
 
 export const UnlockJsonFileForm: FC = () => {
@@ -21,7 +22,7 @@ export const UnlockJsonFileForm: FC = () => {
 
   const schema = yup
     .object({
-      password: yup.string().required(""), // matches the medium strengh requirement
+      password: yup.string().defined(""), // matches the medium strengh requirement
     })
     .required()
 

@@ -31,7 +31,7 @@ const MnemonicRenameForm: FC<{
     () =>
       yup
         .object({
-          name: yup.string().required("").notOneOf(otherAccountNames, t("Name already in use")),
+          name: yup.string().required(" ").notOneOf(otherAccountNames, t("Name already in use")),
         })
         .required(),
     [otherAccountNames, t]

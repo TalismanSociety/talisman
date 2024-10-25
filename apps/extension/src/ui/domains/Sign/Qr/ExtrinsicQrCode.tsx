@@ -9,12 +9,12 @@ import { useChain } from "@ui/state"
 import { QrCode, QrCodeError } from "./QrCode"
 
 const CMD_SIGN_TX = 0
-const CMD_SIGN_TX_HASH = 1
+const _CMD_SIGN_TX_HASH = 1
 const CMD_IMMORTAL = 2
 const CMD_SIGN_MESSAGE = 3
 type Command =
   | typeof CMD_SIGN_TX
-  | typeof CMD_SIGN_TX_HASH
+  | typeof _CMD_SIGN_TX_HASH
   | typeof CMD_IMMORTAL
   | typeof CMD_SIGN_MESSAGE
 

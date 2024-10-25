@@ -1,8 +1,9 @@
-import { AccountAddressType } from "@extension/core"
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
+import { UiAccountAddressType } from "extension-core"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 
 const AccountTypeButton: FC<{
   title: ReactNode
@@ -28,8 +29,8 @@ const AccountTypeButton: FC<{
 )
 
 type AccountTypeSelectorProps = {
-  defaultType?: AccountAddressType
-  onChange: (type: AccountAddressType) => void
+  defaultType?: UiAccountAddressType
+  onChange: (type: UiAccountAddressType) => void
   className?: string
 }
 
@@ -39,9 +40,9 @@ export const AccountTypeSelector = ({
   className,
 }: AccountTypeSelectorProps) => {
   const { t } = useTranslation()
-  const [type, setType] = useState<AccountAddressType | undefined>(defaultType)
+  const [type, setType] = useState<UiAccountAddressType | undefined>(defaultType)
 
-  const handleClick = (type: AccountAddressType) => () => {
+  const handleClick = (type: UiAccountAddressType) => () => {
     setType(type)
   }
 

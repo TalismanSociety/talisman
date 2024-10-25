@@ -1,12 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
+
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
 
 import { useMigratePassword } from "./context"
 
@@ -23,10 +23,13 @@ export const NewPasswordForm = () => {
     () =>
       yup
         .object({
-          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPw: yup
+            .string()
+            .required(" ")
+            .min(6, t("Password must be at least 6 characters long")),
           newPwConfirm: yup
             .string()
-            .required("")
+            .required(" ")
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),

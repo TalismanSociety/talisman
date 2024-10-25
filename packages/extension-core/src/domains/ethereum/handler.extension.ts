@@ -3,7 +3,11 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { CustomEvmNativeToken, evmNativeTokenId } from "@talismn/balances"
-import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  CustomEvmNetwork,
+  EvmNetwork,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import Dexie from "dexie"
 import { DEBUG, log } from "extension-shared"
@@ -428,7 +432,9 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
-    const existingNetwork = await chaindataProvider.evmNetworkById(network.id)
+    const existingNetwork = (await chaindataProvider.evmNetworkById(network.id)) as
+      | EvmNetwork
+      | undefined
 
     try {
       await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
@@ -458,7 +464,7 @@ export class EthHandler extends ExtensionHandler {
           sortIndex: existingNetwork?.sortIndex ?? null,
           name: network.name,
           themeColor: "#505050",
-          logo: network.chainLogoUrl ?? null,
+          logo: existingNetwork?.logo ?? null,
           nativeToken: { id: newToken.id },
           tokens: existingNetwork?.tokens ?? [],
           explorerUrl: network.blockExplorerUrl ?? null,

@@ -1,4 +1,3 @@
-import { HexString } from "@polkadot/util/types"
 import type { CustomEvmErc20Token } from "@talismn/balances"
 import type { EvmNetworkId } from "@talismn/chaindata-provider"
 import type {
@@ -8,10 +7,11 @@ import type {
   Chain as EvmChain,
   TransactionRequest,
 } from "viem"
+import { HexString } from "@polkadot/util/types"
 import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
-import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
+import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
@@ -159,7 +159,6 @@ export type RequestedPermissions = Record<Web3WalletPermissionTarget, unknown>
 export type RequestUpsertCustomEvmNetwork = {
   id: EvmNetworkId
   name: string
-  chainLogoUrl: string | null
   isTestnet: boolean
   rpcs: { url: string }[]
   blockExplorerUrl?: string

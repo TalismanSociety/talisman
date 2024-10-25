@@ -16,7 +16,12 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountAddressType, AssetDiscoveryMode, getEthDerivationPath } from "@extension/core"
+import {
+  AccountAddressType,
+  AssetDiscoveryMode,
+  getEthDerivationPath,
+  UiAccountAddressType,
+} from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -24,6 +29,7 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { useAccounts } from "@ui/state"
+import { isUiAccountAddressType } from "@ui/util/typeCheckers"
 
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
@@ -48,7 +54,7 @@ const getSuri = (secret: string, type: AccountAddressType, derivationPath?: stri
 
 type FormData = {
   name: string
-  type: AccountAddressType
+  type: UiAccountAddressType
   mnemonic: string
   mode: AccountAddDerivationMode
   derivationPath: string
@@ -67,14 +73,18 @@ export const AccountAddMnemonicForm = () => {
     () =>
       yup
         .object({
-          name: yup.string().trim().required(""),
-          type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
-          mode: yup.string().required("").oneOf(["first", "custom", "multi"]),
-          derivationPath: yup.string().trim(),
+          name: yup.string().trim().required(" "),
+          type: yup.mixed(isUiAccountAddressType).defined(),
+          mode: yup
+            .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
+              ["first", "custom", "multi"].includes(v)
+            )
+            .defined(),
+          derivationPath: yup.string().defined().trim(),
           mnemonic: yup
             .string()
             .trim()
-            .required("")
+            .required(" ")
             .transform(cleanupMnemonic)
             .test("is-valid-mnemonic", t("Invalid recovery phrase"), async (val) =>
               api.validateMnemonic(val as string)
@@ -116,7 +126,7 @@ export const AccountAddMnemonicForm = () => {
     watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
-    defaultValues: data,
+    defaultValues: data as FormData,
     mode: "onChange",
     resolver: yupResolver(schema),
   })
@@ -184,7 +194,7 @@ export const AccountAddMnemonicForm = () => {
   )
 
   const handleTypeChange = useCallback(
-    (type: AccountAddressType) => {
+    (type: UiAccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
       setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
         shouldValidate: true,

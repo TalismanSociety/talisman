@@ -12,7 +12,7 @@ type FiatProps = {
   amount?: number | BalanceFormatter | null
   className?: string
   as?: "span" | "div"
-  currencyDisplay?: string
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   isBalance?: boolean
   noCountUp?: boolean
   forceCurrency?: TokenRateCurrency
@@ -21,7 +21,7 @@ type FiatProps = {
 type DisplayValueProps = {
   amount: number
   currency?: Intl.NumberFormatOptions["currency"]
-  currencyDisplay?: string
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   isBalance?: boolean
   noCountUp?: boolean
 }
