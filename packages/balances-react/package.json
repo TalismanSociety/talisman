@@ -57,7 +57,7 @@
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/util-crypto": "13.x",
+    "@polkadot/util-crypto": "*",
     "react": "*",
     "react-dom": "*"
   },

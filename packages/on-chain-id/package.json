@@ -44,10 +44,10 @@
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "@polkadot/api-contract": "14.x",
-    "@polkadot/rpc-provider": "14.x",
-    "@polkadot/types": "14.x",
-    "@polkadot/util": "13.x"
+    "@polkadot/api-contract": "*",
+    "@polkadot/rpc-provider": "*",
+    "@polkadot/types": "*",
+    "@polkadot/util": "*"
   },
   "eslintConfig": {
     "root": true,
