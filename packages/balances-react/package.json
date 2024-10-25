@@ -38,8 +38,8 @@
     "blueimp-md5": "2.19.0",
     "dexie": "^4.0.9",
     "dexie-react-hooks": "^1.1.7",
-    "jotai": "~2.10.1",
-    "jotai-effect": "~1.0.3",
+    "jotai": "~2",
+    "jotai-effect": "~1",
     "lodash": "4.17.21",
     "react-use": "^17.5.1",
     "rxjs": "^7.8.1"
