@@ -12,4 +12,4 @@ docker run --rm --volume "$(pwd)/review":/review talisman-builder bash -c ' \
     cp -r /talisman/ /review/sources \
 '
 cd review
-zip -r extension-and-sources.zip ./*
+zip -r source.zip ./sources/
