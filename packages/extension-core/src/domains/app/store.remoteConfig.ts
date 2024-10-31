@@ -20,6 +20,12 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     // "vara-testnet": [1],
     // "aleph-zero-testnet": [1],
   },
+  stakingPools: {
+    // uncomment for testing on testnets
+    // "avail-turing-testnet": [1],
+    // "vara-testnet": [1],
+    // "aleph-zero-testnet": [1],
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes

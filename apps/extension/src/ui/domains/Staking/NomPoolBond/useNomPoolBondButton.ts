@@ -8,6 +8,7 @@ import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
 import { useNomPoolBondModal } from "./useNomPoolBondModal"
 
+// TODO: Update naming to be more generic
 export const useNomPoolBondButton = ({
   tokenId,
   balances,
@@ -22,12 +23,27 @@ export const useNomPoolBondButton = ({
   const remoteConfig = useRemoteConfig()
   const { open } = useNomPoolBondModal()
 
+  // TODO: Add this to talisman-config
+  const mockedRemoteConfig = {
+    stakingPools: {
+      bittensor: ["5F4tQyWrhfGVcNhoqeiNsR6KjD4wMZ2kfhLj4oHYuyHbZAc3"],
+    },
+  }
+
+  const config = {
+    ...remoteConfig,
+    stakingPools: { ...mockedRemoteConfig.stakingPools, ...remoteConfig.nominationPools },
+  }
+
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
     if (!balances || !tokenId || !token?.chain || token?.type !== "substrate-native")
       return [null, false]
     try {
       let isNomPoolStaking = false
-      let poolId = remoteConfig.nominationPools[token.chain.id]?.[0]
+
+      // @ts-expect-error TODO: fix this, WIP subtensor
+      let poolId = config.stakingPools[token.chain.id]?.[0]
+
       if (!poolId) return [null, false]
 
       const ownedAddresses = ownedAccounts.map(({ address }) => address)
@@ -48,12 +64,22 @@ export const useNomPoolBondButton = ({
       // lookup existing poolId for that account
       for (const balance of sorted.filter((b) => b.address === address)) {
         type Meta = { poolId?: number }
-        const pool = balance.nompools.find((np) => !!(np.meta as Meta).poolId)
-        const meta = pool?.meta as Meta | undefined
-        if (meta?.poolId) {
-          poolId = meta.poolId
-          isNomPoolStaking = true
-          break
+        let pool
+        let meta
+        switch (token.chain.id) {
+          case "bittensor":
+            pool = balance.subtensor.find((pool) => pool.amount.planck > 0n)
+            isNomPoolStaking = !!pool
+            break
+          default:
+            pool = balance.nompools.find((np) => !!(np.meta as Meta).poolId)
+            meta = pool?.meta as Meta | undefined
+            if (meta?.poolId) {
+              poolId = meta.poolId
+              isNomPoolStaking = true
+              break
+            }
+            break
         }
       }
 
@@ -63,7 +89,7 @@ export const useNomPoolBondButton = ({
     }
 
     return [null, false]
-  }, [balances, ownedAccounts, remoteConfig.nominationPools, tokenId, token?.chain, token?.type])
+  }, [balances, ownedAccounts, config.stakingPools, tokenId, token?.chain, token?.type])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
