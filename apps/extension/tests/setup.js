@@ -25,6 +25,7 @@ global.chrome.windows = {
   create: (...args) => new Promise((resolve) => resolve(chrome.windows.create(...args))),
 }
 global.browser.windows = global.chrome.windows
+global.chrome.alarms = chrome.alarms
 
 process.env.VERSION = process.env.npm_package_version
 
