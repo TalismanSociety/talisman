@@ -32,7 +32,7 @@ import { unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
-  #autoLockTimeout = 0
+  #autoLockMinutes = 0
 
   constructor(stores: ExtensionStore) {
     super(stores)
@@ -58,14 +58,9 @@ export default class Extension extends ExtensionHandler {
     }
 
     // connect auto lock timeout setting to the password store
-    this.stores.settings.observable.subscribe(({ autoLockTimeout }) => {
-      this.#autoLockTimeout = autoLockTimeout
-      stores.password.resetAutoLockTimer(autoLockTimeout)
-    })
-
-    // update the autolock timer whenever a setting is changed
-    chrome.storage.onChanged.addListener(() => {
-      stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+    this.stores.settings.observable.subscribe(({ autoLockMinutes }) => {
+      this.#autoLockMinutes = autoLockMinutes
+      stores.password.resetAutoLockTimer(autoLockMinutes)
     })
 
     // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
@@ -201,9 +196,6 @@ export default class Extension extends ExtensionHandler {
     request: RequestType<TMessageType>,
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
-    // Reset the auto lock timer on any message, the user is still actively using the extension
-    this.stores.password.resetAutoLockTimer(this.#autoLockTimeout)
-
     // --------------------------------------------------------------------
     // First try to unsubscribe                          ------------------
     // --------------------------------------------------------------------
@@ -228,6 +220,8 @@ export default class Extension extends ExtensionHandler {
     // --------------------------------------------------------------------
     switch (type) {
       case "pri(ping)":
+        // Reset the auto lock timer on ping, the extension UI is open
+        this.stores.password.resetAutoLockTimer(this.#autoLockMinutes)
         return true
 
       default:

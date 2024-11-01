@@ -13,7 +13,7 @@ export interface SettingsStoreData {
   allowNotifications: boolean
   selectedAccount?: string // undefined = show all accounts
   collapsedFolders?: string[] // persists the collapsed folders in the dashboard account picker
-  autoLockTimeout: 0 | 300 | 900 | 1800 | 3600
+  autoLockMinutes: number
   spiritClanFeatures: boolean
   selectableCurrencies: TokenRateCurrency[]
   selectedCurrency: TokenRateCurrency
@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   hideBalances: false,
   hideDust: false,
   allowNotifications: true,
-  autoLockTimeout: 0,
+  autoLockMinutes: 0,
   spiritClanFeatures: true,
   selectableCurrencies: ["usd", "dot", "eth"],
   selectedCurrency: "usd",

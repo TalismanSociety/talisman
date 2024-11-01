@@ -29,7 +29,7 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   },
-  "permissions": ["storage", "tabs", "notifications"],
+  "permissions": ["storage", "tabs", "notifications", "alarms"],
   "icons": {
     "16": "favicon16x16.png",
     "24": "favicon24x24.png",

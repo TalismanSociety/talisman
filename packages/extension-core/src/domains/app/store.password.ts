@@ -36,9 +36,10 @@ const initialData = {
   salt: undefined,
 }
 
+const ALARM_NAME = "talisman-autolock-alarm"
+
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
   isLoggedIn = new BehaviorSubject<LoggedInType>(UNKNOWN)
-  #autoLockTimer?: NodeJS.Timeout
 
   constructor(prefix: string, data: Partial<PasswordStoreData> = initialData) {
     super(prefix, data)
@@ -46,11 +47,26 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     this.hasPassword().then((result) => {
       this.isLoggedIn.next(result ? TRUE : FALSE)
     })
+
+    chrome.alarms.onAlarm.addListener((alarm) => {
+      if (alarm.name !== ALARM_NAME) return
+      this.clearPassword()
+    })
   }
 
-  public resetAutoLockTimer(seconds: number) {
-    if (this.#autoLockTimer) clearTimeout(this.#autoLockTimer)
-    if (seconds > 0) this.#autoLockTimer = setTimeout(() => this.clearPassword(), seconds * 1000)
+  public async resetAutoLockTimer(minutes: number) {
+    const alarm = await chrome.alarms.get(ALARM_NAME)
+    if (alarm) await chrome.alarms.clear(ALARM_NAME)
+
+    // don't set alarm if user is not logged in
+    if (this.isLoggedIn.value !== TRUE) return
+
+    if (minutes > 0) {
+      await chrome.alarms.create(ALARM_NAME, {
+        delayInMinutes: minutes,
+        periodInMinutes: minutes,
+      })
+    }
   }
 
   async reset() {

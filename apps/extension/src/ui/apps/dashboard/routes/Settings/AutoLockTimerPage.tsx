@@ -2,27 +2,25 @@ import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
 
-import { SettingsStoreData } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/state"
 
 import { DashboardLayout } from "../../layout"
 
-type AllowedValues = SettingsStoreData["autoLockTimeout"]
-type Option = { value: AllowedValues; label: string }
+type Option = { value: number; label: string }
 
 export const Content = () => {
   const { t } = useTranslation("admin")
-  const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
+  const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockMinutes")
 
   const options: Option[] = useMemo(
     () => [
       { value: 0, label: t("Disabled") },
-      { value: 300, label: t("{{count}} minutes", { count: 5 }) },
-      { value: 900, label: t("{{count}} minutes", { count: 15 }) },
-      { value: 1800, label: t("{{count}} minutes", { count: 30 }) },
-      { value: 3600, label: t("{{count}} minutes", { count: 60 }) },
+      { value: 5, label: t("{{count}} minutes", { count: 5 }) },
+      { value: 15, label: t("{{count}} minutes", { count: 15 }) },
+      { value: 30, label: t("{{count}} minutes", { count: 30 }) },
+      { value: 60, label: t("{{count}} minutes", { count: 60 }) },
     ],
     [t],
   )

@@ -1,4 +1,3 @@
-import { IS_FIREFOX } from "extension-shared"
 import { useEffect } from "react"
 
 import { api } from "@ui/api"
@@ -9,9 +8,9 @@ import { api } from "@ui/api"
  **/
 export const useKeepBackgroundOpen = () => {
   useEffect(() => {
-    if (!IS_FIREFOX) return
     const interval = setInterval(() => {
       // making any runtime call keeps the background page open
+      // and resets the autolock timer
       api.ping()
     }, 10000)
     return () => clearInterval(interval)

@@ -2,11 +2,6 @@ interface SessionStorageData {
   password?: string
 }
 
-type MapSessionStorageData = Map<
-  keyof SessionStorageData,
-  SessionStorageData[keyof SessionStorageData]
->
-
 abstract class TalismanSessionStorage {
   abstract get<K extends keyof SessionStorageData>(
     key: K,
@@ -16,28 +11,26 @@ abstract class TalismanSessionStorage {
 }
 
 class MemoryStorage implements TalismanSessionStorage {
-  #data: MapSessionStorageData
+  #data: SessionStorageData = {}
 
   constructor(initialData: SessionStorageData = {}) {
-    this.#data = new Map(Object.entries(initialData)) as MapSessionStorageData
+    this.#data = { ...initialData }
   }
 
   set(items: Partial<SessionStorageData>) {
     return new Promise<void>((resolve) => {
-      ;(Object.keys(items) as Array<keyof SessionStorageData>).forEach((key) => {
-        this.#data.set(key, items[key])
-      })
+      this.#data = { ...this.#data, ...items }
       resolve()
     })
   }
 
   get<K extends keyof SessionStorageData>(key: K) {
-    const result = this.#data.get(key)
-    return new Promise<SessionStorageData[K]>((resolve) => resolve(result))
+    const result = this.#data[key]
+    return new Promise<SessionStorageData[K] | undefined>((resolve) => resolve(result))
   }
 
   clear(): Promise<void> {
-    this.#data.clear()
+    this.#data = {}
     return new Promise((resolve) => resolve())
   }
 }
@@ -57,7 +50,7 @@ class SessionStorage implements TalismanSessionStorage {
 }
 
 let sessionStorage: TalismanSessionStorage
-if (chrome.storage.session) {
+if (chrome && chrome.storage.session) {
   sessionStorage = new SessionStorage()
 } else {
   sessionStorage = new MemoryStorage()
