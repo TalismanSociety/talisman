@@ -1,16 +1,39 @@
 import { ChainId } from "extension-core"
 import { FC } from "react"
 
+import { useGetBittensorValidator } from "./useGetBittensorValidator"
 import { useNomPoolName } from "./useNomPoolName"
 
 export const NomPoolName: FC<{
   chainId: ChainId | null | undefined
   poolId: number | null | undefined
 }> = ({ chainId, poolId }) => {
-  const { data: poolName, isLoading } = useNomPoolName(chainId, poolId)
+  let data,
+    isLoading = false,
+    poolName = "",
+    defaultPoolName = "Talisman Pool"
+
+  const hookMap = {
+    nominationPool: useNomPoolName,
+    bittensor: useGetBittensorValidator,
+  }
+
+  switch (chainId) {
+    case "bittensor":
+      ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
+      poolName = data?.data[0].name || ""
+      defaultPoolName = "Bittensor Pool"
+      break
+    default:
+      ;({ data, isLoading } = hookMap["nominationPool"](chainId, poolId))
+      poolName = data || ""
+      break
+  }
 
   if (isLoading)
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">Talisman Pool</div>
+    return (
+      <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">{defaultPoolName}</div>
+    )
 
   return <>{poolName}</>
 }

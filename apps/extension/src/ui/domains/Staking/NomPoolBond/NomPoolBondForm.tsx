@@ -27,6 +27,7 @@ import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { NomPoolName } from "../shared/NomPoolName"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
+import { useGetBittensorValidator } from "../shared/useGetBittensorValidator"
 import { useStakingAPR } from "../shared/useStakingAPR"
 import { NomPoolBondAccountPicker } from "./NomPoolBondAccountPicker"
 import { NomPoolBondAccountPillButton } from "./NomPoolBondAccountPillButton"
@@ -37,13 +38,22 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
 
   if (!token) return null
 
+  const stakeAssetLabel = () => {
+    switch (token.chain?.id) {
+      case "bittensor":
+        return "Direct Staking"
+      default:
+        return "Pooled Staking"
+    }
+  }
+
   return (
     <div className="flex h-16 items-center gap-4 px-4">
       <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
       <div className="flex items-center gap-2">
         <div className="text-body text-base">{token.symbol}</div>
         <div className="bg-body-disabled inline-block size-2 rounded-full"></div>
-        <div className="text-body-secondary text-sm">{t("Pooled Staking")}</div>
+        <div className="text-body-secondary text-sm">{t(stakeAssetLabel())}</div>
       </div>
     </div>
   )
@@ -282,9 +292,28 @@ export const AmountEdit = () => {
   )
 }
 
-const NomPoolsApr = () => {
-  const { token } = useNomPoolBondWizard()
-  const { data: apr, isLoading } = useStakingAPR(token?.chain?.id)
+const StakeApr = () => {
+  const { token, poolId } = useNomPoolBondWizard()
+  let data,
+    isLoading = false,
+    apr = 0
+
+  const hookMap = {
+    nominationPool: useStakingAPR,
+    bittensor: useGetBittensorValidator,
+  }
+
+  switch (token?.chain?.id) {
+    case "bittensor":
+      ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
+      apr = Number(data?.data[0].apr)
+      break
+    default:
+      ;({ data, isLoading } = hookMap["nominationPool"](token?.chain?.id))
+      apr = Number(data)
+      break
+  }
+
   const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
 
   if (isLoading)
@@ -361,7 +390,7 @@ export const NomPoolBondForm = () => {
             </Tooltip>
           </div>
           <div className={"overflow-hidden font-bold"}>
-            <NomPoolsApr />
+            <StakeApr />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">
