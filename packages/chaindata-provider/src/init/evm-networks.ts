@@ -2,7 +2,7 @@ export const evmNetworks = [
   {
     id: "1",
     isTestnet: false,
-    sortIndex: 305,
+    sortIndex: 312,
     name: "Ethereum Mainnet",
     themeColor: "#62688f",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/1.svg",
@@ -11,20 +11,27 @@ export const evmNetworks = [
     explorerUrl: "https://etherscan.io",
     rpcs: [
       {
+        url: "https://mempool.merkle.io/rpc/eth/pk_mbs_1412a7392bd47753ca2b4bb3d123f6a1",
+      },
+      {
         url: "https://rpc.ankr.com/eth",
       },
       {
-        url: "https://eth.api.onfinality.io/public",
+        url: "https://ethereum-rpc.publicnode.com",
       },
       {
-        url: "https://eth.llamarpc.com",
+        url: "https://eth.merkle.io",
       },
       {
         url: "https://ethereum.rpc.subquery.network/public",
       },
+      {
+        url: "https://eth.llamarpc.com",
+      },
     ],
     substrateChain: null,
     feeType: "eip-1559",
+    erc20aggregator: "0x2e556284556ecEe5754d201bBB6E2cb47fB95DFd",
     balancesConfig: [
       {
         moduleType: "evm-native",
