@@ -6,7 +6,7 @@ import { useNomPoolName } from "./useNomPoolName"
 
 export const NomPoolName: FC<{
   chainId: ChainId | null | undefined
-  poolId: number | null | undefined
+  poolId: number | string | null | undefined
 }> = ({ chainId, poolId }) => {
   let data,
     isLoading = false,
@@ -25,7 +25,7 @@ export const NomPoolName: FC<{
       defaultPoolName = "Bittensor Pool"
       break
     default:
-      ;({ data, isLoading } = hookMap["nominationPool"](chainId, poolId))
+      ;({ data, isLoading } = hookMap["nominationPool"](chainId, poolId as unknown as number))
       poolName = data || ""
       break
   }

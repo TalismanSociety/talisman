@@ -12,7 +12,15 @@ export const useNomPoolBondModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("NomPoolBondModal")
 
   const open = useCallback(
-    ({ address, tokenId, poolId }: { address: Address; tokenId: TokenId; poolId: number }) => {
+    ({
+      address,
+      tokenId,
+      poolId,
+    }: {
+      address: Address
+      tokenId: TokenId
+      poolId: number | string
+    }) => {
       reset({ address, tokenId, poolId })
 
       // then open the modal

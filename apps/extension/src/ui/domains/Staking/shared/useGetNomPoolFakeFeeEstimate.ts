@@ -15,6 +15,7 @@ type GetNomPoolFakeFeeEstimate = {
   minJoinBond: bigint | null | undefined
 }
 
+// TODO: is this required, just fetch the real fee estimate
 export const useGetNomPoolFakeFeeEstimate = ({
   sapi,
   address,
