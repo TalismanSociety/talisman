@@ -278,7 +278,9 @@ const ChainTokenBalancesDetailRow = ({
   const [validator] = validators
 
   const description =
-    tokenId === "bittensor-substrate-native" && row.locked ? validator?.name : row.description
+    tokenId === "bittensor-substrate-native" && row.locked && row.title !== "Reserved"
+      ? validator?.name
+      : row.description
 
   return (
     <div
@@ -292,7 +294,9 @@ const ChainTokenBalancesDetailRow = ({
           description={description}
           render
           address={row.address}
-          isLoading={isBittensorHotkeysLoading || isBittensorValidatorLoading}
+          isLoading={
+            (isBittensorHotkeysLoading || isBittensorValidatorLoading) && row.title !== "Reserved"
+          }
         />
       </div>
       {!row.locked && <div></div>}
@@ -307,15 +311,17 @@ const ChainTokenBalancesDetailRow = ({
           className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
         />
       </div>
-      {!!row.locked && (row.meta || tokenId === "bittensor-substrate-native") && tokenId && (
-        <LockedExtra
-          tokenId={tokenId}
-          address={row.address}
-          isLoading={status.status === "fetching"}
-          rowMeta={row.meta}
-          chainId={chainId}
-        />
-      )}
+      {!!row.locked &&
+        (row.meta || (tokenId === "bittensor-substrate-native" && row.title !== "Reserved")) &&
+        tokenId && (
+          <LockedExtra
+            tokenId={tokenId}
+            address={row.address}
+            isLoading={status.status === "fetching"}
+            rowMeta={row.meta}
+            chainId={chainId}
+          />
+        )}
     </div>
   )
 }
