@@ -1,8 +1,5 @@
-import { Enum } from "@polkadot-api/substrate-bindings"
 import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
-import { papiStringify } from "@talismn/scale"
-import { useQuery } from "@tanstack/react-query"
 import { Address, BalanceFormatter } from "extension-core"
 import { SetStateAction, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,7 +12,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
-import { useNomPoolByMember } from "../shared/useNomPoolByMember"
+import { useGetUnbondInfo } from "../shared/useGetUnbondInfo"
 
 type WizardStep = "review" | "follow-up"
 
@@ -62,8 +59,23 @@ export const useNomPoolUnbondWizard = () => {
   const feeToken = useFeeToken(token?.id)
   const tokenRates = useTokenRates(tokenId)
 
-  const { data: pool } = useNomPoolByMember(token?.chain?.id, account?.address)
   const { data: sapi } = useScaleApi(token?.chain?.id)
+
+  const {
+    pool,
+    plancksToUnbond,
+    payload,
+    txMetadata,
+    isLoadingPayload,
+    errorPayload,
+    feeEstimate,
+    isLoadingFeeEstimate,
+    errorFeeEstimate,
+  } = useGetUnbondInfo({
+    sapi,
+    chainId: token?.chain?.id,
+    address: account?.address,
+  })
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
@@ -73,17 +85,6 @@ export const useNomPoolUnbondWizard = () => {
     [genericEvent, tokenId],
   )
 
-  const { data: plancksToUnbond } = useQuery({
-    queryKey: ["pointsToBalance", sapi?.id, papiStringify(pool)],
-    queryFn: async () => {
-      if (!sapi || !pool) return null
-      return sapi.getRuntimeCallValue("NominationPoolsApi", "points_to_balance", [
-        pool.pool_id,
-        pool.points,
-      ])
-    },
-  })
-
   const amountToUnbond = useMemo(
     () =>
       typeof plancksToUnbond === "bigint"
@@ -91,47 +92,6 @@ export const useNomPoolUnbondWizard = () => {
         : null,
     [plancksToUnbond, token?.decimals, tokenRates],
   )
-
-  const {
-    data: payloadAndMetadata,
-    isLoading: isLoadingPayload,
-    error: errorPayload,
-  } = useQuery({
-    queryKey: [
-      "getExtrinsicPayload",
-      "NominationPools.unbond",
-      sapi?.id,
-      address,
-      papiStringify(pool),
-    ],
-    queryFn: async () => {
-      if (!sapi || !address || !pool) return null
-
-      return sapi.getExtrinsicPayload(
-        "NominationPools",
-        "unbond",
-        {
-          member_account: Enum("Id", address),
-          unbonding_points: pool.points,
-        },
-        { address },
-      )
-    },
-  })
-
-  const { payload, txMetadata } = payloadAndMetadata || {}
-
-  const {
-    data: feeEstimate,
-    isLoading: isLoadingFeeEstimate,
-    error: errorFeeEstimate,
-  } = useQuery({
-    queryKey: ["feeEstimate", payload], // safe stringify because contains bigint
-    queryFn: () => {
-      if (!sapi || !payload) return null
-      return sapi.getFeeEstimate(payload)
-    },
-  })
 
   const existentialDeposit = useExistentialDeposit(token?.id)
 

@@ -21,5 +21,6 @@ export const useNomPoolByMember = (
         ])) ?? null
       )
     },
+    enabled: !!sapi && !!address && chainId !== "bittensor",
   })
 }
