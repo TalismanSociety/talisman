@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 
 const TAOSTATS_API_URL = "https://api-prod-v2.taostats.io/api"
-const TAOSTATS_API_KEY = "abc123"
+const TAOSTATS_API_KEY = ""
 
 const fetchBittensorValidator = async (hotkey: string): Promise<BittensorValidator> => {
   try {
@@ -24,6 +24,24 @@ export const useGetBittensorValidator = (hotkey: string) => {
     queryKey: ["useGetBittensorValidator", hotkey],
     queryFn: () => fetchBittensorValidator(hotkey),
     enabled: !!hotkey,
+  })
+}
+
+export const useGetBittensorValidators = (hotkeys: string[]) => {
+  return useQueries({
+    queries: hotkeys.map((hotkey) => ({
+      queryKey: ["useGetBittensorValidator", hotkey],
+      queryFn: () => fetchBittensorValidator(hotkey),
+      enabled: !!hotkey,
+    })),
+    combine: (results) => {
+      return {
+        data: results.map((result) => result.data?.data?.[0]),
+        isPending: results.some((result) => result.isPending),
+        isLoading: results.some((result) => result.isLoading),
+        error: results.find((result) => result.isError),
+      }
+    },
   })
 }
 
