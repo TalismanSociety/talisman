@@ -22,8 +22,10 @@ export const NomPoolUnbondButton: FC<{
   const { genericEvent } = useAnalytics()
 
   const canUnstake = useMemo(
-    () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
-    [address, stakingStatus],
+    () =>
+      !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake) ||
+      tokenId === "bittensor-substrate-native",
+    [address, stakingStatus?.accounts, tokenId],
   )
 
   const handleClick = useCallback(() => {
@@ -31,7 +33,7 @@ export const NomPoolUnbondButton: FC<{
     genericEvent("open inline unbonding modal", { from: "asset details", tokenId })
   }, [address, genericEvent, open, tokenId])
 
-  if (!canUnstake) return null // no nompool staking on this network
+  if (!canUnstake) return null // no nompool/tao staking on this network
 
   return (
     <button
