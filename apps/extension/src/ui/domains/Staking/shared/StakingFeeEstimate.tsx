@@ -18,7 +18,7 @@ export const StakingFeeEstimate: FC<{
         <div className={classNames("text-alert-error truncate", className)}>
           Failed to estimate fee
         </div>
-      ) : plancks && tokenId ? (
+      ) : (plancks || plancks === 0n) && tokenId ? (
         <TokensAndFiat
           tokenId={tokenId}
           planck={plancks}

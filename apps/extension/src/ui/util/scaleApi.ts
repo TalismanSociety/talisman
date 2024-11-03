@@ -310,7 +310,7 @@ const getFeeEstimate = async (
       "query_info",
       [binary, bytes.length],
     )
-    if (!result?.partial_fee) {
+    if (!result?.partial_fee && result.partial_fee !== 0n) {
       throw new Error("partialFee is not found")
     }
     return result.partial_fee

@@ -2,6 +2,9 @@ import { ChainId } from "extension-core"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
+import { useGetBittensorStakeHotkeys } from "./useGetBittensorStakeHotkeys"
+import { useGetBittensorTotalStaked } from "./useGetBittensorTotalStaked"
+import { useGetBittensorUnbondPayload } from "./useGetBittensorUnbondPayload"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
 import { useGetNomPoolPlanksToUnbond } from "./useGetNomPoolPlanksToUnbond"
 import { useGetNomPoolUnbondPayload } from "./useGetNomPoolUnbondPayload"
@@ -18,7 +21,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanksToUnbond({
     sapi,
     pool,
-    isEnabled: true,
+    isEnabled: chainId !== "bittensor",
   })
   const nomPoolUnbondPayload = useGetNomPoolUnbondPayload({
     sapi,
@@ -26,17 +29,37 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     pool,
     isEnabled: chainId !== "bittensor",
   })
+  const { data: totalTaoStaked } = useGetBittensorTotalStaked({
+    sapi,
+    address,
+    isEnabled: chainId === "bittensor",
+  })
+
+  const { data: hotkeys } = useGetBittensorStakeHotkeys({ chainId, address })
+
+  const bittensorUnbondPayload = useGetBittensorUnbondPayload({
+    sapi,
+    address,
+    hotkey: hotkeys?.[0],
+    isEnabled: chainId === "bittensor",
+    plancks: totalTaoStaked,
+  })
 
   let payloadAndMetadata, isLoadingPayload, errorPayload
+  let plancksToUnbond
 
   switch (chainId) {
     case "bittensor":
-      // console.log("TODO: implement bittensor")
+      payloadAndMetadata = bittensorUnbondPayload.data
+      isLoadingPayload = bittensorUnbondPayload.isLoading
+      errorPayload = bittensorUnbondPayload.error
+      plancksToUnbond = totalTaoStaked
       break
     default:
       payloadAndMetadata = nomPoolUnbondPayload.data
       isLoadingPayload = nomPoolUnbondPayload.isLoading
       errorPayload = nomPoolUnbondPayload.error
+      plancksToUnbond = nomPoolPlanksToUnbond
       break
   }
 
@@ -49,7 +72,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   } = useGetFeeEstimate({ sapi, payload })
 
   return {
-    plancksToUnbond: nomPoolPlanksToUnbond,
+    plancksToUnbond,
     pool,
     payload,
     txMetadata,

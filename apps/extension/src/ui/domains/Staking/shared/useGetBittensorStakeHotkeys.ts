@@ -5,7 +5,7 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 type GetBittensorStakeHotkeys = {
   chainId: ChainId | null | undefined
-  address: string | null
+  address: string | null | undefined
 }
 
 export const useGetBittensorStakeHotkeys = ({ chainId, address }: GetBittensorStakeHotkeys) => {

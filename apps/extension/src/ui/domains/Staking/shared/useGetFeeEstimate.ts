@@ -15,5 +15,6 @@ export const useGetFeeEstimate = ({ sapi, payload }: GetNomPoolFeeEstimate) => {
       if (!sapi || !payload) return null
       return sapi.getFeeEstimate(payload)
     },
+    enabled: !!sapi && !!payload,
   })
 }
