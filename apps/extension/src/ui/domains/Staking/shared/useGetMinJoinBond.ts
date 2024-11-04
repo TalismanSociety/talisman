@@ -1,8 +1,7 @@
 import { ChainId } from "extension-core"
 
+import { useGetBittensorMinJoinBond } from "./useGetBittensorMinJoinBond"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
-
-const MIN_SUBTENSOR_STAKE = { data: 100000000n }
 
 export const useGetMinJoinBond = (chainId: ChainId | null | undefined) => {
   const minNomPoolsJoinBond = useNomPoolsMinJoinBond({
@@ -10,9 +9,11 @@ export const useGetMinJoinBond = (chainId: ChainId | null | undefined) => {
     isEnabled: chainId !== "bittensor",
   })
 
+  const minBittensorJoinBond = useGetBittensorMinJoinBond({ chainId })
+
   switch (chainId) {
     case "bittensor":
-      return MIN_SUBTENSOR_STAKE
+      return minBittensorJoinBond
     default:
       return minNomPoolsJoinBond
   }
