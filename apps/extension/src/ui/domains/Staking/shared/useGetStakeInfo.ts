@@ -13,7 +13,7 @@ import { useNomPoolByMember } from "./useNomPoolByMember"
 import { useNomPoolsClaimPermission } from "./useNomPoolsClaimPermission"
 import { useNomPoolState } from "./useNomPoolState"
 
-type GetStakingInfo = {
+type GetStakeInfo = {
   sapi: ScaleApi | undefined | null
   address: string | null
   poolId: string | number | null
@@ -23,7 +23,7 @@ type GetStakingInfo = {
 
 type BondType = "bittensor" | "nomPools"
 
-export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakingInfo) => {
+export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakeInfo) => {
   const bittensorStakingPayload = useGetBittensorStakingPayload({
     sapi,
     address,

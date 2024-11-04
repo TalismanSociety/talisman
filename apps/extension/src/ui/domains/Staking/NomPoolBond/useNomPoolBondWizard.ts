@@ -153,8 +153,15 @@ export const useNomPoolBondWizard = () => {
   }, [])
 
   const isFormValid = useMemo(
-    () => !!account && !!token && !!poolId && !!formatter && typeof minJoinBond === "bigint",
-    [account, formatter, minJoinBond, poolId, token],
+    () =>
+      !!account &&
+      !!token &&
+      !!poolId &&
+      !!formatter &&
+      typeof minJoinBond === "bigint" &&
+      plancks &&
+      plancks > 0n,
+    [account, formatter, minJoinBond, plancks, poolId, token],
   )
 
   useEffect(() => {
@@ -265,7 +272,7 @@ export const useNomPoolBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
 
-    payload: !inputErrorMessage ? payload : null,
+    payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,
     isLoadingPayload,
     errorPayload,

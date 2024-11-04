@@ -32,17 +32,17 @@ export const useGetNomPoolStakingPayload = ({
       withSetClaimPermission,
     ],
     queryFn: async () => {
-      if (!sapi || !address || !poolId || !plancks) return null
+      if (!sapi || !address || !poolId) return null
       const response = getNomPoolStakingPayload(
         sapi,
         address,
         poolId,
-        plancks,
+        plancks ?? 0n,
         hasJoinedNomPool,
         withSetClaimPermission,
       )
       return response
     },
-    enabled: !!sapi && !!address && !!poolId && !!plancks,
+    enabled: !!sapi && !!address && !!poolId,
   })
 }

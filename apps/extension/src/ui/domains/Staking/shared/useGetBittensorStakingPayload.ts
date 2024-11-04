@@ -22,10 +22,10 @@ export const useGetBittensorStakingPayload = ({
   return useQuery({
     queryKey: ["getBittensorStakingPayload", sapi?.id, address, poolId, plancks?.toString()],
     queryFn: async () => {
-      if (!sapi || !address || !poolId || !plancks) return null
-      const response = getBittensorStakingPayload({ sapi, address, poolId, amount: plancks })
+      if (!sapi || !address || !poolId) return null
+      const response = getBittensorStakingPayload({ sapi, address, poolId, amount: plancks ?? 0n })
       return response
     },
-    enabled: !!sapi && !!address && !!poolId && !!plancks && isEnabled,
+    enabled: !!sapi && !!address && !!poolId && isEnabled,
   })
 }
