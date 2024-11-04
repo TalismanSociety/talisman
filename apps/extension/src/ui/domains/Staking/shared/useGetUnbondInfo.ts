@@ -47,6 +47,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
 
   let payloadAndMetadata, isLoadingPayload, errorPayload
   let plancksToUnbond
+  let poolId
 
   switch (chainId) {
     case "bittensor":
@@ -54,12 +55,14 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
       isLoadingPayload = bittensorUnbondPayload.isLoading
       errorPayload = bittensorUnbondPayload.error
       plancksToUnbond = totalTaoStaked
+      poolId = hotkeys?.[0]
       break
     default:
       payloadAndMetadata = nomPoolUnbondPayload.data
       isLoadingPayload = nomPoolUnbondPayload.isLoading
       errorPayload = nomPoolUnbondPayload.error
       plancksToUnbond = nomPoolPlanksToUnbond
+      poolId = pool?.pool_id
       break
   }
 
@@ -74,6 +77,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   return {
     plancksToUnbond,
     pool,
+    poolId,
     payload,
     txMetadata,
     isLoadingPayload,

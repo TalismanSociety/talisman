@@ -15,16 +15,18 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
+import { useGetBittensorStakeHotkeys } from "@ui/domains/Staking/shared/useGetBittensorStakeHotkeys"
+import { useGetBittensorValidators } from "@ui/domains/Staking/shared/useGetBittensorValidator"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useFeatureFlag, useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -109,6 +111,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               symbol={symbol}
               status={status}
               tokenId={tokenId}
+              chainId={chainId}
             />
           ))}
     </div>
@@ -190,73 +193,110 @@ const ChainTokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
+  chainId,
 }: {
   row: DetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
-}) => (
-  <div
-    className={classNames(
-      "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-      isLastRow && "rounded-b-sm",
-    )}
-  >
-    <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-      <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
-        <div className="truncate">{row.title}</div>
-        {!!row.locked && tokenId && row.meta && (
-          <LockedExtra
-            tokenId={tokenId}
-            address={row.address}
-            rowMeta={row.meta}
-            isLoading={status.status === "fetching"}
-          />
-        )}
-      </div>
-      {!!row.address && (
-        <div className="text-xs">
-          <PortfolioAccount address={row.address} />
-        </div>
-      )}
-      {!row.address && row.description && (
-        <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-          {row.description}
-        </div>
-      )}
-    </div>
+  chainId: ChainId | EvmNetworkId
+}) => {
+  const { selectedAccount } = usePortfolioNavigation()
+
+  const rowAddress = useMemo(
+    () => row.address ?? selectedAccount?.address ?? null,
+    [selectedAccount?.address, row.address],
+  )
+
+  const { data: hotkeys, isLoading: isBittensorHotkeysLoading } = useGetBittensorStakeHotkeys({
+    chainId,
+    address: rowAddress,
+  })
+
+  const { data: validators, isLoading: isBittensorValidatorLoading } = useGetBittensorValidators(
+    hotkeys ?? [],
+  )
+
+  const [validator] = validators
+  const isBittensorLoading =
+    (isBittensorHotkeysLoading || isBittensorValidatorLoading) && row.title !== "Reserved"
+
+  const description =
+    tokenId === "bittensor-substrate-native" && row.locked && row.title !== "Reserved"
+      ? validator?.name
+      : row.description
+
+  return (
     <div
       className={classNames(
-        "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
-        status.status === "fetching" && "animate-pulse transition-opacity",
+        "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
+        isLastRow && "rounded-b-sm",
       )}
     >
+      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+        <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
+          <div className="truncate">{row.title}</div>
+          {!!row.locked &&
+            tokenId &&
+            (row.meta ||
+              (tokenId === "bittensor-substrate-native" && row.title !== "Reserved")) && (
+              <LockedExtra
+                tokenId={tokenId}
+                address={row.address}
+                rowMeta={row.meta}
+                isLoading={status.status === "fetching"}
+                chainId={chainId}
+              />
+            )}
+        </div>
+        {!!row.address && (
+          <div className="text-xs">
+            <PortfolioAccount address={row.address} />
+          </div>
+        )}
+        {isBittensorLoading && !description && row.locked && (
+          <div className="bg-grey-700 rounded-xs h-[1.6rem] w-80 animate-pulse" />
+        )}
+        {!row.address && description && (
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+            {description}
+          </div>
+        )}
+      </div>
       <div
         className={classNames(
-          "flex h-10 items-center gap-2 font-bold",
-          row.locked ? "text-body-secondary" : "text-white",
+          "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
+          status.status === "fetching" && "animate-pulse transition-opacity",
         )}
       >
-        <Tokens amount={row.tokens} symbol={symbol} isBalance />
-        {row.locked ? <LockIcon className="lock shrink-0" /> : null}
-        {status.status === "stale" ? (
-          <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />
-        ) : null}
-      </div>
-      <div className="text-xs">
-        {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+        <div
+          className={classNames(
+            "flex h-10 items-center gap-2 font-bold",
+            row.locked ? "text-body-secondary" : "text-white",
+          )}
+        >
+          <Tokens amount={row.tokens} symbol={symbol} isBalance />
+          {row.locked ? <LockIcon className="lock shrink-0" /> : null}
+          {status.status === "stale" ? (
+            <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />
+          ) : null}
+        </div>
+        <div className="text-xs">
+          {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
   rowMeta: { poolId?: number; unbonding?: boolean }
-}> = ({ tokenId, address, rowMeta, isLoading }) => {
+  chainId?: ChainId | EvmNetworkId
+}> = ({ tokenId, address, rowMeta, isLoading, chainId }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
   const { selectedAccount } = usePortfolioNavigation()
@@ -273,18 +313,18 @@ const LockedExtra: FC<{
 
   const withdrawIn = useMemo(
     () =>
-      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+      !!rowMeta?.unbonding && !!accountStatus?.canWithdrawIn
         ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
+    [accountStatus?.canWithdrawIn, rowMeta?.unbonding],
   )
 
-  if (!rowAddress || !accountStatus) return null
+  if (!rowAddress) return
 
   return (
     <>
-      {rowMeta.unbonding ? (
-        accountStatus.canWithdraw ? (
+      {rowMeta?.unbonding ? (
+        accountStatus?.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="small" />
         ) : (
           <Tooltip>
@@ -305,7 +345,7 @@ const LockedExtra: FC<{
           </Tooltip>
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      accountStatus.canUnstake ? (
+      accountStatus?.canUnstake || chainId === "bittensor" ? (
         <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="small" />
       ) : null}
     </>

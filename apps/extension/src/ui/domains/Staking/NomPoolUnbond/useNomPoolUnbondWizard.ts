@@ -63,6 +63,7 @@ export const useNomPoolUnbondWizard = () => {
 
   const {
     pool,
+    poolId,
     plancksToUnbond,
     payload,
     txMetadata,
@@ -114,7 +115,7 @@ export const useNomPoolUnbondWizard = () => {
 
   return {
     token,
-    poolId: pool?.pool_id,
+    poolId,
     account,
     balance,
     feeToken,
