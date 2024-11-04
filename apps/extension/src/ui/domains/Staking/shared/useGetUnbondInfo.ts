@@ -16,6 +16,8 @@ type GetUnbondInfo = {
   address: string | undefined
 }
 
+type UnbondType = "bittensor" | "nomPools"
+
 export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   const { data: pool } = useNomPoolByMember(chainId, address)
   const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanksToUnbond({
@@ -45,26 +47,31 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     plancks: totalTaoStaked,
   })
 
-  let payloadAndMetadata, isLoadingPayload, errorPayload
+  let payloadInfo
   let plancksToUnbond
   let poolId
+  let unbondType: UnbondType
 
   switch (chainId) {
     case "bittensor":
-      payloadAndMetadata = bittensorUnbondPayload.data
-      isLoadingPayload = bittensorUnbondPayload.isLoading
-      errorPayload = bittensorUnbondPayload.error
+      payloadInfo = bittensorUnbondPayload
       plancksToUnbond = totalTaoStaked
       poolId = hotkeys?.[0]
+      unbondType = "bittensor"
       break
     default:
-      payloadAndMetadata = nomPoolUnbondPayload.data
-      isLoadingPayload = nomPoolUnbondPayload.isLoading
-      errorPayload = nomPoolUnbondPayload.error
+      payloadInfo = nomPoolUnbondPayload
       plancksToUnbond = nomPoolPlanksToUnbond
       poolId = pool?.pool_id
+      unbondType = "bittensor"
       break
   }
+
+  const {
+    data: payloadAndMetadata,
+    isLoading: isLoadingPayload,
+    error: errorPayload,
+  } = payloadInfo || {}
 
   const { payload, txMetadata } = payloadAndMetadata || {}
 
@@ -85,5 +92,6 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
+    unbondType,
   }
 }

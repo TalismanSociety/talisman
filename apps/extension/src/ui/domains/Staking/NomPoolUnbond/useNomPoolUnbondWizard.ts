@@ -72,6 +72,7 @@ export const useNomPoolUnbondWizard = () => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
+    unbondType,
   } = useGetUnbondInfo({
     sapi,
     chainId: token?.chain?.id,
@@ -80,10 +81,10 @@ export const useNomPoolUnbondWizard = () => {
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
-      genericEvent("NomPool Unbond", { tokenId })
+      genericEvent(`${unbondType} Unbond`, { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId],
+    [genericEvent, tokenId, unbondType],
   )
 
   const amountToUnbond = useMemo(
