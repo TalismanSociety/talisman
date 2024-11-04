@@ -12,11 +12,7 @@ import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/st
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../SendFunds/useFeeToken"
-import { useGetMinJoinBond } from "../shared/useGetMinJoinBond"
-import { useGetStakingInfo } from "../shared/useGetStakingInfo"
-import { useIsSoloStaking } from "../shared/useIsSoloStaking"
-import { useNomPoolByMember } from "../shared/useNomPoolByMember"
-import { useNomPoolState } from "../shared/useNomPoolState"
+import { useGetStakeInfo } from "../shared/useGetStakeInfo"
 
 type WizardStep = "form" | "review" | "follow-up"
 
@@ -96,10 +92,29 @@ export const useNomPoolBondWizard = () => {
   const existentialDeposit = useExistentialDeposit(token?.id)
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 
-  const { data: minJoinBond } = useGetMinJoinBond(token?.chain?.id)
-  const { data: isSoloStaking } = useIsSoloStaking(token?.chain?.id, address)
-  const { data: currentPool } = useNomPoolByMember(token?.chain?.id, address)
-  const { data: poolState } = useNomPoolState(token?.chain?.id, poolId as unknown as number)
+  const { data: sapi } = useScaleApi(token?.chain?.id)
+
+  const {
+    payload,
+    txMetadata,
+    isLoadingPayload,
+    errorPayload,
+    feeEstimate,
+    errorFeeEstimate,
+    isLoadingFeeEstimate,
+    bondType,
+    currentPoolId,
+    hasJoinedNomPool,
+    minJoinBond,
+    isSoloStaking,
+    poolState,
+  } = useGetStakeInfo({
+    sapi,
+    address,
+    poolId,
+    plancks,
+    chainId: token?.chain?.id,
+  })
 
   // TODO rename to amountToStake
   const formatter = useMemo(
@@ -137,16 +152,16 @@ export const useNomPoolBondWizard = () => {
     }))
   }, [])
 
-  useEffect(() => {
-    // if user is already staking in pool, set poolId to that pool
-    if (currentPool && currentPool.pool_id !== poolId)
-      setWizardState((prev) => ({ ...prev, poolId: currentPool.pool_id }))
-  }, [currentPool, poolId])
-
   const isFormValid = useMemo(
     () => !!account && !!token && !!poolId && !!formatter && typeof minJoinBond === "bigint",
     [account, formatter, minJoinBond, poolId, token],
   )
+
+  useEffect(() => {
+    // if user is already staking in pool, set poolId to that pool
+    if (!!currentPoolId && currentPoolId !== poolId)
+      setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
+  }, [currentPoolId, poolId])
 
   const setStep = useCallback(
     (step: WizardStep) => {
@@ -159,35 +174,12 @@ export const useNomPoolBondWizard = () => {
     [isFormValid],
   )
 
-  // we must craft a different extrinsic if the user is already staking in a pool
-  const hasJoinedNomPool = useMemo(() => !!currentPool, [currentPool])
-
-  const { data: sapi } = useScaleApi(token?.chain?.id)
-
-  const {
-    payload,
-    txMetadata,
-    isLoadingPayload,
-    errorPayload,
-    feeEstimate,
-    errorFeeEstimate,
-    isLoadingFeeEstimate,
-  } = useGetStakingInfo({
-    sapi,
-    address,
-    poolId,
-    plancks,
-    isFormValid,
-    chainId: token?.chain?.id,
-    hasJoinedNomPool,
-  })
-
   const onSubmitted = useCallback(
     (hash: Hex) => {
-      genericEvent("NomPool Bond", { tokenId, isBondExtra: hasJoinedNomPool })
+      genericEvent(`${bondType} Bond`, { tokenId, isBondExtra: hasJoinedNomPool })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, hasJoinedNomPool, tokenId],
+    [genericEvent, hasJoinedNomPool, tokenId, bondType],
   )
 
   const maxPlancks = useMemo(() => {
@@ -199,8 +191,9 @@ export const useNomPoolBondWizard = () => {
   const inputErrorMessage = useMemo(() => {
     if (isSoloStaking) return t("Account is already staking")
 
-    if (!currentPool && poolState?.isFull) return t("This nomination pool is full")
-    if (!currentPool && poolState && !poolState.isOpen) return t("This nomination pool is not open")
+    if (!currentPoolId && poolState?.isFull) return t("This nomination pool is full")
+    if (!currentPoolId && poolState && !poolState.isOpen)
+      return t("This nomination pool is not open")
 
     if (!formatter || typeof minJoinBond !== "bigint") return null
 
@@ -245,7 +238,7 @@ export const useNomPoolBondWizard = () => {
   }, [
     isSoloStaking,
     t,
-    currentPool,
+    currentPoolId,
     poolState,
     formatter,
     minJoinBond,

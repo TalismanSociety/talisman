@@ -3,40 +3,44 @@ import { useMemo } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
+import { useGetBittensorStakeHotkeys } from "./useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "./useGetBittensorStakingPayload"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
+import { useGetMinJoinBond } from "./useGetMinJoinBond"
 import { useGetNomPoolStakingPayload } from "./useGetNomPoolStakingPayload"
+import { useIsSoloStaking } from "./useIsSoloStaking"
+import { useNomPoolByMember } from "./useNomPoolByMember"
 import { useNomPoolsClaimPermission } from "./useNomPoolsClaimPermission"
+import { useNomPoolState } from "./useNomPoolState"
 
 type GetStakingInfo = {
   sapi: ScaleApi | undefined | null
   address: string | null
   poolId: string | number | null
   plancks: bigint | null
-  isFormValid: boolean
   chainId: ChainId | undefined
-  hasJoinedNomPool: boolean
 }
 
-export const useGetStakingInfo = ({
-  sapi,
-  address,
-  poolId,
-  plancks,
-  isFormValid,
-  chainId,
-  hasJoinedNomPool,
-}: GetStakingInfo) => {
+type BondType = "bittensor" | "nomPools"
+
+export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakingInfo) => {
   const bittensorStakingPayload = useGetBittensorStakingPayload({
     sapi,
     address,
     poolId,
     plancks,
-    isFormValid,
     isEnabled: chainId === "bittensor",
   })
+  const { data: currentBittensorStakeHotkeys } = useGetBittensorStakeHotkeys({ chainId, address })
 
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
+
+  let payloadInfo
+  let bondType: BondType
+  let currentPoolId: string | number | undefined = 0
+
+  // we must craft a different extrinsic if the user is already staking in a pool
+  const hasJoinedNomPool = useMemo(() => !!currentPoolId, [currentPoolId])
 
   const withSetClaimPermission = useMemo(() => {
     switch (claimPermission) {
@@ -54,25 +58,31 @@ export const useGetStakingInfo = ({
     address,
     poolId,
     plancks,
-    isFormValid,
     hasJoinedNomPool,
     withSetClaimPermission,
   })
 
-  let payloadAndMetadata, isLoadingPayload, errorPayload
+  const { data: currentNomPool } = useNomPoolByMember(chainId, address)
+  const { data: isSoloStaking } = useIsSoloStaking(chainId, address)
+  const { data: poolState } = useNomPoolState(chainId, poolId as unknown as number)
 
   switch (chainId) {
     case "bittensor":
-      payloadAndMetadata = bittensorStakingPayload.data
-      isLoadingPayload = bittensorStakingPayload.isLoading
-      errorPayload = bittensorStakingPayload.error
+      payloadInfo = bittensorStakingPayload
+      bondType = "bittensor"
+      currentPoolId = currentBittensorStakeHotkeys?.[0]
       break
     default:
-      payloadAndMetadata = nomPoolStakingPayload.data
-      isLoadingPayload = nomPoolStakingPayload.isLoading
-      errorPayload = nomPoolStakingPayload.error
+      payloadInfo = nomPoolStakingPayload
+      bondType = "nomPools"
+      currentPoolId = currentNomPool?.pool_id
       break
   }
+  const {
+    data: payloadAndMetadata,
+    isLoading: isLoadingPayload,
+    error: errorPayload,
+  } = payloadInfo || {}
 
   const { payload, txMetadata } = payloadAndMetadata || {}
 
@@ -81,6 +91,7 @@ export const useGetStakingInfo = ({
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload })
+  const { data: minJoinBond } = useGetMinJoinBond(chainId)
 
   return {
     payload,
@@ -90,5 +101,11 @@ export const useGetStakingInfo = ({
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
+    bondType,
+    currentPoolId,
+    hasJoinedNomPool,
+    minJoinBond,
+    isSoloStaking,
+    poolState,
   }
 }

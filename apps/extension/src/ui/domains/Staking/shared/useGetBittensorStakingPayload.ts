@@ -9,7 +9,6 @@ type GetBittensorStakingPayload = {
   address: string | null
   poolId: string | number | null
   plancks: bigint | null
-  isFormValid: boolean
   isEnabled: boolean
 }
 
@@ -18,23 +17,15 @@ export const useGetBittensorStakingPayload = ({
   address,
   poolId,
   plancks,
-  isFormValid,
   isEnabled,
 }: GetBittensorStakingPayload) => {
   return useQuery({
-    queryKey: [
-      "getBittensorStakingPayload",
-      sapi?.id,
-      address,
-      poolId,
-      plancks?.toString(),
-      isFormValid,
-    ],
+    queryKey: ["getBittensorStakingPayload", sapi?.id, address, poolId, plancks?.toString()],
     queryFn: async () => {
       if (!sapi || !address || !poolId || !plancks) return null
       const response = getBittensorStakingPayload({ sapi, address, poolId, amount: plancks })
       return response
     },
-    enabled: !!sapi && !!address && !!poolId && !!plancks && isFormValid && isEnabled,
+    enabled: !!sapi && !!address && !!poolId && !!plancks && isEnabled,
   })
 }

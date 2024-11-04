@@ -11,7 +11,6 @@ type GetNomPoolStakingPayload = {
   plancks: bigint | null
   hasJoinedNomPool: boolean
   withSetClaimPermission: boolean
-  isFormValid: boolean
 }
 
 export const useGetNomPoolStakingPayload = ({
@@ -19,7 +18,6 @@ export const useGetNomPoolStakingPayload = ({
   address,
   poolId,
   plancks,
-  isFormValid,
   hasJoinedNomPool,
   withSetClaimPermission,
 }: GetNomPoolStakingPayload) => {
@@ -30,7 +28,6 @@ export const useGetNomPoolStakingPayload = ({
       address,
       poolId,
       plancks?.toString(),
-      isFormValid,
       hasJoinedNomPool,
       withSetClaimPermission,
     ],
@@ -46,6 +43,6 @@ export const useGetNomPoolStakingPayload = ({
       )
       return response
     },
-    enabled: !!sapi && !!address && !!poolId && !!plancks && isFormValid,
+    enabled: !!sapi && !!address && !!poolId && !!plancks,
   })
 }
