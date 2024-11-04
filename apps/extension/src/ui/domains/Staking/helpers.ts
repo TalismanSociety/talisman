@@ -1,5 +1,6 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { range } from "lodash"
+import { Binary } from "polkadot-api"
 
 import {
   EVM_LSD_SUPPORTED_CHAINS,
@@ -133,10 +134,9 @@ export const getBittensorStakingPayload = async ({
           hotkey: poolId,
           amount_staked: amount,
         }),
-        // TODO: fix remark event
-        // sapi.getDecodedCall("System", "remark_with_event", {
-        //   remark: Enum("Bytes", "talisman-bittensor"),
-        // }),
+        sapi.getDecodedCall("System", "remark_with_event", {
+          remark: Binary.fromText("talisman-bittensor"),
+        }),
       ],
     },
     { address },
