@@ -3,7 +3,7 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { NomPoolsClaimPermission } from "../types"
+import { NomPoolsClaimPermission } from "../../types"
 
 export const useNomPoolsClaimPermission = (
   chainId: ChainId | null | undefined,

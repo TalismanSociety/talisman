@@ -2,14 +2,14 @@ import { ChainId } from "extension-core"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { useCanStakeBittensor } from "./useCanStakeBittensor"
-import { useGetBittensorStakeHotkeys } from "./useGetBittensorStakeHotkeys"
-import { useGetBittensorTotalStaked } from "./useGetBittensorTotalStaked"
-import { useGetBittensorUnbondPayload } from "./useGetBittensorUnbondPayload"
+import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
+import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
+import { useGetBittensorTotalStaked } from "../hooks/bittensor/useGetBittensorTotalStaked"
+import { useGetBittensorUnbondPayload } from "../hooks/bittensor/useGetBittensorUnbondPayload"
+import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
+import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
+import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
-import { useGetNomPoolPlanksToUnbond } from "./useGetNomPoolPlanksToUnbond"
-import { useGetNomPoolUnbondPayload } from "./useGetNomPoolUnbondPayload"
-import { useNomPoolByMember } from "./useNomPoolByMember"
 
 type GetUnbondInfo = {
   sapi: ScaleApi | undefined | null

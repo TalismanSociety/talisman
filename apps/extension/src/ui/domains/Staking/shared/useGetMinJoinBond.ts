@@ -1,7 +1,7 @@
 import { ChainId } from "extension-core"
 
-import { useGetBittensorMinJoinBond } from "./useGetBittensorMinJoinBond"
-import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
+import { useGetBittensorMinJoinBond } from "../hooks/bittensor/useGetBittensorMinJoinBond"
+import { useNomPoolsMinJoinBond } from "../hooks/nomPools/useNomPoolsMinJoinBond"
 
 export const useGetMinJoinBond = (chainId: ChainId | null | undefined) => {
   const minNomPoolsJoinBond = useNomPoolsMinJoinBond({

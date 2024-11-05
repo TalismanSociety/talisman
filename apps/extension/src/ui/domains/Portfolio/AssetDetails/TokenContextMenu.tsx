@@ -15,7 +15,7 @@ import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useBondModal } from "@ui/domains/Staking/Bond/useBondModal"
-import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken } from "@ui/state"

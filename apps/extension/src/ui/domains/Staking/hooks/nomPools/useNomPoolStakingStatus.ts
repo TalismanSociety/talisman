@@ -8,10 +8,10 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBalances, useToken } from "@ui/state"
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { getStakingEraDurationMs } from "../helpers"
-import { NomPoolMember } from "../types"
+import { getStakingEraDurationMs } from "../../helpers"
+import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
+import { NomPoolMember } from "../../types"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
-import { useGetMinJoinBond } from "./useGetMinJoinBond"
 
 export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   const token = useToken(tokenId)

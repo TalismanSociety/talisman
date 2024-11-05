@@ -3,16 +3,16 @@ import { useMemo } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { useCanStakeBittensor } from "./useCanStakeBittensor"
-import { useGetBittensorStakeHotkeys } from "./useGetBittensorStakeHotkeys"
-import { useGetBittensorStakingPayload } from "./useGetBittensorStakingPayload"
+import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
+import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
+import { useGetBittensorStakingPayload } from "../hooks/bittensor/useGetBittensorStakingPayload"
+import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
+import { useIsSoloStaking } from "../hooks/nomPools/useIsSoloStaking"
+import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
+import { useNomPoolsClaimPermission } from "../hooks/nomPools/useNomPoolsClaimPermission"
+import { useNomPoolState } from "../hooks/nomPools/useNomPoolState"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
 import { useGetMinJoinBond } from "./useGetMinJoinBond"
-import { useGetNomPoolStakingPayload } from "./useGetNomPoolStakingPayload"
-import { useIsSoloStaking } from "./useIsSoloStaking"
-import { useNomPoolByMember } from "./useNomPoolByMember"
-import { useNomPoolsClaimPermission } from "./useNomPoolsClaimPermission"
-import { useNomPoolState } from "./useNomPoolState"
 
 type GetStakeInfo = {
   sapi: ScaleApi | undefined | null

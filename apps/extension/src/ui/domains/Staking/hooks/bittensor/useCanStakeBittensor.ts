@@ -3,8 +3,8 @@ import { useEffect, useState } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
+import { useGetLatestBlockNumber } from "../../shared/useGetLatestBlockNumber"
 import { useGetBittensorTotalHotkeyColdkeyStakes } from "./useGetBittensorTotalHotkeyColdkeyStakes"
-import { useGetLatestBlockNumber } from "./useGetLatestBlockNumber"
 
 const STAKE_INTERVAL_BLOCKS = 360
 

@@ -1,26 +1,19 @@
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
-import { log } from "extension-shared"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { getStakingAPR } from "../helpers"
+import { getStakingBondingDurationMs } from "../../helpers"
 
-export const useStakingAPR = (chainId: ChainId | null | undefined) => {
+export const useStakingBondingDuration = (chainId: ChainId | null | undefined) => {
   const { data: sapi } = useScaleApi(chainId)
 
   return useQuery({
-    queryKey: ["useStakingAPR", sapi?.id],
-    queryFn: async () => {
+    queryKey: ["useStakingBondingDuration", sapi?.id],
+    queryFn: () => {
       if (!sapi) return null
 
-      const stop = log.timer(`useStakingAPR(${sapi.chainId})`)
-
-      const apr = await getStakingAPR(sapi)
-
-      stop()
-
-      return apr
+      return getStakingBondingDurationMs(sapi)
     },
     enabled: !!sapi,
     refetchInterval: false,

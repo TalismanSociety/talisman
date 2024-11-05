@@ -3,7 +3,7 @@ import { ChainId } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useStakingBondingDuration } from "./useStakingBondingDuration"
+import { useStakingBondingDuration } from "../hooks/nomPools/useStakingBondingDuration"
 
 export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }> = ({
   chainId,

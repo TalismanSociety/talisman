@@ -4,7 +4,7 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { cleanupNomPoolName } from "../helpers"
+import { cleanupNomPoolName } from "../../helpers"
 
 export const useNomPoolName = (
   chainId: ChainId | null | undefined,

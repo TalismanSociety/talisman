@@ -3,7 +3,7 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { NomPoolMember } from "../types"
+import { NomPoolMember } from "../../types"
 
 export const useNomPoolByMember = (
   chainId: ChainId | null | undefined,

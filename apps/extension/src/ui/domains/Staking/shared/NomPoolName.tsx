@@ -1,8 +1,8 @@
 import { ChainId } from "extension-core"
 import { FC } from "react"
 
-import { useGetBittensorValidator } from "./useGetBittensorValidator"
-import { useNomPoolName } from "./useNomPoolName"
+import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
+import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
 export const NomPoolName: FC<{
   chainId: ChainId | null | undefined

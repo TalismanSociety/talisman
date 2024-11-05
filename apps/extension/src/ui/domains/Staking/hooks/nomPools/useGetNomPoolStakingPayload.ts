@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { getNomPoolStakingPayload } from "../helpers"
+import { getNomPoolStakingPayload } from "../../helpers"
 
 type GetNomPoolStakingPayload = {
   sapi: ScaleApi | undefined | null

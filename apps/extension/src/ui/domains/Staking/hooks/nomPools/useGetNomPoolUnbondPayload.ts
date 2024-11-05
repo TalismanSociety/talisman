@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { NomPoolMember } from "../types"
+import { NomPoolMember } from "../../types"
 
 type GetNomPoolUnbondPayload = {
   sapi: ScaleApi | undefined | null

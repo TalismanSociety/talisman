@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { getBittensorStakingPayload } from "../helpers"
+import { getBittensorStakingPayload } from "../../helpers"
 
 type GetBittensorStakingPayload = {
   sapi: ScaleApi | undefined | null
