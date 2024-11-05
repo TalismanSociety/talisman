@@ -12,6 +12,7 @@ import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
 
+import { AutoLockDrawer, useAutoLockDrawerOpenClose } from "./AutoLockDrawer"
 import { CurrenciesDrawer, useCurrenciesDrawerOpenClose } from "./CurrenciesDrawer"
 import { LanguageDrawer, useLanguageDrawerOpenClose } from "./LanguageDrawer"
 
@@ -69,6 +70,7 @@ export const QuickSettingsModal: FC = () => {
         <div className="flex w-full flex-col">
           <LanguageRow />
           <CurrenciesRow />
+          <AutoLockRow />
           <HideBalancesRow />
           <HideSmallBalancesRow />
           <ShowTestnetsRow />
@@ -103,6 +105,30 @@ const LanguageRow = () => {
         {current}
       </button>
       <LanguageDrawer />
+    </SettingRow>
+  )
+}
+
+const AutoLockRow = () => {
+  const { t } = useTranslation()
+  const { open } = useAutoLockDrawerOpenClose()
+
+  const [autoLockMinutes] = useSetting("autoLockMinutes")
+  const display = useMemo(() => {
+    if (autoLockMinutes === 0) return t("Disabled")
+    return t("{{minutes}} minutes", { minutes: autoLockMinutes })
+  }, [autoLockMinutes, t])
+
+  return (
+    <SettingRow label={t("Auto-lock timer")}>
+      <button
+        type="button"
+        className="text-grey-300 hover:text-body text-sm font-bold"
+        onClick={open}
+      >
+        {display}
+      </button>
+      <AutoLockDrawer />
     </SettingRow>
   )
 }
