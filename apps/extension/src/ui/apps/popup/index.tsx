@@ -20,8 +20,8 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
-import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
+import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 
@@ -92,7 +92,7 @@ const Popup = () => {
         <BackupWarningDrawer />
         <LedgerPolkadotUpgradeAlertDrawer />
         <BondModal />
-        <NomPoolUnbondModal />
+        <UnbondModal />
         <NomPoolWithdrawModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}

@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { useNomPoolStakingStatus } from "../shared/useNomPoolStakingStatus"
-import { useNomPoolUnbondModal } from "./useNomPoolUnbondModal"
+import { useUnbondModal } from "./useUnbondModal"
 
 export const UnbondButton: FC<{
   tokenId: TokenId
@@ -16,7 +16,7 @@ export const UnbondButton: FC<{
   variant: "small" | "large"
 }> = ({ tokenId, address, className, variant }) => {
   const { t } = useTranslation()
-  const { open } = useNomPoolUnbondModal()
+  const { open } = useUnbondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const { genericEvent } = useAnalytics()

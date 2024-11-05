@@ -9,9 +9,9 @@ import { NomPoolName } from "../shared/NomPoolName"
 import { StakingAccountDisplay } from "../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
-import { useNomPoolUnbondWizard } from "./useNomPoolUnbondWizard"
+import { useUnbondWizard } from "./useUnbondWizard"
 
-export const NomPoolUnbondReview = () => {
+export const UnbondReview = () => {
   const { t } = useTranslation()
   const {
     token,
@@ -27,7 +27,7 @@ export const NomPoolUnbondReview = () => {
     errorFeeEstimate,
     errorMessage,
     stakeWarningMessage,
-  } = useNomPoolUnbondWizard()
+  } = useUnbondWizard()
 
   if (!account) return null
 

@@ -4,9 +4,9 @@ import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import { useResetNomPoolUnbondWizard } from "./useNomPoolUnbondWizard"
+import { useResetNomPoolUnbondWizard } from "./useUnbondWizard"
 
-export const useNomPoolUnbondModal = () => {
+export const useUnbondModal = () => {
   const reset = useResetNomPoolUnbondWizard()
 
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("UnstakeModal")

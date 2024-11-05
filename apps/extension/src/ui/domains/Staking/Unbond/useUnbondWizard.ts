@@ -47,7 +47,7 @@ export const useResetNomPoolUnbondWizard = () => {
   )
 }
 
-export const useNomPoolUnbondWizard = () => {
+export const useUnbondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
