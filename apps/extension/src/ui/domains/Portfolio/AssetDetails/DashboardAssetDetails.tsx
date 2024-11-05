@@ -13,8 +13,8 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
-import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
-import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { UnbondButton } from "@ui/domains/Staking/NomPoolUnbond/UnbondButton"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { useGetBittensorStakeHotkeys } from "@ui/domains/Staking/shared/useGetBittensorStakeHotkeys"
 import { useGetBittensorValidators } from "@ui/domains/Staking/shared/useGetBittensorValidator"
@@ -132,7 +132,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           />
         </div>
         <div className="flex items-center justify-end gap-2">
-          {tokenId && <NomPoolBondButton tokenId={tokenId} balances={balances} />}
+          {tokenId && <BondButton tokenId={tokenId} balances={balances} />}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -377,7 +377,7 @@ const LockedExtra: FC<{
           </>
         )
       ) : accountStatus?.canUnstake || chainId === "bittensor" ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
+        <UnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
       ) : null}
     </div>
   )

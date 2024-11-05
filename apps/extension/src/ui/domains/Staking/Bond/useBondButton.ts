@@ -6,10 +6,9 @@ import { MouseEventHandler, useCallback, useMemo } from "react"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
-import { useNomPoolBondModal } from "./useNomPoolBondModal"
+import { useBondModal } from "./useBondModal"
 
-// TODO: Update naming to be more generic
-export const useNomPoolBondButton = ({
+export const useBondButton = ({
   tokenId,
   balances,
 }: {
@@ -21,7 +20,7 @@ export const useNomPoolBondButton = ({
   const ownedAccounts = useAccounts("owned")
   const token = useToken(tokenId)
   const remoteConfig = useRemoteConfig()
-  const { open } = useNomPoolBondModal()
+  const { open } = useBondModal()
 
   // TODO: Add this to talisman-config
   const mockedRemoteConfig = {

@@ -29,9 +29,9 @@ import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { useGetBittensorValidator } from "../shared/useGetBittensorValidator"
 import { useStakingAPR } from "../shared/useStakingAPR"
-import { NomPoolBondAccountPicker } from "./NomPoolBondAccountPicker"
-import { NomPoolBondAccountPillButton } from "./NomPoolBondAccountPillButton"
-import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
+import { BondAccountPicker } from "./BondAccountPicker"
+import { BondAccountPillButton } from "./BondAccountPillButton"
+import { useBondWizard } from "./useBondWizard"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
@@ -82,7 +82,7 @@ const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
 
 const FiatDisplay = () => {
   const currency = useSelectedCurrency()
-  const { tokenRates, formatter } = useNomPoolBondWizard()
+  const { tokenRates, formatter } = useBondWizard()
 
   if (!tokenRates) return null
 
@@ -94,7 +94,7 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, formatter } = useNomPoolBondWizard()
+  const { token, formatter } = useBondWizard()
 
   if (!token) return null
 
@@ -111,7 +111,7 @@ const TokenDisplay = () => {
 }
 
 const TokenInput = () => {
-  const { token, formatter, setPlancks } = useNomPoolBondWizard()
+  const { token, formatter, setPlancks } = useBondWizard()
 
   const defaultValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
@@ -169,7 +169,7 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, formatter, setPlancks } = useNomPoolBondWizard()
+  const { token, tokenRates, formatter, setPlancks } = useBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
@@ -245,7 +245,7 @@ export const AmountEdit = () => {
     stakeWarningMessage,
     maxPlancks,
     setPlancks,
-  } = useNomPoolBondWizard()
+  } = useBondWizard()
 
   const onSetMaxClick = useCallback(() => {
     if (!maxPlancks) return
@@ -315,7 +315,7 @@ export const AmountEdit = () => {
 }
 
 const StakeApr = () => {
-  const { token, poolId } = useNomPoolBondWizard()
+  const { token, poolId } = useBondWizard()
   let data,
     isLoading = false,
     apr = 0
@@ -349,7 +349,7 @@ const StakeApr = () => {
 }
 
 const FeeEstimate = () => {
-  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useNomPoolBondWizard()
+  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useBondWizard()
 
   return (
     <StakingFeeEstimate
@@ -361,9 +361,9 @@ const FeeEstimate = () => {
   )
 }
 
-export const NomPoolBondForm = () => {
+export const BondForm = () => {
   const { t } = useTranslation()
-  const { account, poolId, accountPicker, token, payload, setStep } = useNomPoolBondWizard()
+  const { account, poolId, accountPicker, token, payload, setStep } = useBondWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -378,10 +378,7 @@ export const NomPoolBondForm = () => {
           <div className="whitespace-nowrap">{t("Account")}</div>
           <div className="overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
-              <NomPoolBondAccountPillButton
-                address={account?.address}
-                onClick={accountPicker.open}
-              />
+              <BondAccountPillButton address={account?.address} onClick={accountPicker.open} />
             </Suspense>
           </div>
         </div>
@@ -433,7 +430,7 @@ export const NomPoolBondForm = () => {
         {t("Review")}
       </Button>
 
-      <NomPoolBondAccountPicker />
+      <BondAccountPicker />
     </div>
   )
 }

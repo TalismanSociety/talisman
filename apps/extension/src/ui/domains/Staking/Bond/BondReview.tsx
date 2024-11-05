@@ -8,12 +8,11 @@ import { NomPoolName } from "../shared/NomPoolName"
 import { StakingAccountDisplay } from "../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
-import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
+import { useBondWizard } from "./useBondWizard"
 
-export const NomPoolBondReview = () => {
+export const BondReview = () => {
   const { t } = useTranslation()
-  const { token, poolId, formatter, account, onSubmitted, payload, txMetadata } =
-    useNomPoolBondWizard()
+  const { token, poolId, formatter, account, onSubmitted, payload, txMetadata } = useBondWizard()
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -88,7 +87,7 @@ export const NomPoolBondReview = () => {
 }
 
 const FeeEstimate = () => {
-  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useNomPoolBondWizard()
+  const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useBondWizard()
 
   return (
     <StakingFeeEstimate

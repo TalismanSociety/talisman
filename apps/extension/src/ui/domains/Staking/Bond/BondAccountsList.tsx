@@ -131,7 +131,7 @@ type NomPoolBondAccountsListProps = {
   tokenId?: string
 }
 
-export const NomPoolBondAccountsList: FC<NomPoolBondAccountsListProps> = ({
+export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
   selected,
   accounts,
   noFormat,

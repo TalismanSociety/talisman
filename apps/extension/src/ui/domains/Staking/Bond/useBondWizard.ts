@@ -78,7 +78,7 @@ export const useResetNomPoolBondWizard = () => {
   return reset
 }
 
-export const useNomPoolBondWizard = () => {
+export const useBondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 

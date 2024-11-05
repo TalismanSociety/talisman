@@ -9,14 +9,14 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { useAccounts, useChain } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
-import { NomPoolBondAccountsList } from "./NomPoolBondAccountsList"
-import { useNomPoolBondModal } from "./useNomPoolBondModal"
-import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
+import { BondAccountsList } from "./BondAccountsList"
+import { useBondModal } from "./useBondModal"
+import { useBondWizard } from "./useBondWizard"
 
-export const NomPoolBondAccountPicker = () => {
+export const BondAccountPicker = () => {
   const { t } = useTranslation()
-  const { close } = useNomPoolBondModal()
-  const { account, token, setAddress, accountPicker } = useNomPoolBondWizard()
+  const { close } = useBondModal()
+  const { account, token, setAddress, accountPicker } = useBondWizard()
   const [search, setSearch] = useState("")
 
   const chain = useChain(token?.chain?.id)
@@ -71,7 +71,7 @@ export const NomPoolBondAccountPicker = () => {
             </div>
           </div>
           <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-            <NomPoolBondAccountsList
+            <BondAccountsList
               accounts={accounts}
               genesisHash={chain?.genesisHash}
               selected={account?.address}

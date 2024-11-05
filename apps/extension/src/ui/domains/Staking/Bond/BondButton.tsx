@@ -5,14 +5,11 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useNomPoolBondButton } from "./useNomPoolBondButton"
+import { useBondButton } from "./useBondButton"
 
-export const NomPoolBondButton: FC<{ tokenId: TokenId; balances: Balances }> = ({
-  tokenId,
-  balances,
-}) => {
+export const BondButton: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, balances }) => {
   const { t } = useTranslation()
-  const { onClick, isNomPoolStaking } = useNomPoolBondButton({ tokenId, balances })
+  const { onClick, isNomPoolStaking } = useBondButton({ tokenId, balances })
 
   if (!onClick) return null
 

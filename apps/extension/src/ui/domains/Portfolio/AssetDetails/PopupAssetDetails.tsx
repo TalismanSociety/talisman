@@ -16,8 +16,8 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
-import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { UnbondButton } from "@ui/domains/Staking/NomPoolUnbond/UnbondButton"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { useGetBittensorStakeHotkeys } from "@ui/domains/Staking/shared/useGetBittensorStakeHotkeys"
 import { useGetBittensorValidators } from "@ui/domains/Staking/shared/useGetBittensorValidator"
@@ -78,7 +78,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         {tokenId && (
           <div className="size-[3.8rem] shrink-0 empty:hidden">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <NomPoolBondButton tokenId={tokenId} balances={balances} />
+              <BondButton tokenId={tokenId} balances={balances} />
             </Suspense>
           </div>
         )}
@@ -346,7 +346,7 @@ const LockedExtra: FC<{
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
       accountStatus?.canUnstake || chainId === "bittensor" ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="small" />
+        <UnbondButton tokenId={tokenId} address={rowAddress} variant="small" />
       ) : null}
     </>
   )

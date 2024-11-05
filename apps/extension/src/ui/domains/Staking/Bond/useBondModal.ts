@@ -4,9 +4,9 @@ import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import { useResetNomPoolBondWizard } from "./useNomPoolBondWizard"
+import { useResetNomPoolBondWizard } from "./useBondWizard"
 
-export const useNomPoolBondModal = () => {
+export const useBondModal = () => {
   const reset = useResetNomPoolBondWizard()
 
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("NomPoolBondModal")

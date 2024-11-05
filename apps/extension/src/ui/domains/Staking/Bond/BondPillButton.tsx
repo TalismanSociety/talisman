@@ -5,15 +5,15 @@ import { Balances } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useNomPoolBondButton } from "./useNomPoolBondButton"
+import { useBondButton } from "./useBondButton"
 
-export const NomPoolBondPillButton: FC<{
+export const BondPillButton: FC<{
   tokenId: TokenId
   balances: Balances
   className?: string
 }> = ({ tokenId, balances, className }) => {
   const { t } = useTranslation()
-  const { onClick } = useNomPoolBondButton({ tokenId, balances })
+  const { onClick } = useBondButton({ tokenId, balances })
 
   if (!onClick) return null
 

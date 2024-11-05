@@ -5,8 +5,8 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
-import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondButton"
+import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
+import { useBondButton } from "@ui/domains/Staking/Bond/useBondButton"
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -82,7 +82,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
-  const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
+  const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
 
   const stakingReminder = useShowStakingBanner(balances)
 
@@ -147,7 +147,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
         <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 text-right">
           {canBondNomPool && (
             <>
-              <NomPoolBondPillButton
+              <BondPillButton
                 tokenId={token.id}
                 balances={balances}
                 className="[>svg]:text-[2rem] mr-8 hidden text-base group-hover:block"

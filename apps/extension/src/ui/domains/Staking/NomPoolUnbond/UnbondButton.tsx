@@ -9,7 +9,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNomPoolStakingStatus } from "../shared/useNomPoolStakingStatus"
 import { useNomPoolUnbondModal } from "./useNomPoolUnbondModal"
 
-export const NomPoolUnbondButton: FC<{
+export const UnbondButton: FC<{
   tokenId: TokenId
   address: string
   className?: string

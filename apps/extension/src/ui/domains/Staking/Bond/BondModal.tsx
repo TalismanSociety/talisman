@@ -7,16 +7,16 @@ import { IconButton, Modal } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { NomPoolBondFollowUp } from "./NomPoolBondFollowUp"
-import { NomPoolBondForm } from "./NomPoolBondForm"
-import { NomPoolBondReview } from "./NomPoolBondReview"
-import { useNomPoolBondModal } from "./useNomPoolBondModal"
-import { useNomPoolBondWizard } from "./useNomPoolBondWizard"
+import { BondFollowUp } from "./BondFollowUp"
+import { BondForm } from "./BondForm"
+import { BondReview } from "./BondReview"
+import { useBondModal } from "./useBondModal"
+import { useBondWizard } from "./useBondWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()
-  const { step, setStep } = useNomPoolBondWizard()
-  const { close } = useNomPoolBondModal()
+  const { step, setStep } = useBondWizard()
+  const { close } = useBondModal()
 
   const handleBackClick = useCallback(() => setStep("form"), [setStep])
 
@@ -45,15 +45,15 @@ const ModalHeader = () => {
 }
 
 const ModalContent = () => {
-  const { step } = useNomPoolBondWizard()
+  const { step } = useBondWizard()
 
   switch (step) {
     case "form":
-      return <NomPoolBondForm />
+      return <BondForm />
     case "review":
-      return <NomPoolBondReview />
+      return <BondReview />
     case "follow-up":
-      return <NomPoolBondFollowUp />
+      return <BondFollowUp />
   }
 }
 
@@ -72,8 +72,8 @@ const Content = () => (
   </div>
 )
 
-export const NomPoolBondModal = () => {
-  const { isOpen, close } = useNomPoolBondModal()
+export const BondModal = () => {
+  const { isOpen, close } = useBondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
