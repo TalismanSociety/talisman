@@ -242,6 +242,7 @@ export const AmountEdit = () => {
     displayMode,
     toggleDisplayMode,
     inputErrorMessage,
+    stakeWarningMessage,
     maxPlancks,
     setPlancks,
   } = useNomPoolBondWizard()
@@ -285,6 +286,27 @@ export const AmountEdit = () => {
             <div className="text-brand-orange line-clamp-2 text-center text-xs">
               {inputErrorMessage}
             </div>
+            {stakeWarningMessage && (
+              <div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-alert-warn flex items-center justify-center gap-1 whitespace-nowrap text-xs">
+                      <InfoIcon className="inline-block" /> {t(stakeWarningMessage)}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="max-w-[26rem]">
+                      <div>
+                        {t(
+                          "The Tao network requires a wait period of 360 blocks since your last stake / unstake action.",
+                        )}
+                      </div>
+                      <div>{t("Please try again later.")}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
           </div>
         </>
       )}

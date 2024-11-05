@@ -197,6 +197,11 @@ export const useNomPoolBondWizard = () => {
     return balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
   }, [balance, existentialDeposit, feeEstimate])
 
+  const stakeWarningMessage = useMemo(() => {
+    if (!canStake) return t("Stake/unstake currently paused")
+    return null
+  }, [canStake, t])
+
   const inputErrorMessage = useMemo(() => {
     if (isSoloStaking) return t("Account is already staking")
 
@@ -244,6 +249,7 @@ export const useNomPoolBondWizard = () => {
       })
 
     return null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isSoloStaking,
     t,
@@ -273,6 +279,7 @@ export const useNomPoolBondWizard = () => {
     feeToken,
     maxPlancks,
     inputErrorMessage,
+    stakeWarningMessage,
 
     payload: !inputErrorMessage && isFormValid && canStake && !isCanStakeLoading ? payload : null,
     txMetadata,

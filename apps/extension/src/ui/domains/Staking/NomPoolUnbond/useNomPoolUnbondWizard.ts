@@ -116,6 +116,11 @@ export const useNomPoolUnbondWizard = () => {
     return null
   }, [pool, t, balance, feeEstimate, existentialDeposit?.planck])
 
+  const stakeWarningMessage = useMemo(() => {
+    if (!canStake) return t("Stake/unstake currently paused")
+    return null
+  }, [canStake, t])
+
   return {
     token,
     poolId,
@@ -137,6 +142,7 @@ export const useNomPoolUnbondWizard = () => {
     errorFeeEstimate,
 
     errorMessage,
+    stakeWarningMessage,
 
     onSubmitted,
   }
