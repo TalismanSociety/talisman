@@ -1,8 +1,10 @@
 import { ChevronLeftIcon } from "@talismn/icons"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer, Dropdown, IconButton } from "talisman-ui"
+import { Drawer, IconButton } from "talisman-ui"
 
+import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { useSetting } from "@ui/state"
 
@@ -10,9 +12,10 @@ export const useAutoLockDrawerOpenClose = () => useGlobalOpenClose("auto-lock-dr
 
 const AutoLockEditor = () => {
   const { t } = useTranslation()
+  const { close } = useAutoLockDrawerOpenClose()
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockMinutes")
 
-  const options: Option[] = useMemo(
+  const options = useMemo(
     () => [
       { value: 0, label: t("Disabled") },
       { value: 5, label: t("{{count}} minutes", { count: 5 }) },
@@ -24,30 +27,15 @@ const AutoLockEditor = () => {
   )
 
   const handleChange = useCallback(
-    (val: Option | null) => {
-      const newVal = val?.value || 0
-      if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)
+    (value: number) => {
+      setAutoLockTimeout(value)
+      close()
     },
-    [autoLockTimeout, setAutoLockTimeout],
+    [close, setAutoLockTimeout],
   )
 
-  const value = useMemo(
-    () => options.find((o) => o.value === (autoLockTimeout ?? 0)),
-    [autoLockTimeout, options],
-  )
-
-  return (
-    <Dropdown
-      items={options}
-      value={value}
-      propertyKey="value"
-      propertyLabel="label"
-      onChange={handleChange}
-    />
-  )
+  return <ExclusiveButtonsList options={options} value={autoLockTimeout} onChange={handleChange} />
 }
-
-type Option = { value: number; label: string }
 
 const AutoLockDrawerContent = () => {
   const { t } = useTranslation()
@@ -61,11 +49,17 @@ const AutoLockDrawerContent = () => {
         </IconButton>
         <div>{t("Auto-lock Timer")}</div>
       </div>
-      <div className="px-8 text-sm">
-        <p>{t("Lock the Talisman extension after inactivity for")}</p>
-        <div className="h-4"></div>
-        <AutoLockEditor />
+
+      <div className="px-8">
+        <p className="text-xs">
+          {t(
+            "Set a timer to automatically lock the Talisman wallet extension after the following period of inactivity",
+          )}
+        </p>
       </div>
+      <ScrollContainer className="grow" innerClassName="px-8 pb-8">
+        <AutoLockEditor />
+      </ScrollContainer>
     </div>
   )
 }
