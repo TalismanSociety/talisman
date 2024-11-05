@@ -3,6 +3,7 @@ import { useMemo } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
+import { useCanStakeBittensor } from "./useCanStakeBittensor"
 import { useGetBittensorStakeHotkeys } from "./useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "./useGetBittensorStakingPayload"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
@@ -32,6 +33,13 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     isEnabled: chainId === "bittensor",
   })
   const { data: currentBittensorStakeHotkeys } = useGetBittensorStakeHotkeys({ chainId, address })
+
+  const { canStake, isLoading: isCanStakeLoading } = useCanStakeBittensor({
+    sapi,
+    address,
+    hotkey: currentBittensorStakeHotkeys?.[0],
+    chainId,
+  })
 
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
 
@@ -107,5 +115,7 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     minJoinBond,
     isSoloStaking,
     poolState,
+    canStake,
+    isCanStakeLoading,
   }
 }

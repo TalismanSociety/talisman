@@ -108,6 +108,8 @@ export const useNomPoolBondWizard = () => {
     minJoinBond,
     isSoloStaking,
     poolState,
+    canStake,
+    isCanStakeLoading,
   } = useGetStakeInfo({
     sapi,
     address,
@@ -272,7 +274,7 @@ export const useNomPoolBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
 
-    payload: !inputErrorMessage && isFormValid ? payload : null,
+    payload: !inputErrorMessage && isFormValid && canStake && !isCanStakeLoading ? payload : null,
     txMetadata,
     isLoadingPayload,
     errorPayload,

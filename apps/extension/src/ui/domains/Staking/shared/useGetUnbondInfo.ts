@@ -2,6 +2,7 @@ import { ChainId } from "extension-core"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
+import { useCanStakeBittensor } from "./useCanStakeBittensor"
 import { useGetBittensorStakeHotkeys } from "./useGetBittensorStakeHotkeys"
 import { useGetBittensorTotalStaked } from "./useGetBittensorTotalStaked"
 import { useGetBittensorUnbondPayload } from "./useGetBittensorUnbondPayload"
@@ -81,6 +82,13 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload })
 
+  const { canStake, isLoading: isCanStakeLoading } = useCanStakeBittensor({
+    sapi,
+    address,
+    hotkey: poolId,
+    chainId,
+  })
+
   return {
     plancksToUnbond,
     pool,
@@ -93,5 +101,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     unbondType,
+    canStake,
+    isCanStakeLoading,
   }
 }

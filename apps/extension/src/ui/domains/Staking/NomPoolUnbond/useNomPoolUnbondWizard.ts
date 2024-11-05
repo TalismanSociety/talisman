@@ -73,6 +73,8 @@ export const useNomPoolUnbondWizard = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     unbondType,
+    canStake,
+    isCanStakeLoading,
   } = useGetUnbondInfo({
     sapi,
     chainId: token?.chain?.id,
@@ -125,7 +127,7 @@ export const useNomPoolUnbondWizard = () => {
     hash,
     amountToUnbond,
 
-    payload: !errorMessage ? payload : null,
+    payload: !errorMessage && canStake && !isCanStakeLoading ? payload : null,
     txMetadata,
     isLoadingPayload,
     errorPayload,
