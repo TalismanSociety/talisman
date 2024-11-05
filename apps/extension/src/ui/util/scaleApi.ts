@@ -310,6 +310,7 @@ const getFeeEstimate = async (
       "query_info",
       [binary, bytes.length],
     )
+    // Do not throw if partialFee is 0n. This is a valid response, eg: Bittensor remove_stake fee estimation is 0n.
     if (!result?.partial_fee && result.partial_fee !== 0n) {
       throw new Error("partialFee is not found")
     }
