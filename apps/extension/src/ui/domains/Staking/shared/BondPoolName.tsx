@@ -4,7 +4,7 @@ import { FC } from "react"
 import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
-export const NomPoolName: FC<{
+export const BondPoolName: FC<{
   chainId: ChainId | null | undefined
   poolId: number | string | null | undefined
 }> = ({ chainId, poolId }) => {
