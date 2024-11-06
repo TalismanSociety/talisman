@@ -1,0 +1,20 @@
+{
+  "name": "papi-descriptors",
+  "version": "1.0.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "papi:update": "papi update",
+    "papi": "papi",
+    "postinstall": "papi"
+  },
+  "devDependencies": {
+    "polkadot-api": "^1.6.4"
+  },
+  "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors"
+  }
+}

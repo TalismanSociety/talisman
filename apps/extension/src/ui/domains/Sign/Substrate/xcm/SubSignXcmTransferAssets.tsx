@@ -2,11 +2,19 @@ import { u8aToHex } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
+import { isJsonPayload } from "extension-core"
+import {
+  PolkadotAssetHubCalls,
+  PolkadotCalls,
+  XcmVersionedAssets,
+  XcmVersionedLocation,
+} from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountJsonAny } from "@extension/core"
 import { log } from "@extension/shared"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useChains, useTokenRatesMap, useTokensMap } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
@@ -14,23 +22,54 @@ import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
-import { $versionedMultiAssets, VersionedMultiAssets } from "../shapes/VersionedMultiAssets"
-import { $versionedMultiLocation, VersionedMultiLocation } from "../shapes/VersionedMultiLocation"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+
+type SupportedCall =
+  | {
+      pallet: "XcmPallet"
+      call: "reserve_transfer_assets"
+      args: PolkadotCalls["XcmPallet"]["reserve_transfer_assets"]
+    }
+  | {
+      pallet: "XcmPallet"
+      call: "limited_reserve_transfer_assets"
+      args: PolkadotCalls["XcmPallet"]["limited_reserve_transfer_assets"]
+    }
+  | {
+      pallet: "XcmPallet"
+      call: "limited_teleport_assets"
+      args: PolkadotCalls["XcmPallet"]["limited_teleport_assets"]
+    }
+  | {
+      pallet: "PolkadotXcm"
+      call: "reserve_transfer_assets"
+      args: PolkadotAssetHubCalls["PolkadotXcm"]["reserve_transfer_assets"]
+    }
+  | {
+      pallet: "PolkadotXcm"
+      call: "limited_reserve_transfer_assets"
+      args: PolkadotAssetHubCalls["PolkadotXcm"]["limited_reserve_transfer_assets"]
+    }
+  | {
+      pallet: "PolkadotXcm"
+      call: "limited_teleport_assets"
+      args: PolkadotAssetHubCalls["PolkadotXcm"]["limited_teleport_assets"]
+    }
 
 const getMultiAssetTokenId = (
-  multiAsset: VersionedMultiAssets | undefined,
-  chain: Chain | null | undefined,
+  assets: XcmVersionedAssets,
+  chain: Chain,
   tokens: TokenList,
 ): { tokenId: TokenId; value: bigint } => {
-  if (multiAsset?.type === "V3") {
+  if (assets.type === "V3") {
     // our view only support displaying one asset
-    if (multiAsset.value.length === 1) {
-      const asset = multiAsset.value[0]
+    if (assets.value.length === 1) {
+      const asset = assets.value[0]
 
-      if (asset?.id.type === "Concrete" && asset.fun.type === "Fungible") {
+      if (asset.id.type === "Concrete" && asset.fun.type === "Fungible") {
         const value = asset.fun.value
         const interior = asset.id.value.interior
-        if (interior.type === "Here" && chain?.nativeToken?.id) {
+        if (interior.type === "Here" && chain.nativeToken?.id) {
           return { tokenId: chain.nativeToken.id, value }
         }
         if (interior.type === "X2") {
@@ -55,25 +94,25 @@ const getMultiAssetTokenId = (
   }
 
   // throw an error so the sign popup fallbacks to default view
-  log.warn("Unknown multi asset", { multiAsset, chain })
+  log.warn("Unknown multi asset", { multiAsset: assets, chain })
   throw new Error("Unknown multi asset")
 }
 
 const getTargetChain = (
-  multiLocation: VersionedMultiLocation,
-  chain: Chain | null | undefined,
+  multiLocation: XcmVersionedLocation,
+  chain: Chain,
   chains: Chain[],
 ): Chain => {
   if (multiLocation.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()
     const interior = multiLocation.value.interior
-    if (interior.type === "Here" && chain)
+    if (interior.type === "Here")
       if (multiLocation.value.parents === 0) return chain
       else if (multiLocation.value.parents === 1) {
         const targetChain = chains.find((c) => c.id === chain.relay?.id)
         if (targetChain) return targetChain
       }
-    if (interior.type === "X1" && chain && interior.value.type === "Parachain") {
+    if (interior.type === "X1" && interior.value.type === "Parachain") {
       const paraId = interior.value.value
       const relayId = chain.relay ? chain.relay.id : chain.id
       const targetChain = chains.find((c) => c.relay?.id === relayId && c.paraId === paraId)
@@ -97,7 +136,7 @@ const isPrefixMatch = (bytes: Uint8Array, prefix: Uint8Array) => {
 }
 
 const getTargetAccount = (
-  multiLocation: VersionedMultiLocation | undefined,
+  multiLocation: XcmVersionedLocation,
   account: AccountJsonAny,
 ): Address => {
   if (multiLocation?.type === "V3") {
@@ -105,16 +144,17 @@ const getTargetAccount = (
     const interior = multiLocation.value.interior
     if (interior.type === "Here" && account) return account.address
     if (interior.type === "X1") {
-      if (interior.value.type === "AccountKey20") return encodeAnyAddress(interior.value.key)
+      if (interior.value.type === "AccountKey20")
+        return encodeAnyAddress(interior.value.value.key.asBytes())
       if (interior.value.type === "AccountId32") {
         // some chains support evm accounts (AccountId20) as AccountId32, prefixed with ETH (in ASCII) and suffixed with empty bytes to fill the remaining of the array
         // in this case we should identify the corresponding evm address
         // test case: hydration portal, xcm mythos from mythos to hydration
         const ETH_PREFIX = new Uint8Array([69, 84, 72, 0])
-        if (isPrefixMatch(interior.value.id, ETH_PREFIX))
-          return u8aToHex(interior.value.id.slice(4, 24))
+        if (isPrefixMatch(interior.value.value.id.asBytes(), ETH_PREFIX))
+          return u8aToHex(interior.value.value.id.asBytes().slice(4, 24))
 
-        return encodeAnyAddress(interior.value.id)
+        return encodeAnyAddress(interior.value.value.id.asBytes())
       }
     }
   }
@@ -125,26 +165,24 @@ const getTargetAccount = (
 
 export const SubSignXcmTransferAssets = () => {
   const { t } = useTranslation("request")
-  const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
+  const { chain, payload, account } = usePolkadotSigningRequest()
   const tokensMap = useTokensMap()
   const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
+  const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
+
   const props = useMemo(() => {
-    if (Object.keys(tokensMap).length === 0) return null
-    if (!chain) throw new Error("Unknown chain")
-    if (!extrinsic) throw new Error("Unknown extrinsic")
+    if (!sapi || !isJsonPayload(payload) || !chain) return null
+    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
+    log.debug("Decoded call", { pallet, call, args })
 
-    const dest = $versionedMultiLocation.decode(extrinsic.method.args[0].toU8a())
-    const beneficiary = $versionedMultiLocation.decode(extrinsic.method.args[1].toU8a())
-    const assets = $versionedMultiAssets.decode(extrinsic.method.args[2].toU8a())
-
-    const { tokenId, value } = getMultiAssetTokenId(assets, chain, tokensMap)
+    const { tokenId, value } = getMultiAssetTokenId(args.assets, chain, tokensMap)
     const token = tokensMap[tokenId]
     if (!token) throw new Error("Unknown token")
 
-    const toNetwork = getTargetChain(dest, chain, chains)
-    const toAddress = getTargetAccount(beneficiary, account)
+    const toNetwork = getTargetChain(args.dest, chain, chains)
+    const toAddress = getTargetAccount(args.beneficiary, account)
 
     return {
       value,
@@ -157,7 +195,9 @@ export const SubSignXcmTransferAssets = () => {
       fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
       toAddress: encodeAnyAddress(toAddress, toNetwork.prefix ?? undefined),
     }
-  }, [chain, extrinsic, tokensMap, chains, account, tokenRates, payload.address])
+  }, [account, chain, chains, payload, sapi, tokenRates, tokensMap])
+
+  if (errorSapi) return <SubSignBodyDefault />
 
   if (!props) return <SignViewBodyShimmer />
 
