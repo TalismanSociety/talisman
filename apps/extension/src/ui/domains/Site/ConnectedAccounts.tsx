@@ -31,7 +31,7 @@ const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
         addresses,
       })
     },
-    [accounts, site?.id],
+    [accounts, site.id],
   )
 
   return (
