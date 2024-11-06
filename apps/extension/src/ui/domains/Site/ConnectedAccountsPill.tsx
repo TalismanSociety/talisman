@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames, isAddressEqual, normalizeAddress } from "@talismn/util"
+import { AccountJsonAny } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,7 +26,9 @@ export const ConnectedAccountsPill: FC = () => {
     const { addresses = [], ethAddresses = [] } = site || {}
     const connected = [
       ...new Set([...addresses.map(normalizeAddress), ...ethAddresses.map(normalizeAddress)]),
-    ].map((a) => accounts.find(({ address }) => isAddressEqual(address, a)))
+    ]
+      .map((a) => accounts.find(({ address }) => isAddressEqual(address, a)))
+      .filter(Boolean) as AccountJsonAny[]
 
     if (connected.length === 0) return { count: 0, label: t("Not connected") }
 
