@@ -16,6 +16,7 @@
     "playground",
     "extension-core",
     "extension-shared",
-    "talisman-ui"
+    "talisman-ui",
+    "papi-descriptors"
   ]
 }
