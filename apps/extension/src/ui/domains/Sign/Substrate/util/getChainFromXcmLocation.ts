@@ -16,24 +16,30 @@ export const getChainFromXcmLocation = (
   try {
     const relayId = chain.relay ? chain.relay.id : chain.id
 
-    if (multiLocation.type === "V3") {
-      const interior = multiLocation.value.interior
-      if (interior.type === "Here") return chain
+    if (multiLocation.value.parents === 2) throw new Error("Unknown consensus")
 
-      if (interior.type === "X1") {
-        if (interior.value.type === "Parachain")
-          return getParachain(relayId, interior.value.value, chains)
-
-        return chain // assume location targets an address on current chain
+    const interior = multiLocation.value.interior
+    if (interior.type === "Here") {
+      if (multiLocation.value.parents === 1) {
+        const relay = chains.find((c) => c.id === relayId)
+        if (!relay) throw new Error("Unknown relay")
+        return relay
       }
 
-      const parachain = interior.value.find((i) => i.type === "Parachain")
-      if (parachain) return getParachain(relayId, parachain.value, chains)
-
-      return chain // assume location targets an address on current chain
+      return chain
     }
 
-    throw new Error("Unknown multi location")
+    if (interior.type === "X1") {
+      if (interior.value.type === "Parachain")
+        return getParachain(relayId, interior.value.value, chains)
+
+      return chain // assume location targets something on current chain
+    }
+
+    const parachain = interior.value.find((i) => i.type === "Parachain")
+    if (parachain) return getParachain(relayId, parachain.value, chains)
+
+    return chain // assume location targets something on current chain
   } catch (err) {
     log.debug("getChainFromXcmLocation", { multiLocation, chain, chains, err })
     throw err

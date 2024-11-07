@@ -10,25 +10,23 @@ export const getAddressFromXcmLocation = (
   account: AccountJsonAny,
 ): Address => {
   try {
-    if (multiLocation?.type === "V3") {
-      const interior = multiLocation.value.interior
+    const interior = multiLocation.value.interior
 
-      if (interior.type === "Here") return account.address
+    if (interior.type === "Here") return account.address
 
-      if (interior.type === "X1") {
-        if (interior.value.type === "AccountKey20")
-          return encodeAnyAddress(interior.value.value.key.asBytes())
-        if (interior.value.type === "AccountId32")
-          return getAddressFromAccountId32(interior.value.value.id)
-        throw new Error("Unknown address")
-      }
-
-      const anyAccountKey20 = interior.value.find((i) => i.type === "AccountKey20")
-      if (anyAccountKey20) return encodeAnyAddress(anyAccountKey20.value.key.asBytes())
-
-      const anyAccountId32 = interior.value.find((i) => i.type === "AccountId32")
-      if (anyAccountId32) return getAddressFromAccountId32(anyAccountId32.value.id)
+    if (interior.type === "X1") {
+      if (interior.value.type === "AccountKey20") return interior.value.value.key.asHex()
+      if (interior.value.type === "AccountId32")
+        return getAddressFromAccountId32(interior.value.value.id)
+      throw new Error("Unknown address")
     }
+
+    const anyAccountKey20 = interior.value.find((i) => i.type === "AccountKey20")
+    if (anyAccountKey20) return anyAccountKey20.value.key.asHex()
+
+    const anyAccountId32 = interior.value.find((i) => i.type === "AccountId32")
+    if (anyAccountId32) return getAddressFromAccountId32(anyAccountId32.value.id)
+
     // throw an error so the sign popup fallbacks to default view
     throw new Error("Unknown address")
   } catch (error) {
