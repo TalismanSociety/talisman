@@ -5,13 +5,11 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
-import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewVotingUndelegate } from "../../Views/convictionVoting/SignViewVotingUndelegate"
 import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
-import { SubSignBodyDefault } from "../SubSignBodyDefault"
 
 type SupportedCall = {
   pallet: "ConvictionVoting"
@@ -21,12 +19,10 @@ type SupportedCall = {
 
 export const SubSignConvictionVotingUndelegate = () => {
   const { t } = useTranslation("request")
-  const { chain, payload } = usePolkadotSigningRequest()
-
-  const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
+  const { chain, payload, sapi } = usePolkadotSigningRequest()
 
   const props = useMemo(() => {
-    if (!sapi) return null // sapi is still loading
+    if (!sapi) throw new Error("missing sapi")
     if (!isJsonPayload(payload)) throw new Error("missing payload")
 
     const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
@@ -36,8 +32,6 @@ export const SubSignConvictionVotingUndelegate = () => {
       trackId: args.class,
     }
   }, [payload, sapi])
-
-  if (errorSapi) return <SubSignBodyDefault />
 
   if (!props || !chain?.nativeToken) return <SignViewBodyShimmer />
 

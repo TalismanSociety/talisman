@@ -8,8 +8,9 @@ export const getAddressFromMultiAddress = (multiAddress: MultiAddress) => {
     case "Raw":
       return encodeAnyAddress(multiAddress.value.asText())
     case "Address32":
-    case "Address20":
       return encodeAnyAddress(multiAddress.value.asBytes())
+    case "Address20":
+      return encodeAnyAddress(multiAddress.value.asHex())
     case "Index":
     default:
       throw new Error("Invalid MultiAddress type")

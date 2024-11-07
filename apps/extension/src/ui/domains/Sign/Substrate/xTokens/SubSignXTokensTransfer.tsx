@@ -8,7 +8,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { log } from "@extension/shared"
-import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useChains, useTokenRatesMap, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
@@ -16,7 +15,6 @@ import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
-import { SubSignBodyDefault } from "../SubSignBodyDefault"
 import { getAddressFromXcmLocation } from "../util/getAddressFromXcmLocation"
 import { getChainFromXcmLocation } from "../util/getChainFromXcmLocation"
 
@@ -109,15 +107,13 @@ const getTokenFromCurrency = (
 
 export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
-  const { chain, payload, account } = usePolkadotSigningRequest()
+  const { chain, payload, account, sapi } = usePolkadotSigningRequest()
   const tokens = useTokens()
   const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
-  const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
-
   const props = useMemo(() => {
-    if (!sapi) return null // sapi is still loading
+    if (!sapi) throw new Error("missing sapi")
     if (!isJsonPayload(payload)) throw new Error("missing payload")
     if (!chain) throw new Error("missing chain")
 
@@ -140,8 +136,6 @@ export const SubSignXTokensTransfer = () => {
       toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
     }
   }, [account, chain, chains, payload, sapi, tokenRates, tokens])
-
-  if (errorSapi) return <SubSignBodyDefault />
 
   if (!props) return <SignViewBodyShimmer />
 
