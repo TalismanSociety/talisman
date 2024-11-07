@@ -36,6 +36,8 @@ export const getScaleApi = (
   signedExtensions?: ExtDef,
   registryTypes?: unknown,
 ) => {
+  const stop = log.timer("[sapi] getScaleApi " + chainId)
+
   const decoded = decodeMetadata(hexMetadata)
   assert(decoded.metadata, `Missing Metadata V14+ for chain ${chainId}`)
   const { metadata } = decoded
@@ -54,8 +56,10 @@ export const getScaleApi = (
 
   const base58Prefix = getConstantValue<number>(chainId, metadata, builder, "System", "SS58Prefix")
 
+  const { symbol, decimals } = token
+
   const chainInfo = {
-    token,
+    token: { symbol, decimals },
     hasCheckMetadataHash,
     specName,
     specVersion,
@@ -65,14 +69,14 @@ export const getScaleApi = (
     registryTypes,
   }
 
-  return {
+  const sapi = {
     id: `${chainId}::${specName}::${specVersion}`,
     chainId,
     specName,
     specVersion,
     hasCheckMetadataHash,
     base58Prefix,
-    token,
+    token: chainInfo.token,
 
     getConstant: <T>(pallet: string, constant: string) =>
       getConstantValue<T>(chainId, metadata, builder, pallet, constant),
@@ -115,6 +119,10 @@ export const getScaleApi = (
 
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),
   }
+
+  stop()
+
+  return sapi
 }
 
 type ChainInfo = {
