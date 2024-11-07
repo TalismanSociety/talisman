@@ -1,40 +1,76 @@
+import { isJsonPayload } from "extension-core"
+import { log } from "extension-shared"
+import { PolkadotCalls } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignViewVotingVote } from "@ui/domains/Sign/Views/convictionVoting/SignViewVotingVote"
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
-import { getConviction } from "./getConviction"
+import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+
+type SupportedCall = {
+  pallet: "ConvictionVoting"
+  call: "vote"
+  args: PolkadotCalls["ConvictionVoting"]["vote"]
+}
 
 export const SubSignConvictionVotingVote = () => {
   const { t } = useTranslation("request")
-  const { chain, extrinsic } = usePolkadotSigningRequest()
+  const { chain, payload } = usePolkadotSigningRequest()
 
-  const { title, ...props } = useMemo(() => {
-    const vote = extrinsic?.registry.createType(
-      "PalletConvictionVotingVoteAccountVote",
-      extrinsic?.method?.args[1],
-    )
+  const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
 
-    return {
-      title: vote?.asStandard?.vote.isAye ? t("Vote Yes") : t("Vote No"),
-      pollIndex: extrinsic?.method?.args[0]?.toPrimitive() as number,
-      conviction: getConviction(vote?.asStandard?.vote.conviction),
-      voteAmount: vote?.asStandard?.balance.toBigInt() ?? 0n,
+  const props = useMemo(() => {
+    if (!sapi) return null // sapi is still loading
+    if (!isJsonPayload(payload)) throw new Error("missing payload")
+    if (!chain?.nativeToken) throw new Error("missing chain or native token")
+
+    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
+    log.debug("Decoded call", { pallet, call, args })
+
+    if (args.vote.type === "Standard") {
+      const { isAye, conviction } = decodeStandardVote(args.vote.value.vote)
+
+      return {
+        title: isAye ? t("Vote Yes") : t("Vote No"),
+        pollIndex: args.poll_index,
+        conviction,
+        voteAmount: args.vote.value.balance,
+      }
     }
-  }, [extrinsic, t])
 
-  if (!chain?.nativeToken) return null
+    throw new Error("Unsupported vote type")
+  }, [chain, payload, sapi, t])
+
+  if (errorSapi) return <SubSignBodyDefault />
+
+  if (!props || !chain?.nativeToken) return <SignViewBodyShimmer />
 
   return (
     <SignContainer
       networkType="substrate"
-      title={title}
+      title={props.title}
       header={<SignViewIconHeader icon="vote" />}
     >
       <SignViewVotingVote tokenId={chain.nativeToken.id} {...props} />
     </SignContainer>
   )
 }
+
+const AYE_BITS = 0b10000000
+const CON_MASK = 0b01111111
+
+const decodeStandardVote = (
+  vote: number,
+): {
+  isAye: boolean
+  conviction: number
+} => ({
+  isAye: (vote & AYE_BITS) === AYE_BITS,
+  conviction: vote & CON_MASK,
+})

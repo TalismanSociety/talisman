@@ -1,37 +1,50 @@
+import { isJsonPayload } from "extension-core"
+import { log } from "extension-shared"
+import { PolkadotCalls, VotingConviction } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewVotingDelegate } from "../../Views/convictionVoting/SignViewVotingDelegate"
-import { getConviction } from "./getConviction"
+import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+import { getAddressFromMultiAddress } from "./getAddressFromMultiAddress"
+
+type SupportedCall = {
+  pallet: "ConvictionVoting"
+  call: "delegate"
+  args: PolkadotCalls["ConvictionVoting"]["delegate"]
+}
 
 export const SubSignConvictionVotingDelegate = () => {
   const { t } = useTranslation("request")
-  const { chain, extrinsic } = usePolkadotSigningRequest()
+  const { chain, payload } = usePolkadotSigningRequest()
+
+  const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
 
   const props = useMemo(() => {
-    if (!extrinsic || !chain) return null
+    if (!sapi) return null // sapi is still loading
+    if (!isJsonPayload(payload)) throw new Error("missing payload")
+    if (!chain?.nativeToken) throw new Error("missing chain or native token")
 
-    const trackId = extrinsic.registry.createType("u16", extrinsic?.method?.args[0])
-    const representative = extrinsic.registry.createType("MultiAddress", extrinsic?.method?.args[1])
-    const conviction = extrinsic.registry.createType(
-      "PalletConvictionVotingConviction",
-      extrinsic?.method?.args[2],
-    )
-    const balance = extrinsic.registry.createType("u128", extrinsic?.method?.args[3])
+    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
+    log.debug("Decoded call", { pallet, call, args })
 
     return {
-      trackId: trackId.toNumber(),
-      representative: representative.toString(),
-      conviction: getConviction(conviction),
-      amount: balance.toBigInt(),
+      trackId: args.class,
+      representative: getAddressFromMultiAddress(args.to),
+      conviction: getConviction(args.conviction),
+      amount: args.balance,
     }
-  }, [chain, extrinsic])
+  }, [chain, payload, sapi])
 
-  if (!chain?.nativeToken || !props) return null
+  if (errorSapi) return <SubSignBodyDefault />
+
+  if (!props || !chain?.nativeToken) return <SignViewBodyShimmer />
 
   return (
     <SignContainer
@@ -46,4 +59,25 @@ export const SubSignConvictionVotingDelegate = () => {
       />
     </SignContainer>
   )
+}
+
+export const getConviction = (conviction: VotingConviction) => {
+  switch (conviction.type) {
+    case "Locked1x":
+      return 1
+    case "Locked2x":
+      return 2
+    case "Locked3x":
+      return 3
+    case "Locked4x":
+      return 4
+    case "Locked5x":
+      return 5
+    case "Locked6x":
+      return 6
+    case "None":
+      return 0
+    default:
+      throw new Error("Invalid conviction")
+  }
 }

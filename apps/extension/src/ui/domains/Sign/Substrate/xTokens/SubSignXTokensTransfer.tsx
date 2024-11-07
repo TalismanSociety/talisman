@@ -1,14 +1,14 @@
-import { Codec } from "@polkadot/types-codec/types"
-import { assert } from "@polkadot/util"
-import { Address } from "@talismn/balances"
 import { Chain, Token } from "@talismn/chaindata-provider"
-import * as $ from "@talismn/subshape-fork"
 import { encodeAnyAddress } from "@talismn/util"
+import { isJsonPayload } from "extension-core"
 import isEqual from "lodash/isEqual"
+import { AcalaCalls, HydrationCalls } from "papi-descriptors"
+import { Enum } from "polkadot-api"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { log } from "@extension/shared"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useChains, useTokenRatesMap, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
@@ -16,8 +16,29 @@ import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
-import { $versionedMultiLocation, VersionedMultiLocation } from "../shapes/VersionedMultiLocation"
-import { XcmV3Junction } from "../shapes/XcmV3Junction"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+import { getAddressFromXcmLocation } from "../util/getAddressFromXcmLocation"
+import { getChainFromXcmLocation } from "../util/getChainFromXcmLocation"
+
+type SubstrateTokenId = Enum<Record<string, unknown>>
+// ex:
+// - "{\"type\":\"Token\",\"value\":{\"type\":\"DOT\"}}"
+// - "{\"type\":\"Token2\",\"value\":4}"
+// - "{\"type\":\"ForeignAsset\",\"value\":3}"
+
+type SupportedChainCalls = AcalaCalls | HydrationCalls
+
+type SupportedCall =
+  | {
+      pallet: "XTokens"
+      call: "transfer"
+      args: SupportedChainCalls["XTokens"]["transfer"]
+    }
+  | {
+      pallet: "XTokens"
+      call: "transfer_with_fee"
+      args: SupportedChainCalls["XTokens"]["transfer_with_fee"]
+    }
 
 const normalizeTokenId = (tokenId: unknown) => {
   if (typeof tokenId === "string" && tokenId.startsWith("{") && tokenId.endsWith("}"))
@@ -26,7 +47,10 @@ const normalizeTokenId = (tokenId: unknown) => {
     // some property names don't have the same case in chaindata. ex: vsKSM
     return Object.entries(tokenId as Record<string, unknown>).reduce(
       (acc, [key, value]) => {
-        acc[key.toLowerCase()] = typeof value === "string" ? value.toLowerCase() : value
+        // papi explicitely adds an undefined property for enum entries that have no value => ignore those
+        if (value !== undefined)
+          acc[key.toLowerCase()] =
+            typeof value === "string" ? value.toLowerCase() : normalizeTokenId(value)
         return acc
       },
       {} as Record<string, unknown>,
@@ -41,142 +65,83 @@ const isSameTokenId = (tokenId1: unknown, tokenId2: unknown) => {
   return isEqual(tokenId1, tokenId2)
 }
 
-const getTokenFromCurrency = (currency: Codec, chain: Chain, tokens: Token[]): Token => {
-  // ex: HDX
-  if (currency.toRawType() === "u32") {
-    const currencyId = currency.toPrimitive() as number
-    if (currencyId === 0) return tokens.find((t) => t.id === chain.nativeToken?.id) as Token
-    const token = tokens.find((t) => t.type === "substrate-tokens" && t.onChainId === currencyId)
+const getTokenFromCurrency = (
+  currencyId: number | SubstrateTokenId,
+  chain: Chain,
+  tokens: Token[],
+): Token => {
+  const chainTokens = tokens.filter((t) => t.chain?.id === chain.id)
+
+  try {
+    // ex: HDX
+    if (typeof currencyId === "number") {
+      if (currencyId === 0) return chainTokens.find((t) => t.id === chain.nativeToken?.id) as Token
+      const token = chainTokens.find(
+        (t) => t.type === "substrate-tokens" && String(t.onChainId) === String(currencyId),
+      )
+      if (token) return token
+      log.warn("unknown currencyId %d on chain %s", currencyId, chain.id)
+
+      throw new Error("Token not found")
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tokenSymbol = (currencyId.value as any)?.type?.toLowerCase()
+
+    // FAFO mastery
+    const token = chainTokens.find(
+      (t) =>
+        (t.type === "substrate-native" &&
+          (currencyId.type === "Native" || // INTR
+            tokenSymbol === t.symbol.toLowerCase())) || // ACA
+        (t.type === "substrate-tokens" &&
+          (isSameTokenId(t.onChainId, currencyId) || // ex: vsKSM
+            t.onChainId?.toString()?.toLowerCase() === currencyId?.toString().toLowerCase())), // ex: aUSD
+    )
     if (token) return token
-    log.warn("unknown currencyId %d on chain %s", currencyId, chain.id)
+
+    throw new Error("Token not found")
+  } catch (err) {
+    log.debug("getTokenFromCurrency", { currencyId, chain, tokens, err })
+    throw err
   }
-
-  const jsonCurrency = currency.toJSON()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const unsafeCurrency = currency as any
-  const lsymbol = (unsafeCurrency.isToken ? unsafeCurrency.asToken.type : "").toLowerCase()
-
-  const token = tokens.find(
-    (t) =>
-      // ex: ACA
-      (t.type === "substrate-native" && t.symbol.toLowerCase() === lsymbol) ||
-      (t.type === "substrate-tokens" &&
-        // ex: vsKSM
-        (isSameTokenId(t.onChainId, jsonCurrency) ||
-          // ex: aUSD
-          t.onChainId?.toString()?.toLowerCase() === jsonCurrency?.toString().toLowerCase())),
-  )
-  if (token) return token
-
-  // throw an error so the sign popup fallbacks to default view
-  log.warn("unknown on chain %s", chain.id, currency.toHuman())
-  throw new Error("Token not found")
-}
-
-const getTargetFromInterior = (
-  interior: XcmV3Junction,
-  chain: Chain,
-  chains: Chain[],
-): { chain?: Chain; address?: Address } => {
-  if (interior.type === "Parachain") {
-    const paraId = interior.value
-    const relayId = chain.relay ? chain.relay.id : chain.id
-    const targetChain = chains.find((c) => c.relay?.id === relayId && c.paraId === paraId)
-    if (targetChain) return { chain: targetChain }
-  }
-  if (interior.type === "AccountKey20") return { address: encodeAnyAddress(interior.key) }
-  if (interior.type === "AccountId32") return { address: encodeAnyAddress(interior.id) }
-
-  // throw an error so the sign popup fallbacks to default view
-  //log.warn("Unsupported interior", interior.toHuman())
-  throw new Error("Unknown interior")
-}
-
-const getTarget = (
-  multiLocation: VersionedMultiLocation | undefined,
-  chain: Chain,
-  chains: Chain[],
-  address: Address,
-): { chain?: Chain; address?: Address } => {
-  if (multiLocation?.type === "V3") {
-    // const parents = multiLocation.asV1.parents.toNumber()
-    const interior = multiLocation.value.interior
-    if (interior.type === "Here" && chain) return { chain, address }
-
-    if (interior.type === "X1") {
-      if (interior.value.type === "Parachain") {
-        const paraId = interior.value.value
-        const relayId = chain.relay ? chain.relay.id : chain.id
-        const targetChain = chains.find((c) => c.relay?.id === relayId && c.paraId === paraId)
-        if (targetChain) return { chain: targetChain, address }
-      }
-
-      const targetChain =
-        multiLocation.value.parents === 1 ? chains.find((c) => c.id === chain.relay?.id) : chain
-      if (interior.value.type === "AccountKey20")
-        return { chain: targetChain, address: encodeAnyAddress(interior.value.key) }
-      if (interior.value.type === "AccountId32")
-        return { chain: targetChain, address: encodeAnyAddress(interior.value.id) }
-    }
-
-    if (interior.type === "X2") {
-      const interiorX2 = interior.value
-      const res0 = getTargetFromInterior(interiorX2[0], chain, chains)
-      const res1 = getTargetFromInterior(interiorX2[1], chain, chains)
-      const resChain = res0.chain || res1.chain
-      const resAddress = res0.address || res1.address
-      if (!resChain || !resAddress) throw new Error("Unknown multi location")
-      return {
-        chain: resChain,
-        address: resAddress,
-      }
-    }
-  }
-
-  // throw an error so the sign popup fallbacks to default view
-  //log.warn("Unsupported multi location", multiLocation?.toHuman())
-  throw new Error("Unknown multi location")
 }
 
 export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
-  const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
+  const { chain, payload, account } = usePolkadotSigningRequest()
   const tokens = useTokens()
   const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
+  const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
+
   const props = useMemo(() => {
-    // wait for tokens to be loaded
-    if (!tokens.length) return null
-    assert(extrinsic, "No extrinsic")
-    assert(chain, "No chain")
+    if (!sapi) return null // sapi is still loading
+    if (!isJsonPayload(payload)) throw new Error("missing payload")
+    if (!chain) throw new Error("missing chain")
 
-    // CurrencyId - currency ids are chain specific, can't use subshape easily
-    const currency = extrinsic.method.args[0] // as any
-    const value = $.u128.decode(extrinsic.method.args[1].toU8a())
-    const dest = $versionedMultiLocation.decode(extrinsic.method.args[2].toU8a())
+    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
+    log.debug("Decoded call", { pallet, call, args })
 
-    const token = getTokenFromCurrency(
-      currency,
-      chain,
-      tokens.filter((c) => c.chain?.id === chain.id),
-    )
+    const token = getTokenFromCurrency(args.currency_id, chain, tokens)
+    const targetChain = getChainFromXcmLocation(args.dest, chain, chains)
+    const targetAddress = getAddressFromXcmLocation(args.dest, account)
 
-    const target = getTarget(dest, chain, chains, account.address)
-    assert(target.chain && target.address, "Unknown target")
     return {
-      value,
+      value: args.amount,
       tokenDecimals: token.decimals,
       tokenSymbol: token.symbol,
       tokenLogo: token.logo,
       tokenRates: tokenRates[token.id],
       fromNetwork: chain.id,
-      toNetwork: target.chain.id,
+      toNetwork: targetChain.id,
       fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
-      toAddress: encodeAnyAddress(target.address, target.chain.prefix ?? undefined),
+      toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
     }
-  }, [extrinsic, chain, tokens, chains, account.address, tokenRates, payload.address])
+  }, [account, chain, chains, payload, sapi, tokenRates, tokens])
+
+  if (errorSapi) return <SubSignBodyDefault />
 
   if (!props) return <SignViewBodyShimmer />
 

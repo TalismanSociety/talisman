@@ -38,7 +38,8 @@
     "build:review:firefox": "docker build . --build-arg command=build:extension:prod:firefox --target export --output review",
     "lint": "pnpm run -r --parallel lint",
     "test": "pnpm run -r --parallel test",
-    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
+    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait",
+    "papi:update": "pnpm run --filter papi-descriptors papi update"
   },
   "devDependencies": {
     "@alectalisman/preconstruct-cli": "2.3.0-e",

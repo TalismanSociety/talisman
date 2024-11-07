@@ -12,7 +12,7 @@
     "postinstall": "papi"
   },
   "devDependencies": {
-    "polkadot-api": "^1.6.4"
+    "polkadot-api": "^1.7.1"
   },
   "dependencies": {
     "@polkadot-api/descriptors": "file:.papi/descriptors"

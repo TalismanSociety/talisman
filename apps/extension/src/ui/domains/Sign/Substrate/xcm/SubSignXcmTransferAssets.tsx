@@ -1,18 +1,10 @@
-import { u8aToHex } from "@polkadot/util"
-import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { isJsonPayload } from "extension-core"
-import {
-  PolkadotAssetHubCalls,
-  PolkadotCalls,
-  XcmVersionedAssets,
-  XcmVersionedLocation,
-} from "papi-descriptors"
+import { PolkadotAssetHubCalls, PolkadotCalls, XcmVersionedAssets } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny } from "@extension/core"
 import { log } from "@extension/shared"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useChains, useTokenRatesMap, useTokensMap } from "@ui/state"
@@ -23,6 +15,8 @@ import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
 import { SubSignBodyDefault } from "../SubSignBodyDefault"
+import { getAddressFromXcmLocation } from "../util/getAddressFromXcmLocation"
+import { getChainFromXcmLocation } from "../util/getChainFromXcmLocation"
 
 type SupportedCall =
   | {
@@ -98,71 +92,6 @@ const getMultiAssetTokenId = (
   throw new Error("Unknown multi asset")
 }
 
-const getTargetChain = (
-  multiLocation: XcmVersionedLocation,
-  chain: Chain,
-  chains: Chain[],
-): Chain => {
-  if (multiLocation.type === "V3") {
-    // const parents = multiLocation.asV1.parents.toNumber()
-    const interior = multiLocation.value.interior
-    if (interior.type === "Here")
-      if (multiLocation.value.parents === 0) return chain
-      else if (multiLocation.value.parents === 1) {
-        const targetChain = chains.find((c) => c.id === chain.relay?.id)
-        if (targetChain) return targetChain
-      }
-    if (interior.type === "X1" && interior.value.type === "Parachain") {
-      const paraId = interior.value.value
-      const relayId = chain.relay ? chain.relay.id : chain.id
-      const targetChain = chains.find((c) => c.relay?.id === relayId && c.paraId === paraId)
-      if (targetChain) return targetChain
-    }
-  }
-
-  // throw an error so the sign popup fallbacks to default view
-  log.warn("Unknown multi location", multiLocation)
-  throw new Error("Unknown multi location")
-}
-
-const isPrefixMatch = (bytes: Uint8Array, prefix: Uint8Array) => {
-  // Check if the Uint8Array length is at least as long as the sequence
-  if (bytes.length < prefix.length) return false
-
-  // Compare each element of the sequence with the array
-  for (let i = 0; i < prefix.length; i++) if (bytes[i] !== prefix[i]) return false
-
-  return true
-}
-
-const getTargetAccount = (
-  multiLocation: XcmVersionedLocation,
-  account: AccountJsonAny,
-): Address => {
-  if (multiLocation?.type === "V3") {
-    // const parents = multiLocation.asV1.parents.toNumber()
-    const interior = multiLocation.value.interior
-    if (interior.type === "Here" && account) return account.address
-    if (interior.type === "X1") {
-      if (interior.value.type === "AccountKey20")
-        return encodeAnyAddress(interior.value.value.key.asBytes())
-      if (interior.value.type === "AccountId32") {
-        // some chains support evm accounts (AccountId20) as AccountId32, prefixed with ETH (in ASCII) and suffixed with empty bytes to fill the remaining of the array
-        // in this case we should identify the corresponding evm address
-        // test case: hydration portal, xcm mythos from mythos to hydration
-        const ETH_PREFIX = new Uint8Array([69, 84, 72, 0])
-        if (isPrefixMatch(interior.value.value.id.asBytes(), ETH_PREFIX))
-          return u8aToHex(interior.value.value.id.asBytes().slice(4, 24))
-
-        return encodeAnyAddress(interior.value.value.id.asBytes())
-      }
-    }
-  }
-  // throw an error so the sign popup fallbacks to default view
-  log.warn("Unknown multi location", multiLocation)
-  throw new Error("Unknown multi location")
-}
-
 export const SubSignXcmTransferAssets = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
@@ -173,7 +102,10 @@ export const SubSignXcmTransferAssets = () => {
   const { data: sapi, error: errorSapi } = useScaleApi(chain?.id)
 
   const props = useMemo(() => {
-    if (!sapi || !isJsonPayload(payload) || !chain) return null
+    if (!sapi) return null // sapi is still loading
+    if (!isJsonPayload(payload)) throw new Error("missing payload")
+    if (!chain) throw new Error("missing chain")
+
     const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
     log.debug("Decoded call", { pallet, call, args })
 
@@ -181,8 +113,8 @@ export const SubSignXcmTransferAssets = () => {
     const token = tokensMap[tokenId]
     if (!token) throw new Error("Unknown token")
 
-    const toNetwork = getTargetChain(args.dest, chain, chains)
-    const toAddress = getTargetAccount(args.beneficiary, account)
+    const toNetwork = getChainFromXcmLocation(args.dest, chain, chains)
+    const toAddress = getAddressFromXcmLocation(args.beneficiary, account)
 
     return {
       value,
