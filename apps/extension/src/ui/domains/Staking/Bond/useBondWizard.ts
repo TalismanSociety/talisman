@@ -138,7 +138,7 @@ export const useBondWizard = () => {
   )
 
   const setPoolId = useCallback(
-    (poolId: number) => setWizardState((prev) => ({ ...prev, poolId })),
+    (poolId: number | string) => setWizardState((prev) => ({ ...prev, poolId })),
     [],
   )
 

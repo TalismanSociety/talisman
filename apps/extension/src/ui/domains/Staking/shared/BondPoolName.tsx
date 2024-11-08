@@ -1,16 +1,18 @@
 import { ChainId } from "extension-core"
 import { FC } from "react"
 
+import { BittensorBondDelegatorSelectDrawer } from "../Bittensor/BittensorBondDelegatorSelectDrawer"
 import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
 export const BondPoolName: FC<{
   chainId: ChainId | null | undefined
   poolId: number | string | null | undefined
-}> = ({ chainId, poolId }) => {
+  setPoolId?: (poolId: number | string) => void
+}> = ({ chainId, poolId, setPoolId }) => {
   let data,
     isLoading = false,
-    poolName = "",
+    poolName,
     defaultPoolName = "Talisman Pool"
 
   const hookMap = {
@@ -22,6 +24,13 @@ export const BondPoolName: FC<{
     case "bittensor":
       ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
       poolName = data?.data[0].name || ""
+      poolName = (
+        <BittensorBondDelegatorSelectDrawer
+          poolName={poolName}
+          poolId={poolId}
+          setPoolId={setPoolId}
+        />
+      )
       defaultPoolName = "Bittensor Pool"
       break
     default:

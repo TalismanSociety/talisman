@@ -17,7 +17,7 @@ import { useGetMinJoinBond } from "./useGetMinJoinBond"
 type GetStakeInfo = {
   sapi: ScaleApi | undefined | null
   address: string | null
-  poolId: string | number | null
+  poolId: string | number | null | undefined
   plancks: bigint | null
   chainId: ChainId | undefined
 }
