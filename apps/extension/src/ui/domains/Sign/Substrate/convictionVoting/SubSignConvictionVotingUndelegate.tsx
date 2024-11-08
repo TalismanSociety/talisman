@@ -1,15 +1,14 @@
-import { isJsonPayload } from "extension-core"
-import { log } from "extension-shared"
 import { PolkadotCalls } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
-import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewVotingUndelegate } from "../../Views/convictionVoting/SignViewVotingUndelegate"
-import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+import { SignCallDef, SignCustomUiComponent } from "../types"
 
 type SupportedCall = {
   pallet: "ConvictionVoting"
@@ -17,23 +16,24 @@ type SupportedCall = {
   args: PolkadotCalls["ConvictionVoting"]["undelegate"]
 }
 
-export const SubSignConvictionVotingUndelegate = () => {
+export const SupportedCallsConvictionVotingUndelegate: SignCallDef[] = [
+  { pallet: "ConvictionVoting", call: "undelegate" },
+]
+
+export const SubSignConvictionVotingUndelegate: SignCustomUiComponent<SupportedCall["args"]> = ({
+  decodedCall: { args },
+  payload,
+}) => {
   const { t } = useTranslation("request")
-  const { chain, payload, sapi } = usePolkadotSigningRequest()
+  const chain = useChainByGenesisHash(payload.genesisHash)
 
   const props = useMemo(() => {
-    if (!sapi) throw new Error("missing sapi")
-    if (!isJsonPayload(payload)) throw new Error("missing payload")
-
-    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
-    log.debug("Decoded call", { pallet, call, args })
-
     return {
       trackId: args.class,
     }
-  }, [payload, sapi])
+  }, [args.class])
 
-  if (!props || !chain?.nativeToken) return <SignViewBodyShimmer />
+  if (!chain?.nativeToken) return <SubSignBodyDefault />
 
   return (
     <SignContainer

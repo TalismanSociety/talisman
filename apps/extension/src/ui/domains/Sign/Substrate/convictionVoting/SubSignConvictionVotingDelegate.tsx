@@ -1,15 +1,14 @@
-import { isJsonPayload } from "extension-core"
-import { log } from "extension-shared"
 import { PolkadotCalls, VotingConviction } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
-import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewVotingDelegate } from "../../Views/convictionVoting/SignViewVotingDelegate"
-import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+import { SignCallDef, SignCustomUiComponent } from "../types"
 import { getAddressFromMultiAddress } from "../util/getAddressFromMultiAddress"
 
 type SupportedCall = {
@@ -18,27 +17,27 @@ type SupportedCall = {
   args: PolkadotCalls["ConvictionVoting"]["delegate"]
 }
 
-export const SubSignConvictionVotingDelegate = () => {
+export const SupportedCallsConvictionVotingDelegate: SignCallDef[] = [
+  { pallet: "ConvictionVoting", call: "delegate" },
+]
+
+export const SubSignConvictionVotingDelegate: SignCustomUiComponent<SupportedCall["args"]> = ({
+  decodedCall: { args },
+  payload,
+}) => {
   const { t } = useTranslation("request")
-  const { chain, payload, sapi } = usePolkadotSigningRequest()
+  const chain = useChainByGenesisHash(payload.genesisHash)
 
   const props = useMemo(() => {
-    if (!sapi) throw new Error("missing sapi")
-    if (!isJsonPayload(payload)) throw new Error("missing payload")
-    if (!chain?.nativeToken) throw new Error("missing chain or native token")
-
-    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
-    log.debug("Decoded call", { pallet, call, args })
-
     return {
       trackId: args.class,
       representative: getAddressFromMultiAddress(args.to),
       conviction: getConviction(args.conviction),
       amount: args.balance,
     }
-  }, [chain, payload, sapi])
+  }, [args])
 
-  if (!props || !chain?.nativeToken) return <SignViewBodyShimmer />
+  if (!chain?.nativeToken) return <SubSignBodyDefault />
 
   return (
     <SignContainer

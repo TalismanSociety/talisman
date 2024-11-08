@@ -1,18 +1,15 @@
 import { u8aToHex } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
-import { AccountJsonAny, Address } from "extension-core"
+import { Address } from "extension-core"
 import { log } from "extension-shared"
 import { XcmVersionedLocation } from "papi-descriptors"
 import { FixedSizeBinary } from "polkadot-api"
 
-export const getAddressFromXcmLocation = (
-  multiLocation: XcmVersionedLocation,
-  account: AccountJsonAny,
-): Address => {
+export const getAddressFromXcmLocation = (multiLocation: XcmVersionedLocation): Address => {
   try {
     const interior = multiLocation.value.interior
 
-    if (interior.type === "Here") return account.address
+    if (interior.type === "Here") throw new Error("Unknown address")
 
     if (interior.type === "X1") {
       if (interior.value.type === "AccountKey20") return interior.value.value.key.asHex()
@@ -30,7 +27,7 @@ export const getAddressFromXcmLocation = (
     // throw an error so the sign popup fallbacks to default view
     throw new Error("Unknown address")
   } catch (error) {
-    log.debug("getAddressFromXcmLocation", { multiLocation, account, error })
+    log.debug("getAddressFromXcmLocation", { multiLocation, error })
     throw error
   }
 }

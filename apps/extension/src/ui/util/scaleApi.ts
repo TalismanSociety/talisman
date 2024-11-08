@@ -21,7 +21,7 @@ type ScaleLookup = ReturnType<typeof getLookupFn>
 export type ScaleApi = ReturnType<typeof getScaleApi>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DecodedCall<Args = any> = { pallet: string; call: string; args: Args }
+export type DecodedCall<Args = any> = { pallet: string; call: string; args: Args }
 
 export type PayloadSignerConfig = {
   address: string

@@ -1,59 +1,86 @@
-import { GenericExtrinsic } from "@polkadot/types"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
-import { FC } from "react"
+import { isJsonPayload, SignerPayloadJSON } from "extension-core"
+import { FC, useMemo } from "react"
 
 import { log } from "@extension/shared"
+import { DecodedCall } from "@ui/util/scaleApi"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
-import { SubSignConvictionVotingDelegate } from "./convictionVoting/SubSignConvictionVotingDelegate"
-import { SubSignConvictionVotingUndelegate } from "./convictionVoting/SubSignConvictionVotingUndelegate"
-import { SubSignConvictionVotingVote } from "./convictionVoting/SubSignConvictionVotingVote"
+import {
+  SubSignConvictionVotingDelegate,
+  SupportedCallsConvictionVotingDelegate,
+} from "./convictionVoting/SubSignConvictionVotingDelegate"
+import {
+  SubSignConvictionVotingUndelegate,
+  SupportedCallsConvictionVotingUndelegate,
+} from "./convictionVoting/SubSignConvictionVotingUndelegate"
+import {
+  SubSignConvictionVotingVote,
+  SupportedCallsConvictionVotingVote,
+} from "./convictionVoting/SubSignConvictionVotingVote"
 import { SubSignBodyDefault } from "./SubSignBodyDefault"
-import { SubSignXcmTransferAssets } from "./xcm/SubSignXcmTransferAssets"
-import { SubSignXTokensTransfer } from "./xTokens/SubSignXTokensTransfer"
+import { SubSignXcmTransfer, SupportedCallsXcmTransfer } from "./xcm/SubSignXcmTransfer"
+import {
+  SubSignXTokensTransfer,
+  SupportedCallsXTokensTransfer,
+} from "./xTokens/SubSignXTokensTransfer"
 
-const getComponentFromTxDetails = (extrinsic: GenericExtrinsic | null | undefined) => {
-  if (!extrinsic) return null
+type CallDef = { pallet: string; call: string }
 
-  const method = `${extrinsic.method.section}.${extrinsic.method.method}`
+type CustomUiComponent = FC<{
+  decodedCall: DecodedCall
+  payload: SignerPayloadJSON
+}>
 
-  switch (method) {
-    case "x-tokens.transfer":
-      return SubSignXTokensTransfer
-    case "convictionVoting.delegate":
-      return SubSignConvictionVotingDelegate
-    case "convictionVoting.undelegate":
-      return SubSignConvictionVotingUndelegate
-    case "convictionVoting.vote":
-      return SubSignConvictionVotingVote
-    case "xcmPallet.reserveTransferAssets":
-    case "xcmPallet.limitedReserveTransferAssets":
-    case "xcmPallet.limitedTeleportAssets":
-    case "polkadotXcm.reserveTransferAssets":
-    case "polkadotXcm.limitedReserveTransferAssets":
-    case "polkadotXcm.limitedTeleportAssets":
-      return SubSignXcmTransferAssets
-    case "xTokens.transfer":
-      return SubSignXTokensTransfer
-    default:
-      log.debug("Unknown signing request type", { method })
-      return null
-  }
-}
+const CUSTOM_UIS: [CallDef[], CustomUiComponent][] = [
+  [SupportedCallsConvictionVotingVote, SubSignConvictionVotingVote],
+  [SupportedCallsConvictionVotingDelegate, SubSignConvictionVotingDelegate],
+  [SupportedCallsConvictionVotingUndelegate, SubSignConvictionVotingUndelegate],
+  [SupportedCallsXcmTransfer, SubSignXcmTransfer],
+  [SupportedCallsXTokensTransfer, SubSignXTokensTransfer],
+]
 
 const Fallback: FallbackRender = () => <SubSignBodyDefault />
 
 export const SubSignBody: FC = () => {
-  const { extrinsic } = usePolkadotSigningRequest()
+  const { payload, sapi } = usePolkadotSigningRequest()
 
-  const Component = getComponentFromTxDetails(extrinsic)
+  const [call, Component, json] = useMemo<
+    [DecodedCall | null, CustomUiComponent | null, SignerPayloadJSON | null]
+  >(() => {
+    if (!sapi || !isJsonPayload(payload)) return [null, null, null]
 
-  if (Component)
+    try {
+      const call = sapi.getDecodedCallFromPayload(payload)
+      if (call) return [call, getComponentFromCall(call), payload]
+    } catch (err) {
+      log.error("Error decoding call from payload", { err, sapi, payload })
+    }
+
+    return [null, null, null]
+  }, [payload, sapi])
+
+  if (call && Component && json)
     return (
       <ErrorBoundary fallback={Fallback}>
-        <Component />
+        <Component payload={json} decodedCall={call} />
       </ErrorBoundary>
     )
 
   return <SubSignBodyDefault />
+}
+
+const isSupportedCall = (call: DecodedCall, supportedCallDef: CallDef) =>
+  call.pallet === supportedCallDef.pallet && call.call === supportedCallDef.call
+
+const isComponentMatch = (call: DecodedCall, supportedCalls: CallDef[]) =>
+  supportedCalls.some((cd) => isSupportedCall(call, cd))
+
+const getComponentFromCall = (call: DecodedCall | null) => {
+  if (!call) return null
+
+  for (const [supportedCalls, component] of CUSTOM_UIS)
+    if (isComponentMatch(call, supportedCalls)) return component
+
+  return null
 }

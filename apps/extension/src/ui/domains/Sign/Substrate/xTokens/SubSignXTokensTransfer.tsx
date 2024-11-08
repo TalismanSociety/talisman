@@ -1,18 +1,17 @@
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
-import { isJsonPayload } from "extension-core"
+import { SignerPayloadJSON } from "extension-core"
 import isEqual from "lodash/isEqual"
 import { AcalaCalls, HydrationCalls } from "papi-descriptors"
 import { Enum } from "polkadot-api"
-import { useMemo } from "react"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { log } from "@extension/shared"
-import { useChains, useTokenRatesMap, useTokens } from "@ui/state"
+import { useChainByGenesisHash, useChains, useTokenRatesMap, useTokens } from "@ui/state"
+import { DecodedCall } from "@ui/util/scaleApi"
 
 import { SignContainer } from "../../SignContainer"
-import { usePolkadotSigningRequest } from "../../SignRequestContext"
-import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
 import { getAddressFromXcmLocation } from "../util/getAddressFromXcmLocation"
@@ -37,6 +36,11 @@ type SupportedCall =
       call: "transfer_with_fee"
       args: SupportedChainCalls["XTokens"]["transfer_with_fee"]
     }
+
+export const SupportedCallsXTokensTransfer = [
+  { pallet: "XTokens", call: "transfer" },
+  { pallet: "XTokens", call: "transfer_with_fee" },
+]
 
 const normalizeTokenId = (tokenId: unknown) => {
   if (typeof tokenId === "string" && tokenId.startsWith("{") && tokenId.endsWith("}"))
@@ -105,24 +109,22 @@ const getTokenFromCurrency = (
   }
 }
 
-export const SubSignXTokensTransfer = () => {
+export const SubSignXTokensTransfer: FC<{
+  decodedCall: DecodedCall<SupportedCall["args"]>
+  payload: SignerPayloadJSON
+}> = ({ decodedCall: { args }, payload }) => {
   const { t } = useTranslation("request")
-  const { chain, payload, account, sapi } = usePolkadotSigningRequest()
+  const chain = useChainByGenesisHash(payload.genesisHash)
   const tokens = useTokens()
   const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
   const props = useMemo(() => {
-    if (!sapi) throw new Error("missing sapi")
-    if (!isJsonPayload(payload)) throw new Error("missing payload")
-    if (!chain) throw new Error("missing chain")
-
-    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
-    log.debug("Decoded call", { pallet, call, args })
+    if (!chain) throw new Error("chain not found")
 
     const token = getTokenFromCurrency(args.currency_id, chain, tokens)
     const targetChain = getChainFromXcmLocation(args.dest, chain, chains)
-    const targetAddress = getAddressFromXcmLocation(args.dest, account)
+    const targetAddress = getAddressFromXcmLocation(args.dest)
 
     return {
       value: args.amount,
@@ -135,9 +137,7 @@ export const SubSignXTokensTransfer = () => {
       fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
       toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
     }
-  }, [account, chain, chains, payload, sapi, tokenRates, tokens])
-
-  if (!props) return <SignViewBodyShimmer />
+  }, [args, payload, chain, chains, tokenRates, tokens])
 
   return (
     <SignContainer

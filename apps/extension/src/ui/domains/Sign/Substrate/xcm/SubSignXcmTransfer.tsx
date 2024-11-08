@@ -1,18 +1,16 @@
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
-import { isJsonPayload } from "extension-core"
 import { PolkadotAssetHubCalls, PolkadotCalls, XcmVersionedAssets } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { log } from "@extension/shared"
-import { useChains, useTokenRatesMap, useTokensMap } from "@ui/state"
+import { useChainByGenesisHash, useChains, useTokenRatesMap, useTokensMap } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
-import { usePolkadotSigningRequest } from "../../SignRequestContext"
-import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
+import { SignCallDef, SignCustomUiComponent } from "../types"
 import { getAddressFromXcmLocation } from "../util/getAddressFromXcmLocation"
 import { getChainFromXcmLocation } from "../util/getChainFromXcmLocation"
 
@@ -47,6 +45,15 @@ type SupportedCall =
       call: "limited_teleport_assets"
       args: PolkadotAssetHubCalls["PolkadotXcm"]["limited_teleport_assets"]
     }
+
+export const SupportedCallsXcmTransfer: SignCallDef[] = [
+  { pallet: "XcmPallet", call: "reserve_transfer_assets" },
+  { pallet: "XcmPallet", call: "limited_reserve_transfer_assets" },
+  { pallet: "XcmPallet", call: "limited_teleport_assets" },
+  { pallet: "PolkadotXcm", call: "reserve_transfer_assets" },
+  { pallet: "PolkadotXcm", call: "limited_reserve_transfer_assets" },
+  { pallet: "PolkadotXcm", call: "limited_teleport_assets" },
+]
 
 const getMultiAssetTokenId = (
   assets: XcmVersionedAssets,
@@ -90,27 +97,25 @@ const getMultiAssetTokenId = (
   throw new Error("Unknown multi asset")
 }
 
-export const SubSignXcmTransferAssets = () => {
+export const SubSignXcmTransfer: SignCustomUiComponent<SupportedCall["args"]> = ({
+  decodedCall: { args },
+  payload,
+}) => {
   const { t } = useTranslation("request")
-  const { chain, payload, account, sapi } = usePolkadotSigningRequest()
+  const chain = useChainByGenesisHash(payload.genesisHash)
   const tokensMap = useTokensMap()
   const chains = useChains()
   const tokenRates = useTokenRatesMap()
 
   const props = useMemo(() => {
-    if (!sapi) throw new Error("missing sapi")
-    if (!isJsonPayload(payload)) throw new Error("missing payload")
-    if (!chain) throw new Error("missing chain")
-
-    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
-    log.debug("Decoded call", { pallet, call, args })
+    if (!chain) throw new Error("chain not found")
 
     const { tokenId, value } = getMultiAssetTokenId(args.assets, chain, tokensMap)
     const token = tokensMap[tokenId]
     if (!token) throw new Error("Unknown token")
 
     const toNetwork = getChainFromXcmLocation(args.dest, chain, chains)
-    const toAddress = getAddressFromXcmLocation(args.beneficiary, account)
+    const toAddress = getAddressFromXcmLocation(args.beneficiary)
 
     return {
       value,
@@ -123,9 +128,7 @@ export const SubSignXcmTransferAssets = () => {
       fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
       toAddress: encodeAnyAddress(toAddress, toNetwork.prefix ?? undefined),
     }
-  }, [account, chain, chains, payload, sapi, tokenRates, tokensMap])
-
-  if (!props) return <SignViewBodyShimmer />
+  }, [args, payload, chain, chains, tokenRates, tokensMap])
 
   return (
     <SignContainer

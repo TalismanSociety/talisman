@@ -1,15 +1,14 @@
-import { isJsonPayload } from "extension-core"
-import { log } from "extension-shared"
 import { PolkadotCalls } from "papi-descriptors"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignViewVotingVote } from "@ui/domains/Sign/Views/convictionVoting/SignViewVotingVote"
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
-import { usePolkadotSigningRequest } from "../../SignRequestContext"
-import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
+import { SubSignBodyDefault } from "../SubSignBodyDefault"
+import { SignCallDef, SignCustomUiComponent } from "../types"
 
 type SupportedCall = {
   pallet: "ConvictionVoting"
@@ -17,17 +16,19 @@ type SupportedCall = {
   args: PolkadotCalls["ConvictionVoting"]["vote"]
 }
 
-export const SubSignConvictionVotingVote = () => {
+export const SupportedCallsConvictionVotingVote: SignCallDef[] = [
+  { pallet: "ConvictionVoting", call: "vote" },
+]
+
+export const SubSignConvictionVotingVote: SignCustomUiComponent<SupportedCall["args"]> = ({
+  decodedCall: { args },
+  payload,
+}) => {
   const { t } = useTranslation("request")
-  const { chain, payload, sapi } = usePolkadotSigningRequest()
+  const chain = useChainByGenesisHash(payload.genesisHash)
 
   const props = useMemo(() => {
-    if (!sapi) throw new Error("missing sapi")
-    if (!isJsonPayload(payload)) throw new Error("missing payload")
-    if (!chain?.nativeToken) throw new Error("missing chain or native token")
-
-    const { pallet, call, args } = sapi.getDecodedCallFromPayload<SupportedCall>(payload)
-    log.debug("Decoded call", { pallet, call, args })
+    if (!chain) throw new Error("chain not found")
 
     if (args.vote.type === "Standard") {
       const { isAye, conviction } = decodeStandardVote(args.vote.value.vote)
@@ -41,9 +42,9 @@ export const SubSignConvictionVotingVote = () => {
     }
 
     throw new Error("Unsupported vote type")
-  }, [chain, payload, sapi, t])
+  }, [chain, args, t])
 
-  if (!props || !chain?.nativeToken) return <SignViewBodyShimmer />
+  if (!chain?.nativeToken) return <SubSignBodyDefault />
 
   return (
     <SignContainer
