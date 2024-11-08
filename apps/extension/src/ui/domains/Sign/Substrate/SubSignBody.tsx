@@ -18,6 +18,10 @@ import {
   SubSignConvictionVotingVote,
   SupportedCallsConvictionVotingVote,
 } from "./convictionVoting/SubSignConvictionVotingVote"
+import {
+  SubSignStakingWithdraw,
+  SupportedCallsStakingWithdraw,
+} from "./staking/SubSignStakingWithdraw"
 import { SubSignBodyDefault } from "./SubSignBodyDefault"
 import { SubSignXcmTransfer, SupportedCallsXcmTransfer } from "./xcm/SubSignXcmTransfer"
 import {
@@ -38,6 +42,7 @@ const CUSTOM_UIS: [CallDef[], CustomUiComponent][] = [
   [SupportedCallsConvictionVotingUndelegate, SubSignConvictionVotingUndelegate],
   [SupportedCallsXcmTransfer, SubSignXcmTransfer],
   [SupportedCallsXTokensTransfer, SubSignXTokensTransfer],
+  [SupportedCallsStakingWithdraw, SubSignStakingWithdraw],
 ]
 
 const Fallback: FallbackRender = () => <SubSignBodyDefault />
