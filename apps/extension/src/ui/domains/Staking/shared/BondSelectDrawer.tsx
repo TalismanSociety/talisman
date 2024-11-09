@@ -1,22 +1,15 @@
-import { ChevronLeftIcon, SettingsIcon, UserRightIcon } from "@talismn/icons"
+import { ChevronLeftIcon, SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, IconButton, useOpenClose } from "talisman-ui"
+import { Button, Drawer, IconButton } from "talisman-ui"
 
-import { Tokens } from "@ui/domains/Asset/Tokens"
+import { BondOption } from "../hooks/bittensor/types"
+import { BondDrawerOption, BondDrawerOptionSkeleton } from "./BondDrawerOption"
 
 export type SortMethod = {
   label: string
   value: string
-}
-
-export type BondOption = {
-  poolId: number | string
-  name: string
-  apr: number
-  totalStaked: number
-  totalStakers: number
 }
 
 type BondSelectDrawerProps = {
@@ -29,20 +22,27 @@ type BondSelectDrawerProps = {
   bondOptions: BondOption[]
   tokenSymbol: string
   selectedPoolId?: number | string | null | undefined
+  close: () => void
+  isOpen: boolean
+  toggle: () => void
+  isLoading: boolean
 }
 
 export const BondSelectDrawer: FC<BondSelectDrawerProps> = ({
   poolName,
   sortMethods,
   selectedSortMethod,
-  handleSortMethodChange,
-  handleSelectPoolId,
-  handleSubmitPoolId,
   bondOptions,
   tokenSymbol,
   selectedPoolId,
+  isOpen,
+  isLoading,
+  handleSortMethodChange,
+  handleSelectPoolId,
+  handleSubmitPoolId,
+  close,
+  toggle,
 }) => {
-  const { close, isOpen, toggle } = useOpenClose()
   const { t } = useTranslation()
 
   return (
@@ -93,39 +93,19 @@ export const BondSelectDrawer: FC<BondSelectDrawerProps> = ({
             </div>
             <div className="h-full max-h-[56vh] overflow-scroll bg-blue-500">
               <div className="space-y-[1rem]">
-                {bondOptions.map((option) => (
-                  <button
-                    key={option.poolId}
-                    onClick={() => handleSelectPoolId(option.poolId)}
-                    className={classNames(
-                      "bg-black-tertiary text-body-disabled border-black-tertiary flex w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs",
-                      option.poolId === selectedPoolId && "border-grey-400",
-                    )}
-                  >
-                    <div
-                      className={classNames(
-                        "text-sm font-bold",
-                        option.poolId === selectedPoolId && "text-white",
-                      )}
-                    >
-                      {option.name}
-                    </div>
-                    <div className="flex w-full justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-4">
-                          <Tokens amount={option.totalStaked} symbol={tokenSymbol} />
-                          {t("staked")}
-                        </div>
-                        <div className="bg-grey-600 h-[4px] w-[4px] rounded-full" />
-                        <div className="flex gap-4">
-                          {/* TODO: Add correct icon */}
-                          {option.totalStakers} <UserRightIcon />
-                        </div>
-                      </div>
-                      <div className="ml-auto">{option.apr}%</div>
-                    </div>
-                  </button>
-                ))}
+                {isLoading && bondOptions.length === 0
+                  ? Array(5)
+                      .fill(null)
+                      .map((_, i) => <BondDrawerOptionSkeleton key={i} />)
+                  : bondOptions.map((option) => (
+                      <BondDrawerOption
+                        key={option.poolId}
+                        option={option}
+                        selectedPoolId={selectedPoolId}
+                        handleSelectPoolId={handleSelectPoolId}
+                        tokenSymbol={tokenSymbol}
+                      />
+                    ))}
               </div>
             </div>
           </div>

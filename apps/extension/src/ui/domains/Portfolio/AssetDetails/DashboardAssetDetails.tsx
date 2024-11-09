@@ -271,9 +271,9 @@ const ChainTokenBalancesDetailRow = ({
     address: rowAddress,
   })
 
-  const { data: validators, isLoading: isBittensorValidatorLoading } = useGetBittensorValidators(
-    hotkeys ?? [],
-  )
+  const { data: validators, isLoading: isBittensorValidatorLoading } = useGetBittensorValidators({
+    hotkeys: hotkeys ?? [],
+  })
 
   const [validator] = validators
 

@@ -23,7 +23,7 @@ export const BondPoolName: FC<{
   switch (chainId) {
     case "bittensor":
       ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
-      poolName = data?.data[0].name || ""
+      poolName = data?.data?.[0].name || ""
       poolName = (
         <BittensorBondDelegatorSelectDrawer
           poolName={poolName}

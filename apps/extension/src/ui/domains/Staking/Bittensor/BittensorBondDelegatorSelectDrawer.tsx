@@ -1,6 +1,9 @@
-import { FC, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
+import { useOpenClose } from "talisman-ui"
 
-import { BondOption, BondSelectDrawer, SortMethod } from "../shared/BondSelectDrawer"
+import { BondOption } from "../hooks/bittensor/types"
+import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { BondSelectDrawer, SortMethod } from "../shared/BondSelectDrawer"
 
 type BittensorBondDelegatorSelectDrawerProps = {
   poolName: string
@@ -22,11 +25,22 @@ export const BittensorBondDelegatorSelectDrawer: FC<BittensorBondDelegatorSelect
 }) => {
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
   const [selectedPoolId, setSelectedPoolId] = useState<number | string | null | undefined>(poolId)
+  const [sortedDelegators, setSortedDelegators] = useState<BondOption[]>([])
 
-  const handleSubmitPoolId = () => {
-    // console.log("implement selecting pool id ", selectedPoolId)
+  const { isOpen, toggle, close } = useOpenClose()
+
+  const { combinedValidatorsData, isLoading: combinedValidatorsDataLoading } =
+    useCombinedBittensorValidatorsData()
+
+  useEffect(() => {
+    if (combinedValidatorsData.length && !combinedValidatorsDataLoading) {
+      setSortedDelegators(combinedValidatorsData)
+    }
+  }, [combinedValidatorsData, combinedValidatorsDataLoading])
+
+  const handleSubmitPoolId = useCallback(() => {
     if (selectedPoolId && setPoolId) setPoolId(selectedPoolId)
-  }
+  }, [selectedPoolId, setPoolId])
 
   const handleSortMethodChange = (method: SortMethod) => {
     setSelectedSortMethod(method)
@@ -41,82 +55,13 @@ export const BittensorBondDelegatorSelectDrawer: FC<BittensorBondDelegatorSelect
       handleSortMethodChange={handleSortMethodChange}
       handleSelectPoolId={setSelectedPoolId}
       handleSubmitPoolId={handleSubmitPoolId}
-      bondOptions={mockedBondOption}
+      bondOptions={sortedDelegators}
       tokenSymbol="TAO"
       selectedPoolId={selectedPoolId}
+      isOpen={isOpen}
+      close={close}
+      toggle={toggle}
+      isLoading={combinedValidatorsDataLoading}
     />
   )
 }
-
-const mockedBondOption: BondOption[] = [
-  {
-    poolId: 1,
-    name: "Ethereum Staking Pool",
-    apr: 5.2,
-    totalStaked: 1000000,
-    totalStakers: 2500,
-  },
-  {
-    poolId: "5F4tQyWrhfGVcNhoqeiNsR6KjD4wMZ2kfhLj4oHYuyHbZAc3",
-    name: "Bitcoin Staking Pool",
-    apr: 4.8,
-    totalStaked: 750000,
-    totalStakers: 1800,
-  },
-  {
-    poolId: 3,
-    name: "Polkadot Staking Pool",
-    apr: 6.5,
-    totalStaked: 500000,
-    totalStakers: 1200,
-  },
-  {
-    poolId: 4,
-    name: "Cardano Staking Pool",
-    apr: 3.9,
-    totalStaked: 850000,
-    totalStakers: 2100,
-  },
-  {
-    poolId: 5,
-    name: "Solana Staking Pool",
-    apr: 7.1,
-    totalStaked: 600000,
-    totalStakers: 1600,
-  },
-  {
-    poolId: 6,
-    name: "Avalanche Staking Pool",
-    apr: 5.6,
-    totalStaked: 300000,
-    totalStakers: 900,
-  },
-  {
-    poolId: 7,
-    name: "Binance Coin Staking Pool",
-    apr: 6.3,
-    totalStaked: 950000,
-    totalStakers: 2300,
-  },
-  {
-    poolId: 8,
-    name: "Polygon Staking Pool",
-    apr: 4.5,
-    totalStaked: 400000,
-    totalStakers: 1300,
-  },
-  {
-    poolId: 9,
-    name: "Cosmos Staking Pool",
-    apr: 5.9,
-    totalStaked: 550000,
-    totalStakers: 1700,
-  },
-  {
-    poolId: 10,
-    name: "Tezos Staking Pool",
-    apr: 4.1,
-    totalStaked: 650000,
-    totalStakers: 1900,
-  },
-]

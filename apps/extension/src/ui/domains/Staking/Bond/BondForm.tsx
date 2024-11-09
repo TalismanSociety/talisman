@@ -328,7 +328,7 @@ const StakeApr = () => {
   switch (token?.chain?.id) {
     case "bittensor":
       ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
-      apr = Number(data?.data[0].apr)
+      apr = Number(data?.data?.[0].apr)
       break
     default:
       ;({ data, isLoading } = hookMap["nominationPool"](token?.chain?.id))
