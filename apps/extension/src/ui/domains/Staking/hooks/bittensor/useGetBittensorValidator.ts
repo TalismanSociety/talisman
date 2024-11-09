@@ -27,16 +27,22 @@ export const useGetBittensorValidator = (hotkey: string) => {
   })
 }
 
-export const useGetBittensorValidators = (hotkeys: string[]) => {
+export const useGetBittensorValidators = ({
+  hotkeys,
+  isEnabled = true,
+}: {
+  hotkeys: string[]
+  isEnabled?: boolean
+}) => {
   return useQueries({
     queries: hotkeys.map((hotkey) => ({
       queryKey: ["useGetBittensorValidator", hotkey],
       queryFn: () => fetchBittensorValidator(hotkey),
-      enabled: !!hotkey,
+      enabled: !!hotkey && isEnabled,
     })),
     combine: (results) => {
       return {
-        data: results.map((result) => result.data?.data?.[0]),
+        data: results.map((result) => result.data?.data?.[0]).filter(Boolean),
         isPending: results.some((result) => result.isPending),
         isLoading: results.some((result) => result.isLoading),
         error: results.find((result) => result.isError),
