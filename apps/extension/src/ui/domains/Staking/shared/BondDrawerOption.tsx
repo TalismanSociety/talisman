@@ -62,9 +62,7 @@ export const BondDrawerOption = ({
             {option.totalStakers} <UserRightIcon />
           </div>
         </div>
-        <div className="ml-auto animate-pulse">
-          {option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}
-        </div>
+        <div className="ml-auto">{option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}</div>
       </div>
     </button>
   )

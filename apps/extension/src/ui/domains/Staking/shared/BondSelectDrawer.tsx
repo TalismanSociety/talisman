@@ -1,22 +1,21 @@
 import { ChevronLeftIcon, SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, IconButton } from "talisman-ui"
 
 import { BondOption } from "../hooks/bittensor/types"
 import { BondDrawerOption, BondDrawerOptionSkeleton } from "./BondDrawerOption"
 
-export type SortMethod = {
+export type SortMethod<T> = {
   label: string
-  value: string
+  value: T
 }
 
-type BondSelectDrawerProps = {
+type BondSelectDrawerProps<T> = {
   poolName: string
-  sortMethods: SortMethod[]
-  selectedSortMethod: SortMethod
-  handleSortMethodChange: (method: SortMethod) => void
+  sortMethods: SortMethod<T>[]
+  selectedSortMethod: SortMethod<T>
+  handleSortMethodChange: (method: SortMethod<T>) => void
   handleSubmitPoolId: () => void
   handleSelectPoolId: React.Dispatch<React.SetStateAction<number | string | null | undefined>>
   bondOptions: BondOption[]
@@ -28,7 +27,7 @@ type BondSelectDrawerProps = {
   isLoading: boolean
 }
 
-export const BondSelectDrawer: FC<BondSelectDrawerProps> = ({
+export const BondSelectDrawer = <T,>({
   poolName,
   sortMethods,
   selectedSortMethod,
@@ -42,7 +41,7 @@ export const BondSelectDrawer: FC<BondSelectDrawerProps> = ({
   handleSubmitPoolId,
   close,
   toggle,
-}) => {
+}: BondSelectDrawerProps<T>) => {
   const { t } = useTranslation()
 
   return (
@@ -73,7 +72,7 @@ export const BondSelectDrawer: FC<BondSelectDrawerProps> = ({
             <div className="flex justify-between">
               {sortMethods.map((method) => (
                 <button
-                  key={method.value}
+                  key={method.label}
                   onClick={() => handleSortMethodChange(method)}
                   className={classNames(
                     "rounded-[12px] px-[8px] py-[6px] text-sm",
