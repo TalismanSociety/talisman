@@ -21,7 +21,12 @@ export const useBondModal = () => {
       tokenId: TokenId
       poolId: number | string
     }) => {
-      reset({ address, tokenId, poolId })
+      reset({
+        address,
+        tokenId,
+        poolId,
+        step: tokenId === "bittensor-substrate-native" ? "select" : "form",
+      })
 
       // then open the modal
       innerOpen()

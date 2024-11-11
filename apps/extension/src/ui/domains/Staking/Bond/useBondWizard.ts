@@ -14,7 +14,7 @@ import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../SendFunds/useFeeToken"
 import { useGetStakeInfo } from "../shared/useGetStakeInfo"
 
-type WizardStep = "form" | "review" | "follow-up"
+type WizardStep = "form" | "review" | "follow-up" | "select"
 
 type WizardState = {
   step: WizardStep
@@ -70,7 +70,7 @@ const useInnerOpenClose = (key: "isAccountPickerOpen") => {
 
 export const useResetNomPoolBondWizard = () => {
   const reset = useCallback(
-    (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
+    (init: Pick<WizardState, "address" | "tokenId" | "poolId" | "step">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
     [],
   )

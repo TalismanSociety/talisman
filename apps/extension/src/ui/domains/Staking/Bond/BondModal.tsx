@@ -7,6 +7,7 @@ import { IconButton, Modal } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { BondDelegateSelect } from "./BondDelegateSelect"
 import { BondFollowUp } from "./BondFollowUp"
 import { BondForm } from "./BondForm"
 import { BondReview } from "./BondReview"
@@ -48,6 +49,8 @@ const ModalContent = () => {
   const { step } = useBondWizard()
 
   switch (step) {
+    case "select":
+      return <BondDelegateSelect />
     case "form":
       return <BondForm />
     case "review":
