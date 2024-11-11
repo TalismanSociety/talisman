@@ -336,9 +336,6 @@ importers:
       '@talismn/siws':
         specifier: ^0.0.19
         version: 0.0.19(@polkadot/api-contract@14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4))(@polkadot/api@14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4))(@polkadot/extension-dapp@0.55.1(@polkadot/api@14.1.1(bufferutil@4.0.8)(utf-8-validate@6.0.4))(@polkadot/util-crypto@13.2.1(@polkadot/util@13.2.1))(@polkadot/util@13.2.1)(bufferutil@4.0.8)(utf-8-validate@6.0.4))(@polkadot/types@14.1.1)(@polkadot/util-crypto@13.2.1(@polkadot/util@13.2.1))(@polkadot/util@13.2.1)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@talismn/subshape-fork':
-        specifier: ^0.0.2
-        version: 0.0.2
       '@talismn/token-rates':
         specifier: workspace:*
         version: link:../../packages/token-rates
@@ -5272,9 +5269,6 @@ packages:
     peerDependencies:
       '@polkadot/api': 14.1.1
       '@polkadot/extension-dapp': 0.54.1
-
-  '@talismn/subshape-fork@0.0.2':
-    resolution: {integrity: sha512-TnVzQX76RWiJd7AwGvCRnyhrrSC/Azut4APIHLSFyZe6wlqVacA1npU1klYihqE+/pcLPfj5j2yaiVIgYR1w6A==}
 
   '@talismn/wagmi-connector@0.3.1':
     resolution: {integrity: sha512-ocMiNdYGUFN0yA5mzVS7U5oea07ism8VF5h769nX3ulF/Pk/BGUfZXbx/qs0J7JUJ6GAU+rMSD9r+0hWSQRI4Q==}
@@ -18131,8 +18125,6 @@ snapshots:
       - '@polkadot/util-crypto'
       - bufferutil
       - utf-8-validate
-
-  '@talismn/subshape-fork@0.0.2': {}
 
   '@talismn/wagmi-connector@0.3.1(@wagmi/core@2.14.1(@tanstack/query-core@5.59.16)(@types/react@18.3.12)(react@18.3.1)(typescript@5.6.3)(use-sync-external-store@1.2.0(react@18.3.1))(viem@2.21.34(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@5.0.10)))(viem@2.21.34(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@5.0.10))':
     dependencies:
