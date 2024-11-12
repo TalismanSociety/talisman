@@ -24,6 +24,7 @@ export const useGetBittensorValidator = (hotkey: string) => {
     queryKey: ["useGetBittensorValidator", hotkey],
     queryFn: () => fetchBittensorValidator(hotkey),
     enabled: !!hotkey,
+    staleTime: 10 * 60 * 1000,
   })
 }
 
@@ -39,6 +40,7 @@ export const useGetBittensorValidators = ({
       queryKey: ["useGetBittensorValidator", hotkey],
       queryFn: () => fetchBittensorValidator(hotkey),
       enabled: !!hotkey && isEnabled,
+      staleTime: 10 * 60 * 1000,
     })),
     combine: (results) => {
       return {

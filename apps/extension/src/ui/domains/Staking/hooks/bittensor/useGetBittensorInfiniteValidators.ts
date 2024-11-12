@@ -27,5 +27,6 @@ export const useGetBittensorInfiniteValidators = ({ isEnabled }: { isEnabled: bo
     getNextPageParam: (lastPage) => lastPage.pagination?.next_page ?? undefined,
     getPreviousPageParam: (firstPage) => firstPage.pagination?.prev_page ?? undefined,
     enabled: isEnabled,
+    staleTime: 10 * 60 * 1000,
   })
 }
