@@ -1,3 +1,5 @@
+import { ErrorBoundary } from "@sentry/react"
+import { LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import DOMPurify from "dompurify"
 import { log } from "extension-shared"
@@ -5,15 +7,52 @@ import htmlParser from "html-react-parser"
 import { dump as convertToYaml } from "js-yaml"
 import { marked } from "marked"
 import { Binary } from "polkadot-api"
-import { FC, useMemo } from "react"
+import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
+import { SubSignCallSummary } from "../summary/SubSignCallSummary"
+
+const LoadingShimmer = () => {
+  const { t } = useTranslation("request")
+
+  return (
+    <div className="text-body-secondary animate-fade-in flex flex-col items-center gap-2 pt-40 leading-[140%]">
+      <LoaderIcon className="animate-spin-slow h-14 w-14" />
+      <div className="mt-4 text-sm font-bold text-white opacity-70">{t("Analysing request")}</div>
+    </div>
+  )
+}
+
 export const SubSignDecodedCallContent: FC<{
   decodedCall: DecodedCall
-  sapi: ScaleApi | null | undefined
+  sapi: ScaleApi
+}> = ({ decodedCall, sapi }) => (
+  <ErrorBoundary fallback={() => <ErrorFallback decodedCall={decodedCall} sapi={sapi} />}>
+    <Suspense fallback={<LoadingShimmer />}>
+      <div className="text-body-secondary flex flex-col gap-4 text-sm">
+        {/* Summary can suspense to fetch additional data, and break if a chain uses different types */}
+        <SubSignCallSummary decodedCall={decodedCall} sapi={sapi} />
+        <DefaultView decodedCall={decodedCall} sapi={sapi} />
+      </div>
+    </Suspense>
+  </ErrorBoundary>
+)
+
+const ErrorFallback: FC<{
+  decodedCall: DecodedCall
+  sapi: ScaleApi
+}> = ({ decodedCall, sapi }) => (
+  <div className="text-body-secondary flex flex-col gap-4 text-sm">
+    <DefaultView decodedCall={decodedCall} sapi={sapi} />
+  </div>
+)
+
+const DefaultView: FC<{
+  decodedCall: DecodedCall
+  sapi: ScaleApi
 }> = ({ decodedCall, sapi }) => {
   const { t } = useTranslation()
 
@@ -44,7 +83,7 @@ export const SubSignDecodedCallContent: FC<{
   }, [sapi, decodedCall])
 
   return (
-    <div className="text-body-secondary flex flex-col gap-4 text-sm">
+    <>
       <div className="flex w-full justify-between gap-8">
         <div>{t("Pallet")}</div>
         <div className="text-body truncate">{decodedCall.pallet}</div>
@@ -69,7 +108,7 @@ export const SubSignDecodedCallContent: FC<{
           </div>
         </>
       )}
-    </div>
+    </>
   )
 }
 

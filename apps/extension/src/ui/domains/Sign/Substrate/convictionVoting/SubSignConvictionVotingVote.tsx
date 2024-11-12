@@ -9,6 +9,7 @@ import { useChainByGenesisHash } from "@ui/state"
 import { SignContainer } from "../../SignContainer"
 import { SubSignBodyDefault } from "../SubSignBodyDefault"
 import { SignCallDef, SignCustomUiComponent } from "../types"
+import { decodeStandardVote } from "../util/decodeStandardVote"
 
 type SupportedCall = {
   pallet: "ConvictionVoting"
@@ -56,16 +57,3 @@ export const SubSignConvictionVotingVote: SignCustomUiComponent<SupportedCall["a
     </SignContainer>
   )
 }
-
-const AYE_BITS = 0b10000000
-const CON_MASK = 0b01111111
-
-const decodeStandardVote = (
-  vote: number,
-): {
-  isAye: boolean
-  conviction: number
-} => ({
-  isAye: (vote & AYE_BITS) === AYE_BITS,
-  conviction: vote & CON_MASK,
-})
