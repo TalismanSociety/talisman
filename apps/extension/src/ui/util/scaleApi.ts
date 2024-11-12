@@ -18,7 +18,7 @@ import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 type ScaleMetadata = V14 | V15
 type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
 type ScaleLookup = ReturnType<typeof getLookupFn>
-export type ScaleApi = ReturnType<typeof getScaleApi>
+export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DecodedCall<Args = any> = { pallet: string; call: string; args: Args }
@@ -118,6 +118,8 @@ export const getScaleApi = (
       getTypeRegistry(hexMetadata, payload, chainInfo),
 
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),
+
+    getCallDocs: (pallet: string, method: string) => getCallDocs(pallet, method, metadata),
   }
 
   stop()
@@ -222,13 +224,37 @@ const getDecodedCallFromPayload = <Res extends DecodedCall>(
   lookup: ScaleLookup,
   payload: SignerPayloadJSON,
 ): Res => {
-  const decoded = builder.buildDefinition(lookup.call!).dec(payload.method)
+  const def = builder.buildDefinition(lookup.call!)
+  const decoded = def.dec(payload.method)
 
   return {
     pallet: decoded.type,
     call: decoded.value.type,
     args: decoded.value.value,
   } as Res
+}
+
+const getCallDocs = (pallet: string, method: string, metadata: ScaleMetadata): string | null => {
+  try {
+    const typeIdCalls = metadata.pallets.find(({ name }) => name === pallet)?.calls
+    if (!typeIdCalls) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let palletCalls: any = metadata.lookup[typeIdCalls]
+    if (!palletCalls || palletCalls.id !== typeIdCalls)
+      palletCalls = metadata.lookup.find((v) => v.id === typeIdCalls)
+
+    if (!palletCalls) return null
+
+    const call = palletCalls.def.value.find(
+      (c: { name: string; docs?: string[] | null }) => c.name === method,
+    )
+
+    return call?.docs?.join("\n") ?? null
+  } catch (err) {
+    log.error("Failed to find call docs", { pallet, method, metadata })
+    return null
+  }
 }
 
 const getSignerPayloadJSON = async (

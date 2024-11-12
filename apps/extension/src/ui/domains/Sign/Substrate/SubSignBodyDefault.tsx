@@ -6,6 +6,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsSub } from "../ViewDetails/ViewDetailsSub"
+import { SubSignDecoded } from "./decode/SubSignDecoded"
 
 export const SubSignBodyDefault = () => {
   const { t } = useTranslation("request")
@@ -28,9 +29,10 @@ export const SubSignBodyDefault = () => {
         <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
         {chain ? ` on ${chain.name}` : null}
       </h2>
-      <div className="mt-16 flex justify-center">
+      <div className="my-16 flex justify-center">
         <ViewDetailsSub />
       </div>
+      <SubSignDecoded />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { log } from "@extension/shared"
 import { DecodedCall } from "@ui/util/scaleApi"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
+import { SubSignBatch, SupportedCallsBatch } from "./batch/SubSignBatch"
 import {
   SubSignConvictionVotingDelegate,
   SupportedCallsConvictionVotingDelegate,
@@ -43,37 +44,37 @@ const CUSTOM_UIS: [CallDef[], CustomUiComponent][] = [
   [SupportedCallsXcmTransfer, SubSignXcmTransfer],
   [SupportedCallsXTokensTransfer, SubSignXTokensTransfer],
   [SupportedCallsStakingWithdraw, SubSignStakingWithdraw],
+  [SupportedCallsBatch, SubSignBatch],
 ]
 
-const Fallback: FallbackRender = () => <SubSignBodyDefault />
-
 export const SubSignBody: FC = () => {
-  const { payload, sapi } = usePolkadotSigningRequest()
+  const { payload, sapi, decodedCall } = usePolkadotSigningRequest()
 
-  const [call, Component, json] = useMemo<
+  const [call, Component, jsonPayload] = useMemo<
     [DecodedCall | null, CustomUiComponent | null, SignerPayloadJSON | null]
   >(() => {
-    if (!sapi || !isJsonPayload(payload)) return [null, null, null]
+    if (!decodedCall || !sapi || !isJsonPayload(payload)) return [null, null, null]
 
     try {
-      const call = sapi.getDecodedCallFromPayload(payload)
-      if (call) return [call, getComponentFromCall(call), payload]
+      return [decodedCall, getComponentFromCall(decodedCall), payload]
     } catch (err) {
       log.error("Error decoding call from payload", { err, sapi, payload })
     }
 
     return [null, null, null]
-  }, [payload, sapi])
+  }, [payload, sapi, decodedCall])
 
-  if (call && Component && json)
+  if (call && Component && jsonPayload)
     return (
       <ErrorBoundary fallback={Fallback}>
-        <Component payload={json} decodedCall={call} />
+        <Component payload={jsonPayload} decodedCall={call} />
       </ErrorBoundary>
     )
 
   return <SubSignBodyDefault />
 }
+
+const Fallback: FallbackRender = () => <SubSignBodyDefault />
 
 const isSupportedCall = (call: DecodedCall, supportedCallDef: CallDef) =>
   call.pallet === supportedCallDef.pallet && call.call === supportedCallDef.call
@@ -81,7 +82,7 @@ const isSupportedCall = (call: DecodedCall, supportedCallDef: CallDef) =>
 const isComponentMatch = (call: DecodedCall, supportedCalls: CallDef[]) =>
   supportedCalls.some((cd) => isSupportedCall(call, cd))
 
-const getComponentFromCall = (call: DecodedCall | null) => {
+const getComponentFromCall = (call: DecodedCall) => {
   if (!call) return null
 
   for (const [supportedCalls, component] of CUSTOM_UIS)

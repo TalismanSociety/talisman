@@ -21,7 +21,7 @@ export const SupportedCallsConvictionVotingVote: SignCallDef[] = [
 ]
 
 export const SubSignConvictionVotingVote: SignCustomUiComponent<SupportedCall["args"]> = ({
-  decodedCall: { args },
+  decodedCall,
   payload,
 }) => {
   const { t } = useTranslation("request")
@@ -30,19 +30,19 @@ export const SubSignConvictionVotingVote: SignCustomUiComponent<SupportedCall["a
   const props = useMemo(() => {
     if (!chain) throw new Error("chain not found")
 
-    if (args.vote.type === "Standard") {
-      const { isAye, conviction } = decodeStandardVote(args.vote.value.vote)
+    if (decodedCall.args.vote.type === "Standard") {
+      const { isAye, conviction } = decodeStandardVote(decodedCall.args.vote.value.vote)
 
       return {
         title: isAye ? t("Vote Yes") : t("Vote No"),
-        pollIndex: args.poll_index,
+        pollIndex: decodedCall.args.poll_index,
         conviction,
-        voteAmount: args.vote.value.balance,
+        voteAmount: decodedCall.args.vote.value.balance,
       }
     }
 
     throw new Error("Unsupported vote type")
-  }, [chain, args, t])
+  }, [chain, decodedCall, t])
 
   if (!chain?.nativeToken) return <SubSignBodyDefault />
 

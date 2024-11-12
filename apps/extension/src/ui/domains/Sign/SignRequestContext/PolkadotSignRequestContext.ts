@@ -83,6 +83,17 @@ const usePolkadotSigningRequestProvider = ({
     [modifiedPayload, signingRequest.request.payload],
   )
 
+  const decodedCall = useMemo(() => {
+    if (!sapi || !isJsonPayload(payload)) return null
+
+    try {
+      return sapi.getDecodedCallFromPayload(payload)
+    } catch (err) {
+      log.error("failed to decode call", { err })
+      return null
+    }
+  }, [payload, sapi])
+
   const [extrinsic, errorDecodingExtrinsic] = useMemo(() => {
     try {
       return [
@@ -175,6 +186,7 @@ const usePolkadotSigningRequestProvider = ({
     registry,
     shortMetadata,
     sapi,
+    decodedCall,
   }
 }
 

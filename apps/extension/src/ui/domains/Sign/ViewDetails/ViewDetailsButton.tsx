@@ -31,7 +31,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
       type="button"
       onClick={handleClick}
       className={classNames(
-        "text-body-disabled hover:text-body-secondary flex items-center gap-2",
+        "text-body-inactive hover:text-body-secondary flex items-center gap-2",
         className,
         hasError && "text-alert-warn",
         hide && "hidden",
