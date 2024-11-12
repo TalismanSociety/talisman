@@ -24,8 +24,8 @@ export const useGetBittensorInfiniteValidators = ({ isEnabled }: { isEnabled: bo
     queryKey: ["useGetBittensorInfiniteValidators"],
     queryFn: ({ pageParam = 1 }) => fetchBittensorInfiniteValidators(pageParam),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.pagination.next_page ?? undefined,
-    getPreviousPageParam: (firstPage) => firstPage.pagination.prev_page ?? undefined,
+    getNextPageParam: (lastPage) => lastPage.pagination?.next_page ?? undefined,
+    getPreviousPageParam: (firstPage) => firstPage.pagination?.prev_page ?? undefined,
     enabled: isEnabled,
   })
 }

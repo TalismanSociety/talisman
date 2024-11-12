@@ -1,17 +1,18 @@
-import { ChainId } from "extension-core"
-import { FC } from "react"
+import { SettingsIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 
-import { BittensorBondDelegatorSelectDrawer } from "../Bittensor/BittensorBondDelegatorSelectDrawer"
+import { useBondWizard } from "../Bond/useBondWizard"
 import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
-export const BondPoolName: FC<{
-  chainId: ChainId | null | undefined
-  poolId: number | string | null | undefined
-  setPoolId?: (poolId: number | string) => void
-}> = ({ chainId, poolId, setPoolId }) => {
+export const BondPoolName = () => {
+  const { setStep, step, poolId, token } = useBondWizard()
+
+  const { id: chainId } = token?.chain || {}
+
   let data,
     isLoading = false,
+    isError = false,
     poolName,
     defaultPoolName = "Talisman Pool"
 
@@ -22,26 +23,42 @@ export const BondPoolName: FC<{
 
   switch (chainId) {
     case "bittensor":
-      ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
+      ;({ data, isLoading, isError } = hookMap["bittensor"](poolId as unknown as string))
       poolName = data?.data?.[0].name || ""
       poolName = (
-        <BittensorBondDelegatorSelectDrawer
-          poolName={poolName}
-          poolId={poolId}
-          setPoolId={setPoolId}
-        />
+        <button
+          onClick={() => step === "form" && setStep("select")}
+          className={classNames(
+            "bg-pill flex items-center gap-2 rounded-xl p-4 text-xs font-light",
+            step !== "form" && "cursor-not-allowed",
+          )}
+        >
+          <SettingsIcon className="text-body-secondary" />
+          <div>{poolName}</div>
+        </button>
       )
+
       defaultPoolName = "Bittensor Pool"
       break
     default:
-      ;({ data, isLoading } = hookMap["nominationPool"](chainId, poolId as unknown as number))
+      ;({ data, isLoading, isError } = hookMap["nominationPool"](
+        chainId,
+        poolId as unknown as number,
+      ))
       poolName = data || ""
       break
   }
 
-  if (isLoading)
+  if (isError) return <>{defaultPoolName}</>
+
+  if (isLoading || !poolName)
     return (
-      <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">{defaultPoolName}</div>
+      <div
+        className={classNames(
+          "text-grey-700 bg-grey-700 rounded-xs h-[1.6rem] w-40 animate-pulse",
+          chainId === "bittensor" && "my-[0.85rem]",
+        )}
+      />
     )
 
   return <>{poolName}</>

@@ -363,7 +363,7 @@ const FeeEstimate = () => {
 
 export const BondForm = () => {
   const { t } = useTranslation()
-  const { account, poolId, accountPicker, token, payload, setStep, setPoolId } = useBondWizard()
+  const { account, accountPicker, token, payload, setStep } = useBondWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -394,7 +394,7 @@ export const BondForm = () => {
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="text-body truncate">
-            <BondPoolName chainId={token?.chain?.id} poolId={poolId} setPoolId={setPoolId} />
+            <BondPoolName />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">

@@ -168,9 +168,10 @@ export const useBondWizard = () => {
 
   useEffect(() => {
     // if user is already staking in pool, set poolId to that pool
-    if (!!currentPoolId && currentPoolId !== poolId)
+    // Except for TAO, allow user to select any pool
+    if (!!currentPoolId && currentPoolId !== poolId && tokenId !== "bittensor-substrate-native")
       setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
-  }, [currentPoolId, poolId])
+  }, [currentPoolId, poolId, tokenId])
 
   const setStep = useCallback(
     (step: WizardStep) => {

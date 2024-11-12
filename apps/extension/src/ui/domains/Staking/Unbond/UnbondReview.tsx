@@ -15,7 +15,6 @@ export const UnbondReview = () => {
   const { t } = useTranslation()
   const {
     token,
-    poolId,
     amountToUnbond,
     account,
     onSubmitted,
@@ -61,7 +60,7 @@ export const UnbondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <BondPoolName chainId={token?.chain?.id} poolId={poolId} />
+            <BondPoolName />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">

@@ -35,7 +35,7 @@ export const useCombinedBittensorValidatorsData = () => {
 
     const combined: BondOption[] = Object.keys(supportedDelegates).map((key) => {
       const supportedDelegate = supportedDelegates[key]
-      const validator = flatInitialValidators.find((validator) => validator.hotkey.ss58 === key)
+      const validator = flatInitialValidators.find((validator) => validator?.hotkey?.ss58 === key)
       return {
         poolId: key,
         name: supportedDelegate.name,

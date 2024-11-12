@@ -1,15 +1,8 @@
-import { FC, useCallback, useEffect, useState } from "react"
-import { useOpenClose } from "talisman-ui"
+import { useEffect, useState } from "react"
 
 import { BondOption } from "../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
-import { BondSelectDrawer } from "../shared/BondSelectDrawer"
-
-type BittensorBondDelegatorSelectDrawerProps = {
-  poolName: string
-  poolId: number | string | null | undefined
-  setPoolId?: (poolId: number | string) => void
-}
+import { BondDelegateSelect } from "../shared/BondDelegateSelect"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 
@@ -25,20 +18,23 @@ const sortMethods: SortMethod[] = [
   { label: "Rewards", value: "apr" },
 ]
 
-export const BittensorBondDelegatorSelectDrawer: FC<BittensorBondDelegatorSelectDrawerProps> = ({
-  poolName,
-  poolId,
-  setPoolId,
-}) => {
+export const BittensorBondDelegateSelect = () => {
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
-  const [selectedPoolId, setSelectedPoolId] = useState<number | string | null | undefined>(poolId)
   const [sortedDelegators, setSortedDelegators] = useState<BondOption[]>([])
-
-  const { isOpen, toggle, close } = useOpenClose()
 
   const { combinedValidatorsData, isLoading: combinedValidatorsDataLoading } =
     useCombinedBittensorValidatorsData()
 
+  useEffect(() => {
+    if (combinedValidatorsData.length && !combinedValidatorsDataLoading) {
+      setSortedDelegators(sortBondOptions(combinedValidatorsData, "name"))
+    }
+  }, [combinedValidatorsData, combinedValidatorsDataLoading])
+
+  const handleSortMethodChange = (method: SortMethod) => {
+    setSelectedSortMethod(method)
+    setSortedDelegators((prev) => sortBondOptions(prev, method.value))
+  }
   const sortBondOptions = (data: BondOption[], sortBy: SortValue): BondOption[] => {
     return data.sort((a, b) => {
       if (sortBy === "name") {
@@ -54,36 +50,14 @@ export const BittensorBondDelegatorSelectDrawer: FC<BittensorBondDelegatorSelect
     })
   }
 
-  useEffect(() => {
-    if (combinedValidatorsData.length && !combinedValidatorsDataLoading) {
-      setSortedDelegators(sortBondOptions(combinedValidatorsData, "name"))
-    }
-  }, [combinedValidatorsData, combinedValidatorsDataLoading])
-
-  const handleSubmitPoolId = useCallback(() => {
-    if (selectedPoolId && setPoolId) setPoolId(selectedPoolId)
-  }, [selectedPoolId, setPoolId])
-
-  const handleSortMethodChange = (method: SortMethod) => {
-    setSelectedSortMethod(method)
-    setSortedDelegators((prev) => sortBondOptions(prev, method.value))
-  }
-
   return (
-    <BondSelectDrawer
-      poolName={poolName}
+    <BondDelegateSelect
       sortMethods={sortMethods}
       selectedSortMethod={selectedSortMethod}
       handleSortMethodChange={handleSortMethodChange}
-      handleSelectPoolId={setSelectedPoolId}
-      handleSubmitPoolId={handleSubmitPoolId}
+      isLoading={combinedValidatorsDataLoading}
       bondOptions={sortedDelegators}
       tokenSymbol="TAO"
-      selectedPoolId={selectedPoolId}
-      isOpen={isOpen}
-      close={close}
-      toggle={toggle}
-      isLoading={combinedValidatorsDataLoading}
     />
   )
 }

@@ -5,9 +5,10 @@ import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { BondDelegateSelect } from "./BondDelegateSelect"
+import { BittensorBondDelegateSelect } from "../Bittensor/BittensorBondDelegateSelect"
 import { BondFollowUp } from "./BondFollowUp"
 import { BondForm } from "./BondForm"
 import { BondReview } from "./BondReview"
@@ -16,7 +17,7 @@ import { useBondWizard } from "./useBondWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()
-  const { step, setStep } = useBondWizard()
+  const { step, setStep, token } = useBondWizard()
   const { close } = useBondModal()
 
   const handleBackClick = useCallback(() => setStep("form"), [setStep])
@@ -24,7 +25,7 @@ const ModalHeader = () => {
   return (
     <div
       className={classNames(
-        "text-body-secondary flex h-32 w-full shrink-0 items-center justify-between px-10",
+        "text-body-secondary flex min-h-32 w-full shrink-0 items-center justify-between px-10",
         step === "follow-up" ? "invisible" : "visible",
       )}
     >
@@ -37,6 +38,22 @@ const ModalHeader = () => {
       <div>
         {step === "form" && <span className="text-body font-bold">{t("Staking")}</span>}
         {step === "review" && t("Confirm")}
+        {step === "select" && (
+          <div className="flex items-center gap-2 space-y-4 pt-10">
+            <IconButton onClick={handleBackClick}>
+              <ChevronLeftIcon />
+            </IconButton>
+            <div>
+              <div className="font-bold text-white">{t("Select Validator")}</div>
+              <div className="flex items-center gap-2 text-xs">
+                <TokenLogo tokenId={token?.id ?? ""} className="text-md shrink-0" />
+                <div className="text-white">{token?.symbol}</div>
+                <div className="bg-body-disabled inline-block size-2 rounded-full" />
+                <div className="text-body-secondary">{t("Direct Staking")}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <IconButton onClick={close}>
         <XIcon />
@@ -50,7 +67,7 @@ const ModalContent = () => {
 
   switch (step) {
     case "select":
-      return <BondDelegateSelect />
+      return <BittensorBondDelegateSelect />
     case "form":
       return <BondForm />
     case "review":

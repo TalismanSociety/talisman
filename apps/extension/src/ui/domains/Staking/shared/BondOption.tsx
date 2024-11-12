@@ -4,16 +4,16 @@ import { useTranslation } from "react-i18next"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
 
-import { BondOption } from "../hooks/bittensor/types"
+import { BondOption as BondOptionType } from "../hooks/bittensor/types"
 
-type BondDrawerOptionProps = {
-  option: BondOption
+type BondDrawerProps = {
+  option: BondOptionType
   selectedPoolId: number | string | null | undefined
   handleSelectPoolId: (poolId: number | string) => void
   tokenSymbol: string
 }
 
-export const BondDrawerOptionSkeleton = () => {
+export const BondOptionSkeleton = () => {
   return (
     <div className="bg-black-tertiary border-black-tertiary flex h-[6.5rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
       <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[10rem] animate-pulse" />
@@ -26,12 +26,12 @@ export const BondDrawerOptionSkeleton = () => {
   )
 }
 
-export const BondDrawerOption = ({
+export const BondOption = ({
   option,
   selectedPoolId,
   handleSelectPoolId,
   tokenSymbol,
-}: BondDrawerOptionProps) => {
+}: BondDrawerProps) => {
   const { t } = useTranslation()
   return (
     <button
@@ -56,7 +56,7 @@ export const BondDrawerOption = ({
             <Tokens amount={option.totalStaked} symbol={tokenSymbol} />
             {t("staked")}
           </div>
-          <div className="bg-grey-600 h-[4px] w-[4px] rounded-full" />
+          <div className="bg-body-disabled inline-block size-2 rounded-full" />
           <div className="flex gap-4">
             {/* TODO: Add correct icon */}
             {option.totalStakers} <UserRightIcon />
