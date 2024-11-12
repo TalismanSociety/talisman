@@ -1,4 +1,4 @@
-import { classNames } from "@talismn/util"
+import { classNames, encodeAnyAddress } from "@talismn/util"
 import DOMPurify from "dompurify"
 import { log } from "extension-shared"
 import htmlParser from "html-react-parser"
@@ -19,6 +19,10 @@ export const SubSignDecodedCallContent: FC<{
 
   const yamlArgs = useMemo(() => {
     try {
+      log.debug("formatArgs(decodedCall.args)", {
+        args: decodedCall.args,
+        formatted: formatArgs(decodedCall.args),
+      })
       return convertToYaml(formatArgs(decodedCall.args), {
         skipInvalid: true,
       })
@@ -72,12 +76,34 @@ export const SubSignDecodedCallContent: FC<{
 const formatArgs = (args: unknown): unknown => {
   if (args === undefined) return args
   if (args === null) return args
+  if (typeof args === "boolean") return args.toString()
   if (typeof args === "string") return args
   if (typeof args === "number") return args
   if (typeof args === "bigint") return args.toString() + "n"
-  if (args instanceof Binary) return args.asText()
-  if (Array.isArray(args)) return args.map(formatArgs)
+
+  if (args instanceof Binary) {
+    // TODO fallback to asHex if any weird characters are present
+    return args.asText()
+  }
+
+  if (Array.isArray(args)) {
+    return args.map(formatArgs)
+  }
+
   if (typeof args === "object") {
+    // workaround for AccountId32 - asText() returns glyphs so we need to decode it manually
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyArgs = args as any
+    if (anyArgs.type === "AccountId32" && anyArgs.value.id)
+      return {
+        type: "AccountId32",
+        value: encodeAnyAddress(anyArgs.value.id.asBytes()),
+      }
+
+    // workaround - cant detect type of FixedSizeBinary programmatically
+    if ("asHex" in args && typeof args.asHex === "function") return args.asHex()
+
+    //console.log("decodedArgs Object", { args })
     const obj = args as Record<string, unknown>
     return Object.fromEntries(
       Object.entries(obj)
@@ -85,5 +111,6 @@ const formatArgs = (args: unknown): unknown => {
         .map(([k, v]) => [k, formatArgs(v)]),
     )
   }
+
   return "UNKNOWN"
 }
