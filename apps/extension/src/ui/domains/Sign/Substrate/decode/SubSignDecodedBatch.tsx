@@ -1,18 +1,20 @@
+import { SignerPayloadJSON } from "extension-core"
 import { FC, useMemo } from "react"
 
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
+import { DecodedBatchCall } from "../types"
 import { SubSignDecodedBatchModal } from "./SubSignDecodedBatchModal"
 import {
   SubSignDecodedBatchModalProvider,
   useSubSignDecodedBatchModal,
 } from "./SubSignDecodedBatchModalContext"
-import { SupportedCallBatch } from "./types"
 
-export const SubSignDecodedBatch: FC<{ sapi: ScaleApi; decodedCall: SupportedCallBatch }> = ({
-  sapi,
-  decodedCall,
-}) => {
+export const SubSignDecodedBatch: FC<{
+  sapi: ScaleApi
+  decodedCall: DecodedBatchCall
+  payload: SignerPayloadJSON
+}> = ({ sapi, decodedCall, payload }) => {
   const childCalls = useMemo<DecodedCall[]>(() => {
     return decodedCall.args.calls.map((call) => ({
       pallet: call.type,
@@ -26,7 +28,7 @@ export const SubSignDecodedBatch: FC<{ sapi: ScaleApi; decodedCall: SupportedCal
       {childCalls.map((call, index) => (
         <BatchCallItemButton key={index} index={index} call={call} />
       ))}
-      <SubSignDecodedBatchModal sapi={sapi} />
+      <SubSignDecodedBatchModal sapi={sapi} payload={payload} />
     </SubSignDecodedBatchModalProvider>
   )
 }

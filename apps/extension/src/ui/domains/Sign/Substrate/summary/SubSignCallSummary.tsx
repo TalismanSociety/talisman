@@ -1,21 +1,20 @@
-import { FC, useMemo } from "react"
+import { useMemo } from "react"
 
-import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
+import { DecodedCallComponent, DecodedCallComponentDefs } from "../types"
+import { SUMMARY_COMPONENTS_BALANCES } from "./calls/SummaryBalances"
+import { SUMMARY_COMPONENTS_CONVICTION_VOTING } from "./calls/SummaryConvictionVoting"
+import { SUMMARY_COMPONENTS_NOMINATION_POOLS } from "./calls/SummaryNominationPools"
 
-import { SummaryComponentsBalances } from "./calls/SummaryBalances"
-import { SummaryComponentsConvictionVoting } from "./calls/SummaryConvictionVoting"
-import { SummaryComponentsNominationPools } from "./calls/SummaryNominationPools"
-import { SummaryComponentDefs } from "./shared/types"
-
-const SupportedCalls: SummaryComponentDefs = [
-  ...SummaryComponentsConvictionVoting,
-  ...SummaryComponentsNominationPools,
-  ...SummaryComponentsBalances,
+const SupportedCalls: DecodedCallComponentDefs = [
+  ...SUMMARY_COMPONENTS_CONVICTION_VOTING,
+  ...SUMMARY_COMPONENTS_NOMINATION_POOLS,
+  ...SUMMARY_COMPONENTS_BALANCES,
 ]
 
-export const SubSignCallSummary: FC<{ decodedCall: DecodedCall; sapi: ScaleApi }> = ({
+export const SubSignCallSummary: DecodedCallComponent<unknown> = ({
   decodedCall,
   sapi,
+  payload,
 }) => {
   const Component = useMemo(() => {
     if (!decodedCall) return null
@@ -28,5 +27,5 @@ export const SubSignCallSummary: FC<{ decodedCall: DecodedCall; sapi: ScaleApi }
 
   if (!Component || !decodedCall) return null
 
-  return <Component decodedCall={decodedCall} sapi={sapi} />
+  return <Component decodedCall={decodedCall} sapi={sapi} payload={payload} />
 }

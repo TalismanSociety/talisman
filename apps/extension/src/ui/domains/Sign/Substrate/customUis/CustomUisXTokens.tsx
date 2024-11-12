@@ -14,32 +14,59 @@ import { DecodedCall } from "@ui/util/scaleApi"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
+import { DecodedCallComponentDefs } from "../types"
 import { getAddressFromXcmLocation } from "../util/getAddressFromXcmLocation"
 import { getChainFromXcmLocation } from "../util/getChainFromXcmLocation"
 
-type SubstrateTokenId = Enum<Record<string, unknown>>
-// ex:
-// - "{\"type\":\"Token\",\"value\":{\"type\":\"DOT\"}}"
-// - "{\"type\":\"Token2\",\"value\":4}"
-// - "{\"type\":\"ForeignAsset\",\"value\":3}"
+type TransferChainCalls = AcalaCalls | HydrationCalls
+type TransferArgs =
+  | TransferChainCalls["XTokens"]["transfer"]
+  | TransferChainCalls["XTokens"]["transfer_with_fee"]
 
-type SupportedChainCalls = AcalaCalls | HydrationCalls
+const Transfer: FC<{
+  decodedCall: DecodedCall<TransferArgs>
+  payload: SignerPayloadJSON
+}> = ({ decodedCall: { args }, payload }) => {
+  const { t } = useTranslation("request")
+  const chain = useChainByGenesisHash(payload.genesisHash)
+  const tokens = useTokens()
+  const chains = useChains()
+  const tokenRates = useTokenRatesMap()
 
-type SupportedCall =
-  | {
-      pallet: "XTokens"
-      call: "transfer"
-      args: SupportedChainCalls["XTokens"]["transfer"]
+  const props = useMemo(() => {
+    if (!chain) throw new Error("chain not found")
+
+    const token = getTokenFromCurrency(args.currency_id, chain, tokens)
+    const targetChain = getChainFromXcmLocation(args.dest, chain, chains)
+    const targetAddress = getAddressFromXcmLocation(args.dest)
+
+    return {
+      value: args.amount,
+      tokenDecimals: token.decimals,
+      tokenSymbol: token.symbol,
+      tokenLogo: token.logo,
+      tokenRates: tokenRates[token.id],
+      fromNetwork: chain.id,
+      toNetwork: targetChain.id,
+      fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
+      toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
     }
-  | {
-      pallet: "XTokens"
-      call: "transfer_with_fee"
-      args: SupportedChainCalls["XTokens"]["transfer_with_fee"]
-    }
+  }, [args, payload, chain, chains, tokenRates, tokens])
 
-export const SupportedCallsXTokensTransfer = [
-  { pallet: "XTokens", call: "transfer" },
-  { pallet: "XTokens", call: "transfer_with_fee" },
+  return (
+    <SignContainer
+      networkType="substrate"
+      title={t("Transfer")}
+      header={<SignViewIconHeader icon="transfer" />}
+    >
+      <SignViewXTokensTransfer {...props} />
+    </SignContainer>
+  )
+}
+
+export const CUSTOM_UIX_TOKENS: DecodedCallComponentDefs = [
+  ["XTokens", "transfer", Transfer],
+  ["XTokens", "transfer_with_fee", Transfer],
 ]
 
 const normalizeTokenId = (tokenId: unknown) => {
@@ -66,6 +93,12 @@ const isSameTokenId = (tokenId1: unknown, tokenId2: unknown) => {
   tokenId2 = normalizeTokenId(tokenId2)
   return isEqual(tokenId1, tokenId2)
 }
+
+type SubstrateTokenId = Enum<Record<string, unknown>>
+// ex:
+// - "{\"type\":\"Token\",\"value\":{\"type\":\"DOT\"}}"
+// - "{\"type\":\"Token2\",\"value\":4}"
+// - "{\"type\":\"ForeignAsset\",\"value\":3}"
 
 const getTokenFromCurrency = (
   currencyId: number | SubstrateTokenId,
@@ -107,45 +140,4 @@ const getTokenFromCurrency = (
     log.debug("getTokenFromCurrency", { currencyId, chain, tokens, err })
     throw err
   }
-}
-
-export const SubSignXTokensTransfer: FC<{
-  decodedCall: DecodedCall<SupportedCall["args"]>
-  payload: SignerPayloadJSON
-}> = ({ decodedCall: { args }, payload }) => {
-  const { t } = useTranslation("request")
-  const chain = useChainByGenesisHash(payload.genesisHash)
-  const tokens = useTokens()
-  const chains = useChains()
-  const tokenRates = useTokenRatesMap()
-
-  const props = useMemo(() => {
-    if (!chain) throw new Error("chain not found")
-
-    const token = getTokenFromCurrency(args.currency_id, chain, tokens)
-    const targetChain = getChainFromXcmLocation(args.dest, chain, chains)
-    const targetAddress = getAddressFromXcmLocation(args.dest)
-
-    return {
-      value: args.amount,
-      tokenDecimals: token.decimals,
-      tokenSymbol: token.symbol,
-      tokenLogo: token.logo,
-      tokenRates: tokenRates[token.id],
-      fromNetwork: chain.id,
-      toNetwork: targetChain.id,
-      fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
-      toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
-    }
-  }, [args, payload, chain, chains, tokenRates, tokens])
-
-  return (
-    <SignContainer
-      networkType="substrate"
-      title={t("Transfer")}
-      header={<SignViewIconHeader icon="transfer" />}
-    >
-      <SignViewXTokensTransfer {...props} />
-    </SignContainer>
-  )
 }

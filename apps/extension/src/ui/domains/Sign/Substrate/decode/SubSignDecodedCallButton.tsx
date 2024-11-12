@@ -1,3 +1,4 @@
+import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
 import { useOpenClose } from "talisman-ui"
 
@@ -5,10 +6,11 @@ import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { SubSignDecodedCallModal } from "./SubSignDecodedCallModal"
 
-export const SubSignDecodedCallButton: FC<{ sapi: ScaleApi; decodedCall: DecodedCall }> = ({
-  sapi,
-  decodedCall,
-}) => {
+export const SubSignDecodedCallButton: FC<{
+  sapi: ScaleApi
+  decodedCall: DecodedCall
+  payload: SignerPayloadJSON
+}> = ({ sapi, decodedCall, payload }) => {
   const { isOpen, open, close } = useOpenClose()
 
   return (
@@ -23,6 +25,7 @@ export const SubSignDecodedCallButton: FC<{ sapi: ScaleApi; decodedCall: Decoded
       <SubSignDecodedCallModal
         sapi={sapi}
         decodedCall={decodedCall}
+        payload={payload}
         isOpen={isOpen}
         onClose={close}
       />

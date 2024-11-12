@@ -1,37 +1,29 @@
-import { useMemo } from "react"
+import { isJsonPayload } from "extension-core"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
-import { SupportedCallsBatch } from "../batch/SubSignBatch"
+import { isBatchCall } from "../types"
 import { SubSignDecodedBatch } from "./SubSignDecodedBatch"
 import { SubSignDecodedCallButton } from "./SubSignDecodedCallButton"
-import { SupportedCallBatch } from "./types"
 
 export const SubSignDecoded = () => {
   const { t } = useTranslation()
-  const { decodedCall, sapi } = usePolkadotSigningRequest()
+  const { decodedCall, sapi, payload } = usePolkadotSigningRequest()
 
-  const isBatchCall = useMemo(
-    () =>
-      !!decodedCall &&
-      SupportedCallsBatch.some(
-        (supportedCall) =>
-          supportedCall.pallet === decodedCall.pallet && supportedCall.call === decodedCall.call,
-      ),
-    [decodedCall],
-  )
-
-  if (!decodedCall || !sapi) return null
+  if (!decodedCall || !sapi || !isJsonPayload(payload)) return null
 
   return (
     <div className="flex w-full flex-col gap-4 px-3 text-left text-sm">
-      <div className="text-body-inactive">
-        {isBatchCall ? t("Batch content:") : t("Request content:")}
-      </div>
-      {isBatchCall ? (
-        <SubSignDecodedBatch sapi={sapi} decodedCall={decodedCall as SupportedCallBatch} />
+      {isBatchCall(decodedCall) ? (
+        <>
+          <div className="text-body-inactive">{t("Batch content:")}</div>
+          <SubSignDecodedBatch sapi={sapi} decodedCall={decodedCall} payload={payload} />
+        </>
       ) : (
-        <SubSignDecodedCallButton sapi={sapi} decodedCall={decodedCall} />
+        <>
+          <div className="text-body-inactive">{t("Request content:")}</div>
+          <SubSignDecodedCallButton sapi={sapi} decodedCall={decodedCall} payload={payload} />
+        </>
       )}
     </div>
   )

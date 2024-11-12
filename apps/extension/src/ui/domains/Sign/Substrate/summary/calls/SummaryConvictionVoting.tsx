@@ -1,19 +1,18 @@
 import { PolkadotCalls } from "papi-descriptors"
-import { FC, useMemo } from "react"
+import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useChain } from "@ui/state"
-import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
+import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
 import { decodeStandardVote } from "../../util/decodeStandardVote"
 import { SummaryContainer } from "../shared/SummaryContainer"
-import { SummaryComponentDefs } from "../shared/types"
 
-const Vote: FC<{
-  decodedCall: DecodedCall<PolkadotCalls["ConvictionVoting"]["vote"]>
-  sapi: ScaleApi
-}> = ({ decodedCall, sapi }) => {
+const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
+  decodedCall,
+  sapi,
+}) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
@@ -59,6 +58,6 @@ const Vote: FC<{
   )
 }
 
-export const SummaryComponentsConvictionVoting: SummaryComponentDefs = [
+export const SUMMARY_COMPONENTS_CONVICTION_VOTING: DecodedCallComponentDefs = [
   ["ConvictionVoting", "vote", Vote],
 ]

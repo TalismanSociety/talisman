@@ -2,6 +2,7 @@ import { ErrorBoundary } from "@sentry/react"
 import { LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import DOMPurify from "dompurify"
+import { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
 import htmlParser from "html-react-parser"
 import { dump as convertToYaml } from "js-yaml"
@@ -29,12 +30,13 @@ const LoadingShimmer = () => {
 export const SubSignDecodedCallContent: FC<{
   decodedCall: DecodedCall
   sapi: ScaleApi
-}> = ({ decodedCall, sapi }) => (
+  payload: SignerPayloadJSON
+}> = ({ decodedCall, sapi, payload }) => (
   <ErrorBoundary fallback={() => <ErrorFallback decodedCall={decodedCall} sapi={sapi} />}>
     <Suspense fallback={<LoadingShimmer />}>
       <div className="text-body-secondary flex flex-col gap-4 text-sm">
         {/* Summary can suspense to fetch additional data, and break if a chain uses different types */}
-        <SubSignCallSummary decodedCall={decodedCall} sapi={sapi} />
+        <SubSignCallSummary decodedCall={decodedCall} sapi={sapi} payload={payload} />
         <DefaultView decodedCall={decodedCall} sapi={sapi} />
       </div>
     </Suspense>
@@ -119,15 +121,10 @@ const formatArgs = (args: unknown): unknown => {
   if (typeof args === "string") return args
   if (typeof args === "number") return args
   if (typeof args === "bigint") return args.toString() + "n"
+  if (Array.isArray(args)) return args.map(formatArgs)
 
-  if (args instanceof Binary) {
-    // TODO fallback to asHex if any weird characters are present
-    return args.asText()
-  }
-
-  if (Array.isArray(args)) {
-    return args.map(formatArgs)
-  }
+  // TODO fallback to asHex if any weird characters are present
+  if (args instanceof Binary) return args.asText()
 
   if (typeof args === "object") {
     // workaround for AccountId32 - asText() returns glyphs so we need to decode it manually

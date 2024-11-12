@@ -1,3 +1,4 @@
+import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Modal } from "talisman-ui"
@@ -8,7 +9,10 @@ import { ScaleApi } from "@ui/util/scaleApi"
 import { useSubSignDecodedBatchModal } from "./SubSignDecodedBatchModalContext"
 import { SubSignDecodedCallContent } from "./SubSignDecodedCallContent"
 
-export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi }> = ({ sapi }) => {
+export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi; payload: SignerPayloadJSON }> = ({
+  sapi,
+  payload,
+}) => {
   const { t } = useTranslation()
   const {
     isOpen,
@@ -54,8 +58,9 @@ export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi }> = ({ sapi }) => {
         </button>
       </div>
       <ScrollContainer className="grow px-12">
-        {/* {!!currentCall && <BatchItemModalContent decodedCall={currentCall}  />} */}
-        {!!currentCall && <SubSignDecodedCallContent decodedCall={currentCall} sapi={sapi} />}
+        {!!currentCall && (
+          <SubSignDecodedCallContent decodedCall={currentCall} sapi={sapi} payload={payload} />
+        )}
       </ScrollContainer>
       <div className="px-12 pb-10 pt-8">
         <Button fullWidth onClick={close}>

@@ -5,16 +5,9 @@ import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { ViewDetailsSub } from "../../ViewDetails/ViewDetailsSub"
 import { SubSignDecoded } from "../decode/SubSignDecoded"
-import { SupportedCallBatch } from "../decode/types"
-import { SignCallDef, SignCustomUiComponent } from "../types"
+import { DecodedBatchArgs, DecodedCallComponent, DecodedCallComponentDefs } from "../types"
 
-export const SupportedCallsBatch: SignCallDef[] = [
-  { pallet: "Utility", call: "batch" },
-  { pallet: "Utility", call: "batch_all" },
-  { pallet: "Utility", call: "force_batch" },
-]
-
-export const SubSignBatch: SignCustomUiComponent<SupportedCallBatch["args"]> = () => {
+const Batch: DecodedCallComponent<DecodedBatchArgs> = () => {
   const { t } = useTranslation("request")
   const { account, chain } = usePolkadotSigningRequest()
 
@@ -33,3 +26,9 @@ export const SubSignBatch: SignCustomUiComponent<SupportedCallBatch["args"]> = (
     </div>
   )
 }
+
+export const CUSTOM_UI_UTILITY: DecodedCallComponentDefs = [
+  ["Utility", "batch", Batch],
+  ["Utility", "batch_all", Batch],
+  ["Utility", "force_batch", Batch],
+]

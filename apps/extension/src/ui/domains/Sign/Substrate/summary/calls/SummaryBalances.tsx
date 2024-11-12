@@ -1,20 +1,19 @@
 import { PolkadotCalls } from "papi-descriptors"
-import { FC, useMemo } from "react"
+import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useChain } from "@ui/state"
-import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
+import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import { SummaryContainer } from "../shared/SummaryContainer"
-import { SummaryComponentDefs } from "../shared/types"
 
-const TransferKeepAlive: FC<{
-  decodedCall: DecodedCall<PolkadotCalls["Balances"]["transfer_keep_alive"]>
-  sapi: ScaleApi
-}> = ({ decodedCall, sapi }) => {
+const TransferKeepAlive: DecodedCallComponent<PolkadotCalls["Balances"]["transfer_keep_alive"]> = ({
+  decodedCall,
+  sapi,
+}) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
@@ -67,6 +66,6 @@ const TransferKeepAlive: FC<{
   )
 }
 
-export const SummaryComponentsBalances: SummaryComponentDefs = [
+export const SUMMARY_COMPONENTS_BALANCES: DecodedCallComponentDefs = [
   ["Balances", "transfer_keep_alive", TransferKeepAlive],
 ]

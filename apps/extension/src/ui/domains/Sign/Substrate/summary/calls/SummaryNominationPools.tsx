@@ -1,21 +1,19 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { PolkadotCalls } from "papi-descriptors"
 import { Binary } from "polkadot-api"
-import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useChain } from "@ui/state"
-import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
+import { ScaleApi } from "@ui/util/scaleApi"
 
+import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
 import { SummaryContainer } from "../shared/SummaryContainer"
-import { SummaryComponentDefs } from "../shared/types"
 
-export const SubSignCallSummaryNomPoolJoin: FC<{
-  decodedCall: DecodedCall<PolkadotCalls["NominationPools"]["join"]>
-  sapi: ScaleApi
-}> = ({ decodedCall, sapi }) => {
+export const SubSignCallSummaryNomPoolJoin: DecodedCallComponent<
+  PolkadotCalls["NominationPools"]["join"]
+> = ({ decodedCall, sapi }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
   const { data: poolName } = useNomPoolName(sapi, decodedCall.args.pool_id)
@@ -45,7 +43,7 @@ export const SubSignCallSummaryNomPoolJoin: FC<{
   )
 }
 
-// do not reuse staking module's useNomPoolName, we need suspense
+// do not reuse staking module's useNomPoolName, we need suspense here
 const useNomPoolName = (sapi: ScaleApi | null | undefined, poolId: number | null | undefined) => {
   return useSuspenseQuery({
     queryKey: ["useNomPoolName", sapi?.id, poolId],
@@ -63,6 +61,6 @@ const useNomPoolName = (sapi: ScaleApi | null | undefined, poolId: number | null
   })
 }
 
-export const SummaryComponentsNominationPools: SummaryComponentDefs = [
+export const SUMMARY_COMPONENTS_NOMINATION_POOLS: DecodedCallComponentDefs = [
   ["NominationPools", "join", SubSignCallSummaryNomPoolJoin],
 ]

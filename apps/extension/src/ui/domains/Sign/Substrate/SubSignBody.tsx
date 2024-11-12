@@ -1,73 +1,40 @@
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
-import { isJsonPayload, SignerPayloadJSON } from "extension-core"
+import { isJsonPayload } from "extension-core"
 import { FC, useMemo } from "react"
 
-import { log } from "@extension/shared"
-import { DecodedCall } from "@ui/util/scaleApi"
-
 import { usePolkadotSigningRequest } from "../SignRequestContext"
-import { SubSignBatch, SupportedCallsBatch } from "./batch/SubSignBatch"
-import {
-  SubSignConvictionVotingDelegate,
-  SupportedCallsConvictionVotingDelegate,
-} from "./convictionVoting/SubSignConvictionVotingDelegate"
-import {
-  SubSignConvictionVotingUndelegate,
-  SupportedCallsConvictionVotingUndelegate,
-} from "./convictionVoting/SubSignConvictionVotingUndelegate"
-import {
-  SubSignConvictionVotingVote,
-  SupportedCallsConvictionVotingVote,
-} from "./convictionVoting/SubSignConvictionVotingVote"
-import {
-  SubSignStakingWithdraw,
-  SupportedCallsStakingWithdraw,
-} from "./staking/SubSignStakingWithdraw"
+import { CUSTOM_UI_CONVICTION_VOTING } from "./customUis/CustomUisConvictionVoting"
+import { CUSTOM_UI_NOMINATION_POOLS } from "./customUis/CustomUisNominationPools"
+import { CUSTOM_UI_UTILITY } from "./customUis/CustomUisUtility"
+import { CUSTOM_UI_XCM } from "./customUis/CustomUisXcm"
+import { CUSTOM_UIX_TOKENS } from "./customUis/CustomUisXTokens"
 import { SubSignBodyDefault } from "./SubSignBodyDefault"
-import { SubSignXcmTransfer, SupportedCallsXcmTransfer } from "./xcm/SubSignXcmTransfer"
-import {
-  SubSignXTokensTransfer,
-  SupportedCallsXTokensTransfer,
-} from "./xTokens/SubSignXTokensTransfer"
+import { DecodedCallComponentDefs } from "./types"
 
-type CallDef = { pallet: string; call: string }
-
-type CustomUiComponent = FC<{
-  decodedCall: DecodedCall
-  payload: SignerPayloadJSON
-}>
-
-const CUSTOM_UIS: [CallDef[], CustomUiComponent][] = [
-  [SupportedCallsConvictionVotingVote, SubSignConvictionVotingVote],
-  [SupportedCallsConvictionVotingDelegate, SubSignConvictionVotingDelegate],
-  [SupportedCallsConvictionVotingUndelegate, SubSignConvictionVotingUndelegate],
-  [SupportedCallsXcmTransfer, SubSignXcmTransfer],
-  [SupportedCallsXTokensTransfer, SubSignXTokensTransfer],
-  [SupportedCallsStakingWithdraw, SubSignStakingWithdraw],
-  [SupportedCallsBatch, SubSignBatch],
+const CUSTOM_UI_COMPONENTS: DecodedCallComponentDefs = [
+  ...CUSTOM_UI_UTILITY, // batch
+  ...CUSTOM_UI_CONVICTION_VOTING,
+  ...CUSTOM_UI_NOMINATION_POOLS,
+  ...CUSTOM_UIX_TOKENS,
+  ...CUSTOM_UI_XCM,
 ]
 
 export const SubSignBody: FC = () => {
   const { payload, sapi, decodedCall } = usePolkadotSigningRequest()
 
-  const [call, Component, jsonPayload] = useMemo<
-    [DecodedCall | null, CustomUiComponent | null, SignerPayloadJSON | null]
-  >(() => {
-    if (!decodedCall || !sapi || !isJsonPayload(payload)) return [null, null, null]
+  const Component = useMemo(() => {
+    if (!decodedCall) return null
+    return (
+      CUSTOM_UI_COMPONENTS.find(
+        ([pallet, call]) => pallet === decodedCall.pallet && call === decodedCall.call,
+      )?.[2] ?? null
+    )
+  }, [decodedCall])
 
-    try {
-      return [decodedCall, getComponentFromCall(decodedCall), payload]
-    } catch (err) {
-      log.error("Error decoding call from payload", { err, sapi, payload })
-    }
-
-    return [null, null, null]
-  }, [payload, sapi, decodedCall])
-
-  if (call && Component && jsonPayload)
+  if (decodedCall && sapi && Component && isJsonPayload(payload))
     return (
       <ErrorBoundary fallback={Fallback}>
-        <Component payload={jsonPayload} decodedCall={call} />
+        <Component payload={payload} decodedCall={decodedCall} sapi={sapi} />
       </ErrorBoundary>
     )
 
@@ -75,18 +42,3 @@ export const SubSignBody: FC = () => {
 }
 
 const Fallback: FallbackRender = () => <SubSignBodyDefault />
-
-const isSupportedCall = (call: DecodedCall, supportedCallDef: CallDef) =>
-  call.pallet === supportedCallDef.pallet && call.call === supportedCallDef.call
-
-const isComponentMatch = (call: DecodedCall, supportedCalls: CallDef[]) =>
-  supportedCalls.some((cd) => isSupportedCall(call, cd))
-
-const getComponentFromCall = (call: DecodedCall) => {
-  if (!call) return null
-
-  for (const [supportedCalls, component] of CUSTOM_UIS)
-    if (isComponentMatch(call, supportedCalls)) return component
-
-  return null
-}

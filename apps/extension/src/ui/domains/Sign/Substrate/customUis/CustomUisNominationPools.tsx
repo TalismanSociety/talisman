@@ -7,27 +7,15 @@ import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingWithdraw } from "../../Views/staking/SignViewStakingWithdraw"
 import { SubSignBodyDefault } from "../SubSignBodyDefault"
-import { SignCallDef, SignCustomUiComponent } from "../types"
+import { DecodedCallComponent, DecodedCallComponentDefs } from "../types"
 
-type SupportedCall = {
-  pallet: "NominationPools"
-  call: "withdraw_unbonded"
-  args: PolkadotCalls["NominationPools"]["withdraw_unbonded"]
-}
-
-export const SupportedCallsStakingWithdraw: SignCallDef[] = [
-  { pallet: "NominationPools", call: "withdraw_unbonded" },
-  { pallet: "DappStaking", call: "claim_staker_rewards" },
-]
-
-export const SubSignStakingWithdraw: SignCustomUiComponent<SupportedCall["args"]> = ({
+const Withdraw: DecodedCallComponent<PolkadotCalls["NominationPools"]["withdraw_unbonded"]> = ({
   payload,
 }) => {
   const { t } = useTranslation("request")
   const chain = useChainByGenesisHash(payload.genesisHash)
 
   // arguments only contain target account and slash period, ignore for now
-
   if (!chain?.nativeToken) return <SubSignBodyDefault />
 
   return (
@@ -40,3 +28,7 @@ export const SubSignStakingWithdraw: SignCustomUiComponent<SupportedCall["args"]
     </SignContainer>
   )
 }
+
+export const CUSTOM_UI_NOMINATION_POOLS: DecodedCallComponentDefs = [
+  ["NominationPools", "withdraw_unbonded", Withdraw],
+]
