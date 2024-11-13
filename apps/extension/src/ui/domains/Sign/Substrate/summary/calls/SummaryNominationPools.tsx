@@ -9,37 +9,35 @@ import { useChain } from "@ui/state"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
-import { SummaryContainer } from "../shared/SummaryContainer"
 
-export const SubSignCallSummaryNomPoolJoin: DecodedCallComponent<
-  PolkadotCalls["NominationPools"]["join"]
-> = ({ decodedCall, sapi }) => {
+const Join: DecodedCallComponent<PolkadotCalls["NominationPools"]["join"]> = ({
+  decodedCall,
+  sapi,
+}) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
   const { data: poolName } = useNomPoolName(sapi, decodedCall.args.pool_id)
 
-  if (!chain?.nativeToken?.id) return null
+  if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
   return (
-    <SummaryContainer>
-      <Trans
-        t={t}
-        components={{
-          Pool: <span className="text-body inline-block font-bold">{poolName}</span>,
-          Tokens: (
-            <TokensAndFiat
-              tokenId={chain?.nativeToken?.id}
-              planck={decodedCall.args.amount}
-              noCountUp
-              className="font-bold"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
-            />
-          ),
-        }}
-        defaults="Stake <Tokens /> in nomination pool <Pool />"
-      />
-    </SummaryContainer>
+    <Trans
+      t={t}
+      components={{
+        Pool: <span className="text-body inline-block font-bold">{poolName}</span>,
+        Tokens: (
+          <TokensAndFiat
+            tokenId={chain?.nativeToken?.id}
+            planck={decodedCall.args.amount}
+            noCountUp
+            className="font-bold"
+            tokensClassName="text-body"
+            fiatClassName="text-body-secondary"
+          />
+        ),
+      }}
+      defaults="Stake <Tokens /> in nomination pool <Pool />"
+    />
   )
 }
 
@@ -62,5 +60,5 @@ const useNomPoolName = (sapi: ScaleApi | null | undefined, poolId: number | null
 }
 
 export const SUMMARY_COMPONENTS_NOMINATION_POOLS: DecodedCallComponentDefs = [
-  ["NominationPools", "join", SubSignCallSummaryNomPoolJoin],
+  ["NominationPools", "join", Join],
 ]

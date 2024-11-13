@@ -9,10 +9,11 @@ import { useContact } from "@ui/hooks/useContact"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useAccountByAddress, useChain } from "@ui/state"
 
-export const SummaryAddressDisplay: FC<{ address: string; networkId: ChainId | EvmNetworkId }> = ({
-  address,
-  networkId,
-}) => {
+export const SummaryAddressDisplay: FC<{
+  address: string
+  networkId: ChainId | EvmNetworkId
+  inline: boolean
+}> = ({ address, networkId, inline }) => {
   const copy = useCopyToClipboard()
   const account = useAccountByAddress(address)
   const contact = useContact(address)
@@ -26,12 +27,33 @@ export const SummaryAddressDisplay: FC<{ address: string; networkId: ChainId | E
     copy(formattedAddress)
   }, [copy, formattedAddress])
 
+  if (inline)
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-body truncate whitespace-nowrap font-bold">
+            <AccountIcon
+              className="inline-block size-[1.2em] align-sub"
+              address={address}
+              genesisHash={account?.genesisHash ?? contact?.genesisHash}
+            />
+            <span className="truncate pl-2">
+              {account?.name ?? contact?.name ?? (
+                <Address startCharCount={6} endCharCount={4} address={address} />
+              )}
+            </span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{formattedAddress}</TooltipContent>
+      </Tooltip>
+    )
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="inline-flex max-w-full items-center gap-2 overflow-hidden font-bold"
+          className="inline-flex max-w-full items-baseline gap-2 overflow-hidden font-bold text-white"
           onClick={handleClick}
         >
           <AccountIcon

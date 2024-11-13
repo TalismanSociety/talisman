@@ -7,7 +7,6 @@ import { useChain } from "@ui/state"
 
 import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
 import { decodeStandardVote } from "../../util/decodeStandardVote"
-import { SummaryContainer } from "../shared/SummaryContainer"
 
 const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
   decodedCall,
@@ -33,28 +32,26 @@ const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
     throw new Error("Unsupported vote type")
   }, [chain, decodedCall, t])
 
-  if (!chain?.nativeToken?.id) return null
+  if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
   return (
-    <SummaryContainer>
-      <Trans
-        t={t}
-        components={{
-          Vote: <span className="font-bold">{props.vote}</span>,
-          Referenda: <span className="font-bold">#{props.referenda}</span>,
-          Conviction: <span className="font-bold">{props.conviction}X</span>,
-          Tokens: (
-            <TokensAndFiat
-              noFiat
-              planck={props.voteAmount}
-              tokenId={chain.nativeToken.id}
-              className="font-bold"
-            />
-          ),
-        }}
-        defaults="Vote <Vote /> on referenda <Referenda /> with <Tokens /> and conviction <Conviction />"
-      />
-    </SummaryContainer>
+    <Trans
+      t={t}
+      components={{
+        Vote: <span className="font-bold">{props.vote}</span>,
+        Referenda: <span className="font-bold">#{props.referenda}</span>,
+        Conviction: <span className="font-bold">{props.conviction}X</span>,
+        Tokens: (
+          <TokensAndFiat
+            noFiat
+            planck={props.voteAmount}
+            tokenId={chain.nativeToken.id}
+            className="font-bold"
+          />
+        ),
+      }}
+      defaults="Vote <Vote /> on referenda <Referenda /> with <Tokens /> and conviction <Conviction />"
+    />
   )
 }
 

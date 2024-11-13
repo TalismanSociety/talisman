@@ -34,6 +34,7 @@ export type DecodedCallComponent<Args> = FC<{
   decodedCall: DecodedCall<Args>
   sapi: ScaleApi
   payload: SignerPayloadJSON
+  inline?: boolean
 }>
 
 export type DecodedCallComponentDef<T> = [string, string, DecodedCallComponent<T>]

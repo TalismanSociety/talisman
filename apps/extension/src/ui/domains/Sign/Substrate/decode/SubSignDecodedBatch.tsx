@@ -4,6 +4,7 @@ import { FC, useMemo } from "react"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedBatchCall } from "../types"
+import { SubSignDecodeButtonContent } from "./SubSignDecodeButtonContent"
 import { SubSignDecodedBatchModal } from "./SubSignDecodedBatchModal"
 import {
   SubSignDecodedBatchModalProvider,
@@ -26,14 +27,25 @@ export const SubSignDecodedBatch: FC<{
   return (
     <SubSignDecodedBatchModalProvider decodedCall={decodedCall}>
       {childCalls.map((call, index) => (
-        <BatchCallItemButton key={index} index={index} call={call} />
+        <BatchCallItemButton
+          key={index}
+          index={index}
+          decodedCall={call}
+          sapi={sapi}
+          payload={payload}
+        />
       ))}
       <SubSignDecodedBatchModal sapi={sapi} payload={payload} />
     </SubSignDecodedBatchModalProvider>
   )
 }
 
-const BatchCallItemButton: FC<{ index: number; call: DecodedCall }> = ({ index, call }) => {
+const BatchCallItemButton: FC<{
+  index: number
+  sapi: ScaleApi
+  decodedCall: DecodedCall
+  payload: SignerPayloadJSON
+}> = ({ index, decodedCall, sapi, payload }) => {
   const { open } = useSubSignDecodedBatchModal()
 
   return (
@@ -44,7 +56,7 @@ const BatchCallItemButton: FC<{ index: number; call: DecodedCall }> = ({ index, 
     >
       <div className="text-body-inactive inine-block shrink-0 tabular-nums">{index + 1}.</div>
       <div className="grow truncate">
-        {call.pallet} : {call.call}
+        <SubSignDecodeButtonContent sapi={sapi} decodedCall={decodedCall} payload={payload} />
       </div>
     </button>
   )
