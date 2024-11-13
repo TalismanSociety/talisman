@@ -14,7 +14,7 @@ const useBatchItemModalProvider = ({ decodedCall }: { decodedCall: DecodedBatchC
   const batchCalls = useMemo<DecodedCall[]>(() => {
     return decodedCall.args.calls.map((call) => ({
       pallet: call.type,
-      call: call.value.type,
+      method: call.value.type,
       args: call.value.value,
     }))
   }, [decodedCall.args.calls])

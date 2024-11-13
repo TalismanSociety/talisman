@@ -7,17 +7,17 @@ import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 export type DecodedBatchCall =
   | {
       pallet: "Utility"
-      call: "batch"
+      method: "batch"
       args: PolkadotCalls["Utility"]["batch"]
     }
   | {
       pallet: "Utility"
-      call: "batch_all"
+      method: "batch_all"
       args: PolkadotCalls["Utility"]["batch_all"]
     }
   | {
       pallet: "Utility"
-      call: "force_batch"
+      method: "force_batch"
       args: PolkadotCalls["Utility"]["force_batch"]
     }
 
@@ -26,7 +26,7 @@ export type DecodedBatchArgs = DecodedBatchCall["args"]
 export const isBatchCall = (decodedCall: DecodedCall): decodedCall is DecodedBatchCall => {
   return (
     decodedCall.pallet === "Utility" &&
-    ["batch", "batch_all", "force_batch"].includes(decodedCall.call)
+    ["batch", "batch_all", "force_batch"].includes(decodedCall.method)
   )
 }
 

@@ -65,7 +65,7 @@ const DefaultView: FC<{
   }, [decodedCall])
 
   const docs = useMemo(() => {
-    const rawDocs = sapi?.getCallDocs(decodedCall.pallet, decodedCall.call) ?? null
+    const rawDocs = sapi?.getCallDocs(decodedCall.pallet, decodedCall.method) ?? null
     if (!rawDocs) return null
     try {
       return DOMPurify.sanitize(marked(rawDocs, { gfm: true, async: false }) as string)
@@ -83,7 +83,7 @@ const DefaultView: FC<{
       </div>
       <div className="flex w-full justify-between gap-8">
         <div>{t("Method")}</div>
-        <div className="text-body truncate">{decodedCall.call}</div>
+        <div className="text-body truncate">{decodedCall.method}</div>
       </div>
       <div>{t("Arguments")}</div>
       <div>{!!yamlArgs && <CodeBlock code={yamlArgs} className="text-sm" />}</div>

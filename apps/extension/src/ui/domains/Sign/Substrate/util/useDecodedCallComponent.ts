@@ -12,7 +12,7 @@ export const useDecodedCallComponent = (
     if (!decodedCall) return null
     return (
       componentDefs.find(
-        ([pallet, call]) => pallet === decodedCall.pallet && call === decodedCall.call,
+        ([pallet, call]) => pallet === decodedCall.pallet && call === decodedCall.method,
       )?.[2] ?? null
     )
   }, [decodedCall, componentDefs])

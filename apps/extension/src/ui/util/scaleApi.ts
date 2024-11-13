@@ -21,7 +21,7 @@ type ScaleLookup = ReturnType<typeof getLookupFn>
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DecodedCall<Args = any> = { pallet: string; call: string; args: Args }
+export type DecodedCall<Args = any> = { pallet: string; method: string; args: Args }
 
 export type PayloadSignerConfig = {
   address: string
@@ -229,7 +229,7 @@ const getDecodedCallFromPayload = <Res extends DecodedCall>(
 
   return {
     pallet: decoded.type,
-    call: decoded.value.type,
+    method: decoded.value.type,
     args: decoded.value.value,
   } as Res
 }
