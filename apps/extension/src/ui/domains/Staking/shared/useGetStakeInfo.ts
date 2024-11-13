@@ -4,7 +4,6 @@ import { useMemo } from "react"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
-import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
 import { useIsSoloStaking } from "../hooks/nomPools/useIsSoloStaking"
@@ -32,12 +31,11 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     plancks,
     isEnabled: chainId === "bittensor",
   })
-  const { data: currentBittensorStakeHotkeys } = useGetBittensorStakeHotkeys({ chainId, address })
 
   const { canStake, isLoading: isCanStakeLoading } = useCanStakeBittensor({
     sapi,
     address,
-    hotkey: currentBittensorStakeHotkeys?.[0],
+    hotkey: poolId,
     chainId,
   })
 
@@ -45,7 +43,7 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
 
   let payloadInfo
   let bondType: BondType
-  let currentPoolId: string | number | undefined = 0
+  let currentPoolId: string | number | undefined | null = 0
 
   // we must craft a different extrinsic if the user is already staking in a pool
   const hasJoinedNomPool = useMemo(() => !!currentPoolId, [currentPoolId])
@@ -78,7 +76,7 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     case "bittensor":
       payloadInfo = bittensorStakingPayload
       bondType = "bittensor"
-      currentPoolId = currentBittensorStakeHotkeys?.[0]
+      currentPoolId = poolId
       break
     default:
       payloadInfo = nomPoolStakingPayload

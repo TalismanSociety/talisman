@@ -11,7 +11,7 @@ const STAKE_INTERVAL_BLOCKS = 360
 type CanStakeBittensor = {
   sapi: ScaleApi | undefined | null
   address: string | null | undefined
-  hotkey: string | number | undefined
+  hotkey: string | number | undefined | null
   chainId: ChainId | undefined
 }
 
@@ -32,16 +32,14 @@ export const useCanStakeBittensor = ({ sapi, address, hotkey, chainId }: CanStak
   const [, lastStakedBlockNumber] = stakeData || [0n, 0n]
 
   useEffect(() => {
-    if (lastStakedBlockNumber && blockNumber) {
-      const coolDownBlockNumber = Number(lastStakedBlockNumber) + STAKE_INTERVAL_BLOCKS
-      if (coolDownBlockNumber > blockNumber) {
-        setCanStake(false)
-      } else {
-        // Handles the case were is user is switching between accounts where both accounts have staked but one account has a cooldown and the other does not
-        setCanStake(true)
-      }
+    const coolDownBlockNumber = Number(lastStakedBlockNumber) + STAKE_INTERVAL_BLOCKS
+    if (coolDownBlockNumber > (blockNumber ?? 0)) {
+      setCanStake(false)
+    } else {
+      // Handles the case were is user is switching between accounts where both accounts have staked but one account has a cooldown and the other does not
+      setCanStake(true)
     }
-  }, [blockNumber, lastStakedBlockNumber])
+  }, [blockNumber, lastStakedBlockNumber, address])
 
   return { canStake, isLoading: isBlockNumberLoading || isStakeDataLoading }
 }
