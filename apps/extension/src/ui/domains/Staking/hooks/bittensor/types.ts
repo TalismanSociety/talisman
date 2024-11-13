@@ -75,3 +75,23 @@ export type BondOption = {
   totalStaked: number
   totalStakers: number
 }
+
+type Address = {
+  ss58: string
+  hex: string
+}
+
+type DelegateData = {
+  nominator: Address
+  delegate: Address
+  block_number: number
+  timestamp: string // ISO date string
+  balance: string // Big number represented as a string
+  delegate_from: number
+  delegate_from_timestamp: string // ISO date string
+}
+
+export type DelegatesData = {
+  pagination: Pagination
+  data: DelegateData[]
+}
