@@ -74,7 +74,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   )
 }
 
-const useTxStatusDetails = (tx?: WalletTransaction) => {
+const useTxStatusDetails = (tx?: WalletTransaction, onSuccess?: (...args: unknown[]) => void) => {
   const { t } = useTranslation()
   const { title, subtitle, animStatus } = useMemo<{
     title: string
@@ -118,6 +118,7 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
           animStatus: "failure",
         }
       case "success":
+        onSuccess?.(tx.blockNumber)
         return {
           title: isReplacementCancel ? t("Transaction cancelled") : t("Success"),
           subtitle: isReplacementCancel
@@ -134,7 +135,7 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
           animStatus: "processing",
         }
     }
-  }, [tx, t])
+  }, [tx, t, onSuccess])
 
   return {
     title,
@@ -143,17 +144,18 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
   }
 }
 
-type TxProgressBaseProps = {
+type TxProgressBaseProps<T extends unknown[] = []> = {
   tx?: WalletTransaction
   className?: string
   blockNumber?: string
   onClose?: () => void
   href?: string
+  onSuccess?: (...args: T) => void
 }
 
-const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose }) => {
+const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose, onSuccess }) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus } = useTxStatusDetails(tx)
+  const { title, subtitle, animStatus } = useTxStatusDetails(tx, onSuccess)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
@@ -199,13 +201,20 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
   )
 }
 
-type TxProgressSubstrateProps = {
+type TxProgressSubstrateProps<T extends unknown[] = []> = {
   tx: SubWalletTransaction
   onClose?: () => void
   className?: string
+  onSuccess?: (...args: T) => void
 }
 
-const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, className }) => {
+const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({
+  tx,
+  onClose,
+  className,
+  onSuccess,
+}) => {
+  // Add block number callback here
   const chain = useChainByGenesisHash(tx.genesisHash)
   const href = useMemo(() => getBlockExplorerUrl(undefined, chain, tx.hash), [chain, tx.hash])
 
@@ -216,6 +225,7 @@ const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, classN
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
+      onSuccess={onSuccess}
     />
   )
 }
@@ -241,14 +251,21 @@ const TxProgressEvm: FC<TxProgressEvmProps> = ({ tx, className, onClose }) => {
   )
 }
 
-type TxProgressProps = {
+type TxProgressProps<T extends unknown[] = []> = {
   hash: HexString
   networkIdOrHash: string
   onClose?: () => void
   className?: string
+  onSuccess?: (...args: T) => void
 }
 
-export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, onClose, className }) => {
+export const TxProgress = <T extends unknown[]>({
+  hash,
+  networkIdOrHash,
+  onClose,
+  className,
+  onSuccess,
+}: TxProgressProps<T>) => {
   const tx = useTransaction(hash)
   const evmNetwork = useEvmNetwork(networkIdOrHash)
   const chain = useChainByGenesisHash(networkIdOrHash)
@@ -260,7 +277,9 @@ export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, onClose
   }
 
   if (tx?.networkType === "substrate")
-    return <TxProgressSubstrate tx={tx} onClose={onClose} className={className} />
+    return (
+      <TxProgressSubstrate tx={tx} onClose={onClose} className={className} onSuccess={onSuccess} />
+    )
 
   if (tx?.networkType === "evm")
     return <TxProgressEvm tx={tx} onClose={onClose} className={className} />

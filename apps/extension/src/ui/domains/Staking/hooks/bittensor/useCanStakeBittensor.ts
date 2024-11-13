@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { useGetLatestBlockNumber } from "../../shared/useGetLatestBlockNumber"
+import { useBittensorStakedBlockNumber } from "./useBittensorStakedBlockNumber"
 import { useGetBittensorTotalHotkeyColdkeyStakes } from "./useGetBittensorTotalHotkeyColdkeyStakes"
 
 const STAKE_INTERVAL_BLOCKS = 360
@@ -29,17 +30,23 @@ export const useCanStakeBittensor = ({ sapi, address, hotkey, chainId }: CanStak
       hotkey: hotkey,
     })
 
+  const { getByAccountAndDelegator } = useBittensorStakedBlockNumber()
+
+  const unbondBlock = getByAccountAndDelegator({ account: address, delegator: hotkey })
+
   const [, lastStakedBlockNumber] = stakeData || [0n, 0n]
 
   useEffect(() => {
-    const coolDownBlockNumber = Number(lastStakedBlockNumber) + STAKE_INTERVAL_BLOCKS
+    if (chainId !== "bittensor") return
+    const latestActionBlock = Math.max(Number(unbondBlock), Number(lastStakedBlockNumber))
+    const coolDownBlockNumber = Number(latestActionBlock) + STAKE_INTERVAL_BLOCKS
     if (coolDownBlockNumber > (blockNumber ?? 0)) {
       setCanStake(false)
     } else {
       // Handles the case were is user is switching between accounts where both accounts have staked but one account has a cooldown and the other does not
       setCanStake(true)
     }
-  }, [blockNumber, lastStakedBlockNumber, address])
+  }, [blockNumber, lastStakedBlockNumber, address, chainId, unbondBlock])
 
   return { canStake, isLoading: isBlockNumberLoading || isStakeDataLoading }
 }

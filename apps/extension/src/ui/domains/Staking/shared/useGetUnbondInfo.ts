@@ -2,6 +2,7 @@ import { ChainId } from "extension-core"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
+import { useBittensorStakedBlockNumber } from "../hooks/bittensor/useBittensorStakedBlockNumber"
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeInfo } from "../hooks/bittensor/useGetBittensorStakeInfo"
 import { useGetBittensorTotalStaked } from "../hooks/bittensor/useGetBittensorTotalStaked"
@@ -55,6 +56,18 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     isEnabled: chainId === "bittensor",
     plancks: bittensorPlanks,
   })
+
+  const { setByAccountAndDelegator, getByAccountAndDelegator } = useBittensorStakedBlockNumber()
+
+  const handleBittensorUnbondSuccess = (blockNumber: number) => {
+    const unbondBlock = getByAccountAndDelegator({ account: address, delegator: unstakePoolId })
+    if (unbondBlock === blockNumber) return
+    setByAccountAndDelegator({
+      account: address,
+      delegator: unstakePoolId,
+      blockNumber,
+    })
+  }
 
   let payloadInfo
   let plancksToUnbond
@@ -111,5 +124,6 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     unbondType,
     canStake,
     isCanStakeLoading,
+    handleSuccess: chainId === "bittensor" ? handleBittensorUnbondSuccess : () => {},
   }
 }

@@ -77,6 +77,7 @@ export const useUnbondWizard = () => {
     unbondType,
     canStake,
     isCanStakeLoading,
+    handleSuccess,
   } = useGetUnbondInfo({
     sapi,
     chainId: token?.chain?.id,
@@ -148,5 +149,6 @@ export const useUnbondWizard = () => {
     stakeWarningMessage,
 
     onSubmitted,
+    handleSuccess,
   }
 }
