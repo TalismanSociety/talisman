@@ -1,4 +1,6 @@
 import { DecodedCallComponentDefs } from "../../types"
+import { SUMMARY_COMPONENTS_ASSET_CONVERSION } from "./SummaryAssetConversion"
+import { SUMMARY_COMPONENTS_ASSETS } from "./SummaryAssets"
 import { SUMMARY_COMPONENTS_BALANCES } from "./SummaryBalances"
 import { SUMMARY_COMPONENTS_CONVICTION_VOTING } from "./SummaryConvictionVoting"
 import { SUMMARY_COMPONENTS_NOMINATION_POOLS } from "./SummaryNominationPools"
@@ -11,4 +13,6 @@ export const SUMMARY_COMPONENTS: DecodedCallComponentDefs = [
   ...SUMMARY_COMPONENTS_BALANCES,
   ...SUMMARY_COMPONENTS_XCM,
   ...SUMMARY_COMPONENTS_X_TOKENS,
+  ...SUMMARY_COMPONENTS_ASSETS,
+  ...SUMMARY_COMPONENTS_ASSET_CONVERSION,
 ]
