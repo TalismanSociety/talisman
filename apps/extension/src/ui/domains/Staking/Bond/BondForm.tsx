@@ -394,7 +394,7 @@ export const BondForm = () => {
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} />
+            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">

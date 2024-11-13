@@ -1,14 +1,19 @@
 import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { ChainId } from "extension-core"
 
 import { useBondWizard } from "../Bond/useBondWizard"
 import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
-export const BondPoolName = ({ poolId }: { poolId: string | number | undefined | null }) => {
-  const { setStep, step, token } = useBondWizard()
-
-  const { id: chainId } = token?.chain || {}
+export const BondPoolName = ({
+  poolId,
+  chainId,
+}: {
+  poolId: string | number | undefined | null
+  chainId: ChainId | undefined
+}) => {
+  const { setStep, step } = useBondWizard()
 
   let data,
     isLoading = false,
@@ -46,12 +51,11 @@ export const BondPoolName = ({ poolId }: { poolId: string | number | undefined |
         poolId as unknown as number,
       ))
       poolName = data || ""
+      defaultPoolName = "Talisman Pool"
       break
   }
 
-  if (isError) return <>{defaultPoolName}</>
-
-  if (isLoading || !poolName)
+  if (isLoading)
     return (
       <div
         className={classNames(
@@ -60,6 +64,8 @@ export const BondPoolName = ({ poolId }: { poolId: string | number | undefined |
         )}
       />
     )
+
+  if (isError || !poolName) return <>{defaultPoolName}</>
 
   return <>{poolName}</>
 }

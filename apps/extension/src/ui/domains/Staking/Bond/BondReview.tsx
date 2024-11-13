@@ -55,7 +55,7 @@ export const BondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} />
+            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
