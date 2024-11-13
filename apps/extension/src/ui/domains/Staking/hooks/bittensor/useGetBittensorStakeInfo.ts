@@ -23,17 +23,17 @@ const fetchBittensorStakeInfo = async (address?: string): Promise<DelegatesData>
 export const useGetBittensorStakeInfo = ({
   address,
   isEnabled = true,
-  totalStaked = 0n,
+  totalStaked = 0,
 }: {
   address: string | undefined
   isEnabled?: boolean
-  totalStaked?: bigint
+  totalStaked?: number
 }) => {
   const { data, ...rest } = useQuery({
-    queryKey: ["useGetBittensorStakeInfo", address, totalStaked.toString()],
+    queryKey: ["useGetBittensorStakeInfo", address, totalStaked],
     queryFn: () => fetchBittensorStakeInfo(address),
     staleTime: 5 * 60 * 1000,
-    enabled: !!address && isEnabled && totalStaked > 0n,
+    enabled: !!address && isEnabled && totalStaked > 0,
   })
 
   return { data: data?.data, ...rest }

@@ -14,8 +14,6 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
-import { useGetBittensorStakeHotkeys } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorStakeHotkeys"
-import { useGetBittensorValidators } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorValidator"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
@@ -44,8 +42,8 @@ const AssetState = ({
   description?: string
   render: boolean
   address?: Address
-  isLoading: boolean
-  locked: boolean
+  isLoading?: boolean
+  locked?: boolean
 }) => {
   if (!render) return null
   return (
@@ -64,7 +62,7 @@ const AssetState = ({
       {isLoading && !description && locked && (
         <div className="bg-grey-700 rounded-xs h-[1.6rem] w-80 animate-pulse" />
       )}
-      {description && !isLoading && !address && (
+      {description && !address && (
         <div className="flex-shrink-0 truncate text-sm">{description}</div>
       )}
     </div>
@@ -168,7 +166,6 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               symbol={symbol}
               status={status}
               tokenId={tokenId}
-              chainId={chainId}
             />
           ))}
     </div>
@@ -250,89 +247,58 @@ const ChainTokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
-  chainId,
 }: {
   row: DetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
-  chainId: ChainId | EvmNetworkId
-}) => {
-  const { selectedAccount } = usePortfolioNavigation()
-
-  const rowAddress = useMemo(
-    () => row.address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, row.address],
-  )
-
-  const { data: hotkeys, isLoading: isBittensorHotkeysLoading } = useGetBittensorStakeHotkeys({
-    chainId,
-    address: rowAddress,
-  })
-
-  const { data: validators, isLoading: isBittensorValidatorLoading } = useGetBittensorValidators({
-    hotkeys: hotkeys ?? [],
-  })
-
-  const [validator] = validators
-
-  const description =
-    tokenId === "bittensor-substrate-native" && row.locked && row.title !== "Reserved"
-      ? validator?.name
-      : row.description
-
-  return (
-    <div
-      key={row.key}
-      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
-    >
-      <div>
-        <AssetState
-          title={row.title}
-          locked={row.locked}
-          description={description}
-          render
-          address={row.address}
-          isLoading={
-            (isBittensorHotkeysLoading || isBittensorValidatorLoading) && row.title !== "Reserved"
-          }
-        />
-      </div>
-      {!row.locked && <div></div>}
-      <div>
-        <AssetBalanceCellValue
-          render={row.tokens.gt(0)}
-          tokens={row.tokens}
-          fiat={row.fiat}
-          symbol={symbol}
-          locked={row.locked}
-          balancesStatus={status}
-          className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
-        />
-      </div>
-      {!!row.locked &&
-        (row.meta || (tokenId === "bittensor-substrate-native" && row.title !== "Reserved")) &&
-        tokenId && (
-          <LockedExtra
-            tokenId={tokenId}
-            address={row.address}
-            isLoading={status.status === "fetching"}
-            rowMeta={row.meta}
-            chainId={chainId}
-          />
-        )}
+}) => (
+  <div
+    key={row.key}
+    className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+  >
+    <div>
+      <AssetState
+        title={row.title}
+        description={row.description}
+        render
+        address={row.address}
+        isLoading={row.isLoading}
+        locked={row.locked}
+      />
     </div>
-  )
-}
+    {!row.locked && <div></div>}
+    <div>
+      <AssetBalanceCellValue
+        render={row.tokens.gt(0)}
+        tokens={row.tokens}
+        fiat={row.fiat}
+        symbol={symbol}
+        locked={row.locked}
+        balancesStatus={status}
+        className={classNames(
+          (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+        )}
+      />
+    </div>
+    {!!row.locked && row.meta && tokenId && (
+      <LockedExtra
+        tokenId={tokenId}
+        address={row.address}
+        isLoading={status.status === "fetching"}
+        rowMeta={row.meta}
+      />
+    )}
+  </div>
+)
 
 const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
   rowMeta: { poolId?: number; unbonding?: boolean }
-  chainId: ChainId | EvmNetworkId
-}> = ({ tokenId, address, rowMeta, isLoading, chainId }) => {
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
   const { selectedAccount } = usePortfolioNavigation()
@@ -341,6 +307,7 @@ const LockedExtra: FC<{
     () => address ?? selectedAccount?.address ?? null,
     [selectedAccount?.address, address],
   )
+
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
     [data?.accounts, rowAddress],
@@ -348,17 +315,17 @@ const LockedExtra: FC<{
 
   const withdrawIn = useMemo(
     () =>
-      !!rowMeta?.unbonding && !!accountStatus?.canWithdrawIn
+      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
         ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta?.unbonding],
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
   )
 
   if (!rowAddress) return null
 
   return (
     <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
-      {rowMeta?.unbonding ? (
+      {rowMeta.unbonding ? (
         accountStatus?.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
         ) : (
@@ -376,7 +343,7 @@ const LockedExtra: FC<{
             )}
           </>
         )
-      ) : accountStatus?.canUnstake || chainId === "bittensor" ? (
+      ) : accountStatus?.canUnstake || tokenId === "bittensor-substrate-native" ? (
         <UnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
       ) : null}
     </div>
