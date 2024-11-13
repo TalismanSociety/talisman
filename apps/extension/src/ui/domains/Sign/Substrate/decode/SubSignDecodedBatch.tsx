@@ -51,7 +51,7 @@ const BatchCallItemButton: FC<{
   return (
     <button
       type="button"
-      className="bg-grey-900 hover:bg-grey-800 text-body-secondary rounded-xs left-align flex gap-4 truncate p-4 text-left"
+      className="bg-grey-900 hover:bg-grey-800 text-body-secondary rounded-xs left-align flex w-full gap-4 overflow-hidden p-4 text-left"
       onClick={() => open(index)}
     >
       <div className="text-body-inactive inine-block shrink-0 tabular-nums">{index + 1}.</div>

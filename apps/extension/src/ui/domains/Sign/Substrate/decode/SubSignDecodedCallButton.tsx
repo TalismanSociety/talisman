@@ -15,10 +15,12 @@ export const SubSignDecodedCallButton: DecodedCallComponent<unknown> = ({
     <>
       <button
         type="button"
-        className="bg-grey-900 hover:bg-grey-800 text-body-secondary rounded-xs left-align flex gap-4 truncate p-4 text-left"
+        className="bg-grey-900 hover:bg-grey-800 text-body-secondary rounded-xs left-align flex w-full gap-4 overflow-hidden truncate p-4 text-left"
         onClick={open}
       >
-        <SubSignDecodeButtonContent sapi={sapi} decodedCall={decodedCall} payload={payload} />
+        <div className="truncate">
+          <SubSignDecodeButtonContent sapi={sapi} decodedCall={decodedCall} payload={payload} />
+        </div>
       </button>
       <SubSignDecodedCallModal
         sapi={sapi}
