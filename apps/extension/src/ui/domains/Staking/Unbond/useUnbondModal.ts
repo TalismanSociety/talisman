@@ -12,8 +12,16 @@ export const useUnbondModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("UnstakeModal")
 
   const open = useCallback(
-    ({ address, tokenId }: { address: Address; tokenId: TokenId }) => {
-      reset({ address, tokenId })
+    ({
+      address,
+      tokenId,
+      poolId,
+    }: {
+      address: Address
+      tokenId: TokenId
+      poolId: string | number | undefined
+    }) => {
+      reset({ address, tokenId, poolId })
 
       // then open the modal
       innerOpen()

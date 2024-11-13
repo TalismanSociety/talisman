@@ -21,6 +21,7 @@ type WizardState = {
   address: Address | null
   tokenId: TokenId | null
   hash: Hex | null
+  poolId: number | string | undefined
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -28,6 +29,7 @@ const DEFAULT_STATE: WizardState = {
   address: null,
   tokenId: null,
   hash: null,
+  poolId: undefined,
 }
 
 const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -41,7 +43,7 @@ const [useWizardState] = bind(wizardState$)
 
 export const useResetNomPoolUnbondWizard = () => {
   return useCallback(
-    (init: Pick<WizardState, "address" | "tokenId">) =>
+    (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
     [],
   )
@@ -51,7 +53,7 @@ export const useUnbondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { address, step, hash, tokenId } = useWizardState()
+  const { address, step, hash, tokenId, poolId: unstakePoolId } = useWizardState()
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -79,6 +81,7 @@ export const useUnbondWizard = () => {
     sapi,
     chainId: token?.chain?.id,
     address: account?.address,
+    unstakePoolId,
   })
 
   const onSubmitted = useCallback(

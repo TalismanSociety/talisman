@@ -14,7 +14,8 @@ export const UnbondButton: FC<{
   address: string
   className?: string
   variant: "small" | "large"
-}> = ({ tokenId, address, className, variant }) => {
+  poolId: number | string | undefined
+}> = ({ tokenId, address, className, variant, poolId }) => {
   const { t } = useTranslation()
   const { open } = useUnbondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
@@ -29,9 +30,9 @@ export const UnbondButton: FC<{
   )
 
   const handleClick = useCallback(() => {
-    open({ tokenId, address })
+    open({ tokenId, address, poolId })
     genericEvent("open inline unbonding modal", { from: "asset details", tokenId })
-  }, [address, genericEvent, open, tokenId])
+  }, [address, genericEvent, open, poolId, tokenId])
 
   if (!canUnstake) return null // no nompool/tao staking on this network
 

@@ -309,7 +309,12 @@ const LockedExtra: FC<{
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
       accountStatus?.canUnstake || tokenId === "bittensor-substrate-native" ? (
-        <UnbondButton tokenId={tokenId} address={rowAddress} variant="small" />
+        <UnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          variant="small"
+          poolId={rowMeta.poolId}
+        />
       ) : null}
     </>
   )

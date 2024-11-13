@@ -3,7 +3,7 @@ import { ChainId } from "extension-core"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
-import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
+import { useGetBittensorStakeInfo } from "../hooks/bittensor/useGetBittensorStakeInfo"
 import { useGetBittensorTotalStaked } from "../hooks/bittensor/useGetBittensorTotalStaked"
 import { useGetBittensorUnbondPayload } from "../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
@@ -15,11 +15,12 @@ type GetUnbondInfo = {
   sapi: ScaleApi | undefined | null
   chainId: ChainId | undefined
   address: string | undefined
+  unstakePoolId: number | string | undefined
 }
 
 type UnbondType = "bittensor" | "nomPools"
 
-export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
+export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetUnbondInfo) => {
   const { data: pool } = useNomPoolByMember(chainId, address)
   const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanksToUnbond({
     sapi,
@@ -38,14 +39,21 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     isEnabled: chainId === "bittensor",
   })
 
-  const { data: hotkeys } = useGetBittensorStakeHotkeys({ chainId, address })
+  const { data: bittensorStakeInfo } = useGetBittensorStakeInfo({
+    address,
+    totalStaked: Number(totalTaoStaked) ?? 1,
+  })
+
+  const bittensorPlanks = BigInt(
+    bittensorStakeInfo?.find((stake) => stake.delegate.ss58 === unstakePoolId)?.balance ?? "0",
+  )
 
   const bittensorUnbondPayload = useGetBittensorUnbondPayload({
     sapi,
     address,
-    hotkey: hotkeys?.[0],
+    hotkey: unstakePoolId,
     isEnabled: chainId === "bittensor",
-    plancks: totalTaoStaked,
+    plancks: bittensorPlanks,
   })
 
   let payloadInfo
@@ -56,8 +64,8 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   switch (chainId) {
     case "bittensor":
       payloadInfo = bittensorUnbondPayload
-      plancksToUnbond = totalTaoStaked
-      poolId = hotkeys?.[0]
+      plancksToUnbond = bittensorPlanks
+      poolId = unstakePoolId
       unbondType = "bittensor"
       break
     default:

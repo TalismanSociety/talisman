@@ -344,7 +344,12 @@ const LockedExtra: FC<{
           </>
         )
       ) : accountStatus?.canUnstake || tokenId === "bittensor-substrate-native" ? (
-        <UnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
+        <UnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          variant="large"
+          poolId={rowMeta.poolId}
+        />
       ) : null}
     </div>
   )

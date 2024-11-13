@@ -65,7 +65,7 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
         fiat: formattedStakedAmount * (tokenRates?.[selectedCurrency] ?? 0),
         locked: true,
         address: undefined,
-        meta: stake,
+        meta: { poolId: stake.delegate.ss58 },
         isLoading: isBittensorValidatorLoading,
       }
     })

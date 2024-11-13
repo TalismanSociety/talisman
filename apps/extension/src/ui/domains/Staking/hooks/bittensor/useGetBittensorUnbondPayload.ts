@@ -6,7 +6,7 @@ type GetBittensorUnbondPayload = {
   sapi: ScaleApi | undefined | null
   isEnabled: boolean
   address: string | undefined
-  hotkey: string | undefined
+  hotkey: string | number | undefined
   plancks: bigint | null | undefined
 }
 

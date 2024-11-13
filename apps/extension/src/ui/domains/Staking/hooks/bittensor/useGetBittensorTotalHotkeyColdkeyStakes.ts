@@ -5,7 +5,7 @@ import { ScaleApi } from "@ui/util/scaleApi"
 type GetBittensorTotalHotkeyColdkeyStakes = {
   sapi: ScaleApi | undefined | null
   address: string | null | undefined
-  hotkey: string | number | undefined
+  hotkey: string | number | undefined | null
   isEnabled: boolean
 }
 
