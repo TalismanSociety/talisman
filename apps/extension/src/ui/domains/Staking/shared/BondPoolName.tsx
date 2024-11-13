@@ -5,8 +5,8 @@ import { useBondWizard } from "../Bond/useBondWizard"
 import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
-export const BondPoolName = () => {
-  const { setStep, step, poolId, token } = useBondWizard()
+export const BondPoolName = ({ poolId }: { poolId: string | number | undefined | null }) => {
+  const { setStep, step, token } = useBondWizard()
 
   const { id: chainId } = token?.chain || {}
 

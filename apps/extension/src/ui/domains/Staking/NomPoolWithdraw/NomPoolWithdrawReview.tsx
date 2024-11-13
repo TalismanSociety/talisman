@@ -24,6 +24,7 @@ export const NomPoolWithdrawReview = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     errorMessage,
+    poolId,
   } = useNomPoolWithdrawWizard()
 
   if (!account) return null
@@ -58,7 +59,7 @@ export const NomPoolWithdrawReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <BondPoolName />
+            <BondPoolName poolId={poolId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">

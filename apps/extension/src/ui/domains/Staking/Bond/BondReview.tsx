@@ -12,7 +12,7 @@ import { useBondWizard } from "./useBondWizard"
 
 export const BondReview = () => {
   const { t } = useTranslation()
-  const { token, formatter, account, onSubmitted, payload, txMetadata } = useBondWizard()
+  const { token, formatter, account, onSubmitted, payload, txMetadata, poolId } = useBondWizard()
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -55,7 +55,7 @@ export const BondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <BondPoolName />
+            <BondPoolName poolId={poolId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
