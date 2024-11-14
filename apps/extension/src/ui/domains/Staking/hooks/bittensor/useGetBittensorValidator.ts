@@ -3,7 +3,7 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 const TAOSTATS_API_URL = "https://api-prod-v2.taostats.io/api"
 const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY || ""
 
-const fetchBittensorValidator = async (hotkey: string): Promise<BittensorValidator> => {
+const fetchBittensorValidator = async (hotkey: string | undefined): Promise<BittensorValidator> => {
   try {
     return await (
       await fetch(`${TAOSTATS_API_URL}/validator/latest/v1?hotkey=${hotkey}`, {
@@ -32,7 +32,7 @@ export const useGetBittensorValidators = ({
   hotkeys,
   isEnabled = true,
 }: {
-  hotkeys: string[]
+  hotkeys: (string | undefined)[]
   isEnabled?: boolean
 }) => {
   return useQueries({

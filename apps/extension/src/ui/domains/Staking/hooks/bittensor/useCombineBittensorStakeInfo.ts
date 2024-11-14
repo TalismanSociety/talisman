@@ -7,7 +7,8 @@ import { Balances } from "@extension/core"
 import { DetailRow } from "@ui/domains/Portfolio/AssetDetails/useChainTokenBalances"
 import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 
-import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
+import { useGetBittensorStakesByHotKeys } from "./useGetBittensorStakeByHotKey"
+import { useGetBittensorStakesHotkeys } from "./useGetBittensorStakeHotkeys"
 import { useGetBittensorValidators } from "./useGetBittensorValidator"
 
 type CombineBittensorStakeInfo = {
@@ -25,22 +26,38 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
     return acc + b.subtensor.reduce((acc, subtensor) => acc + Number(subtensor.amount.tokens), 0)
   }, 0)
 
-  const { data: stakeInfo, isLoading: isStakeInfoLoading } = useGetBittensorStakeInfo({
-    address,
+  const balancesAddresses = balances.each.map((b) => b.address)
+
+  const addresses = useMemo(
+    () => (address ? [address] : balancesAddresses),
+    [address, balancesAddresses],
+  )
+
+  const { data: hotkeys } = useGetBittensorStakesHotkeys({
+    chainId: "bittensor",
+    addresses: addresses,
     totalStaked,
   })
 
-  const hotkeys = useMemo(() => stakeInfo?.map((stake) => stake.delegate.ss58), [stakeInfo])
+  const flatHotkeys = hotkeys?.flat()
+
+  const { data: stakes, isLoading: isStakesLoading } = useGetBittensorStakesByHotKeys({
+    addresses,
+    hotkeys: hotkeys,
+  })
 
   const { data: validators, isLoading: isBittensorValidatorLoading } = useGetBittensorValidators({
-    hotkeys: hotkeys ?? [],
+    hotkeys: flatHotkeys ?? [],
   })
 
   const combinedStakeInfo: DetailRow[] = useMemo(() => {
-    if ((totalStaked > 0 && isStakeInfoLoading) || !stakeInfo) {
+    if (
+      (totalStaked > 0 && flatHotkeys?.length && isBittensorValidatorLoading) ||
+      isStakesLoading
+    ) {
       return [
         {
-          key: "test",
+          key: "loading-placeholder",
           title: getLockTitle({ label: "subtensor-staking" }),
           description: undefined,
           tokens: BigNumber(totalStaked),
@@ -48,38 +65,58 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
           locked: true,
           address: undefined,
           meta: null,
-          isLoading: isBittensorValidatorLoading || isStakeInfoLoading,
+          isLoading: true,
         },
       ]
     }
+    if (!flatHotkeys?.length) return []
 
-    const stakeInfos = stakeInfo.map((stake, index) => {
-      const validator = validators[index]
-      const formattedStakedAmount = formatTokenDecimals(stake.balance, token?.decimals ?? 9)
+    let currentIndex = 0
 
-      return {
-        key: `${stake.delegate.ss58}-subtensor-${index}`,
-        title: getLockTitle({ label: "subtensor-staking" }),
-        description: validator?.name,
-        tokens: BigNumber(formattedStakedAmount),
-        fiat: formattedStakedAmount * (tokenRates?.[selectedCurrency] ?? 0),
-        locked: true,
-        address: undefined,
-        meta: { poolId: stake.delegate.ss58 },
-        isLoading: isBittensorValidatorLoading,
-      }
+    const stakesInfo = addresses.map((addr, index) => {
+      const hotkeysCount = hotkeys?.[index]?.length ?? 0
+      const hotkeysForAddress = flatHotkeys.slice(currentIndex, currentIndex + hotkeysCount)
+      const stakesForAddress = stakes?.slice(currentIndex, currentIndex + hotkeysCount)
+      const validatorsForAddress = validators?.slice(currentIndex, currentIndex + hotkeysCount)
+      currentIndex += hotkeysCount
+
+      const stakeInfo = hotkeysForAddress.map((hotkey, index) => {
+        const formattedStakedAmount = formatTokenDecimals(
+          stakesForAddress?.[index]?.toString() ?? 0,
+          token?.decimals ?? 9,
+        )
+
+        return {
+          key: `${hotkey}-subtensor-${index}`,
+          title: getLockTitle({ label: "subtensor-staking" }),
+          description: validatorsForAddress?.[index]?.name,
+          tokens: BigNumber(formattedStakedAmount),
+          fiat: formattedStakedAmount * (tokenRates?.[selectedCurrency] ?? 0),
+          locked: true,
+          // only show address when we're viewing balances for all accounts
+          address: address ? undefined : addr,
+          meta: { poolId: hotkey },
+          isLoading: isBittensorValidatorLoading,
+        }
+      })
+
+      return stakeInfo
     })
 
-    return stakeInfos
+    return stakesInfo.flat()
   }, [
     totalStaked,
-    isStakeInfoLoading,
-    stakeInfo,
+    flatHotkeys,
     isBittensorValidatorLoading,
+    isStakesLoading,
+    addresses,
+    hotkeys,
+    stakes,
     validators,
     token?.decimals,
     tokenRates,
     selectedCurrency,
+    address,
   ])
 
   return { combinedStakeInfo }
