@@ -145,7 +145,7 @@ export const TreeItemFolder: FC<{
   const { isOpen, toggle } = useOpenClose(true)
 
   return (
-    <div className={classNames("@container bg-grey-800 relative flex flex-col rounded-sm pt-2")}>
+    <div className={classNames("@container bg-grey-850 relative flex flex-col rounded-sm pt-2")}>
       <div
         className={classNames(
           "flex h-[5.3rem] items-center gap-8 overflow-hidden border-[1px] border-transparent px-8 pb-0",
