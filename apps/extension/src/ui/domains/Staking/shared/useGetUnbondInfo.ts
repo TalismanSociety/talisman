@@ -4,8 +4,7 @@ import { ScaleApi } from "@ui/util/scaleApi"
 
 import { useBittensorStakedBlockNumber } from "../hooks/bittensor/useBittensorStakedBlockNumber"
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
-import { useGetBittensorStakeInfo } from "../hooks/bittensor/useGetBittensorStakeInfo"
-import { useGetBittensorTotalStaked } from "../hooks/bittensor/useGetBittensorTotalStaked"
+import { useGetBittensorStakeByHotKey } from "../hooks/bittensor/useGetBittensorStakeByHotKey"
 import { useGetBittensorUnbondPayload } from "../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
 import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
@@ -34,20 +33,11 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     pool,
     isEnabled: chainId !== "bittensor",
   })
-  const { data: totalTaoStaked } = useGetBittensorTotalStaked({
-    sapi,
-    address,
-    isEnabled: chainId === "bittensor",
-  })
 
-  const { data: bittensorStakeInfo } = useGetBittensorStakeInfo({
+  const { data: bittensorPlanks } = useGetBittensorStakeByHotKey({
     address,
-    totalStaked: Number(totalTaoStaked) ?? 1,
+    hotkey: unstakePoolId,
   })
-
-  const bittensorPlanks = BigInt(
-    bittensorStakeInfo?.find((stake) => stake.delegate.ss58 === unstakePoolId)?.balance ?? "0",
-  )
 
   const bittensorUnbondPayload = useGetBittensorUnbondPayload({
     sapi,
