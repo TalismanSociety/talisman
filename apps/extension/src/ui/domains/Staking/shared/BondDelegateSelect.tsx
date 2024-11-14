@@ -37,12 +37,13 @@ export const BondDelegateSelect = <T,>({
         {sortMethods.map((method) => (
           <button
             key={method.label}
-            onClick={() => handleSortMethodChange(method)}
+            onClick={() => !isLoading && handleSortMethodChange(method)}
             className={classNames(
               "rounded-[12px] px-[8px] py-[6px] text-sm",
               method.value === selectedSortMethod.value
                 ? "bg-primary-500 text-black"
                 : "bg-black-tertiary text-grey-400",
+              isLoading && "cursor-not-allowed",
             )}
           >
             {t(method.label)}

@@ -26,10 +26,14 @@ export const BittensorBondDelegateSelect = () => {
     useCombinedBittensorValidatorsData()
 
   useEffect(() => {
-    if (combinedValidatorsData.length && !combinedValidatorsDataLoading) {
+    if (
+      combinedValidatorsData.length &&
+      !combinedValidatorsDataLoading &&
+      !sortedDelegators.length
+    ) {
       setSortedDelegators(sortBondOptions(combinedValidatorsData, "name"))
     }
-  }, [combinedValidatorsData, combinedValidatorsDataLoading])
+  }, [combinedValidatorsData, combinedValidatorsDataLoading, sortedDelegators.length])
 
   const handleSortMethodChange = (method: SortMethod) => {
     setSelectedSortMethod(method)
@@ -55,7 +59,7 @@ export const BittensorBondDelegateSelect = () => {
       sortMethods={sortMethods}
       selectedSortMethod={selectedSortMethod}
       handleSortMethodChange={handleSortMethodChange}
-      isLoading={combinedValidatorsDataLoading}
+      isLoading={combinedValidatorsDataLoading && !sortedDelegators.length}
       bondOptions={sortedDelegators}
       tokenId="bittensor-substrate-native"
     />
