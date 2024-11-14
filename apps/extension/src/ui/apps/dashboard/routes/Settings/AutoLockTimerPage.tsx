@@ -46,7 +46,7 @@ export const Content = () => {
 }
 
 export const AutoLockTimerPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

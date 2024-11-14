@@ -130,7 +130,7 @@ const Content = () => {
 }
 
 export const NetworksPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

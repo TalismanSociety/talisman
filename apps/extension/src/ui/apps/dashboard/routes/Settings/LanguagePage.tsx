@@ -31,7 +31,7 @@ const Content = () => {
 }
 
 export const LanguagePage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

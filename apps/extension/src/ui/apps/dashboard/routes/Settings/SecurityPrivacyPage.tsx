@@ -138,7 +138,7 @@ const Content = () => {
 }
 
 export const SecurityPrivacyPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )
