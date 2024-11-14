@@ -15,10 +15,7 @@ class TalismanAnalytics {
       // have to put this manual check here because posthog is buggy and will not respect our settings
       // https://github.com/PostHog/posthog-js/issues/336
       const allowTracking = await settingsStore.get("useAnalyticsTracking")
-
-      // we need to allow tracking during onboarding, while value is not defined
-      // so we need to explicitly check for false
-      if (allowTracking === false) return
+      if (!allowTracking) return
 
       const captureProperties = await withGeneralReport(properties)
       await analyticsStore.capture(eventName, captureProperties)
