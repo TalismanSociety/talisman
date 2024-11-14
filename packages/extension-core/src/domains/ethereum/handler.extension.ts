@@ -368,7 +368,7 @@ export class EthHandler extends ExtensionHandler {
         isCustom: false,
       })
     } else {
-      const knownNativeTokenConfig = known?.balancesConfig.find(
+      const knownNativeTokenConfig = known?.balancesConfig?.find(
         (mod) => mod.moduleType === "evm-native",
       )?.moduleConfig as { coingeckoId?: string; logo?: string }
 
@@ -411,7 +411,7 @@ export class EthHandler extends ExtensionHandler {
         isCustom: true,
         explorerUrls: network.blockExplorerUrls || (known?.explorerUrl ? [known.explorerUrl] : []),
         iconUrls: network.iconUrls || [],
-        balancesConfig: existingNetwork.balancesConfig ?? [],
+        balancesConfig: existingNetwork?.balancesConfig ?? [],
         balancesMetadata: [],
       }
 

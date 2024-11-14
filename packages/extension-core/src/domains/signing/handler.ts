@@ -109,7 +109,9 @@ export default class SigningHandler extends ExtensionHandler {
           } catch (cause) {
             const error = new Error(`Failed to create signedTransaction`, { cause })
             console.warn(error) // eslint-disable-line no-console
-            sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+            sentry.captureException(error, {
+              extra: { chainId: chain?.id, chainName: chain?.name },
+            })
           }
         }
 
