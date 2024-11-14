@@ -28,7 +28,7 @@ export interface SettingsStoreData {
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
 export const DEFAULT_SETTINGS: SettingsStoreData = {
-  useErrorTracking: true,
+  useErrorTracking: false,
   useTestnets: false,
   identiconType: "talisman-orb",
   useAnalyticsTracking: undefined, // undefined for onboarding
