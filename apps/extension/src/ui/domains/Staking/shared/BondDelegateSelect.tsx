@@ -16,7 +16,7 @@ type BondDelegateSelectProps<T> = {
   selectedSortMethod: SortMethod<T>
   handleSortMethodChange: (method: SortMethod<T>) => void
   bondOptions: BondOptionType[]
-  tokenSymbol: string
+  tokenId: string
   isLoading: boolean
 }
 
@@ -26,7 +26,7 @@ export const BondDelegateSelect = <T,>({
   selectedSortMethod,
   isLoading,
   bondOptions,
-  tokenSymbol,
+  tokenId,
 }: BondDelegateSelectProps<T>) => {
   const { setStep, setPoolId, poolId } = useBondWizard()
   const { t } = useTranslation()
@@ -65,7 +65,7 @@ export const BondDelegateSelect = <T,>({
                   option={option}
                   selectedPoolId={poolId}
                   handleSelectPoolId={setPoolId}
-                  tokenSymbol={tokenSymbol}
+                  tokenId={tokenId}
                 />
               ))}
         </div>

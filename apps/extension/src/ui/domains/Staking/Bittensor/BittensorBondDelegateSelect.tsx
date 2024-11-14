@@ -57,7 +57,7 @@ export const BittensorBondDelegateSelect = () => {
       handleSortMethodChange={handleSortMethodChange}
       isLoading={combinedValidatorsDataLoading}
       bondOptions={sortedDelegators}
-      tokenSymbol="TAO"
+      tokenId="bittensor-substrate-native"
     />
   )
 }

@@ -1,8 +1,9 @@
-import { UserRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { UserIcon } from "@talismn/icons"
+import { classNames, formatTokenDecimals } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useToken } from "@ui/state"
 
 import { BondOption as BondOptionType } from "../hooks/bittensor/types"
 
@@ -10,7 +11,7 @@ type BondDrawerProps = {
   option: BondOptionType
   selectedPoolId: number | string | null | undefined
   handleSelectPoolId: (poolId: number | string) => void
-  tokenSymbol: string
+  tokenId: string
 }
 
 export const BondOptionSkeleton = () => {
@@ -30,9 +31,10 @@ export const BondOption = ({
   option,
   selectedPoolId,
   handleSelectPoolId,
-  tokenSymbol,
+  tokenId,
 }: BondDrawerProps) => {
   const { t } = useTranslation()
+  const token = useToken(tokenId)
   return (
     <button
       key={option.poolId}
@@ -53,13 +55,15 @@ export const BondOption = ({
       <div className="flex w-full justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-4">
-            <Tokens amount={option.totalStaked} symbol={tokenSymbol} />
+            <Tokens
+              amount={formatTokenDecimals(option.totalStaked, token?.decimals ?? 9)}
+              symbol={token?.symbol}
+            />
             {t("staked")}
           </div>
           <div className="bg-body-disabled inline-block size-2 rounded-full" />
           <div className="flex gap-4">
-            {/* TODO: Add correct icon */}
-            {option.totalStakers} <UserRightIcon />
+            {option.totalStakers} <UserIcon />
           </div>
         </div>
         <div className="ml-auto">{option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}</div>
