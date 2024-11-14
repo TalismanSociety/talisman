@@ -1,5 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { Balances } from "extension-core"
+import { Balances, RemoteConfigStoreData } from "extension-core"
 import { log } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
@@ -29,7 +29,7 @@ export const useBondButton = ({
     },
   }
 
-  const config = {
+  const config: RemoteConfigStoreData = {
     ...remoteConfig,
     stakingPools: { ...mockedRemoteConfig.stakingPools, ...remoteConfig.nominationPools },
   }
@@ -40,7 +40,6 @@ export const useBondButton = ({
     try {
       let isNomPoolStaking = false
 
-      // @ts-expect-error TODO: fix this, WIP subtensor
       let poolId = config.stakingPools[token.chain.id]?.[0]
 
       if (!poolId) return [null, false]
