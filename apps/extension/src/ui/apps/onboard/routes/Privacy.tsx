@@ -67,15 +67,16 @@ export const PrivacyPage = () => {
               always adjust these settings, or opt out completely at any time.
             </p>
             <p>
+              Read our{" "}
               <a
                 onClick={handleLearnMoreClick}
                 className="text-body"
                 href={PRIVACY_POLICY_URL}
                 target="_blank"
               >
-                Learn more
+                Privacy Policy
               </a>{" "}
-              about what we track and how we use this data.
+              to learn more about what we track and how we use this data.
             </p>
           </div>
         </Trans>
