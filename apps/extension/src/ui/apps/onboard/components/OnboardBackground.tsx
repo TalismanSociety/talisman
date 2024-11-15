@@ -2,14 +2,18 @@ import { CSSProperties, useMemo } from "react"
 
 import { useOnboard } from "../context"
 
+const BASE_STYLE: CSSProperties = {
+  backgroundImage:
+    "radial-gradient(90% 100% at 35% 20%, #BA84FF77 0%, #12121200 100%),radial-gradient(75% 100% at 90% 20%, #F48F4588 0%, #12121200 100%),radial-gradient(100% 100% at 30% 20%, #047A5C88 0%, #12121200 100%),radial-gradient(75% 75% at 50% 50%, #121212 0%, #121212 100%)",
+  opacity: 0.8,
+}
+
 export const OnboardBackground = () => {
   const { stage } = useOnboard()
   const style: CSSProperties = useMemo(
     () => ({
-      // generated using https://colorgradient.dev/gradient-generator/
-      backgroundImage:
-        "radial-gradient(49% 81% at 45% 47%, #fd4848 0%, #073AFF00 100%),radial-gradient(113% 91% at 17% -2%, #d5ff5c 1%, #FF000000 99%),radial-gradient(142% 91% at 83% 7%, #d5ff5c 1%, #FF000000 99%),radial-gradient(142% 91% at 111% 84%, #121212 0%, #121212 100%)",
-      opacity: (1 - stage * 0.2) / 4,
+      ...BASE_STYLE,
+      opacity: Number(BASE_STYLE.opacity ?? 1) * (1 - stage * 0.2),
     }),
     [stage],
   )
