@@ -4,7 +4,7 @@ import { useOnboard } from "../context"
 
 const BASE_STYLE: CSSProperties = {
   backgroundImage:
-    "radial-gradient(75% 75% at 0% 80%, #01828F 18%, #00E0AC00 100%),radial-gradient(75% 75% at 0% 0%, #FF92D9bb 0%, #00E0AC00 100%),radial-gradient(75% 75% at 10% 2%, #8C3FCB 18%, #00E0AC00 100%),radial-gradient(75% 75% at 60% 20%, #01828F 18%, #00E0AC00 100%),radial-gradient(75% 75% at 50% 100%, #FF92D9bb 0%, #00E0AC00 100%),radial-gradient(75% 75% at 100% 30%, #8C3FCB 18%, #00E0AC00 100%)",
+    "radial-gradient(75% 75% at 50% 50%, #ffffff22 0%, #ffffff44 100%),radial-gradient(75% 75% at 0% 80%, #01828F 18%, #00E0AC00 100%),radial-gradient(75% 75% at 0% 30%, #FF92D9bb 0%, #00E0AC00 100%),radial-gradient(75% 75% at 10% 2%, #8C3FCB 18%, #00E0AC00 100%),radial-gradient(75% 75% at 60% 20%, #01828Fee 18%, #00E0AC00 100%),radial-gradient(75% 75% at 80% 50%, #8C3FCBFF 18%, #00E0AC00 100%),radial-gradient(75% 75% at 50% 100%, #FF92D9bb 0%, #00E0AC00 100%)",
   opacity: 0.8,
 }
 
