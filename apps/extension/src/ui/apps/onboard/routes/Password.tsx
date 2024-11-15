@@ -164,7 +164,6 @@ export const PasswordPage = () => {
                   data-lpignore
                   // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
-                  //className="placeholder:text-body-inactive !px-0"
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />
               </FormFieldContainer>
@@ -176,7 +175,6 @@ export const PasswordPage = () => {
                   placeholder={t("Confirm password")}
                   spellCheck={false}
                   data-lpignore
-                  //className="placeholder:text-body-secondary/30 !px-0"
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />
               </FormFieldContainer>
