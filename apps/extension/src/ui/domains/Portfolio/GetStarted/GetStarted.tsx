@@ -86,7 +86,7 @@ export const GetStarted = () => {
         <div className="grid grid-cols-2 gap-8">
           <GetStartedActionButton
             label={t("Add account")}
-            description={t("Follow a well-known account")}
+            description={t("Create or import an existing account")}
             iconTop={<GetStartedAddAccountIcon className="-ml-2 size-12" />}
             onClick={onAddAccountClick}
           />
