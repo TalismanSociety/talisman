@@ -12,6 +12,7 @@ import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBounda
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
+import { useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
 
 import { initSentryFrontend } from "../sentry"
 
@@ -23,6 +24,10 @@ preloadFonts(FONT_FAMILIES)
 
 const KeepBackgroundOpen = () => {
   useKeepBackgroundOpen()
+  return null
+}
+const KeepWalletUnlocked = () => {
+  useKeepWalletUnlocked()
   return null
 }
 
@@ -42,6 +47,7 @@ export const renderTalisman = (app: ReactNode) => {
         <ErrorBoundaryDatabaseMigration>
           <Suspense fallback={<SuspenseTracker name="Root" />}>
             <KeepBackgroundOpen />
+            <KeepWalletUnlocked />
             <Subscribe>
               <QueryClientProvider client={queryClient}>
                 <HashRouter>{app}</HashRouter>

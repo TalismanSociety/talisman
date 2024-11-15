@@ -62,7 +62,8 @@ import {
 } from "@extension/core/domains/accounts/helpers.catalog"
 
 export default interface MessageTypes {
-  ping: () => Promise<boolean>
+  keepalive: () => Promise<boolean>
+  keepunlocked: () => Promise<boolean>
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
   onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>

@@ -46,6 +46,7 @@ export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
 }>
 
 type RemovedMessages =
+  | "pri(ping)"
   | "pri(signing.approve.password)"
   | "pri(signing.approve.signature)"
   | "pri(authorize.list)"
@@ -85,7 +86,15 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TokenRatesMessages &
   SubstrateMessages &
   AssetDiscoveryMessages &
-  NftsMessages
+  NftsMessages &
+  PingMessages
+
+interface PingMessages {
+  // keeps the background script alive while the UI is open
+  "pri(keepalive)": [null, boolean]
+  // keeps the wallet unlocked while the user is actively interacting with it (clicks/keypresses)
+  "pri(keepunlocked)": [null, boolean]
+}
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

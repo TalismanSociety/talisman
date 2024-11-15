@@ -8,7 +8,8 @@ import MessageTypes from "./types"
 const messageService = new PortMessageService()
 
 export const api: MessageTypes = {
-  ping: () => messageService.sendMessage("pri(ping)"),
+  keepalive: () => messageService.sendMessage("pri(keepalive)"),
+  keepunlocked: () => messageService.sendMessage("pri(keepunlocked)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>

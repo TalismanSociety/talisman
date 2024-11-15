@@ -11,8 +11,9 @@ export const useKeepBackgroundOpen = () => {
     const interval = setInterval(() => {
       // making any runtime call keeps the background page open
       // and resets the autolock timer
-      api.ping()
+      api.keepalive()
     }, 10000)
+
     return () => clearInterval(interval)
   }, [])
 }

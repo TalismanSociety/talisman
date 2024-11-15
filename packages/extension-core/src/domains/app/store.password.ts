@@ -48,11 +48,12 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
 
     chrome.alarms.onAlarm.addListener((alarm) => {
       if (alarm.name !== ALARM_NAME) return
+
       this.clearPassword()
     })
   }
 
-  public async resetAutoLockTimer(minutes: number) {
+  public async resetAutolockTimer(minutes: number) {
     const alarm = await chrome.alarms.get(ALARM_NAME)
     if (alarm) await chrome.alarms.clear(ALARM_NAME)
 
