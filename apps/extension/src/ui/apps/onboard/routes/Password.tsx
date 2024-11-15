@@ -22,7 +22,7 @@ type FormData = {
   passwordConfirm: string
 }
 
-const INPUT_CONTAINER_PROPS_PASSWORD = { className: "!bg-white/5 h-28" }
+const INPUT_CONTAINER_PROPS_PASSWORD = { className: "h-28 opacity-70" }
 
 const schema = yup
   .object({
@@ -144,7 +144,9 @@ export const PasswordPage = () => {
             <div className="flex flex-col pb-12">
               <div className="mb-4 mt-12 flex h-[1.2em] items-center justify-between text-sm">
                 <div
-                  className={classNames(password ? "text-body-secondary" : "text-body-disabled")}
+                  className={classNames(
+                    password ? "text-body-secondary" : "text-body-secondary/50",
+                  )}
                 >
                   {t("Password strength")}: <PasswordStrength password={password} />
                 </div>
@@ -162,7 +164,7 @@ export const PasswordPage = () => {
                   data-lpignore
                   // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
-                  className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                  //className="placeholder:text-body-inactive !px-0"
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />
               </FormFieldContainer>
@@ -174,7 +176,7 @@ export const PasswordPage = () => {
                   placeholder={t("Confirm password")}
                   spellCheck={false}
                   data-lpignore
-                  className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                  //className="placeholder:text-body-secondary/30 !px-0"
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />
               </FormFieldContainer>
@@ -183,9 +185,7 @@ export const PasswordPage = () => {
               fullWidth
               primary
               type="submit"
-              className={classNames(
-                !isValid && "bg-body/5 transform-gpu cursor-not-allowed backdrop-blur-xl",
-              )}
+              className={classNames(!isValid && "opacity-70")}
               disabled={!isValid}
               processing={isSubmitting}
             >

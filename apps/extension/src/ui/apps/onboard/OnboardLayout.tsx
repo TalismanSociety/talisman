@@ -27,7 +27,7 @@ export const OnboardLayout: FC<LayoutProps> = ({
   >
     {!!withBack && (
       <BackButton
-        className="bg-body hover:bg-body absolute left-4 top-4 z-20 bg-opacity-10 transition-colors ease-in hover:bg-opacity-20 sm:left-32 sm:top-32"
+        className="absolute left-4 top-4 z-20 bg-opacity-50 transition-colors ease-in hover:bg-opacity-70 sm:left-32 sm:top-32"
         analytics={analytics}
       />
     )}
