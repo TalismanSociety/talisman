@@ -1,4 +1,5 @@
 import { TokenRateCurrency } from "@talismn/token-rates"
+import { IS_FIREFOX } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
 import { IdenticonType } from "../accounts/types"
@@ -28,7 +29,7 @@ export interface SettingsStoreData {
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
 export const DEFAULT_SETTINGS: SettingsStoreData = {
-  useErrorTracking: false,
+  useErrorTracking: !IS_FIREFOX,
   useTestnets: false,
   identiconType: "talisman-orb",
   useAnalyticsTracking: undefined, // undefined for onboarding

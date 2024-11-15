@@ -1,4 +1,4 @@
-import { DEBUG } from "extension-shared"
+import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { analyticsStore } from "../domains/analytics/store"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
@@ -15,7 +15,7 @@ class TalismanAnalytics {
       // have to put this manual check here because posthog is buggy and will not respect our settings
       // https://github.com/PostHog/posthog-js/issues/336
       const allowTracking = await settingsStore.get("useAnalyticsTracking")
-      if (!allowTracking) return
+      if (IS_FIREFOX ? !allowTracking : allowTracking === false) return
 
       const captureProperties = await withGeneralReport(properties)
       await analyticsStore.capture(eventName, captureProperties)
