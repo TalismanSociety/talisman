@@ -52,7 +52,7 @@ const SetVerifierCertificateContentInner = () => {
           title: t("Error"),
           subtitle: t("Failed to set verifier certificate."),
         },
-        { autoClose: false },
+        { autoClose: false, closeOnClick: true },
       )
     }
   }, [generateMnemonic, mnemonicId, t])
