@@ -4,7 +4,7 @@ import { useOnboard } from "../context"
 
 const BASE_STYLE: CSSProperties = {
   backgroundImage:
-    "radial-gradient(90% 100% at 35% 20%, #BA84FF77 0%, #12121200 100%),radial-gradient(75% 100% at 90% 20%, #F48F4588 0%, #12121200 100%),radial-gradient(100% 100% at 30% 20%, #047A5C88 0%, #12121200 100%),radial-gradient(75% 75% at 50% 50%, #121212 0%, #121212 100%)",
+    "radial-gradient(75% 75% at 0% 80%, #01828F 18%, #00E0AC00 100%),radial-gradient(75% 75% at 0% 0%, #FF92D9bb 0%, #00E0AC00 100%),radial-gradient(75% 75% at 10% 2%, #8C3FCB 18%, #00E0AC00 100%),radial-gradient(75% 75% at 60% 20%, #01828F 18%, #00E0AC00 100%),radial-gradient(75% 75% at 50% 100%, #FF92D9bb 0%, #00E0AC00 100%),radial-gradient(75% 75% at 100% 30%, #8C3FCB 18%, #00E0AC00 100%)",
   opacity: 0.8,
 }
 
@@ -20,7 +20,7 @@ export const OnboardBackground = () => {
 
   return (
     <div
-      className="fixed left-0 top-0 z-0 h-lvh w-lvw transition-opacity duration-[2.5s] ease-in-out"
+      className="fixed left-0 top-0 z-0 h-lvh w-lvw transition-opacity duration-[2s] ease-in"
       style={style}
     ></div>
   )
