@@ -4,7 +4,6 @@ import { api } from "@ui/api"
 
 /**
  * Used to keep the background page open on Firefox
- * @returns void
  **/
 export const useKeepBackgroundOpen = () => {
   useEffect(() => {
@@ -12,7 +11,7 @@ export const useKeepBackgroundOpen = () => {
       // making any runtime call keeps the background page open
       // and resets the autolock timer
       api.keepalive()
-    }, 10000)
+    }, 10_000)
 
     return () => clearInterval(interval)
   }, [])
