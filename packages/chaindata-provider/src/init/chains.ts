@@ -33,9 +33,6 @@ export const chains = [
         url: "wss://rpc.ibp.network/polkadot",
       },
       {
-        url: "wss://rpc.dotters.network/polkadot",
-      },
-      {
         url: "wss://1rpc.io/dot",
       },
       {
@@ -51,6 +48,9 @@ export const chains = [
         url: "wss://polkadot-public-rpc.blockops.network/ws",
       },
       {
+        url: "wss://polkadot.dotters.network",
+      },
+      {
         url: "wss://rpc-polkadot.luckyfriday.io",
       },
       {
@@ -61,6 +61,9 @@ export const chains = [
       },
       {
         url: "wss://dot-rpc.stakeworld.io",
+      },
+      {
+        url: "wss://polkadot.rpc.subquery.network/public/ws",
       },
     ],
     evmNetworks: [],
@@ -129,6 +132,11 @@ export const chains = [
         id: "frequency",
         paraId: 2091,
         name: "Frequency",
+      },
+      {
+        id: "geminis",
+        paraId: 2038,
+        name: "Geminis",
       },
       {
         id: "hashed",
@@ -206,6 +214,21 @@ export const chains = [
         name: "Nodle",
       },
       {
+        id: "oak",
+        paraId: 2090,
+        name: "Oak",
+      },
+      {
+        id: "omnibtc",
+        paraId: 2053,
+        name: "OmniBTC",
+      },
+      {
+        id: "peaq",
+        paraId: 3338,
+        name: "Peaq",
+      },
+      {
         id: "pendulum",
         paraId: 2094,
         name: "Pendulum",
@@ -241,14 +264,29 @@ export const chains = [
         name: "Polkadot Collectives",
       },
       {
+        id: "polkadot-coretime",
+        paraId: 1005,
+        name: "Polkadot Coretime",
+      },
+      {
         id: "polkadot-people",
         paraId: 1004,
         name: "Polkadot People",
       },
       {
+        id: "robonomics-polkadot",
+        paraId: 3388,
+        name: "Robonomics Polkadot",
+      },
+      {
         id: "sora-polkadot",
         paraId: 2025,
         name: "Sora",
+      },
+      {
+        id: "subdao",
+        paraId: 2018,
+        name: "SubDAO",
       },
       {
         id: "subsocial-polkadot",
@@ -320,9 +358,6 @@ export const chains = [
         url: "wss://rpc.ibp.network/kusama",
       },
       {
-        url: "wss://rpc.dotters.network/kusama",
-      },
-      {
         url: "wss://1rpc.io/ksm",
       },
       {
@@ -335,6 +370,9 @@ export const chains = [
         url: "wss://kusama-rpc.publicnode.com",
       },
       {
+        url: "wss://kusama.dotters.network",
+      },
+      {
         url: "wss://rpc-kusama.luckyfriday.io",
       },
       {
@@ -345,6 +383,9 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io",
+      },
+      {
+        url: "wss://kusama.rpc.subquery.network/public/ws",
       },
     ],
     evmNetworks: [],
@@ -405,6 +446,11 @@ export const chains = [
         name: "Encointer",
       },
       {
+        id: "gm",
+        paraId: 2123,
+        name: "GM",
+      },
+      {
         id: "imbue",
         paraId: 2121,
         name: "Imbue",
@@ -413,6 +459,11 @@ export const chains = [
         id: "integritee-kusama",
         paraId: 2015,
         name: "Integritee",
+      },
+      {
+        id: "ipci",
+        paraId: 2222,
+        name: "DAO IPCI",
       },
       {
         id: "kabocha",
@@ -433,6 +484,11 @@ export const chains = [
         id: "kintsugi",
         paraId: 2092,
         name: "Kintsugi",
+      },
+      {
+        id: "kpron",
+        paraId: 2019,
+        name: "Kpron",
       },
       {
         id: "kreivo",
@@ -487,7 +543,12 @@ export const chains = [
       {
         id: "robonomics-kusama",
         paraId: 2048,
-        name: "Robonomics",
+        name: "Robonomics Kusama",
+      },
+      {
+        id: "sakura",
+        paraId: 2016,
+        name: "Sakura",
       },
       {
         id: "shadow-kusama",
@@ -538,7 +599,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 507,
+    sortIndex: 512,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -577,13 +638,13 @@ export const chains = [
         url: "wss://sys.ibp.network/statemine",
       },
       {
-        url: "wss://sys.dotters.network/statemine",
-      },
-      {
         url: "wss://asset-hub-kusama-rpc.dwellir.com",
       },
       {
         url: "wss://statemine-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://asset-hub-kusama.dotters.network",
       },
       {
         url: "wss://rpc-asset-hub-kusama.luckyfriday.io",
@@ -644,7 +705,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 508,
+    sortIndex: 513,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -675,13 +736,13 @@ export const chains = [
         url: "wss://sys.ibp.network/bridgehub-kusama",
       },
       {
-        url: "wss://sys.dotters.network/bridgehub-kusama",
-      },
-      {
         url: "wss://bridge-hub-kusama-rpc.dwellir.com",
       },
       {
         url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://bridge-hub-kusama.dotters.network",
       },
       {
         url: "wss://rpc-bridge-hub-kusama.luckyfriday.io",
@@ -718,7 +779,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 729,
+    sortIndex: 742,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -805,13 +866,13 @@ export const chains = [
         url: "wss://sys.ibp.network/asset-hub-polkadot",
       },
       {
-        url: "wss://sys.dotters.network/asset-hub-polkadot",
-      },
-      {
         url: "wss://asset-hub-polkadot-rpc.dwellir.com",
       },
       {
         url: "wss://statemint-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://asset-hub-polkadot.dotters.network",
       },
       {
         url: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
@@ -1044,7 +1105,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 730,
+    sortIndex: 743,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -1075,13 +1136,13 @@ export const chains = [
         url: "wss://sys.ibp.network/bridgehub-polkadot",
       },
       {
-        url: "wss://sys.dotters.network/bridgehub-polkadot",
-      },
-      {
         url: "wss://bridge-hub-polkadot-rpc.dwellir.com",
       },
       {
         url: "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://bridge-hub-polkadot.dotters.network",
       },
       {
         url: "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
