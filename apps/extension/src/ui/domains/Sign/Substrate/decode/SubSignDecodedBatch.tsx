@@ -4,12 +4,12 @@ import { FC, useMemo } from "react"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedBatchCall } from "../types"
-import { SubSignDecodeButtonContent } from "./SubSignDecodeButtonContent"
 import { SubSignDecodedBatchModal } from "./SubSignDecodedBatchModal"
 import {
   SubSignDecodedBatchModalProvider,
   useSubSignDecodedBatchModal,
 } from "./SubSignDecodedBatchModalContext"
+import { SubSignDecodedButtonBase } from "./SubSignDecodedCallButton"
 
 export const SubSignDecodedBatch: FC<{
   sapi: ScaleApi
@@ -49,15 +49,11 @@ const BatchCallItemButton: FC<{
   const { open } = useSubSignDecodedBatchModal()
 
   return (
-    <button
-      type="button"
-      className="bg-grey-900 hover:bg-grey-800 text-body-secondary rounded-xs left-align flex w-full gap-4 overflow-hidden p-4 text-left"
+    <SubSignDecodedButtonBase
+      sapi={sapi}
+      decodedCall={decodedCall}
+      payload={payload}
       onClick={() => open(index)}
-    >
-      <div className="text-body-inactive inine-block shrink-0 tabular-nums">{index + 1}.</div>
-      <div className="grow truncate">
-        <SubSignDecodeButtonContent sapi={sapi} decodedCall={decodedCall} payload={payload} />
-      </div>
-    </button>
+    />
   )
 }

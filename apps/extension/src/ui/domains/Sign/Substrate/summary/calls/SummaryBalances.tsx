@@ -4,13 +4,20 @@ import { PolkadotCalls } from "papi-descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useChain, useToken } from "@ui/state"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
+import {
+  SummaryAlert,
+  SummaryContainer,
+  SummaryContent,
+  SummarySeparator,
+} from "../shared/SummaryContainer"
+import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
+import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 
 const TransferKeepAlive: DecodedCallComponent<PolkadotCalls["Balances"]["transfer_keep_alive"]> = ({
   decodedCall,
@@ -30,45 +37,55 @@ const TransferKeepAlive: DecodedCallComponent<PolkadotCalls["Balances"]["transfe
 
   if (!chain?.nativeToken?.id || !target) throw new Error("Missing data")
 
-  return (
-    <>
+  if (inline)
+    return (
       <Trans
         t={t}
         components={{
-          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={!!inline} />,
+          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={true} />,
           Tokens: (
-            <TokensAndFiat
+            <SummaryTokensAndFiat
               tokenId={chain?.nativeToken?.id}
               planck={decodedCall.args.value}
-              noCountUp
-              className="whitespace-nowrap font-bold"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
+              withFiat={false}
             />
           ),
         }}
         defaults="Transfer <Tokens /> to <Target />"
       />
-      {!inline && (
-        <div className="mt-4">
-          <Trans
-            t={t}
-            components={{
-              Tokens: (
-                <TokensAndFiat
-                  noFiat
-                  planck={ed}
-                  tokenId={chain.nativeToken.id}
-                  noCountUp
-                  className="text-body font-bold"
-                />
-              ),
-            }}
-            defaults="Transaction will revert if sender balance goes below the <Tokens /> existential deposit"
-          />
-        </div>
-      )}
-    </>
+    )
+
+  return (
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={false} />,
+            Tokens: (
+              <SummaryTokensAndFiat
+                tokenId={chain?.nativeToken?.id}
+                planck={decodedCall.args.value}
+                withFiat
+              />
+            ),
+          }}
+          defaults="Transfer <Tokens /> to <Target />"
+        />
+      </SummaryContent>
+      <SummarySeparator />
+      <SummaryAlert>
+        <Trans
+          t={t}
+          components={{
+            Tokens: (
+              <SummaryTokensAndFiat tokenId={chain.nativeToken.id} planck={ed} withFiat={false} />
+            ),
+          }}
+          defaults="Transaction will revert if sender balance goes below the <Tokens /> existential deposit"
+        />
+      </SummaryAlert>
+    </SummaryContainer>
   )
 }
 
@@ -88,46 +105,55 @@ const TransferAllowDeath: DecodedCallComponent<
 
   if (!chain?.nativeToken?.id || !target) throw new Error("Missing data")
 
-  return (
-    <>
+  if (inline)
+    return (
       <Trans
         t={t}
         components={{
-          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={!!inline} />,
+          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={true} />,
           Tokens: (
-            <TokensAndFiat
+            <SummaryTokensAndFiat
               tokenId={chain?.nativeToken?.id}
               planck={decodedCall.args.value}
-              noCountUp
-              className="whitespace-nowrap font-bold"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
+              withFiat={false}
             />
           ),
         }}
         defaults="Transfer <Tokens /> to <Target />"
       />
-      {!inline && (
-        <div className="mt-4 text-left">
-          <Trans
-            t={t}
-            components={{
-              Tokens: (
-                <TokensAndFiat
-                  noFiat
-                  planck={ed}
-                  tokenId={chain.nativeToken.id}
-                  noCountUp
-                  className="text-body whitespace-nowrap font-bold"
-                  fiatClassName="text-body-secondary"
-                />
-              ),
-            }}
-            defaults="If this causes the sender balance goes below the <Tokens /> existential deposit, the remaining balance will be lost and account will be removed from chain state."
-          />
-        </div>
-      )}
-    </>
+    )
+
+  return (
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={false} />,
+            Tokens: (
+              <SummaryTokensAndFiat
+                tokenId={chain?.nativeToken?.id}
+                planck={decodedCall.args.value}
+                withFiat
+              />
+            ),
+          }}
+          defaults="Transfer <Tokens /> to <Target />"
+        />
+      </SummaryContent>
+      <SummarySeparator />
+      <SummaryAlert>
+        <Trans
+          t={t}
+          components={{
+            Tokens: (
+              <SummaryTokensAndFiat tokenId={chain.nativeToken.id} planck={ed} withFiat={false} />
+            ),
+          }}
+          defaults="If this causes the sender balance goes below the <Tokens /> existential deposit, the remaining balance will be lost and account will be removed from chain state."
+        />
+      </SummaryAlert>
+    </SummaryContainer>
   )
 }
 
@@ -161,63 +187,60 @@ const TransferAll: DecodedCallComponent<PolkadotCalls["Balances"]["transfer_all"
   if (!chain?.nativeToken?.id || !nativeToken || !account || transferable === null)
     throw new Error("Missing data")
 
-  return (
-    <>
+  if (inline)
+    return (
       <Trans
         t={t}
         components={{
-          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={!!inline} />,
-          Symbol: <span className="text-body font-bold">{nativeToken.symbol}</span>,
+          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={true} />,
+          Symbol: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
         }}
-        defaults="Transfer all available <Symbol /> to <Target />"
+        defaults="Transfer all <Symbol /> to <Target />"
       />
-      {!inline && (
-        <>
-          <div className="mt-8 text-left [button>&]:hidden">
-            {decodedCall.args.keep_alive ? (
-              <Trans
-                t={t}
-                components={{
-                  Tokens: (
-                    <TokensAndFiat
-                      noFiat
-                      planck={ed}
-                      tokenId={chain.nativeToken.id}
-                      noCountUp
-                      fiatClassName="text-body-secondary"
-                      className="text-body whitespace-nowrap font-bold"
-                    />
-                  ),
-                  Symbol: <span className="text-body font-bold">{nativeToken.symbol}</span>,
-                }}
-                defaults="Sender account will keep <Tokens /> as existential deposit."
-              />
-            ) : (
-              t(
-                "This may remove the sender account from the chain state if it doesn't own any other sufficient assets.",
-              )
-            )}
-          </div>
-          <div className="mt-4 text-left [button>&]:hidden">
-            <Trans
-              t={t}
-              components={{
-                Tokens: (
-                  <TokensAndFiat
-                    planck={transferable}
-                    tokenId={chain.nativeToken.id}
-                    noCountUp
-                    className="text-body whitespace-nowrap font-bold"
-                    fiatClassName="text-body-secondary"
-                  />
-                ),
-              }}
-              defaults="Expected transfer: <Tokens />"
-            />
-          </div>
-        </>
-      )}
-    </>
+    )
+
+  return (
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={false} />,
+            Symbol: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
+          }}
+          defaults="Transfer all available <Symbol /><br/>to <Target />"
+        />
+      </SummaryContent>
+      <SummarySeparator />
+      <SummaryContent className="pb-0 text-xs">
+        <Trans
+          t={t}
+          components={{
+            Tokens: (
+              <SummaryTokensAndFiat planck={transferable} tokenId={chain.nativeToken.id} withFiat />
+            ),
+          }}
+          defaults="Expected transfer: <Tokens />"
+        />
+      </SummaryContent>
+      <SummaryAlert>
+        {decodedCall.args.keep_alive ? (
+          <Trans
+            t={t}
+            components={{
+              Tokens: (
+                <SummaryTokensAndFiat tokenId={chain.nativeToken.id} planck={ed} withFiat={false} />
+              ),
+            }}
+            defaults="Sender account will keep <Tokens /> as existential deposit."
+          />
+        ) : (
+          t(
+            "This may remove the sender account from the chain state if it doesn't own any other sufficient assets.",
+          )
+        )}
+      </SummaryAlert>
+    </SummaryContainer>
   )
 }
 

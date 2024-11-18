@@ -6,10 +6,11 @@ import { PolkadotAssetHubCalls, XcmV3Junctions } from "papi-descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useChain, useTokens } from "@ui/state"
 
 import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
+import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 
 const SwapExactTokensForTokens: DecodedCallComponent<
@@ -35,13 +36,10 @@ const SwapExactTokensForTokens: DecodedCallComponent<
         t={t}
         components={{
           TokensIn: (
-            <TokensAndFiat
+            <SummaryTokensAndFiat
               tokenId={tokenIn.id}
               planck={decodedCall.args.amount_in}
-              noCountUp
-              className="whitespace-nowrap font-bold"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
+              withFiat={false}
             />
           ),
           TokensOut: <SummaryTokenSymbolDisplay tokenId={tokenOut.id} />,
@@ -51,32 +49,30 @@ const SwapExactTokensForTokens: DecodedCallComponent<
     )
 
   return (
-    <Trans
-      t={t}
-      components={{
-        TokensIn: (
-          <TokensAndFiat
-            tokenId={tokenIn.id}
-            planck={decodedCall.args.amount_in}
-            noCountUp
-            className="whitespace-nowrap font-bold"
-            tokensClassName="text-body"
-            fiatClassName="text-body-secondary"
-          />
-        ),
-        TokensOut: (
-          <TokensAndFiat
-            tokenId={tokenOut.id}
-            planck={decodedCall.args.amount_out_min}
-            noCountUp
-            className="whitespace-nowrap font-bold"
-            tokensClassName="text-body"
-            fiatClassName="text-body-secondary"
-          />
-        ),
-      }}
-      defaults="Swap <TokensIn /> for a minimum of <TokensOut />"
-    />
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            TokensIn: (
+              <SummaryTokensAndFiat
+                tokenId={tokenIn.id}
+                planck={decodedCall.args.amount_in}
+                withFiat
+              />
+            ),
+            TokensOut: (
+              <SummaryTokensAndFiat
+                tokenId={tokenOut.id}
+                planck={decodedCall.args.amount_out_min}
+                withFiat
+              />
+            ),
+          }}
+          defaults="Swap <TokensIn /><br/>for a minimum of <TokensOut />"
+        />
+      </SummaryContent>
+    </SummaryContainer>
   )
 }
 

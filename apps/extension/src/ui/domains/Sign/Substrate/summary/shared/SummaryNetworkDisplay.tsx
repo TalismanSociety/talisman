@@ -14,9 +14,9 @@ export const SummaryNetworkDisplay: FC<{ networkId: ChainId | EvmNetworkId }> = 
   )
 
   return (
-    <span className="text-body truncate whitespace-nowrap font-bold">
+    <span className="text-body truncate whitespace-nowrap">
       <ChainLogo id={networkId} className="inline-block size-[1.2em]" />
-      <span className="truncate pl-2">{name}</span>
+      <span className="ml-[0.3em] truncate">{name}</span>
     </span>
   )
 }

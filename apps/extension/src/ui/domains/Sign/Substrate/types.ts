@@ -30,14 +30,16 @@ export const isBatchCall = (decodedCall: DecodedCall): decodedCall is DecodedBat
   )
 }
 
-export type DecodedCallComponent<Args> = FC<{
-  decodedCall: DecodedCall<Args>
-  sapi: ScaleApi
-  payload: SignerPayloadJSON
-  inline?: boolean
-}>
+export type DecodedCallComponent<Args, Props = object> = FC<
+  {
+    decodedCall: DecodedCall<Args>
+    sapi: ScaleApi
+    payload: SignerPayloadJSON
+    inline?: boolean
+  } & Props
+>
 
-export type DecodedCallComponentDef<T> = [string, string, DecodedCallComponent<T>]
+export type DecodedCallComponentDef<T, P = object> = [string, string, DecodedCallComponent<T, P>]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DecodedCallComponentDefs = DecodedCallComponentDef<any>[]

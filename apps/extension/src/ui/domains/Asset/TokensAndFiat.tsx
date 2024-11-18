@@ -1,9 +1,11 @@
 import { BalanceFormatter } from "@talismn/balances"
+import { classNames } from "@talismn/util"
 import { FC, Suspense, useMemo } from "react"
 
 import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 
 import { Fiat } from "./Fiat"
+import { TokenLogo } from "./TokenLogo"
 import Tokens from "./Tokens"
 
 type TokensAndFiatProps = {
@@ -15,6 +17,8 @@ type TokensAndFiatProps = {
   noCountUp?: boolean
   isBalance?: boolean
   noFiat?: boolean
+  withLogo?: boolean
+  logoClassName?: string
   tokensClassName?: string
   fiatClassName?: string
 }
@@ -29,6 +33,8 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
   noFiat,
   tokensClassName,
   fiatClassName,
+  withLogo,
+  logoClassName,
 }) => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -46,6 +52,15 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
 
   return (
     <span className={className}>
+      {withLogo ? (
+        <TokenLogo
+          tokenId={tokenId}
+          className={classNames(
+            "mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub",
+            logoClassName,
+          )}
+        />
+      ) : null}
       <Tokens
         amount={balance.tokens}
         decimals={token.decimals}

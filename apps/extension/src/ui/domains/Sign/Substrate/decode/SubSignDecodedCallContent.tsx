@@ -8,13 +8,13 @@ import htmlParser from "html-react-parser"
 import { dump as convertToYaml } from "js-yaml"
 import { marked } from "marked"
 import { Binary } from "polkadot-api"
-import { FC, PropsWithChildren, Suspense, useMemo } from "react"
+import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
-import { SubSignCallSummary } from "../summary/SubSignCallSummary"
+import { SubSignCallSummary } from "./SubSignDecodedSummary"
 
 export const SubSignDecodedCallContent: FC<{
   decodedCall: DecodedCall
@@ -24,10 +24,8 @@ export const SubSignDecodedCallContent: FC<{
   <ErrorBoundary fallback={() => <ErrorFallback decodedCall={decodedCall} sapi={sapi} />}>
     <Suspense fallback={<LoadingShimmer />}>
       <div className="text-body-secondary flex flex-col gap-4 text-sm">
-        {/* Summary can suspense to fetch additional data, and break if a chain uses different types */}
-        <SummaryContainer>
-          <SubSignCallSummary decodedCall={decodedCall} sapi={sapi} payload={payload} />
-        </SummaryContainer>
+        {/* Summary can suspense to fetch additional data, and break if a chain uses incompatible types */}
+        <SubSignCallSummary decodedCall={decodedCall} sapi={sapi} payload={payload} />
         <DefaultView decodedCall={decodedCall} sapi={sapi} />
       </div>
     </Suspense>
@@ -85,8 +83,14 @@ const DefaultView: FC<{
         <div>{t("Method")}</div>
         <div className="text-body truncate">{decodedCall.method}</div>
       </div>
-      <div>{t("Arguments")}</div>
-      <div>{!!yamlArgs && <CodeBlock code={yamlArgs} className="text-sm" />}</div>
+      {!!yamlArgs && (
+        <>
+          <div>{t("Arguments")}</div>
+          <div>
+            <CodeBlock code={yamlArgs} className="bg-grey-850 rounded text-sm" />
+          </div>
+        </>
+      )}
       {!!docs && (
         <>
           <div className="mt-4">{t("Documentation")}</div>
@@ -112,24 +116,6 @@ const LoadingShimmer = () => {
     <div className="text-body-secondary animate-fade-in flex flex-col items-center gap-2 pt-40 leading-[140%]">
       <LoaderIcon className="animate-spin-slow h-14 w-14" />
       <div className="mt-4 text-sm font-bold text-white opacity-70">{t("Analysing request")}</div>
-    </div>
-  )
-}
-
-const SummaryContainer: FC<PropsWithChildren & { className?: string }> = ({
-  children,
-  className,
-}) => {
-  return (
-    <div
-      className={classNames(
-        "text-body leading-paragraph border-grey-700 bg-grey-800 mb-8 mt-4 rounded-sm p-4 py-6 text-center",
-        "bg-primary/5 border-primary/20 border",
-        "empty:hidden",
-        className,
-      )}
-    >
-      {children}
     </div>
   )
 }

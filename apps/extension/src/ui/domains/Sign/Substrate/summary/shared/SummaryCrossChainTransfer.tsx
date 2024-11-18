@@ -1,14 +1,13 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Address, ChainId, EvmNetworkId } from "extension-core"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-
 import { SummaryAddressDisplay } from "./SummaryAddressDisplay"
+import { SummaryContainer, SummaryContent, SummarySeparator } from "./SummaryContainer"
 import { SummaryNetworkDisplay } from "./SummaryNetworkDisplay"
+import { SummaryTokensAndFiat } from "./SummaryTokensAndFiat"
 
 export type SummaryCrossChainTransferProps = {
   fromNetwork: ChainId | EvmNetworkId
@@ -31,46 +30,44 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  return (
-    <>
+  if (inline)
+    return (
       <Trans
         t={t}
         components={{
           TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
-          Tokens: (
-            <TokensAndFiat
-              tokenId={tokenId}
-              planck={value}
-              noCountUp
-              className="font-bold"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
-            />
-          ),
+          Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} withFiat={false} />,
         }}
         defaults="Transfer <Tokens /> to <TargetNetwork />"
       />
+    )
 
-      {!inline && (
-        <div
-          className={classNames(
-            "[button>&]:hidden", // don't show this if parent is a button (1 line only)
-            "mt-12 grid grid-cols-[1fr_2.4rem_1fr] items-center gap-4",
-          )}
-        >
-          <div className="flex flex-col items-start gap-2 overflow-hidden">
-            <SummaryNetworkDisplay networkId={fromNetwork} />
-            <SummaryAddressDisplay address={fromAddress} networkId={fromNetwork} inline={inline} />
-          </div>
-          <div>
-            <ArrowRightIcon className="text-lg" />
-          </div>
-          <div className="flex flex-col items-end gap-2 overflow-hidden">
-            <SummaryNetworkDisplay networkId={toNetwork} />
-            <SummaryAddressDisplay address={toAddress} networkId={toNetwork} inline={inline} />
-          </div>
+  return (
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
+            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} withFiat={true} />,
+          }}
+          defaults="Transfer <Tokens /><br/> to <TargetNetwork />"
+        />
+      </SummaryContent>
+      <SummarySeparator />
+      <SummaryContent className="grid grid-cols-[1fr_2.4rem_1fr] items-center gap-4">
+        <div className="flex flex-col items-center gap-2 overflow-hidden">
+          <SummaryNetworkDisplay networkId={fromNetwork} />
+          <SummaryAddressDisplay address={fromAddress} networkId={fromNetwork} inline={false} />
         </div>
-      )}
-    </>
+        <div>
+          <ArrowRightIcon className="text-lg" />
+        </div>
+        <div className="flex flex-col items-center gap-2 overflow-hidden">
+          <SummaryNetworkDisplay networkId={toNetwork} />
+          <SummaryAddressDisplay address={toAddress} networkId={toNetwork} inline={false} />
+        </div>
+      </SummaryContent>
+    </SummaryContainer>
   )
 }

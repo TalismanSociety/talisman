@@ -31,13 +31,13 @@ export const SummaryAddressDisplay: FC<{
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="text-body truncate whitespace-nowrap font-bold">
+          <span className="text-body truncate whitespace-nowrap">
             <AccountIcon
-              className="inline-block size-[1.2em] align-sub"
+              className="inline-block align-sub text-[1.2em]"
               address={address}
               genesisHash={account?.genesisHash ?? contact?.genesisHash}
             />
-            <span className="truncate pl-2">
+            <span className="ml-[0.3em] truncate">
               {account?.name ?? contact?.name ?? (
                 <Address startCharCount={6} endCharCount={4} address={address} />
               )}
@@ -53,7 +53,7 @@ export const SummaryAddressDisplay: FC<{
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="inline-flex max-w-full items-baseline gap-2 overflow-hidden font-bold text-white"
+          className="text-body inline-flex max-w-full items-baseline gap-2 overflow-hidden"
           onClick={handleClick}
         >
           <AccountIcon

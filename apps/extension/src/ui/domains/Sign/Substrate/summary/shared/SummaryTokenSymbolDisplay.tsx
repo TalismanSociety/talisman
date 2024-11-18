@@ -10,9 +10,9 @@ export const SummaryTokenSymbolDisplay: FC<{ tokenId: TokenId }> = ({ tokenId })
   if (!token) throw new Error("Missing data")
 
   return (
-    <span className="text-body shrink-0 whitespace-nowrap font-bold">
-      <TokenLogo tokenId={tokenId} className="inline-block size-[1.2em]" />
-      <span className="pl-2">{token.symbol}</span>
+    <span className="text-body shrink-0 whitespace-nowrap">
+      <TokenLogo tokenId={tokenId} className="mr-[0.3em] inline-block size-[1.2em] align-sub" />
+      <span>{token.symbol}</span>
     </span>
   )
 }

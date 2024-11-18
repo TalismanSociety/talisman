@@ -1,81 +1,154 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { PolkadotCalls } from "papi-descriptors"
 import { Binary } from "polkadot-api"
-import { useMemo } from "react"
+import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useChain } from "@ui/state"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { SummaryContainer, SummaryContent, SummarySeparator } from "../shared/SummaryContainer"
+import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 
 const Join: DecodedCallComponent<PolkadotCalls["NominationPools"]["join"]> = ({
   decodedCall,
   sapi,
+  inline,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
-  const { data: poolName } = useNomPoolName(sapi, decodedCall.args.pool_id)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
+  if (inline)
+    return (
+      <Trans
+        t={t}
+        components={{
+          Pool: <NomPoolName sapi={sapi} poolId={decodedCall.args.pool_id} />,
+          Tokens: (
+            <SummaryTokensAndFiat
+              tokenId={chain?.nativeToken?.id}
+              planck={decodedCall.args.amount}
+              withFiat={false}
+            />
+          ),
+        }}
+        defaults="Stake <Tokens /> in <Pool />"
+      />
+    )
+
   return (
-    <Trans
-      t={t}
-      components={{
-        Pool: <span className="text-body inline-block font-bold">{poolName}</span>,
-        Tokens: (
-          <TokensAndFiat
-            tokenId={chain?.nativeToken?.id}
-            planck={decodedCall.args.amount}
-            noCountUp
-            className="font-bold"
-            tokensClassName="text-body"
-            fiatClassName="text-body-secondary"
-          />
-        ),
-      }}
-      defaults="Stake <Tokens /> in nomination pool <Pool />"
-    />
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            Pool: <NomPoolName sapi={sapi} poolId={decodedCall.args.pool_id} />,
+            Tokens: (
+              <SummaryTokensAndFiat
+                tokenId={chain?.nativeToken?.id}
+                planck={decodedCall.args.amount}
+                withFiat={true}
+              />
+            ),
+          }}
+          defaults="Stake <Tokens /><br /> in nomination pool <Pool />"
+        />
+      </SummaryContent>
+    </SummaryContainer>
   )
 }
 
 const BondExtra: DecodedCallComponent<PolkadotCalls["NominationPools"]["bond_extra"]> = ({
   decodedCall,
   sapi,
+  inline,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
-  if (decodedCall.args.extra.type === "Rewards") return t("Restake your staking rewards")
+  if (!chain?.nativeToken?.id) throw new Error("Missing data")
+
+  if (inline && decodedCall.args.extra.type === "Rewards")
+    return (
+      <Trans
+        t={t}
+        components={{
+          Tokens: <SummaryTokenSymbolDisplay tokenId={chain?.nativeToken?.id} />,
+        }}
+        defaults="Restake your <Tokens /> rewards"
+      />
+    )
+
+  if (inline && decodedCall.args.extra.type === "FreeBalance")
+    return (
+      <Trans
+        t={t}
+        components={{
+          Tokens: (
+            <SummaryTokensAndFiat
+              tokenId={chain?.nativeToken?.id}
+              planck={decodedCall.args.extra.value}
+              withFiat={false}
+            />
+          ),
+        }}
+        defaults="Add <Tokens /> to your stake"
+      />
+    )
+
+  if (decodedCall.args.extra.type === "Rewards")
+    return (
+      <SummaryContainer>
+        <SummaryContent>
+          <Trans
+            t={t}
+            components={{
+              Tokens: <SummaryTokenSymbolDisplay tokenId={chain?.nativeToken?.id} />,
+            }}
+            defaults="Restake your <Tokens /> rewards in current nomination pool"
+          />
+        </SummaryContent>
+      </SummaryContainer>
+    )
 
   return (
-    <Trans
-      t={t}
-      components={{
-        Tokens: (
-          <TokensAndFiat
-            tokenId={chain?.nativeToken?.id}
-            planck={decodedCall.args.extra.value}
-            noCountUp
-            className="font-bold"
-            tokensClassName="text-body"
-            fiatClassName="text-body-secondary"
-          />
-        ),
-      }}
-      defaults="Stake <Tokens /> in current nomination pool"
-    />
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            Tokens: (
+              <SummaryTokensAndFiat
+                tokenId={chain?.nativeToken?.id}
+                planck={decodedCall.args.extra.value}
+                withFiat={true}
+              />
+            ),
+          }}
+          defaults="Add <Tokens /> to your stake with current nomination pool"
+        />
+      </SummaryContent>
+    </SummaryContainer>
   )
 }
 
-const ClaimPayout: DecodedCallComponent<PolkadotCalls["NominationPools"]["claim_payout"]> = () => {
+const ClaimPayout: DecodedCallComponent<PolkadotCalls["NominationPools"]["claim_payout"]> = ({
+  inline,
+}) => {
   const { t } = useTranslation()
 
-  return t("Claim your staking rewards")
+  if (inline) return t("Claim your staking rewards")
+
+  return (
+    <SummaryContainer>
+      <SummaryContent>{t("Claim your staking rewards")}</SummaryContent>
+    </SummaryContainer>
+  )
 }
 
 const SetClaimPermission: DecodedCallComponent<
@@ -98,41 +171,72 @@ const SetClaimPermission: DecodedCallComponent<
     }
   }, [decodedCall.args.permission.type, t])
 
-  return (
-    <>
+  if (inline)
+    return (
       <Trans
         t={t}
         components={{
-          ClaimPermission: (
-            <span className="font-bold text-white">{decodedCall.args.permission.type}</span>
-          ),
+          ClaimPermission: <span className="text-white">{decodedCall.args.permission.type}</span>,
         }}
         defaults="Set claim permission to <ClaimPermission />"
       />
-      {!inline && <div className="mt-4 text-left">{description}</div>}
-    </>
+    )
+
+  return (
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            ClaimPermission: <span className="text-white">{decodedCall.args.permission.type}</span>,
+          }}
+          defaults="Set claim permission to <ClaimPermission />"
+        />
+      </SummaryContent>
+      <SummarySeparator />
+      <SummaryContent>{description}</SummaryContent>
+    </SummaryContainer>
   )
 }
 
 const WithdrawUnbonded: DecodedCallComponent<
   PolkadotCalls["NominationPools"]["withdraw_unbonded"]
-> = ({ sapi }) => {
+> = ({ sapi, inline }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  return (
-    <span>
+  if (inline)
+    return (
       <Trans
         t={t}
         components={{
           Token: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
         }}
-        defaults="Withdraw unbonded <Token /> from nomination pool lalala"
+        defaults="Withdraw unbonded <Token />"
       />
-    </span>
+    )
+
+  return (
+    <SummaryContainer>
+      <SummaryContent>
+        <Trans
+          t={t}
+          components={{
+            Token: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
+          }}
+          defaults="Withdraw unbonded <Token /> from nomination pool"
+        />
+      </SummaryContent>
+    </SummaryContainer>
   )
+}
+
+const NomPoolName: FC<{ sapi: ScaleApi; poolId: number }> = ({ sapi, poolId }) => {
+  const { data: poolName } = useNomPoolName(sapi, poolId)
+
+  return <span className="text-body inline-block">{poolName ?? `Pool ${poolId}`}</span>
 }
 
 // do not reuse staking module's useNomPoolName, we need suspense here

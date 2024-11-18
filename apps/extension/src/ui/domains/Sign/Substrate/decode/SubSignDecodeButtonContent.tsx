@@ -9,7 +9,7 @@ import { useDecodedCallComponent } from "../util/useDecodedCallComponent"
 
 const ContentFallback: FC<{ decodedCall: DecodedCall }> = ({ decodedCall }) => (
   <>
-    {decodedCall.pallet} : {decodedCall.method}
+    {decodedCall.pallet}: <span className="text-body">{decodedCall.method}</span>
   </>
 )
 

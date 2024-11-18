@@ -16,12 +16,12 @@ export const SubSignDecoded = () => {
     <div className="flex w-full flex-col gap-4 px-3 text-left text-sm">
       {isBatchCall(decodedCall) ? (
         <>
-          <div className="text-body-inactive">{t("Batch content:")}</div>
+          <div className="text-body-inactive">{t("Batch content")}</div>
           <SubSignDecodedBatch sapi={sapi} decodedCall={decodedCall} payload={payload} />
         </>
       ) : (
         <>
-          <div className="text-body-inactive">{t("Request content:")}</div>
+          <div className="text-body-inactive">{t("Request content")}</div>
           <SubSignDecodedCallButton sapi={sapi} decodedCall={decodedCall} payload={payload} />
         </>
       )}

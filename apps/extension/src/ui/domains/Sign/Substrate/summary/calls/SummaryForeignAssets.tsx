@@ -1,4 +1,5 @@
-import { SubAssetsToken } from "@talismn/balances"
+import { SubForeignAssetsToken } from "@talismn/balances"
+import { papiStringify } from "@talismn/scale"
 import { PolkadotAssetHubCalls } from "papi-descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -16,7 +17,7 @@ import {
 } from "../shared/SummaryContainer"
 import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
-const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["Assets"]["transfer"]> = ({
+const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["ForeignAssets"]["transfer"]> = ({
   decodedCall,
   sapi,
   inline,
@@ -27,9 +28,12 @@ const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["Assets"]["transfer"]
 
   const token = useMemo(() => {
     return tokens.find(
-      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id),
-    ) as SubAssetsToken | undefined
-  }, [decodedCall.args.id, tokens])
+      (t) =>
+        t.type === "substrate-foreignassets" &&
+        t.chain.id === sapi.chainId &&
+        t.onChainId === papiStringify(decodedCall.args.id),
+    ) as SubForeignAssetsToken | undefined
+  }, [decodedCall.args.id, sapi.chainId, tokens])
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.target)
@@ -90,7 +94,7 @@ const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["Assets"]["transfer"]
 }
 
 const TransferKeepAlive: DecodedCallComponent<
-  PolkadotAssetHubCalls["Assets"]["transfer_keep_alive"]
+  PolkadotAssetHubCalls["ForeignAssets"]["transfer_keep_alive"]
 > = ({ decodedCall, sapi, inline }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
@@ -98,9 +102,12 @@ const TransferKeepAlive: DecodedCallComponent<
 
   const token = useMemo(() => {
     return tokens.find(
-      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id),
-    ) as SubAssetsToken | undefined
-  }, [decodedCall.args.id, tokens])
+      (t) =>
+        t.type === "substrate-foreignassets" &&
+        t.chain.id === sapi.chainId &&
+        t.onChainId === papiStringify(decodedCall.args.id),
+    ) as SubForeignAssetsToken | undefined
+  }, [decodedCall.args.id, sapi.chainId, tokens])
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.target)
@@ -158,7 +165,7 @@ const TransferKeepAlive: DecodedCallComponent<
   )
 }
 
-export const SUMMARY_COMPONENTS_ASSETS: DecodedCallComponentDefs = [
-  ["Assets", "transfer", Transfer],
-  ["Assets", "transfer_keep_alive", TransferKeepAlive],
+export const SUMMARY_COMPONENTS_FOREIGN_ASSETS: DecodedCallComponentDefs = [
+  ["ForeignAssets", "transfer", Transfer],
+  ["ForeignAssets", "transfer_keep_alive", TransferKeepAlive],
 ]

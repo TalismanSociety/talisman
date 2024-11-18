@@ -1,8 +1,8 @@
 import { ErrorBoundary } from "@sentry/react"
 
+import { SUMMARY_COMPONENTS } from "../summary/calls"
 import { DecodedCallComponent } from "../types"
 import { useDecodedCallComponent } from "../util/useDecodedCallComponent"
-import { SUMMARY_COMPONENTS } from "./calls"
 
 export const SubSignCallSummary: DecodedCallComponent<unknown> = ({
   decodedCall,
