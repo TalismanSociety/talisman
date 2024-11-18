@@ -1,3 +1,4 @@
+import { ChevronLeftIcon, ChevronRightIcon } from "@talismn/icons"
 import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -46,7 +47,7 @@ export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi; payload: SignerPaylo
           onClick={goPrev}
           className="bg-grey-800 enabled:hover:bg-grey-700 rounded-xs p-2 px-4 disabled:opacity-50"
         >
-          {t("Prev.")}
+          <ChevronLeftIcon />
         </button>
         <button
           type="button"
@@ -54,7 +55,7 @@ export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi; payload: SignerPaylo
           onClick={goNext}
           className="bg-grey-800 enabled:hover:bg-grey-700 rounded-xs p-2 px-4 disabled:opacity-50"
         >
-          {t("Next")}
+          <ChevronRightIcon />
         </button>
       </div>
       <ScrollContainer className="grow px-12">
