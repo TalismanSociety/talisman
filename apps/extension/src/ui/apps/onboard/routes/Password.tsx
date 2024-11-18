@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { classNames } from "@talismn/util"
+import { IS_FIREFOX } from "extension-shared"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -86,7 +87,7 @@ export const PasswordPage = () => {
   }, [setValue])
 
   const navigateNext = useCallback(() => {
-    navigate(isResettingWallet ? "/accounts/add" : `/privacy`)
+    navigate(isResettingWallet || IS_FIREFOX ? "/accounts/add" : `/privacy`)
   }, [navigate, isResettingWallet])
 
   const submit = useCallback(
