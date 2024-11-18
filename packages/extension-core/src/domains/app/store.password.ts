@@ -5,6 +5,7 @@ import { BehaviorSubject } from "rxjs"
 import { Err, Ok, Result } from "ts-results"
 
 import { StorageProvider } from "../../libs/Store"
+import { createNotification } from "../../notifications"
 import { sessionStorage } from "../../util/sessionStorageCompat"
 
 /* ----------------------------------------------------------------
@@ -48,12 +49,14 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
 
     chrome.alarms.onAlarm.addListener((alarm) => {
       if (alarm.name !== ALARM_NAME) return
+      if (this.isLoggedIn.value !== TRUE) return
 
       this.clearPassword()
+      createNotification("autolocked", "", "autolocked")
     })
   }
 
-  public async resetAutolockTimer(minutes: number) {
+  public async resetAutolockTimer(minutes?: number) {
     const alarm = await chrome.alarms.get(ALARM_NAME)
     if (alarm) await chrome.alarms.clear(ALARM_NAME)
 
@@ -144,7 +147,11 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   }
 
   public clearPassword() {
+    // clear password
     this.setPassword(undefined)
+
+    // clear autolock timer
+    this.resetAutolockTimer()
   }
 
   async transformPassword(password: string) {
