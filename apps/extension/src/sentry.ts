@@ -45,7 +45,7 @@ export const initSentryFrontend = () => {
       }
 
       const errorTracking = await firstValueFrom(useErrorTracking)
-      return !IS_FIREFOX && errorTracking ? event : null
+      return errorTracking ? event : null
     },
     beforeBreadcrumb: (breadCrumb) => {
       if (breadCrumb.data?.url) {
