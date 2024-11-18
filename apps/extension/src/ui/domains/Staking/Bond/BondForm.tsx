@@ -363,7 +363,9 @@ const FeeEstimate = () => {
 
 export const BondForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, setStep, poolId } = useBondWizard()
+  const { account, accountPicker, token, payload, setStep, poolId, bondType } = useBondWizard()
+
+  const bondRowLabel = bondType === "bittensor" ? t("Validator") : t("Pool")
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -390,9 +392,9 @@ export const BondForm = () => {
           <div>{!!token && !!account && <AvailableBalance token={token} account={account} />}</div>
         </div>
       </div>
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
+      <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
         <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Pool")}</div>
+          <div className="whitespace-nowrap">{bondRowLabel}</div>
           <div className="text-body truncate">
             <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>

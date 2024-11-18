@@ -281,6 +281,7 @@ export const useBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
     stakeWarningMessage,
+    bondType,
 
     payload: !inputErrorMessage && isFormValid && canStake && !isCanStakeLoading ? payload : null,
     txMetadata,

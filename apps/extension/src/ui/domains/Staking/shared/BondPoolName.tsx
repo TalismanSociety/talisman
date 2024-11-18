@@ -34,7 +34,7 @@ export const BondPoolName = ({
         <button
           onClick={() => step === "form" && setStep("select")}
           className={classNames(
-            "bg-pill flex items-center gap-2 rounded-xl p-4 text-xs font-light",
+            "bg-pill flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
             step !== "form" && "cursor-not-allowed",
           )}
         >
@@ -60,7 +60,7 @@ export const BondPoolName = ({
       <div
         className={classNames(
           "text-grey-700 bg-grey-700 rounded-xs h-[1.6rem] w-40 animate-pulse",
-          chainId === "bittensor" && "my-[0.85rem]",
+          chainId === "bittensor" && "my-[0.45rem]",
         )}
       />
     )
