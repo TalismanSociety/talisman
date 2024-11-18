@@ -5,7 +5,7 @@ import {
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
 } from "extension-core"
-import { DEBUG } from "extension-shared"
+import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 const normalizeUrl = (url: string) => {
@@ -18,7 +18,7 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 
 export const initSentryFrontend = () => {
   SentryReact.init({
-    enabled: true,
+    enabled: !IS_FIREFOX,
     environment: process.env.BUILD,
     dsn: process.env.SENTRY_DSN,
     integrations: [SentryReact.browserTracingIntegration()],
@@ -45,7 +45,7 @@ export const initSentryFrontend = () => {
       }
 
       const errorTracking = await firstValueFrom(useErrorTracking)
-      return errorTracking ? event : null
+      return !IS_FIREFOX && errorTracking ? event : null
     },
     beforeBreadcrumb: (breadCrumb) => {
       if (breadCrumb.data?.url) {
