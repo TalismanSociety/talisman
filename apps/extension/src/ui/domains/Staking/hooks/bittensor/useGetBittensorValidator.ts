@@ -1,6 +1,6 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 
-const TAOSTATS_API_URL = "https://api-prod-v2.taostats.io/api"
+const TAOSTATS_API_URL = "https://api.taostats.io/api"
 const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY || ""
 
 const fetchBittensorValidator = async (hotkey: string | undefined): Promise<BittensorValidator> => {
