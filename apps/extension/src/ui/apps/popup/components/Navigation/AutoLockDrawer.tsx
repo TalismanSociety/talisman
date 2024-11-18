@@ -18,6 +18,7 @@ const AutoLockEditor = () => {
   const options = useMemo(
     () => [
       { value: 0, label: t("Disabled") },
+      { value: 1, label: t("{{count}} minute", { count: 1 }) },
       { value: 5, label: t("{{count}} minutes", { count: 5 }) },
       { value: 15, label: t("{{count}} minutes", { count: 15 }) },
       { value: 30, label: t("{{count}} minutes", { count: 30 }) },
