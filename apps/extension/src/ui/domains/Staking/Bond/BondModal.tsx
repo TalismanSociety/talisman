@@ -39,7 +39,7 @@ const ModalHeader = () => {
         {step === "form" && <span className="text-body font-bold">{t("Staking")}</span>}
         {step === "review" && t("Confirm")}
         {step === "select" && (
-          <div className="flex items-center gap-2 space-y-4 pt-10">
+          <div className="flex items-center gap-2 space-y-4">
             <IconButton onClick={handleBackClick}>
               <ChevronLeftIcon />
             </IconButton>

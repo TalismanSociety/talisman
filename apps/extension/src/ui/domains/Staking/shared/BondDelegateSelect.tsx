@@ -2,6 +2,9 @@ import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
+
 import { useBondWizard } from "../Bond/useBondWizard"
 import { BondOption as BondOptionType } from "../hooks/bittensor/types"
 import { BondOption, BondOptionSkeleton } from "./BondOption"
@@ -33,13 +36,13 @@ export const BondDelegateSelect = <T,>({
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-10">
-      <div className="flex justify-between">
+      <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
         {sortMethods.map((method) => (
           <button
             key={method.label}
             onClick={() => !isLoading && handleSortMethodChange(method)}
             className={classNames(
-              "rounded-[12px] px-[8px] py-[6px] text-sm",
+              "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
               method.value === selectedSortMethod.value
                 ? "bg-primary-500 text-black"
                 : "bg-black-tertiary text-grey-400",
@@ -49,13 +52,13 @@ export const BondDelegateSelect = <T,>({
             {t(method.label)}
           </button>
         ))}
-      </div>
+      </ScrollContainerDraggableHorizontal>
       <div className="space-y-[8px]">
         <div className="text-body-disabled flex justify-between px-[10px] text-sm">
           <div>{t("Name")}</div>
           <div>{t("Est. Rewards")}</div>
         </div>
-        <div className="bg-[blue]-500 h-[36rem] space-y-[1rem] overflow-y-scroll">
+        <ScrollContainer className="h-[34.5rem]" innerClassName="space-y-[1rem]">
           {isLoading && bondOptions.length === 0
             ? Array(6)
                 .fill(null)
@@ -69,7 +72,7 @@ export const BondDelegateSelect = <T,>({
                   tokenId={tokenId}
                 />
               ))}
-        </div>
+        </ScrollContainer>
       </div>
       <Button primary className="mt-auto w-full" onClick={() => setStep("form")}>
         {t("Continue")}

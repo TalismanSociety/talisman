@@ -16,7 +16,7 @@ type BondDrawerProps = {
 
 export const BondOptionSkeleton = () => {
   return (
-    <div className="bg-black-tertiary border-black-tertiary flex h-[6.5rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
+    <div className="bg-black-tertiary border-black-tertiary flex h-[6.7rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
       <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[10rem] animate-pulse" />
       <div className="flex w-full justify-between">
         <div className="flex items-center" />
