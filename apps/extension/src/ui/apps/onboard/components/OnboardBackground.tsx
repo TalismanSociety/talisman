@@ -8,12 +8,20 @@ const BASE_STYLE: CSSProperties = {
   opacity: 0.8,
 }
 
+const getStageOpacity = (stage: number) => {
+  if (stage === 0) return 0.8 // home
+  if (stage === 1) return 0.55 // password
+  if (stage === 2) return 0.3 // privacy
+  return 0 // account creation and success
+}
+
 export const OnboardBackground = () => {
   const { stage } = useOnboard()
   const style: CSSProperties = useMemo(
     () => ({
       ...BASE_STYLE,
-      opacity: Number(BASE_STYLE.opacity ?? 1) * (1 - stage * 0.2),
+      // must reach opacity 0 at stage 3 (account creation UI is meant for black bg)
+      opacity: Number(BASE_STYLE.opacity ?? 1) * getStageOpacity(stage),
     }),
     [stage],
   )
