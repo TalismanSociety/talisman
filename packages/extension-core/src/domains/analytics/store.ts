@@ -66,7 +66,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
     eventTimestamp?: number,
   ) {
     const enabled = await settingsStore.get("useAnalyticsTracking")
-    if (!IS_FIREFOX || enabled === false) return
+    if (IS_FIREFOX || enabled === false) return
 
     log.debug("AnalyticsStore.capture", { eventName, rawProperties, eventTimestamp })
     const timestamp = eventTimestamp ?? Date.now()
