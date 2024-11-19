@@ -116,6 +116,7 @@ const AutoLockRow = () => {
   const [autoLockMinutes] = useSetting("autoLockMinutes")
   const display = useMemo(() => {
     if (autoLockMinutes === 0) return t("Disabled")
+    if (autoLockMinutes === 1) return t("{{minutes}} minute", { minutes: autoLockMinutes })
     return t("{{minutes}} minutes", { minutes: autoLockMinutes })
   }, [autoLockMinutes, t])
 
