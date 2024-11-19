@@ -31,7 +31,7 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
 
   if (!tokenIn?.id || !tokenOut?.id || !chain) throw new Error("Missing data")
 
-  if (mode !== "block")
+  if (mode === "compact")
     return (
       <Trans
         t={t}
@@ -46,7 +46,31 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
           LineBreak: <SummaryLineBreak mode={mode} />,
           TokensOut: <SummaryTokenSymbolDisplay tokenId={tokenOut.id} />,
         }}
-        defaults="Swap <TokensIn /><LineBreak /> for <TokensOut /> minimum"
+        defaults="Swap <TokensIn /><LineBreak /> for <TokensOut />"
+      />
+    )
+
+  if (mode === "multiline")
+    return (
+      <Trans
+        t={t}
+        components={{
+          TokensIn: (
+            <SummaryTokensAndFiat
+              tokenId={tokenIn.id}
+              planck={decodedCall.args.amount_in}
+              mode={mode}
+            />
+          ),
+          TokensOut: (
+            <SummaryTokensAndFiat
+              tokenId={tokenOut.id}
+              planck={decodedCall.args.amount_out_min}
+              mode={mode}
+            />
+          ),
+        }}
+        defaults="Swap <TokensIn /><br/>for a minimum of <TokensOut />"
       />
     )
 

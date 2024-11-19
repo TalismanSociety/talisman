@@ -13,7 +13,7 @@ const ContentFallback: FC<{ decodedCall: DecodedCall }> = ({ decodedCall }) => (
   </>
 )
 
-export const SubSignDecodeButtonContent: DecodedCallComponent<
+export const SubSignDecodedCallButtonContent: DecodedCallComponent<
   unknown,
   { mode: SummaryButtonDisplayMode }
 > = (props) => {

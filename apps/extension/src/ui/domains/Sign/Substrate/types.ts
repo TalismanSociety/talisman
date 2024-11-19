@@ -23,9 +23,11 @@ export type DecodedBatchCall =
 
 export type DecodedBatchArgs = DecodedBatchCall["args"]
 
-export const isBatchCall = (decodedCall: DecodedCall): decodedCall is DecodedBatchCall => {
+export const isBatchCall = (
+  decodedCall: DecodedCall | null | undefined,
+): decodedCall is DecodedBatchCall => {
   return (
-    decodedCall.pallet === "Utility" &&
+    decodedCall?.pallet === "Utility" &&
     ["batch", "batch_all", "force_batch"].includes(decodedCall.method)
   )
 }

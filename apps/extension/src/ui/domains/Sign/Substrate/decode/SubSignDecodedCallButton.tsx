@@ -3,7 +3,7 @@ import { classNames } from "@talismn/util"
 import { useOpenClose } from "talisman-ui"
 
 import { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
-import { SubSignDecodeButtonContent } from "./SubSignDecodeButtonContent"
+import { SubSignDecodedCallButtonContent } from "./SubSignDecodedCallButtonContent"
 import { SubSignDecodedCallModal } from "./SubSignDecodedCallModal"
 
 export const SubSignDecodedButtonBase: DecodedCallComponent<
@@ -22,7 +22,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
       onClick={onClick}
     >
       <div className={classNames("grow align-baseline", mode === "compact" && "truncate")}>
-        <SubSignDecodeButtonContent
+        <SubSignDecodedCallButtonContent
           sapi={sapi}
           decodedCall={decodedCall}
           payload={payload}

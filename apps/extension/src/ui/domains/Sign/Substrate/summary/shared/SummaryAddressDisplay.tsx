@@ -6,8 +6,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useContact } from "@ui/hooks/useContact"
-import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { useAccountByAddress, useChain } from "@ui/state"
+import { copyAddress } from "@ui/util/copyAddress"
 
 import { SummaryDisplayMode } from "../../types"
 
@@ -16,7 +16,6 @@ export const SummaryAddressDisplay: FC<{
   networkId: ChainId | EvmNetworkId
   mode: SummaryDisplayMode
 }> = ({ address, networkId, mode }) => {
-  const copy = useCopyToClipboard()
   const account = useAccountByAddress(address)
   const contact = useContact(address)
   const chain = useChain(networkId)
@@ -26,8 +25,8 @@ export const SummaryAddressDisplay: FC<{
   }, [address, chain])
 
   const handleClick = useCallback(() => {
-    copy(formattedAddress)
-  }, [copy, formattedAddress])
+    copyAddress(formattedAddress)
+  }, [formattedAddress])
 
   if (mode !== "block")
     return (
