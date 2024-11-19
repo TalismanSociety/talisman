@@ -69,7 +69,7 @@ const Content = () => {
 }
 
 export const CurrencySettingsPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

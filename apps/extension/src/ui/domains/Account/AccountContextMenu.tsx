@@ -1,4 +1,5 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
+import { isEthereumAddress } from "@talismn/util"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -10,8 +11,9 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
+import { AccountJsonAny, AssetDiscoveryMode } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -21,6 +23,7 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useChainByGenesisHash } from "@ui/state"
+import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
@@ -123,6 +126,16 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     [_openAccountRemoveModal, account],
   )
 
+  const canScanTokens = useMemo(() => isEthereumAddress(account?.address), [account])
+  const scanTokensClick = useCallback(() => {
+    if (!account) return
+    api.assetDiscoveryStartScan(AssetDiscoveryMode.ALL_NETWORKS, [account.address])
+    if (IS_POPUP) {
+      api.dashboardOpen("/settings/networks-tokens/asset-discovery")
+      if (IS_EMBEDDED_POPUP) window.close()
+    }
+  }, [account])
+
   const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
 
   return (
@@ -148,6 +161,11 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
               <ViewOnExplorerMenuItem account={account} />
               {canRename && (
                 <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
+              )}
+              {canScanTokens && (
+                <ContextMenuItem onClick={scanTokensClick}>
+                  {t("Scan missing tokens")}
+                </ContextMenuItem>
               )}
               {canExport && (
                 <ContextMenuItem onClick={openAccountExportModal}>

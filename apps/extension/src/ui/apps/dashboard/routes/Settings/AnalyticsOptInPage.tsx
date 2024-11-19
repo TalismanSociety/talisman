@@ -33,7 +33,7 @@ const Content = () => {
 }
 
 export const AnalyticsOptInPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

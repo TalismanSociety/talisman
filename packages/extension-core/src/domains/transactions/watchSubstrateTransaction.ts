@@ -6,6 +6,7 @@ import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
+import urlJoin from "url-join"
 
 import { sentry } from "../../config/sentry"
 import { createNotification, NotificationType } from "../../notifications"
@@ -270,7 +271,9 @@ export const watchSubstrateTransaction = async (
       hash,
       async (result, blockNumber, extIndex, finalized) => {
         const type: NotificationType = result === "included" ? "submitted" : result
-        const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
+
+        // if subscanUrl doesnt exist, the link will not work, but we still need an url for the notification
+        const url = urlJoin(chain.subscanUrl ?? "", "extrinsic", `${blockNumber}-${extIndex}`)
 
         if (withNotifications) createNotification(type, chain.name ?? "chain", url)
 

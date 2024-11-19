@@ -48,6 +48,7 @@ export const OnboardingToast = () => {
 
       notifyCustom(OnboardNotification, {
         autoClose: false,
+        closeOnClick: true,
       })
     }
   }, [searchParams, setSearchParams, OnboardNotification])

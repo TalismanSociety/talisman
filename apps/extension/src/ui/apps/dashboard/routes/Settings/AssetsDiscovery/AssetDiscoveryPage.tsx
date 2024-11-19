@@ -607,7 +607,7 @@ const Content = () => {
 }
 
 export const AssetDiscoveryPage = () => (
-  <DashboardLayout sidebar="settings" width="800">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

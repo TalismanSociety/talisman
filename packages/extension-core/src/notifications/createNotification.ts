@@ -1,7 +1,7 @@
 import { sentry } from "../config/sentry"
 import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
-export type NotificationType = "submitted" | "success" | "error" | "not_found"
+export type NotificationType = "submitted" | "success" | "error" | "not_found" | "autolocked"
 
 const getNotificationOptions = (
   type: NotificationType,
@@ -16,6 +16,7 @@ const getNotificationOptions = (
         message: `Waiting on transaction confirmation on ${networkName}.`,
         iconUrl: "/images/tx-ok.png",
       }
+
     case "success":
       return {
         type: "basic",
@@ -23,6 +24,7 @@ const getNotificationOptions = (
         message: `Your transaction on ${networkName} has been confirmed.`,
         iconUrl: "/images/tx-ok.png",
       }
+
     case "error":
       return {
         type: "basic",
@@ -34,13 +36,21 @@ const getNotificationOptions = (
           `Failed transaction on ${networkName}.`,
         iconUrl: "/images/tx-nok.png",
       }
+
     case "not_found":
       return {
         type: "basic",
         title: "Transaction not found",
         message: `We aren't able to determine the status of this transaction.`,
-
         iconUrl: "/images/tx-nok.png",
+      }
+
+    case "autolocked":
+      return {
+        type: "basic",
+        title: "Talisman locked",
+        message: "Your wallet has been locked due to inactivity.",
+        iconUrl: "/images/tx-ok.png",
       }
   }
 }

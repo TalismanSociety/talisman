@@ -19,11 +19,10 @@ import { DashboardNotificationsAndModals } from "./notifications/DashboardNotifi
 export const DashboardLayout: FC<{
   children?: ReactNode
   sidebar: "accounts" | "settings"
-  width?: "660" | "800"
-}> = ({ children, sidebar, width }) => {
+}> = ({ children, sidebar }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
-      <div className="relative mx-auto w-full max-w-[161.6rem]">
+      <div className="relative mx-auto w-full max-w-[144rem]">
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           {/* Sidebar */}
           <div className="w-[29.6rem] shrink-0 overflow-hidden">
@@ -46,8 +45,6 @@ export const DashboardLayout: FC<{
                 className={classNames(
                   // minimum width is automatically set by the horizontal nav bar which never shrinks
                   "animate-fade-in w-full grow",
-                  width === "660" && "max-w-[66rem]",
-                  width === "800" && "max-w-[80rem]",
                 )}
               >
                 <LayoutBreadcrumb />
@@ -62,7 +59,12 @@ export const DashboardLayout: FC<{
   )
 }
 
-const RESPONSIVE_FLEX_SPACING = classNames("gap-5 px-5", "md:gap-10 md:px-10", "lg:gap-20 lg:px-20")
+const RESPONSIVE_FLEX_SPACING = classNames(
+  "gap-5 px-5",
+  "md:gap-10 md:px-10",
+  "lg:gap-20 lg:px-20",
+  "xl:gap-32 xl:px-32",
+)
 
 const NavButton: FC<{
   label: ReactNode

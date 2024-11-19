@@ -147,7 +147,10 @@ const Scanner = ({
     <div className="absolute h-full w-full">
       <video
         ref={preview}
-        className={`absolute h-full w-full -scale-x-100 object-cover${blur ? "blur-sm" : ""}`}
+        className={classNames(
+          "absolute h-full w-full -scale-x-100 object-cover",
+          blur && "blur-sm",
+        )}
       />
       {inputDevices.length > 1 ? (
         <div className="absolute left-1/2 top-10 -translate-x-1/2">

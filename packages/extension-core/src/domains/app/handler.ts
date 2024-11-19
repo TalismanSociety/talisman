@@ -88,6 +88,10 @@ export default class AppHandler extends ExtensionHandler {
         await this.stores.password.authenticate(pass)
         talismanAnalytics.capture("authenticate", { method: "new" })
       }
+      // start the autolock timer
+      this.stores.settings
+        .get()
+        .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
 
       return true
     } catch (e) {

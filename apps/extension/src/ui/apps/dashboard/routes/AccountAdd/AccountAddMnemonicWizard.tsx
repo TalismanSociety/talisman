@@ -14,7 +14,7 @@ const Content = () => {
 }
 
 export const AccountAddMnemonicDashboardWizard = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

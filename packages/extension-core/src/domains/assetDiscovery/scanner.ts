@@ -22,6 +22,7 @@ import { settingsStore } from "../app/store.settings"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
+import { setAutoEnableDiscoveredAssets } from "./autoEnable"
 import { assetDiscoveryStore } from "./store"
 import { AssetDiscoveryMode, DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
@@ -124,6 +125,8 @@ class AssetDiscoveryScanner {
     // ensure a scan can't run twice in parallel
     if (this.#resumedScans.includes(scanId)) return
     this.#resumedScans.push(scanId)
+
+    setAutoEnableDiscoveredAssets(true)
 
     const {
       currentScanMode: mode,

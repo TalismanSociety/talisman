@@ -2,7 +2,10 @@ import {
   migratePolkadotLedgerAccounts,
   migrateToNewAccountTypes,
 } from "../../domains/accounts/migrations"
-import { migratePosthogDistinctIdToAnalyticsStore } from "../../domains/analytics/migrations"
+import {
+  migrateAnaliticsPurgePendingCaptures,
+  migratePosthogDistinctIdToAnalyticsStore,
+} from "../../domains/analytics/migrations"
 import {
   cleanBadContacts,
   hideGetStartedIfFunded,
@@ -26,6 +29,7 @@ export const migrations: Migrations = [
   migratePosthogDistinctIdToAnalyticsStore,
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
+  migrateAnaliticsPurgePendingCaptures,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
