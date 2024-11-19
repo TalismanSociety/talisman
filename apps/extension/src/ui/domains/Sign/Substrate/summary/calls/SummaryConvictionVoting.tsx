@@ -1,10 +1,9 @@
-import { PolkadotCalls } from "papi-descriptors"
+import { PolkadotCalls, VotingConviction } from "papi-descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useChain } from "@ui/state"
 
-import { getConviction } from "../../customUis/CustomUisConvictionVoting"
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { decodeStandardVote } from "../../util/decodeStandardVote"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
@@ -30,7 +29,7 @@ const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"
       return {
         vote: isAye ? t("Aye") : t("Nay"),
         referenda: decodedCall.args.poll_index,
-        conviction,
+        conviction: getConviction(conviction),
         voteAmount: decodedCall.args.vote.value.balance,
       }
     }
@@ -47,7 +46,7 @@ const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"
         components={{
           Vote: <span className="text-body">{props.vote}</span>,
           Referenda: <span className="text-body">#{props.referenda}</span>,
-          Conviction: <span className="text-body">{props.conviction}X</span>,
+          Conviction: <span className="text-body">{props.conviction}</span>,
           Tokens: (
             <SummaryTokensAndFiat
               planck={props.voteAmount}
@@ -67,7 +66,7 @@ const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"
         components={{
           Vote: <span className="text-body">{props.vote}</span>,
           Referenda: <span className="text-body">#{props.referenda}</span>,
-          Conviction: <span className="text-body">{props.conviction}X</span>,
+          Conviction: <span className="text-body">{props.conviction}</span>,
           Tokens: (
             <SummaryTokensAndFiat
               planck={props.voteAmount}
@@ -76,7 +75,7 @@ const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"
             />
           ),
         }}
-        defaults="Vote <Vote /> on referenda <Referenda /><br/> with <Tokens /> and <Conviction /> conviction"
+        defaults="Vote <Vote /> on referenda <Referenda /><br/> with <Tokens /><br/> and <Conviction /> conviction"
       />
     )
 
@@ -88,7 +87,7 @@ const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"
           components={{
             Vote: <span className="text-body">{props.vote}</span>,
             Referenda: <span className="text-body">#{props.referenda}</span>,
-            Conviction: <span className="text-body">{props.conviction}X</span>,
+            Conviction: <span className="text-body">{props.conviction}</span>,
             Tokens: (
               <SummaryTokensAndFiat
                 planck={props.voteAmount}
@@ -97,7 +96,7 @@ const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"
               />
             ),
           }}
-          defaults="Vote <Vote /> on referenda <Referenda /><br/> with <Tokens /> and <Conviction /> conviction"
+          defaults="Vote <Vote /> on referenda <Referenda /><br/> with <Tokens /><br /> and <Conviction /> conviction"
         />
       </SummaryContent>
     </SummaryContainer>
@@ -169,7 +168,7 @@ const Delegate: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["d
           Track: (
             <span className="text-body">{getConvictionVotingTrackName(sapi, args.class)}</span>
           ),
-          Conviction: <span className="text-body">{getConviction(args.conviction)}X</span>,
+          Conviction: <span className="text-body">{getConviction(args.conviction)}</span>,
           Tokens: (
             <SummaryTokensAndFiat
               planck={args.balance}
@@ -197,7 +196,7 @@ const Delegate: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["d
           Track: (
             <span className="text-body">{getConvictionVotingTrackName(sapi, args.class)}</span>
           ),
-          Conviction: <span className="text-body">{getConviction(args.conviction)}X</span>,
+          Conviction: <span className="text-body">{getConviction(args.conviction)}</span>,
           Tokens: (
             <SummaryTokensAndFiat
               planck={args.balance}
@@ -226,7 +225,7 @@ const Delegate: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["d
             Track: (
               <span className="text-body">{getConvictionVotingTrackName(sapi, args.class)}</span>
             ),
-            Conviction: <span className="text-body">{getConviction(args.conviction)}X</span>,
+            Conviction: <span className="text-body">{getConviction(args.conviction)}</span>,
             Tokens: (
               <SummaryTokensAndFiat
                 planck={args.balance}
@@ -286,3 +285,26 @@ export const SUMMARY_COMPONENTS_CONVICTION_VOTING: DecodedCallSummaryComponentDe
   ["ConvictionVoting", "delegate", Delegate],
   ["ConvictionVoting", "undelegate", Undelegate],
 ]
+
+const getConviction = (conviction: VotingConviction | number) => {
+  if (typeof conviction === "number") return conviction === 0 ? `0.1X` : `${conviction}X`
+
+  switch (conviction.type) {
+    case "Locked1x":
+      return "1X"
+    case "Locked2x":
+      return "2X"
+    case "Locked3x":
+      return "3X"
+    case "Locked4x":
+      return "4X"
+    case "Locked5x":
+      return "5X"
+    case "Locked6x":
+      return "6X"
+    case "None":
+      return "0.1X"
+    default:
+      throw new Error("Invalid conviction")
+  }
+}

@@ -17,7 +17,7 @@ export const SummaryTokensAndFiat: FC<{
       planck={planck}
       noCountUp
       withLogo
-      noFiat={!!noFiat || mode !== "block"}
+      noFiat={!!noFiat || mode === "compact"}
       noTooltip={mode !== "block"}
       className="whitespace-nowrap"
       tokensClassName="text-body"
