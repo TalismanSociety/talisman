@@ -11,7 +11,7 @@ import { SubSignDecoded } from "./decode/SubSignDecoded"
 import { isBatchCall } from "./types"
 
 export const SubSignBody: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { account, chain, decodedCall } = usePolkadotSigningRequest()
 
   const isBatch = useMemo(() => isBatchCall(decodedCall), [decodedCall])
