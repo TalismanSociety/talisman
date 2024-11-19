@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 import { useChain, useChains, useTokensMap } from "@ui/state"
 
-import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromXcmLocation } from "../../util/getAddressFromXcmLocation"
 import { getChainFromXcmLocation } from "../../util/getChainFromXcmLocation"
 import { getMultiAssetTokenId } from "../../util/getMultiAssetTokenId"
@@ -21,11 +21,11 @@ type TransferAssetArgs =
   | PolkadotAssetHubCalls["PolkadotXcm"]["limited_reserve_transfer_assets"]
   | PolkadotAssetHubCalls["PolkadotXcm"]["limited_teleport_assets"]
 
-const TransferAssets: DecodedCallComponent<TransferAssetArgs> = ({
+const TransferAssets: DecodedCallSummaryComponent<TransferAssetArgs> = ({
   decodedCall: { args },
   sapi,
   payload,
-  inline,
+  mode,
 }) => {
   const chain = useChain(sapi.chainId)
   const tokensMap = useTokensMap()
@@ -48,14 +48,14 @@ const TransferAssets: DecodedCallComponent<TransferAssetArgs> = ({
       toNetwork: toNetwork.id,
       fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
       toAddress: encodeAnyAddress(toAddress, toNetwork.prefix ?? undefined),
-      inline: !!inline,
+      mode,
     }
-  }, [args, payload, chain, chains, tokensMap, inline])
+  }, [args, payload, chain, chains, tokensMap, mode])
 
   return <SummaryCrossChainTransfer {...props} />
 }
 
-export const SUMMARY_COMPONENTS_XCM: DecodedCallComponentDefs = [
+export const SUMMARY_COMPONENTS_XCM: DecodedCallSummaryComponentDefs = [
   ["XcmPallet", "reserve_transfer_assets", TransferAssets],
   ["XcmPallet", "limited_reserve_transfer_assets", TransferAssets],
   ["XcmPallet", "limited_teleport_assets", TransferAssets],

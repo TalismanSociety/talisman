@@ -3,18 +3,22 @@ import { FC } from "react"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 
+import { SummaryDisplayMode } from "../../types"
+
 export const SummaryTokensAndFiat: FC<{
   tokenId: TokenId
   planck: bigint | string
-  withFiat: boolean
-}> = ({ tokenId, planck, withFiat }) => {
+  mode: SummaryDisplayMode
+  noFiat?: boolean // used to force, such as for ED
+}> = ({ tokenId, planck, mode, noFiat }) => {
   return (
     <TokensAndFiat
       tokenId={tokenId}
       planck={planck}
       noCountUp
       withLogo
-      noFiat={!withFiat}
+      noFiat={!!noFiat || mode !== "block"}
+      noTooltip={mode !== "block"}
       className="whitespace-nowrap"
       tokensClassName="text-body"
     />

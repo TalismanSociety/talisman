@@ -6,7 +6,7 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { useChain, useTokens } from "@ui/state"
 
-import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import {
@@ -15,12 +15,13 @@ import {
   SummaryContent,
   SummarySeparator,
 } from "../shared/SummaryContainer"
+import { SummaryLineBreak } from "../shared/SummaryLineBreak"
 import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
-const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["ForeignAssets"]["transfer"]> = ({
+const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["ForeignAssets"]["transfer"]> = ({
   decodedCall,
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
@@ -41,21 +42,18 @@ const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["ForeignAssets"]["tra
 
   if (!token?.id || !target || !chain) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
         components={{
           Tokens: (
-            <SummaryTokensAndFiat
-              tokenId={token.id}
-              planck={decodedCall.args.amount}
-              withFiat={false}
-            />
+            <SummaryTokensAndFiat tokenId={token.id} planck={decodedCall.args.amount} mode={mode} />
           ),
-          Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={true} />,
+          LineBreak: <SummaryLineBreak mode={mode} />,
+          Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
         }}
-        defaults="Transfer <Tokens /> to <Target />"
+        defaults="Transfer <Tokens /><LineBreak /> to <Target />"
       />
     )
 
@@ -66,9 +64,13 @@ const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["ForeignAssets"]["tra
           t={t}
           components={{
             Tokens: (
-              <SummaryTokensAndFiat tokenId={token.id} planck={decodedCall.args.amount} withFiat />
+              <SummaryTokensAndFiat
+                tokenId={token.id}
+                planck={decodedCall.args.amount}
+                mode={mode}
+              />
             ),
-            Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={false} />,
+            Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
           }}
           defaults="Transfer <Tokens /><br /> to <Target />"
         />
@@ -80,9 +82,10 @@ const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["ForeignAssets"]["tra
           components={{
             Tokens: (
               <SummaryTokensAndFiat
-                withFiat={false}
                 planck={token.existentialDeposit}
                 tokenId={token.id}
+                mode={mode}
+                noFiat
               />
             ),
           }}
@@ -93,9 +96,9 @@ const Transfer: DecodedCallComponent<PolkadotAssetHubCalls["ForeignAssets"]["tra
   )
 }
 
-const TransferKeepAlive: DecodedCallComponent<
+const TransferKeepAlive: DecodedCallSummaryComponent<
   PolkadotAssetHubCalls["ForeignAssets"]["transfer_keep_alive"]
-> = ({ decodedCall, sapi, inline }) => {
+> = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
   const tokens = useTokens()
@@ -115,20 +118,17 @@ const TransferKeepAlive: DecodedCallComponent<
 
   if (!token?.id || !target || !chain) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     <Trans
       t={t}
       components={{
-        Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={true} />,
         Tokens: (
-          <SummaryTokensAndFiat
-            tokenId={token.id}
-            planck={decodedCall.args.amount}
-            withFiat={false}
-          />
+          <SummaryTokensAndFiat tokenId={token.id} planck={decodedCall.args.amount} mode={mode} />
         ),
+        LineBreak: <SummaryLineBreak mode={mode} />,
+        Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
       }}
-      defaults="Transfer <Tokens /> to <Target />"
+      defaults="Transfer <Tokens /><LineBreak /> to <Target />"
     />
 
   return (
@@ -138,9 +138,13 @@ const TransferKeepAlive: DecodedCallComponent<
           t={t}
           components={{
             Tokens: (
-              <SummaryTokensAndFiat tokenId={token.id} planck={decodedCall.args.amount} withFiat />
+              <SummaryTokensAndFiat
+                tokenId={token.id}
+                planck={decodedCall.args.amount}
+                mode={mode}
+              />
             ),
-            Target: <SummaryAddressDisplay address={target} networkId={chain.id} inline={false} />,
+            Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
           }}
           defaults="Transfer <Tokens /><br /> to <Target />"
         />
@@ -152,9 +156,10 @@ const TransferKeepAlive: DecodedCallComponent<
           components={{
             Tokens: (
               <SummaryTokensAndFiat
-                withFiat={false}
                 planck={token.existentialDeposit}
                 tokenId={token.id}
+                mode={mode}
+                noFiat
               />
             ),
           }}
@@ -165,7 +170,7 @@ const TransferKeepAlive: DecodedCallComponent<
   )
 }
 
-export const SUMMARY_COMPONENTS_FOREIGN_ASSETS: DecodedCallComponentDefs = [
+export const SUMMARY_COMPONENTS_FOREIGN_ASSETS: DecodedCallSummaryComponentDefs = [
   ["ForeignAssets", "transfer", Transfer],
   ["ForeignAssets", "transfer_keep_alive", TransferKeepAlive],
 ]

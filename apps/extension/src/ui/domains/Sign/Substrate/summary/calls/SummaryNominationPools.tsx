@@ -8,36 +8,38 @@ import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useChain } from "@ui/state"
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent, SummarySeparator } from "../shared/SummaryContainer"
+import { SummaryLineBreak } from "../shared/SummaryLineBreak"
 import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 
-const Join: DecodedCallComponent<PolkadotCalls["NominationPools"]["join"]> = ({
+const Join: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["join"]> = ({
   decodedCall,
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
         components={{
           Pool: <NomPoolName sapi={sapi} poolId={decodedCall.args.pool_id} />,
+          LineBreak: <SummaryLineBreak mode={mode} />,
           Tokens: (
             <SummaryTokensAndFiat
               tokenId={chain?.nativeToken?.id}
               planck={decodedCall.args.amount}
-              withFiat={false}
+              mode={mode}
             />
           ),
         }}
-        defaults="Stake <Tokens /> in <Pool />"
+        defaults="Stake <Tokens /><LineBreak /> in <Pool />"
       />
     )
 
@@ -52,7 +54,7 @@ const Join: DecodedCallComponent<PolkadotCalls["NominationPools"]["join"]> = ({
               <SummaryTokensAndFiat
                 tokenId={chain?.nativeToken?.id}
                 planck={decodedCall.args.amount}
-                withFiat={true}
+                mode={mode}
               />
             ),
           }}
@@ -63,17 +65,17 @@ const Join: DecodedCallComponent<PolkadotCalls["NominationPools"]["join"]> = ({
   )
 }
 
-const BondExtra: DecodedCallComponent<PolkadotCalls["NominationPools"]["bond_extra"]> = ({
+const BondExtra: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["bond_extra"]> = ({
   decodedCall,
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline && decodedCall.args.extra.type === "Rewards")
+  if (mode !== "block" && decodedCall.args.extra.type === "Rewards")
     return (
       <Trans
         t={t}
@@ -84,7 +86,7 @@ const BondExtra: DecodedCallComponent<PolkadotCalls["NominationPools"]["bond_ext
       />
     )
 
-  if (inline && decodedCall.args.extra.type === "FreeBalance")
+  if (mode !== "block" && decodedCall.args.extra.type === "FreeBalance")
     return (
       <Trans
         t={t}
@@ -93,7 +95,7 @@ const BondExtra: DecodedCallComponent<PolkadotCalls["NominationPools"]["bond_ext
             <SummaryTokensAndFiat
               tokenId={chain?.nativeToken?.id}
               planck={decodedCall.args.extra.value}
-              withFiat={false}
+              mode={mode}
             />
           ),
         }}
@@ -126,7 +128,7 @@ const BondExtra: DecodedCallComponent<PolkadotCalls["NominationPools"]["bond_ext
               <SummaryTokensAndFiat
                 tokenId={chain?.nativeToken?.id}
                 planck={decodedCall.args.extra.value}
-                withFiat={true}
+                mode={mode}
               />
             ),
           }}
@@ -137,12 +139,12 @@ const BondExtra: DecodedCallComponent<PolkadotCalls["NominationPools"]["bond_ext
   )
 }
 
-const ClaimPayout: DecodedCallComponent<PolkadotCalls["NominationPools"]["claim_payout"]> = ({
-  inline,
-}) => {
+const ClaimPayout: DecodedCallSummaryComponent<
+  PolkadotCalls["NominationPools"]["claim_payout"]
+> = ({ mode }) => {
   const { t } = useTranslation()
 
-  if (inline) return t("Claim your staking rewards")
+  if (mode !== "block") return t("Claim your staking rewards")
 
   return (
     <SummaryContainer>
@@ -151,9 +153,9 @@ const ClaimPayout: DecodedCallComponent<PolkadotCalls["NominationPools"]["claim_
   )
 }
 
-const SetClaimPermission: DecodedCallComponent<
+const SetClaimPermission: DecodedCallSummaryComponent<
   PolkadotCalls["NominationPools"]["set_claim_permission"]
-> = ({ decodedCall, inline }) => {
+> = ({ decodedCall, mode }) => {
   const { t } = useTranslation()
 
   const description = useMemo(() => {
@@ -171,7 +173,7 @@ const SetClaimPermission: DecodedCallComponent<
     }
   }, [decodedCall.args.permission.type, t])
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
@@ -199,15 +201,15 @@ const SetClaimPermission: DecodedCallComponent<
   )
 }
 
-const WithdrawUnbonded: DecodedCallComponent<
+const WithdrawUnbonded: DecodedCallSummaryComponent<
   PolkadotCalls["NominationPools"]["withdraw_unbonded"]
-> = ({ sapi, inline }) => {
+> = ({ sapi, mode }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
@@ -257,7 +259,7 @@ const useNomPoolName = (sapi: ScaleApi | null | undefined, poolId: number | null
   })
 }
 
-export const SUMMARY_COMPONENTS_NOMINATION_POOLS: DecodedCallComponentDefs = [
+export const SUMMARY_COMPONENTS_NOMINATION_POOLS: DecodedCallSummaryComponentDefs = [
   ["NominationPools", "join", Join],
   ["NominationPools", "set_claim_permission", SetClaimPermission],
   ["NominationPools", "withdraw_unbonded", WithdrawUnbonded],

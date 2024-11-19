@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next"
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
-import { SubSignCallSummary } from "./SubSignDecodedSummary"
+import { SubSignDecodedCallSummaryBlock } from "./SubSignDecodedCallSummaryBlock"
 
 export const SubSignDecodedCallContent: FC<{
   decodedCall: DecodedCall
@@ -25,7 +25,7 @@ export const SubSignDecodedCallContent: FC<{
     <Suspense fallback={<LoadingShimmer />}>
       <div className="text-body-secondary flex flex-col gap-4 text-sm">
         {/* Summary can suspense to fetch additional data, and break if a chain uses incompatible types */}
-        <SubSignCallSummary decodedCall={decodedCall} sapi={sapi} payload={payload} />
+        <SubSignDecodedCallSummaryBlock decodedCall={decodedCall} sapi={sapi} payload={payload} />
         <DefaultView decodedCall={decodedCall} sapi={sapi} />
       </div>
     </Suspense>

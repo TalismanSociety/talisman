@@ -4,7 +4,7 @@ import { FC } from "react"
 import { DecodedCall } from "@ui/util/scaleApi"
 
 import { SUMMARY_COMPONENTS } from "../summary/calls"
-import { DecodedCallComponent } from "../types"
+import { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { useDecodedCallComponent } from "../util/useDecodedCallComponent"
 
 const ContentFallback: FC<{ decodedCall: DecodedCall }> = ({ decodedCall }) => (
@@ -13,18 +13,17 @@ const ContentFallback: FC<{ decodedCall: DecodedCall }> = ({ decodedCall }) => (
   </>
 )
 
-export const SubSignDecodeButtonContent: DecodedCallComponent<unknown> = ({
-  sapi,
-  decodedCall,
-  payload,
-}) => {
-  const Component = useDecodedCallComponent(decodedCall, SUMMARY_COMPONENTS)
+export const SubSignDecodeButtonContent: DecodedCallComponent<
+  unknown,
+  { mode: SummaryButtonDisplayMode }
+> = (props) => {
+  const Component = useDecodedCallComponent(props.decodedCall, SUMMARY_COMPONENTS)
 
-  if (!Component) return <ContentFallback decodedCall={decodedCall} />
+  if (!Component) return <ContentFallback decodedCall={props.decodedCall} />
 
   return (
-    <ErrorBoundary fallback={<ContentFallback decodedCall={decodedCall} />}>
-      <Component decodedCall={decodedCall} sapi={sapi} payload={payload} inline />
+    <ErrorBoundary fallback={<ContentFallback decodedCall={props.decodedCall} />}>
+      <Component {...props} mode={props.mode} />
     </ErrorBoundary>
   )
 }

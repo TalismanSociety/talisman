@@ -4,8 +4,10 @@ import { Address, ChainId, EvmNetworkId } from "extension-core"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { SummaryDisplayMode } from "../../types"
 import { SummaryAddressDisplay } from "./SummaryAddressDisplay"
 import { SummaryContainer, SummaryContent, SummarySeparator } from "./SummaryContainer"
+import { SummaryLineBreak } from "./SummaryLineBreak"
 import { SummaryNetworkDisplay } from "./SummaryNetworkDisplay"
 import { SummaryTokensAndFiat } from "./SummaryTokensAndFiat"
 
@@ -16,7 +18,7 @@ export type SummaryCrossChainTransferProps = {
   toAddress: Address
   tokenId: TokenId
   value: bigint
-  inline: boolean
+  mode: SummaryDisplayMode
 }
 
 export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
@@ -26,19 +28,20 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
   toAddress,
   tokenId,
   value,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
         components={{
+          Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} mode={mode} />,
+          LineBreak: <SummaryLineBreak mode={mode} />,
           TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
-          Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} withFiat={false} />,
         }}
-        defaults="Transfer <Tokens /> to <TargetNetwork />"
+        defaults="Transfer <Tokens /><LineBreak /> to <TargetNetwork />"
       />
     )
 
@@ -49,7 +52,7 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
           t={t}
           components={{
             TargetNetwork: <SummaryNetworkDisplay networkId={toNetwork} />,
-            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} withFiat={true} />,
+            Tokens: <SummaryTokensAndFiat tokenId={tokenId} planck={value} mode={mode} />,
           }}
           defaults="Transfer <Tokens /><br/> to <TargetNetwork />"
         />
@@ -58,14 +61,14 @@ export const SummaryCrossChainTransfer: FC<SummaryCrossChainTransferProps> = ({
       <SummaryContent className="grid grid-cols-[1fr_2.4rem_1fr] items-center gap-4">
         <div className="flex flex-col items-center gap-2 overflow-hidden">
           <SummaryNetworkDisplay networkId={fromNetwork} />
-          <SummaryAddressDisplay address={fromAddress} networkId={fromNetwork} inline={false} />
+          <SummaryAddressDisplay address={fromAddress} networkId={fromNetwork} mode={mode} />
         </div>
         <div>
           <ArrowRightIcon className="text-lg" />
         </div>
         <div className="flex flex-col items-center gap-2 overflow-hidden">
           <SummaryNetworkDisplay networkId={toNetwork} />
-          <SummaryAddressDisplay address={toAddress} networkId={toNetwork} inline={false} />
+          <SummaryAddressDisplay address={toAddress} networkId={toNetwork} mode={mode} />
         </div>
       </SummaryContent>
     </SummaryContainer>

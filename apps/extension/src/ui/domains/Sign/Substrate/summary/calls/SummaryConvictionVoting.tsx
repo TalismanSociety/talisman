@@ -5,7 +5,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useChain } from "@ui/state"
 
 import { getConviction } from "../../customUis/CustomUisConvictionVoting"
-import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { decodeStandardVote } from "../../util/decodeStandardVote"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { getConvictionVotingTrackName } from "../../util/getGovernanceTrackName"
@@ -13,10 +13,10 @@ import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
 import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
-const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
+const Vote: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
   decodedCall,
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
@@ -40,7 +40,7 @@ const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline)
+  if (mode === "compact")
     return (
       <Trans
         t={t}
@@ -52,11 +52,31 @@ const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
             <SummaryTokensAndFiat
               planck={props.voteAmount}
               tokenId={chain.nativeToken.id}
-              withFiat={false}
+              mode={mode}
             />
           ),
         }}
         defaults="Vote <Vote /> on <Referenda /> with <Conviction /> <Tokens />"
+      />
+    )
+
+  if (mode === "multiline")
+    return (
+      <Trans
+        t={t}
+        components={{
+          Vote: <span className="text-body">{props.vote}</span>,
+          Referenda: <span className="text-body">#{props.referenda}</span>,
+          Conviction: <span className="text-body">{props.conviction}X</span>,
+          Tokens: (
+            <SummaryTokensAndFiat
+              planck={props.voteAmount}
+              tokenId={chain.nativeToken.id}
+              mode={mode}
+            />
+          ),
+        }}
+        defaults="Vote <Vote /> on referenda <Referenda /><br/> with <Tokens /> and <Conviction /> conviction"
       />
     )
 
@@ -73,28 +93,28 @@ const Vote: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["vote"]> = ({
               <SummaryTokensAndFiat
                 planck={props.voteAmount}
                 tokenId={chain.nativeToken.id}
-                withFiat={true}
+                mode={mode}
               />
             ),
           }}
-          defaults="Vote <Vote /> on referenda <Referenda /><br/>with <Tokens /> and <Conviction /> conviction"
+          defaults="Vote <Vote /> on referenda <Referenda /><br/> with <Tokens /> and <Conviction /> conviction"
         />
       </SummaryContent>
     </SummaryContainer>
   )
 }
 
-const Unlock: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["unlock"]> = ({
+const Unlock: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["unlock"]> = ({
   decodedCall: { args },
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
@@ -124,17 +144,17 @@ const Unlock: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["unlock"]> 
   )
 }
 
-const Delegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["delegate"]> = ({
+const Delegate: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["delegate"]> = ({
   decodedCall: { args },
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline)
+  if (mode === "compact")
     return (
       <Trans
         t={t}
@@ -143,7 +163,7 @@ const Delegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["delegate
             <SummaryAddressDisplay
               address={getAddressFromMultiAddress(args.to)}
               networkId={sapi.chainId}
-              inline
+              mode={mode}
             />
           ),
           Track: (
@@ -154,11 +174,39 @@ const Delegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["delegate
             <SummaryTokensAndFiat
               planck={args.balance}
               tokenId={chain.nativeToken.id}
-              withFiat={false}
+              mode={mode}
             />
           ),
         }}
         defaults="Delegate <Conviction /> <Tokens /> for track <Track /> to <Target />"
+      />
+    )
+
+  if (mode === "multiline")
+    return (
+      <Trans
+        t={t}
+        components={{
+          Target: (
+            <SummaryAddressDisplay
+              address={getAddressFromMultiAddress(args.to)}
+              networkId={sapi.chainId}
+              mode={mode}
+            />
+          ),
+          Track: (
+            <span className="text-body">{getConvictionVotingTrackName(sapi, args.class)}</span>
+          ),
+          Conviction: <span className="text-body">{getConviction(args.conviction)}X</span>,
+          Tokens: (
+            <SummaryTokensAndFiat
+              planck={args.balance}
+              tokenId={chain.nativeToken.id}
+              mode={mode}
+            />
+          ),
+        }}
+        defaults="Delegate <Tokens /><br/> to <Target /><br/> for track <Track /><br/> with <Conviction /> conviction"
       />
     )
 
@@ -172,7 +220,7 @@ const Delegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["delegate
               <SummaryAddressDisplay
                 address={getAddressFromMultiAddress(args.to)}
                 networkId={sapi.chainId}
-                inline={false}
+                mode={mode}
               />
             ),
             Track: (
@@ -183,7 +231,7 @@ const Delegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["delegate
               <SummaryTokensAndFiat
                 planck={args.balance}
                 tokenId={chain.nativeToken.id}
-                withFiat={true}
+                mode={mode}
               />
             ),
           }}
@@ -194,17 +242,17 @@ const Delegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["delegate
   )
 }
 
-const Undelegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["undelegate"]> = ({
+const Undelegate: DecodedCallSummaryComponent<PolkadotCalls["ConvictionVoting"]["undelegate"]> = ({
   decodedCall: { args },
   sapi,
-  inline,
+  mode,
 }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
 
   if (!chain?.nativeToken?.id) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
@@ -232,7 +280,7 @@ const Undelegate: DecodedCallComponent<PolkadotCalls["ConvictionVoting"]["undele
   )
 }
 
-export const SUMMARY_COMPONENTS_CONVICTION_VOTING: DecodedCallComponentDefs = [
+export const SUMMARY_COMPONENTS_CONVICTION_VOTING: DecodedCallSummaryComponentDefs = [
   ["ConvictionVoting", "vote", Vote],
   ["ConvictionVoting", "unlock", Unlock],
   ["ConvictionVoting", "delegate", Delegate],

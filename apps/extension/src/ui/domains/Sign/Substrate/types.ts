@@ -30,16 +30,39 @@ export const isBatchCall = (decodedCall: DecodedCall): decodedCall is DecodedBat
   )
 }
 
+/**
+ * Decoded call display mode
+ * - block: display as a block element (includes the container)
+ * - multiline: display as a multiline text, meant for big buttons (no container)
+ * - compact: display as a compact text, meant one liner buttons (no container)
+ */
+export type SummaryDisplayMode = "block" | "multiline" | "compact"
+export type SummaryButtonDisplayMode = "multiline" | "compact"
+
 export type DecodedCallComponent<Args, Props = object> = FC<
   {
     decodedCall: DecodedCall<Args>
     sapi: ScaleApi
     payload: SignerPayloadJSON
-    inline?: boolean
   } & Props
 >
 
-export type DecodedCallComponentDef<T, P = object> = [string, string, DecodedCallComponent<T, P>]
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DecodedCallComponentDef<T = any, P = object> = [
+  string,
+  string,
+  DecodedCallComponent<T, P>,
+]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DecodedCallComponentDefs = DecodedCallComponentDef<any>[]
+export type DecodedCallComponentDefs<T = any, P = unknown> = DecodedCallComponentDef<T, P>[]
+
+export type DecodedCallSummaryComponent<T> = DecodedCallComponent<T, { mode: SummaryDisplayMode }>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DecodedCallSummaryComponentDef<T = any> = [
+  string,
+  string,
+  DecodedCallSummaryComponent<T>,
+]
+export type DecodedCallSummaryComponentDefs = DecodedCallSummaryComponentDef[]

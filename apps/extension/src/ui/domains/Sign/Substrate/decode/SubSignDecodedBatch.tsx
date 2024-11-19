@@ -1,9 +1,8 @@
-import { SignerPayloadJSON } from "extension-core"
-import { FC, useMemo } from "react"
+import { useMemo } from "react"
 
-import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
+import { DecodedCall } from "@ui/util/scaleApi"
 
-import { DecodedBatchCall } from "../types"
+import { DecodedBatchArgs, DecodedBatchCall, DecodedCallComponent } from "../types"
 import { SubSignDecodedBatchModal } from "./SubSignDecodedBatchModal"
 import {
   SubSignDecodedBatchModalProvider,
@@ -11,11 +10,11 @@ import {
 } from "./SubSignDecodedBatchModalContext"
 import { SubSignDecodedButtonBase } from "./SubSignDecodedCallButton"
 
-export const SubSignDecodedBatch: FC<{
-  sapi: ScaleApi
-  decodedCall: DecodedBatchCall
-  payload: SignerPayloadJSON
-}> = ({ sapi, decodedCall, payload }) => {
+export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
+  sapi,
+  decodedCall,
+  payload,
+}) => {
   const childCalls = useMemo<DecodedCall[]>(() => {
     return decodedCall.args.calls.map((call) => ({
       pallet: call.type,
@@ -25,7 +24,7 @@ export const SubSignDecodedBatch: FC<{
   }, [decodedCall.args.calls])
 
   return (
-    <SubSignDecodedBatchModalProvider decodedCall={decodedCall}>
+    <SubSignDecodedBatchModalProvider decodedCall={decodedCall as DecodedBatchCall}>
       {childCalls.map((call, index) => (
         <BatchCallItemButton
           key={index}
@@ -40,12 +39,12 @@ export const SubSignDecodedBatch: FC<{
   )
 }
 
-const BatchCallItemButton: FC<{
-  index: number
-  sapi: ScaleApi
-  decodedCall: DecodedCall
-  payload: SignerPayloadJSON
-}> = ({ index, decodedCall, sapi, payload }) => {
+const BatchCallItemButton: DecodedCallComponent<unknown, { index: number }> = ({
+  index,
+  decodedCall,
+  sapi,
+  payload,
+}) => {
   const { open } = useSubSignDecodedBatchModal()
 
   return (
@@ -53,6 +52,7 @@ const BatchCallItemButton: FC<{
       sapi={sapi}
       decodedCall={decodedCall}
       payload={payload}
+      mode="compact"
       onClick={() => open(index)}
     />
   )

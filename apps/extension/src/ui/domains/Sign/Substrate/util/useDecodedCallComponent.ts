@@ -4,9 +4,9 @@ import { DecodedCall } from "@ui/util/scaleApi"
 
 import { DecodedCallComponentDefs } from "../types"
 
-export const useDecodedCallComponent = (
+export const useDecodedCallComponent = <T, P>(
   decodedCall: DecodedCall | null | undefined,
-  componentDefs: DecodedCallComponentDefs,
+  componentDefs: DecodedCallComponentDefs<T, P>,
 ) => {
   return useMemo(() => {
     if (!decodedCall) return null

@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 import { useChain, useChains, useTokens } from "@ui/state"
 
-import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromXcmLocation } from "../../util/getAddressFromXcmLocation"
 import { getChainFromXcmLocation } from "../../util/getChainFromXcmLocation"
 import { getTokenFromCurrency } from "../../util/getTokenFromCurrency"
@@ -18,11 +18,11 @@ type TransferArgs =
   | TransferChainCalls["XTokens"]["transfer"]
   | TransferChainCalls["XTokens"]["transfer_with_fee"]
 
-const Transfer: DecodedCallComponent<TransferArgs> = ({
+const Transfer: DecodedCallSummaryComponent<TransferArgs> = ({
   decodedCall: { args },
   sapi,
   payload,
-  inline,
+  mode,
 }) => {
   const chain = useChain(sapi.chainId)
   const tokens = useTokens()
@@ -42,14 +42,14 @@ const Transfer: DecodedCallComponent<TransferArgs> = ({
       toNetwork: targetChain.id,
       fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
       toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
-      inline: !!inline,
+      mode,
     }
-  }, [args, payload, chain, chains, tokens, inline])
+  }, [args, payload, chain, chains, tokens, mode])
 
   return <SummaryCrossChainTransfer {...props} />
 }
 
-export const SUMMARY_COMPONENTS_X_TOKENS: DecodedCallComponentDefs = [
+export const SUMMARY_COMPONENTS_X_TOKENS: DecodedCallSummaryComponentDefs = [
   ["XTokens", "transfer", Transfer],
   ["XTokens", "transfer_with_fee", Transfer],
 ]

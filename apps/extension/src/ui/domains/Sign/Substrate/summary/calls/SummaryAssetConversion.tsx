@@ -8,14 +8,15 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { useChain, useTokens } from "@ui/state"
 
-import { DecodedCallComponent, DecodedCallComponentDefs } from "../../types"
+import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
+import { SummaryLineBreak } from "../shared/SummaryLineBreak"
 import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 
-const SwapExactTokensForTokens: DecodedCallComponent<
+const SwapExactTokensForTokens: DecodedCallSummaryComponent<
   PolkadotAssetHubCalls["AssetConversion"]["swap_exact_tokens_for_tokens"]
-> = ({ decodedCall, sapi, inline }) => {
+> = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
   const tokens = useTokens()
@@ -30,7 +31,7 @@ const SwapExactTokensForTokens: DecodedCallComponent<
 
   if (!tokenIn?.id || !tokenOut?.id || !chain) throw new Error("Missing data")
 
-  if (inline)
+  if (mode !== "block")
     return (
       <Trans
         t={t}
@@ -39,12 +40,13 @@ const SwapExactTokensForTokens: DecodedCallComponent<
             <SummaryTokensAndFiat
               tokenId={tokenIn.id}
               planck={decodedCall.args.amount_in}
-              withFiat={false}
+              mode={mode}
             />
           ),
+          LineBreak: <SummaryLineBreak mode={mode} />,
           TokensOut: <SummaryTokenSymbolDisplay tokenId={tokenOut.id} />,
         }}
-        defaults="Swap <TokensIn /> for <TokensOut />"
+        defaults="Swap <TokensIn /><LineBreak /> for <TokensOut /> minimum"
       />
     )
 
@@ -58,14 +60,14 @@ const SwapExactTokensForTokens: DecodedCallComponent<
               <SummaryTokensAndFiat
                 tokenId={tokenIn.id}
                 planck={decodedCall.args.amount_in}
-                withFiat
+                mode={mode}
               />
             ),
             TokensOut: (
               <SummaryTokensAndFiat
                 tokenId={tokenOut.id}
                 planck={decodedCall.args.amount_out_min}
-                withFiat
+                mode={mode}
               />
             ),
           }}
@@ -76,7 +78,7 @@ const SwapExactTokensForTokens: DecodedCallComponent<
   )
 }
 
-export const SUMMARY_COMPONENTS_ASSET_CONVERSION: DecodedCallComponentDefs = [
+export const SUMMARY_COMPONENTS_ASSET_CONVERSION: DecodedCallSummaryComponentDefs = [
   ["AssetConversion", "swap_exact_tokens_for_tokens", SwapExactTokensForTokens],
 ]
 
