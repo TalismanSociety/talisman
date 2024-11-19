@@ -1,15 +1,13 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
-
-const TAOSTATS_API_URL = "https://api.taostats.io/api"
-const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY || ""
+import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
 
 const fetchBittensorValidator = async (hotkey: string | undefined): Promise<BittensorValidator> => {
   try {
     return await (
-      await fetch(`${TAOSTATS_API_URL}/validator/latest/v1?hotkey=${hotkey}`, {
+      await fetch(`${TAOSTATS_BASE_PATH}/api/validator/latest/v1?hotkey=${hotkey}`, {
         method: "GET",
         headers: {
-          "Authorization": TAOSTATS_API_KEY,
+          "Authorization": TAOSTATS_API_KEY ?? "",
           "Content-Type": "application/json",
         },
       })

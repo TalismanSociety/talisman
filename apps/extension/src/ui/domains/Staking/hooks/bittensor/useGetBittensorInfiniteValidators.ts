@@ -1,21 +1,22 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
+import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
 
 import { ValidatorsData } from "./types"
-
-const TAOSTATS_API_URL = "https://api-prod-v2.taostats.io/api"
-const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY || ""
 
 const MAX_PAGE_SIZE = 100
 
 const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<ValidatorsData> => {
   return await (
-    await fetch(`${TAOSTATS_API_URL}/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`, {
-      method: "GET",
-      headers: {
-        "Authorization": TAOSTATS_API_KEY,
-        "Content-Type": "application/json",
+    await fetch(
+      `${TAOSTATS_BASE_PATH}/api/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": TAOSTATS_API_KEY ?? "",
+          "Content-Type": "application/json",
+        },
       },
-    })
+    )
   ).json()
 }
 
