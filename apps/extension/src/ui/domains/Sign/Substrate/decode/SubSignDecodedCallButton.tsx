@@ -4,7 +4,7 @@ import { useOpenClose } from "talisman-ui"
 
 import { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { SubSignDecodedCallButtonContent } from "./SubSignDecodedCallButtonContent"
-import { SubSignDecodedCallModal } from "./SubSignDecodedCallModal"
+import { SubSignDecodedCallDrawer } from "./SubSignDecodedCallDrawer"
 
 export const SubSignDecodedButtonBase: DecodedCallComponent<
   unknown,
@@ -50,7 +50,7 @@ export const SubSignDecodedCallButton: DecodedCallComponent<unknown> = ({
         mode="multiline"
         onClick={open}
       />
-      <SubSignDecodedCallModal
+      <SubSignDecodedCallDrawer
         sapi={sapi}
         decodedCall={decodedCall}
         payload={payload}

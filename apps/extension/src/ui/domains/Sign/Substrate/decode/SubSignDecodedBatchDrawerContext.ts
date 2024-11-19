@@ -5,7 +5,7 @@ import { DecodedCall } from "@ui/util/scaleApi"
 
 import { DecodedBatchCall } from "../types"
 
-const useBatchItemModalProvider = ({ decodedCall }: { decodedCall: DecodedBatchCall }) => {
+const useBatchItemDrawerProvider = ({ decodedCall }: { decodedCall: DecodedBatchCall }) => {
   const [batchItemModalIndex, setBatchItemModalIndex] = useState(-1)
 
   // keep this in a state to keep last selected entry, so we can still display the item while the modal is closing
@@ -65,5 +65,6 @@ const useBatchItemModalProvider = ({ decodedCall }: { decodedCall: DecodedBatchC
   }
 }
 
-export const [SubSignDecodedBatchModalProvider, useSubSignDecodedBatchModal] =
-  provideContext(useBatchItemModalProvider)
+export const [SubSignDecodedBatchDrawerProvider, useSubSignDecodedBatchDrawer] = provideContext(
+  useBatchItemDrawerProvider,
+)

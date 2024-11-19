@@ -3,11 +3,11 @@ import { useMemo } from "react"
 import { DecodedCall } from "@ui/util/scaleApi"
 
 import { DecodedBatchArgs, DecodedBatchCall, DecodedCallComponent } from "../types"
-import { SubSignDecodedBatchModal } from "./SubSignDecodedBatchModal"
+import { SubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawer"
 import {
-  SubSignDecodedBatchModalProvider,
-  useSubSignDecodedBatchModal,
-} from "./SubSignDecodedBatchModalContext"
+  SubSignDecodedBatchDrawerProvider,
+  useSubSignDecodedBatchDrawer,
+} from "./SubSignDecodedBatchDrawerContext"
 import { SubSignDecodedButtonBase } from "./SubSignDecodedCallButton"
 
 export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
@@ -24,7 +24,7 @@ export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
   }, [decodedCall.args.calls])
 
   return (
-    <SubSignDecodedBatchModalProvider decodedCall={decodedCall as DecodedBatchCall}>
+    <SubSignDecodedBatchDrawerProvider decodedCall={decodedCall as DecodedBatchCall}>
       {childCalls.map((call, index) => (
         <BatchCallItemButton
           key={index}
@@ -34,8 +34,8 @@ export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
           payload={payload}
         />
       ))}
-      <SubSignDecodedBatchModal sapi={sapi} payload={payload} />
-    </SubSignDecodedBatchModalProvider>
+      <SubSignDecodedBatchDrawer sapi={sapi} payload={payload} />
+    </SubSignDecodedBatchDrawerProvider>
   )
 }
 
@@ -45,7 +45,7 @@ const BatchCallItemButton: DecodedCallComponent<unknown, { index: number }> = ({
   sapi,
   payload,
 }) => {
-  const { open } = useSubSignDecodedBatchModal()
+  const { open } = useSubSignDecodedBatchDrawer()
 
   return (
     <SubSignDecodedButtonBase

@@ -2,14 +2,14 @@ import { XIcon } from "@talismn/icons"
 import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, IconButton, Modal } from "talisman-ui"
+import { Button, Drawer, IconButton } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { SubSignDecodedCallContent } from "./SubSignDecodedCallContent"
 
-export const SubSignDecodedCallModal: FC<{
+export const SubSignDecodedCallDrawer: FC<{
   sapi: ScaleApi
   decodedCall: DecodedCall
   payload: SignerPayloadJSON
@@ -19,7 +19,8 @@ export const SubSignDecodedCallModal: FC<{
   const { t } = useTranslation()
 
   return (
-    <Modal
+    <Drawer
+      anchor="right"
       isOpen={isOpen && !!decodedCall}
       containerId="main"
       onDismiss={onClose}
@@ -41,6 +42,6 @@ export const SubSignDecodedCallModal: FC<{
           {t("Close")}
         </Button>
       </div>
-    </Modal>
+    </Drawer>
   )
 }

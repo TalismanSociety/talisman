@@ -2,15 +2,15 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@talismn/icons"
 import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Modal } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { useSubSignDecodedBatchModal } from "./SubSignDecodedBatchModalContext"
+import { useSubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawerContext"
 import { SubSignDecodedCallContent } from "./SubSignDecodedCallContent"
 
-export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi; payload: SignerPayloadJSON }> = ({
+export const SubSignDecodedBatchDrawer: FC<{ sapi: ScaleApi; payload: SignerPayloadJSON }> = ({
   sapi,
   payload,
 }) => {
@@ -25,10 +25,11 @@ export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi; payload: SignerPaylo
     close,
     currentIndex,
     batchItemsCount,
-  } = useSubSignDecodedBatchModal()
+  } = useSubSignDecodedBatchDrawer()
 
   return (
-    <Modal
+    <Drawer
+      anchor="right"
       isOpen={isOpen && !!currentCall}
       containerId="main"
       onDismiss={close}
@@ -68,6 +69,6 @@ export const SubSignDecodedBatchModal: FC<{ sapi: ScaleApi; payload: SignerPaylo
           {t("Close")}
         </Button>
       </div>
-    </Modal>
+    </Drawer>
   )
 }
