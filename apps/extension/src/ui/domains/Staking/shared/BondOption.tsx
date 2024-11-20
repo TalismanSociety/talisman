@@ -46,7 +46,7 @@ export const BondOption = ({
     >
       <div
         className={classNames(
-          "text-sm font-bold",
+          "self-start text-sm font-bold",
           option.poolId === selectedPoolId && "text-white",
         )}
       >

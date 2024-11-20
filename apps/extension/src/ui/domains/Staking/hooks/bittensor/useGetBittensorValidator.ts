@@ -7,7 +7,7 @@ const fetchBittensorValidator = async (hotkey: string | undefined): Promise<Bitt
       await fetch(`${TAOSTATS_BASE_PATH}/api/validator/latest/v1?hotkey=${hotkey}`, {
         method: "GET",
         headers: {
-          "Authorization": TAOSTATS_API_KEY ?? "",
+          "X-Extension-ID": TAOSTATS_API_KEY ?? "",
           "Content-Type": "application/json",
         },
       })

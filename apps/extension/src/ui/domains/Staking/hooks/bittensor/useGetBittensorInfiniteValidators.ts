@@ -12,7 +12,7 @@ const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<Valid
       {
         method: "GET",
         headers: {
-          "Authorization": TAOSTATS_API_KEY ?? "",
+          "X-Extension-ID": TAOSTATS_API_KEY ?? "",
           "Content-Type": "application/json",
         },
       },
