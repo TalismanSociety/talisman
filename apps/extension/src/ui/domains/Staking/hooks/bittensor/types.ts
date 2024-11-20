@@ -74,6 +74,7 @@ export type BondOption = {
   apr: number
   totalStaked: number
   totalStakers: number
+  hasData: boolean
 }
 
 type Address = {

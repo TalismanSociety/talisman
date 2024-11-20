@@ -6,8 +6,12 @@ const SUPPORTED_DELEGATES_URL =
   "https://raw.githubusercontent.com/opentensor/bittensor-delegates/main/public/delegates.json"
 
 const fetchBittensorSupportedDelegates = async (): Promise<ValidatorsResponse> => {
-  const response = await (await fetch(SUPPORTED_DELEGATES_URL)).json()
-  return response
+  try {
+    const response = await (await fetch(SUPPORTED_DELEGATES_URL)).json()
+    return response
+  } catch (cause) {
+    throw new Error("Failed to fetch TAO stats", { cause })
+  }
 }
 
 export const useGetBittensorSupportedDelegates = () => {

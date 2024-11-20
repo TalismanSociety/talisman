@@ -5,11 +5,15 @@ import { useGetBittensorInfiniteValidators } from "./useGetBittensorInfiniteVali
 import { useGetBittensorSupportedDelegates } from "./useGetBittensorSupportedDelegates"
 
 export const useCombinedBittensorValidatorsData = () => {
-  const { data: supportedDelegates, isLoading: isSupportedDelegatesLoading } =
-    useGetBittensorSupportedDelegates()
+  const {
+    data: supportedDelegates,
+    isLoading: isSupportedDelegatesLoading,
+    isError: isBittensorSupportedDelegatesError,
+  } = useGetBittensorSupportedDelegates()
   const {
     data: infiniteValidators,
     isLoading: isValidatorsLoading,
+    isError: isInfiniteValidatorsError,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -42,6 +46,7 @@ export const useCombinedBittensorValidatorsData = () => {
         apr: parseFloat(validator?.apr ?? "0"),
         totalStaked: parseFloat(validator?.stake ?? "0"),
         totalStakers: validator?.nominators ?? 0,
+        hasData: !!validator,
       }
     })
 
@@ -57,5 +62,7 @@ export const useCombinedBittensorValidatorsData = () => {
   return {
     combinedValidatorsData,
     isLoading: isSupportedDelegatesLoading || isValidatorsLoading || isFetchingNextPage,
+    isSupportedValidatorsError: isBittensorSupportedDelegatesError,
+    isInfiniteValidatorsError,
   }
 }

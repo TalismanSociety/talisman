@@ -22,8 +22,11 @@ export const BittensorBondDelegateSelect = () => {
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
   const [sortedDelegators, setSortedDelegators] = useState<BondOption[]>([])
 
-  const { combinedValidatorsData, isLoading: combinedValidatorsDataLoading } =
-    useCombinedBittensorValidatorsData()
+  const {
+    combinedValidatorsData,
+    isLoading: combinedValidatorsDataLoading,
+    isSupportedValidatorsError,
+  } = useCombinedBittensorValidatorsData()
 
   useEffect(() => {
     if (
@@ -62,6 +65,7 @@ export const BittensorBondDelegateSelect = () => {
       isLoading={combinedValidatorsDataLoading && !sortedDelegators.length}
       bondOptions={sortedDelegators}
       tokenId="bittensor-substrate-native"
+      isError={isSupportedValidatorsError}
     />
   )
 }

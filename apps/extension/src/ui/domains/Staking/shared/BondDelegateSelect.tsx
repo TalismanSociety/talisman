@@ -21,6 +21,7 @@ type BondDelegateSelectProps<T> = {
   bondOptions: BondOptionType[]
   tokenId: string
   isLoading: boolean
+  isError: boolean
 }
 
 export const BondDelegateSelect = <T,>({
@@ -30,6 +31,7 @@ export const BondDelegateSelect = <T,>({
   isLoading,
   bondOptions,
   tokenId,
+  isError,
 }: BondDelegateSelectProps<T>) => {
   const { setStep, setPoolId, poolId } = useBondWizard()
   const { t } = useTranslation()
@@ -72,6 +74,11 @@ export const BondDelegateSelect = <T,>({
                   tokenId={tokenId}
                 />
               ))}
+          {isError && (
+            <div className="text-alert-error flex h-full items-center justify-center">
+              {t("Unable to fetch validators")}
+            </div>
+          )}
         </ScrollContainer>
       </div>
       <Button primary className="mt-auto w-full" onClick={() => setStep("form")}>

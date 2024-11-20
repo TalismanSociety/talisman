@@ -54,17 +54,23 @@ export const BondOption = ({
       </div>
       <div className="flex w-full justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-4">
-            <Tokens
-              amount={formatTokenDecimals(option.totalStaked, token?.decimals ?? 9)}
-              symbol={token?.symbol}
-            />
-            {t("staked")}
-          </div>
-          <div className="bg-body-disabled inline-block size-2 rounded-full" />
-          <div className="flex gap-4">
-            {option.totalStakers} <UserIcon />
-          </div>
+          {option.hasData ? (
+            <>
+              <div className="flex items-center gap-4">
+                <Tokens
+                  amount={formatTokenDecimals(option.totalStaked, token?.decimals ?? 9)}
+                  symbol={token?.symbol}
+                />
+                {t("staked")}
+              </div>
+              <div className="bg-body-disabled inline-block size-2 rounded-full" />
+              <div className="flex gap-4">
+                {option.totalStakers} <UserIcon />
+              </div>
+            </>
+          ) : (
+            <div className="text-alert-error">Unable to fetch validator data</div>
+          )}
         </div>
         <div className="ml-auto">{option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}</div>
       </div>
