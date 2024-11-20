@@ -21,7 +21,7 @@
   "dependencies": {
     "@metamask/browser-passworder": "5.0.1",
     "@metamask/eth-sig-util": "8.0.0",
-    "@polkadot-api/merkleize-metadata": "^1.1.8",
+    "@polkadot-api/merkleize-metadata": "^1.1.9",
     "@polkadot/apps-config": "0.145.1",
     "@polkadot/extension-base": "0.55.1",
     "@polkadot/extension-inject": "0.55.1",
@@ -58,7 +58,7 @@
     "nanoid": "5.0.7",
     "pako": "^2.1.0",
     "rxjs": "^7.8.1",
-    "scale-ts": "^1.6.0",
+    "scale-ts": "^1.6.1",
     "semver": "7.6.3",
     "toml": "^3.0.0",
     "ts-results": "3.3.0",
