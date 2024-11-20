@@ -3,6 +3,10 @@ import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
 
 const fetchBittensorValidator = async (hotkey: string | undefined): Promise<BittensorValidator> => {
   try {
+    if (!TAOSTATS_API_KEY) {
+      throw new Error("TAOSTATS_API_KEY is not set. Cannot make API request.")
+    }
+
     return await (
       await fetch(`${TAOSTATS_BASE_PATH}/api/validator/latest/v1?hotkey=${hotkey}`, {
         method: "GET",
