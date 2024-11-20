@@ -1,10 +1,16 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
 
-const fetchBittensorValidator = async (hotkey: string | undefined): Promise<BittensorValidator> => {
+const fetchBittensorValidator = async (
+  hotkey: string | number | null | undefined,
+): Promise<BittensorValidator> => {
   try {
     if (!TAOSTATS_API_KEY) {
       throw new Error("TAOSTATS_API_KEY is not set. Cannot make API request.")
+    }
+
+    if (!hotkey) {
+      throw new Error("No hotkey provided")
     }
 
     return await (
@@ -21,7 +27,7 @@ const fetchBittensorValidator = async (hotkey: string | undefined): Promise<Bitt
   }
 }
 
-export const useGetBittensorValidator = (hotkey: string) => {
+export const useGetBittensorValidator = (hotkey: string | number | null) => {
   return useQuery({
     queryKey: ["useGetBittensorValidator", hotkey],
     queryFn: () => fetchBittensorValidator(hotkey),

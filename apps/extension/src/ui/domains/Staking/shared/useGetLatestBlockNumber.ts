@@ -13,6 +13,6 @@ export const useGetLatestBlockNumber = ({ sapi, isEnabled }: GetLatestBlockNumbe
     queryFn: async () => {
       return sapi?.getStorage<number>("System", "Number", [])
     },
-    enabled: isEnabled,
+    enabled: isEnabled && !!sapi,
   })
 }

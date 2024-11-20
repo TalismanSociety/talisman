@@ -318,6 +318,7 @@ const StakeApr = () => {
   const { token, poolId } = useBondWizard()
   let data,
     isLoading = false,
+    isError = false,
     apr = 0
 
   const hookMap = {
@@ -327,11 +328,11 @@ const StakeApr = () => {
 
   switch (token?.chain?.id) {
     case "bittensor":
-      ;({ data, isLoading } = hookMap["bittensor"](poolId as unknown as string))
+      ;({ data, isLoading, isError } = hookMap["bittensor"](poolId))
       apr = Number(data?.data?.[0].apr)
       break
     default:
-      ;({ data, isLoading } = hookMap["nominationPool"](token?.chain?.id))
+      ;({ data, isLoading, isError } = hookMap["nominationPool"](token?.chain?.id))
       apr = Number(data)
       break
   }
@@ -340,6 +341,8 @@ const StakeApr = () => {
 
   if (isLoading)
     return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+
+  if (isError) return <div className="text-alert-error">Unable to fetch APR data</div>
 
   return (
     <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>

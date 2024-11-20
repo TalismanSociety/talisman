@@ -29,7 +29,6 @@ export const BondPoolName = ({
   switch (chainId) {
     case "bittensor":
       ;({ data, isLoading, isError } = hookMap["bittensor"](poolId as unknown as string))
-      poolName = data?.data?.[0].name || ""
       poolName = (
         <button
           onClick={() => step === "form" && setStep("select")}
