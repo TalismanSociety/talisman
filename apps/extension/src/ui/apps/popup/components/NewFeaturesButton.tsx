@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { getWhatsNewVersions } from "@ui/apps/popup/pages/WhatsNew/WhatsNew"
-import { useSetting } from "@ui/state"
+import { useFeatureFlag, useSetting } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -22,6 +22,7 @@ type Props = {
 export const NewFeaturesButton = ({ className }: Props) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const isEnabled = useFeatureFlag("NEW_FEATURES_HOME_BANNER")
   const [dismissedVersion, setDismissedVersion] = useSetting("newFeaturesDismissed")
   const versions = getWhatsNewVersions()
 
@@ -41,7 +42,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
     [setDismissedVersion, versions],
   )
 
-  if (dismissedVersion === versions[0]) return null
+  if (!isEnabled || dismissedVersion === versions[0]) return null
 
   return (
     <div
