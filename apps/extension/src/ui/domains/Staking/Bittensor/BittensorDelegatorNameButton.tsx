@@ -26,8 +26,6 @@ export const BittensorDelegatorNameButton = ({ poolId }: BittensorDelegatorNameB
       />
     )
 
-  if (isError || !poolName) return <>{defaultPoolName}</>
-
   return (
     <button
       onClick={() => step === "form" && setStep("select")}
