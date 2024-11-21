@@ -8,8 +8,7 @@
   },
   "scripts": {
     "papi:update": "papi update",
-    "papi": "papi",
-    "postinstall": "papi"
+    "papi": "papi"
   },
   "devDependencies": {
     "polkadot-api": "^1.7.6"
