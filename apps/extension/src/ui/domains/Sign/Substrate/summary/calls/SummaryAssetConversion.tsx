@@ -1,8 +1,8 @@
+import { PolkadotAssetHubCalls, XcmV3Junctions } from "@polkadot-api/descriptors"
 import { SubAssetsToken, SubForeignAssetsToken, SubNativeToken } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { Chain } from "extension-core"
-import { PolkadotAssetHubCalls, XcmV3Junctions } from "papi-descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

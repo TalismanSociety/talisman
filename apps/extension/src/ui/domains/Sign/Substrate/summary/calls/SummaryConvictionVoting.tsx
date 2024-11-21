@@ -1,4 +1,4 @@
-import { PolkadotCalls, VotingConviction } from "papi-descriptors"
+import { PolkadotCalls, VotingConviction } from "@polkadot-api/descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

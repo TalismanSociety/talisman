@@ -13,7 +13,7 @@
     "preconstruct:dev": "preconstruct dev",
     "preconstruct:fix": "preconstruct fix",
     "papi": "papi && pnpm papi:fixdep",
-    "papi:fixdep": "sed -i -e s#file:\\.papi/descriptors#workspace:*# package.json && git checkout pnpm-lock.yaml && pnpm install",
+    "papi:fixdep": "git checkout pnpm-lock.yaml && pnpm remove --workspace-root @polkadot-api/descriptors && pnpm install",
     "papi:generate": "papi generate && pnpm papi:fixdep",
     "papi:update": "papi update && pnpm papi:fixdep",
     "chore:format": "prettier --write \"{apps,config,packages}/**/src/**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
@@ -45,7 +45,6 @@
     "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
   },
   "dependencies": {
-    "@polkadot-api/descriptors": "workspace:*",
     "polkadot-api": "^1.7.6"
   },
   "devDependencies": {
