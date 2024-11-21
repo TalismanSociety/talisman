@@ -27,7 +27,7 @@ const fetchBittensorValidator = async (
   }
 }
 
-export const useGetBittensorValidator = (hotkey: string | number | null) => {
+export const useGetBittensorValidator = (hotkey: string | number | null | undefined) => {
   return useQuery({
     queryKey: ["useGetBittensorValidator", hotkey],
     queryFn: () => fetchBittensorValidator(hotkey),
