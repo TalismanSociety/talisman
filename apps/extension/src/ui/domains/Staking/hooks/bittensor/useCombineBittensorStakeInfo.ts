@@ -1,5 +1,5 @@
 import { getLockTitle } from "@talismn/balances"
-import { formatTokenDecimals } from "@talismn/util"
+import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
@@ -85,8 +85,8 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
       currentIndex += hotkeysCount
 
       const stakeInfo = hotkeysForAddress.map((hotkey, index) => {
-        const formattedStakedAmount = formatTokenDecimals(
-          stakesForAddress?.[index]?.toString() ?? 0,
+        const formattedStakedAmount = planckToTokens(
+          stakesForAddress?.[index]?.toString() ?? "0",
           token?.decimals ?? 9,
         )
 
@@ -95,7 +95,7 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
           title: getLockTitle({ label: "subtensor-staking" }),
           description: validatorsForAddress?.[index]?.name,
           tokens: BigNumber(formattedStakedAmount),
-          fiat: formattedStakedAmount * (tokenRates?.[selectedCurrency] ?? 0),
+          fiat: Number(formattedStakedAmount) * (tokenRates?.[selectedCurrency] ?? 0),
           locked: true,
           // only show address when we're viewing balances for all accounts
           address: address ? undefined : addr,

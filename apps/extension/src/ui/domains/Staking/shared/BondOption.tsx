@@ -1,5 +1,5 @@
 import { UserIcon } from "@talismn/icons"
-import { classNames, formatTokenDecimals } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -58,7 +58,7 @@ export const BondOption = ({
             <>
               <div className="flex items-center gap-4">
                 <Tokens
-                  amount={formatTokenDecimals(option.totalStaked, token?.decimals ?? 9)}
+                  amount={planckToTokens(option.totalStaked.toString(), token?.decimals ?? 9)}
                   symbol={token?.symbol}
                 />
                 {t("staked")}
