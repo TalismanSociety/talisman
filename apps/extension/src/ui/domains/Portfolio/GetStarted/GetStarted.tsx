@@ -21,6 +21,7 @@ import {
   GetStartedSwapIcon,
   GetStartedTryItIcon,
 } from "./icons"
+import { LearnMoreModal, useLearnMoreModal } from "./LearnMore/LearnMoreModal"
 
 export const GetStarted = () => {
   const { t } = useTranslation()
@@ -108,6 +109,7 @@ export const GetStarted = () => {
         }
         onClick={onLearnMoreClick}
       />
+      <LearnMoreModal />
     </div>
   )
 }
@@ -119,6 +121,7 @@ const useGetStarted = () => {
   const navigate = useNavigate()
   const { open: openBuyTokensModal } = useBuyTokensModal()
   const { open: onCopyAddressModal } = useCopyAddressModal()
+  const { open: openLearnMoreModal } = useLearnMoreModal()
 
   const [isHidden, setIsHidden] = useAppState("hideGetStarted")
 
@@ -165,12 +168,11 @@ const useGetStarted = () => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
 
     if (IS_POPUP) navigate("/learn-more")
-    else api.popupOpen("#/learn-more")
-  }, [navigate])
+    else openLearnMoreModal()
+  }, [navigate, openLearnMoreModal])
 
   const onDismissClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "dismiss get started" })
-
     setIsHidden(true)
   }, [setIsHidden])
 
@@ -182,8 +184,8 @@ const useGetStarted = () => {
     onSwapClick,
     onReceiveClick,
     onBuyClick,
-    onLearnMoreClick,
     onDismissClick,
+    onLearnMoreClick,
   }
 }
 
