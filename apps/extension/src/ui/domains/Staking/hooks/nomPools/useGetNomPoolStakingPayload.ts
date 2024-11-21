@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
@@ -9,6 +10,7 @@ type GetNomPoolStakingPayload = {
   address: string | null
   poolId: string | number | null | undefined
   plancks: bigint | null
+  minJoinBond: bigint | null | undefined
   hasJoinedNomPool: boolean
   withSetClaimPermission: boolean
 }
@@ -20,14 +22,21 @@ export const useGetNomPoolStakingPayload = ({
   plancks,
   hasJoinedNomPool,
   withSetClaimPermission,
+  minJoinBond,
 }: GetNomPoolStakingPayload) => {
+  // use minJoinBond to get an accurate a 'fake fee estimate' if the amount is 0 or less than minJoinBond
+  const amount = useMemo(
+    () => (!!minJoinBond && plancks && plancks >= minJoinBond ? plancks : minJoinBond),
+    [minJoinBond, plancks],
+  )
+
   return useQuery({
     queryKey: [
       "getNomPoolStakingPayload",
       sapi?.id,
       address,
       poolId,
-      plancks?.toString(),
+      amount?.toString() ?? "0",
       hasJoinedNomPool,
       withSetClaimPermission,
     ],
@@ -37,7 +46,7 @@ export const useGetNomPoolStakingPayload = ({
         sapi,
         address,
         poolId,
-        plancks ?? 0n,
+        amount ?? 0n,
         hasJoinedNomPool,
         withSetClaimPermission,
       )

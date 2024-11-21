@@ -24,11 +24,14 @@ type GetStakeInfo = {
 type BondType = "bittensor" | "nomPools"
 
 export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakeInfo) => {
+  const { data: minJoinBond } = useGetMinJoinBond(chainId)
+
   const bittensorStakingPayload = useGetBittensorStakingPayload({
     sapi,
     address,
     poolId,
     plancks,
+    minJoinBond,
     isEnabled: chainId === "bittensor",
   })
 
@@ -66,6 +69,7 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     plancks,
     hasJoinedNomPool,
     withSetClaimPermission,
+    minJoinBond,
   })
 
   const { data: currentNomPool } = useNomPoolByMember(chainId, address)
@@ -97,7 +101,6 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload })
-  const { data: minJoinBond } = useGetMinJoinBond(chainId)
 
   return {
     payload,
