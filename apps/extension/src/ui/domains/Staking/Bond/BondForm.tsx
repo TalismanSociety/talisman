@@ -291,7 +291,7 @@ export const AmountEdit = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="text-alert-warn flex items-center justify-center gap-1 whitespace-nowrap text-xs">
-                      <InfoIcon className="inline-block" /> {t(stakeWarningMessage)}
+                      <InfoIcon className="inline-block" /> {stakeWarningMessage}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>

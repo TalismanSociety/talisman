@@ -6,18 +6,23 @@ import { ValidatorsData } from "./types"
 const MAX_PAGE_SIZE = 100
 
 const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<ValidatorsData> => {
-  return await (
-    await fetch(
-      `${TAOSTATS_BASE_PATH}/api/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
-      {
-        method: "GET",
-        headers: {
-          "X-Extension-ID": TAOSTATS_API_KEY ?? "",
-          "Content-Type": "application/json",
+  try {
+    const response = await (
+      await fetch(
+        `${TAOSTATS_BASE_PATH}/api/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
+        {
+          method: "GET",
+          headers: {
+            "X-Extension-ID": TAOSTATS_API_KEY ?? "",
+            "Content-Type": "application/json",
+          },
         },
-      },
-    )
-  ).json()
+      )
+    ).json()
+    return response
+  } catch (cause) {
+    throw new Error("Failed to fetch TAO stats", { cause })
+  }
 }
 
 export const useGetBittensorInfiniteValidators = ({ isEnabled }: { isEnabled: boolean }) => {

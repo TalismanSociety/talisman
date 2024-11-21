@@ -95,7 +95,7 @@ export const UnbondReview = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="bg-grey-900 text-alert-warn my-8 flex w-full items-center justify-center gap-5 rounded-sm px-5 py-6 text-xs">
-                <InfoIcon className="inline-block" /> {t(stakeWarningMessage)}
+                <InfoIcon className="inline-block" /> {stakeWarningMessage}
               </div>
             </TooltipTrigger>
             <TooltipContent>
