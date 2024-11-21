@@ -1,7 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
@@ -74,7 +74,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   )
 }
 
-const useTxStatusDetails = (tx?: WalletTransaction, onSuccess?: (...args: unknown[]) => void) => {
+const useTxStatusDetails = (tx?: WalletTransaction) => {
   const { t } = useTranslation()
   const { title, subtitle, animStatus } = useMemo<{
     title: string
@@ -118,7 +118,6 @@ const useTxStatusDetails = (tx?: WalletTransaction, onSuccess?: (...args: unknow
           animStatus: "failure",
         }
       case "success":
-        onSuccess?.(tx.blockNumber)
         return {
           title: isReplacementCancel ? t("Transaction cancelled") : t("Success"),
           subtitle: isReplacementCancel
@@ -135,7 +134,7 @@ const useTxStatusDetails = (tx?: WalletTransaction, onSuccess?: (...args: unknow
           animStatus: "processing",
         }
     }
-  }, [tx, t, onSuccess])
+  }, [tx, t])
 
   return {
     title,
@@ -144,18 +143,24 @@ const useTxStatusDetails = (tx?: WalletTransaction, onSuccess?: (...args: unknow
   }
 }
 
-type TxProgressBaseProps<T extends unknown[] = []> = {
+type TxProgressBaseProps = {
   tx?: WalletTransaction
   className?: string
   blockNumber?: string
   onClose?: () => void
   href?: string
-  onSuccess?: (...args: T) => void
+  onSuccess?: (...args: unknown[]) => void
 }
 
 const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose, onSuccess }) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus } = useTxStatusDetails(tx, onSuccess)
+  const { title, subtitle, animStatus } = useTxStatusDetails(tx)
+
+  useEffect(() => {
+    if (tx?.status === "success" && onSuccess) {
+      onSuccess(tx.blockNumber)
+    }
+  }, [onSuccess, tx])
 
   return (
     <div className="flex h-full w-full flex-col items-center">
