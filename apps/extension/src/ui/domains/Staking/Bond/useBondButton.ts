@@ -1,5 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { Balances, RemoteConfigStoreData } from "extension-core"
+import { Balances } from "extension-core"
 import { log } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
@@ -22,25 +22,13 @@ export const useBondButton = ({
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
 
-  // TODO: Add this to talisman-config
-  const mockedRemoteConfig = {
-    stakingPools: {
-      bittensor: ["5F4tQyWrhfGVcNhoqeiNsR6KjD4wMZ2kfhLj4oHYuyHbZAc3"],
-    },
-  }
-
-  const config: RemoteConfigStoreData = {
-    ...remoteConfig,
-    stakingPools: { ...mockedRemoteConfig.stakingPools, ...remoteConfig.nominationPools },
-  }
-
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
     if (!balances || !tokenId || !token?.chain || token?.type !== "substrate-native")
       return [null, false]
     try {
       let isNomPoolStaking = false
 
-      let poolId = config.stakingPools[token.chain.id]?.[0]
+      let poolId = remoteConfig.stakingPools[token.chain.id]?.[0]
 
       if (!poolId) return [null, false]
 
@@ -87,7 +75,7 @@ export const useBondButton = ({
     }
 
     return [null, false]
-  }, [balances, ownedAccounts, config.stakingPools, tokenId, token?.chain, token?.type])
+  }, [balances, ownedAccounts, remoteConfig, tokenId, token?.chain, token?.type])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
