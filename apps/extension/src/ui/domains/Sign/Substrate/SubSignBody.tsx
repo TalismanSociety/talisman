@@ -25,7 +25,7 @@ export const SubSignBody: FC = () => {
         <Trans
           t={t}
           components={{
-            RequestType: <>{isBatchCall(decodedCall) ? t("batch request") : t("request")}</>,
+            RequestType: <>{isBatch ? t("batch request") : t("request")}</>,
             Account: <AccountPill account={account} prefix={chain?.prefix ?? undefined} />,
             Extra: <ChainLabel chain={chain} />,
           }}

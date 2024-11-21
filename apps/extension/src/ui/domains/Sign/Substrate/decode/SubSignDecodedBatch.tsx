@@ -2,7 +2,7 @@ import { useMemo } from "react"
 
 import { DecodedCall } from "@ui/util/scaleApi"
 
-import { DecodedBatchArgs, DecodedBatchCall, DecodedCallComponent } from "../types"
+import { DecodedBatchArgs, DecodedCallComponent, isBatchCall } from "../types"
 import { SubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawer"
 import {
   SubSignDecodedBatchDrawerProvider,
@@ -15,16 +15,21 @@ export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
   decodedCall,
   payload,
 }) => {
-  const childCalls = useMemo<DecodedCall[]>(() => {
-    return decodedCall.args.calls.map((call) => ({
-      pallet: call.type,
-      method: call.value.type,
-      args: call.value.value,
-    }))
-  }, [decodedCall.args.calls])
+  const [batchCall, childCalls] = useMemo(() => {
+    return [
+      isBatchCall(decodedCall) ? decodedCall : null,
+      decodedCall.args.calls.map<DecodedCall>((call) => ({
+        pallet: call.type,
+        method: call.value.type,
+        args: call.value.value,
+      })),
+    ]
+  }, [decodedCall])
+
+  if (!batchCall) throw null
 
   return (
-    <SubSignDecodedBatchDrawerProvider decodedCall={decodedCall as DecodedBatchCall}>
+    <SubSignDecodedBatchDrawerProvider decodedCall={batchCall}>
       {childCalls.map((call, index) => (
         <BatchCallItemButton
           key={index}
