@@ -54,7 +54,7 @@ export const BondOption = ({
       </div>
       <div className="flex w-full justify-between">
         <div className="flex items-center gap-4">
-          {option.hasData ? (
+          {option.hasData || !option.isError ? (
             <>
               <div className="flex items-center gap-4">
                 <Tokens
@@ -69,7 +69,9 @@ export const BondOption = ({
               </div>
             </>
           ) : (
-            <div className="text-alert-error">Unable to fetch validator data</div>
+            <div className="text-alert-error line-clamp-1 text-ellipsis">
+              {t("Unable to fetch validator data")}
+            </div>
           )}
         </div>
         <div className="ml-auto">{option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}</div>

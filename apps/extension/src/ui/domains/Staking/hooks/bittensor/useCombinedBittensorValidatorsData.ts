@@ -47,6 +47,7 @@ export const useCombinedBittensorValidatorsData = () => {
         totalStaked: parseFloat(validator?.stake ?? "0"),
         totalStakers: validator?.nominators ?? 0,
         hasData: !!validator,
+        isError: isInfiniteValidatorsError,
       }
     })
 
@@ -54,6 +55,7 @@ export const useCombinedBittensorValidatorsData = () => {
   }, [
     infiniteValidators,
     isFetchingNextPage,
+    isInfiniteValidatorsError,
     isSupportedDelegatesLoading,
     isValidatorsLoading,
     supportedDelegates,

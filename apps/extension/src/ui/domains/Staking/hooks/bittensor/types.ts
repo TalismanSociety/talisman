@@ -75,6 +75,7 @@ export type BondOption = {
   totalStaked: number
   totalStakers: number
   hasData: boolean
+  isError: boolean
 }
 
 type Address = {
