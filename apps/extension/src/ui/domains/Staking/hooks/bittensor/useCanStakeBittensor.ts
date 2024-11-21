@@ -1,5 +1,5 @@
 import { ChainId } from "extension-core"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
@@ -32,7 +32,10 @@ export const useCanStakeBittensor = ({ sapi, address, hotkey, chainId }: CanStak
 
   const { getByAccountAndDelegator } = useBittensorStakedBlockNumber()
 
-  const unbondBlock = getByAccountAndDelegator({ account: address, delegator: hotkey })
+  const unbondBlock = useMemo(
+    () => getByAccountAndDelegator({ account: address, delegator: hotkey }),
+    [address, getByAccountAndDelegator, hotkey],
+  )
 
   const [, lastStakedBlockNumber] = stakeData || [0n, 0n]
 

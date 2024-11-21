@@ -250,7 +250,6 @@ export const useBondWizard = () => {
       })
 
     return null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isSoloStaking,
     t,

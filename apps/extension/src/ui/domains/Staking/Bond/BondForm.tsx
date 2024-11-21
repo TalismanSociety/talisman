@@ -41,9 +41,9 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const stakeAssetLabel = () => {
     switch (token.chain?.id) {
       case "bittensor":
-        return "Direct Staking"
+        return t("Direct Staking")
       default:
-        return "Pooled Staking"
+        return t("Pooled Staking")
     }
   }
 
@@ -53,7 +53,7 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
       <div className="flex items-center gap-2">
         <div className="text-body text-base">{token.symbol}</div>
         <div className="bg-body-disabled inline-block size-2 rounded-full"></div>
-        <div className="text-body-secondary text-sm">{t(stakeAssetLabel())}</div>
+        <div className="text-body-secondary text-sm">{stakeAssetLabel()}</div>
       </div>
     </div>
   )
