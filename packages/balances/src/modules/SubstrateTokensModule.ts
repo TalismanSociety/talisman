@@ -25,10 +25,18 @@ import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from ".
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
-import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelper } from "./util"
+import {
+  buildStorageCoders,
+  findChainMeta,
+  getUniqueChainIds,
+  RpcStateQuery,
+  RpcStateQueryHelper,
+} from "./util"
 
 type ModuleType = "substrate-tokens"
 const moduleType: ModuleType = "substrate-tokens"
+
+const defaultPalletId = "Tokens"
 
 export type SubTokensToken = Extract<Token, { type: ModuleType }>
 
@@ -37,11 +45,13 @@ export const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
 
 export type SubTokensChainMeta = {
   isTestnet: boolean
+  palletId?: string
   miniMetadata?: string
   metadataVersion?: number
 }
 
 export type SubTokensModuleConfig = {
+  palletId?: string
   tokens?: Array<
     {
       symbol?: string
@@ -93,11 +103,14 @@ export const SubTokensModule: NewBalanceModule<
       const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
       if (!metadata) return { isTestnet }
 
-      compactMetadata(metadata, [{ pallet: "Tokens", items: ["Accounts"] }])
+      const palletId = moduleConfig?.palletId ?? defaultPalletId
+      compactMetadata(metadata, [{ pallet: palletId, items: ["Accounts"] }])
 
       const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
-      return { isTestnet, miniMetadata, metadataVersion }
+      return palletId === defaultPalletId
+        ? { isTestnet, miniMetadata, metadataVersion }
+        : { isTestnet, palletId, miniMetadata, metadataVersion }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
@@ -182,6 +195,15 @@ export const SubTokensModule: NewBalanceModule<
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
+      const miniMetadatas = new Map(
+        (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
+          miniMetadata.id,
+          miniMetadata,
+        ]),
+      )
+      const [chainMeta] = findChainMeta<typeof SubTokensModule>(miniMetadatas, moduleType, chain)
+      const tokensPallet = chainMeta?.palletId ?? defaultPalletId
+
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -235,7 +257,7 @@ export const SubTokensModule: NewBalanceModule<
           },
         },
         {
-          pallet: "Tokens",
+          pallet: tokensPallet,
           method: transferMethod,
           args: sendAll
             ? {
@@ -250,7 +272,7 @@ export const SubTokensModule: NewBalanceModule<
               },
         },
         {
-          pallet: "Tokens",
+          pallet: tokensPallet,
           method: transferMethod,
           args: sendAll
             ? {
@@ -301,6 +323,13 @@ async function buildQueries(
     ]),
   )
 
+  const tokensPalletByChain = new Map(
+    Object.values(allChains).map((chain) => [
+      chain.id,
+      findChainMeta<typeof SubTokensModule>(miniMetadatas, moduleType, chain)[0]?.palletId,
+    ]),
+  )
+
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
   const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
   const chainStorageCoders = buildStorageCoders({
@@ -308,7 +337,9 @@ async function buildQueries(
     chains,
     miniMetadatas,
     moduleType: "substrate-tokens",
-    coders: { storage: ["Tokens", "Accounts"] },
+    coders: {
+      storage: ({ chainId }) => [tokensPalletByChain.get(chainId) ?? defaultPalletId, "Accounts"],
+    },
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
