@@ -3,6 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "baseUrl": "src",
+    "moduleResolution": "bundler",
     "paths": {
       "@common": ["./common"],
       "@common/*": ["./common/*"],

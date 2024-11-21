@@ -1,17 +1,11 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import {
-  Bytes,
-  enhanceEncoder,
-  metadata as metadataCodec,
-  u16,
-  V14,
-  V15,
-} from "@polkadot-api/substrate-bindings"
+import { Bytes, enhanceEncoder, u16, V14, V15 } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { IRuntimeVersionBase } from "@polkadot/types/types"
-import { getDynamicBuilder, getLookupFn } from "@talismn/scale"
+import { assert } from "@polkadot/util"
+import { decodeMetadata, getDynamicBuilder, getLookupFn } from "@talismn/scale"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
@@ -23,7 +17,11 @@ import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 
 type ScaleMetadata = V14 | V15
 type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
-export type ScaleApi = ReturnType<typeof getScaleApi>
+type ScaleLookup = ReturnType<typeof getLookupFn>
+export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DecodedCall<Args = any> = { pallet: string; method: string; args: Args }
 
 export type PayloadSignerConfig = {
   address: string
@@ -32,12 +30,17 @@ export type PayloadSignerConfig = {
 
 export const getScaleApi = (
   chainId: ChainId,
-  metadata: ScaleMetadata,
+  hexMetadata: Hex,
   token: { symbol: string; decimals: number },
   hasCheckMetadataHash?: boolean,
   signedExtensions?: ExtDef,
   registryTypes?: unknown,
 ) => {
+  const stop = log.timer("[sapi] getScaleApi " + chainId)
+
+  const decoded = decodeMetadata(hexMetadata)
+  assert(decoded.metadata, `Missing Metadata V14+ for chain ${chainId}`)
+  const { metadata } = decoded
   const lookup = getLookupFn(metadata)
   const builder = getDynamicBuilder(lookup)
 
@@ -53,8 +56,10 @@ export const getScaleApi = (
 
   const base58Prefix = getConstantValue<number>(chainId, metadata, builder, "System", "SS58Prefix")
 
+  const { symbol, decimals } = token
+
   const chainInfo = {
-    token,
+    token: { symbol, decimals },
     hasCheckMetadataHash,
     specName,
     specVersion,
@@ -64,14 +69,14 @@ export const getScaleApi = (
     registryTypes,
   }
 
-  return {
+  const sapi = {
     id: `${chainId}::${specName}::${specVersion}`,
     chainId,
     specName,
     specVersion,
     hasCheckMetadataHash,
     base58Prefix,
-    token,
+    token: chainInfo.token,
 
     getConstant: <T>(pallet: string, constant: string) =>
       getConstantValue<T>(chainId, metadata, builder, pallet, constant),
@@ -82,23 +87,44 @@ export const getScaleApi = (
     getDecodedCall: (pallet: string, method: string, args: unknown) =>
       getDecodedCall(pallet, method, args),
 
+    getDecodedCallFromPayload: <Res extends DecodedCall>(payload: SignerPayloadJSON) =>
+      getDecodedCallFromPayload<Res>(builder, lookup, payload),
+
     getExtrinsicPayload: (
       pallet: string,
       method: string,
       args: unknown,
       config: PayloadSignerConfig,
-    ) => getSignerPayloadJSON(chainId, metadata, builder, pallet, method, args, config, chainInfo),
+    ) =>
+      getSignerPayloadJSON(
+        chainId,
+        hexMetadata,
+        metadata,
+        builder,
+        pallet,
+        method,
+        args,
+        config,
+        chainInfo,
+      ),
 
     getFeeEstimate: (payload: SignerPayloadJSON) =>
-      getFeeEstimate(chainId, metadata, builder, payload, chainInfo),
+      getFeeEstimate(chainId, hexMetadata, builder, payload, chainInfo),
 
     getRuntimeCallValue: (apiName: string, method: string, args: unknown[]) =>
       getRuntimeCallValue(chainId, builder, apiName, method, args),
 
-    getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(metadata, payload, chainInfo),
+    getTypeRegistry: (payload: SignerPayloadJSON) =>
+      getTypeRegistry(hexMetadata, payload, chainInfo),
 
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),
+
+    getCallDocs: (pallet: string, method: string) => getCallDocs(pallet, method, metadata),
   }
+
+  stop()
+
+  return sapi
 }
 
 type ChainInfo = {
@@ -112,25 +138,14 @@ type ChainInfo = {
   registryTypes?: unknown
 }
 
-// TODO remove this => waiting for @polkadot-api/tx-utils
-const getTypeRegistry = (
-  metadata: ScaleMetadata,
-  payload: SignerPayloadJSON,
-  chainInfo: ChainInfo,
-) => {
+const getTypeRegistry = (hexMetadata: Hex, payload: SignerPayloadJSON, chainInfo: ChainInfo) => {
   const stop = log.timer("[sapi] getTypeRegistry")
-  const fullMetadata = {
-    magicNumber: 1635018093, // magic number for metadata
-    metadata: { tag: "v15" as const, value: metadata as V15 },
-  }
-  const metadataBytes = metadataCodec.enc(fullMetadata) // ~30ms
-
   const registry = new TypeRegistry()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (chainInfo.registryTypes) registry.register(chainInfo.registryTypes as any)
 
-  const meta = new Metadata(registry, metadataBytes)
+  const meta = new Metadata(registry, hexMetadata)
   registry.setMetadata(meta, payload.signedExtensions, chainInfo.signedExtensions) // ~30ms
 
   stop()
@@ -138,7 +153,7 @@ const getTypeRegistry = (
 }
 
 const getPayloadWithMetadataHash = (
-  metadata: ScaleMetadata,
+  hexMetadata: Hex,
   builder: ScaleBuilder,
   chainInfo: ChainInfo,
   payload: SignerPayloadJSON,
@@ -150,13 +165,6 @@ const getPayloadWithMetadataHash = (
     }
 
   try {
-    // merkleizeMetadata method expects versioned metadata so we need to reencode our V15 object back to a versioned one (~30ms)
-    const fullMetadata = {
-      magicNumber: 1635018093, // magic number for metadata
-      metadata: { tag: "v15" as const, value: metadata as V15 },
-    }
-    const metadataBytes = metadataCodec.enc(fullMetadata)
-
     const {
       token: { decimals, symbol: tokenSymbol },
       base58Prefix,
@@ -165,7 +173,7 @@ const getPayloadWithMetadataHash = (
     } = chainInfo
 
     // since ultimately this needs a V15 object, would be nice if this accepted one directly as input
-    const merkleizedMetadata = merkleizeMetadata(metadataBytes, {
+    const merkleizedMetadata = merkleizeMetadata(hexMetadata, {
       tokenSymbol,
       decimals,
       base58Prefix,
@@ -187,7 +195,7 @@ const getPayloadWithMetadataHash = (
     // const badExtPayload = mergeUint8(fromHex(payload.method), ...extra, ...additionalSigned)
     // log.debug("[sapi] bad ExtPayload", { badExtPayload })
 
-    const registry = getTypeRegistry(metadata, payload, chainInfo)
+    const registry = getTypeRegistry(hexMetadata, payload, chainInfo)
     const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)
     const barePayload = extPayload.toU8a(true)
 
@@ -211,8 +219,47 @@ const getDecodedCall = (palletName: string, methodName: string, args: unknown) =
   value: { type: methodName, value: args },
 })
 
+const getDecodedCallFromPayload = <Res extends DecodedCall>(
+  builder: ScaleBuilder,
+  lookup: ScaleLookup,
+  payload: SignerPayloadJSON,
+): Res => {
+  const def = builder.buildDefinition(lookup.call!)
+  const decoded = def.dec(payload.method)
+
+  return {
+    pallet: decoded.type,
+    method: decoded.value.type,
+    args: decoded.value.value,
+  } as Res
+}
+
+const getCallDocs = (pallet: string, method: string, metadata: ScaleMetadata): string | null => {
+  try {
+    const typeIdCalls = metadata.pallets.find(({ name }) => name === pallet)?.calls
+    if (!typeIdCalls) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let palletCalls: any = metadata.lookup[typeIdCalls]
+    if (!palletCalls || palletCalls.id !== typeIdCalls)
+      palletCalls = metadata.lookup.find((v) => v.id === typeIdCalls)
+
+    if (!palletCalls) return null
+
+    const call = palletCalls.def.value.find(
+      (c: { name: string; docs?: string[] | null }) => c.name === method,
+    )
+
+    return call?.docs?.join("\n") ?? null
+  } catch (err) {
+    log.error("Failed to find call docs", { pallet, method, metadata })
+    return null
+  }
+}
+
 const getSignerPayloadJSON = async (
   chainId: ChainId,
+  hexMetadata: Hex,
   metadata: ScaleMetadata,
   builder: ScaleBuilder,
   palletName: string,
@@ -260,7 +307,7 @@ const getSignerPayloadJSON = async (
   }
 
   const { payload, txMetadata } = getPayloadWithMetadataHash(
-    metadata,
+    hexMetadata,
     builder,
     chainInfo,
     basePayload,
@@ -277,13 +324,13 @@ const getSignerPayloadJSON = async (
 
 const getFeeEstimate = async (
   chainId: ChainId,
-  metadata: ScaleMetadata,
+  hexMetadata: Hex,
   builder: ScaleBuilder,
   payload: SignerPayloadJSON,
   chainInfo: ChainInfo,
 ) => {
   // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
-  const registry = getTypeRegistry(metadata, payload, chainInfo)
+  const registry = getTypeRegistry(hexMetadata, payload, chainInfo)
   const extrinsic = registry.createType("Extrinsic", payload)
 
   extrinsic.signFake(payload.address, {

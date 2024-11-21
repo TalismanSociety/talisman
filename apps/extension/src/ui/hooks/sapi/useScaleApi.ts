@@ -1,6 +1,5 @@
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { decodeMetadata } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 import { useMemo } from "react"
@@ -27,13 +26,13 @@ export const useScaleApi = (
       const metadataDef = await api.subChainMetadata(chain.genesisHash, specVersion, blockHash)
       assert(metadataDef?.metadataRpc, `Metadata unavailable for chain ${chain.id}`)
 
-      const hexMetadata = Buffer.from(metadataDef.metadataRpc, "base64").toString("hex")
-      const metadata = decodeMetadata(hexMetadata)
-      assert(metadata.metadata, `Metadata V14+ unavailable for chain ${chain.id}`)
+      const hexMetadata = Buffer.from(metadataDef.metadataRpc, "base64").toString(
+        "hex",
+      ) as HexString
 
       return getScaleApi(
         chain.id,
-        metadata.metadata,
+        hexMetadata,
         token,
         chain.hasCheckMetadataHash,
         chain.signedExtensions,

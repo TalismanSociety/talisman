@@ -1,0 +1,22 @@
+{
+  "version": 0,
+  "descriptorPath": ".papi/descriptors",
+  "entries": {
+    "polkadot": {
+      "wsUrl": "wss://polkadot-rpc.publicnode.com",
+      "metadata": ".papi/scale/polkadot.scale"
+    },
+    "polkadotAssetHub": {
+      "wsUrl": "wss://polkadot-asset-hub-rpc.polkadot.io",
+      "metadata": ".papi/scale/polkadot-asset-hub.scale"
+    },
+    "hydration": {
+      "wsUrl": "wss://hydration.ibp.network",
+      "metadata": ".papi/scale/hydration.scale"
+    },
+    "acala": {
+      "wsUrl": "wss://acala-rpc.dwellir.com",
+      "metadata": ".papi/scale/acala.scale"
+    }
+  }
+}
