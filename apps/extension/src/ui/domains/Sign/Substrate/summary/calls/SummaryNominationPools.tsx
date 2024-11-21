@@ -1,5 +1,5 @@
+import { PolkadotCalls } from "@polkadot-api/descriptors"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { PolkadotCalls } from "papi-descriptors"
 import { Binary } from "polkadot-api"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"

@@ -1,5 +1,5 @@
+import { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
 import { SubAssetsToken } from "@talismn/balances"
-import { PolkadotAssetHubCalls } from "papi-descriptors"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

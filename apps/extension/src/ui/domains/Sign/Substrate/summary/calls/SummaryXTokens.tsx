@@ -1,5 +1,5 @@
+import { AcalaCalls, HydrationCalls } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/util"
-import { AcalaCalls, HydrationCalls } from "papi-descriptors"
 import { useMemo } from "react"
 
 import { useChain, useChains, useTokens } from "@ui/state"

@@ -1,7 +1,7 @@
+import { XcmVersionedAssets } from "@polkadot-api/descriptors"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { Chain } from "extension-core"
 import { log } from "extension-shared"
-import { XcmVersionedAssets } from "papi-descriptors"
 
 export const getMultiAssetTokenId = (
   assets: XcmVersionedAssets,

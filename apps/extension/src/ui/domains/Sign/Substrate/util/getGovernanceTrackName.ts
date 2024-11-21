@@ -1,5 +1,5 @@
+import { PolkadotConstants } from "@polkadot-api/descriptors"
 import { capitalize } from "lodash"
-import { PolkadotConstants } from "papi-descriptors"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 

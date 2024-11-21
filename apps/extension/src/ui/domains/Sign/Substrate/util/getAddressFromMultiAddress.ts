@@ -1,5 +1,5 @@
+import { MultiAddress } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/util"
-import { MultiAddress } from "papi-descriptors"
 
 export const getAddressFromMultiAddress = (multiAddress: MultiAddress) => {
   switch (multiAddress.type) {

@@ -1,5 +1,5 @@
+import { PolkadotAssetHubCalls, PolkadotCalls } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/util"
-import { PolkadotAssetHubCalls, PolkadotCalls } from "papi-descriptors"
 import { useMemo } from "react"
 
 import { useChain, useChains, useTokensMap } from "@ui/state"

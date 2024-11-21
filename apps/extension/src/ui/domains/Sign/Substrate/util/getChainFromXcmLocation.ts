@@ -1,6 +1,6 @@
+import { XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { Chain } from "extension-core"
 import { log } from "extension-shared"
-import { XcmVersionedLocation } from "papi-descriptors"
 
 const getParachain = (relayId: string, paraId: number, chains: Chain[]): Chain => {
   const targetChain = chains.find((c) => c.relay?.id === relayId && c.paraId === paraId)

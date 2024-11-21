@@ -12,6 +12,10 @@
     "prepare": "husky",
     "preconstruct:dev": "preconstruct dev",
     "preconstruct:fix": "preconstruct fix",
+    "papi": "papi && pnpm papi:fixdep && pnpm install",
+    "papi:fixdep": "sed -i -e s#file:\\.papi/descriptors#workspace:*# package.json",
+    "papi:generate": "papi generate && pnpm papi:fixdep && pnpm install",
+    "papi:update": "papi update && pnpm papi:fixdep && pnpm install",
     "chore:format": "prettier --write \"{apps,config,packages}/**/src/**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "chore:update-translations": "pnpm run --filter extension chore:update-translations",
     "chore:update:translations": "pnpm chore:update-translations",
@@ -38,8 +42,11 @@
     "build:review:firefox": "docker build . --build-arg command=build:extension:prod:firefox --target export --output review",
     "lint": "pnpm run -r --parallel lint",
     "test": "pnpm run -r --parallel test",
-    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait",
-    "papi:update": "pnpm run --filter papi-descriptors papi update"
+    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
+  },
+  "dependencies": {
+    "@polkadot-api/descriptors": "workspace:*",
+    "polkadot-api": "^1.7.6"
   },
   "devDependencies": {
     "@alectalisman/preconstruct-cli": "2.3.0-e",

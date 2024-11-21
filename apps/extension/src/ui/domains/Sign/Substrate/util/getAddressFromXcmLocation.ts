@@ -1,8 +1,8 @@
+import { XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { u8aToHex } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
 import { Address } from "extension-core"
 import { log } from "extension-shared"
-import { XcmVersionedLocation } from "papi-descriptors"
 import { FixedSizeBinary } from "polkadot-api"
 
 export const getAddressFromXcmLocation = (multiLocation: XcmVersionedLocation): Address => {

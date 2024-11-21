@@ -1,5 +1,5 @@
+import { PolkadotCalls } from "@polkadot-api/descriptors"
 import { SignerPayloadJSON } from "extension-core"
-import { PolkadotCalls } from "papi-descriptors"
 import { FC } from "react"
 
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
