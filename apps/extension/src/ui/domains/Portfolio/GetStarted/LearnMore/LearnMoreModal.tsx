@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom"
 import { Modal, ModalDialog } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 
 import { LearnMoreContent } from "./LearnMoreContent"
+import { useLearnMoreModal } from "./useLearnMoreModal"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -15,8 +15,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   featureVersion: 2,
   page: "Learn More",
 }
-
-export const useLearnMoreModal = () => useGlobalOpenClose("LearnMore")
 
 export const LearnMoreModal = () => {
   const { t } = useTranslation()

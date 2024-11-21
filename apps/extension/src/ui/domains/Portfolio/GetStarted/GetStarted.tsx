@@ -21,7 +21,8 @@ import {
   GetStartedSwapIcon,
   GetStartedTryItIcon,
 } from "./icons"
-import { LearnMoreModal, useLearnMoreModal } from "./LearnMore/LearnMoreModal"
+import { useLearnMoreModal } from "./LearnMore"
+import { useTryTalismanModal } from "./TryTalisman"
 
 export const GetStarted = () => {
   const { t } = useTranslation()
@@ -109,7 +110,6 @@ export const GetStarted = () => {
         }
         onClick={onLearnMoreClick}
       />
-      <LearnMoreModal />
     </div>
   )
 }
@@ -122,6 +122,7 @@ const useGetStarted = () => {
   const { open: openBuyTokensModal } = useBuyTokensModal()
   const { open: onCopyAddressModal } = useCopyAddressModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
+  const { open: openTryTalismanModal } = useTryTalismanModal()
 
   const [isHidden, setIsHidden] = useAppState("hideGetStarted")
 
@@ -138,8 +139,8 @@ const useGetStarted = () => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "try talisman" })
 
     if (IS_POPUP) navigate("/try-talisman")
-    else api.popupOpen("#/try-talisman") // TODO open in a modal
-  }, [navigate])
+    else openTryTalismanModal()
+  }, [navigate, openTryTalismanModal])
 
   const onSwapClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })

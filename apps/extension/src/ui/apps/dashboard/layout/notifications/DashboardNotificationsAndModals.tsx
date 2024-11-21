@@ -7,6 +7,7 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { NomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/NomPoolBondModal"
 import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
@@ -51,6 +52,7 @@ export const DashboardNotificationsAndModals = () => {
       <NomPoolBondModal />
       <NomPoolUnbondModal />
       <NomPoolWithdrawModal />
+      <GetStartedModals />
     </Suspense>
   )
 }
