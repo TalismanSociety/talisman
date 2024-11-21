@@ -11,7 +11,7 @@ import OnboardingRoutes from "./routes"
 const HydrateFromChaindata = () => {
   // Loading tokens will cause backend to fetch latest chain/evmNetworks/tokens from github
   // Additionally it will update chains's metadata if necessary
-  // This allows displaying balances much faster if user attempts to import accounts later during the onboarding
+  // This allows displaying balances much faster after onboarding is finished
   useTokens({ activeOnly: true, includeTestnets: false })
 
   return null

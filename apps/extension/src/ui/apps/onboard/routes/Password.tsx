@@ -54,7 +54,7 @@ export const PasswordPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { data, createPassword, isResettingWallet, passwordExists } = useOnboard()
+  const { data, createPassword, isResettingWallet, passwordExists, setOnboarded } = useOnboard()
 
   const navigate = useNavigate()
 
@@ -87,8 +87,9 @@ export const PasswordPage = () => {
   }, [setValue])
 
   const navigateNext = useCallback(() => {
-    navigate(isResettingWallet || IS_FIREFOX ? "/accounts/add" : `/privacy`)
-  }, [navigate, isResettingWallet])
+    if (isResettingWallet || IS_FIREFOX) setOnboarded()
+    else navigate("/privacy")
+  }, [isResettingWallet, setOnboarded, navigate])
 
   const submit = useCallback(
     async (fields: FormData) => {
