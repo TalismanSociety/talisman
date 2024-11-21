@@ -38,7 +38,7 @@ export const BondPoolName = ({
           )}
         >
           <SettingsIcon className="text-body-secondary" />
-          <div>{poolName}</div>
+          <div>{data?.data?.[0].name || ""}</div>
         </button>
       )
 

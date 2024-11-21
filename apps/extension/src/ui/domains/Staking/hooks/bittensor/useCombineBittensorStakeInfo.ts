@@ -5,7 +5,8 @@ import { useMemo } from "react"
 
 import { Balances } from "@extension/core"
 import { DetailRow } from "@ui/domains/Portfolio/AssetDetails/useChainTokenBalances"
-import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
+import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
+import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 import { useGetBittensorStakesByHotKeys } from "./useGetBittensorStakeByHotKey"
 import { useGetBittensorStakesHotkeys } from "./useGetBittensorStakeHotkeys"
@@ -17,37 +18,40 @@ type CombineBittensorStakeInfo = {
 }
 
 export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBittensorStakeInfo) => {
-  const tokenId = "bittensor-substrate-native"
-  const token = useToken(tokenId)
-  const tokenRates = useTokenRates(tokenId)
+  const { token } = useTokenBalancesSummary(balances)
+  const bittensorTokenId = "bittensor-substrate-native"
+  const tokenRates = useTokenRates(token?.id)
   const selectedCurrency = useSelectedCurrency()
 
-  const totalStaked = balances.each.reduce((acc, b) => {
-    return acc + b.subtensor.reduce((acc, subtensor) => acc + Number(subtensor.amount.tokens), 0)
-  }, 0)
-
-  const balancesAddresses = balances.each.map((b) => b.address)
+  const totalStaked = useMemo(() => {
+    if (token?.id !== bittensorTokenId) return 0
+    return balances.each.reduce((acc, b) => {
+      return acc + b.subtensor.reduce((acc, subtensor) => acc + Number(subtensor.amount.tokens), 0)
+    }, 0)
+  }, [balances.each, token?.id])
 
   const addresses = useMemo(
-    () => (address ? [address] : balancesAddresses),
-    [address, balancesAddresses],
+    () => (address ? [address] : balances.each.map((b) => b.address)),
+    [address, balances.each],
   )
 
   const { data: hotkeys } = useGetBittensorStakesHotkeys({
-    chainId: "bittensor",
+    chainId: token?.id === bittensorTokenId ? "bittensor" : "",
     addresses: addresses,
     totalStaked,
   })
 
-  const flatHotkeys = hotkeys?.flat()
+  const flatHotkeys = useMemo(() => hotkeys?.flat(), [hotkeys])
 
   const { data: stakes, isLoading: isStakesLoading } = useGetBittensorStakesByHotKeys({
     addresses,
     hotkeys: hotkeys,
+    isEnabled: hotkeys?.length > 0 && totalStaked > 0,
   })
 
   const { data: validators, isLoading: isBittensorValidatorLoading } = useGetBittensorValidators({
     hotkeys: flatHotkeys ?? [],
+    isEnabled: flatHotkeys?.length > 0 && totalStaked > 0,
   })
 
   const combinedStakeInfo: DetailRow[] = useMemo(() => {

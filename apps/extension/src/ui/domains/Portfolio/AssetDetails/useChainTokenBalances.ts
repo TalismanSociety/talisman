@@ -43,7 +43,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
   const { combinedStakeInfo: subtensor } = useCombineBittensorStakeInfo({
     address: account?.address,
-    balances: tokenBalances,
+    balances: balances,
   })
 
   const detailRows = useMemo((): DetailRow[] => {
