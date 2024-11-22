@@ -39,7 +39,7 @@ const EstimatedFeesRow: FC = () => {
           <LoaderIcon className="animate-spin-slow inline-block" />
         ) : errorFee || errorDecodingExtrinsic ? (
           <Tooltip placement="bottom-end">
-            <TooltipTrigger>{t("Unknown")}</TooltipTrigger>
+            <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>
             <TooltipContent>{t("Failed to compute fee")}</TooltipContent>
           </Tooltip>
         ) : (
@@ -50,7 +50,55 @@ const EstimatedFeesRow: FC = () => {
   )
 }
 
-export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
+const DryRunRow: FC = () => {
+  const { t } = useTranslation("request")
+  const { dryRun, dryRunIsLoading, isDryRunAvailable } = usePolkadotSigningRequest()
+
+  if (!isDryRunAvailable) return null
+
+  return (
+    <>
+      <div className="text-body-secondary mb-2 flex w-full items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          <span>{t("Simulation")} </span>
+
+          <Tooltip>
+            <TooltipTrigger className="flex flex-col justify-center">
+              <InfoIcon className="inline-block" />
+            </TooltipTrigger>
+            <TooltipContent>
+              {t(
+                "Dry runs aren't always reliable as they are unaware of details that are only provided in signatures, such as which asset to use to pay for fees.",
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <div>
+          {dryRunIsLoading ? (
+            <LoaderIcon className="animate-spin-slow inline-block" />
+          ) : dryRun?.available ? (
+            dryRun.errorMessage ? (
+              <Tooltip placement="bottom-end">
+                <TooltipTrigger type="button" className="text-orange">
+                  {t("Failed")}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="text-alert-error">{dryRun.errorMessage}</span>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              t("Success")
+            )
+          ) : (
+            <span className="text-disabled">{t("Unavailable")}</span>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+export const FooterContent = ({ isTransaction = false }: { isTransaction?: boolean }) => {
   const { t } = useTranslation("request")
   const {
     fee,
@@ -78,7 +126,12 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
           {t("Cannot sign with a watch-only account.")}
         </SignAlertMessage>
       )}
-      {withFee && <EstimatedFeesRow />}
+      {isTransaction && (
+        <>
+          <DryRunRow />
+          <EstimatedFeesRow />
+        </>
+      )}
       {(() => {
         switch (account.origin) {
           case AccountType.Dcent:
@@ -88,7 +141,7 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
             return (
               <Suspense fallback={null}>
                 <SignHardwareSubstrate
-                  fee={withFee ? fee?.toString() : undefined}
+                  fee={isTransaction ? fee?.toString() : undefined}
                   payload={payload}
                   onSigned={approveHardware}
                   onCancel={reject}

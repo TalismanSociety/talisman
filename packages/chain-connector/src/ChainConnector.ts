@@ -415,7 +415,7 @@ export class ChainConnector {
   ): Promise<void> {
     const timer = timeout
       ? sleep(timeout).then(() => {
-          throw new Error("RPC connect timeout reached")
+          throw new Error(`RPC connect timeout reached: ${ws.endpoint}`)
         })
       : false
 

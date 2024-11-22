@@ -58,7 +58,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
               </SignAlertMessage>
             )}
           </div>
-          {account && request && <FooterContent withFee />}
+          {account && request && <FooterContent isTransaction />}
         </PopupFooter>
       </>
     </PopupLayout>
