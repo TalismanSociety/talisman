@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
 import { Address, BalanceFormatter } from "extension-core"
-import { SetStateAction, useCallback, useMemo } from "react"
+import { SetStateAction, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Hex } from "viem"
@@ -9,7 +9,7 @@ import { Hex } from "viem"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/state"
+import { useAccountByAddress, useBalance, useToken, useTokenRates, useTransaction } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useGetUnbondInfo } from "../shared/useGetUnbondInfo"
@@ -55,6 +55,8 @@ export const useUnbondWizard = () => {
 
   const { address, step, hash, tokenId, poolId: unstakePoolId } = useWizardState()
 
+  const tx = useTransaction(hash || "0x")
+
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
   const token = useToken(tokenId)
@@ -84,6 +86,12 @@ export const useUnbondWizard = () => {
     address: account?.address,
     unstakePoolId,
   })
+
+  useEffect(() => {
+    if (hash && tx?.blockNumber && tx?.status === "success" && handleSuccess) {
+      handleSuccess(Number(tx.blockNumber))
+    }
+  }, [handleSuccess, hash, tx])
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
@@ -149,6 +157,5 @@ export const useUnbondWizard = () => {
     stakeWarningMessage,
 
     onSubmitted,
-    handleSuccess,
   }
 }

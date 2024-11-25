@@ -1,7 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
@@ -149,18 +149,11 @@ type TxProgressBaseProps = {
   blockNumber?: string
   onClose?: () => void
   href?: string
-  onSuccess?: (...args: unknown[]) => void
 }
 
-const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose, onSuccess }) => {
+const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose }) => {
   const { t } = useTranslation()
   const { title, subtitle, animStatus } = useTxStatusDetails(tx)
-
-  useEffect(() => {
-    if (tx?.status === "success" && onSuccess) {
-      onSuccess(tx.blockNumber)
-    }
-  }, [onSuccess, tx])
 
   return (
     <div className="flex h-full w-full flex-col items-center">
@@ -206,20 +199,13 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
   )
 }
 
-type TxProgressSubstrateProps<T extends unknown[] = []> = {
+type TxProgressSubstrateProps = {
   tx: SubWalletTransaction
   onClose?: () => void
   className?: string
-  onSuccess?: (...args: T) => void
 }
 
-const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({
-  tx,
-  onClose,
-  className,
-  onSuccess,
-}) => {
-  // Add block number callback here
+const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, className }) => {
   const chain = useChainByGenesisHash(tx.genesisHash)
   const href = useMemo(() => getBlockExplorerUrl(undefined, chain, tx.hash), [chain, tx.hash])
 
@@ -230,7 +216,6 @@ const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
-      onSuccess={onSuccess}
     />
   )
 }
@@ -256,21 +241,14 @@ const TxProgressEvm: FC<TxProgressEvmProps> = ({ tx, className, onClose }) => {
   )
 }
 
-type TxProgressProps<T extends unknown[] = []> = {
+type TxProgressProps = {
   hash: HexString
   networkIdOrHash: string
   onClose?: () => void
   className?: string
-  onSuccess?: (...args: T) => void
 }
 
-export const TxProgress = <T extends unknown[]>({
-  hash,
-  networkIdOrHash,
-  onClose,
-  className,
-  onSuccess,
-}: TxProgressProps<T>) => {
+export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, onClose, className }) => {
   const tx = useTransaction(hash)
   const evmNetwork = useEvmNetwork(networkIdOrHash)
   const chain = useChainByGenesisHash(networkIdOrHash)
@@ -282,9 +260,7 @@ export const TxProgress = <T extends unknown[]>({
   }
 
   if (tx?.networkType === "substrate")
-    return (
-      <TxProgressSubstrate tx={tx} onClose={onClose} className={className} onSuccess={onSuccess} />
-    )
+    return <TxProgressSubstrate tx={tx} onClose={onClose} className={className} />
 
   if (tx?.networkType === "evm")
     return <TxProgressEvm tx={tx} onClose={onClose} className={className} />

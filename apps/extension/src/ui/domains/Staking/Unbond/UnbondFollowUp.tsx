@@ -4,16 +4,9 @@ import { useUnbondWizard } from "./useUnbondWizard"
 
 export const UnbondFollowUp = () => {
   const { close } = useUnbondModal()
-  const { hash, token, handleSuccess } = useUnbondWizard()
+  const { hash, token } = useUnbondWizard()
 
   if (!hash || !token?.chain?.id) return null
 
-  return (
-    <TxProgress
-      hash={hash}
-      networkIdOrHash={token.chain.id}
-      onClose={close}
-      onSuccess={handleSuccess}
-    />
-  )
+  return <TxProgress hash={hash} networkIdOrHash={token.chain.id} onClose={close} />
 }
