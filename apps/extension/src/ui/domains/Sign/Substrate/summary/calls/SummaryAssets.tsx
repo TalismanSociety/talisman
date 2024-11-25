@@ -112,17 +112,19 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
   if (!token?.id || !target || !chain) throw new Error("Missing data")
 
   if (mode !== "block")
-    <Trans
-      t={t}
-      components={{
-        Tokens: (
-          <SummaryTokensAndFiat tokenId={token.id} planck={decodedCall.args.amount} mode={mode} />
-        ),
-        LineBreak: <SummaryLineBreak mode={mode} />,
-        Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
-      }}
-      defaults="Transfer <Tokens /><LineBreak /> to <Target />"
-    />
+    return (
+      <Trans
+        t={t}
+        components={{
+          Tokens: (
+            <SummaryTokensAndFiat tokenId={token.id} planck={decodedCall.args.amount} mode={mode} />
+          ),
+          LineBreak: <SummaryLineBreak mode={mode} />,
+          Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
+        }}
+        defaults="Transfer <Tokens /><LineBreak /> to <Target />"
+      />
+    )
 
   return (
     <SummaryContainer>
