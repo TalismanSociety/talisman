@@ -2,10 +2,10 @@ import { ChainId } from "extension-core"
 
 import { ScaleApi } from "@ui/util/scaleApi"
 
-import { useBittensorStakedBlockNumber } from "../hooks/bittensor/useBittensorStakedBlockNumber"
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeByHotKey } from "../hooks/bittensor/useGetBittensorStakeByHotKey"
 import { useGetBittensorUnbondPayload } from "../hooks/bittensor/useGetBittensorUnbondPayload"
+import { useUpsertBittensorUnbondBlockNumber } from "../hooks/bittensor/useUpsertBittensorUnbondBlockNumber"
 import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
 import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
@@ -47,12 +47,10 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     plancks: bittensorPlanks,
   })
 
-  const { setByAccountAndDelegator, getByAccountAndDelegator } = useBittensorStakedBlockNumber()
+  const { mutate: upsertBittensorUnbondBlockNumber } = useUpsertBittensorUnbondBlockNumber()
 
   const handleBittensorUnbondSuccess = (blockNumber: number) => {
-    const unbondBlock = getByAccountAndDelegator({ account: address, delegator: unstakePoolId })
-    if (unbondBlock === blockNumber) return
-    setByAccountAndDelegator({
+    upsertBittensorUnbondBlockNumber({
       account: address,
       delegator: unstakePoolId,
       blockNumber,
