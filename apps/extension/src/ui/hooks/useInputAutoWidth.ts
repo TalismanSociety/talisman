@@ -13,7 +13,6 @@ const getTextWidth = (text?: string, element?: HTMLElement) => {
 const checkSize = (input: HTMLInputElement) => {
   const text = input.value || input.placeholder || "0"
   const width = getTextWidth(text, input)
-
   if (width !== input.clientWidth) input.style.width = `${width}px`
 }
 
@@ -27,7 +26,7 @@ export const useInputAutoWidth = (ref?: RefObject<HTMLInputElement>) => {
 
   useEffect(() => {
     const input = ref?.current
-    if (!input || !input?.placeholder) return
+    if (!input) return
 
     const resize = () => checkSize(input)
 
