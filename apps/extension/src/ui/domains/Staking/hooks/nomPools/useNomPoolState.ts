@@ -5,7 +5,7 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 export const useNomPoolState = (
   chainId: ChainId | null | undefined,
-  poolId: number | null | undefined,
+  poolId: number | string | null | undefined,
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 

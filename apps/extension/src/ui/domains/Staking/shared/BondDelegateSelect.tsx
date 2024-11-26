@@ -33,8 +33,13 @@ export const BondDelegateSelect = <T,>({
   tokenId,
   isError,
 }: BondDelegateSelectProps<T>) => {
-  const { setStep, setPoolId, poolId } = useBondWizard()
+  const { setStep, setPoolId, poolId, setIsDefaultOption } = useBondWizard()
   const { t } = useTranslation()
+
+  const handleSelectPoolId = (poolId: number | string) => {
+    setPoolId(poolId)
+    setIsDefaultOption(false)
+  }
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-10">
@@ -70,7 +75,7 @@ export const BondDelegateSelect = <T,>({
                   key={option.poolId}
                   option={option}
                   selectedPoolId={poolId}
-                  handleSelectPoolId={setPoolId}
+                  handleSelectPoolId={handleSelectPoolId}
                   tokenId={tokenId}
                 />
               ))}

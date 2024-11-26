@@ -25,6 +25,7 @@ type WizardState = {
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
   hash: Hex | null
+  isDefaultOption: boolean
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -36,6 +37,7 @@ const DEFAULT_STATE: WizardState = {
   displayMode: "token",
   isAccountPickerOpen: false,
   hash: null,
+  isDefaultOption: true,
 }
 
 const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -82,7 +84,8 @@ export const useBondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { poolId, step, displayMode, hash, tokenId, address, plancks } = useWizardState()
+  const { poolId, step, displayMode, hash, tokenId, address, plancks, isDefaultOption } =
+    useWizardState()
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -147,6 +150,11 @@ export const useBondWizard = () => {
     [],
   )
 
+  const setIsDefaultOption = useCallback(
+    (isDefaultOption: boolean) => setWizardState((prev) => ({ ...prev, isDefaultOption })),
+    [],
+  )
+
   const toggleDisplayMode = useCallback(() => {
     setWizardState((prev) => ({
       ...prev,
@@ -167,11 +175,13 @@ export const useBondWizard = () => {
   )
 
   useEffect(() => {
-    // if user is already staking in pool, set poolId to that pool
-    // Except for TAO, allow user to select any pool
-    if (!!currentPoolId && currentPoolId !== poolId && tokenId !== "bittensor-substrate-native")
+    /**
+     * if user is already staking in pool, set poolId to that pool
+     * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
+     */
+    if (!!currentPoolId && currentPoolId !== poolId && isDefaultOption)
       setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
-  }, [currentPoolId, poolId, tokenId])
+  }, [bondType, currentPoolId, isDefaultOption, poolId, step, tokenId])
 
   const setStep = useCallback(
     (step: WizardStep) => {
@@ -296,6 +306,7 @@ export const useBondWizard = () => {
     setPoolId,
     setPlancks,
     setStep,
+    setIsDefaultOption,
     toggleDisplayMode,
 
     onSubmitted,

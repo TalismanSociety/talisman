@@ -25,7 +25,7 @@ export const useBondModal = () => {
         address,
         tokenId,
         poolId,
-        step: tokenId === "bittensor-substrate-native" ? "select" : "form",
+        step: "form",
       })
 
       // then open the modal

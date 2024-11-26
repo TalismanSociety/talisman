@@ -6,6 +6,7 @@ import { MouseEventHandler, useCallback, useMemo } from "react"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
+import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useBondModal } from "./useBondModal"
 
 export const useBondButton = ({
@@ -22,6 +23,26 @@ export const useBondButton = ({
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
 
+  const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
+
+  const sorted = useMemo(() => {
+    if (!balances || !tokenId) return []
+    return balances
+      .find({ tokenId })
+      .each.filter((b) => ownedAddresses.includes(b.address))
+      .sort((a, b) => {
+        if (a.transferable.planck === b.transferable.planck) return 0
+        return a.transferable.planck > b.transferable.planck ? -1 : 1
+      })
+  }, [balances, ownedAddresses, tokenId])
+
+  const address = sorted[0].address
+
+  const { data: hotkeys } = useGetBittensorStakeHotkeys({
+    chainId: token?.chain?.id,
+    address,
+  })
+
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
     if (!balances || !tokenId || !token?.chain || token?.type !== "substrate-native")
       return [null, false]
@@ -32,20 +53,8 @@ export const useBondButton = ({
 
       if (!poolId) return [null, false]
 
-      const ownedAddresses = ownedAccounts.map(({ address }) => address)
-
-      const sorted = balances
-        .find({ tokenId })
-        .each.filter((b) => ownedAddresses.includes(b.address))
-        .sort((a, b) => {
-          if (a.transferable.planck === b.transferable.planck) return 0
-          return a.transferable.planck > b.transferable.planck ? -1 : 1
-        })
-
       // if a watch-only account is selected, there will be no entries here
       if (!sorted.length) return [null, false]
-
-      const address = sorted[0].address
 
       // lookup existing poolId for that account
       for (const balance of sorted.filter((b) => b.address === address)) {
@@ -54,8 +63,7 @@ export const useBondButton = ({
         let meta
         switch (token.chain.id) {
           case "bittensor":
-            pool = balance.subtensor.find((pool) => pool.amount.planck > 0n)
-            isNomPoolStaking = !!pool
+            poolId = hotkeys?.[0] ?? poolId
             break
           default:
             pool = balance.nompools.find((np) => !!(np.meta as Meta).poolId)
@@ -75,7 +83,7 @@ export const useBondButton = ({
     }
 
     return [null, false]
-  }, [balances, ownedAccounts, remoteConfig, tokenId, token?.chain, token?.type])
+  }, [balances, remoteConfig, tokenId, token?.chain, token?.type, hotkeys, address, sorted])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {

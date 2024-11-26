@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { ScaleApi } from "@ui/util/scaleApi"
 
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
+import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
 import { useIsSoloStaking } from "../hooks/nomPools/useIsSoloStaking"
@@ -42,6 +43,8 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     chainId,
   })
 
+  const { data: hotkeys } = useGetBittensorStakeHotkeys({ address, chainId })
+
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
 
   let payloadInfo
@@ -74,13 +77,13 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
 
   const { data: currentNomPool } = useNomPoolByMember(chainId, address)
   const { data: isSoloStaking } = useIsSoloStaking(chainId, address)
-  const { data: poolState } = useNomPoolState(chainId, poolId as unknown as number)
+  const { data: poolState } = useNomPoolState(chainId, poolId)
 
   switch (chainId) {
     case "bittensor":
       payloadInfo = bittensorStakingPayload
       bondType = "bittensor"
-      currentPoolId = poolId
+      currentPoolId = hotkeys?.[0] ?? poolId
       break
     default:
       payloadInfo = nomPoolStakingPayload
