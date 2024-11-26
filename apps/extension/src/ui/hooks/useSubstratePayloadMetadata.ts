@@ -53,7 +53,7 @@ const getSubstratePayloadMetadata = async ({
 
     // metadata v15 is required by the shortener
     const { registry, metadataRpc } = await getFrontendTypeRegistry(
-      chain.id,
+      chain,
       payload.specVersion,
       payload.blockHash,
       payload.signedExtensions,
