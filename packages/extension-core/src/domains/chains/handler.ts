@@ -3,7 +3,10 @@ import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
 import { Chain, CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import Dexie from "dexie"
+import { isEqual } from "lodash"
+import { distinctUntilChanged } from "rxjs"
 
+import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"
@@ -11,6 +14,7 @@ import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
+import { Port } from "../../types/base"
 import { activeChainsStore } from "./store.activeChains"
 
 export class ChainsHandler extends ExtensionHandler {
@@ -133,7 +137,7 @@ export class ChainsHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    // port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -141,8 +145,12 @@ export class ChainsHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to chains
-        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
-        return true
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.chainsObservable.pipe(distinctUntilChanged(isEqual)),
+        )
 
       case "pri(chains.upsert)":
         try {

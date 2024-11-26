@@ -20,11 +20,9 @@ import {
   isEvmNetworkActive,
   isTokenActive,
 } from "extension-core"
-import { isEqual } from "lodash"
-import { combineLatest, distinctUntilChanged, map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
-import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -40,8 +38,6 @@ const ALL: ChaindataQueryOptions = {
   activeOnly: false,
   includeTestnets: true,
 }
-
-const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
@@ -59,15 +55,9 @@ const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
 }).pipe(debugObservable("allEvmNetworks$"), shareReplay(1))
 
 const allChains$ = new Observable<AnyChain[]>((subscriber) => {
-  const subData = chaindataProvider.chainsObservable
-    .pipe(distinctUntilChanged<AnyChain[]>(isEqual))
-    .subscribe((data) => {
-      subscriber.next(data)
-    })
-  const unsubscribe = api.chains(NO_OP) // keeps provider up to date from chaindata
+  const unsubscribe = api.chains((data) => subscriber.next(data)) // keeps provider up to date from chaindata
   return () => {
     unsubscribe()
-    subData.unsubscribe()
   }
 }).pipe(debugObservable("allChains$"), shareReplay(1))
 

@@ -3,7 +3,9 @@ import type { HexString } from "@polkadot/util/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { Address, BalanceJson } from "@talismn/balances"
 import {
+  Chain,
   ChainId,
+  CustomChain,
   CustomEvmNetwork,
   EvmNetwork,
   EvmNetworkId,
@@ -214,7 +216,7 @@ export default interface MessageTypes {
   ) => UnsubscribeFn
 
   // chain message types
-  chains: (cb: () => void) => UnsubscribeFn
+  chains: (cb: (chains: Array<Chain | CustomChain>) => void) => UnsubscribeFn
   chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
   chainRemove: (id: string) => Promise<boolean>
   chainReset: (id: string) => Promise<boolean>
