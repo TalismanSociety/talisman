@@ -11,9 +11,12 @@ import {
 import { isEthereumAddress } from "@talismn/util"
 import Dexie from "dexie"
 import { DEBUG, log } from "extension-shared"
+import { isEqual } from "lodash"
+import { distinctUntilChanged } from "rxjs"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
+import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -659,8 +662,14 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
-        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
-        return true
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.evmNetworksObservable.pipe(
+            distinctUntilChanged<Array<EvmNetwork | CustomEvmNetwork>>(isEqual),
+          ),
+        )
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])

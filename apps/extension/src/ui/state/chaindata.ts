@@ -52,15 +52,9 @@ export const [useActiveEvmNetworksState, activeEvmNetworksState$] = bind(
 export const [useActiveChainsState, activeChainsState$] = bind(activeChainsStore.observable)
 
 const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
-  const subData = chaindataProvider.evmNetworksObservable
-    .pipe(distinctUntilChanged<AnyEvmNetwork[]>(isEqual))
-    .subscribe((data) => {
-      subscriber.next(data)
-    })
-  const unsubscribe = api.ethereumNetworks(NO_OP) // keeps provider up to date from chaindata
+  const unsubscribe = api.ethereumNetworks((data) => subscriber.next(data))
   return () => {
     unsubscribe()
-    subData.unsubscribe()
   }
 }).pipe(debugObservable("allEvmNetworks$"), shareReplay(1))
 

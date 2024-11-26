@@ -2,7 +2,14 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { Address, BalanceJson } from "@talismn/balances"
-import { ChainId, EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import {
+  ChainId,
+  CustomEvmNetwork,
+  EvmNetwork,
+  EvmNetworkId,
+  Token,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
 import { MetadataDef } from "inject/substrate/types"
@@ -302,7 +309,7 @@ export default interface MessageTypes {
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
 
   // ethereum networks message types
-  ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  ethereumNetworks: (cb: (networks: Array<EvmNetwork | CustomEvmNetwork>) => void) => UnsubscribeFn
   ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
   ethNetworkRemove: (id: string) => Promise<boolean>
   ethNetworkReset: (id: string) => Promise<boolean>
