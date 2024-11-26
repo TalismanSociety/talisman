@@ -2,7 +2,7 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { Address, BalanceJson } from "@talismn/balances"
-import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { ChainId, EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
 import { MetadataDef } from "inject/substrate/types"
@@ -218,7 +218,7 @@ export default interface MessageTypes {
   ) => Promise<HexString>
 
   // token message types
-  tokens: (cb: () => void) => UnsubscribeFn
+  tokens: (cb: (tokens: Token[]) => void) => UnsubscribeFn
 
   // tokenRates message types
   tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn

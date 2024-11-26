@@ -230,15 +230,9 @@ export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(
 export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
 
 const rawTokens$ = new Observable<Token[]>((subscriber) => {
-  const subData = chaindataProvider.tokensObservable
-    .pipe(distinctUntilChanged<Token[]>(isEqual))
-    .subscribe((data) => {
-      subscriber.next(data)
-    })
-  const unsubscribe = api.tokens(NO_OP)
+  const unsubscribe = api.tokens((data) => subscriber.next(data))
   return () => {
     unsubscribe()
-    subData.unsubscribe()
   }
 }).pipe(debugObservable("rawTokens$"), shareReplay(1))
 
