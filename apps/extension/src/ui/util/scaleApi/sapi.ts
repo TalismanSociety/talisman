@@ -1,4 +1,4 @@
-import { polkadot, PolkadotRuntimeOriginCaller } from "@polkadot-api/descriptors"
+import { polkadot, polkadotAssetHub, PolkadotRuntimeOriginCaller } from "@polkadot-api/descriptors"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { Bytes, enhanceEncoder, u16 } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
@@ -370,6 +370,11 @@ const getFeeEstimate = async (
   return BigInt(partialFee)
 }
 
+type DryRunRefChain = typeof polkadot | typeof polkadotAssetHub
+type DryRunResult = Awaited<
+  ReturnType<TypedApi<DryRunRefChain>["apis"]["DryRunApi"]["dry_run_call"]>
+>
+
 const getDryRunCall = async (
   chainId: ChainId,
   metadata: ScaleMetadata,
@@ -394,15 +399,14 @@ const getDryRunCall = async (
     const { pallet, method, args } = decodedCall
     const call = { type: pallet, value: { type: method, value: args } }
 
-    type Result = Awaited<
-      ReturnType<TypedApi<typeof polkadot>["apis"]["DryRunApi"]["dry_run_call"]>
-    >
-
     // This will throw an error if the api is not available on that chain
-    const data = await getRuntimeCallValue<Result>(chainId, builder, "DryRunApi", "dry_run_call", [
-      origin,
-      call,
-    ])
+    const data = await getRuntimeCallValue<DryRunResult>(
+      chainId,
+      builder,
+      "DryRunApi",
+      "dry_run_call",
+      [origin, call],
+    )
 
     const ok = data.success && data.value.execution_result.success
     const errorMessage =

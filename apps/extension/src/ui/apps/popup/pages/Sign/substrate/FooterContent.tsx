@@ -1,4 +1,6 @@
+import { TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
+import { uniq } from "lodash"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -11,92 +13,9 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
-
-const EstimatedFeesRow: FC = () => {
-  const { t } = useTranslation("request")
-  const { fee, isLoadingFee, errorFee, chain, errorDecodingExtrinsic } = usePolkadotSigningRequest()
-  const feeToken = useFeeToken(chain?.nativeToken?.id)
-
-  return (
-    <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
-      <div className="flex items-center gap-2">
-        <span>{t("Estimated Fee")} </span>
-        {!!chain?.isUnknownFeeToken && (
-          <Tooltip>
-            <TooltipTrigger className="flex flex-col justify-center">
-              <InfoIcon className="inline-block" />
-            </TooltipTrigger>
-            <TooltipContent>
-              {t(
-                "We are unable to detect which currency will be used for fees in this transaction.",
-              )}
-            </TooltipContent>
-          </Tooltip>
-        )}
-      </div>
-      <div>
-        {isLoadingFee ? (
-          <LoaderIcon className="animate-spin-slow inline-block" />
-        ) : errorFee || errorDecodingExtrinsic ? (
-          <Tooltip placement="bottom-end">
-            <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>
-            <TooltipContent>{t("Failed to compute fee")}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <TokensAndFiat planck={fee ?? undefined} tokenId={feeToken?.id} />
-        )}
-      </div>
-    </div>
-  )
-}
-
-const DryRunRow: FC = () => {
-  const { t } = useTranslation("request")
-  const { dryRun, dryRunIsLoading, isDryRunAvailable } = usePolkadotSigningRequest()
-
-  if (!isDryRunAvailable) return null
-
-  return (
-    <>
-      <div className="text-body-secondary mb-2 flex w-full items-center justify-between text-sm">
-        <div className="flex items-center gap-2">
-          <span>{t("Simulation")} </span>
-
-          <Tooltip>
-            <TooltipTrigger className="flex flex-col justify-center">
-              <InfoIcon className="inline-block" />
-            </TooltipTrigger>
-            <TooltipContent>
-              {t(
-                "Dry runs aren't always reliable as they are unaware of details that are only provided in signatures, such as which asset to use to pay for fees.",
-              )}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <div>
-          {dryRunIsLoading ? (
-            <LoaderIcon className="animate-spin-slow inline-block" />
-          ) : dryRun?.available ? (
-            dryRun.errorMessage ? (
-              <Tooltip placement="bottom-end">
-                <TooltipTrigger type="button" className="text-orange">
-                  {t("Failed")}
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span className="text-alert-error">{dryRun.errorMessage}</span>
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              t("Success")
-            )
-          ) : (
-            <span className="text-disabled">{t("Unavailable")}</span>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
+import { getMultiLocationTokenId } from "@ui/domains/Sign/Substrate/util/getMultiLocationTokenId"
+import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useBalance, useTokensMap } from "@ui/state"
 
 export const FooterContent = ({ isTransaction = false }: { isTransaction?: boolean }) => {
   const { t } = useTranslation("request")
@@ -128,7 +47,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
       )}
       {isTransaction && (
         <>
-          <DryRunRow />
+          <DryRunError />
           <EstimatedFeesRow />
         </>
       )}
@@ -193,5 +112,196 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
         }
       })()}
     </>
+  )
+}
+
+const DryRunError: FC = () => {
+  const { t } = useTranslation("request")
+  const { dryRun } = usePolkadotSigningRequest()
+
+  if (!dryRun?.errorMessage) return null
+
+  return (
+    <SignAlertMessage className="mb-6" type="error">
+      {t("This transaction is likely to fail:")}
+      <br />
+      {dryRun.errorMessage}
+    </SignAlertMessage>
+  )
+}
+
+type FeeDetails = {
+  label: string
+  plancks: bigint
+  tokenId: TokenId
+  balance: bigint | null
+}
+
+type FeeDetailsRow = { label: string; tokenId: string; plancks: bigint }
+
+const EstimatedFeesRow: FC = () => {
+  const { t } = useTranslation("request")
+  const {
+    fee,
+    isLoadingFee,
+    errorFee,
+    chain,
+    errorDecodingExtrinsic,
+    signingRequest,
+    dryRun,
+    dryRunIsLoading,
+  } = usePolkadotSigningRequest()
+  const tokens = useTokensMap()
+
+  const feeToken = useFeeToken(chain?.nativeToken?.id)
+  const feeTokenBalance = useBalance(signingRequest?.account?.address, feeToken?.id)
+
+  const deliveryFees = useMemo<FeeDetails[]>(() => {
+    if (!chain?.nativeToken?.id || !dryRun?.ok || !dryRun.data.success) return []
+
+    const fees: { plancks: bigint; tokenId: TokenId }[] = []
+
+    for (const e of dryRun.data.value.emitted_events) {
+      if (
+        (e.type === "XcmPallet" || e.type === "PolkadotXcm" || e.type === "CumulusXcm") &&
+        e.value.type === "FeesPaid"
+      )
+        for (const fee of e.value.value.fees) {
+          if (fee.fun.type === "NonFungible") continue
+
+          const plancks = fee.fun.value
+          const tokenId = getMultiLocationTokenId(fee.id, chain, tokens)
+          if (!tokenId || !plancks) continue
+
+          fees.push({ plancks, tokenId })
+        }
+    }
+
+    return fees.map(
+      (fee): FeeDetails => ({
+        label: t("XCM Delivery Fee:"),
+        plancks: fee.plancks,
+        tokenId: fee.tokenId,
+        balance: null,
+      }),
+    )
+  }, [chain, dryRun, t, tokens])
+
+  const allBalances = useBalancesByParams(
+    useMemo(
+      () => ({
+        addressesAndTokens: {
+          addresses: [signingRequest?.account?.address ?? ""].filter(Boolean),
+          tokenIds: deliveryFees?.map((fee) => fee.tokenId).filter(Boolean) ?? [],
+        },
+      }),
+      [deliveryFees, signingRequest?.account?.address],
+    ),
+  )
+
+  const fees = useMemo<FeeDetails[]>(() => {
+    const deliveryFeesWithBalances = deliveryFees.map((fee) => ({
+      ...fee,
+      balance:
+        allBalances.balances.find({ tokenId: fee.tokenId }).each[0]?.transferable.planck ?? null,
+    }))
+
+    const executionFee =
+      fee && feeToken?.id
+        ? [
+            {
+              label: t("Execution fee:"),
+              plancks: fee,
+              tokenId: feeToken.id,
+              balance: feeTokenBalance.transferable.planck,
+            },
+          ]
+        : []
+
+    return [...deliveryFeesWithBalances, ...executionFee]
+  }, [deliveryFees, fee, feeToken?.id, feeTokenBalance.transferable.planck, t, allBalances])
+
+  const estimatedFee = fees
+    .filter((fee) => fee.tokenId === feeToken?.id)
+    .reduce((acc, fee) => acc + fee.plancks, 0n)
+
+  return (
+    <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
+      <div className="flex items-center gap-2">
+        <Tooltip placement="top-start">
+          <TooltipTrigger asChild>
+            <div>
+              {t("Estimated Fee")} <InfoIcon className="inline-block align-text-top text-[1.1em]" />
+            </div>
+          </TooltipTrigger>
+          {(!!fees.length || !!chain?.isUnknownFeeToken) && (
+            <TooltipContent>
+              <FeeInfo isUnknownFeeToken={true || chain?.isUnknownFeeToken} fees={fees} />
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </div>
+      <div>
+        {isLoadingFee || dryRunIsLoading ? (
+          <LoaderIcon className="animate-spin-slow inline-block" />
+        ) : errorFee || errorDecodingExtrinsic ? (
+          <Tooltip placement="bottom-end">
+            <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>
+            <TooltipContent>{t("Failed to compute fee")}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <TokensAndFiat planck={estimatedFee} tokenId={feeToken?.id} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+const FeeInfo = ({
+  fees,
+  isUnknownFeeToken,
+}: {
+  fees?: FeeDetails[]
+  isUnknownFeeToken?: boolean
+}) => {
+  const { t } = useTranslation("request")
+
+  // extract unique balances and display them at the end
+  const feeRows = useMemo<{ label: string; tokenId: string; plancks: bigint }[]>(() => {
+    if (!fees?.length) return []
+
+    const balances = uniq(
+      fees?.filter((fee) => typeof fee.balance === "bigint").map((fee) => fee.tokenId),
+    )
+      .map((tokenId) => {
+        const fee = fees?.find((fee) => fee.tokenId === tokenId && typeof fee.balance === "bigint")
+        return { label: t("Balance:"), tokenId, plancks: fee?.balance }
+      })
+      .filter((fee) => typeof fee.plancks === "bigint") as FeeDetailsRow[]
+
+    return [...fees, ...balances]
+  }, [fees, t])
+
+  if (!feeRows.length) return null
+
+  return (
+    <TooltipContent>
+      <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
+        {feeRows.map((row, idx) => (
+          <div key={`${row.tokenId}-${idx}`} className="flex w-full justify-between gap-8">
+            <div>{row.label}</div>
+            <div>
+              <TokensAndFiat tokenId={row.tokenId} planck={row.plancks} noTooltip noCountUp />
+            </div>
+          </div>
+        ))}
+
+        {isUnknownFeeToken && (
+          <div className="whitespace-normal">
+            {t("We are unable to detect which currency will be used for fees in this transaction.")}
+          </div>
+        )}
+      </div>
+    </TooltipContent>
   )
 }
