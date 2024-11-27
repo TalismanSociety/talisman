@@ -1,7 +1,9 @@
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/util"
 
-export const getAddressFromMultiAddress = (multiAddress: MultiAddress) => {
+export const getAddressFromMultiAddress = (multiAddress: MultiAddress | string) => {
+  if (typeof multiAddress === "string") return multiAddress
+
   switch (multiAddress.type) {
     case "Id":
       return encodeAnyAddress(multiAddress.value)

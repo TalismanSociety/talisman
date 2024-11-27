@@ -130,7 +130,7 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="text-body-secondary hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-[1.2rem] opacity-90"
+          className="text-body-secondary enabled:hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-[1.2rem] opacity-90"
           onClick={handleClick}
           disabled={disabled}
         >

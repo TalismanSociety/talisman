@@ -53,6 +53,7 @@ export type FeatureFlags = Partial<{
   LINK_STAKING: boolean
   USE_ONFINALITY_API_KEY: boolean
   RISK_ANALYSIS: boolean
+  NEW_FEATURES_HOME_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

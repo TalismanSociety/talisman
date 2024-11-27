@@ -21,6 +21,8 @@ import {
   GetStartedSwapIcon,
   GetStartedTryItIcon,
 } from "./icons"
+import { useLearnMoreModal } from "./LearnMore"
+import { useTryTalismanModal } from "./TryTalisman"
 
 export const GetStarted = () => {
   const { t } = useTranslation()
@@ -119,6 +121,8 @@ const useGetStarted = () => {
   const navigate = useNavigate()
   const { open: openBuyTokensModal } = useBuyTokensModal()
   const { open: onCopyAddressModal } = useCopyAddressModal()
+  const { open: openLearnMoreModal } = useLearnMoreModal()
+  const { open: openTryTalismanModal } = useTryTalismanModal()
 
   const [isHidden, setIsHidden] = useAppState("hideGetStarted")
 
@@ -135,8 +139,8 @@ const useGetStarted = () => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "try talisman" })
 
     if (IS_POPUP) navigate("/try-talisman")
-    else api.popupOpen("#/try-talisman") // TODO open in a modal
-  }, [navigate])
+    else openTryTalismanModal()
+  }, [navigate, openTryTalismanModal])
 
   const onSwapClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
@@ -165,12 +169,11 @@ const useGetStarted = () => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
 
     if (IS_POPUP) navigate("/learn-more")
-    else api.popupOpen("#/learn-more")
-  }, [navigate])
+    else openLearnMoreModal()
+  }, [navigate, openLearnMoreModal])
 
   const onDismissClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "dismiss get started" })
-
     setIsHidden(true)
   }, [setIsHidden])
 
@@ -182,8 +185,8 @@ const useGetStarted = () => {
     onSwapClick,
     onReceiveClick,
     onBuyClick,
-    onLearnMoreClick,
     onDismissClick,
+    onLearnMoreClick,
   }
 }
 

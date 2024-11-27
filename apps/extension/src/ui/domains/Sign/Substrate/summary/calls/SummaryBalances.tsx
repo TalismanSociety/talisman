@@ -1,4 +1,4 @@
-import { PolkadotCalls } from "@polkadot-api/descriptors"
+import { HydrationCalls, PolkadotCalls } from "@polkadot-api/descriptors"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { Address } from "extension-core"
 import { useMemo } from "react"
@@ -21,7 +21,8 @@ import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 
 const TransferKeepAlive: DecodedCallSummaryComponent<
-  PolkadotCalls["Balances"]["transfer_keep_alive"]
+  | PolkadotCalls["Balances"]["transfer_keep_alive"]
+  | HydrationCalls["Balances"]["transfer_keep_alive"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
@@ -90,7 +91,8 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
 }
 
 const TransferAllowDeath: DecodedCallSummaryComponent<
-  PolkadotCalls["Balances"]["transfer_allow_death"]
+  | PolkadotCalls["Balances"]["transfer_allow_death"]
+  | HydrationCalls["Balances"]["transfer_allow_death"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
@@ -158,12 +160,9 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
   )
 }
 
-const TransferAll: DecodedCallSummaryComponent<PolkadotCalls["Balances"]["transfer_all"]> = ({
-  decodedCall,
-  sapi,
-  payload,
-  mode,
-}) => {
+const TransferAll: DecodedCallSummaryComponent<
+  PolkadotCalls["Balances"]["transfer_all"] | HydrationCalls["Balances"]["transfer_all"]
+> = ({ decodedCall, sapi, payload, mode }) => {
   const { t } = useTranslation()
   const chain = useChain(sapi.chainId)
   const nativeToken = useToken(chain?.nativeToken?.id)

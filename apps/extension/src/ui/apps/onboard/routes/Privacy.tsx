@@ -1,6 +1,5 @@
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { PRIVACY_POLICY_URL } from "@extension/shared"
@@ -8,7 +7,6 @@ import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useIsLoggedIn } from "@ui/state"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
@@ -26,8 +24,6 @@ export const PrivacyPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { updateData, setOnboarded } = useOnboard()
-  const navigate = useNavigate()
-  const isLoggedIn = useIsLoggedIn()
 
   const handleClick = useCallback(
     (allowTracking: boolean) => () => {
@@ -37,9 +33,9 @@ export const PrivacyPage = () => {
         action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
       })
       updateData({ allowTracking })
-      isLoggedIn ? navigate("/accounts/add") : setOnboarded()
+      setOnboarded()
     },
-    [navigate, updateData, isLoggedIn, setOnboarded],
+    [updateData, setOnboarded],
   )
 
   const handleLearnMoreClick = useCallback(() => {

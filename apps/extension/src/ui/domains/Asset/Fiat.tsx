@@ -69,8 +69,9 @@ export const Fiat = ({
 const DisplayValue = React.memo(
   ({ amount, currency, currencyDisplay, isBalance, noCountUp }: DisplayValueProps) => {
     const decimalPlacesCount = getDecimalPlacesCount(amount)
+    // for non balances (ie: prices), display 3 meaningful digits starting from the first non-zero digit => decimalPlacesCount + 2
     const decimalPlaces =
-      amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 1 : 2
+      amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 2 : 2
 
     const format = useCallback(
       (amount = 0) => {
