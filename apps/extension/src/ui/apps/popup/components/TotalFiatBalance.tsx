@@ -3,11 +3,12 @@ import {
   CreditCardIcon,
   EyeIcon,
   EyeOffIcon,
+  QuestStarCircleIcon,
   RepeatIcon,
   SendIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -21,6 +22,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useAccounts, useFeatureFlag, useSelectedCurrency, useSetting } from "@ui/state"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 type Props = {
   className?: string
@@ -130,7 +132,10 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="text-body-secondary enabled:hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-[1.2rem] opacity-90"
+          className={classNames(
+            "text-body-secondary pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[1rem] opacity-90 backdrop-blur-sm",
+            "enabled:hover:text-body enabled:hover:bg-white/10",
+          )}
           onClick={handleClick}
           disabled={disabled}
         >
@@ -159,10 +164,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
+  const showQuestLink = useFeatureFlag("QUEST_LINK")
 
   const handleSwapClick = useCallback(() => {
     window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-    window.close()
+    if (IS_EMBEDDED_POPUP) window.close()
   }, [])
 
   const { disableActions, disabledReason } = useMemo(() => {
@@ -215,10 +221,38 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   )
 
   return (
-    <div className="flex justify-center gap-4">
-      {topActions.map((action, index) => (
-        <Action key={index} {...action} />
-      ))}
+    <div className="flex w-full items-center justify-between">
+      <div className="flex justify-center gap-4">
+        {topActions.map((action, index) => (
+          <Action key={index} {...action} />
+        ))}
+      </div>
+      {showQuestLink && <QuestLink />}
     </div>
+  )
+}
+
+const QuestLink = () => {
+  const { t } = useTranslation()
+
+  const handleQuestsClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
+    window.open(TALISMAN_QUEST_APP_URL, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
+  }, [])
+
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "text-primary-700 hover:text-primary pointer-events-auto flex items-center gap-2.5 text-[1rem]",
+      )}
+      onClick={handleQuestsClick}
+    >
+      <div className="flex flex-col justify-center text-sm">
+        <QuestStarCircleIcon />
+      </div>
+      <div>{t("Quests")}</div>
+    </button>
   )
 }

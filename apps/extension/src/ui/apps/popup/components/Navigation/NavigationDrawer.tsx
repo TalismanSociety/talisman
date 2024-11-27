@@ -27,6 +27,7 @@ import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -136,7 +137,7 @@ export const NavigationDrawer: FC = () => {
   const handleQuestsClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
     window.open(TALISMAN_QUEST_APP_URL, "_blank")
-    window.close()
+    if (IS_EMBEDDED_POPUP) window.close()
   }, [])
 
   return (
