@@ -14,41 +14,27 @@ export const getMultiLocationTokenId = (
   chain: Chain,
   tokens: TokenList,
 ): TokenId | null => {
-  if (location.parents === 1) {
-    if (location.interior.type === "Here" && chain.nativeToken?.id) {
-      // relay native
-      return (
-        values(tokens).find(
-          (token: Token) => token.type === "substrate-native" && token.chain.id === chain.relay?.id,
-        )?.id ?? null
-      )
-    }
+  if (location.interior.type === "Here" && chain.nativeToken?.id) {
+    // native token
+    return chain.nativeToken.id
   }
 
-  // pay from current chain
-  if (location.parents === 0) {
-    if (location.interior.type === "Here" && chain.nativeToken?.id) {
-      // native token
-      return chain.nativeToken.id
-    }
-
-    if (location.interior.type === "X2") {
-      if (
-        location.interior.value[0].type === "PalletInstance" &&
-        location.interior.value[0].value === 50 &&
-        location.interior.value[1].type === "GeneralIndex"
-      ) {
-        // Assets pallet
-        const assetId = location.interior.value[1].value
-        return (
-          values(tokens).find(
-            (token: Token) =>
-              token.type === "substrate-assets" &&
-              token.chain.id === chain.id &&
-              token.assetId === String(assetId),
-          )?.id ?? null
-        )
-      }
+  if (location.interior.type === "X2") {
+    if (
+      location.interior.value[0].type === "PalletInstance" &&
+      location.interior.value[0].value === 50 &&
+      location.interior.value[1].type === "GeneralIndex"
+    ) {
+      // Assets pallet
+      const assetId = location.interior.value[1].value
+      return (
+        values(tokens).find(
+          (token: Token) =>
+            token.type === "substrate-assets" &&
+            token.chain.id === chain.id &&
+            token.assetId === String(assetId),
+        )?.id ?? null
+      )
     }
   }
 
