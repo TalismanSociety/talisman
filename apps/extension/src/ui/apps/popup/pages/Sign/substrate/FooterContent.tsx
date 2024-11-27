@@ -15,7 +15,7 @@ import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { getMultiLocationTokenId } from "@ui/domains/Sign/Substrate/util/getMultiLocationTokenId"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useBalance, useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state"
 
 export const FooterContent = ({ isTransaction = false }: { isTransaction?: boolean }) => {
   const { t } = useTranslation("request")
@@ -154,7 +154,6 @@ const EstimatedFeesRow: FC = () => {
   const tokens = useTokensMap()
 
   const feeToken = useFeeToken(chain?.nativeToken?.id)
-  const feeTokenBalance = useBalance(signingRequest?.account?.address, feeToken?.id)
 
   const deliveryFees = useMemo<FeeDetails[]>(() => {
     if (!chain?.nativeToken?.id || !dryRun?.ok || !dryRun.data.success) return []
@@ -192,10 +191,14 @@ const EstimatedFeesRow: FC = () => {
       () => ({
         addressesAndTokens: {
           addresses: [signingRequest?.account?.address ?? ""].filter(Boolean),
-          tokenIds: deliveryFees?.map((fee) => fee.tokenId).filter(Boolean) ?? [],
+          tokenIds:
+            deliveryFees
+              ?.map((fee) => fee.tokenId)
+              .concat(feeToken?.id ?? "")
+              .filter(Boolean) ?? [],
         },
       }),
-      [deliveryFees, signingRequest?.account?.address],
+      [deliveryFees, signingRequest?.account?.address, feeToken?.id],
     ),
   )
 
@@ -213,17 +216,23 @@ const EstimatedFeesRow: FC = () => {
               label: t("Execution fee:"),
               plancks: fee,
               tokenId: feeToken.id,
-              balance: feeTokenBalance.transferable.planck,
+              balance:
+                allBalances.balances.find({ tokenId: feeToken.id }).each[0]?.transferable.planck ??
+                null,
             },
           ]
         : []
 
     return [...deliveryFeesWithBalances, ...executionFee]
-  }, [deliveryFees, fee, feeToken?.id, feeTokenBalance.transferable.planck, t, allBalances])
+  }, [deliveryFees, fee, feeToken?.id, t, allBalances])
 
-  const estimatedFee = fees
-    .filter((fee) => fee.tokenId === feeToken?.id)
-    .reduce((acc, fee) => acc + fee.plancks, 0n)
+  const estimatedFee = useMemo(
+    () =>
+      fees
+        .filter((fee) => fee.tokenId === feeToken?.id)
+        .reduce((acc, fee) => acc + fee.plancks, 0n),
+    [fees, feeToken?.id],
+  )
 
   return (
     <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
@@ -236,7 +245,7 @@ const EstimatedFeesRow: FC = () => {
           </TooltipTrigger>
           {(!!fees.length || !!chain?.isUnknownFeeToken) && (
             <TooltipContent>
-              <FeeInfo isUnknownFeeToken={true || chain?.isUnknownFeeToken} fees={fees} />
+              <FeeInfo isUnknownFeeToken={chain?.isUnknownFeeToken} fees={fees} />
             </TooltipContent>
           )}
         </Tooltip>
