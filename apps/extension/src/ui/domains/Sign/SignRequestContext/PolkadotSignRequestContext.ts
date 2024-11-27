@@ -71,10 +71,7 @@ const useDryRun = ({
 
       return sapi.getDryRunCall(from, decodedCall)
     },
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: true,
+    refetchInterval: 10_000,
   })
 }
 
