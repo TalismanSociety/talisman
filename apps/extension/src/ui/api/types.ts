@@ -6,8 +6,6 @@ import {
   Chain,
   ChainId,
   CustomChain,
-  CustomEvmNetwork,
-  EvmNetwork,
   EvmNetworkId,
   Token,
   TokenId,
@@ -60,6 +58,7 @@ import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
+  SimpleEvmNetwork,
   UnsubscribeFn,
   ValidRequests,
   WalletTransactionTransferInfo,
@@ -311,7 +310,7 @@ export default interface MessageTypes {
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
 
   // ethereum networks message types
-  ethereumNetworks: (cb: (networks: Array<EvmNetwork | CustomEvmNetwork>) => void) => UnsubscribeFn
+  ethereumNetworks: (cb: (networks: Array<SimpleEvmNetwork>) => void) => UnsubscribeFn
   ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
   ethNetworkRemove: (id: string) => Promise<boolean>
   ethNetworkReset: (id: string) => Promise<boolean>

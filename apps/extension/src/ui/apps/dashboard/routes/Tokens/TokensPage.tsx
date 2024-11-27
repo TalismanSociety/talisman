@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -172,7 +172,7 @@ const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
   )
 }
 
-const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
+const renderNetwork = (network: SimpleEvmNetwork) => {
   return (
     <div className="flex items-center gap-5">
       <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
@@ -186,11 +186,11 @@ const NetworkSelect = ({
   selectedId,
   onChange,
 }: {
-  networks: (EvmNetwork | CustomEvmNetwork)[]
+  networks: SimpleEvmNetwork[]
   selectedId: EvmNetworkId | null
   onChange: (evmNetworkId: EvmNetworkId) => void
 }) => {
-  const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
+  const [selected, setSelected] = useState<SimpleEvmNetwork | undefined>(
     networks.find((n) => n.id === selectedId),
   )
 
@@ -204,7 +204,7 @@ const NetworkSelect = ({
   }, [selectedId, networks, selected])
 
   const handleChange = useCallback(
-    (item: EvmNetwork | CustomEvmNetwork | null) => {
+    (item: SimpleEvmNetwork | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)
@@ -253,7 +253,7 @@ const Content = () => {
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
-    return [{ id: "ALL", name: "All networks" } as EvmNetwork, ...sortBy(evmNetworks, "name")]
+    return [{ id: "ALL", name: "All networks" } as SimpleEvmNetwork, ...sortBy(evmNetworks, "name")]
   }, [evmNetworks])
   const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
 

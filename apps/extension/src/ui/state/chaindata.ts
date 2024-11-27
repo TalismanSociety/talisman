@@ -4,8 +4,6 @@ import {
   ChainId,
   ChainList,
   CustomChain,
-  CustomEvmNetwork,
-  EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
   Token,
@@ -19,6 +17,7 @@ import {
   isChainActive,
   isEvmNetworkActive,
   isTokenActive,
+  SimpleEvmNetwork,
 } from "extension-core"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
@@ -26,7 +25,6 @@ import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 
-type AnyEvmNetwork = EvmNetwork | CustomEvmNetwork
 type AnyChain = Chain | CustomChain
 
 export type ChaindataQueryOptions = {
@@ -47,7 +45,7 @@ export const [useActiveEvmNetworksState, activeEvmNetworksState$] = bind(
 
 export const [useActiveChainsState, activeChainsState$] = bind(activeChainsStore.observable)
 
-const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
+const allEvmNetworks$ = new Observable<SimpleEvmNetwork[]>((subscriber) => {
   const unsubscribe = api.ethereumNetworks((data) => subscriber.next(data))
   return () => {
     unsubscribe()
@@ -55,7 +53,7 @@ const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
 }).pipe(debugObservable("allEvmNetworks$"), shareReplay(1))
 
 const allChains$ = new Observable<AnyChain[]>((subscriber) => {
-  const unsubscribe = api.chains((data) => subscriber.next(data)) // keeps provider up to date from chaindata
+  const unsubscribe = api.chains((data) => subscriber.next(data))
   return () => {
     unsubscribe()
   }
@@ -214,7 +212,9 @@ export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(
 export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
 
 const rawTokens$ = new Observable<Token[]>((subscriber) => {
-  const unsubscribe = api.tokens((data) => subscriber.next(data))
+  const unsubscribe = api.tokens((data) => {
+    subscriber.next(data)
+  })
   return () => {
     unsubscribe()
   }

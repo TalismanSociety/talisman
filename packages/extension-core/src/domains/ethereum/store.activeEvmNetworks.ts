@@ -1,9 +1,4 @@
-import {
-  CustomEvmNetwork,
-  EvmNetwork,
-  EvmNetworkId,
-  isCustomEvmNetwork,
-} from "@talismn/chaindata-provider"
+import { EvmNetworkId, isCustomEvmNetwork, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -32,7 +27,7 @@ class ActiveEvmNetworksStore extends StorageProvider<ActiveEvmNetworks> {
 export const activeEvmNetworksStore = new ActiveEvmNetworksStore()
 
 export const isEvmNetworkActive = (
-  network: EvmNetwork | CustomEvmNetwork,
+  network: SimpleEvmNetwork,
   activeNetworks: ActiveEvmNetworks,
 ) => {
   return activeNetworks[network.id] ?? (isCustomEvmNetwork(network) || network.isDefault)

@@ -42,6 +42,11 @@ export type CustomEvmNetwork = EvmNetwork & {
   iconUrls: string[]
 }
 
+export type SimpleEvmNetwork = Omit<
+  EvmNetwork | CustomEvmNetwork,
+  "balancesConfig" | "balancesMetadata"
+>
+
 export type EthereumRpc = {
   url: string // The url of this ethereum RPC
 }
