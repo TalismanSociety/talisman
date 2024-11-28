@@ -15,16 +15,24 @@ type BondDrawerProps = {
   tokenId: string
 }
 
-export const BondOptionSkeleton = () => {
+export const BondOptionSkeleton = ({ isRecommended }: { isRecommended?: boolean }) => {
   return (
-    <div className="bg-black-tertiary border-black-tertiary flex h-[6.7rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
-      <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[10rem] animate-pulse" />
-      <div className="flex w-full justify-between">
-        <div className="flex items-center" />
-        <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[15rem] animate-pulse" />
-        <div className="bg-grey-700 rounded-xs ml-auto h-[1.6rem] w-[3rem] animate-pulse" />
+    <>
+      <div
+        className={classNames(
+          "bg-black-tertiary border-black-tertiary flex h-[6.7rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs",
+          isRecommended && "h-[8.1rem]",
+        )}
+      >
+        <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[10rem] animate-pulse" />
+        <div className="flex w-full justify-between">
+          <div className="flex items-center" />
+          <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[15rem] animate-pulse" />
+          <div className="bg-grey-700 rounded-xs ml-auto h-[1.6rem] w-[3rem] animate-pulse" />
+        </div>
       </div>
-    </div>
+      {isRecommended && <div className="bg-grey-800 h-0.5" />}
+    </>
   )
 }
 

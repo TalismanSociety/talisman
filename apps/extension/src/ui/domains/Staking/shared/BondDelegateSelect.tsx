@@ -69,7 +69,7 @@ export const BondDelegateSelect = <T,>({
           {isLoading && bondOptions.length === 0
             ? Array(6)
                 .fill(null)
-                .map((_, i) => <BondOptionSkeleton key={i} />)
+                .map((_, i) => <BondOptionSkeleton key={i} isRecommended={i === 0} />)
             : bondOptions.map((option) => (
                 <BondOption
                   key={option.poolId}
