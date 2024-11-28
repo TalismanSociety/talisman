@@ -47,7 +47,7 @@ export const useCanStakeBittensor = ({ sapi, address, hotkey, chainId }: CanStak
     )
     const coolDownBlockNumber = Number(latestActionBlock) + STAKE_INTERVAL_BLOCKS
 
-    if (coolDownBlockNumber > (blockNumber ?? 0) && blockNumber) {
+    if (blockNumber && coolDownBlockNumber > blockNumber) {
       setCanStake(false)
     } else {
       // Handles the case were is user is switching between accounts where both accounts have staked but one account has a cooldown and the other does not
