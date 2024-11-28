@@ -74,7 +74,10 @@
         "react-native",
         "eciesjs"
       ],
-      "allowAny": ["utf-8-validate", "eciesjs"]
+      "allowAny": [
+        "utf-8-validate",
+        "eciesjs"
+      ]
     },
     "overrides": {
       "@polkadot/apps-config": "0.146.1",
