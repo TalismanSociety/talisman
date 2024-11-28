@@ -27,10 +27,12 @@ export const SUPPORTED_CURRENCIES = {
 } as const
 
 export type TokenRateCurrency = keyof typeof SUPPORTED_CURRENCIES
-export type TokenRates = Record<TokenRateCurrency, number | null>
+export type TokenRateData = { price: number; marketCap?: number; change24h?: number }
+export type TokenRates = Record<TokenRateCurrency, TokenRateData | null>
 export type TokenRatesList = Record<TokenId, TokenRates>
 export type DbTokenRates = { tokenId: TokenId; rates: TokenRates }
-export const NewTokenRates = (): TokenRates => ({
+
+export const newTokenRates = (): TokenRates => ({
   btc: null,
   eth: null,
   dot: null,

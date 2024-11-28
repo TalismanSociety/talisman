@@ -1,5 +1,6 @@
 import { Token } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
+import { TokenRateData } from "@talismn/token-rates"
 import { t } from "i18next"
 import { FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -106,14 +107,14 @@ const TokenBreadcrumb: FC<{
   balances: Balances
   symbol: string
   token: Token | undefined
-  rate: number | null | undefined
+  rate: TokenRateData | null | undefined
 }> = ({ balances, symbol, token, rate }) => {
   const { t } = useTranslation()
 
   const navigate = useNavigateWithQuery()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const items = useMemo(() => {
     return [
@@ -131,8 +132,8 @@ const TokenBreadcrumb: FC<{
                 <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} className="text-body-secondary" />
+            {!isUniswapV2LpToken && typeof rate?.price === "number" && (
+              <Fiat amount={rate.price} className="text-body-secondary" />
             )}
           </div>
         ),

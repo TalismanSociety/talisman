@@ -31,7 +31,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const { t } = useTranslation()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   return (
     <>
@@ -51,8 +51,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <Fiat className="overflow-hidden text-ellipsis whitespace-nowrap" amount={tvl} />
             )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat className="overflow-hidden text-ellipsis whitespace-nowrap" amount={rate} />
+            {!isUniswapV2LpToken && !!rate && (
+              <Fiat
+                className="overflow-hidden text-ellipsis whitespace-nowrap"
+                amount={rate.price}
+              />
             )}
             <div>
               <Fiat amount={total} isBalance />

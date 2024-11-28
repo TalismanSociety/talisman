@@ -86,7 +86,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { t } = useTranslation()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
@@ -126,8 +126,8 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} className="text-body-secondary text-xs" />
+            {!isUniswapV2LpToken && !!rate && (
+              <Fiat amount={rate.price} className="text-body-secondary text-xs" />
             )}
           </div>
           <div
