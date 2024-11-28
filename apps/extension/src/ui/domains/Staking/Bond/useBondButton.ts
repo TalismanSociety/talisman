@@ -36,7 +36,7 @@ export const useBondButton = ({
       })
   }, [balances, ownedAddresses, tokenId])
 
-  const address = sorted[0].address
+  const address = sorted[0]?.address
 
   const { data: hotkeys } = useGetBittensorStakeHotkeys({
     chainId: token?.chain?.id,
