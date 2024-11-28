@@ -406,8 +406,9 @@ export const BondForm = () => {
           <div>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="whitespace-nowrap">
-                  {t("APR")} <InfoIcon className="inline-block" />
+                <div className="flex items-center gap-1 whitespace-nowrap leading-none">
+                  {t("APR")}
+                  <InfoIcon />
                 </div>
               </TooltipTrigger>
               <TooltipContent>{t("Estimated Annual Percentage Rate (APR)")}</TooltipContent>
