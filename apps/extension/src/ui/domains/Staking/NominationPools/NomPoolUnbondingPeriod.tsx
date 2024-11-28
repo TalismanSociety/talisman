@@ -21,8 +21,7 @@ export const NomPoolUnbondingPeriod = ({ chainId }: NomPoolUnbondingPeriodProps)
   if (isLoading)
     return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">28 Days</div>
 
-  if (isError)
-    return <div className="text-alert-error">{t("Unable to fetch unbonding period")}</div>
+  if (isError) return <div className="text-alert-warn">{t("Unable to fetch unbonding period")}</div>
 
   return <>{display}</>
 }

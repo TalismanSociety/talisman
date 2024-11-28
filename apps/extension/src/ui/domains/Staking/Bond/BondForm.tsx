@@ -342,7 +342,7 @@ const StakeApr = () => {
   if (isLoading)
     return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
 
-  if (isError) return <div className="text-alert-error">Unable to fetch APR data</div>
+  if (isError) return <div className="text-alert-warn">Unable to fetch APR data</div>
 
   return (
     <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>

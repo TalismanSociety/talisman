@@ -93,7 +93,7 @@ export const BondOption = ({
                 </div>
               </>
             ) : (
-              <div className="text-alert-error line-clamp-1 text-ellipsis">
+              <div className="text-alert-warn line-clamp-1 text-ellipsis">
                 {t("Unable to fetch validator data")}
               </div>
             )}
