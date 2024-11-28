@@ -31,10 +31,10 @@
     "anylogger": "^1.0.11"
   },
   "devDependencies": {
-    "@polkadot/api-contract": "14.1.1",
-    "@polkadot/rpc-provider": "14.1.1",
-    "@polkadot/types": "14.1.1",
-    "@polkadot/util": "13.2.1",
+    "@polkadot/api-contract": "15.0.1",
+    "@polkadot/rpc-provider": "15.0.1",
+    "@polkadot/types": "15.0.1",
+    "@polkadot/util": "13.2.3",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^29.5.14",

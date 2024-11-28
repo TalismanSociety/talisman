@@ -11,8 +11,8 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@polkadot/util": "13.2.1",
-    "@polkadot/util-crypto": "13.2.1",
+    "@polkadot/util": "13.2.3",
+    "@polkadot/util-crypto": "13.2.3",
     "@sentry/browser": "8.35.0",
     "@sentry/react": "8.35.0",
     "@talismn/chaindata-provider": "workspace:*",
