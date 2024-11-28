@@ -1,14 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { bittensorUnbondBlockNumberStore } from "extension-core"
 
-const fetchBittensorUnbondBlockNumber = async ({
-  address,
-  delegator,
-}: GetBittensorUnbondBlockNumber) => {
-  if (!address || !delegator) return null
-  const response = await bittensorUnbondBlockNumberStore.get(address)
-  return response?.[delegator]
-}
+import { useAppStateValue } from "@ui/state"
 
 type GetBittensorUnbondBlockNumber = {
   address: string | null | undefined
@@ -19,9 +11,13 @@ export const useGetBittensorUnbondBlockNumber = ({
   address,
   delegator,
 }: GetBittensorUnbondBlockNumber) => {
+  const unbondBlockNumber = useAppStateValue("bittensorUnbondBlockNumber")
   return useQuery({
     queryKey: ["useGetBittensorUnbondBlockNumber", address, delegator],
-    queryFn: async () => fetchBittensorUnbondBlockNumber({ address, delegator }),
+    queryFn: () =>
+      address && delegator && unbondBlockNumber[address]
+        ? unbondBlockNumber[address]?.[delegator]
+        : undefined,
     enabled: !!address && !!delegator,
   })
 }

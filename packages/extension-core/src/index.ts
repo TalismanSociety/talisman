@@ -7,11 +7,6 @@ export { passwordStore } from "./domains/app/store.password"
 export { remoteConfigStore } from "./domains/app/store.remoteConfig"
 export { addressBookStore, type AddressBookContact } from "./domains/app/store.addressBook"
 export {
-  bittensorUnbondBlockNumberStore,
-  type BlockNumberByDelegator,
-  type DelegatorsBlockNumberByAccount,
-} from "./domains/app/store.bittensorUnbondBlockNumber"
-export {
   ERRORS_STORE_INITIAL_DATA,
   type ErrorsStoreData,
   errorsStore,

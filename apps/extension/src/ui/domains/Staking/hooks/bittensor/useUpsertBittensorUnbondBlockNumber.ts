@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query"
-import { bittensorUnbondBlockNumberStore } from "extension-core"
+
+import { useAppState } from "@ui/state"
 
 export const useUpsertBittensorUnbondBlockNumber = () => {
+  const [_, setUnbondBlockNumber] = useAppState("bittensorUnbondBlockNumber")
   return useMutation({
     mutationFn: async ({
       account,
@@ -13,8 +15,15 @@ export const useUpsertBittensorUnbondBlockNumber = () => {
       blockNumber: number
     }) => {
       if (!account || !delegator || !blockNumber) return
-      const info = await bittensorUnbondBlockNumberStore.get(account)
-      bittensorUnbondBlockNumberStore.set({ [account]: { ...info, [delegator]: blockNumber } })
+      setUnbondBlockNumber((prev) => {
+        return {
+          ...prev,
+          [account]: {
+            ...prev[account],
+            [delegator]: blockNumber,
+          },
+        }
+      })
     },
   })
 }
