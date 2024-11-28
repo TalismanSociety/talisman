@@ -76,7 +76,6 @@
       ]
     },
     "overrides": {
-      "polkadot-api": "1.7.6",
       "@polkadot/apps-config": "0.146.1",
       "@polkadot/api-augment": "15.0.1",
       "@polkadot/api-base": "15.0.1",
