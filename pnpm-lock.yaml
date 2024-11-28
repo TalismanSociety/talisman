@@ -17446,7 +17446,7 @@ snapshots:
       execa: 5.1.1
       invariant: 2.2.4
       metro: 0.81.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      metro-config: 0.81.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      metro-config: 0.81.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       metro-core: 0.81.0
       node-fetch: 2.7.0
       readline: 1.3.0
@@ -24476,6 +24476,21 @@ snapshots:
       flow-enums-runtime: 0.0.6
       metro-core: 0.81.0
 
+  metro-config@0.81.0(bufferutil@4.0.8)(utf-8-validate@5.0.10):
+    dependencies:
+      connect: 3.7.0
+      cosmiconfig: 5.2.1
+      flow-enums-runtime: 0.0.6
+      jest-validate: 29.7.0
+      metro: 0.81.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      metro-cache: 0.81.0
+      metro-core: 0.81.0
+      metro-runtime: 0.81.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   metro-config@0.81.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     dependencies:
       connect: 3.7.0
@@ -24490,6 +24505,7 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
+    optional: true
 
   metro-core@0.81.0:
     dependencies:
@@ -24606,6 +24622,7 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
+    optional: true
 
   metro@0.81.0(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     dependencies:
@@ -24634,7 +24651,7 @@ snapshots:
       metro-babel-transformer: 0.81.0
       metro-cache: 0.81.0
       metro-cache-key: 0.81.0
-      metro-config: 0.81.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      metro-config: 0.81.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       metro-core: 0.81.0
       metro-file-map: 0.81.0
       metro-resolver: 0.81.0
@@ -24704,6 +24721,7 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
+    optional: true
 
   micro-ftch@0.3.1: {}
 
@@ -28156,6 +28174,7 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 6.0.4
+    optional: true
 
   ws@8.17.1(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     optionalDependencies:
