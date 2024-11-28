@@ -45,7 +45,7 @@
     "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
   },
   "dependencies": {
-    "polkadot-api": "^1.7.6"
+    "polkadot-api": "^1.7.7"
   },
   "devDependencies": {
     "@alectalisman/preconstruct-cli": "2.3.0-e",
