@@ -69,7 +69,7 @@ export const AssetDiscoveryDashboardAlert = () => {
           </Suspense>
         ),
         {
-          autoClose: false,
+          autoClose: 60_000,
           toastId: ASSET_DISCOVERY_TOAST_ID,
           onClick: () => {
             navigate("/settings/networks-tokens/asset-discovery")
