@@ -150,6 +150,7 @@ export const EvmErc20Module: NewBalanceModule<
           type: "evm-erc20",
           isTestnet,
           isDefault: tokenConfig.isDefault ?? true,
+          discoverable: tokenConfig.discoverable ?? true,
           symbol,
           decimals,
           logo: tokenConfig?.logo || githubTokenLogoUrl(id),

@@ -96,6 +96,7 @@ export const EvmNativeModule: NewBalanceModule<
         type: "evm-native",
         isTestnet,
         isDefault: true,
+        discoverable: moduleConfig?.discoverable ?? true,
         symbol,
         decimals,
         logo: moduleConfig?.logo || githubTokenLogoUrl(id),

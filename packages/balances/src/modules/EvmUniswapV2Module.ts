@@ -125,6 +125,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
           type: "evm-uniswapv2",
           isTestnet,
           isDefault: tokenConfig.isDefault ?? false,
+          discoverable: tokenConfig.discoverable ?? true,
           symbol: `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           decimals,
           logo: tokenConfig?.logo || githubTokenLogoUrl("uniswap"),
