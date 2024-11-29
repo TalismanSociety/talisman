@@ -3,7 +3,7 @@ import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { TransactionRequest } from "viem"
@@ -21,7 +21,6 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTip } from "@ui/hooks/useTip"
 import {
   useAccountByAddress,
@@ -30,7 +29,6 @@ import {
   useBalancesHydrate,
   useChain,
   useEvmNetwork,
-  useSelectedCurrency,
   useToken,
   useTokenRates,
   useTokenRatesMap,
@@ -44,7 +42,6 @@ import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMeta
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
 import { useFeeToken } from "./useFeeToken"
-import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
 
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
@@ -225,7 +222,6 @@ const useSendFundsProvider = () => {
   const tokensMap = useTokensMap()
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
-  const currency = useSelectedCurrency()
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
@@ -237,14 +233,6 @@ const useSendFundsProvider = () => {
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
   const feeTokenRates = useTokenRates(feeToken?.id)
-
-  const refTokensInput = useRef<HTMLInputElement>(null)
-  useSendFundsInputNumber(refTokensInput, token?.decimals)
-  const resizeTokensInput = useInputAutoWidth(refTokensInput)
-
-  const refFiatInput = useRef<HTMLInputElement>(null)
-  useSendFundsInputNumber(refFiatInput, 2)
-  const resizeFiatInput = useInputAutoWidth(refFiatInput)
 
   const transfer = useMemo(
     () => (token && amount ? new BalanceFormatter(amount, token.decimals, tokenRates) : null),
@@ -554,16 +542,7 @@ const useSendFundsProvider = () => {
 
     if (isSubToken(token)) set("sendMax", true)
     else set("amount", maxAmount.planck.toString())
-
-    if (refTokensInput.current) {
-      refTokensInput.current.value = maxAmount.tokens
-      resizeTokensInput()
-    }
-    if (refFiatInput.current) {
-      refFiatInput.current.value = maxAmount.fiat(currency)?.toString() ?? ""
-      resizeFiatInput()
-    }
-  }, [currency, maxAmount, resizeFiatInput, resizeTokensInput, set, token])
+  }, [maxAmount, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
@@ -741,10 +720,6 @@ const useSendFundsProvider = () => {
     isProcessing,
     sendErrorMessage,
     isEstimatingMaxAmount,
-    refTokensInput,
-    resizeTokensInput,
-    refFiatInput,
-    resizeFiatInput,
   }
 }
 
