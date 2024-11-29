@@ -46,10 +46,10 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
       "focusout",
     ]
 
-    events.forEach((eventName) => input.addEventListener(eventName, handler))
+    events.forEach((eventName) => input.addEventListener(eventName, handler, true))
 
     return () => {
-      events.forEach((eventName) => input.removeEventListener(eventName, handler))
+      events.forEach((eventName) => input.removeEventListener(eventName, handler, true))
     }
     // ref?.current will toggle between defined and not, it's imperative to resubscribe each time
     // eslint-disable-next-line react-hooks/exhaustive-deps
