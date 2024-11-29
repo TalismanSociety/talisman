@@ -70,6 +70,7 @@ export const AssetDiscoveryDashboardAlert = () => {
         ),
         {
           autoClose: 60_000,
+          hideProgressBar: true,
           toastId: ASSET_DISCOVERY_TOAST_ID,
           onClick: () => {
             navigate("/settings/networks-tokens/asset-discovery")
