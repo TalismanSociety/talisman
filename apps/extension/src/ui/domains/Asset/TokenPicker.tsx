@@ -317,13 +317,23 @@ const TokensList: FC<TokensListProps> = ({
 
   // apply user search
   const tokens = useMemo(() => {
+    if (!search) return tokensWithBalances
+
     const ls = search?.toLowerCase()
-    return tokensWithBalances.filter(
-      (t) =>
-        !ls ||
-        t.token.symbol.toLowerCase().includes(ls) ||
-        t.chainNameSearch?.toLowerCase().includes(ls),
-    )
+    return tokensWithBalances
+      .filter(
+        (t) =>
+          !ls ||
+          t.token.symbol.toLowerCase().includes(ls) ||
+          t.chainNameSearch?.toLowerCase().includes(ls),
+      )
+      .sort((t1, t2) => {
+        const s1 = t1.token.symbol.toLowerCase()
+        const s2 = t2.token.symbol.toLowerCase()
+        if (s1 === ls && s2 !== ls) return -1
+        if (s1 !== ls && s2 === ls) return 1
+        return 0
+      })
   }, [search, tokensWithBalances])
 
   const handleAccountClick = useCallback(
