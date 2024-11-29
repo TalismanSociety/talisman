@@ -34,7 +34,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
         "text-body-inactive hover:text-body-secondary flex items-center gap-2",
         className,
         hasError && "text-alert-warn",
-        hide && "hidden",
+        hide && "invisible",
       )}
     >
       {hasClickRequest && isAnalysing ? (
