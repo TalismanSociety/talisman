@@ -13,6 +13,7 @@
     "preconstruct:dev": "preconstruct dev",
     "preconstruct:fix": "preconstruct fix",
     "papi": "papi && pnpm papi:fixdep",
+    "papi:dockerbuildcompat": "cp pnpm-lock.yaml pnpm-lock.yaml.cp && ./node_modules/.bin/papi && mv pnpm-lock.yaml.cp pnpm-lock.yaml && pnpm remove --workspace-root @polkadot-api/descriptors && pnpm install",
     "papi:fixdep": "git checkout pnpm-lock.yaml && pnpm remove --workspace-root @polkadot-api/descriptors && pnpm install",
     "papi:generate": "papi generate && pnpm papi:fixdep",
     "papi:update": "papi update && pnpm papi:fixdep",
