@@ -93,7 +93,11 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
 }
 
 const renderAccountItem: DropdownOptionRender<AccountJsonAny> = (account) => {
-  return <FormattedAddress address={account.address} withSource className="h-24" />
+  return (
+    <div className="flex h-24 flex-col justify-center">
+      <FormattedAddress address={account.address} withSource />
+    </div>
+  )
 }
 
 export const BuyTokensForm = () => {

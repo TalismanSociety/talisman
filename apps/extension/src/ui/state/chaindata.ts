@@ -4,8 +4,6 @@ import {
   ChainId,
   ChainList,
   CustomChain,
-  CustomEvmNetwork,
-  EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
   Token,
@@ -19,16 +17,14 @@ import {
   isChainActive,
   isEvmNetworkActive,
   isTokenActive,
+  SimpleEvmNetwork,
 } from "extension-core"
-import { isEqual } from "lodash"
-import { combineLatest, distinctUntilChanged, map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
-import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
 import { debugObservable } from "./util/debugObservable"
 
-type AnyEvmNetwork = EvmNetwork | CustomEvmNetwork
 type AnyChain = Chain | CustomChain
 
 export type ChaindataQueryOptions = {
@@ -41,8 +37,6 @@ const ALL: ChaindataQueryOptions = {
   includeTestnets: true,
 }
 
-const NO_OP = () => {}
-
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
 export const [useActiveEvmNetworksState, activeEvmNetworksState$] = bind(
@@ -51,29 +45,17 @@ export const [useActiveEvmNetworksState, activeEvmNetworksState$] = bind(
 
 export const [useActiveChainsState, activeChainsState$] = bind(activeChainsStore.observable)
 
-const allEvmNetworks$ = new Observable<AnyEvmNetwork[]>((subscriber) => {
-  const subData = chaindataProvider.evmNetworksObservable
-    .pipe(distinctUntilChanged<AnyEvmNetwork[]>(isEqual))
-    .subscribe((data) => {
-      subscriber.next(data)
-    })
-  const unsubscribe = api.ethereumNetworks(NO_OP) // keeps provider up to date from chaindata
+const allEvmNetworks$ = new Observable<SimpleEvmNetwork[]>((subscriber) => {
+  const unsubscribe = api.ethereumNetworks((data) => subscriber.next(data))
   return () => {
     unsubscribe()
-    subData.unsubscribe()
   }
 }).pipe(debugObservable("allEvmNetworks$"), shareReplay(1))
 
 const allChains$ = new Observable<AnyChain[]>((subscriber) => {
-  const subData = chaindataProvider.chainsObservable
-    .pipe(distinctUntilChanged<AnyChain[]>(isEqual))
-    .subscribe((data) => {
-      subscriber.next(data)
-    })
-  const unsubscribe = api.chains(NO_OP) // keeps provider up to date from chaindata
+  const unsubscribe = api.chains((data) => subscriber.next(data))
   return () => {
     unsubscribe()
-    subData.unsubscribe()
   }
 }).pipe(debugObservable("allChains$"), shareReplay(1))
 
@@ -230,15 +212,11 @@ export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(
 export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
 
 const rawTokens$ = new Observable<Token[]>((subscriber) => {
-  const subData = chaindataProvider.tokensObservable
-    .pipe(distinctUntilChanged<Token[]>(isEqual))
-    .subscribe((data) => {
-      subscriber.next(data)
-    })
-  const unsubscribe = api.tokens(NO_OP)
+  const unsubscribe = api.tokens((data) => {
+    subscriber.next(data)
+  })
   return () => {
     unsubscribe()
-    subData.unsubscribe()
   }
 }).pipe(debugObservable("rawTokens$"), shareReplay(1))
 

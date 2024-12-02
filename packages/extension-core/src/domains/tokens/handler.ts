@@ -5,8 +5,11 @@ import {
   evmErc20TokenId,
   evmUniswapV2TokenId,
 } from "@talismn/balances"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { githubUnknownTokenLogoUrl, Token } from "@talismn/chaindata-provider"
+import { isEqual } from "lodash"
+import { distinctUntilChanged } from "rxjs"
 
+import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -31,13 +34,16 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
         // TODO: Run this on a timer or something instead of when subscribing to tokens
-        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
 
         // triggers a pending scan if any
         // doing this here as this is the only place where we hydrate tokens from github
         assetDiscoveryScanner.startPendingScan()
-
-        return true
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.tokensObservable.pipe(distinctUntilChanged<Token[]>(isEqual)),
+        )
       }
 
       // --------------------------------------------------------------------

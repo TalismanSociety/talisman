@@ -12,6 +12,7 @@ import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBounda
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
+import { KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
 
 import { initSentryFrontend } from "../sentry"
 
@@ -25,15 +26,27 @@ const KeepBackgroundOpen = () => {
   useKeepBackgroundOpen()
   return null
 }
+const KeepWalletUnlocked = ({ mode }: { mode?: KeepWalletUnlockedMode }) => {
+  useKeepWalletUnlocked({ mode })
+  return null
+}
 
 const queryClient = new QueryClient()
 
 initSentryFrontend()
 const container = document.getElementById("root")
 
+export type RenderTalismanOptions = {
+  /** Sets whether the wallet autolock timer should be restarted on a user-interaction, or on a 10s interval. */
+  keepWalletUnlockedMode?: KeepWalletUnlockedMode
+}
+
 // render a context dependent app with all providers
 // could possibly re-org this slightly better
-export const renderTalisman = (app: ReactNode) => {
+export const renderTalisman = (
+  app: ReactNode,
+  { keepWalletUnlockedMode }: RenderTalismanOptions = {},
+) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
   root.render(
@@ -42,6 +55,7 @@ export const renderTalisman = (app: ReactNode) => {
         <ErrorBoundaryDatabaseMigration>
           <Suspense fallback={<SuspenseTracker name="Root" />}>
             <KeepBackgroundOpen />
+            <KeepWalletUnlocked mode={keepWalletUnlockedMode} />
             <Subscribe>
               <QueryClientProvider client={queryClient}>
                 <HashRouter>{app}</HashRouter>

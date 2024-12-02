@@ -39,6 +39,8 @@ export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
 export const TALISMAN_WEB_APP_SWAP_URL = "https://app.talisman.xyz/transport/swap"
 
+export const TALISMAN_QUEST_APP_URL = "https://quest.talisman.xyz"
+
 export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 

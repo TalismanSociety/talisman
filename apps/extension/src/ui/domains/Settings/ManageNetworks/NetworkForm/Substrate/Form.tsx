@@ -175,7 +175,7 @@ export const SubNetworkForm = ({
               }}
             />
           </div>
-          <FormFieldContainer label={t("Subscan URL")} error={errors.subscanUrl?.message}>
+          <FormFieldContainer label={t("Explorer URL")} error={errors.subscanUrl?.message}>
             <FormFieldInputText
               placeholder="https://chain-name.subscan.io/"
               {...register("subscanUrl")}

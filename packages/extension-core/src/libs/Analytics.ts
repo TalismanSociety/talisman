@@ -1,4 +1,4 @@
-import { DEBUG } from "extension-shared"
+import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { analyticsStore } from "../domains/analytics/store"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
@@ -6,7 +6,7 @@ import { settingsStore } from "../domains/app/store.settings"
 import { withGeneralReport } from "./GeneralReport"
 
 class TalismanAnalytics {
-  #enabled = Boolean(process.env.POSTHOG_AUTH_TOKEN)
+  #enabled = !IS_FIREFOX && Boolean(process.env.POSTHOG_AUTH_TOKEN)
 
   async capture(eventName: string, properties?: PostHogCaptureProperties) {
     if (!this.#enabled) return
@@ -15,9 +15,6 @@ class TalismanAnalytics {
       // have to put this manual check here because posthog is buggy and will not respect our settings
       // https://github.com/PostHog/posthog-js/issues/336
       const allowTracking = await settingsStore.get("useAnalyticsTracking")
-
-      // we need to allow tracking during onboarding, while value is not defined
-      // so we need to explicitly check for false
       if (allowTracking === false) return
 
       const captureProperties = await withGeneralReport(properties)

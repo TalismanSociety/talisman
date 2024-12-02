@@ -83,7 +83,7 @@ const Content = () => {
 }
 
 export const NetworksTokensPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

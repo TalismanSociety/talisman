@@ -1,47 +1,26 @@
-import { CheckIcon, ChevronLeftIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo } from "react"
+import { ChevronLeftIcon } from "@talismn/icons"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, IconButton } from "talisman-ui"
 
 import { languages } from "@common/i18nConfig"
+import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
 export const useLanguageDrawerOpenClose = () => useGlobalOpenClose("language-drawer")
 
-type Language = keyof typeof languages
-
-const LanguageButton: FC<{
-  displayName: string
-  selected: boolean
-  onClick: () => void
-}> = ({ displayName, selected, onClick }) => {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "text-body-secondary flex h-28 w-full items-center justify-between gap-4 rounded-sm px-6",
-        "border-grey-800 border",
-        selected && "bg-grey-900 text-body",
-        "hover:border-grey-700 hover:bg-grey-800 stroke-primary",
-      )}
-      onClick={onClick}
-    >
-      <div>{displayName}</div>
-      {!!selected && <CheckIcon className="text-primary size-8" />}
-    </button>
-  )
-}
-
 const LanguagesList = () => {
   const { i18n } = useTranslation()
   const { close } = useLanguageDrawerOpenClose()
 
-  const currentLang = useMemo(() => i18n.language, [i18n.language])
+  const options = useMemo(
+    () => Object.entries(languages).map(([value, label]) => ({ value, label })),
+    [],
+  )
 
   const handleLanguageClick = useCallback(
-    (lang: Language) => () => {
+    (lang: string) => {
       i18n.changeLanguage(lang ?? "en")
       close()
     },
@@ -49,16 +28,7 @@ const LanguagesList = () => {
   )
 
   return (
-    <div className="flex flex-col gap-4">
-      {Object.entries(languages).map(([lang, displayName]) => (
-        <LanguageButton
-          key={lang}
-          displayName={displayName}
-          selected={lang === currentLang}
-          onClick={handleLanguageClick(lang)}
-        />
-      ))}
-    </div>
+    <ExclusiveButtonsList options={options} value={i18n.language} onChange={handleLanguageClick} />
   )
 }
 

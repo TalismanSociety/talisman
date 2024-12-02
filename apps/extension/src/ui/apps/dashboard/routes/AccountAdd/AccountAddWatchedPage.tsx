@@ -24,7 +24,7 @@ export const Content = () => {
 }
 
 export const AccountAddWatchedPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

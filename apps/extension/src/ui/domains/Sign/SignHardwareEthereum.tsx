@@ -5,7 +5,7 @@ import { FC, lazy, Suspense } from "react"
 import { AccountJsonAny, AccountType, EthSignMessageMethod } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
-import SignDcentEthereum from "./SignDcentEthereum"
+import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
 
 const SignLedgerEthereum = lazy(() => import("./SignLedgerEthereum"))
 
@@ -26,7 +26,7 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
 
   switch (account?.origin) {
     case AccountType.Dcent:
-      return SignDcentEthereum
+      return SignDcentUnsupportedMessage
     case AccountType.Ledger:
     case // @ts-expect-error incomplete migration, remove once migration is completed
     "HARDWARE":

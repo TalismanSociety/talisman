@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "author": "Talisman",
   "name": "Talisman Wallet",
-  "description": "Talisman is an open-source crypto wallet that makes web3 simple for beginners and unlocks superpowers for pros",
+  "description": "Talisman is an open-source crypto wallet that makes web3 simple for beginners and unlocks superpowers for pros.",
   "version": "latest",
   "action": {
     "default_title": "Talisman",

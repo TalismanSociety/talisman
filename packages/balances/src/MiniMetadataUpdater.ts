@@ -37,7 +37,7 @@ const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
  * As such, the metadata can clock in at around 1-2MB per chain, which is a lot of storage
  * for browser-based dapps which want to connect to lots of chains.
  *
- * By utilizing the wonderful [subshape](https://github.com/paritytech/subshape) library,
+ * By utilizing the wonderful [scale-ts](https://github.com/unstoppablejs/unstoppablejs/tree/main/packages/scale-ts#readme) library,
  * we can trim the chain metadata down so that it only includes the types we need for balance fetching.
  *
  * Each balance module has a function to do just that, `BalanceModule::fetchSubstrateChainMeta`.

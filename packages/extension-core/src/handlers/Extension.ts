@@ -60,7 +60,7 @@ export default class Extension extends ExtensionHandler {
     // connect auto lock timeout setting to the password store
     this.stores.settings.observable.subscribe(({ autoLockMinutes }) => {
       this.#autoLockMinutes = autoLockMinutes
-      stores.password.resetAutoLockTimer(autoLockMinutes)
+      stores.password.resetAutolockTimer(autoLockMinutes)
     })
 
     // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
@@ -219,9 +219,14 @@ export default class Extension extends ExtensionHandler {
     // Then try remaining which are present in this class
     // --------------------------------------------------------------------
     switch (type) {
-      case "pri(ping)":
-        // Reset the auto lock timer on ping, the extension UI is open
-        this.stores.password.resetAutoLockTimer(this.#autoLockMinutes)
+      // Ensures that the background script remains open when the UI is also open (especially on firefox)
+      case "pri(keepalive)":
+        return true
+
+      // Keeps the wallet unlocked for N (user-definable) minutes after the last user interaction
+      case "pri(keepunlocked)":
+        // Restart the autolock timer when the user interacts with the wallet UI
+        this.stores.password.resetAutolockTimer(this.#autoLockMinutes)
         return true
 
       default:

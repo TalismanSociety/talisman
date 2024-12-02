@@ -7,6 +7,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 
 import { RiskAnalysisPillButton } from "./Ethereum/riskAnalysis"
+import { SubSignDecoded } from "./Substrate/decode/SubSignDecoded"
 
 type SignContainerProps = {
   title: ReactNode
@@ -40,6 +41,7 @@ export const SignContainer: FC<SignContainerProps> = ({
       </div>
       <div className="mb-8 mt-12 grow text-center">
         {networkType === "ethereum" && <RiskAnalysisPillButton />}
+        {networkType === "substrate" && <SubSignDecoded />}
       </div>
       {alert && alertContainer && createPortal(alert, alertContainer)}
     </FadeIn>

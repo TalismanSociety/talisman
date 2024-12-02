@@ -89,7 +89,7 @@ const Content = () => {
 }
 
 export const AboutPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )

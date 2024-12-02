@@ -1,6 +1,6 @@
 import keyring from "@polkadot/ui-keyring"
 import { sleep } from "@talismn/util"
-import { DEBUG } from "extension-shared"
+import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
 
 import { db } from "../db"
@@ -84,7 +84,7 @@ async function getGeneralReport() {
     settingsStore.get("useAnalyticsTracking"),
     appStore.getIsOnboarded(),
   ])
-  if (!allowTracking || !onboarded) return
+  if (!allowTracking || !onboarded || IS_FIREFOX) return
 
   //
   // accounts

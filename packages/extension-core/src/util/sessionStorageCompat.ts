@@ -6,6 +6,7 @@ abstract class TalismanSessionStorage {
   abstract get<K extends keyof SessionStorageData>(
     key: K,
   ): Promise<SessionStorageData[K] | undefined>
+  abstract remove<K extends keyof SessionStorageData>(keys: K | K[]): Promise<void>
   abstract set(data: Partial<SessionStorageData>): Promise<void>
   abstract clear(): Promise<void>
 }
@@ -24,6 +25,19 @@ class MemoryStorage implements TalismanSessionStorage {
     })
   }
 
+  remove(keys: string | string[]) {
+    return new Promise<void>((resolve) => {
+      keys = Array.isArray(keys) ? keys : [keys]
+
+      this.#data = { ...this.#data }
+      keys.forEach((key) => {
+        delete (this.#data as Record<string, unknown>)[key]
+      })
+
+      resolve()
+    })
+  }
+
   get<K extends keyof SessionStorageData>(key: K) {
     const result = this.#data[key]
     return new Promise<SessionStorageData[K] | undefined>((resolve) => resolve(result))
@@ -38,6 +52,10 @@ class MemoryStorage implements TalismanSessionStorage {
 class SessionStorage implements TalismanSessionStorage {
   set(data: Partial<SessionStorageData>) {
     return chrome.storage.session.set(data)
+  }
+
+  remove(keys: string | number | (string | number)[]) {
+    return chrome.storage.session.remove(keys)
   }
 
   async get<K extends keyof SessionStorageData>(key: K) {

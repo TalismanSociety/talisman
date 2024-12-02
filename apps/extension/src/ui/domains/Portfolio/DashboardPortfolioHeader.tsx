@@ -3,13 +3,14 @@ import {
   CreditCardIcon,
   FolderIcon,
   MoreHorizontalIcon,
+  QuestStarCircleIcon,
   RepeatIcon,
   SendIcon,
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { AccountJsonAny, AccountType, TreeFolder } from "extension-core"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
@@ -31,6 +32,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 import { AccountContextMenu } from "../Account/AccountContextMenu"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -200,7 +202,10 @@ const Action: FC<ActionProps> = ({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="text-body-secondary enabled:hover:text-body pointer-events-auto flex h-10 items-center gap-3 px-2 text-base opacity-90 disabled:opacity-70"
+          className={classNames(
+            "text-body-secondary pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base opacity-90 backdrop-blur-sm disabled:opacity-70",
+            "enabled:hover:text-body enabled:hover:bg-white/10",
+          )}
           onClick={handleClick}
           disabled={disabled}
         >
@@ -229,6 +234,7 @@ const TopActions: FC = () => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
+  const showQuestLink = useFeatureFlag("QUEST_LINK")
 
   const [disableActions, disabledReason] = useMemo(() => {
     if (!!selectedAccount && !isOwnedAccount(selectedAccount))
@@ -297,10 +303,13 @@ const TopActions: FC = () => {
   )
 
   return (
-    <div className="flex justify-center gap-4">
-      {topActions.map((action, index) => (
-        <Action key={index} {...action} />
-      ))}
+    <div className="z-[1] flex w-full items-center justify-between gap-8">
+      <div className="flex justify-center gap-4">
+        {topActions.map((action, index) => (
+          <Action key={index} {...action} />
+        ))}
+      </div>
+      {showQuestLink && <QuestLink />}
     </div>
   )
 }
@@ -313,4 +322,29 @@ const isOwnedAccount = (account: AccountJsonAny) => {
     default:
       return true
   }
+}
+
+const QuestLink = () => {
+  const { t } = useTranslation()
+
+  const handleQuestsClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
+    window.open(TALISMAN_QUEST_APP_URL, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
+  }, [])
+
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "text-primary-700 hover:text-primary flex shrink-0 items-center gap-3 text-base",
+      )}
+      onClick={handleQuestsClick}
+    >
+      <div className="flex flex-col justify-center text-[2rem]">
+        <QuestStarCircleIcon />
+      </div>
+      <div>{t("Quests")}</div>
+    </button>
+  )
 }

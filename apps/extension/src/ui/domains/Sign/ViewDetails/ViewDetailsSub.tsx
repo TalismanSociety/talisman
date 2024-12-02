@@ -19,7 +19,6 @@ import { ViewDetailsAddress } from "./ViewDetailsAddress"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
 import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
-import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
 import { ViewDetailsTxObject } from "./ViewDetailsTxObject"
 
 const ViewDetailsContent: FC<{
@@ -65,16 +64,15 @@ const ViewDetailsContent: FC<{
     }
   }, [payload])
 
-  const { methodName, args, decodedMethod } = useMemo(() => {
+  const { methodName, args } = useMemo(() => {
     if (!extrinsic) return { methodName: t("Unknown") }
 
     const methodName = `${extrinsic.method.section} : ${extrinsic.method.method}`
 
-    const decodedMethod = extrinsic.method.toHuman(true) as TransactionMethod
     const decoded = extrinsic.method.toHuman() as TransactionMethod
     const args = decoded?.args
 
-    return { methodName, args, decodedMethod }
+    return { methodName, args }
   }, [extrinsic, t])
 
   useEffect(() => {
@@ -107,7 +105,6 @@ const ViewDetailsContent: FC<{
               error={errorDecodingExtrinsic ? t("Failed to decode method.") : ""}
             />
             <ViewDetailsField label={t("Method")}>{methodName}</ViewDetailsField>
-            <ViewDetailsTxDesc label={t("Description")} method={decodedMethod} />
             <ViewDetailsTxObject label={t("Arguments")} obj={args} />
             <ViewDetailsTxObject label={t("Payload")} obj={decodedPayload?.toHuman()} />
           </>

@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser"
-import { DEBUG, log } from "extension-shared"
+import { DEBUG, IS_FIREFOX, log } from "extension-shared"
 import { v4 } from "uuid"
 
 import { StorageProvider } from "../../libs/Store"
@@ -65,6 +65,9 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
     rawProperties?: PostHogCaptureProperties,
     eventTimestamp?: number,
   ) {
+    const enabled = await settingsStore.get("useAnalyticsTracking")
+    if (IS_FIREFOX || enabled === false) return
+
     log.debug("AnalyticsStore.capture", { eventName, rawProperties, eventTimestamp })
     const timestamp = eventTimestamp ?? Date.now()
     const distinct_id = await this.getDistinctId()

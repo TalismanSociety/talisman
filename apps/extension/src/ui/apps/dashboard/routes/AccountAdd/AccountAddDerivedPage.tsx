@@ -29,7 +29,7 @@ const Content = () => {
 }
 
 export const AccountAddDerivedPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )
