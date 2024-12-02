@@ -45,7 +45,6 @@ const useLedgerSubstrateGenericAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
   const chains = useChains({ activeOnly: true, includeTestnets: false })
-
   const withBalances = useMemo(() => chains.some((chain) => chain.hasCheckMetadataHash), [chains])
 
   const { isReady, ledger, getAddress, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
