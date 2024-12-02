@@ -7,7 +7,7 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useEvmNetworks } from "@ui/state"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
@@ -25,6 +25,8 @@ const useLedgerEthereumAccounts = (
   ])
   const [isBusy, setIsBusy] = useState<boolean>()
   const [error, setError] = useState<string>()
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => !!evmNetworks.length, [evmNetworks])
 
   const { isReady, ledger, ...connectionStatus } = useLedgerEthereum()
 
@@ -66,19 +68,17 @@ const useLedgerEthereumAccounts = (
     setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
-  const withBalances = useMemo(() => !!derivedAccounts?.length, [derivedAccounts?.length])
-
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      derivedAccounts.filter(Boolean).length
+      withBalances && derivedAccounts.filter(Boolean).length === itemsPerPage
         ? derivedAccounts
             .filter((acc): acc is LedgerEthereumAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ethereum" }))
         : [],
-    [derivedAccounts],
+    [derivedAccounts, itemsPerPage, withBalances],
   )
-  const balances = useAccountImportBalances(accountImportDefs)
+  const balances = useAccountImportBalances(balanceDefs)
 
   const accounts = useMemo(
     () =>
@@ -93,8 +93,9 @@ const useLedgerEthereumAccounts = (
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
         )
         const isBalanceLoading =
-          accountBalances.each.some((b) => b.status === "cache") ||
-          balances.status === "initialising"
+          withBalances &&
+          (accountBalances.each.some((b) => b.status === "cache") ||
+            balances.status === "initialising")
 
         return {
           ...acc,
@@ -105,7 +106,7 @@ const useLedgerEthereumAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts],
+    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances],
   )
 
   useEffect(() => {
