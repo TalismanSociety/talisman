@@ -10,7 +10,7 @@ docker run --rm --volume "$(pwd)/review":/review talisman-builder bash -c ' \
     rm -rf /talisman/apps/extension/dist && \
     find /talisman/ -depth -type d -name node_modules -exec rm -rf {} \; && \
     cp -r /talisman/ /review/sources && \
-    rm /talisman/sources/apps/extension/.env.local
+    rm /review/sources/apps/extension/.env.local
 '
 cd review
 zip -r source.zip ./sources/
