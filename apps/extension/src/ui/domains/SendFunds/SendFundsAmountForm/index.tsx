@@ -46,7 +46,7 @@ const ReviewButton = () => {
       !acceptedWarnings.includes("recipientWarning")
     )
       recipientWarningDrawer.open()
-    else gotoReview(false)
+    else gotoReview(acceptedWarnings.includes("forfeitWarning"))
   }, [confirmed, warnings, acceptedWarnings, forfeitDrawer, recipientWarningDrawer, gotoReview])
 
   const handleAcceptWarning = useCallback((warning: string) => {
