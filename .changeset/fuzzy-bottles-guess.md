@@ -2,4 +2,4 @@
 "@talismn/balances": minor
 ---
 
-discoverable property on tokens
+noDiscovery property on tokens

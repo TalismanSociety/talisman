@@ -346,7 +346,7 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
 
-    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName, discoverable } =
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName, noDiscovery } =
       nativeModule.moduleConfig as Token
     if (!symbol) throw new Error("Missing native token symbol")
     if (!decimals) throw new Error("Missing native token decimals")
@@ -363,7 +363,7 @@ export class ChaindataProvider implements IChaindataProvider {
       logo,
       mirrorOf,
       dcentName,
-      discoverable,
+      noDiscovery,
     }
 
     builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }

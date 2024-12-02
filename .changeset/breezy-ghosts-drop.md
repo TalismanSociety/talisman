@@ -2,4 +2,4 @@
 "@talismn/chaindata-provider": minor
 ---
 
-new discoverable property on tokens
+new noDiscovery property on tokens

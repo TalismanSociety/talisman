@@ -14,9 +14,7 @@ export type TokenBase = {
   logo: string
   coingeckoId?: string
   dcentName?: string
-
-  // if false, ignore from asset discovery. if undefined, assume it's true
-  discoverable?: boolean
+  noDiscovery?: boolean
 
   // Example use-case:
   // An account on moonbeam has tokens via both the substrate and evm APIs
