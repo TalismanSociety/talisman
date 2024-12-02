@@ -99,12 +99,6 @@ class AssetDiscoveryScanner {
     // 2. Clear scan table
     await db.assetDiscovery.clear()
 
-    // 3. Inform the user that a scan is in progress
-    await appStore.set({
-      showAssetDiscoveryAlert: true,
-      dismissedAssetDiscoveryAlertScanId: "",
-    })
-
     // 3. Start scan
     this.resumeScan()
 
@@ -272,13 +266,6 @@ class AssetDiscoveryScanner {
 
             if (newBalances.length) {
               await db.assetDiscovery.bulkPut(newBalances)
-
-              // display alert if it has not been explicitely dismissed
-              // happens if user navigated away from asset discovery screen before a new token is found
-              const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
-                await appStore.get()
-              if (!showAssetDiscoveryAlert && dismissedAssetDiscoveryAlertScanId !== scanId)
-                await appStore.set({ showAssetDiscoveryAlert: true })
             }
           }
         } catch (err) {
@@ -301,9 +288,6 @@ class AssetDiscoveryScanner {
         status: "idle",
       }
     })
-
-    if ((await db.assetDiscovery.count()) === 0)
-      await appStore.set({ showAssetDiscoveryAlert: false })
   }
 
   public async startPendingScan(): Promise<void> {

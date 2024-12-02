@@ -7,7 +7,6 @@ import { FullScreenLocked } from "@talisman/components/FullScreenLocked"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
@@ -181,7 +180,6 @@ const Dashboard = () => (
       <DashboardInner />
     </LoginChecker>
     <DatabaseErrorAlert container="fullscreen" />
-    <AssetDiscoveryDashboardAlert />
   </PreventPhishing>
 )
 

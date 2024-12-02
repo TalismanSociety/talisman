@@ -11,7 +11,7 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
+import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
@@ -55,7 +55,6 @@ import {
   useAccounts,
   useActiveEvmNetworksState,
   useActiveTokensState,
-  useAppState,
   useAssetDiscoveryScan,
   useAssetDiscoveryScanProgress,
   useBalancesHydrate,
@@ -580,13 +579,6 @@ const Content = () => {
   useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
-    useAppState("showAssetDiscoveryAlert")
-
-  // hide alert when user browses this page
-  useEffect(() => {
-    if (showAssetDiscoveryAlert) setShowAssetDiscoveryAlert(false)
-  }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
     <>

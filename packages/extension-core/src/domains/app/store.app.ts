@@ -29,8 +29,6 @@ export type AppStoreData = {
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
-  showAssetDiscoveryAlert?: boolean
-  dismissedAssetDiscoveryAlertScanId?: string
   isAssetDiscoveryScanPending?: boolean
   showLedgerPolkadotGenericMigrationAlert?: boolean
   hideManageAccountsWelcome?: boolean
@@ -50,7 +48,6 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   needsSpiritKeyUpdate: false,
   hideStakingBanner: [],
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
-  showAssetDiscoveryAlert: false,
   showLedgerPolkadotGenericMigrationAlert: false,
 }
 
