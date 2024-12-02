@@ -361,10 +361,11 @@ export class ChaindataProvider implements IChaindataProvider {
       decimals,
       coingeckoId,
       logo,
-      mirrorOf,
-      dcentName,
-      noDiscovery,
     }
+
+    if (mirrorOf) builtInNativeToken.mirrorOf = mirrorOf
+    if (dcentName) builtInNativeToken.dcentName = dcentName
+    if (noDiscovery) builtInNativeToken.noDiscovery = noDiscovery
 
     builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
 

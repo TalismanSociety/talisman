@@ -96,7 +96,6 @@ export const EvmNativeModule: NewBalanceModule<
         type: "evm-native",
         isTestnet,
         isDefault: true,
-        noDiscovery: moduleConfig?.noDiscovery,
         symbol,
         decimals,
         logo: moduleConfig?.logo || githubTokenLogoUrl(id),
@@ -107,6 +106,7 @@ export const EvmNativeModule: NewBalanceModule<
       if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
       if (moduleConfig?.dcentName) nativeToken.dcentName = moduleConfig?.dcentName
       if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
+      if (moduleConfig?.noDiscovery) nativeToken.noDiscovery = moduleConfig?.noDiscovery
 
       return { [nativeToken.id]: nativeToken }
     },
