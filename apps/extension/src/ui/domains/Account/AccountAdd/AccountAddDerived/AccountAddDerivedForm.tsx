@@ -20,7 +20,6 @@ import * as yup from "yup"
 
 import {
   AccountAddressType,
-  AssetDiscoveryMode,
   RequestAccountCreateOptions,
   UiAccountAddressType,
 } from "@extension/core"
@@ -35,6 +34,7 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAccounts, useMnemonics } from "@ui/state"
 
 import { AccountIcon } from "../../AccountIcon"
@@ -105,6 +105,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const mnemonics = useMnemonics()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const schema = useMemo(
     () =>
@@ -200,7 +201,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
         onSuccess(address)
 
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
+        api.assetDiscoveryStartScan({ networkIds, addresses: [address] })
 
         notifyUpdate(notificationId, {
           type: "success",
@@ -216,7 +217,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         })
       }
     },
-    [generateMnemonic, onSuccess, t],
+    [generateMnemonic, networkIds, onSuccess, t],
   )
 
   const handleTypeChange = useCallback(

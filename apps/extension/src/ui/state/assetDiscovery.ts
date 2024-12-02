@@ -27,9 +27,8 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
   ]).pipe(
     map(([scan, balances, tokensMap]) => {
       const {
-        currentScanId,
+        currentScanScope,
         currentScanProgressPercent: percent,
-        currentScanAccounts,
         currentScanTokensCount,
         lastScanAccounts,
         lastScanTokensCount,
@@ -42,8 +41,8 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
         (tokenId) => tokensMap[tokenId]?.symbol,
       )
 
-      const isInProgress = !!currentScanId
-      const accounts = isInProgress ? currentScanAccounts : lastScanAccounts
+      const isInProgress = !!currentScanScope
+      const accounts = isInProgress ? currentScanScope.addresses : lastScanAccounts
       const tokensCount = isInProgress ? currentScanTokensCount : lastScanTokensCount
 
       return {

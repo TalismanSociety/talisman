@@ -2,13 +2,13 @@ import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import {
-  AssetDiscoveryMode,
   getEthDerivationPath,
   RequestAccountCreateFromSuri,
   UiAccountAddressType,
 } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 
 export type AccountAddDerivationMode = "first" | "custom" | "multi"
 
@@ -23,6 +23,8 @@ type AccountAddSecretInputs = {
 
 const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
+
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
     type: params.get("type") as UiAccountAddressType,
     mode: "first",
@@ -36,18 +38,21 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
     }))
   }, [])
 
-  const importAccounts = useCallback(async (accounts: RequestAccountCreateFromSuri[]) => {
-    setData((prev) => ({ ...prev, accounts }))
+  const importAccounts = useCallback(
+    async (accounts: RequestAccountCreateFromSuri[]) => {
+      setData((prev) => ({ ...prev, accounts }))
 
-    const addresses: string[] = []
-    // proceed sequencially in case mnemonic must be added to the store on first call
-    for (const { name, suri, type } of accounts)
-      addresses.push(await api.accountCreateFromSuri(name, suri, type))
+      const addresses: string[] = []
+      // proceed sequencially in case mnemonic must be added to the store on first call
+      for (const { name, suri, type } of accounts)
+        addresses.push(await api.accountCreateFromSuri(name, suri, type))
 
-    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
+      api.assetDiscoveryStartScan({ networkIds, addresses })
 
-    return addresses
-  }, [])
+      return addresses
+    },
+    [networkIds],
+  )
 
   return { data, updateData, importAccounts, onSuccess }
 }

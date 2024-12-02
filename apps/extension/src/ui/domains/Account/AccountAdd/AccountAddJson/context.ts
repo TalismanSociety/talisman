@@ -8,11 +8,12 @@ import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { AccountType, AssetDiscoveryMode } from "@extension/core"
+import { AccountType } from "@extension/core"
 import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAccounts, useChains } from "@ui/state"
 
 export type JsonImportAccount = {
@@ -90,6 +91,7 @@ const useJsonAccountImportProvider = () => {
   const existingAccounts = useAccounts()
   const [json, setJson] = useState<string>()
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   // warning : array of mutable objects
   const [pairs, setPairs] = useState<KeyringPair[]>()
@@ -286,10 +288,10 @@ const useJsonAccountImportProvider = () => {
 
     const addresses = await api.accountCreateFromJson(unlockedPairs)
 
-    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
+    api.assetDiscoveryStartScan({ networkIds, addresses })
 
     return addresses
-  }, [pairs, selectedAccounts])
+  }, [networkIds, pairs, selectedAccounts])
 
   return {
     accounts,

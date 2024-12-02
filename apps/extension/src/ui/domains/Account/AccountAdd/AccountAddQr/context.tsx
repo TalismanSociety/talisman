@@ -3,10 +3,11 @@ import { decodeAnyAddress, sleep } from "@talismn/util"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetDiscoveryMode, VerifierCertificateType } from "@extension/core"
+import { VerifierCertificateType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
 
@@ -148,6 +149,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const vaultAccounts = useQrCodeAccounts()
 
@@ -204,7 +206,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           lockToNetwork ? genesisHash : null,
         )
 
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [createdAddress])
+        api.assetDiscoveryStartScan({ networkIds, addresses: [createdAddress] })
 
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {
@@ -221,7 +223,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, state, t],
+    [networkIds, onSuccess, state, t],
   )
 
   const submitConfigure = useCallback(

@@ -16,18 +16,14 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import {
-  AccountAddressType,
-  AssetDiscoveryMode,
-  getEthDerivationPath,
-  UiAccountAddressType,
-} from "@extension/core"
+import { AccountAddressType, getEthDerivationPath, UiAccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAccounts } from "@ui/state"
 import { isUiAccountAddressType } from "@ui/util/typeCheckers"
 
@@ -62,6 +58,7 @@ type FormData = {
 
 export const AccountAddMnemonicForm = () => {
   const { t } = useTranslation("admin")
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const { data, updateData, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()
@@ -173,7 +170,7 @@ export const AccountAddMnemonicForm = () => {
         try {
           const address = await api.accountCreateFromSuri(name, suri, type)
 
-          api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
+          api.assetDiscoveryStartScan({ networkIds, addresses: [address] })
 
           onSuccess(address)
           notifyUpdate(notificationId, {
@@ -190,7 +187,7 @@ export const AccountAddMnemonicForm = () => {
         }
       }
     },
-    [t, navigate, onSuccess, updateData],
+    [updateData, navigate, t, networkIds, onSuccess],
   )
 
   const handleTypeChange = useCallback(

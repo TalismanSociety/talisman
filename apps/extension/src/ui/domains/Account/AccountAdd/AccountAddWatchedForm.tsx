@@ -8,12 +8,13 @@ import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
-import { AssetDiscoveryMode, UiAccountAddressType } from "@extension/core"
+import { UiAccountAddressType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
 
@@ -21,6 +22,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const schema = useMemo(
     () =>
@@ -104,7 +106,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
       try {
         onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
 
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
+        api.assetDiscoveryStartScan({ networkIds, addresses: [address] })
 
         notifyUpdate(notificationId, {
           type: "success",
@@ -119,7 +121,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, t],
+    [networkIds, onSuccess, t],
   )
 
   const handleTypeChange = useCallback(

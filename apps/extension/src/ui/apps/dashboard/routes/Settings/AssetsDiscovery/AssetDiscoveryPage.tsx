@@ -33,7 +33,6 @@ import {
   AccountJsonAny,
   activeEvmNetworksStore,
   activeTokensStore,
-  AssetDiscoveryMode,
   DiscoveredBalance,
   isEvmNetworkActive,
   isTokenActive,
@@ -338,15 +337,21 @@ const Header: FC = () => {
   const activeNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
   const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
 
+  const allAccounts = useAccounts("all")
+  const addresses = allAccounts.map((a) => a.address)
+
   const effectivePercent = isInitializing ? 0 : percent
 
   const handleScanClick = useCallback(
-    (mode: AssetDiscoveryMode) => async () => {
+    (all: boolean) => async () => {
       isInitializingScan$.next(true)
-      await api.assetDiscoveryStartScan(mode)
+      await api.assetDiscoveryStartScan({
+        networkIds: (all ? allNetworks : activeNetworks).map((n) => n.id),
+        addresses,
+      })
       isInitializingScan$.next(false)
     },
-    [],
+    [activeNetworks, addresses, allNetworks],
   )
 
   const handleCancelScanClick = useCallback(() => {
@@ -424,10 +429,10 @@ const Header: FC = () => {
             <ChevronDownIcon className="text-base" />
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuItem onClick={handleScanClick(AssetDiscoveryMode.ACTIVE_NETWORKS)}>
+            <ContextMenuItem onClick={handleScanClick(false)}>
               {t("Scan active networks")} ({activeNetworks.length})
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleScanClick(AssetDiscoveryMode.ALL_NETWORKS)}>
+            <ContextMenuItem onClick={handleScanClick(true)}>
               {t("Scan all networks")} ({allNetworks.length})
             </ContextMenuItem>
           </ContextMenuContent>
