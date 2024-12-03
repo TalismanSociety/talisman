@@ -41,7 +41,7 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const stakeAssetLabel = () => {
     switch (token.chain?.id) {
       case "bittensor":
-        return t("Direct Staking")
+        return t("Delegated Staking")
       default:
         return t("Pooled Staking")
     }

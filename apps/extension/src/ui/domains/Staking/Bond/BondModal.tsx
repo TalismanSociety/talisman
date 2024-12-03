@@ -49,7 +49,7 @@ const ModalHeader = () => {
                 <TokenLogo tokenId={token?.id ?? ""} className="text-md shrink-0" />
                 <div className="text-white">{token?.symbol}</div>
                 <div className="bg-body-disabled inline-block size-2 rounded-full" />
-                <div className="text-body-secondary">{t("Direct Staking")}</div>
+                <div className="text-body-secondary">{t("Delegated Staking")}</div>
               </div>
             </div>
           </div>
