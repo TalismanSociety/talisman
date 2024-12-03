@@ -42,7 +42,7 @@ export const BondDelegateSelect = <T,>({
   }
 
   return (
-    <div className="flex h-full flex-col gap-y-[16px] pt-10">
+    <div className="flex h-full flex-col gap-y-[16px] pt-8">
       <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
         {sortMethods.map((method) => (
           <button
@@ -65,7 +65,7 @@ export const BondDelegateSelect = <T,>({
           <div>{t("Name")}</div>
           <div>{t("Est. Rewards")}</div>
         </div>
-        <ScrollContainer className="h-[34.5rem]" innerClassName="space-y-[1rem]">
+        <ScrollContainer className="h-[34.5rem]" innerClassName="space-y-[0.8rem]">
           {isLoading && bondOptions.length === 0
             ? Array(6)
                 .fill(null)

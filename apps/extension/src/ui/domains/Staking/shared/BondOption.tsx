@@ -57,7 +57,7 @@ export const BondOption = ({
         {option.isRecommended && (
           <div
             className={classNames(
-              "text-primary flex items-center gap-2 rounded-lg bg-[#38D4481A] px-[8px] py-[2px] text-xs",
+              "text-primary bg-primary flex items-center gap-2 rounded-lg bg-opacity-10 px-[8px] py-[3px] text-xs",
               !isSelected && "opacity-50",
             )}
           >
