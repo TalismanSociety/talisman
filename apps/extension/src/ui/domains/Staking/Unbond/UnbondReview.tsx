@@ -102,7 +102,7 @@ export const UnbondReview = () => {
               <div className="max-w-[26rem]">
                 <div>
                   {t(
-                    "The Tao network requires a wait period of 360 blocks since your last stake / unstake action.",
+                    "The Bittensor network requires a wait period of 360 blocks since your last stake / unstake action.",
                   )}
                 </div>
                 <div>{t("Please try again later.")}</div>
