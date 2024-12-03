@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import { Chain, EvmNetwork, EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -44,6 +44,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -57,11 +58,13 @@ import {
   useAssetDiscoveryScan,
   useAssetDiscoveryScanProgress,
   useBalancesHydrate,
+  useChainsMap,
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
   useSetting,
   useToken,
+  useTokens,
   useTokensMap,
 } from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
@@ -103,11 +106,56 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
           key={account.address}
           className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
         >
-          <AccountIcon address={account.address} genesisHash={account.genesisHash} />
+          <AccountIcon
+            className="shrink-0"
+            address={account.address}
+            genesisHash={account.genesisHash}
+          />
           <div className="text-body grow truncate">{account.name}</div>
           <div>{shortenAddress(account.address)}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+const NetworksTooltip: FC<{ networks: (EvmNetwork | Chain)[] }> = ({ networks }) => {
+  const { t } = useTranslation()
+
+  const tokens = useTokens()
+  const networksWIthTokens = useMemo(
+    () =>
+      networks
+        .map(
+          (n) =>
+            [
+              n,
+              tokens.filter((t) => t.evmNetwork?.id === n.id || t.chain?.id === n.id).length,
+            ] as const,
+        )
+        .sort((a, b) => b[1] - a[1]),
+    [networks, tokens],
+  )
+
+  return (
+    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
+      <div>{t("Networks")}</div>
+      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
+      {networksWIthTokens.slice(0, 5).map(([network, tokens]) => (
+        <div
+          key={network.id}
+          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
+        >
+          <ChainLogo id={network.id} />
+          <div className="text-body grow truncate">{network.name}</div>
+          <div>{t("{{count}} tokens", { count: tokens })}</div>
+        </div>
+      ))}
+      {networksWIthTokens.length > 5 && (
+        <div className="text-body-secondary text-sm">
+          {t("and {{count}} more", { count: networksWIthTokens.length - 5 })}
+        </div>
+      )}
     </div>
   )
 }
@@ -465,6 +513,21 @@ const AccountsWrapper: FC<{
   )
 }
 
+const NetworksWrapper: FC<{
+  children?: ReactNode
+  networks: (EvmNetwork | Chain)[]
+  className?: string
+}> = ({ children, networks, className }) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger className={className}>{children}</TooltipTrigger>
+      <TooltipContent>
+        <NetworksTooltip networks={networks} />
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
   const isInitializing = useIsInitializingScan()
@@ -476,6 +539,7 @@ const ScanInfo: FC = () => {
   const activeTokens = useActiveTokensState()
   const tokensMap = useTokensMap()
   const evmNetworksMap = useEvmNetworksMap()
+  const chainsMap = useChainsMap()
 
   const canEnable = useMemo(() => {
     const tokenIds = Object.keys(balancesByTokenId)
@@ -513,6 +577,14 @@ const ScanInfo: FC = () => {
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
     [accounts, lastScanAccounts],
   )
+  const lastNetworks = useMemo(
+    () =>
+      lastScanNetworks.map((id) => evmNetworksMap[id] ?? chainsMap[id]).filter(Boolean) as (
+        | EvmNetwork
+        | Chain
+      )[],
+    [chainsMap, evmNetworksMap, lastScanNetworks],
+  )
 
   if (isInitializing) return null
 
@@ -522,12 +594,18 @@ const ScanInfo: FC = () => {
         {!isInProgress && !!lastScanTimestamp && !!lastScanAccounts.length && (
           <Trans
             t={t}
-            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> on {{networksCount}} network(s) at <DateWrapper>{{timestamp}}</DateWrapper>"
+            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> on <NetworksWrapper>{{networksCount}} network(s)</NetworksWrapper> at <DateWrapper>{{timestamp}}</DateWrapper>"
             components={{
               AccountsWrapper: (
                 <AccountsWrapper
                   className="text-body-secondary underline"
                   accounts={lastAccounts}
+                />
+              ),
+              NetworksWrapper: (
+                <NetworksWrapper
+                  className="text-body-secondary underline"
+                  networks={lastNetworks}
                 />
               ),
               DateWrapper: <span className="text-body-secondary"></span>,
