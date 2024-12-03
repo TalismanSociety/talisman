@@ -149,6 +149,7 @@ class AssetDiscoveryScanner {
       if (!evmNetwork) return false
       if (!settings.useTestnets && (evmNetwork.isTestnet || token.isTestnet)) return false
       if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
+      if (token.noDiscovery) return false
       if (mode === AssetDiscoveryMode.ALL_NETWORKS)
         return (
           !isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens)

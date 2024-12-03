@@ -132,11 +132,8 @@ const TokenInput = () => {
     if (!formatter) refTokensInput.current?.focus()
   }, [formatter, refTokensInput])
 
-  // resize input width to fit content
-  const resizeTokensInput = useInputAutoWidth(refTokensInput)
-  useEffect(() => {
-    resizeTokensInput()
-  }, [resizeTokensInput, token?.symbol])
+  // resize input to keep content centered
+  useInputAutoWidth(refTokensInput)
 
   return (
     <div className={"flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4"}>
@@ -196,11 +193,8 @@ const FiatInput = () => {
     if (!formatter) refFiatInput.current?.focus()
   }, [formatter, refFiatInput])
 
-  // resize input width to fit content
-  const resizeFiatInput = useInputAutoWidth(refFiatInput)
-  useEffect(() => {
-    resizeFiatInput()
-  }, [resizeFiatInput])
+  // resize input to keep content centered
+  useInputAutoWidth(refFiatInput)
 
   if (!tokenRates) return null
 

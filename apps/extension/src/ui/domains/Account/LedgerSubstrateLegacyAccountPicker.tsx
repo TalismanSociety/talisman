@@ -29,7 +29,7 @@ const useLedgerChainAccounts = (
   const app = useLedgerSubstrateAppByChain(chain)
   const activeChains = useActiveChainsState()
   const withBalances = useMemo(
-    () => !!chain && isChainActive(chain, activeChains),
+    () => !chain?.isTestnet && !!chain && isChainActive(chain, activeChains),
     [chain, activeChains],
   )
 
@@ -86,16 +86,16 @@ const useLedgerChainAccounts = (
   }, [app, chain, isReady, itemsPerPage, ledger, pageIndex, t])
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      ledgerAccounts.filter(Boolean).length === itemsPerPage
+      withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ed25519", genesisHash: acc.genesisHash }))
         : [],
-    [itemsPerPage, ledgerAccounts],
+    [withBalances, itemsPerPage, ledgerAccounts],
   )
-  const balances = useAccountImportBalances(accountImportDefs)
+  const balances = useAccountImportBalances(balanceDefs)
 
   const accounts: (LedgerSubstrateAccount | null)[] = useMemo(
     () =>
@@ -115,8 +115,10 @@ const useLedgerChainAccounts = (
         )
 
         const isBalanceLoading =
-          accountBalances.each.some((b) => b.status === "cache") ||
-          balances.status === "initialising"
+          withBalances &&
+          (accountBalances.each.some((b) => b.status === "cache") ||
+            balances.status === "initialising")
+
         return {
           ...acc,
           name: existingAccount?.name ?? acc.name,
@@ -126,7 +128,15 @@ const useLedgerChainAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts],
+    [
+      balances.balances,
+      balances.status,
+      chain?.id,
+      withBalances,
+      ledgerAccounts,
+      selectedAccounts,
+      walletAccounts,
+    ],
   )
 
   useEffect(() => {
@@ -152,7 +162,7 @@ type LedgerSubstrateAccountPickerProps = {
 
 type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrate
 
-export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps> = ({
+export const LedgerSubstrateLegacyAccountPicker: FC<LedgerSubstrateAccountPickerProps> = ({
   chainId,
   onChange,
 }) => {

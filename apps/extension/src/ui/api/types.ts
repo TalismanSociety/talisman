@@ -2,7 +2,14 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { Address, BalanceJson } from "@talismn/balances"
-import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import {
+  Chain,
+  ChainId,
+  CustomChain,
+  EvmNetworkId,
+  Token,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
 import { MetadataDef } from "inject/substrate/types"
@@ -51,6 +58,7 @@ import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
+  SimpleEvmNetwork,
   UnsubscribeFn,
   ValidRequests,
   WalletTransactionTransferInfo,
@@ -207,7 +215,7 @@ export default interface MessageTypes {
   ) => UnsubscribeFn
 
   // chain message types
-  chains: (cb: () => void) => UnsubscribeFn
+  chains: (cb: (chains: Array<Chain | CustomChain>) => void) => UnsubscribeFn
   chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
   chainRemove: (id: string) => Promise<boolean>
   chainReset: (id: string) => Promise<boolean>
@@ -218,7 +226,7 @@ export default interface MessageTypes {
   ) => Promise<HexString>
 
   // token message types
-  tokens: (cb: () => void) => UnsubscribeFn
+  tokens: (cb: (tokens: Token[]) => void) => UnsubscribeFn
 
   // tokenRates message types
   tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
@@ -302,7 +310,7 @@ export default interface MessageTypes {
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
 
   // ethereum networks message types
-  ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  ethereumNetworks: (cb: (networks: Array<SimpleEvmNetwork>) => void) => UnsubscribeFn
   ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
   ethNetworkRemove: (id: string) => Promise<boolean>
   ethNetworkReset: (id: string) => Promise<boolean>

@@ -1,11 +1,11 @@
 import type { CustomEvmErc20Token, CustomEvmUniswapV2Token } from "@talismn/balances"
-import type { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import type { ChainId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 
 import { RequestIdOnly } from "../../types/base"
 
 export interface TokenMessages {
   // token message signatures
-  "pri(tokens.subscribe)": [null, boolean, boolean]
+  "pri(tokens.subscribe)": [null, boolean, Token[]]
 
   // custom evm token management
   "pri(tokens.evm.custom.add)": [CustomEvmTokenCreate, boolean]

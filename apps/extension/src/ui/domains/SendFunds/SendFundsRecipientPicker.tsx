@@ -24,13 +24,13 @@ const AddressFormatError = ({ chain }: { chain?: Chain }) => {
   return (
     <div className="h-min-h-full align-center flex w-full flex-col items-center gap-4 px-12 py-7">
       <XOctagonIcon className="text-brand-orange text-lg" />
-      <span className="text-body-secondary">{t("Address Format Mismatch")}</span>
-      <p className="text-body-disabled text-center">
+      <span className="text-body">{t("Address Format Mismatch")}</span>
+      <p className="text-body-secondary mt-4 text-center">
         <Trans
           t={t}
           defaults="The address you've entered is not compatible with the <Chain><ChainLogo />{{chainName}}</Chain> chain. Please enter a compatible address or select a different chain to send on."
           components={{
-            Chain: <div className="text-body-secondary inline-flex items-baseline gap-1" />,
+            Chain: <div className="text-body inline-flex items-baseline gap-1" />,
             ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
           }}
           values={{ chainName: chain?.name ?? t("Unknown") }}

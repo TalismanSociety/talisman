@@ -161,7 +161,7 @@ const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   })
 
   return (
-    <div ref={refContainer} className="size-[22.2rem]">
+    <div ref={refContainer} className="size-[22rem]">
       {intersection?.isIntersecting ? <NftTileInner {...props} /> : null}
     </div>
   )
@@ -174,7 +174,7 @@ const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-wrap justify-stretch gap-8">
+    <div className="flex flex-wrap gap-[2.4rem]">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftTileItem

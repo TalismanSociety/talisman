@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { ChainId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, CustomChain } from "@talismn/chaindata-provider"
 
 import { RequestIdOnly } from "../../types/base"
 import { SignerPayloadGenesisHash } from "../signing/types"
@@ -33,7 +33,7 @@ export type RequestUpsertCustomChain = {
 
 export interface ChainsMessages {
   // chain message signatures
-  "pri(chains.subscribe)": [null, boolean, boolean]
+  "pri(chains.subscribe)": [null, boolean, Array<Chain | CustomChain>]
   "pri(chains.upsert)": [RequestUpsertCustomChain, boolean]
   "pri(chains.remove)": [RequestIdOnly, boolean]
   "pri(chains.reset)": [RequestIdOnly, boolean]

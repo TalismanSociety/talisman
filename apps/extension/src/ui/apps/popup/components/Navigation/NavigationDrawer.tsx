@@ -5,6 +5,7 @@ import {
   KeyIcon,
   LockIcon,
   PlusIcon,
+  QuestStarIcon,
   RepeatIcon,
   SendIcon,
   SettingsIcon,
@@ -17,16 +18,16 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Drawer, IconButton } from "talisman-ui"
 
-import { TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
+import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useFeatureFlag } from "@ui/state"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -132,6 +133,13 @@ export const NavigationDrawer: FC = () => {
     close()
   }, [close, navigate])
 
+  const showQuestLink = useFeatureFlag("QUEST_LINK")
+  const handleQuestsClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
+    window.open(TALISMAN_QUEST_APP_URL, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
+  }, [])
+
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
@@ -143,8 +151,9 @@ export const NavigationDrawer: FC = () => {
             <XIcon />
           </IconButton>
         </header>
-        <ScrollContainer className="flex-grow">
-          <Nav className="p-4">
+        <div className="w-full grow overflow-hidden">
+          {/* buttons must shrink height if necessary */}
+          <Nav className="flex size-full flex-col overflow-hidden p-4">
             <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
               {t("Add Account")}
             </NavItem>
@@ -175,12 +184,24 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
               {t("Latest Features")}
             </NavItem>
-
+            {showQuestLink && (
+              <NavItem
+                className="hover:bg-primary/10"
+                icon={
+                  <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
+                    <QuestStarIcon className="text-xs text-black" />
+                  </div>
+                }
+                onClick={handleQuestsClick}
+              >
+                <span className="text-primary font-bold">{t("Quests")}</span>
+              </NavItem>
+            )}
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("All Settings")}
             </NavItem>
           </Nav>
-        </ScrollContainer>
+        </div>
         <footer>
           <button
             type="button"

@@ -1,5 +1,6 @@
+import { polkadot, polkadotAssetHub, PolkadotRuntimeOriginCaller } from "@polkadot-api/descriptors"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import { Bytes, enhanceEncoder, u16, V14, V15 } from "@polkadot-api/substrate-bindings"
+import { Bytes, enhanceEncoder, u16 } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
@@ -8,25 +9,16 @@ import { assert } from "@polkadot/util"
 import { decodeMetadata, getDynamicBuilder, getLookupFn } from "@talismn/scale"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
-import { Binary } from "polkadot-api"
+import { Binary, TypedApi } from "polkadot-api"
 import { Hex } from "viem"
 
 import { api } from "@ui/api"
 
-import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
+import { getExtrinsicDispatchInfo } from "../getExtrinsicDispatchInfo"
+import { getDispatchErrorMessage } from "./errors"
+import { DecodedCall, PayloadSignerConfig, ScaleBuilder, ScaleLookup, ScaleMetadata } from "./types"
 
-type ScaleMetadata = V14 | V15
-type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
-type ScaleLookup = ReturnType<typeof getLookupFn>
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DecodedCall<Args = any> = { pallet: string; method: string; args: Args }
-
-export type PayloadSignerConfig = {
-  address: string
-  tip?: bigint
-}
 
 export const getScaleApi = (
   chainId: ChainId,
@@ -120,6 +112,12 @@ export const getScaleApi = (
     submit: (payload: SignerPayloadJSON, signature?: Hex) => api.subSubmit(payload, signature),
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(pallet, method, metadata),
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getDryRunCall: (from: string, decodedCall: DecodedCall<unknown>) =>
+      getDryRunCall(chainId, metadata, builder, from, decodedCall),
+
+    isApiAvailable: (name: string, method: string) => isApiAvailable(metadata, name, method),
   }
 
   stop()
@@ -372,6 +370,68 @@ const getFeeEstimate = async (
   return BigInt(partialFee)
 }
 
+type DryRunRefChain = typeof polkadot | typeof polkadotAssetHub
+type DryRunResult = Awaited<
+  ReturnType<TypedApi<DryRunRefChain>["apis"]["DryRunApi"]["dry_run_call"]>
+>
+
+const getDryRunCall = async (
+  chainId: ChainId,
+  metadata: ScaleMetadata,
+  builder: ScaleBuilder,
+  from: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  decodedCall: DecodedCall<unknown>,
+) => {
+  const stop = log.timer("[sapi] getDryRun")
+  try {
+    if (!isApiAvailable(metadata, "DryRunApi", "dry_run_call"))
+      return {
+        available: false,
+        data: null,
+      }
+
+    const origin = PolkadotRuntimeOriginCaller.system({
+      type: "Signed",
+      value: from,
+    })
+
+    const { pallet, method, args } = decodedCall
+    const call = { type: pallet, value: { type: method, value: args } }
+
+    // This will throw an error if the api is not available on that chain
+    const data = await getRuntimeCallValue<DryRunResult>(
+      chainId,
+      builder,
+      "DryRunApi",
+      "dry_run_call",
+      [origin, call],
+    )
+
+    const ok = data.success && data.value.execution_result.success
+    const errorMessage =
+      data.success && !data.value.execution_result.success
+        ? getDispatchErrorMessage(chainId, metadata, data.value.execution_result.value.error)
+        : null
+
+    return {
+      available: true,
+      data,
+      ok,
+      errorMessage,
+    }
+  } catch (err) {
+    // Note : err is null if chain doesnt have the api
+    log.error("Failed to dry run", { chainId, err })
+    return {
+      available: false,
+      data: null,
+    }
+  } finally {
+    stop()
+  }
+}
+
 const getRuntimeCallValue = async <T>(
   chainId: ChainId,
   scaleBuilder: ScaleBuilder,
@@ -430,6 +490,10 @@ const getStorageValue = async <T>(
   if (!hexValue) return null as T // caller will need to expect null when applicable
 
   return storageCodec.dec(hexValue) as T
+}
+
+const isApiAvailable = (metadata: ScaleMetadata, name: string, method: string) => {
+  return metadata.apis.some((a) => a.name === name && a.methods.some((m) => m.name === method))
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

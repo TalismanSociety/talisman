@@ -10,7 +10,7 @@ import * as yup from "yup"
 import { LedgerEthDerivationPathType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
+import { LedgerSubstrateLegacyAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 
@@ -180,7 +180,7 @@ export const AddLedgerSelectAccount = () => {
         {data.type === "sr25519" && (
           <>
             {data.substrateAppType === AddSubstrateLedgerAppType.Legacy && (
-              <LedgerSubstrateAccountPicker
+              <LedgerSubstrateLegacyAccountPicker
                 chainId={data.chainId as string}
                 onChange={handleAccountsChange}
               />

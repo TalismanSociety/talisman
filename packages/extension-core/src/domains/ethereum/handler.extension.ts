@@ -7,13 +7,17 @@ import {
   CustomEvmNetwork,
   EvmNetwork,
   githubUnknownTokenLogoUrl,
+  SimpleEvmNetwork,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import Dexie from "dexie"
 import { DEBUG, log } from "extension-shared"
+import { isEqual } from "lodash"
+import { distinctUntilChanged, map } from "rxjs"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
+import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -659,8 +663,20 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
-        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
-        return true
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
+
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.evmNetworksObservable.pipe(
+            // the balancesConfig is not needed for the UI and can be HUGE
+            map((evmNetworks) =>
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              evmNetworks.map(({ balancesConfig, balancesMetadata, ...network }) => network),
+            ),
+            distinctUntilChanged<Array<SimpleEvmNetwork>>(isEqual),
+          ),
+        )
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])

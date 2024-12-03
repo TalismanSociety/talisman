@@ -144,6 +144,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
         if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
         if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
+        if (tokenConfig?.noDiscovery) token.noDiscovery = tokenConfig?.noDiscovery
 
         tokens[token.id] = token
       }

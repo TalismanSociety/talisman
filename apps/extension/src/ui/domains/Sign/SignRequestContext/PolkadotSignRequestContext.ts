@@ -1,15 +1,17 @@
 import { GenericExtrinsic } from "@polkadot/types"
 import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
+import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
-import { isJsonPayload, SubstrateSigningRequest } from "@extension/core"
+import { Address, isJsonPayload, SubstrateSigningRequest } from "@extension/core"
 import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useBalancesHydrate, useChainByGenesisHash } from "@ui/state"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
+import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
@@ -53,6 +55,26 @@ const usePartialFee = (
   })
 }
 
+const useDryRun = ({
+  from,
+  sapi,
+  decodedCall,
+}: {
+  from: Address
+  sapi: ScaleApi | null | undefined
+  decodedCall: DecodedCall<unknown> | null | undefined
+}) => {
+  return useQuery({
+    queryKey: ["useDryRun", from, papiStringify(decodedCall), sapi?.id],
+    queryFn: async () => {
+      if (!from || !sapi || !decodedCall) return null
+
+      return sapi.getDryRunCall(from, decodedCall)
+    },
+    refetchInterval: 10_000,
+  })
+}
+
 const usePolkadotSigningRequestProvider = ({
   signingRequest,
 }: {
@@ -93,6 +115,25 @@ const usePolkadotSigningRequestProvider = ({
       return null
     }
   }, [payload, sapi])
+
+  const isDryRunAvailable = useMemo(
+    () => sapi?.isApiAvailable("DryRunApi", "dry_run_call") || false,
+    [sapi],
+  )
+
+  const {
+    data: dryRun,
+    isLoading: dryRunIsLoading,
+    error: dryRunError,
+  } = useDryRun({
+    from: payload.address,
+    sapi,
+    decodedCall,
+  })
+
+  useEffect(() => {
+    log.log("DRY RUN", { dryRun, dryRunIsLoading, dryRunError, decodedCall, payload })
+  }, [dryRun, dryRunIsLoading, dryRunError, decodedCall, payload])
 
   const [extrinsic, errorDecodingExtrinsic] = useMemo(() => {
     try {
@@ -187,6 +228,9 @@ const usePolkadotSigningRequestProvider = ({
     shortMetadata,
     sapi,
     decodedCall,
+    isDryRunAvailable,
+    dryRun,
+    dryRunIsLoading,
   }
 }
 

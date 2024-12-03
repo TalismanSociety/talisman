@@ -7,7 +7,7 @@ import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAccountByAddress } from "@ui/state"
 
-import { SignDcentSubstrate } from "./SignDcentSubstrate"
+import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
 
 const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
 const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
@@ -15,7 +15,7 @@ const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy
 export type SignHardwareSubstrateProps = {
   payload: SignerPayloadRaw | SignerPayloadJSON | undefined
   fee?: string
-  containerId: string | undefined
+  containerId?: string | undefined
   className?: string
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
@@ -29,7 +29,7 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
 
   switch (account?.origin) {
     case AccountType.Dcent:
-      return SignDcentSubstrate
+      return SignDcentUnsupportedMessage
     case AccountType.Ledger: {
       switch (account?.ledgerApp) {
         case SubstrateLedgerAppType.Generic:

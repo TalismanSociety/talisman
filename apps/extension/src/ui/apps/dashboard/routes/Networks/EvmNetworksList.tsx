@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
-import { activeEvmNetworksStore, EvmNetwork, isEvmNetworkActive } from "@extension/core"
+import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -134,7 +134,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {
     const lowerSearch = search?.toLowerCase() ?? ""
 
-    const filter = (network: EvmNetwork) => {
+    const filter = (network: SimpleEvmNetwork) => {
       if (!lowerSearch)
         return (
           network.isDefault ||
@@ -174,7 +174,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
   }, [exactMatches, filteredEvmNetworks])
 
   const handleNetworkActiveChanged = useCallback(
-    (network: EvmNetwork) => (enable: boolean) => {
+    (network: SimpleEvmNetwork) => (enable: boolean) => {
       activeEvmNetworksStore.setActive(network.id, enable)
     },
     [],
@@ -240,7 +240,7 @@ const EvmNetworksListItem = ({
   isActive: isActive,
   onEnableChanged,
 }: {
-  network: EvmNetwork
+  network: SimpleEvmNetwork
   isActive: boolean
   onEnableChanged: (enable: boolean) => void
 }) => {
