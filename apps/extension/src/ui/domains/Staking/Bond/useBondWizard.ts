@@ -214,7 +214,8 @@ export const useBondWizard = () => {
   }, [canStake, t])
 
   const inputErrorMessage = useMemo(() => {
-    if (isSoloStaking) return t("Account is already staking")
+    if (isSoloStaking)
+      return t("Account has an open validator staking position, please unbond first")
 
     if (!currentPoolId && poolState?.isFull) return t("This nomination pool is full")
     if (!currentPoolId && poolState && !poolState.isOpen)
