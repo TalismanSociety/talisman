@@ -70,14 +70,18 @@ export const BondDelegateSelect = <T,>({
             ? Array(6)
                 .fill(null)
                 .map((_, i) => <BondOptionSkeleton key={i} isRecommended={i === 0} />)
-            : bondOptions.map((option) => (
-                <BondOption
-                  key={option.poolId}
-                  option={option}
-                  selectedPoolId={poolId}
-                  handleSelectPoolId={handleSelectPoolId}
-                  tokenId={tokenId}
-                />
+            : bondOptions.map((option, i) => (
+                <>
+                  <BondOption
+                    key={option.poolId}
+                    option={option}
+                    selectedPoolId={poolId}
+                    handleSelectPoolId={handleSelectPoolId}
+                    tokenId={tokenId}
+                  />
+                  {/* add a separator after the recommended it, which should be first */}
+                  {i === 0 && <div className="bg-grey-800 h-[1px]" />}
+                </>
               ))}
           {isError && (
             <div className="text-alert-error flex h-full items-center justify-center">
