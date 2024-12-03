@@ -17,7 +17,9 @@ export type StorageCoders<TCoders extends { [key: string]: [string, string] }> =
 
 export const buildStorageCoders = <
   TBalanceModule extends AnyNewBalanceModule,
-  TCoders extends { [key: string]: [string, string] },
+  TCoders extends {
+    [key: string]: [string, string] | ((params: { chainId: string }) => [string, string])
+  },
 >({
   chainIds,
   chains,
@@ -47,7 +49,14 @@ export const buildStorageCoders = <
         const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
         const builtCoders = Object.fromEntries(
           Object.entries(coders).flatMap(
-            ([key, [module, method]]: [keyof TCoders, [string, string]]) => {
+            ([key, moduleMethodOrFn]: [
+              keyof TCoders,
+              [string, string] | ((params: { chainId: string }) => [string, string]),
+            ]) => {
+              const [module, method] =
+                typeof moduleMethodOrFn === "function"
+                  ? moduleMethodOrFn({ chainId })
+                  : moduleMethodOrFn
               try {
                 return [[key, scaleBuilder.buildStorage(module, method)] as const]
               } catch (cause) {

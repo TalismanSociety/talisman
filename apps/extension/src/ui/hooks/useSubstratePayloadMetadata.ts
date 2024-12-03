@@ -7,6 +7,7 @@ import { SignerPayloadJSON } from "extension-core"
 import { log } from "@extension/shared"
 import { useChainByGenesisHash, useToken } from "@ui/state"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
+import { getScaleApi } from "@ui/util/scaleApi"
 
 export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
@@ -52,7 +53,7 @@ const getSubstratePayloadMetadata = async ({
 
     // metadata v15 is required by the shortener
     const { registry, metadataRpc } = await getFrontendTypeRegistry(
-      chain.id,
+      chain,
       payload.specVersion,
       payload.blockHash,
       payload.signedExtensions,
@@ -61,6 +62,19 @@ const getSubstratePayloadMetadata = async ({
 
     // TODO try and avoid creating new metadata object
     const metadata = registry.createType("Metadata", metadataRpc)
+
+    // generate the sapi object if possible
+    const sapi =
+      metadata.version > 14
+        ? getScaleApi(
+            chain.id,
+            metadataRpc,
+            token,
+            chain.hasCheckMetadataHash,
+            chain.signedExtensions,
+            chain.registryTypes,
+          )
+        : null
 
     // check if runtime supports CheckMetadataHash
     const hasCheckMetadataHash =
@@ -81,6 +95,7 @@ const getSubstratePayloadMetadata = async ({
         registry,
         payloadWithMetadataHash: payload,
         hasCheckMetadataHash,
+        sapi,
       }
 
     const merkleizedMetadata = merkleizeMetadata(metadataRpc, {
@@ -112,6 +127,7 @@ const getSubstratePayloadMetadata = async ({
       registry,
       payloadWithMetadataHash,
       hasCheckMetadataHash,
+      sapi,
     }
   } catch (error) {
     log.error("Failed to get shortened metadata", { error })

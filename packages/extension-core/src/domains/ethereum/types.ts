@@ -1,5 +1,5 @@
 import type { CustomEvmErc20Token } from "@talismn/balances"
-import type { EvmNetworkId } from "@talismn/chaindata-provider"
+import type { EvmNetworkId, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import type {
   AddEthereumChainParameter,
   EIP1193Parameters,
@@ -33,6 +33,7 @@ export type AnyEvmError = {
 export type {
   EvmNetwork,
   CustomEvmNetwork,
+  SimpleEvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
   EthereumRpc,
@@ -193,7 +194,7 @@ export interface EthMessages {
   "pri(eth.watchasset.requests.cancel)": [WatchAssetRequestIdOnly, boolean]
 
   // ethereum networks message signatures
-  "pri(eth.networks.subscribe)": [null, boolean, boolean]
+  "pri(eth.networks.subscribe)": [null, boolean, Array<SimpleEvmNetwork>]
   "pri(eth.networks.remove)": [RequestIdOnly, boolean]
   "pri(eth.networks.reset)": [RequestIdOnly, boolean]
   "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]

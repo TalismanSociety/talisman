@@ -17,3 +17,9 @@ export const migratePosthogDistinctIdToAnalyticsStore: Migration = {
     analyticsStore.delete("distinctId")
   }),
 }
+
+export const migrateAnaliticsPurgePendingCaptures: Migration = {
+  forward: new MigrationFunction(async () => {
+    analyticsStore.set({ data: [] })
+  }),
+}

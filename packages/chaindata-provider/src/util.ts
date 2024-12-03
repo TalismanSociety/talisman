@@ -1,6 +1,6 @@
 import { firstValueFrom, Observable } from "rxjs"
 
-import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, Token } from "./types"
+import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork, Token } from "./types"
 
 /**
  * Util to add our onfinality api key to any public onfinality RPC urls in an array of chains.
@@ -130,7 +130,7 @@ export const isCustomChain = (chain: Chain | CustomChain): chain is CustomChain 
 }
 
 export const isCustomEvmNetwork = (
-  evmNetwork: EvmNetwork | CustomEvmNetwork,
+  evmNetwork: EvmNetwork | CustomEvmNetwork | SimpleEvmNetwork,
 ): evmNetwork is CustomEvmNetwork => {
   return "isCustom" in evmNetwork && evmNetwork.isCustom === true
 }

@@ -33,10 +33,10 @@
     "eventemitter3": "^5.0.0"
   },
   "devDependencies": {
-    "@polkadot/rpc-provider": "14.1.1",
-    "@polkadot/util": "13.2.1",
-    "@polkadot/x-global": "13.2.1",
-    "@polkadot/x-ws": "13.2.1",
+    "@polkadot/rpc-provider": "15.0.1",
+    "@polkadot/util": "13.2.3",
+    "@polkadot/x-global": "13.2.3",
+    "@polkadot/x-ws": "13.2.3",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^29.5.14",

@@ -3,7 +3,7 @@ import { AuthorisedSites } from "@ui/domains/Settings/AuthorisedSites/Authorised
 import { DashboardLayout } from "../../layout"
 
 export const ConnectedSitesPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <AuthorisedSites />
   </DashboardLayout>
 )

@@ -43,4 +43,21 @@ describe("Test password store password not hashed", () => {
     const returnedPw = await passwordStore.getPassword()
     expect(returnedPw).toEqual(spaceyPw)
   })
+
+  test("logging out deletes the stored password", async () => {
+    // set up the logged-in password store
+    const passwordStore = new PasswordStore("password", { isHashed: false, isTrimmed: false })
+    expect(await passwordStore.get("isHashed")).toBe(false)
+    await passwordStore.setPlaintextPassword(spaceyPw)
+    const returnedPw = await passwordStore.getPassword()
+    expect(returnedPw).toEqual(spaceyPw)
+
+    // log out (see the `lock` method of `packages/extension-core/src/domains/app/handler.ts` to confirm this is the same as there)
+    passwordStore.clearPassword()
+
+    // check that the password was cleared from storage by initialising a new PasswordStore and checking that it is not authenticated
+    // (PasswordStore loads any stored password from storage as part of its constructor)
+    const newPasswordStore = new PasswordStore("password", { isHashed: false, isTrimmed: false })
+    expect(await newPasswordStore.getPassword()).toEqual(undefined)
+  })
 })

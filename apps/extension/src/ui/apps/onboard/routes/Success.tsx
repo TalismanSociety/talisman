@@ -1,9 +1,10 @@
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import imgHandOrb from "@talisman/theme/images/onboard_hand_orb.png"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
+import { ReactComponent as ImgSuccess } from "../assets/success.svg"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
 
@@ -15,20 +16,22 @@ const SUCCESS_PAGE: AnalyticsPage = {
 }
 
 export const SuccessPage = () => {
+  const { t } = useTranslation()
   useAnalyticsPageView(SUCCESS_PAGE)
   const { completeOnboarding } = useOnboard()
+
   return (
     <OnboardLayout analytics={SUCCESS_PAGE} className="min-h-[48rem] min-w-[59rem]">
-      <div className="inline-flex w-[59rem] flex-col items-center justify-center gap-12 rounded-sm p-12">
-        <div className="text-center text-lg">Welcome, brave Seeker!</div>
-        <img src={imgHandOrb} className="w-[23rem]" alt="Talisman Hand Logo" />
+      <div className="flex w-[36.9rem] flex-col items-center justify-center gap-12 p-12">
+        <div className="whitespace-nowrap text-center text-lg uppercase">
+          {t("Welcome, brave Seeker!")}
+        </div>
+        <ImgSuccess className="h-[16.6rem] w-[24.9rem]" />
         <div className="text-body-secondary text-center">
-          Your wallet has been forged in the fires of Talisman.
-          <br />
-          You're ready to get started!
+          {t("Your wallet has been forged in the fires of Talisman.")}
         </div>
         <Button primary onClick={completeOnboarding}>
-          Enter Talisman
+          {t("Go to Portfolio")}
         </Button>
       </div>
     </OnboardLayout>

@@ -1,9 +1,9 @@
-import { CustomEvmNetwork, EvmNetwork } from "@talismn/chaindata-provider"
+import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { useEvmNetworks } from "@ui/state"
 
-const sortNetworks = (a: EvmNetwork | CustomEvmNetwork, b: EvmNetwork | CustomEvmNetwork) =>
+const sortNetworks = (a: SimpleEvmNetwork, b: SimpleEvmNetwork) =>
   (a.name || "").localeCompare(b.name || "")
 
 export const useSortedEvmNetworks = (includeTestnets: boolean) => {

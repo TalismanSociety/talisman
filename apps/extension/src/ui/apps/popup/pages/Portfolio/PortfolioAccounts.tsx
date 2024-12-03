@@ -477,7 +477,7 @@ export const PortfolioAccounts = () => {
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
-      <GetStarted />
+      {!search && <GetStarted />}
       {fetchBalances && (
         <Suspense fallback={<SuspenseTracker name="BalancesLoader" />}>
           <BalancesLoader />

@@ -32,7 +32,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, prefix, className }
       type="button"
       onClick={handleClick}
       className={classNames(
-        "bg-grey-800 inline max-w-full rounded-3xl px-4 align-middle",
+        "bg-grey-850 hover:bg-grey-800 text-body inline-block max-w-full rounded-3xl px-4",
         className,
       )}
     >

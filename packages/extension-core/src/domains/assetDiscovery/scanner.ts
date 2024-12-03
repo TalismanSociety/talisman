@@ -22,6 +22,7 @@ import { settingsStore } from "../app/store.settings"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
+import { setAutoEnableDiscoveredAssets } from "./autoEnable"
 import { assetDiscoveryStore } from "./store"
 import { AssetDiscoveryMode, DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
@@ -125,6 +126,8 @@ class AssetDiscoveryScanner {
     if (this.#resumedScans.includes(scanId)) return
     this.#resumedScans.push(scanId)
 
+    setAutoEnableDiscoveredAssets(true)
+
     const {
       currentScanMode: mode,
       currentScanAccounts: addresses,
@@ -146,6 +149,7 @@ class AssetDiscoveryScanner {
       if (!evmNetwork) return false
       if (!settings.useTestnets && (evmNetwork.isTestnet || token.isTestnet)) return false
       if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
+      if (token.noDiscovery) return false
       if (mode === AssetDiscoveryMode.ALL_NETWORKS)
         return (
           !isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens)

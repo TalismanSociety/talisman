@@ -109,7 +109,9 @@ export default class SigningHandler extends ExtensionHandler {
           } catch (cause) {
             const error = new Error(`Failed to create signedTransaction`, { cause })
             console.warn(error) // eslint-disable-line no-console
-            sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+            sentry.captureException(error, {
+              extra: { chainId: chain?.id, chainName: chain?.name },
+            })
           }
         }
 
@@ -129,10 +131,13 @@ export default class SigningHandler extends ExtensionHandler {
         signature = request.sign(registry, pair).signature
       }
 
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        ...analyticsProperties,
-        networkType: "substrate",
-      })
+      talismanAnalytics.captureDelayed(
+        isJsonPayload(payload) ? "sign transaction approve" : "sign approve",
+        {
+          ...analyticsProperties,
+          networkType: "substrate",
+        },
+      )
 
       resolve({
         id,
@@ -221,11 +226,14 @@ export default class SigningHandler extends ExtensionHandler {
         ? "qr"
         : undefined
 
-    talismanAnalytics.captureDelayed("sign transaction approve", {
-      ...analyticsProperties,
-      networkType: "substrate",
-      hardwareType,
-    })
+    talismanAnalytics.captureDelayed(
+      isJsonPayload(payload) ? "sign transaction approve" : "sign approve",
+      {
+        ...analyticsProperties,
+        networkType: "substrate",
+        hardwareType,
+      },
+    )
 
     return true
   }

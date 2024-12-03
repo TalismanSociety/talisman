@@ -1,11 +1,13 @@
-import { ChainId } from "@talismn/chaindata-provider"
+import { ChainId, fetchChain } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-
-import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
 export const useIsBuiltInChain = (chainId?: ChainId) => {
   return useQuery({
     queryKey: ["useIsBuiltInChain", chainId],
-    queryFn: () => (chainId ? chaindataProvider.getIsBuiltInChain(chainId) : false),
+    queryFn: async () => {
+      if (!chainId) return false
+      const chain = await fetchChain(chainId)
+      return Boolean(chain)
+    },
   })
 }

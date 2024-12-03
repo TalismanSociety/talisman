@@ -1,4 +1,5 @@
-import { FC, Fragment, useCallback, useMemo } from "react"
+import { isAddressEqual } from "@talismn/util"
+import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountJsonAny, AuthorizedSite } from "@extension/core"
@@ -11,25 +12,26 @@ import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 
-const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
+const isMatch = (acc: AccountJsonAny) => (address: string) => isAddressEqual(acc.address, address)
+
+const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
   const accounts = useAccountsForSite(site)
 
-  const activeAccounts = useMemo(
-    () =>
-      accounts.map(
-        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean],
-      ),
-    [accounts, site?.addresses],
+  // using a local state allows for optimistic updates
+  const [activeAccounts, setActiveAccounts] = useState(() =>
+    accounts.map((acc) => [acc, site.addresses?.some(isMatch(acc))] as [AccountJsonAny, boolean]),
   )
 
   const handleUpdateAccounts = useCallback(
     (addresses: string[]) => {
-      if (!site?.id) return
-      api.authorizedSiteUpdate(site?.id, {
+      setActiveAccounts(
+        accounts.map((acc) => [acc, addresses.some(isMatch(acc))] as [AccountJsonAny, boolean]),
+      )
+      api.authorizedSiteUpdate(site.id, {
         addresses,
       })
     },
-    [site?.id],
+    [accounts, site.id],
   )
 
   return (

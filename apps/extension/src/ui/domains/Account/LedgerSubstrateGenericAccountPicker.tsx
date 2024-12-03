@@ -21,7 +21,7 @@ import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useChains } from "@ui/state"
 
 import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
@@ -44,6 +44,8 @@ const useLedgerSubstrateGenericAccounts = (
   >([...Array(itemsPerPage)])
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
+  const chains = useChains({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => chains.some((chain) => chain.hasCheckMetadataHash), [chains])
 
   const { isReady, ledger, getAddress, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
 
@@ -89,16 +91,16 @@ const useLedgerSubstrateGenericAccounts = (
   }, [app, isReady, itemsPerPage, ledger, getAddress, pageIndex, t])
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      ledgerAccounts.filter(Boolean).length === itemsPerPage
+      withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ed25519" }))
         : [],
-    [itemsPerPage, ledgerAccounts],
+    [itemsPerPage, ledgerAccounts, withBalances],
   )
-  const balances = useAccountImportBalances(accountImportDefs)
+  const balances = useAccountImportBalances(balanceDefs)
 
   const accounts: (LedgerSubstrateGenericAccount | null)[] = useMemo(
     () =>
@@ -120,10 +122,11 @@ const useLedgerSubstrateGenericAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
+          isBalanceLoading:
+            withBalances && (balances.status === "initialising" || balances.status === "cached"),
         }
       }),
-    [ledgerAccounts, walletAccounts, balances, selectedAccounts],
+    [ledgerAccounts, walletAccounts, balances, selectedAccounts, withBalances],
   )
 
   useEffect(() => {
@@ -137,6 +140,7 @@ const useLedgerSubstrateGenericAccounts = (
     isBusy,
     error,
     connectionStatus,
+    withBalances,
   }
 }
 
@@ -155,12 +159,8 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateGeneric[]>([])
-  const { accounts, error, isBusy, connectionStatus } = useLedgerSubstrateGenericAccounts(
-    selectedAccounts,
-    pageIndex,
-    itemsPerPage,
-    app,
-  )
+  const { accounts, error, isBusy, connectionStatus, withBalances } =
+    useLedgerSubstrateGenericAccounts(selectedAccounts, pageIndex, itemsPerPage, app)
 
   // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
   const refInitialized = useRef(false)
@@ -206,7 +206,7 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
       </div>
       <DerivedAccountPickerBase
         accounts={accounts}
-        withBalances
+        withBalances={withBalances}
         disablePaging={isBusy}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}

@@ -212,28 +212,28 @@ export class ChaindataProvider implements IChaindataProvider {
   async chainById(chainId: ChainId) {
     return await util.withErrorReason(
       "Failed to get chain by id",
-      async () => (await this.chainsById())[chainId] ?? null,
+      async (): Promise<Chain | null> => (await this.chainsById())[chainId] ?? null,
     )
   }
 
   async chainByGenesisHash(genesisHash: `0x${string}`) {
     return await util.withErrorReason(
       "Failed to get chain by genesisHash",
-      async () => (await this.chainsByGenesisHash())[genesisHash] ?? null,
+      async (): Promise<Chain | null> => (await this.chainsByGenesisHash())[genesisHash] ?? null,
     )
   }
 
   async evmNetworkById(evmNetworkId: EvmNetworkId) {
     return await util.withErrorReason(
       "Failed to get evmNetwork by id",
-      async () => (await this.evmNetworksById())[evmNetworkId] ?? null,
+      async (): Promise<EvmNetwork | null> => (await this.evmNetworksById())[evmNetworkId] ?? null,
     )
   }
 
   async tokenById(tokenId: TokenId) {
     return await util.withErrorReason(
       "Failed to get token by id",
-      async () => (await this.tokensById())[tokenId] ?? null,
+      async (): Promise<Token | null> => (await this.tokensById())[tokenId] ?? null,
     )
   }
 
@@ -346,7 +346,7 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
 
-    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName } =
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName, noDiscovery } =
       nativeModule.moduleConfig as Token
     if (!symbol) throw new Error("Missing native token symbol")
     if (!decimals) throw new Error("Missing native token decimals")
@@ -361,9 +361,11 @@ export class ChaindataProvider implements IChaindataProvider {
       decimals,
       coingeckoId,
       logo,
-      mirrorOf,
-      dcentName,
     }
+
+    if (mirrorOf) builtInNativeToken.mirrorOf = mirrorOf
+    if (dcentName) builtInNativeToken.dcentName = dcentName
+    if (noDiscovery) builtInNativeToken.noDiscovery = noDiscovery
 
     builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
 

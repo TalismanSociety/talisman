@@ -1,4 +1,4 @@
-import { api } from "./api"
+import { mockedApi } from "./api"
 
 jest.setTimeout(20_000)
 
@@ -39,7 +39,7 @@ jest.mock("bcryptjs", () => {
   }
 })
 
-jest.mock("@ui/api", () => api)
+jest.mock("@ui/api", () => ({ api: mockedApi }))
 
 jest.mock("react-i18next", () => ({
   // this mock makes sure any components using the translate hook can use it without a warning being shown

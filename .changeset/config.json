@@ -11,11 +11,12 @@
   "baseBranch": "origin/dev",
   "updateInternalDependencies": "patch",
   "ignore": [
+    "@polkadot-api/descriptors",
     "balances-demo",
     "extension",
-    "playground",
     "extension-core",
     "extension-shared",
+    "playground",
     "talisman-ui"
   ]
 }

@@ -226,7 +226,7 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
   onNftClick,
 }) => {
   return (
-    <div className="flex flex-wrap gap-[2.5rem]">
+    <div className="flex flex-wrap gap-[2.4rem]">
       {data.collections.map((collection, i) => (
         <NftCollectionTile
           key={`${collection.id}-${i}`}

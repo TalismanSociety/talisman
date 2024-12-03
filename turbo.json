@@ -1,5 +1,33 @@
 {
   "$schema": "https://turborepo.org/schema.json",
+  "globalEnv": [
+    "API_KEY_ONFINALITY",
+    "BLOWFISH_API_KEY",
+    "BLOWFISH_BASE_PATH",
+    "BLOWFISH_QA_API_KEY",
+    "COINGECKO_API_KEY_NAME",
+    "COINGECKO_API_KEY_VALUE",
+    "COINGECKO_API_URL",
+    "EVM_LOGPROXY",
+    "MEASURE_WEBPACK_SPEED",
+    "NFTS_API_BASE_PATH",
+    "NFTS_API_KEY",
+    "NFTS_QA_API_KEY",
+    "NODE_DEBUG",
+    "NODE_ENV",
+    "NODE_OPTIONS",
+    "PASSWORD",
+    "PORT_PREFIX",
+    "POSTHOG_AUTH_TOKEN",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_DSN",
+    "SIMPLE_LOCALIZE_API_KEY",
+    "SIMPLE_LOCALIZE_PROJECT_TOKEN",
+    "SUPPORTED_LANGUAGES",
+    "TEST_MNEMONIC",
+    "USE_ONE_DIST_DIR",
+    "npm_package_version"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["//#build:packages", "^build"],
@@ -20,80 +48,26 @@
     },
     "build:extension:ci": {
       "dependsOn": ["//#build:packages"],
-      "env": [
-        "POSTHOG_AUTH_TOKEN",
-        "SIMPLE_LOCALIZE_API_KEY",
-        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "SENTRY_DSN",
-        "SENTRY_AUTH_TOKEN",
-        "BLOWFISH_BASE_PATH",
-        "BLOWFISH_API_KEY"
-      ],
       "outputs": ["dist/**"]
     },
     "build:extension:ci:firefox": {
       "dependsOn": ["//#build:packages"],
-      "env": [
-        "POSTHOG_AUTH_TOKEN",
-        "SIMPLE_LOCALIZE_API_KEY",
-        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "SENTRY_DSN",
-        "SENTRY_AUTH_TOKEN",
-        "BLOWFISH_BASE_PATH",
-        "BLOWFISH_API_KEY"
-      ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary": {
       "dependsOn": ["//#build:packages"],
-      "env": [
-        "POSTHOG_AUTH_TOKEN",
-        "SIMPLE_LOCALIZE_API_KEY",
-        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "SENTRY_DSN",
-        "SENTRY_AUTH_TOKEN",
-        "BLOWFISH_BASE_PATH",
-        "BLOWFISH_API_KEY"
-      ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary:firefox": {
       "dependsOn": ["//#build:packages"],
-      "env": [
-        "POSTHOG_AUTH_TOKEN",
-        "SIMPLE_LOCALIZE_API_KEY",
-        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "SENTRY_DSN",
-        "SENTRY_AUTH_TOKEN",
-        "BLOWFISH_BASE_PATH",
-        "BLOWFISH_API_KEY"
-      ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod": {
       "dependsOn": ["//#build:packages"],
-      "env": [
-        "POSTHOG_AUTH_TOKEN",
-        "SIMPLE_LOCALIZE_API_KEY",
-        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "SENTRY_DSN",
-        "SENTRY_AUTH_TOKEN",
-        "BLOWFISH_BASE_PATH",
-        "BLOWFISH_API_KEY"
-      ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod:firefox": {
       "dependsOn": ["//#build:packages"],
-      "env": [
-        "POSTHOG_AUTH_TOKEN",
-        "SIMPLE_LOCALIZE_API_KEY",
-        "SIMPLE_LOCALIZE_PROJECT_TOKEN",
-        "SENTRY_DSN",
-        "SENTRY_AUTH_TOKEN",
-        "BLOWFISH_BASE_PATH",
-        "BLOWFISH_API_KEY"
-      ],
       "outputs": ["dist/**"]
     }
   }

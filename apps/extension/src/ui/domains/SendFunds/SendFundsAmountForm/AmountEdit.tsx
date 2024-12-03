@@ -18,12 +18,14 @@ import { PillButton } from "talisman-ui"
 import { log } from "@extension/shared"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import Tokens from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
+import { useSendFundsInputNumber } from "../useSendFundsInputNumber"
 import { TokenPillButton } from "./TokenPillButton"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
@@ -41,16 +43,20 @@ const normalizeStringNumber = (value?: string | number | null, decimals = 18) =>
 
 const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   const { set, remove } = useSendFundsWizard()
-  const {
-    tokenId,
-    token,
-    transfer,
-    maxAmount,
-    isEstimatingMaxAmount,
-    sendMax,
-    refTokensInput,
-    resizeTokensInput,
-  } = useSendFunds()
+  const { tokenId, token, transfer, maxAmount, isEstimatingMaxAmount, sendMax, amount } =
+    useSendFunds()
+
+  const refTokensInput = useRef<HTMLInputElement>(null)
+  useSendFundsInputNumber(refTokensInput, token?.decimals)
+  useInputAutoWidth(refTokensInput)
+
+  useEffect(() => {
+    if (sendMax && refTokensInput.current && transfer?.tokens) {
+      const expectedInputValue = normalizeStringNumber(transfer.tokens, token?.decimals)
+      if (refTokensInput.current.value !== expectedInputValue)
+        refTokensInput.current.value = expectedInputValue
+    }
+  }, [amount, transfer, sendMax, token])
 
   const defaultValue = useMemo(
     () =>
@@ -82,10 +88,6 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     if (!sendMax && !transfer) refTokensInput.current?.focus()
   }, [refTokensInput, sendMax, transfer])
 
-  useEffect(() => {
-    resizeTokensInput()
-  }, [resizeTokensInput, token?.symbol])
-
   return (
     <div
       className={classNames(
@@ -115,17 +117,20 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
 
 const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
-  const {
-    token,
-    transfer,
-    maxAmount,
-    tokenRates,
-    isEstimatingMaxAmount,
-    refFiatInput,
-    resizeFiatInput,
-  } = useSendFunds()
+  const { token, transfer, maxAmount, tokenRates, isEstimatingMaxAmount } = useSendFunds()
 
+  const refFiatInput = useRef<HTMLInputElement>(null)
+  useSendFundsInputNumber(refFiatInput, 2)
+  useInputAutoWidth(refFiatInput)
   const currency = useSelectedCurrency()
+
+  useEffect(() => {
+    if (sendMax && refFiatInput.current && typeof transfer?.fiat(currency) === "number") {
+      const expectedInputValue = transfer?.fiat(currency)?.toString() ?? ""
+      if (refFiatInput.current.value !== expectedInputValue)
+        refFiatInput.current.value = expectedInputValue
+    }
+  }, [transfer, sendMax, currency])
 
   const defaultValue = useMemo(
     () =>
@@ -153,10 +158,6 @@ const FiatInput = () => {
     }, 250),
     [remove, sendMax, set, token, tokenRates],
   )
-
-  useEffect(() => {
-    resizeFiatInput()
-  }, [resizeFiatInput])
 
   if (!tokenRates) return null
 

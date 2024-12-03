@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { v4 } from "uuid"
 
 import { ExtensionHandler } from "../src/libs/Handler"

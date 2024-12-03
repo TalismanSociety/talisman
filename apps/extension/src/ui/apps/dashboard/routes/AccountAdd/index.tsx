@@ -23,7 +23,7 @@ const Content = () => {
 
 export const AccountAddMenu = () => {
   return (
-    <DashboardLayout sidebar="settings" width="660">
+    <DashboardLayout sidebar="settings">
       <Content />
     </DashboardLayout>
   )

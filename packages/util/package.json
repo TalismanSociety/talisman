@@ -31,9 +31,9 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
-    "@polkadot/keyring": "13.2.1",
-    "@polkadot/util": "13.2.1",
-    "@polkadot/util-crypto": "13.2.1",
+    "@polkadot/keyring": "13.2.3",
+    "@polkadot/util": "13.2.3",
+    "@polkadot/util-crypto": "13.2.3",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^29.5.14",

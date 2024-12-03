@@ -25,10 +25,7 @@ export const subNetworkFormSchema = yup
       .test(
         "subscan",
         i18next.t("Invalid URL"),
-        (url) =>
-          url === undefined ||
-          url.length < 1 ||
-          (/^https:\/\//i.test(url) && /\.subscan\.io\/?$/i.test(url)),
+        (url) => url === undefined || url.length < 1 || /^https:\/\//i.test(url),
       ),
     hasCheckMetadataHash: yup.boolean().required(),
     rpcs: yup

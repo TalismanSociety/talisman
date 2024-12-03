@@ -52,7 +52,7 @@ const SetVerifierCertificateContentInner = () => {
           title: t("Error"),
           subtitle: t("Failed to set verifier certificate."),
         },
-        { autoClose: false },
+        { autoClose: false, closeOnClick: true },
       )
     }
   }, [generateMnemonic, mnemonicId, t])
@@ -250,7 +250,7 @@ const Content = () => {
 }
 
 export const QrMetadataPage = () => (
-  <DashboardLayout sidebar="settings" width="660">
+  <DashboardLayout sidebar="settings">
     <Content />
   </DashboardLayout>
 )
