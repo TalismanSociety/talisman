@@ -20,6 +20,7 @@ export type AssetDiscoveryScanState = {
   >
   lastScanTimestamp: number
   lastScanAccounts: string[]
+  lastScanNetworks: string[]
   lastScanTokensCount: number
   queue?: AssetDiscoveryScanScope[] // may be undefined for older installs : TODO migration ?
 }
@@ -31,6 +32,7 @@ export const DEFAULT_STATE: AssetDiscoveryScanState = {
   currentScanCursors: {},
   lastScanTimestamp: 0,
   lastScanAccounts: [],
+  lastScanNetworks: [],
   lastScanTokensCount: 0,
   queue: [],
 }
@@ -38,6 +40,10 @@ export const DEFAULT_STATE: AssetDiscoveryScanState = {
 class AssetDiscoveryStore extends StorageProvider<AssetDiscoveryScanState> {
   constructor() {
     super("assetDiscovery", DEFAULT_STATE)
+  }
+
+  reset() {
+    return this.set(DEFAULT_STATE)
   }
 }
 

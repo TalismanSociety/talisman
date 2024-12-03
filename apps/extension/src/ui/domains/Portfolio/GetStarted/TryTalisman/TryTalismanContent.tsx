@@ -1,4 +1,3 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import {
@@ -19,7 +18,6 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
@@ -41,7 +39,6 @@ export const TryTalismanContent: FC<{
   const { close } = useTryTalismanModal()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -96,9 +93,6 @@ export const TryTalismanContent: FC<{
           isPortfolio,
         )
 
-        if (isEthereumAddress(resultAddress))
-          api.assetDiscoveryStartScan({ networkIds, addresses: [resultAddress] })
-
         setPending(false)
         setError(null)
         if (resultAddress) IS_POPUP ? navigate("/portfolio") : close()
@@ -107,7 +101,7 @@ export const TryTalismanContent: FC<{
         setError(t("Please enter a valid Polkadot or Ethereum address"))
       }
     },
-    [analytics, address, isNsLookup, searchAddress, networkIds, navigate, close, t],
+    [analytics, address, isNsLookup, searchAddress, navigate, close, t],
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
     setSearchAddress(event.target.value)
@@ -212,7 +206,6 @@ const FollowAccountButton = ({
 }) => {
   const { t } = useTranslation()
   const allAccounts = useAccounts()
-  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const onClick = useCallback(async () => {
     sendAnalyticsEvent({
@@ -222,15 +215,8 @@ const FollowAccountButton = ({
     })
 
     const isPortfolio = true
-    const resultAddress = await api.accountCreateWatched(
-      name ?? shortenAddress(address),
-      address,
-      isPortfolio,
-    )
-
-    if (isEthereumAddress(resultAddress))
-      api.assetDiscoveryStartScan({ networkIds, addresses: [resultAddress] })
-  }, [address, analytics, description, name, networkIds])
+    await api.accountCreateWatched(name ?? shortenAddress(address), address, isPortfolio)
+  }, [address, analytics, description, name])
 
   const isAdded = useMemo(
     () => allAccounts.some((a) => encodeAnyAddress(a.address) === encodeAnyAddress(address)),

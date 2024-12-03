@@ -13,7 +13,7 @@ export class AssetDiscoveryHandler extends ExtensionHandler {
     switch (type) {
       case "pri(assetDiscovery.scan.start)":
         await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
-        return assetDiscoveryScanner.startScan(request as AssetDiscoveryScanScope)
+        return assetDiscoveryScanner.startScan(request as AssetDiscoveryScanScope, true)
 
       case "pri(assetDiscovery.scan.stop)":
         return assetDiscoveryScanner.stopScan()

@@ -14,7 +14,6 @@ import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
 
@@ -22,7 +21,6 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
-  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const schema = useMemo(
     () =>
@@ -106,8 +104,6 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
       try {
         onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
 
-        api.assetDiscoveryStartScan({ networkIds, addresses: [address] })
-
         notifyUpdate(notificationId, {
           type: "success",
           title: t("Account added"),
@@ -121,7 +117,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [networkIds, onSuccess, t],
+    [onSuccess, t],
   )
 
   const handleTypeChange = useCallback(

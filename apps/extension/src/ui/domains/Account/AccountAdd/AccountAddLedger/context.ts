@@ -12,7 +12,6 @@ import {
 } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useChain } from "@ui/state"
 
 export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
@@ -61,7 +60,6 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
     type: params.get("type") as AccountAddressType,
   }))
   const chain = useChain(data.chainId as string)
-  const networkIds = useActiveAssetDiscoveryNetworkIds()
 
   const updateData = useCallback((newData: Partial<LedgerCreationInputs>) => {
     setData((prev) => ({
@@ -91,11 +89,9 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
           ),
         )
 
-      api.assetDiscoveryStartScan({ networkIds, addresses })
-
       return addresses
     },
-    [chain?.genesisHash, data.substrateAppType, data.type, networkIds],
+    [chain?.genesisHash, data.substrateAppType, data.type],
   )
 
   return { data, updateData, connectAccounts, onSuccess }

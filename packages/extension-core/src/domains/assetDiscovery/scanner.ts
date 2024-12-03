@@ -9,7 +9,7 @@ import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
-import { distinctUntilKeyChanged, skip } from "rxjs"
+import { combineLatest, debounceTime, distinctUntilKeyChanged, skip } from "rxjs"
 import { PublicClient } from "viem"
 
 import { sentry } from "../../config/sentry"
@@ -19,10 +19,9 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isEvmToken } from "../../util/isEvmToken"
 import { appStore } from "../app/store.app"
-import { settingsStore } from "../app/store.settings"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
-import { activeTokensStore } from "../tokens/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
 
@@ -53,20 +52,88 @@ const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenL
 }
 
 class AssetDiscoveryScanner {
-  #isScanning = false
+  #isBusy = false
+  #preventAutoStart = false
 
   constructor() {
-    this.init()
+    this.watchNewAccounts()
+    this.watchEnabledNetworks()
+    this.resume()
   }
 
-  private async init(): Promise<void> {
+  private watchNewAccounts = async () => {
+    await awaitKeyringLoaded()
+
+    let prevAllAddresses: string[] | null = null
+
+    // identify newly added accounts and scan those
+    keyring.accounts.subject.pipe(debounceTime(500)).subscribe(async (accounts) => {
+      try {
+        const allAddresses = Object.keys(accounts)
+
+        if (prevAllAddresses && !this.#preventAutoStart) {
+          const addresses = allAddresses.filter((k) => !(prevAllAddresses as string[]).includes(k))
+          const networkIds = await getActiveNetworkIdsToScan()
+
+          log.debug("[AssetDiscovery] New accounts detected, starting scan", {
+            addresses,
+            networkIds,
+          })
+
+          this.startScan({ networkIds, addresses })
+        }
+
+        prevAllAddresses = allAddresses // update reference
+      } catch (err) {
+        log.error("[AssetDiscovery] Failed to start scan after account creation", { err })
+      }
+    })
+  }
+
+  private watchEnabledNetworks = async () => {
+    let prevAllActiveNetworkIds: string[] | null = null
+
+    // identify newly enabled networks and scan those
+    combineLatest([chaindataProvider.evmNetworksByIdObservable, activeEvmNetworksStore.observable])
+      .pipe(debounceTime(500))
+      .subscribe(([networksById, activeNetworks]) => {
+        try {
+          const allActiveNetworkIds = Object.keys(activeNetworks).filter(
+            (k) => !!activeNetworks[k] && networksById[k] && !networksById.isTestnet,
+          )
+
+          if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
+            const networkIds = allActiveNetworkIds.filter(
+              (k) => !(prevAllActiveNetworkIds as string[]).includes(k),
+            )
+            const addresses = keyring.getAccounts().map((acc) => acc.address)
+
+            log.debug("[AssetDiscovery] New enabled networks detected, starting scan", {
+              addresses,
+              networkIds,
+            })
+
+            this.startScan({ networkIds, addresses })
+          }
+
+          prevAllActiveNetworkIds = allActiveNetworkIds
+        } catch (err) {
+          log.error("[AssetDiscovery] Failed to start scan after active networks list changed", {
+            err,
+          })
+        }
+      })
+  }
+
+  private resume(): void {
     setTimeout(async () => {
-      this.resumeScan()
-      // resume after 15 sec to not interfere with other startup routines
-    }, 15_000)
+      this.executeNextScan()
+      // resume after 5 sec to not interfere with other startup routines
+      // could be longer but because of MV3 it's better to start asap
+    }, 5_000)
   }
 
-  public async startScan(scope: AssetDiscoveryScanScope): Promise<boolean> {
+  public async startScan(scope: AssetDiscoveryScanScope, dequeue?: boolean): Promise<boolean> {
     const evmNetworksMap = await chaindataProvider.evmNetworksById()
 
     // for now we only support ethereum addresses and networks
@@ -74,13 +141,25 @@ class AssetDiscoveryScanner {
     const networkIds = scope.networkIds.filter((id) => evmNetworksMap[id])
     if (!addresses.length || !networkIds.length) return false
 
+    log.debug("[AssetDiscovery] Enqueue scan", { addresses, networkIds })
+
     // add to queue
     await assetDiscoveryStore.mutate((state) => ({
       ...state,
       queue: [...(state.queue ?? []), { addresses, networkIds }],
     }))
 
-    this.resumeScan()
+    // for front end calls, dequeue as part of this promise to keep UI in sync
+    if (dequeue && !this.#isBusy) {
+      this.#isBusy = true
+      try {
+        await this.dequeue()
+      } finally {
+        this.#isBusy = false
+      }
+    }
+
+    this.executeNextScan()
 
     return true
   }
@@ -99,14 +178,15 @@ class AssetDiscoveryScanner {
     return true
   }
 
-  private async checkQueue(): Promise<void> {
-    // if no current scope, set it as the first entry from the queue
+  private async dequeue(): Promise<void> {
     const scope = await assetDiscoveryStore.get("currentScanScope")
 
     if (!scope) {
       const queue = await assetDiscoveryStore.get("queue")
       if (queue?.length) {
-        await enableDiscoveredTokens() // if pending tokens to enable, do it now
+        await this.enableDiscoveredTokens() // enable pending discovered tokens before flushing the table
+
+        await db.assetDiscovery.clear()
 
         await assetDiscoveryStore.mutate((state): AssetDiscoveryScanState => {
           const [next, ...others] = state.queue ?? []
@@ -121,31 +201,29 @@ class AssetDiscoveryScanner {
         })
       }
     }
-
-    this.resumeScan()
   }
 
-  private async resumeScan(): Promise<void> {
-    if (this.#isScanning) return
-    this.#isScanning = true
+  private async executeNextScan(): Promise<void> {
+    if (this.#isBusy) return
+    this.#isBusy = true
+
+    const abortController = new AbortController()
 
     try {
-      await this.checkQueue()
+      await this.dequeue()
 
       const scope = await assetDiscoveryStore.get("currentScanScope")
       if (!scope) return
 
+      log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
+
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
-      const [allTokens, evmNetworks, activeTokens, activeEvmNetworks, settings] = await Promise.all(
-        [
-          chaindataProvider.tokens(),
-          chaindataProvider.evmNetworksById(),
-          activeTokensStore.get(),
-          activeEvmNetworksStore.get(),
-          settingsStore.get(),
-        ],
-      )
+      const [allTokens, evmNetworks, activeTokens] = await Promise.all([
+        chaindataProvider.tokens(),
+        chaindataProvider.evmNetworksById(),
+        activeTokensStore.get(),
+      ])
 
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
 
@@ -155,12 +233,10 @@ class AssetDiscoveryScanner {
         .filter((token) => {
           const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
           if (!evmNetwork) return false
-          if (!settings.useTestnets && (evmNetwork.isTestnet || token.isTestnet)) return false
+          if (evmNetwork.isTestnet || token.isTestnet) return false
           if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
           if (token.noDiscovery) return false
-          return (
-            activeEvmNetworks[evmNetwork.id] === undefined || activeTokens[token.id] === undefined
-          )
+          return !isTokenActive(token, activeTokens)
         })
 
       await assetDiscoveryStore.mutate((prev) => ({
@@ -175,11 +251,6 @@ class AssetDiscoveryScanner {
 
       const totalChecks = tokensToScan.length * scope.addresses.length
       const totalTokens = tokensToScan.length
-
-      // const currentScanId$ = assetDiscoveryStore.observable.pipe(
-      //   map((state) => state.currentScanId),
-      // )
-      const abortController = new AbortController()
 
       const subScopeChange = assetDiscoveryStore.observable
         .pipe(distinctUntilKeyChanged("currentScanScope", isEqual), skip(1))
@@ -296,7 +367,7 @@ class AssetDiscoveryScanner {
               }
             }
           } catch (err) {
-            log.error(`Could not scan network ${networkId}`, { err })
+            log.error(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
           }
         })
 
@@ -304,27 +375,29 @@ class AssetDiscoveryScanner {
         if (abortController.signal.aborted) return prev
         return {
           ...prev,
+          currentScanProgressPercent: 100,
           currentScanScope: null,
-          currentScanProgressPercent: 0,
-          currentScanTokensCount: 0,
-          currentScanCursors: {},
           lastScanTimestamp: Date.now(),
           lastScanAccounts: prev.currentScanScope?.addresses ?? [],
+          lastScanNetworks: prev.currentScanScope?.networkIds ?? [],
           lastScanTokensCount: prev.currentScanTokensCount,
         }
       })
 
       subScopeChange.unsubscribe()
 
-      await enableDiscoveredTokens() // if pending tokens to enable, do it now
+      log.debug("[AssetDiscovery] Scan completed", scope)
+
+      await this.enableDiscoveredTokens() // if pending tokens to enable, do it now
     } catch (cause) {
+      abortController.abort()
       log.error("Error while scanning", { cause })
     } finally {
-      this.#isScanning = false
+      this.#isBusy = false
     }
 
     // proceed with next scan in queue, if any
-    this.resumeScan()
+    this.executeNextScan()
   }
 
   public async startPendingScan(): Promise<void> {
@@ -353,6 +426,67 @@ class AssetDiscoveryScanner {
 
     await appStore.set({ isAssetDiscoveryScanPending: false })
   }
+
+  private async enableDiscoveredTokens(): Promise<void> {
+    this.#preventAutoStart = true
+
+    try {
+      const [discoveredBalances, activeEvmNetworks, activeTokens] = await Promise.all([
+        db.assetDiscovery.toArray(),
+        activeEvmNetworksStore.get(),
+        activeTokensStore.get(),
+      ])
+
+      const tokenIds = uniq(discoveredBalances.map((entry) => entry.tokenId))
+      const tokens = (
+        await Promise.all(tokenIds.map((tokenId) => chaindataProvider.tokenById(tokenId)))
+      ).filter(isEvmToken)
+
+      const evmNetworkIds = uniq(
+        tokens.map((token) => token.evmNetwork?.id).filter((id): id is EvmNetworkId => !!id),
+      )
+      const evmNetworks = (
+        await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))
+      ).filter((network): network is EvmNetwork => !!network)
+
+      // activate tokens that have not been explicitely disabled and that are not default tokens
+      for (const token of tokens)
+        if (activeTokens[token.id] === undefined && !isTokenActive(token, activeTokens)) {
+          log.debug("[AssetDiscovery] Automatically enabling discovered asset", { token })
+          activeTokensStore.setActive(token.id, true)
+        }
+
+      // activate networks that have not been explicitely disabled and that are not default networks
+      for (const evmNetwork of evmNetworks)
+        if (
+          activeEvmNetworks[evmNetwork.id] === undefined &&
+          !isEvmNetworkActive(evmNetwork, activeEvmNetworks)
+        ) {
+          log.debug("[AssetDiscovery] Automatically enabling discovered network", { evmNetwork })
+          activeEvmNetworksStore.setActive(evmNetwork.id, true)
+        }
+    } catch (err) {
+      log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
+        err,
+      })
+    }
+
+    this.#preventAutoStart = false
+  }
+}
+
+const getActiveNetworkIdsToScan = async () => {
+  const [evmNetworks, activeEvmNetworks] = await Promise.all([
+    chaindataProvider.evmNetworks(),
+    activeEvmNetworksStore.get(),
+    // we dont scan substrate tokens for now
+    // chaindataProvider.chains(),
+    // activeChainsStore.get()
+  ])
+
+  return evmNetworks
+    .filter((n) => !n.isTestnet && isEvmNetworkActive(n, activeEvmNetworks))
+    .map((n) => n.id)
 }
 
 const getEvmTokenBalance = async (client: PublicClient, token: Token, address: EvmAddress) => {
@@ -471,46 +605,6 @@ const getEvmTokenBalances = (
   return aggregatorAddress
     ? getEvmTokenBalancesWithAggregator(client, balanceDefs, aggregatorAddress)
     : getEvmTokenBalancesWithoutAggregator(client, balanceDefs)
-}
-
-const enableDiscoveredTokens = async () => {
-  try {
-    const [discoveredBalances, activeEvmNetworks, activeTokens] = await Promise.all([
-      db.assetDiscovery.toArray(),
-      activeEvmNetworksStore.get(),
-      activeTokensStore.get(),
-    ])
-
-    const tokenIds = uniq(discoveredBalances.map((entry) => entry.tokenId))
-    const tokens = (
-      await Promise.all(tokenIds.map((tokenId) => chaindataProvider.tokenById(tokenId)))
-    ).filter(isEvmToken)
-
-    const evmNetworkIds = uniq(
-      tokens.map((token) => token.evmNetwork?.id).filter((id): id is EvmNetworkId => !!id),
-    )
-    const evmNetworks = (
-      await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))
-    ).filter((network): network is EvmNetwork => !!network)
-
-    // activate tokens that have not been explicitely disabled
-    for (const token of tokens)
-      if (activeTokens[token.id] === undefined) {
-        log.debug("[AssetDiscovery] Automatically enabling discovered asset", { token })
-        activeTokensStore.setActive(token.id, true)
-      }
-
-    // activate networks that have not been explicitely disabled
-    for (const evmNetwork of evmNetworks)
-      if (activeEvmNetworks[evmNetwork.id] === undefined) {
-        log.debug("[AssetDiscovery] Automatically enabling discovered network", { evmNetwork })
-        activeEvmNetworksStore.setActive(evmNetwork.id, true)
-      }
-  } catch (err) {
-    log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
-      err,
-    })
-  }
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()

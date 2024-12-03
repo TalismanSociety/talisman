@@ -330,7 +330,7 @@ const AssetTable: FC = () => {
 const Header: FC = () => {
   const { t } = useTranslation("admin")
   const isInitializing = useIsInitializingScan()
-  const { balances, accountsCount, tokensCount, percent, isInProgress } =
+  const { balances, accountsCount, networksCount, tokensCount, percent, isInProgress } =
     useAssetDiscoveryScanProgress()
 
   const [includeTestnets] = useSetting("useTestnets")
@@ -367,21 +367,29 @@ const Header: FC = () => {
         )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {isInitializing || isInProgress || balances.length ? (
+        {isInitializing || isInProgress || balances.length || !!percent ? (
           <>
             <div className="flex text-base">
               <div className="grow">
                 {isInitializing
                   ? t("Initialising...")
                   : isInProgress
-                    ? t("Scanning {{tokensCount}} tokens for {{count}} account(s)", {
-                        tokensCount,
-                        count: accountsCount,
-                      })
-                    : t("Scanned {{tokensCount}} tokens for {{count}} account(s)", {
-                        tokensCount,
-                        count: accountsCount,
-                      })}
+                    ? t(
+                        "Scanning {{tokensCount}} tokens for {{accountsCount}} account(s) on {{networksCount}} network(s)",
+                        {
+                          tokensCount,
+                          accountsCount,
+                          networksCount,
+                        },
+                      )
+                    : t(
+                        "Scanned {{tokensCount}} tokens for {{accountsCount}} account(s) on {{networksCount}} network(s)",
+                        {
+                          tokensCount,
+                          accountsCount,
+                          networksCount,
+                        },
+                      )}
               </div>
               <div className="text-primary">{effectivePercent}%</div>
             </div>
@@ -462,7 +470,7 @@ const ScanInfo: FC = () => {
   const isInitializing = useIsInitializingScan()
 
   const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
-  const { lastScanAccounts, lastScanTimestamp } = useAssetDiscoveryScan()
+  const { lastScanAccounts, lastScanNetworks, lastScanTimestamp } = useAssetDiscoveryScan()
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
@@ -514,7 +522,7 @@ const ScanInfo: FC = () => {
         {!isInProgress && !!lastScanTimestamp && !!lastScanAccounts.length && (
           <Trans
             t={t}
-            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> at <DateWrapper>{{timestamp}}</DateWrapper>"
+            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> on {{networksCount}} network(s) at <DateWrapper>{{timestamp}}</DateWrapper>"
             components={{
               AccountsWrapper: (
                 <AccountsWrapper
@@ -524,7 +532,11 @@ const ScanInfo: FC = () => {
               ),
               DateWrapper: <span className="text-body-secondary"></span>,
             }}
-            values={{ count: lastScanAccounts.length, timestamp: formatedTimestamp }}
+            values={{
+              count: lastScanAccounts.length,
+              timestamp: formatedTimestamp,
+              networksCount: lastScanNetworks.length,
+            }}
           ></Trans>
         )}
       </div>
