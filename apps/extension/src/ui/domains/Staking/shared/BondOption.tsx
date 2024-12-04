@@ -62,7 +62,7 @@ export const BondOption = ({
             )}
           >
             <TalismanHandIcon />
-            {t("Recommended")}
+            {t("Featured")}
           </div>
         )}
       </div>
