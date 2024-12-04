@@ -38,8 +38,11 @@ const [useDisplayAssetPrice] = bind((tokenId: TokenId | null | undefined) =>
         : undefined
 
       // exclude +0.0% and -0.0%, display nothing in that case
-      const change24h =
-        rawChange24h?.length && rawChange24h.slice(1) !== "0.0%" ? rawChange24h : undefined
+      const change24h = rawChange24h?.length
+        ? rawChange24h.slice(1) === "0.0%"
+          ? "0.0%" // we dont want a sign if it's +0.0% or -0.0%
+          : rawChange24h
+        : undefined
 
       return {
         compact,
@@ -79,8 +82,8 @@ export const AssetPrice: FC<{
           {!noChange && price.change24h ? (
             <span
               className={classNames(
-                price.change24h.startsWith("+") && "text-green",
-                price.change24h.startsWith("-") && "text-red",
+                price.change24h.startsWith("+") && "text-price-up",
+                price.change24h.startsWith("-") && "text-price-down",
                 changeClassName,
               )}
             >
