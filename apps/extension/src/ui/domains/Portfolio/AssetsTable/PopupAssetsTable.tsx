@@ -7,6 +7,7 @@ import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
@@ -126,9 +127,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && !!rate && (
-              <Fiat amount={rate.price} className="text-body-secondary text-xs" />
-            )}
+            {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
           </div>
           <div
             className={classNames(

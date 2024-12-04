@@ -77,7 +77,7 @@ export const AssetPrice: FC<{
   return (
     <Tooltip placement="bottom-start">
       <TooltipTrigger asChild>
-        <Container className={className}>
+        <Container className={classNames("whitespace-nowrap", className)}>
           <span className={priceClassName}>{price.compact} </span>
           {!noChange && price.change24h ? (
             <span
