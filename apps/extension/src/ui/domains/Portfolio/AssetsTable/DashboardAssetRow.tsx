@@ -4,6 +4,7 @@ import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
 import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondButton"
@@ -126,7 +127,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
               </div>
             )}
             {!isUniswapV2LpToken && !!rate && (
-              <Fiat amount={rate.price} className="text-body-secondary" />
+              <AssetPrice tokenId={token.id} className="text-body-secondary" />
             )}
           </div>
         </div>
