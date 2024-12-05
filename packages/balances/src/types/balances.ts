@@ -852,6 +852,75 @@ export class SumBalancesFormatter {
   fiat(currency: TokenRateCurrency) {
     return new FiatSumBalancesFormatter(this.#balances, currency)
   }
+
+  change24h(currency: TokenRateCurrency) {
+    return new Change24hCurrencyFormatter(this.#balances, currency)
+  }
+}
+
+export class Change24hCurrencyFormatter {
+  #balances: Balances
+  #currency: TokenRateCurrency
+
+  constructor(balances: Balances, currency: TokenRateCurrency) {
+    this.#balances = balances
+    this.#currency = currency
+  }
+
+  #change24h = (
+    balanceField: {
+      [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
+    }[keyof Balance],
+  ) => {
+    const output = this.#balances.filterMirrorTokens().each.reduce(
+      // add the total amount to the fiat amount of each balance
+      (acc, balance) => {
+        const change24h = balance.rates?.[this.#currency]?.change24h
+        if (typeof change24h !== "number") return acc
+        const fiat = balance[balanceField].fiat(this.#currency)
+        if (!fiat) return acc
+
+        return {
+          totalFiatDiff: acc.totalFiatDiff + fiat * change24h,
+          totalFiat: acc.totalFiat + fiat,
+        }
+      },
+      // start with a total of 0
+      { totalFiatDiff: 0, totalFiat: 0 },
+    )
+
+    return output.totalFiat === 0
+      ? null
+      : {
+          diff: output.totalFiatDiff / 100,
+          ratio: output.totalFiatDiff / output.totalFiat,
+        }
+  }
+
+  get total() {
+    return this.#change24h("total")
+  }
+  get free() {
+    return this.#change24h("free")
+  }
+  get reserved() {
+    return this.#change24h("reserved")
+  }
+  get locked() {
+    return this.#change24h("locked")
+  }
+  get frozen() {
+    return this.#change24h("frozen")
+  }
+  get transferable() {
+    return this.#change24h("transferable")
+  }
+  get unavailable() {
+    return this.#change24h("unavailable")
+  }
+  get feePayable() {
+    return this.#change24h("feePayable")
+  }
 }
 
 export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {

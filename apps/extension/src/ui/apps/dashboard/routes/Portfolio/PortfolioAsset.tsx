@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Balances } from "@extension/core"
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -132,15 +133,15 @@ const TokenBreadcrumb: FC<{
                 <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && typeof rate?.price === "number" && (
-              <Fiat amount={rate.price} className="text-body-secondary" />
+            {!isUniswapV2LpToken && (
+              <AssetPrice tokenId={token?.id} className="text-body-secondary" />
             )}
           </div>
         ),
         onClick: undefined,
       },
     ]
-  }, [t, token?.id, token?.symbol, symbol, isUniswapV2LpToken, tvl, rate, navigate])
+  }, [t, token?.id, token?.symbol, symbol, isUniswapV2LpToken, tvl, navigate])
 
   return (
     <div className="flex h-20 items-center justify-between">
