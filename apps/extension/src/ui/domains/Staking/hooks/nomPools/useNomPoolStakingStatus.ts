@@ -95,7 +95,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
 
       return { accounts, poolId }
     },
-    enabled: !!sapi,
+    enabled: !!sapi && token?.chain?.id !== "bittensor",
   })
 }
 
