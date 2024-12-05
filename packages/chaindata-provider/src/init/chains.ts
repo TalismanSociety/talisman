@@ -131,11 +131,6 @@ export const chains = [
         name: "Frequency",
       },
       {
-        id: "geminis",
-        paraId: 2038,
-        name: "Geminis",
-      },
-      {
         id: "hashed",
         paraId: 2093,
         name: "Hashed",
@@ -211,16 +206,6 @@ export const chains = [
         name: "Nodle",
       },
       {
-        id: "oak",
-        paraId: 2090,
-        name: "Oak",
-      },
-      {
-        id: "omnibtc",
-        paraId: 2053,
-        name: "OmniBTC",
-      },
-      {
         id: "peaq",
         paraId: 3338,
         name: "Peaq",
@@ -279,11 +264,6 @@ export const chains = [
         id: "sora-polkadot",
         paraId: 2025,
         name: "Sora",
-      },
-      {
-        id: "subdao",
-        paraId: 2018,
-        name: "SubDAO",
       },
       {
         id: "subsocial-polkadot",
@@ -475,11 +455,6 @@ export const chains = [
         name: "Kintsugi",
       },
       {
-        id: "kpron",
-        paraId: 2019,
-        name: "Kpron",
-      },
-      {
         id: "kreivo",
         paraId: 2281,
         name: "Kreivo",
@@ -533,11 +508,6 @@ export const chains = [
         id: "robonomics-kusama",
         paraId: 2048,
         name: "Robonomics Kusama",
-      },
-      {
-        id: "sakura",
-        paraId: 2016,
-        name: "Sakura",
       },
       {
         id: "shadow-kusama",
@@ -768,7 +738,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 754,
+    sortIndex: 753,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -800,6 +770,9 @@ export const chains = [
       },
       {
         id: "polkadot-asset-hub-substrate-assets-17-wifd",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-assets-555-game",
       },
       {
         id: "polkadot-asset-hub-substrate-assets-690-bork",
@@ -926,6 +899,11 @@ export const chains = [
               assetId: 17,
               symbol: "WIFD",
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/wifd.svg",
+            },
+            {
+              assetId: 555,
+              symbol: "GAME",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/game.svg",
             },
             {
               assetId: 690,
@@ -1100,7 +1078,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 755,
+    sortIndex: 754,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",

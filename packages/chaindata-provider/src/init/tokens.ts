@@ -197,6 +197,21 @@ export const tokens = [
     },
   },
   {
+    id: "polkadot-asset-hub-substrate-assets-555-game",
+    type: "substrate-assets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "GAME",
+    decimals: 10,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/game.svg",
+    existentialDeposit: "100000",
+    assetId: "555",
+    isFrozen: false,
+    chain: {
+      id: "polkadot-asset-hub",
+    },
+  },
+  {
     id: "polkadot-asset-hub-substrate-assets-690-bork",
     type: "substrate-assets",
     isTestnet: false,
