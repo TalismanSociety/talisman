@@ -7,7 +7,7 @@ export const useDetaultNomPoolId = (chainId?: ChainId | null | undefined) => {
   const remoteConfig = useRemoteConfig()
 
   return useMemo(() => {
-    if (!chainId || chainId === "bittensor") return null
-    return remoteConfig.stakingPools?.[chainId]?.[0] ?? null
-  }, [chainId, remoteConfig.stakingPools])
+    if (!chainId) return null
+    return remoteConfig.nominationPools?.[chainId]?.[0] ?? null
+  }, [chainId, remoteConfig.nominationPools])
 }
