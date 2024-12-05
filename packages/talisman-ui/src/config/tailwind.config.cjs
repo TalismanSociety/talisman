@@ -66,7 +66,7 @@ module.exports = {
       },
       price: {
         up: "#38D448", // rgba(56, 212, 72, 1)
-        down: "#FD4848", // rgba(253, 72, 72, 1)
+        down: "#FF5C5F", // rgba(255, 92, 92, 1)
       },
     },
     lineHeight: {
