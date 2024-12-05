@@ -5,6 +5,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { IconButton } from "talisman-ui"
 
 import { Balances } from "@extension/core"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -42,23 +43,20 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         <div className="shrink-0 text-2xl">
           <TokenLogo tokenId={token?.id} />
         </div>
-        <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
+        <div className="flex grow flex-col overflow-hidden pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
             <div>{symbol}</div>
             <div>{t("Total")}</div>
           </div>
-          <div className="text-md flex justify-between font-bold">
+          <div className="text-md flex items-baseline justify-between font-bold">
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <Fiat className="overflow-hidden text-ellipsis whitespace-nowrap" amount={tvl} />
             )}
             {!isUniswapV2LpToken && !!rate && (
-              <Fiat
-                className="overflow-hidden text-ellipsis whitespace-nowrap"
-                amount={rate.price}
-              />
+              <AssetPrice tokenId={token?.id} className="truncate text-sm" />
             )}
             <div>
-              <Fiat amount={total} isBalance />
+              <Fiat amount={total} isBalance className="text-sm" />
             </div>
           </div>
         </div>
