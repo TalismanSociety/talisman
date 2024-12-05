@@ -5,10 +5,6 @@ const fetchBittensorValidator = async (
   hotkey: string | number | null | undefined,
 ): Promise<BittensorValidator> => {
   try {
-    if (!TAOSTATS_API_KEY) {
-      throw new Error("TAOSTATS_API_KEY is not set. Cannot make API request.")
-    }
-
     if (!hotkey) {
       throw new Error("No hotkey provided")
     }
