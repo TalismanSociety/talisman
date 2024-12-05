@@ -1,4 +1,6 @@
+import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { uniq } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
@@ -6,6 +8,7 @@ import { IconButton } from "talisman-ui"
 
 import { Balances } from "@extension/core"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
+import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -27,6 +30,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const total = useMemo(
     () => balancesToDisplay.sum.fiat(currency).total,
     [balancesToDisplay.sum, currency],
+  )
+
+  const tokenIds = useMemo(
+    () => uniq(balancesToDisplay.each.map((b) => b.token?.id)).filter(Boolean) as TokenId[],
+    [balancesToDisplay],
   )
 
   const { t } = useTranslation()
@@ -61,6 +69,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
           </div>
         </div>
       </div>
+      <AssetPriceChart tokenIds={tokenIds} />
       <div className="py-12">
         <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
       </div>
