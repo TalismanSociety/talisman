@@ -290,8 +290,8 @@ export const SendFundsRecipientPicker = () => {
   )
 
   const handleSubmitSearch = useCallback(() => {
-    if (isValidAddressInput) set("to", search, true)
-  }, [isValidAddressInput, search, set])
+    if (isValidAddressInput && isValidSubstrateNetworkAddressInput) set("to", search, true)
+  }, [isValidAddressInput, isValidSubstrateNetworkAddressInput, search, set])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
