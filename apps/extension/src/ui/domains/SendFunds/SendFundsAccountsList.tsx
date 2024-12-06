@@ -99,7 +99,7 @@ const AccountRow: FC<AccountRowProps> = ({
         genesisHash={account.genesisHash}
         className="!text-lg"
       />
-      <div className="flex grow items-center overflow-hidden">
+      <div className="flex grow items-center justify-between overflow-hidden">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">
             <div className="truncate">
