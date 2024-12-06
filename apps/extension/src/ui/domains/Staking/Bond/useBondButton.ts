@@ -49,7 +49,9 @@ export const useBondButton = ({
     try {
       let isNomPoolStaking = false
 
-      let poolId = remoteConfig.stakingPools[token.chain.id]?.[0]
+      let poolId =
+        remoteConfig.stakingPools[token.chain.id]?.[0] ||
+        remoteConfig.nominationPools[token.chain.id]?.[0]
 
       if (!poolId) return [null, false]
 
