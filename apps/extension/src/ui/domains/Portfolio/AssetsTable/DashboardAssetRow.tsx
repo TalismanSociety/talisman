@@ -1,13 +1,12 @@
-import { ExternalLinkIcon, XIcon, ZapFastIcon, ZapIcon } from "@talismn/icons"
+import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/useBondButton"
-import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -18,47 +17,6 @@ import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
-
-const AssetRowStakingReminder = (props: ReturnType<typeof useShowStakingBanner>) => {
-  const { t } = useTranslation()
-
-  const { message, colours, handleClickStakingBanner, handleDismissStakingBanner } = props
-  const { token, summary } = useTokenBalancesSummary(props.balances)
-
-  if (!token || !summary) return null
-
-  return (
-    <div
-      className={classNames(
-        colours?.["text"],
-        colours?.["background"],
-        `flex h-[4.1rem] w-full cursor-pointer items-center justify-between rounded-t px-8 text-sm`,
-      )}
-    >
-      <button type="button" className="flex items-center gap-4" onClick={handleClickStakingBanner}>
-        <ZapIcon className="shrink-0" />{" "}
-        <div className="text-left">
-          <Trans
-            t={t}
-            components={{
-              Highlight: <span className="text-white" />,
-              LinkIcon: (
-                <span className="inline-flex shrink-0 flex-col justify-center">
-                  <ExternalLinkIcon className="inline-block shrink-0" />
-                </span>
-              ),
-            }}
-            defaults="<Highlight>Earn yield on your {{symbol}}.</Highlight> {{message}} <LinkIcon />"
-            values={{ symbol: token.symbol, message }}
-          />
-        </div>
-      </button>
-      <button type="button" className="shrink-0">
-        <XIcon onClick={handleDismissStakingBanner} />
-      </button>
-    </div>
-  )
-}
 
 type AssetRowProps = {
   balances: Balances
@@ -84,19 +42,14 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
 
-  const stakingReminder = useShowStakingBanner(balances)
-
   if (!token || !summary) return null
 
   return (
     <div className="relative mb-4">
-      {stakingReminder.showBanner && <AssetRowStakingReminder {...stakingReminder} />}
-
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden text-left text-base",
-          stakingReminder.showBanner ? "rounded-b" : "rounded",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base",
         )}
         onClick={handleClick}
       >

@@ -28,7 +28,6 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
-import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -183,9 +182,6 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
   )
 }
 
-const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
-  option.type === "account"
-
 const AccountsToolbar = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -292,11 +288,6 @@ const Accounts = ({
   const hasPortfolioOptions = portfolioOptions.length > 0
   const hasWatchedOptions = watchedOptions.length > 0
 
-  const addresses = useMemo(
-    () => portfolioOptions.filter(accountTypeGuard).map(({ address }) => address),
-    [portfolioOptions],
-  )
-
   return (
     <div className="flex w-full flex-col gap-4">
       {folder ? (
@@ -305,7 +296,6 @@ const Accounts = ({
         <>
           <AllAccountsHeader accounts={accounts} />
           <NewFeaturesButton />
-          <StakingBanner addresses={addresses} />
         </>
       )}
 

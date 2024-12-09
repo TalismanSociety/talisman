@@ -2,55 +2,7 @@ import { Enum } from "@polkadot-api/substrate-bindings"
 import { range } from "lodash"
 import { Binary } from "polkadot-api"
 
-import {
-  EVM_LSD_SUPPORTED_CHAINS,
-  EvmLsdSupportedChain,
-  NOM_POOL_SUPPORTED_CHAINS,
-  NomPoolSupportedChain,
-  StakingSupportedChain,
-} from "@extension/core"
 import { ScaleApi } from "@ui/util/scaleApi"
-
-type Colours = {
-  text: string
-  background: string
-}
-
-export const colours: Record<StakingSupportedChain, Colours> = {
-  "polkadot": {
-    text: "text-[#cc2c75]",
-    background: "bg-[#260001]",
-  },
-  "kusama": {
-    text: "text-body-secondary",
-    background: "bg-[#303030]",
-  },
-  "aleph-zero": {
-    text: "text-[#e5ff57]",
-    background: "bg-[#2C2D30]",
-  },
-  "vara": {
-    text: "text-[#00a87a]",
-    background: "bg-[#002905]",
-  },
-  "avail": {
-    text: "text-[#D0E5FF]",
-    background: "bg-[#4E6786]",
-  },
-  "1": {
-    text: "text-[#8b93b4]",
-    background: "bg-[#151C2F]",
-  },
-}
-
-export const isNomPoolChain = (chainId: string): chainId is NomPoolSupportedChain =>
-  NOM_POOL_SUPPORTED_CHAINS.includes(chainId as NomPoolSupportedChain)
-
-export const isEvmLsdChain = (networkId: string): networkId is EvmLsdSupportedChain =>
-  EVM_LSD_SUPPORTED_CHAINS.includes(networkId as EvmLsdSupportedChain)
-
-export const isStakingSupportedChain = (chainId: string): chainId is StakingSupportedChain =>
-  isNomPoolChain(chainId) || isEvmLsdChain(chainId)
 
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
