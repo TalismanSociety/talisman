@@ -135,7 +135,7 @@ export const AssetPriceChart: FC<{
         )}
       </div>
       {/* use absolute position for buttons, above the graph, to not break the gradient */}
-      <div className="absolute bottom-0 left-0 right-0">
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0">
         <TimespanSelect value={timespan} variant={variant} onChange={setTimespan} />
       </div>
     </div>
@@ -258,11 +258,11 @@ const Chart: FC<{
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // set min/max boundaries for y axis to ensure we have 10% gap on each side, so our timespan selector and token dropdown arent drawn on the price line
+    // set min boundaries for y axis to ensure that timespan selector isn't drawn on the price line
     const allPrices = prices.map(([, price]) => price)
     const minPrice = Math.min(...allPrices)
     const maxPrice = Math.max(...allPrices)
-    const suggestedMin = minPrice - (maxPrice - minPrice) * 0.15
+    const suggestedMin = minPrice - (maxPrice - minPrice) * 0.2
 
     // sometimes chart's onHover is called after mouse has left the canvas, so we need to track this
     let isHovering = false
@@ -330,8 +330,6 @@ const Chart: FC<{
               size: variant === "large" ? 14 : 12,
               weight: 400,
             },
-
-            bodyColor: "#d5ff5c",
             titleMarginBottom: 0,
             caretSize: 0,
             caretPadding: 40,
@@ -422,6 +420,7 @@ const TimespanSelect: FC<{
           type="button"
           className={classNames(
             "rounded-[0.6rem] px-3 py-1.5 hover:bg-white/5 hover:text-white",
+            "pointer-events-auto",
             variant === "small" && "text-[1rem]",
             variant === "large" && "text-sm",
             value === key && "bg-white/10 text-white",
