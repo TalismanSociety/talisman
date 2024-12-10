@@ -3,7 +3,7 @@ import { decodeAnyAddress, sleep } from "@talismn/util"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetDiscoveryMode, VerifierCertificateType } from "@extension/core"
+import { VerifierCertificateType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -203,8 +203,6 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           address,
           lockToNetwork ? genesisHash : null,
         )
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [createdAddress])
 
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {

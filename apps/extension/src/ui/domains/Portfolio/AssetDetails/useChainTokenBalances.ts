@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
+import { useCombineBittensorStakeInfo } from "@ui/domains/Staking/hooks/bittensor/useCombineBittensorStakeInfo"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 import { useChain, useSelectedCurrency } from "@ui/state"
@@ -23,6 +24,7 @@ export type DetailRow = {
   locked: boolean
   address?: Address
   meta?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  isLoading?: boolean
 }
 
 type ChainTokenBalancesParams = {
@@ -38,6 +40,11 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   const { t } = useTranslation()
 
   const currency = useSelectedCurrency()
+
+  const { combinedStakeInfo: subtensor } = useCombineBittensorStakeInfo({
+    address: account?.address,
+    balances: balances,
+  })
 
   const detailRows = useMemo((): DetailRow[] => {
     if (!summary) return []
@@ -123,26 +130,10 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       })),
     )
 
-    // STAKED (SUBTENSOR)
-    const subtensor = tokenBalances.each.flatMap((b) =>
-      b.subtensor.map((subtensor, index) => ({
-        key: `${b.id}-subtensor-${index}`,
-        title: getLockTitle(subtensor, { balance: b }),
-
-        description: undefined,
-        tokens: BigNumber(subtensor.amount.tokens),
-        fiat: subtensor.amount.fiat(currency),
-        locked: true,
-        // only show address when we're viewing balances for all accounts
-        address: account ? undefined : b.address,
-        meta: subtensor.meta,
-      })),
-    )
-
     return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [summary, account, t, tokenBalances, currency])
+  }, [summary, account, t, tokenBalances.each, subtensor, currency])
 
   const { evmNetwork } = balances.sorted[0]
   const relay = useChain(chain?.relay?.id)

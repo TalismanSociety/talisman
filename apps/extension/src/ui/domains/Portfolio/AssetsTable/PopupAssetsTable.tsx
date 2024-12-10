@@ -10,8 +10,8 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
-import { NomPoolBondPillButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondPillButton"
-import { useNomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondButton"
+import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
+import { useBondButton } from "@ui/domains/Staking/Bond/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -89,7 +89,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  const { canBondNomPool } = useNomPoolBondButton({ tokenId: token?.id, balances })
+  const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
 
   if (!token || !summary) return null
@@ -163,7 +163,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
               </div>
               {showStakingButton && (
-                <NomPoolBondPillButton
+                <BondPillButton
                   tokenId={token.id}
                   balances={balances}
                   className="hidden group-hover:block"

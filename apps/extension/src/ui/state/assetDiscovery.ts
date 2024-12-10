@@ -1,21 +1,17 @@
 import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
-import { assetDiscoveryStore, db, DiscoveredBalance } from "extension-core"
+import { assetDiscoveryStore, db } from "extension-core"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
-import { combineLatest, from, map, Observable, shareReplay, throttleTime } from "rxjs"
+import { combineLatest, from, map, shareReplay, throttleTime } from "rxjs"
 
 import { getTokensMap$ } from "./chaindata"
-import { debugObservable } from "./util/debugObservable"
 
-// TODO return dexie observable directly ?
-export const assetDiscoveryBalances$ = new Observable<DiscoveredBalance[]>((subscriber) => {
-  const sub = from(liveQuery(() => db.assetDiscovery.toArray()))
-    .pipe(throttleTime(500, undefined, { leading: true, trailing: true }))
-    .subscribe(subscriber)
-
-  return () => sub.unsubscribe()
-}).pipe(debugObservable("assetDiscoveryBalances$"), shareReplay(1))
+// debounced to prevent hammering coingecko api
+const assetDiscoveryBalances$ = from(liveQuery(() => db.assetDiscovery.toArray())).pipe(
+  throttleTime(500, undefined, { leading: true, trailing: true }),
+  shareReplay(1),
+)
 
 export const [useAssetDiscoveryScan, assetDiscoveryScan$] = bind(assetDiscoveryStore.observable)
 
@@ -27,11 +23,11 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
   ]).pipe(
     map(([scan, balances, tokensMap]) => {
       const {
-        currentScanId,
+        currentScanScope,
         currentScanProgressPercent: percent,
-        currentScanAccounts,
         currentScanTokensCount,
         lastScanAccounts,
+        lastScanNetworks,
         lastScanTokensCount,
       } = scan
 
@@ -42,9 +38,13 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
         (tokenId) => tokensMap[tokenId]?.symbol,
       )
 
-      const isInProgress = !!currentScanId
-      const accounts = isInProgress ? currentScanAccounts : lastScanAccounts
+      const isInProgress = !!currentScanScope
+
+      const accounts = isInProgress ? currentScanScope.addresses : lastScanAccounts
       const tokensCount = isInProgress ? currentScanTokensCount : lastScanTokensCount
+      const networksCount = isInProgress
+        ? currentScanScope?.networkIds.length
+        : lastScanNetworks.length
 
       return {
         isInProgress,
@@ -54,6 +54,7 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
         tokensCount,
         accounts,
         accountsCount: accounts.length,
+        networksCount,
         tokenIds,
       }
     }),

@@ -9,9 +9,9 @@ import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { NomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/NomPoolBondModal"
-import { NomPoolUnbondModal } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondModal"
+import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
+import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 
 import DashboardNotifications from "."
@@ -49,8 +49,8 @@ export const DashboardNotificationsAndModals = () => {
       <ExplorerNetworkPickerModal />
       <MigratePasswordModal />
       <OnboardingToast />
-      <NomPoolBondModal />
-      <NomPoolUnbondModal />
+      <BondModal />
+      <UnbondModal />
       <NomPoolWithdrawModal />
       <GetStartedModals />
     </Suspense>

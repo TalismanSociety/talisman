@@ -176,6 +176,12 @@ const config = (env) => ({
       "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
         env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : "",
       ),
+      "process.env.TAOSTATS_API_KEY": JSON.stringify(
+        env.build === "dev" ? process.env.TAOSTATS_API_KEY || "" : "",
+      ),
+      "process.env.TAOSTATS_BASE_PATH": JSON.stringify(
+        env.build === "dev" ? process.env.TAOSTATS_BASE_PATH || "" : "",
+      ),
       "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : "",
       ),

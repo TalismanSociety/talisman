@@ -14,8 +14,8 @@ import {
 import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useNomPoolBondModal } from "@ui/domains/Staking/NomPoolBond/useNomPoolBondModal"
-import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
+import { useBondModal } from "@ui/domains/Staking/Bond/useBondModal"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken } from "@ui/state"
@@ -54,7 +54,7 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { open } = useNomPoolBondModal()
+  const { open } = useBondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
   const openArgs = useMemo<Parameters<typeof open>[0] | undefined>(() => {

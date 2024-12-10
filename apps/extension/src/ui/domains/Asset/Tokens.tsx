@@ -67,15 +67,14 @@ export const Tokens: FC<TokensProps> = ({
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
 
-  const tooltip = useMemo(
+  const tooltipAmount = useMemo(
     () =>
-      noTooltip
-        ? null
-        : `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
-            symbol ?? ""
-          }`.trim(),
-    [amount, decimals, noTooltip, symbol],
+      `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
+        symbol ?? ""
+      }`.trim(),
+    [amount, decimals, symbol],
   )
+  const tooltip = useMemo(() => (noTooltip ? null : tooltipAmount), [noTooltip, tooltipAmount])
 
   const render = amount !== null && amount !== undefined
 
@@ -92,7 +91,7 @@ export const Tokens: FC<TokensProps> = ({
       {render && (
         <Tooltip placement="bottom-end">
           <TooltipTrigger asChild>
-            <span>
+            <span data-amount={tooltipAmount}>
               <DisplayValue
                 amount={isHidden ? 0 : amount}
                 symbol={symbol}

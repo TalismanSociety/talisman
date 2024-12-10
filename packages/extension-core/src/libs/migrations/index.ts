@@ -11,7 +11,10 @@ import {
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
 } from "../../domains/app/migrations"
-import { migrateAssetDiscoveryRollout } from "../../domains/assetDiscovery/migrations"
+import {
+  migrateAssetDiscoveryRollout,
+  migrateAssetDiscoveryV2,
+} from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
 import { migrateTokenRates } from "../../domains/tokenRates/migrations"
@@ -31,6 +34,7 @@ export const migrations: Migrations = [
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
   migrateAnaliticsPurgePendingCaptures,
+  migrateAssetDiscoveryV2,
   migrateTokenRates,
 ]
 

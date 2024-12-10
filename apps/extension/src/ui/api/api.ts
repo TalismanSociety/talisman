@@ -346,8 +346,8 @@ export const api: MessageTypes = {
     }),
 
   // asset discovery
-  assetDiscoveryStartScan: (mode, addresses) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", { mode, addresses }),
+  assetDiscoveryStartScan: (scope) =>
+    messageService.sendMessage("pri(assetDiscovery.scan.start)", scope),
   assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
 
   // nfts

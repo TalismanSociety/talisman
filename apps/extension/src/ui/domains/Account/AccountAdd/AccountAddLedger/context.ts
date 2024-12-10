@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom"
 
 import {
   AccountAddressType,
-  AssetDiscoveryMode,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateLedgerSubstrateGeneric,
@@ -89,8 +88,6 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
             data.substrateAppType ? getSubstrateLedgerAppType(data.substrateAppType) : undefined,
           ),
         )
-
-      api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
       return addresses
     },

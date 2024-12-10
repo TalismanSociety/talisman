@@ -95,7 +95,7 @@ export const getLockTitle = (
   }
   if (lock.label === "nompools-staking") return "Pooled Staking"
   if (lock.label === "nompools-unbonding") return "Pooled Staking"
-  if (lock.label === "subtensor-staking") return "Delegate Staking"
+  if (lock.label === "subtensor-staking") return "Delegated Staking"
   if (lock.label === "dapp-staking") return "DApp Staking"
   if (lock.label === "fees") return "Locked (Fees)"
   if (lock.label === "misc") return "Locked"

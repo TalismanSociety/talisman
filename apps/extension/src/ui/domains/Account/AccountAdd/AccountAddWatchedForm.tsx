@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
-import { AssetDiscoveryMode, UiAccountAddressType } from "@extension/core"
+import { UiAccountAddressType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
@@ -103,8 +103,6 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
       try {
         onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",

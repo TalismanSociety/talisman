@@ -18,7 +18,6 @@ import { isHex, toHex } from "viem"
 import { publicKeyToAddress } from "viem/accounts"
 import * as yup from "yup"
 
-import { AssetDiscoveryMode } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -102,7 +101,6 @@ const schema = yup
 
 export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
-
   const allAccounts = useAccounts()
   const accountEthAddresses = useMemo(
     () => allAccounts.filter(({ type }) => type === "ethereum").map((a) => a.address),
@@ -150,8 +148,6 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
       )
       try {
         const address = await api.accountCreateFromSuri(name, privateKey, "ethereum")
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         onSuccess(address)
         notifyUpdate(notificationId, {

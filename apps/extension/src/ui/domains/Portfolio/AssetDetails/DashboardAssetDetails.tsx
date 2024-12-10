@@ -13,10 +13,10 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
-import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
-import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
-import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
+import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/state"
 
@@ -35,11 +35,15 @@ const AssetState = ({
   description,
   render,
   address,
+  isLoading,
+  locked,
 }: {
   title: string
   description?: string
   render: boolean
   address?: Address
+  isLoading?: boolean
+  locked?: boolean
 }) => {
   if (!render) return null
   return (
@@ -55,6 +59,9 @@ const AssetState = ({
         </div>
       )}
       {/* show description below title when address is not set */}
+      {isLoading && !description && locked && (
+        <div className="bg-grey-700 rounded-xs h-[1.6rem] w-80 animate-pulse" />
+      )}
       {description && !address && (
         <div className="flex-shrink-0 truncate text-sm">{description}</div>
       )}
@@ -123,7 +130,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           />
         </div>
         <div className="flex items-center justify-end gap-2">
-          {tokenId && <NomPoolBondButton tokenId={tokenId} balances={balances} />}
+          {tokenId && <BondButton tokenId={tokenId} balances={balances} />}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -252,7 +259,14 @@ const ChainTokenBalancesDetailRow = ({
     className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
   >
     <div>
-      <AssetState title={row.title} description={row.description} render address={row.address} />
+      <AssetState
+        title={row.title}
+        description={row.description}
+        render
+        address={row.address}
+        isLoading={row.isLoading}
+        locked={row.locked}
+      />
     </div>
     {!row.locked && <div></div>}
     <div>
@@ -263,7 +277,9 @@ const ChainTokenBalancesDetailRow = ({
         symbol={symbol}
         locked={row.locked}
         balancesStatus={status}
-        className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
+        className={classNames(
+          (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+        )}
       />
     </div>
     {!!row.locked && row.meta && tokenId && (
@@ -305,12 +321,12 @@ const LockedExtra: FC<{
     [accountStatus?.canWithdrawIn, rowMeta.unbonding],
   )
 
-  if (!rowAddress || !accountStatus) return null
+  if (!rowAddress) return null
 
   return (
     <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
       {rowMeta.unbonding ? (
-        accountStatus.canWithdraw ? (
+        accountStatus?.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
         ) : (
           <>
@@ -327,8 +343,13 @@ const LockedExtra: FC<{
             )}
           </>
         )
-      ) : accountStatus.canUnstake ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="large" />
+      ) : accountStatus?.canUnstake || tokenId === "bittensor-substrate-native" ? (
+        <UnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          variant="large"
+          poolId={rowMeta.poolId}
+        />
       ) : null}
     </div>
   )

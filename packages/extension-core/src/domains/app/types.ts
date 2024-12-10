@@ -15,6 +15,7 @@ export type RemoteConfigStoreData = {
     apiKeyValue?: string
   }
   nominationPools: Record<ChainId, number[]>
+  stakingPools: Record<ChainId, (number | string)[]>
   postHogUrl: string
 }
 

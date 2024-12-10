@@ -20,7 +20,6 @@ import * as yup from "yup"
 
 import {
   AccountAddressType,
-  AssetDiscoveryMode,
   RequestAccountCreateOptions,
   UiAccountAddressType,
 } from "@extension/core"
@@ -199,8 +198,6 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         const address = await api.accountCreate(name, type, options)
 
         onSuccess(address)
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",

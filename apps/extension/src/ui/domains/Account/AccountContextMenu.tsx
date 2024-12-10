@@ -11,7 +11,7 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 
-import { AccountJsonAny, AssetDiscoveryMode } from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
@@ -21,6 +21,7 @@ import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
+import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useChainByGenesisHash } from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
@@ -126,15 +127,16 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     [_openAccountRemoveModal, account],
   )
 
+  const networkIds = useActiveAssetDiscoveryNetworkIds()
   const canScanTokens = useMemo(() => isEthereumAddress(account?.address), [account])
   const scanTokensClick = useCallback(() => {
     if (!account) return
-    api.assetDiscoveryStartScan(AssetDiscoveryMode.ALL_NETWORKS, [account.address])
+    api.assetDiscoveryStartScan({ networkIds, addresses: [account.address] })
     if (IS_POPUP) {
       api.dashboardOpen("/settings/networks-tokens/asset-discovery")
       if (IS_EMBEDDED_POPUP) window.close()
     }
-  }, [account])
+  }, [account, networkIds])
 
   const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
 

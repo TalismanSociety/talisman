@@ -16,12 +16,7 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import {
-  AccountAddressType,
-  AssetDiscoveryMode,
-  getEthDerivationPath,
-  UiAccountAddressType,
-} from "@extension/core"
+import { AccountAddressType, getEthDerivationPath, UiAccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -173,8 +168,6 @@ export const AccountAddMnemonicForm = () => {
         try {
           const address = await api.accountCreateFromSuri(name, suri, type)
 
-          api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
-
           onSuccess(address)
           notifyUpdate(notificationId, {
             type: "success",
@@ -190,7 +183,7 @@ export const AccountAddMnemonicForm = () => {
         }
       }
     },
-    [t, navigate, onSuccess, updateData],
+    [updateData, navigate, t, onSuccess],
   )
 
   const handleTypeChange = useCallback(

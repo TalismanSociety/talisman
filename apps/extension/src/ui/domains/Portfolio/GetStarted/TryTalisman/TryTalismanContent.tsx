@@ -1,7 +1,5 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { AssetDiscoveryMode } from "extension-core"
 import {
   ChangeEventHandler,
   FC,
@@ -94,9 +92,6 @@ export const TryTalismanContent: FC<{
           address,
           isPortfolio,
         )
-
-        if (isEthereumAddress(resultAddress))
-          api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [resultAddress])
 
         setPending(false)
         setError(null)
@@ -220,14 +215,7 @@ const FollowAccountButton = ({
     })
 
     const isPortfolio = true
-    const resultAddress = await api.accountCreateWatched(
-      name ?? shortenAddress(address),
-      address,
-      isPortfolio,
-    )
-
-    if (isEthereumAddress(resultAddress))
-      api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [resultAddress])
+    await api.accountCreateWatched(name ?? shortenAddress(address), address, isPortfolio)
   }, [address, analytics, description, name])
 
   const isAdded = useMemo(

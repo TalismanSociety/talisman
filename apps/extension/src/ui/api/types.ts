@@ -1,7 +1,7 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
-import { Address, BalanceJson } from "@talismn/balances"
+import { BalanceJson } from "@talismn/balances"
 import {
   Chain,
   ChainId,
@@ -25,7 +25,7 @@ import {
   AddressesByChain,
   AnalyticsCaptureRequest,
   AnyEthRequestChainId,
-  AssetDiscoveryMode,
+  AssetDiscoveryScanScope,
   AssetTransferMethod,
   AuthorisedSiteUpdate,
   AuthorizedSite,
@@ -335,7 +335,7 @@ export default interface MessageTypes {
     blockHash?: HexString,
   ) => Promise<MetadataDef | undefined>
 
-  assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>
+  assetDiscoveryStartScan: (scope: AssetDiscoveryScanScope) => Promise<boolean>
   assetDiscoveryStopScan: () => Promise<boolean>
 
   nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn

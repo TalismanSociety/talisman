@@ -34,11 +34,12 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
         // TODO: Run this on a timer or something instead of when subscribing to tokens
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true }).then(() => {
+          // triggers a pending scan if any
+          // doing this here as this is the only place where we hydrate tokens from github
+          assetDiscoveryScanner.startPendingScan()
+        })
 
-        // triggers a pending scan if any
-        // doing this here as this is the only place where we hydrate tokens from github
-        assetDiscoveryScanner.startPendingScan()
         return genericSubscription(
           id,
           port,

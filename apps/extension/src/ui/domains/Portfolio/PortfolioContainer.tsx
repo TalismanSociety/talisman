@@ -8,20 +8,13 @@ import {
   balancesHydrate$,
   portfolioSelectedAccounts$,
   remoteConfig$,
-  stakingBannerStore$,
   usePortfolio,
 } from "@ui/state"
 
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const [usePreload] = bind(
-  combineLatest([
-    balancesHydrate$,
-    accounts$,
-    accountsCatalog$,
-    remoteConfig$,
-    stakingBannerStore$,
-  ]),
+  combineLatest([balancesHydrate$, accounts$, accountsCatalog$, remoteConfig$]),
 )
 
 export const PortfolioContainer: FC<{ children: ReactNode; renderWhileLoading?: boolean }> = ({

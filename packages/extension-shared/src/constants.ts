@@ -31,6 +31,9 @@ export const BLOWFISH_BASE_PATH = process.env.BLOWFISH_BASE_PATH || "https://bfp
 export const BLOWFISH_API_KEY = process.env.BLOWFISH_API_KEY
 export const NFTS_API_KEY = process.env.NFTS_API_KEY
 export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nfts-api.talisman.xyz"
+export const TAOSTATS_BASE_PATH =
+  process.env.TAOSTATS_BASE_PATH || "https://taostats-api-proxy.talismn.workers.dev"
+export const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"

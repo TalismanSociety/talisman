@@ -15,16 +15,16 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { NomPoolBondButton } from "@ui/domains/Staking/NomPoolBond/NomPoolBondButton"
-import { NomPoolUnbondButton } from "@ui/domains/Staking/NomPoolUnbond/NomPoolUnbondButton"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
-import { useNomPoolStakingStatus } from "@ui/domains/Staking/shared/useNomPoolStakingStatus"
+import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useFeatureFlag, useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -76,7 +76,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         {tokenId && (
           <div className="size-[3.8rem] shrink-0 empty:hidden">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <NomPoolBondButton tokenId={tokenId} balances={balances} />
+              <BondButton tokenId={tokenId} balances={balances} />
             </Suspense>
           </div>
         )}
@@ -211,7 +211,7 @@ const ChainTokenBalancesDetailRow = ({
             tokenId={tokenId}
             address={row.address}
             rowMeta={row.meta}
-            isLoading={status.status === "fetching"}
+            isLoading={status.status === "fetching" || !!row.isLoading}
           />
         )}
       </div>
@@ -219,6 +219,9 @@ const ChainTokenBalancesDetailRow = ({
         <div className="text-xs">
           <PortfolioAccount address={row.address} />
         </div>
+      )}
+      {row.isLoading && !row.description && row.locked && (
+        <div className="bg-grey-700 rounded-xs h-[1.6rem] max-w-48 animate-pulse" />
       )}
       {!row.address && row.description && (
         <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
@@ -279,12 +282,12 @@ const LockedExtra: FC<{
     [accountStatus?.canWithdrawIn, rowMeta.unbonding],
   )
 
-  if (!rowAddress || !accountStatus) return null
+  if (!rowAddress) return null
 
   return (
     <>
       {rowMeta.unbonding ? (
-        accountStatus.canWithdraw ? (
+        accountStatus?.canWithdraw ? (
           <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="small" />
         ) : (
           <Tooltip>
@@ -305,8 +308,13 @@ const LockedExtra: FC<{
           </Tooltip>
         )
       ) : //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      accountStatus.canUnstake ? (
-        <NomPoolUnbondButton tokenId={tokenId} address={rowAddress} variant="small" />
+      accountStatus?.canUnstake || tokenId === "bittensor-substrate-native" ? (
+        <UnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          variant="small"
+          poolId={rowMeta.poolId}
+        />
       ) : null}
     </>
   )
