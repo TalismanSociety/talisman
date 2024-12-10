@@ -95,7 +95,7 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
           title: getLockTitle({ label: "subtensor-staking" }),
           description: validatorsForAddress?.[index]?.name,
           tokens: BigNumber(formattedStakedAmount),
-          fiat: Number(formattedStakedAmount) * (tokenRates?.[selectedCurrency] ?? 0),
+          fiat: Number(formattedStakedAmount) * (tokenRates?.[selectedCurrency]?.price ?? 0),
           locked: true,
           // only show address when we're viewing balances for all accounts
           address: address ? undefined : addr,
