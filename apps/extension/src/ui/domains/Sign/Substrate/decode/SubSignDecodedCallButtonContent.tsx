@@ -1,6 +1,6 @@
-import { ErrorBoundary } from "@sentry/react"
 import { FC } from "react"
 
+import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 import { DecodedCall } from "@ui/util/scaleApi"
 
 import { SUMMARY_COMPONENTS } from "../summary/calls"
@@ -22,8 +22,8 @@ export const SubSignDecodedCallButtonContent: DecodedCallComponent<
   if (!Component) return <ContentFallback decodedCall={props.decodedCall} />
 
   return (
-    <ErrorBoundary fallback={<ContentFallback decodedCall={props.decodedCall} />}>
+    <FallbackErrorBoundary fallback={<ContentFallback decodedCall={props.decodedCall} />}>
       <Component {...props} mode={props.mode} />
-    </ErrorBoundary>
+    </FallbackErrorBoundary>
   )
 }
