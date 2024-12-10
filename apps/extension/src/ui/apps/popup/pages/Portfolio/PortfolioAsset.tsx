@@ -7,23 +7,18 @@ import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { IconButton } from "talisman-ui"
 
 import { Balances } from "@extension/core"
-import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useBalances, usePortfolio, useSelectedCurrency, useSetting } from "@ui/state"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
   const currency = useSelectedCurrency()
-  const { token, rate } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])
 
@@ -39,38 +34,21 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   const { t } = useTranslation()
 
-  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
-
   return (
     <>
-      <div className="flex w-full items-center gap-4">
+      <div className="text-body flex h-12 w-full items-center gap-4 text-base font-bold">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>
-        <div className="shrink-0 text-2xl">
-          <TokenLogo tokenId={token?.id} />
-        </div>
-        <div className="flex grow flex-col overflow-hidden pl-2 text-sm">
-          <div className="text-body-secondary flex justify-between">
-            <div>{symbol}</div>
-            <div>{t("Total")}</div>
-          </div>
-          <div className="text-md flex items-baseline justify-between font-bold">
-            {isUniswapV2LpToken && typeof tvl === "number" && (
-              <Fiat className="overflow-hidden text-ellipsis whitespace-nowrap" amount={tvl} />
-            )}
-            {!isUniswapV2LpToken && !!rate && (
-              <AssetPrice tokenId={token?.id} className="truncate text-sm" />
-            )}
-            <div>
-              <Fiat amount={total} isBalance className="text-sm" />
-            </div>
-          </div>
+        <div className="shrink-0">{symbol}</div>
+        <div className="flex grow items-center justify-end gap-3">
+          <div className="text-body-secondary text-sm">{t("Total")}</div>
+          <Fiat amount={total} isBalance className="" />
         </div>
       </div>
-      <AssetPriceChart tokenIds={tokenIds} variant="small" />
-      <div className="py-12">
+
+      <div className="py-4">
+        <AssetPriceChart tokenIds={tokenIds} variant="small" className="mb-8" />
         <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
       </div>
     </>

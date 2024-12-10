@@ -10,7 +10,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
@@ -104,8 +103,7 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
 
 const TokenBreadcrumb: FC<{
   symbol: string
-  token: Token | undefined
-}> = ({ symbol, token }) => {
+}> = ({ symbol }) => {
   const { t } = useTranslation()
 
   const navigate = useNavigateWithQuery()
@@ -117,16 +115,11 @@ const TokenBreadcrumb: FC<{
         onClick: () => navigate("/portfolio/tokens"),
       },
       {
-        label: (
-          <div className="flex items-center gap-2">
-            <TokenLogo tokenId={token?.id} className="text-md" />
-            <div className="text-body font-bold">{token?.symbol ?? symbol}</div>
-          </div>
-        ),
+        label: <div className="text-body font-bold">{symbol}</div>,
         onClick: undefined,
       },
     ]
-  }, [t, token?.id, token?.symbol, symbol, navigate])
+  }, [t, symbol, navigate])
 
   return (
     <div className="flex h-20 items-center justify-between">
@@ -166,7 +159,7 @@ export const PortfolioAsset = () => {
 
   return (
     <>
-      <TokenBreadcrumb token={token} symbol={symbol} />
+      <TokenBreadcrumb symbol={symbol} />
       <HeaderRow token={token} summary={summary} />
       <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
     </>
