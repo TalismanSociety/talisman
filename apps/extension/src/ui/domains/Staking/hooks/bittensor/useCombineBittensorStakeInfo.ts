@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 import { Balances } from "@extension/core"
-import { DetailRow } from "@ui/domains/Portfolio/AssetDetails/useChainTokenBalances"
+import { BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useChainTokenBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
@@ -54,7 +54,7 @@ export const useCombineBittensorStakeInfo = ({ address, balances }: CombineBitte
     isEnabled: flatHotkeys?.length > 0 && totalStaked > 0,
   })
 
-  const combinedStakeInfo: DetailRow[] = useMemo(() => {
+  const combinedStakeInfo: BalanceDetailRow[] = useMemo(() => {
     if (
       (totalStaked > 0 && flatHotkeys?.length && isBittensorValidatorLoading) ||
       isStakesLoading

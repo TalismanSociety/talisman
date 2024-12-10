@@ -502,7 +502,6 @@ export const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: (
 }) => {
   const { t } = useTranslation()
   const { setOpen } = usePopoverContext()
-  //const tokenRates = useTokenRates(token.id)
 
   const handleClick = useCallback(() => {
     onClick()
@@ -538,6 +537,7 @@ export const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: (
 }
 
 const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
+  const { t } = useTranslation()
   const tokenRates = useTokenRates(tokenId)
   const currency = useSelectedCurrency()
 
@@ -551,8 +551,8 @@ const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
             currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
             notation: "compact",
           }).format(tokenRates[currency].marketCap)
-        : null,
-    [tokenRates, currency],
+        : t("unknown"),
+    [tokenRates, currency, t],
   )
 
   return <span className="font-bold">{display}</span>

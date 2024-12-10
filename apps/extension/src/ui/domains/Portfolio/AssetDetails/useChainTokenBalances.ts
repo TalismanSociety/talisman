@@ -1,5 +1,5 @@
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -10,12 +10,12 @@ import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useCombineBittensorStakeInfo } from "@ui/domains/Staking/hooks/bittensor/useCombineBittensorStakeInfo"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
-import { useChain, useSelectedCurrency } from "@ui/state"
+import { useChain, useSelectedCurrency, useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
-export type DetailRow = {
+export type BalanceDetailRow = {
   key: string | BalanceLockType
   title: string
   description?: string
@@ -27,16 +27,17 @@ export type DetailRow = {
   isLoading?: boolean
 }
 
-type ChainTokenBalancesParams = {
-  chainId: ChainId | EvmNetworkId
+type TokenBalancesParams = {
+  tokenId: TokenId
   balances: Balances
 }
 
-export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesParams) => {
-  const chain = useChain(chainId)
+export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
+  const token = useToken(tokenId)
+  const chain = useChain(token?.chain?.id)
 
   const { selectedAccount: account } = usePortfolioNavigation()
-  const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
+  const { summary, tokenBalances } = useTokenBalancesSummary(balances)
   const { t } = useTranslation()
 
   const currency = useSelectedCurrency()
@@ -46,7 +47,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     balances: balances,
   })
 
-  const detailRows = useMemo((): DetailRow[] => {
+  const detailRows = useMemo((): BalanceDetailRow[] => {
     if (!summary) return []
 
     // AVAILABLE
@@ -143,8 +144,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
   return {
     summary,
-    tokenId: token?.id, // there could be more than one token with same symbol, use this only for icon
-    symbol: token?.symbol,
+    token,
     detailRows,
     evmNetwork,
     chain,
