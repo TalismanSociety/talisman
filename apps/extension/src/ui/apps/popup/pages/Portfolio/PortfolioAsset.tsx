@@ -69,7 +69,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
           </div>
         </div>
       </div>
-      <AssetPriceChart tokenIds={tokenIds} />
+      <AssetPriceChart tokenIds={tokenIds} variant="small" />
       <div className="py-12">
         <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
       </div>

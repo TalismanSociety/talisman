@@ -1,4 +1,5 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
+import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -6,24 +7,22 @@ import ChartJs, { ChartComponentLike } from "chart.js/auto"
 import { fetchFromCoingecko } from "extension-core"
 import { log } from "extension-shared"
 import { uniq } from "lodash"
-import {
-  ButtonHTMLAttributes,
-  FC,
-  MouseEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
-import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
 
-import { useSelectedCurrency, useTokenRatesMap, useTokensMap } from "@ui/state"
+import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
 
 import { AssetPrice } from "./AssetPrice"
 import { TokenLogo } from "./TokenLogo"
 
-export const AssetPriceChart: FC<{ tokenIds: TokenId[]; className?: string }> = ({ tokenIds }) => {
+type ChartVariant = "small" | "large"
+
+export const AssetPriceChart: FC<{
+  tokenIds: TokenId[]
+  variant: ChartVariant
+  className?: string
+}> = ({ tokenIds, variant, className }) => {
   const currency = useSelectedCurrency()
   const tokensMap = useTokensMap()
   const tokensWithCoingeckoId = useMemo(
@@ -38,11 +37,8 @@ export const AssetPriceChart: FC<{ tokenIds: TokenId[]; className?: string }> = 
   const selectableTokens = useMemo(() => {
     if (!tokenRates) return []
 
-    const coingeckoIds = uniq((tokensWithCoingeckoId || []).map((t) => t.coingeckoId)).filter(
-      Boolean,
-    )
-    // console.log("uniq coingecko ids", coingeckoIds)
-    const tokens = coingeckoIds
+    const tokens = uniq((tokensWithCoingeckoId || []).map((t) => t.coingeckoId))
+      .filter(Boolean)
       .map((coingeckoId) => tokensWithCoingeckoId.find((t) => t.coingeckoId === coingeckoId))
       .filter(Boolean) as Token[]
 
@@ -57,6 +53,12 @@ export const AssetPriceChart: FC<{ tokenIds: TokenId[]; className?: string }> = 
   const [selectedTokenId, setSelectedTokenId] = useState<TokenId | null>(
     selectableTokens[0]?.id ?? null,
   )
+  useEffect(() => {
+    // workaround empty button when changing account to one that doesnt have balance for the selecte done
+    if (!selectableTokens.find((t) => t.id === selectedTokenId) && selectableTokens.length)
+      setSelectedTokenId(selectableTokens[0].id)
+  }, [selectedTokenId, selectableTokens])
+
   const coingeckoId = useMemo(
     () => tokensWithCoingeckoId.find((t) => t.id === selectedTokenId)?.coingeckoId ?? null,
     [selectedTokenId, tokensWithCoingeckoId],
@@ -72,37 +74,57 @@ export const AssetPriceChart: FC<{ tokenIds: TokenId[]; className?: string }> = 
     refetch()
   }, [tokenRates, refetch])
 
-  if (!selectedTokenId || !selectableTokens.length) return null
+  const handleCoingeckoClick = useCallback(() => {
+    if (!coingeckoId) return
 
-  // console.log("AssetPriceChart", {
-  //   selectedTokenId,
-  //   selectableTokens,
-  //   tokenIds,
-  //   tokensWithCoingeckoId,
-  // })
+    window.open(
+      `https://www.coingecko.com/en/coins/${coingeckoId}`,
+      "_blank",
+      "noopener noreferrer",
+    )
+  }, [coingeckoId])
+
+  if (!selectedTokenId || !selectableTokens.length) return null
 
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex h-[16.8rem] w-full shrink-0 flex-col overflow-hidden rounded-sm",
+        "bg-black-secondary relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm",
+        variant === "small" && "h-[16.8rem]",
+        variant === "large" && "h-[19.2rem]",
+        className,
       )}
     >
-      <div className="flex shrink-0 justify-between p-5">
+      <div className="flex h-20 shrink-0 items-center justify-between px-5">
         <TokenSelect
           value={selectedTokenId}
           tokens={selectableTokens}
+          variant={variant}
           onChange={setSelectedTokenId}
         />
-        <AssetPrice tokenId={selectedTokenId} noChange />
+        <div className="flex items-center gap-5">
+          <div
+            className={classNames(
+              "text-body-secondary font-bold",
+              variant === "small" && "text-base",
+              variant === "large" && "text-[2rem]",
+            )}
+          >
+            <AssetPrice tokenId={selectedTokenId} noChange />
+          </div>
+
+          <IconButton onClick={handleCoingeckoClick} className="text-base">
+            <ExternalLinkIcon />
+          </IconButton>
+        </div>
       </div>
       <div className="grow overflow-hidden">
-        {!!prices && <Chart prices={prices} timespan={timespan} />}
+        {!!prices && <Chart prices={prices} timespan={timespan} variant={variant} />}
       </div>
-      <TimespanSelect
-        value={timespan}
-        onChange={setTimespan}
-        className={classNames(prices && "bg-primary/10")}
-      />
+      {/* use absolute position for buttons, above the graph, to not break the gradient */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <TimespanSelect value={timespan} variant={variant} onChange={setTimespan} />
+      </div>
     </div>
   )
 }
@@ -192,15 +214,13 @@ const verticalLinePlugin: ChartComponentLike = {
     const { ctx, tooltip, chartArea } = chart
 
     if (tooltip && tooltip.opacity !== 0) {
-      const tooltipX = tooltip.caretX
-
       ctx.save()
       ctx.beginPath()
-      ctx.setLineDash([5, 5]) // Dashed line
-      ctx.strokeStyle = "rgba(213, 255, 92, 0.5)" // Line color
-      ctx.lineWidth = 1 // Line width
-      ctx.moveTo(tooltipX, chartArea.top) // Start at the top of the chart
-      ctx.lineTo(tooltipX, chartArea.bottom) // Extend to the bottom
+      ctx.setLineDash([5, 5])
+      ctx.strokeStyle = "rgba(213, 255, 92, 0.5)"
+      ctx.lineWidth = 1
+      ctx.moveTo(tooltip.caretX, tooltip.y + tooltip.height + 5) // start below the tooltip
+      ctx.lineTo(tooltip.caretX, chartArea.bottom)
       ctx.stroke()
       ctx.restore()
     }
@@ -209,23 +229,39 @@ const verticalLinePlugin: ChartComponentLike = {
 
 ChartJs.register(verticalLinePlugin)
 
-const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices, timespan }) => {
+const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: ChartVariant }> = ({
+  prices,
+  timespan,
+  variant,
+}) => {
   const refChart = useRef<HTMLCanvasElement>(null)
   const currency = useSelectedCurrency()
 
   useEffect(() => {
     if (!refChart.current) return
 
+    const ctx = refChart.current.getContext("2d")
+    if (!ctx) return
+
+    // Create a gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height)
+    gradient.addColorStop(0, "rgba(213, 255, 92, 0.2)") // Start color (top)
+    gradient.addColorStop(1, "rgba(213, 255, 92, 0)") // End color (bottom)
+
     // set min/max boundaries for y axis to ensure we have 10% gap on each side, so our timespan selector and token dropdown arent drawn on the price line
-    // const minPrice = Math.min(...prices.map(([, price]) => price))
-    // const maxPrice = Math.max(...prices.map(([, price]) => price))
-    // const suggestedMin = minPrice - (maxPrice - minPrice) * 0.15
-    // const suggestedMax = maxPrice + (maxPrice - minPrice) * 0.15
+    const allPrices = prices.map(([, price]) => price)
+    const minPrice = Math.min(...allPrices)
+    const maxPrice = Math.max(...allPrices)
+    const suggestedMin = minPrice - (maxPrice - minPrice) * 0.15
+
+    const onTooltipValueChange = (_value: string) => {
+      // console.log("Tooltip value:", value)
+      // Use the value in your application logic
+    }
 
     const chart = new ChartJs(refChart.current, {
       type: "line",
       options: {
-        //aspectRatio: 366 / 168,
         maintainAspectRatio: false,
         responsive: true,
         animation: false,
@@ -237,10 +273,6 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
             right: 0,
           },
         },
-        // interaction: {
-        //   mode: "index", // Ensures interaction on the nearest data point
-        //   intersect: false, // Allows hovering anywhere on the X-axis to show the line
-        // },
         plugins: {
           legend: {
             display: false,
@@ -250,10 +282,15 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
             mode: "index",
             intersect: false,
             displayColors: false,
-            backgroundColor: "#262626",
+            backgroundColor: "#2E3221", // #474E34", // "#616F37",
             titleColor: "#d5ff5c",
+            titleFont: {
+              size: variant === "large" ? 14 : 12,
+              weight: 400,
+            },
             bodyColor: "#d5ff5c",
             titleMarginBottom: 0,
+            caretSize: 0,
             caretPadding: 40,
             yAlign: "bottom",
             callbacks: {
@@ -265,38 +302,21 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
               },
               label: function (tooltipItem) {
                 const value = tooltipItem.raw as number
-                return new Intl.NumberFormat(undefined, {
+                const formatted = new Intl.NumberFormat(undefined, {
                   maximumSignificantDigits: 4,
                   style: "currency",
                   currency,
                   currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
                   notation: value >= 10_000 ? "compact" : "standard", // account for very low currencies such as korean won
                 }).format(value)
+
+                onTooltipValueChange(formatted)
+
+                return "null"
+                //                return formatted
               },
             },
           },
-          // Custom plugin for the vertical line
-          // customLine: {
-          //   id: "verticalLine",
-          //   afterDatasetsDraw(chart, args, options) {
-          //     const { ctx, tooltip, chartArea } = chart
-
-          //     // Draw vertical line only if tooltip is visible
-          //     if (tooltip && tooltip.opacity !== 0) {
-          //       const tooltipX = tooltip.caretX
-
-          //       ctx.save()
-          //       ctx.beginPath()
-          //       ctx.setLineDash([5, 5]) // Dashed line
-          //       ctx.strokeStyle = "rgba(213, 255, 92, 0.5)" // Line color
-          //       ctx.lineWidth = 1 // Line width
-          //       ctx.moveTo(tooltipX, chartArea.top) // Start at the top of the chart
-          //       ctx.lineTo(tooltipX, chartArea.bottom) // Extend to the bottom
-          //       ctx.stroke()
-          //       ctx.restore()
-          //     }
-          //   },
-          // },
         },
         scales: {
           x: {
@@ -306,11 +326,11 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
             },
             grid: {
               display: false,
-              // drawBorder: false, // Removes border line around the chart
-              drawTicks: false, // Removes tick marks on the grid
+              drawTicks: false,
             },
           },
           y: {
+            suggestedMin,
             ticks: {
               display: false,
               align: "start",
@@ -325,7 +345,6 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
 
       data: {
         labels: prices.map(([timestamp]) => new Date(timestamp)),
-        // xLabels: data.prices.map(([timestamp]) => timestamp),
         datasets: [
           {
             label: "Price",
@@ -334,9 +353,7 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
             pointRadius: 0,
             tension: 0.1,
             fill: true,
-            // linear gradient from #d5ff5c to transparent
-
-            backgroundColor: "rgba(213, 255, 92, 0.1)",
+            backgroundColor: gradient,
             borderWidth: 2,
           },
         ],
@@ -346,20 +363,23 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan }> = ({ prices
     return () => {
       chart.destroy()
     }
-  }, [currency, prices, refChart, timespan])
+  }, [currency, prices, refChart, timespan, variant])
 
   return <canvas ref={refChart}></canvas>
 }
 
 const TimespanSelect: FC<{
   value: ChartSpan
+  variant: ChartVariant
   onChange: (value: ChartSpan) => void
   className?: string
-}> = ({ value, onChange, className }) => {
+}> = ({ value, variant, onChange, className }) => {
   return (
     <div
       className={classNames(
-        "text-body-secondary flex h-16 w-full shrink-0 items-center justify-center gap-2 text-[1rem] font-bold",
+        "text-body-secondary flex w-full shrink-0 items-center justify-center gap-2 font-bold",
+        variant === "small" && "h-16",
+        variant === "large" && "h-20",
         className,
       )}
     >
@@ -369,6 +389,8 @@ const TimespanSelect: FC<{
           type="button"
           className={classNames(
             "rounded-[0.6rem] px-3 py-1.5 hover:bg-white/5 hover:text-white",
+            variant === "small" && "text-[1rem]",
+            variant === "large" && "text-sm",
             value === key && "bg-white/10 text-white",
           )}
           onClick={() => onChange(key as ChartSpan)}
@@ -383,30 +405,46 @@ const TimespanSelect: FC<{
 const TokenSelect: FC<{
   tokens: Token[]
   value: TokenId
+  variant: ChartVariant
   onChange: (tokenId: TokenId) => void
-}> = ({ tokens, value, onChange }) => {
+}> = ({ tokens, value, variant, onChange }) => {
   const token = useMemo(() => tokens.find((t) => t.id === value), [tokens, value])
 
   if (!token || !tokens.length) return null
 
   if (tokens.length === 1)
     return (
-      <div className="flex gap-2">
+      <div
+        className={classNames(
+          "flex items-center gap-2 p-2 font-bold",
+          variant === "small" && "text-base",
+          variant === "large" && "text-[2rem]",
+        )}
+      >
         <div className="flex flex-col justify-center">
-          <TokenLogo tokenId={value} className="inline-block text-[1.2em]" />
+          <TokenLogo tokenId={token.id} className="inline-block text-[1.2em]" />
         </div>
-        <AssetPrice tokenId={value} />
+        <span>{token.symbol}</span>
       </div>
     )
 
   return (
     <Popover placement="bottom-start">
       <PopoverTrigger asChild>
-        <button type="button" className="flex items-center gap-2 font-bold">
+        <button
+          type="button"
+          className={classNames(
+            "bg-grey-850 hover:bg-grey-800 group rounded-lg",
+            "flex items-center gap-2 p-2 font-bold",
+            variant === "small" && "text-base",
+            variant === "large" && "text-[2rem]",
+          )}
+        >
           <div className="flex flex-col justify-center">
             <TokenLogo tokenId={token.id} className="inline-block text-[1.2em]" />
           </div>
           <span>{token.symbol}</span>
+          <ChevronDownIcon className="text-body-secondary group-hover:text-body" />
         </button>
       </PopoverTrigger>
       <PopoverContent>
@@ -414,53 +452,76 @@ const TokenSelect: FC<{
           {tokens.map((t) => (
             <TokenSelectOption
               key={t.id}
-              type="button"
-              className="flex w-full items-center gap-2"
+              token={t}
+              selected={t.id === value}
               onClick={() => onChange(t.id)}
-            >
-              <div className="flex flex-col justify-center">
-                <TokenLogo tokenId={t.id} className="inline-block text-[1.2em]" />
-              </div>
-              <span>{t.symbol}</span>
-              <span className="text-body-inactive text-xs">{t.coingeckoId}</span>
-            </TokenSelectOption>
+            />
           ))}
         </div>
       </PopoverContent>
     </Popover>
   )
-  // return <ContextMenu>
-  //   <ContextMenuTrigger asChild>
-
-  //   </ContextMenuTrigger>
-
-  // </ContextMenu>
 }
 
-export const TokenSelectOption: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
+export const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => void }> = ({
+  token,
+  selected,
   onClick,
-  className,
-  ...props
 }) => {
+  const { t } = useTranslation()
   const { setOpen } = usePopoverContext()
+  //const tokenRates = useTokenRates(token.id)
 
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
-      onClick?.(e)
-      setOpen(false)
-    },
-    [setOpen, onClick],
-  )
+  const handleClick = useCallback(() => {
+    onClick()
+    setOpen(false)
+  }, [setOpen, onClick])
 
   return (
     <button
       type="button"
-      {...props}
       onClick={handleClick}
       className={classNames(
-        "enabled:hover:bg-grey-800 focus-visible:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 text-left",
-        className,
+        "enabled:hover:bg-grey-800 focus-visible:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 px-3 text-left",
+        "flex w-full items-center justify-between gap-16",
       )}
-    />
+    >
+      <div className="flex items-center gap-4">
+        <TokenLogo tokenId={token.id} className="inline-block text-[2.8rem]" />
+        <div className="flex grow flex-col gap-1">
+          <span className="text-sm font-bold">{token.symbol}</span>
+          <span className="text-body-secondary text-[1rem]">
+            {t("Mkt Cap:")} <MarketCap tokenId={token.id} />
+          </span>
+        </div>
+      </div>
+      <div className="text-body flex gap-4 font-bold">
+        <AssetPrice tokenId={token.id} noTooltip noChange className="text-sm" />
+        <CheckIcon
+          className={classNames("text-primary text-base", selected ? "visible" : "invisible")}
+        />
+      </div>
+    </button>
   )
+}
+
+const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
+  const tokenRates = useTokenRates(tokenId)
+  const currency = useSelectedCurrency()
+
+  const display = useMemo(
+    () =>
+      tokenRates?.[currency]?.marketCap
+        ? new Intl.NumberFormat(undefined, {
+            maximumSignificantDigits: 4,
+            style: "currency",
+            currency,
+            currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
+            notation: "compact",
+          }).format(tokenRates[currency].marketCap)
+        : null,
+    [tokenRates, currency],
+  )
+
+  return <span className="font-bold">{display}</span>
 }
