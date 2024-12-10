@@ -13,7 +13,7 @@ import { AccountJsonAny, AccountType, TreeFolder } from "extension-core"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useMatch } from "react-router-dom"
+import { useMatch, useNavigate } from "react-router-dom"
 import {
   ContextMenuTrigger,
   IconButton,
@@ -231,6 +231,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
@@ -293,13 +294,23 @@ const TopActions: FC = () => {
               analyticsAction: "Buy Crypto button",
               label: t("Buy"),
               icon: CreditCardIcon,
-              onClick: () => api.modalOpen({ modalType: "buy" }),
+              // onClick: () => api.modalOpen({ modalType: "buy" }), // TODO: remove old buy modal components
+              onClick: () => navigate("/ramp/buy"),
               disabled: disableActions,
               disabledReason,
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, selectedAddress, openCopyAddressModal, symbol, t],
+    [
+      t,
+      disableActions,
+      disabledReason,
+      canBuy,
+      selectedAddress,
+      symbol,
+      openCopyAddressModal,
+      navigate,
+    ],
   )
 
   return (
