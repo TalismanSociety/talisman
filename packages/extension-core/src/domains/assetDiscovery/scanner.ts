@@ -12,7 +12,6 @@ import sortBy from "lodash/sortBy"
 import { combineLatest, debounceTime, distinctUntilKeyChanged, skip } from "rxjs"
 import { PublicClient } from "viem"
 
-import { sentry } from "../../config/sentry"
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -549,7 +548,6 @@ const getEvmTokenBalancesWithoutAggregator = async (
 
         throw new Error(`Failed to scan ${token.id} (Timeout)`)
       } catch (err) {
-        sentry.captureException(err)
         log.error(`Failed to scan ${token.id} for ${address}: `, { err })
         return "0"
       }
