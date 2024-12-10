@@ -1,9 +1,9 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
+import { classNames, formatPrice } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import ChartJs, { ChartComponentLike } from "chart.js/auto"
+import ChartJs, { ActiveElement, ChartComponentLike, ChartEvent } from "chart.js/auto"
 import { fetchFromCoingecko } from "extension-core"
 import { log } from "extension-shared"
 import { uniq } from "lodash"
@@ -84,6 +84,11 @@ export const AssetPriceChart: FC<{
     )
   }, [coingeckoId])
 
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null)
+  const formattedHoveredValue = useMemo(() => {
+    return typeof hoveredValue === "number" ? formatPrice(hoveredValue, currency, true) : null
+  }, [hoveredValue, currency])
+
   if (!selectedTokenId || !selectableTokens.length) return null
 
   return (
@@ -108,9 +113,10 @@ export const AssetPriceChart: FC<{
               "text-body-secondary font-bold",
               variant === "small" && "text-base",
               variant === "large" && "text-[2rem]",
+              formattedHoveredValue && "text-body",
             )}
           >
-            <AssetPrice tokenId={selectedTokenId} noChange />
+            {formattedHoveredValue ?? <AssetPrice tokenId={selectedTokenId} noChange />}
           </div>
 
           <IconButton onClick={handleCoingeckoClick} className="text-base">
@@ -119,7 +125,14 @@ export const AssetPriceChart: FC<{
         </div>
       </div>
       <div className="grow overflow-hidden">
-        {!!prices && <Chart prices={prices} timespan={timespan} variant={variant} />}
+        {!!prices && (
+          <Chart
+            prices={prices}
+            timespan={timespan}
+            variant={variant}
+            onHoverValueChange={setHoveredValue}
+          />
+        )}
       </div>
       {/* use absolute position for buttons, above the graph, to not break the gradient */}
       <div className="absolute bottom-0 left-0 right-0">
@@ -229,24 +242,21 @@ const verticalLinePlugin: ChartComponentLike = {
 
 ChartJs.register(verticalLinePlugin)
 
-const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: ChartVariant }> = ({
-  prices,
-  timespan,
-  variant,
-}) => {
+const Chart: FC<{
+  prices: [number, number][]
+  timespan: ChartSpan
+  variant: ChartVariant
+  onHoverValueChange: (price: number | null) => void
+}> = ({ prices, timespan, variant, onHoverValueChange }) => {
   const refChart = useRef<HTMLCanvasElement>(null)
   const currency = useSelectedCurrency()
 
   useEffect(() => {
-    if (!refChart.current) return
+    const canvas = refChart.current
+    if (!canvas) return
 
-    const ctx = refChart.current.getContext("2d")
+    const ctx = canvas.getContext("2d")
     if (!ctx) return
-
-    // Create a gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height)
-    gradient.addColorStop(0, "rgba(213, 255, 92, 0.2)") // Start color (top)
-    gradient.addColorStop(1, "rgba(213, 255, 92, 0)") // End color (bottom)
 
     // set min/max boundaries for y axis to ensure we have 10% gap on each side, so our timespan selector and token dropdown arent drawn on the price line
     const allPrices = prices.map(([, price]) => price)
@@ -254,14 +264,41 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: Char
     const maxPrice = Math.max(...allPrices)
     const suggestedMin = minPrice - (maxPrice - minPrice) * 0.15
 
-    const onTooltipValueChange = (_value: string) => {
-      // console.log("Tooltip value:", value)
-      // Use the value in your application logic
+    // sometimes chart's onHover is called after mouse has left the canvas, so we need to track this
+    let isHovering = false
+
+    const onMouseEnter = () => {
+      isHovering = true
+    }
+    const onMouseLeave = () => {
+      isHovering = false
+      onHoverValueChange(null)
     }
 
-    const chart = new ChartJs(refChart.current, {
+    canvas.addEventListener("mouseenter", onMouseEnter)
+    canvas.addEventListener("mouseleave", onMouseLeave)
+
+    const onHover = (event: ChartEvent, elements: ActiveElement[]) => {
+      if (!isHovering || !elements.length) return
+      try {
+        const element = elements[0]
+        const price = allPrices[element.index]
+        onHoverValueChange(price)
+      } catch (e) {
+        log.warn("Failed to read hovered price", { event, elements })
+        onHoverValueChange(null)
+      }
+    }
+
+    // Create a gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height)
+    gradient.addColorStop(0, "rgba(213, 255, 92, 0.2)") // Start color (top)
+    gradient.addColorStop(1, "rgba(213, 255, 92, 0)") // End color (bottom)
+
+    const chart = new ChartJs(canvas, {
       type: "line",
       options: {
+        onHover,
         maintainAspectRatio: false,
         responsive: true,
         animation: false,
@@ -272,6 +309,11 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: Char
             left: 0,
             right: 0,
           },
+        },
+        interaction: {
+          // controls activeElements for onHover
+          mode: "index",
+          intersect: false,
         },
         plugins: {
           legend: {
@@ -288,6 +330,7 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: Char
               size: variant === "large" ? 14 : 12,
               weight: 400,
             },
+
             bodyColor: "#d5ff5c",
             titleMarginBottom: 0,
             caretSize: 0,
@@ -300,20 +343,8 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: Char
                   ? `${date.toLocaleDateString(undefined, { dateStyle: "short" })} ${date.toLocaleTimeString(undefined, { timeStyle: "short" })}`
                   : date.toLocaleDateString(undefined, { dateStyle: "short" })
               },
-              label: function (tooltipItem) {
-                const value = tooltipItem.raw as number
-                const formatted = new Intl.NumberFormat(undefined, {
-                  maximumSignificantDigits: 4,
-                  style: "currency",
-                  currency,
-                  currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
-                  notation: value >= 10_000 ? "compact" : "standard", // account for very low currencies such as korean won
-                }).format(value)
-
-                onTooltipValueChange(formatted)
-
-                return "null"
-                //                return formatted
+              label: function () {
+                return ""
               },
             },
           },
@@ -348,7 +379,7 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: Char
         datasets: [
           {
             label: "Price",
-            data: prices.map(([, price]) => price),
+            data: allPrices,
             borderColor: "#d5ff5c",
             pointRadius: 0,
             tension: 0.1,
@@ -361,9 +392,11 @@ const Chart: FC<{ prices: [number, number][]; timespan: ChartSpan; variant: Char
     })
 
     return () => {
+      canvas.removeEventListener("mouseenter", onMouseEnter)
+      canvas.removeEventListener("mouseleave", onMouseLeave)
       chart.destroy()
     }
-  }, [currency, prices, refChart, timespan, variant])
+  }, [currency, onHoverValueChange, prices, refChart, timespan, variant])
 
   return <canvas ref={refChart}></canvas>
 }

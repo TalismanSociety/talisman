@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
+import { classNames, formatPrice } from "@talismn/util"
 import { FC } from "react"
 import { combineLatest, map } from "rxjs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -13,21 +13,9 @@ const [useDisplayAssetPrice] = bind((tokenId: TokenId | null | undefined) =>
       const rate = rates?.[currency]
       if (!rate) return null
 
-      const compact = new Intl.NumberFormat(undefined, {
-        maximumSignificantDigits: 4,
-        style: "currency",
-        currency,
-        currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
-        notation: rate.price >= 10_000 ? "compact" : "standard", // account for very low currencies such as korean won
-      }).format(rate.price)
+      const compact = formatPrice(rate.price, currency, true)
 
-      const full = new Intl.NumberFormat(undefined, {
-        roundingPriority: "morePrecision",
-        style: "currency",
-        currency,
-        currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
-        notation: "standard",
-      }).format(rate.price)
+      const full = formatPrice(rate.price, currency, false)
 
       const rawChange24h = rate.change24h
         ? new Intl.NumberFormat(undefined, {
