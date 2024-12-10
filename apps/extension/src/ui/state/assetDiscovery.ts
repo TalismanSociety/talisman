@@ -62,6 +62,5 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
         tokenIds,
       }
     }),
-    shareReplay(1),
   ),
 )
