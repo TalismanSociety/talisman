@@ -220,8 +220,8 @@ const ChainTokenBalancesDetailRow = ({
           <PortfolioAccount address={row.address} />
         </div>
       )}
-      {row.isLoading && !row.description && row.locked && (
-        <div className="bg-grey-700 rounded-xs h-[1.6rem] max-w-48 animate-pulse" />
+      {!row.address && row.isLoading && !row.description && row.locked && (
+        <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
       )}
       {!row.address && row.description && (
         <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
