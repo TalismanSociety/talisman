@@ -148,7 +148,7 @@ export const SubNativeModule: NewBalanceModule<
         { pallet: "Staking", items: ["Ledger"] },
         { pallet: "Crowdloan", items: ["Funds"] },
         { pallet: "Paras", items: ["Parachains"] },
-        { pallet: "SubtensorModule", items: ["TotalColdkeyStake"] },
+        { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys"] },
       ])
 
       const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
