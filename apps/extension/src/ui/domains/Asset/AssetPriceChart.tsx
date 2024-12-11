@@ -23,6 +23,7 @@ export const AssetPriceChart: FC<{
   variant: ChartVariant
   className?: string
 }> = ({ tokenIds, variant, className }) => {
+  const { t } = useTranslation()
   const currency = useSelectedCurrency()
   const tokensMap = useTokensMap()
   const tokensWithCoingeckoId = useMemo(
@@ -89,6 +90,9 @@ export const AssetPriceChart: FC<{
     return typeof hoveredValue === "number" ? formatPrice(hoveredValue, currency, true) : null
   }, [hoveredValue, currency])
 
+  // Note : if prices array has only 1 entry, the token is in preview mode and we should not render the chart nor the price
+  const isValid = useMemo(() => !prices || prices.length > 1, [prices])
+
   if (!selectedTokenId || !selectableTokens.length) return null
 
   return (
@@ -100,47 +104,73 @@ export const AssetPriceChart: FC<{
         className,
       )}
     >
-      <div className="flex h-20 shrink-0 items-center justify-between px-5">
+      <div
+        className={classNames(
+          "flex shrink-0 items-center justify-between",
+          variant === "small" && "h-20 px-4",
+          variant === "large" && "h-24 px-5",
+        )}
+      >
         <TokenSelect
           value={selectedTokenId}
           tokens={selectableTokens}
           variant={variant}
           onChange={setSelectedTokenId}
         />
-        <div className="flex items-center gap-5">
-          <div
-            className={classNames(
-              "text-body-secondary font-bold",
-              variant === "small" && "text-base",
-              variant === "large" && "text-[2rem]",
-              formattedHoveredValue && "text-body",
-            )}
-          >
-            {formattedHoveredValue ?? <AssetPrice tokenId={selectedTokenId} noChange />}
-          </div>
+        <div className="flex items-center gap-4">
+          {isValid && (
+            <div
+              className={classNames(
+                "text-body-secondary font-bold",
+                variant === "small" && "text-base",
+                variant === "large" && "text-[2rem]",
+                formattedHoveredValue && "text-body",
+              )}
+            >
+              {formattedHoveredValue ?? <AssetPrice tokenId={selectedTokenId} noChange />}
+            </div>
+          )}
 
           <IconButton onClick={handleCoingeckoClick} className="text-base">
             <ExternalLinkIcon />
           </IconButton>
         </div>
       </div>
-      <div className="grow overflow-hidden">
-        {!!prices && (
-          <Chart
-            prices={prices}
-            timespan={timespan}
-            variant={variant}
-            onHoverValueChange={setHoveredValue}
-          />
-        )}
-      </div>
-      {/* use absolute position for buttons, above the graph, to not break the gradient */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0">
-        <TimespanSelect value={timespan} variant={variant} onChange={setTimespan} />
-      </div>
+
+      {isValid && (
+        <>
+          <div className="grow overflow-hidden">
+            {!!prices && (
+              <Chart
+                prices={prices}
+                timespan={timespan}
+                variant={variant}
+                onHoverValueChange={setHoveredValue}
+              />
+            )}
+            {/* use absolute position for buttons, above the graph, to not break the gradient */}
+          </div>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0">
+            <TimespanSelect value={timespan} variant={variant} onChange={setTimespan} />
+          </div>
+        </>
+      )}
+      {!isValid && (
+        <div
+          className={classNames(
+            "text-body-inactive absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center",
+            variant === "small" && "text-base",
+            variant === "large" && "text-lg",
+          )}
+        >
+          {t("No price history")}
+        </div>
+      )}
     </div>
   )
 }
+
+type ChartSpan = "H" | "D" | "W" | "M" | "Y" | "A"
 
 type ChartSpanConfig = {
   label: string
@@ -181,8 +211,6 @@ const CHART_TIMESPANS: Record<string, ChartSpanConfig> = {
   },
 }
 
-type ChartSpan = keyof typeof CHART_TIMESPANS
-
 const useMarketChart = (
   coingeckoId: string | null,
   currency: TokenRateCurrency,
@@ -216,8 +244,6 @@ const useMarketChart = (
           return data?.prices // interval is 1d
       }
     },
-
-    // TODO find a way to sync it with tokenRates store
   })
 }
 
@@ -466,7 +492,7 @@ const TokenSelect: FC<{
         <button
           type="button"
           className={classNames(
-            "bg-grey-850 hover:bg-grey-800 group rounded-lg",
+            "bg-grey-850 hover:bg-grey-800 group rounded",
             "flex items-center gap-2 p-2 font-bold",
             variant === "small" && "text-base",
             variant === "large" && "text-[2rem]",
