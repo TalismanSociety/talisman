@@ -43,7 +43,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         <div className="shrink-0">{symbol}</div>
         <div className="flex grow items-center justify-end gap-3">
           <div className="text-body-secondary text-sm">{t("Total")}</div>
-          <Fiat amount={total} isBalance className="" />
+          <Fiat amount={total} isBalance />
         </div>
       </div>
 

@@ -33,10 +33,7 @@ import { useAssetDetails } from "./useAssetDetails"
 import { BalanceDetailRow, useTokenBalances } from "./useTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 
-const ChainTokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({
-  tokenId,
-  balances,
-}) => {
+const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, balances }) => {
   const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
     tokenId,
     balances,
@@ -91,7 +88,7 @@ const ChainTokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({
         balances.sorted
           .filter((balance) => balance.total.planck > 0n)
           .map((balance, i, balances) => (
-            <ChainTokenBalancesUniswapV2Row
+            <TokenBalancesUniswapV2Row
               key={balance.id}
               balance={balance}
               isLastBalance={balances.length === i + 1}
@@ -102,7 +99,7 @@ const ChainTokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({
         detailRows
           .filter((row) => row.tokens.gt(0))
           .map((row, i, rows) => (
-            <ChainTokenBalancesDetailRow
+            <TokenBalancesDetailRow
               key={row.key}
               row={row}
               isLastRow={rows.length === i + 1}
@@ -115,7 +112,7 @@ const ChainTokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({
   )
 }
 
-const ChainTokenBalancesUniswapV2Row = ({
+const TokenBalancesUniswapV2Row = ({
   balance,
   isLastBalance,
   status,
@@ -184,7 +181,7 @@ const ChainTokenBalancesUniswapV2Row = ({
   )
 }
 
-const ChainTokenBalancesDetailRow = ({
+const TokenBalancesDetailRow = ({
   row,
   isLastRow,
   status,
@@ -195,7 +192,7 @@ const ChainTokenBalancesDetailRow = ({
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-  tokenId?: TokenId // unsafe, there could be multiple aggregated here
+  tokenId?: TokenId
 }) => (
   <div
     className={classNames(
@@ -381,7 +378,7 @@ export const PopupAssetDetails: FC<{
     <FadeIn>
       <div className="flex flex-col gap-8">
         {rows.map(([tokenId, bal]) => (
-          <ChainTokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
+          <TokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
         ))}
       </div>
     </FadeIn>

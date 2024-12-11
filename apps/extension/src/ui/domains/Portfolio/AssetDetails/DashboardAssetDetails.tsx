@@ -356,13 +356,13 @@ export const DashboardAssetDetails: FC<{ balances: Balances; symbol: string }> =
   balances,
   symbol,
 }) => {
-  const { balancesByToken: rows } = useAssetDetails(balances)
+  const { balancesByToken } = useAssetDetails(balances)
 
-  if (rows.length === 0) return <NoTokensMessage symbol={symbol} />
+  if (balancesByToken.length === 0) return <NoTokensMessage symbol={symbol} />
 
   return (
     <div className="text-body-secondary">
-      {rows.map(([tokenId, bal]) => (
+      {balancesByToken.map(([tokenId, bal]) => (
         <TokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
       ))}
     </div>

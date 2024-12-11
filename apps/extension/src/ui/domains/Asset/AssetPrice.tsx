@@ -25,10 +25,10 @@ const [useDisplayAssetPrice] = bind((tokenId: TokenId | null | undefined) =>
           }).format(rate.change24h / 100)
         : undefined
 
-      // exclude +0.0% and -0.0%, display nothing in that case
+      // we dont want a sign (which is used for color check) if change displays as +0.0% or -0.0%
       const change24h = rawChange24h?.length
         ? rawChange24h.slice(1) === "0.0%"
-          ? "0.0%" // we dont want a sign if it's +0.0% or -0.0%
+          ? "0.0%"
           : rawChange24h
         : undefined
 

@@ -130,7 +130,6 @@ export const AssetPriceChart: FC<{
               {formattedHoveredValue ?? <AssetPrice tokenId={selectedTokenId} noChange />}
             </div>
           )}
-
           <IconButton onClick={handleCoingeckoClick} className="text-base">
             <ExternalLinkIcon />
           </IconButton>
@@ -350,7 +349,7 @@ const Chart: FC<{
             mode: "index",
             intersect: false,
             displayColors: false,
-            backgroundColor: "#2E3221", // #474E34", // "#616F37",
+            backgroundColor: "#2E3221",
             titleColor: "#d5ff5c",
             titleFont: {
               size: variant === "large" ? 14 : 12,
@@ -506,7 +505,7 @@ const TokenSelect: FC<{
         </button>
       </PopoverTrigger>
       <PopoverContent>
-        <div className="bg-grey-900 rounded p-4">
+        <div className="bg-grey-900 flex w-full flex-col gap-2 rounded p-4">
           {tokens.map((t) => (
             <TokenSelectOption
               key={t.id}
@@ -521,7 +520,7 @@ const TokenSelect: FC<{
   )
 }
 
-export const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => void }> = ({
+const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => void }> = ({
   token,
   selected,
   onClick,

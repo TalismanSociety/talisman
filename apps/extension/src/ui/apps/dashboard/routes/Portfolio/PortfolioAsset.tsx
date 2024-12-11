@@ -181,5 +181,5 @@ export const PortfolioAssetHeader = () => {
   // no chart to display, use default header
   if (!tokenIds.length) return <DashboardPortfolioHeader />
 
-  return <AssetPriceChart tokenIds={tokenIds} className="h-[19.2rem]" variant="large" />
+  return <AssetPriceChart tokenIds={tokenIds} variant="large" />
 }
