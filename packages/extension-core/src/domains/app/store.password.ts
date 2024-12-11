@@ -65,7 +65,10 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     // don't set alarm if minutes is less than or equal to 0
     if (!minutes || minutes <= 0) return
 
-    await chrome.alarms.create(ALARM_NAME, { delayInMinutes: minutes, periodInMinutes: minutes })
+    // if an alarm is missed, retry every 30s after the initial event (30s is the shortest retry interval allowed by chrome)
+    const minPeriod = 0.5
+
+    await chrome.alarms.create(ALARM_NAME, { delayInMinutes: minutes, periodInMinutes: minPeriod })
   }
 
   async reset() {
