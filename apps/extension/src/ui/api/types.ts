@@ -83,7 +83,7 @@ export default interface MessageTypes {
     newPw: string,
     newPwConfirm: string,
     cb: (val: ChangePasswordStatusUpdate) => void,
-  ) => Promise<boolean>
+  ) => UnsubscribeFn
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
