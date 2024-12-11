@@ -32,6 +32,8 @@ const HeaderRow: FC<{
   const { t } = useTranslation()
   const canHaveLockedState = Boolean(token?.chain?.id)
 
+  if (summary.totalTokens.isZero()) return null
+
   return (
     <div className="text-body-secondary bg-grey-850 rounded p-8 text-left text-base">
       <div className="grid grid-cols-[40%_30%_30%]">
