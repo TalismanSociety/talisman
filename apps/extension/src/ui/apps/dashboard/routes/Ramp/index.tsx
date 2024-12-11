@@ -1,10 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
-export const RampRoutes = () => {
-  const RampBuy = () => {
-    return <div>Buy</div>
-  }
+import { RampBuyForm } from "@ui/domains/Ramp/RampBuyForm"
 
+export const RampRoutes = () => {
   const RampSell = () => {
     return <div>Sell</div>
   }
@@ -12,7 +10,7 @@ export const RampRoutes = () => {
   return (
     <Routes>
       <Route path="*" element={<Navigate to="buy" />} />
-      <Route path="buy" element={<RampBuy />} />
+      <Route path="buy" element={<RampBuyForm />} />
       <Route path="sell" element={<RampSell />} />
     </Routes>
   )
