@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 import { Balances } from "@extension/core"
-import { BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useChainTokenBalances"
+import { BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
