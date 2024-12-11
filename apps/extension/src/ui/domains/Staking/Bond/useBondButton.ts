@@ -40,7 +40,7 @@ export const useBondButton = ({
 
   const { data: hotkeys } = useGetBittensorStakeHotkeys({
     // this calls useScaleApi which downloads metadata from chain, we only want this to be done for bittensor
-    chainId: token?.chain?.id === "bittensor" ? "bittensor" : null,
+    chainId: token?.chain?.id,
     address,
   })
 

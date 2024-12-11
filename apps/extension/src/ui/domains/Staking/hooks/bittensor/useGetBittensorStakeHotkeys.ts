@@ -16,7 +16,7 @@ export const useGetBittensorStakeHotkeys = ({
   address,
   totalStaked,
 }: GetBittensorStakeHotkeys) => {
-  const { data: sapi } = useScaleApi(chainId)
+  const { data: sapi } = useScaleApi(chainId === "bittensor" ? "bittensor" : null)
 
   return useQuery({
     queryKey: ["getBittensorStakeHotkeys", sapi?.id, address, totalStaked],
