@@ -39,7 +39,8 @@ export const useBondButton = ({
   const address = sorted[0]?.address
 
   const { data: hotkeys } = useGetBittensorStakeHotkeys({
-    chainId: token?.chain?.id,
+    // this calls useScaleApi which downloads metadata from chain, we only want this to be done for bittensor
+    chainId: token?.chain?.id === "bittensor" ? "bittensor" : null,
     address,
   })
 
