@@ -1,9 +1,24 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { classNames } from "@talismn/util"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
+import { Button, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
+
+import { useSelectedCurrency } from "@ui/state"
+
+import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
+
+type FormData = {
+  address: string
+  fiatAmount: number
+  tokenId: string
+  fiatCurrencySymbol: string
+}
+
+type FiatCurrency = {
+  fiatCurrencySymbol: string
+  id: string
+}
 
 const schema = yup.object({
   address: yup.string().required(" "),
@@ -13,12 +28,7 @@ const schema = yup.object({
 })
 
 export const RampBuyForm = () => {
-  type FormData = {
-    address: string
-    fiatAmount: number
-    tokenId: string
-    fiatCurrencySymbol: string
-  }
+  const currency = useSelectedCurrency()
 
   const {
     register,
@@ -28,13 +38,11 @@ export const RampBuyForm = () => {
     formState: { isValid },
   } = useForm<FormData>({
     mode: "all",
+    defaultValues: {
+      fiatCurrencySymbol: currency.toUpperCase(),
+    },
     resolver: yupResolver(schema),
   })
-
-  type FiatCurrency = {
-    fiatCurrencySymbol: string
-    id: string
-  }
 
   const [fiatCurrencySymbol] = watch(["fiatCurrencySymbol"])
   // const submit = (data: FormData) => console.log({ data })
@@ -54,46 +62,37 @@ export const RampBuyForm = () => {
   )
 
   const renderFiatCurrencyItem: DropdownOptionRender<FiatCurrency> = (item) => {
-    return <div>{item.fiatCurrencySymbol}</div>
+    return <div className="flex flex-col justify-center">{item.fiatCurrencySymbol}</div>
   }
 
   const { t } = useTranslation()
   return (
-    <form className="h-[30rem] w-[32rem]" onSubmit={handleSubmit(submit)}>
-      <div className="border-grey-750 rounded-2xl border-[1px] p-6">
-        <div className="flex gap-4">
-          <div>{t("Step1")}</div>
-          <div>{t("Select Asset")}</div>
-        </div>
-        <div>{t("You Pay")}</div>
-        <div className="flex gap-4">
-          <input
-            type="number"
-            inputMode="decimal"
-            placeholder="100"
-            autoComplete="off"
-            className={classNames(
-              "text-secondary peer min-w-0 appearance-none border-none bg-transparent text-xl leading-none",
-            )}
-            {...register("fiatAmount")}
-          />
-          <Dropdown
-            items={mockedFiatCurrencies}
+    <div className="text-body-secondary h-[30rem] w-[32rem] xl:w-[64rem]">
+      <form onSubmit={handleSubmit(submit)}>
+        <div className="border-grey-750 space-y-8 rounded-2xl border-[1px] p-6">
+          <div className="flex gap-4">
+            <div className="font-bold text-white">{t("Step1")}</div>
+            <div>{t("Select Asset")}</div>
+          </div>
+          <div className="text-xs">{t("You Pay")}</div>
+
+          <NumberInputWithDropDown
+            inputFieldProps={register("fiatAmount")}
+            inputFieldLabel={fiatCurrencySymbol}
+            inputType="number"
+            inputPlaceholder="100"
             propertyKey="fiatCurrencySymbol"
+            placeholder={t("Select Currency")}
+            items={mockedFiatCurrencies}
+            value={selectedFiatCurrency}
             renderItem={renderFiatCurrencyItem}
             onChange={handleFiatCurrencyChange}
-            placeholder={t("Select Currency")}
-            value={selectedFiatCurrency}
-            // key={address} // uncontrolled component, will reset if value changes
-            className="w-full"
-            buttonClassName="h-28"
-            optionClassName="h-24 py-0"
           />
         </div>
-      </div>
-      <Button type="submit" primary disabled={!isValid}>
-        {t("Continue")}
-      </Button>
-    </form>
+        <Button type="submit" primary disabled={!isValid}>
+          {t("Continue")}
+        </Button>
+      </form>
+    </div>
   )
 }
