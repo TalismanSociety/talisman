@@ -9,7 +9,7 @@ import { useSendFunds } from "./useSendFunds"
  * @returns A function that formats a network name for display.
  * @description
  * For networks which have both a Substrate and Ethereum chain, the network name will be formatted as:
- *   Network Name (Substrate) or Network Name (Ethereum)
+ *   Network Name (Polkadot) or Network Name (Ethereum)
  *
  * For networks which have only a Substrate or Ethereum chain, the network name will be formatted as:
  *   Network Name
@@ -20,7 +20,7 @@ export const useFormatNetworkName = () => {
   return useCallback(
     (chain?: Chain | CustomChain | null, evmNetwork?: EvmNetwork | CustomEvmNetwork | null) =>
       chain?.name
-        ? `${chain.name}${chain.evmNetworks?.length > 0 ? ` (${t("Substrate")})` : ""}`
+        ? `${chain.name}${chain.evmNetworks?.length > 0 ? ` (${t("Polkadot")})` : ""}`
         : evmNetwork
           ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
           : `${t("Chain")} ${(chain ?? evmNetwork)?.id}`,
