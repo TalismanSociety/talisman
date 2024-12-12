@@ -47,7 +47,7 @@ export const AssetBalanceCellValue = ({
           )}
         >
           <div>
-            <Tokens amount={tokens} symbol={symbol} isBalance />
+            <Tokens amount={tokens} symbol={symbol} isBalance noCountUp />
           </div>
           {locked ? (
             <div className="pb-1">
@@ -60,7 +60,7 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance />}</div>
+        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp />}</div>
       </div>
     </WithTooltip>
   )
