@@ -52,6 +52,9 @@ const AssetState = ({
         <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
         {/* show description next to title when address is set */}
         {description && address && <div className="grow truncate text-sm">{description}</div>}
+        {!description && address && isLoading && (
+          <div className="bg-grey-800 rounded-xs h-[1.4rem] w-60 animate-pulse" />
+        )}
       </div>
       {address && (
         <div className="text-sm">
@@ -59,8 +62,8 @@ const AssetState = ({
         </div>
       )}
       {/* show description below title when address is not set */}
-      {isLoading && !description && locked && (
-        <div className="bg-grey-700 rounded-xs h-[1.6rem] w-80 animate-pulse" />
+      {isLoading && !description && !address && locked && (
+        <div className="bg-grey-800 rounded-xs h-[1.6rem] w-60 animate-pulse" />
       )}
       {description && !address && (
         <div className="flex-shrink-0 truncate text-sm">{description}</div>
@@ -297,7 +300,7 @@ const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean }
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
@@ -348,7 +351,7 @@ const LockedExtra: FC<{
           tokenId={tokenId}
           address={rowAddress}
           variant="large"
-          poolId={rowMeta.poolId}
+          poolId={rowMeta.poolId ?? rowMeta.hotkey}
         />
       ) : null}
     </div>

@@ -220,8 +220,8 @@ const ChainTokenBalancesDetailRow = ({
           <PortfolioAccount address={row.address} />
         </div>
       )}
-      {row.isLoading && !row.description && row.locked && (
-        <div className="bg-grey-700 rounded-xs h-[1.6rem] max-w-48 animate-pulse" />
+      {!row.address && row.isLoading && !row.description && row.locked && (
+        <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
       )}
       {!row.address && row.description && (
         <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
@@ -258,7 +258,7 @@ const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean }
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
@@ -313,7 +313,7 @@ const LockedExtra: FC<{
           tokenId={tokenId}
           address={rowAddress}
           variant="small"
-          poolId={rowMeta.poolId}
+          poolId={rowMeta.poolId ?? rowMeta.hotkey}
         />
       ) : null}
     </>
