@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { IntersectRow } from "@talisman/components/IntersectRow"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -123,11 +124,11 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <div className="text-body-secondary whitespace-nowrap text-xs">
-                <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
+                <Fiat amount={tvl} noCountUp /> <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
             {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} className="text-body-secondary text-xs" />
+              <Fiat amount={rate} noCountUp className="text-body-secondary text-xs" />
             )}
           </div>
           <div
@@ -147,6 +148,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 <Tokens
                   amount={tokens}
                   symbol={isUniswapV2LpToken ? "" : token?.symbol}
+                  noCountUp
                   isBalance
                 />
                 {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
@@ -161,7 +163,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                   showStakingButton && "group-hover:hidden",
                 )}
               >
-                {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+                {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp />}
               </div>
               {showStakingButton && (
                 <BondPillButton
@@ -255,7 +257,9 @@ export const PopupAssetsTable = () => {
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} />
+            <IntersectRow key={symbol} className="h-28" rootMargin="400px">
+              <AssetRow balances={b} />
+            </IntersectRow>
           ))}
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
@@ -280,7 +284,9 @@ export const PopupAssetsTable = () => {
             fiatAmount={totalLocked}
           >
             {lockedSymbolBalances.map(([symbol, b]) => (
-              <AssetRow key={symbol} balances={b} locked />
+              <IntersectRow key={symbol} className="h-28" rootMargin="400px">
+                <AssetRow balances={b} locked />
+              </IntersectRow>
             ))}
           </BalancesGroup>
         )}

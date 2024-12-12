@@ -75,11 +75,11 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             </div>
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <div className="text-body-secondary whitespace-nowrap">
-                <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
+                <Fiat amount={tvl} noCountUp /> <span className="text-tiny">TVL</span>
               </div>
             )}
             {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} className="text-body-secondary" />
+              <Fiat amount={rate} noCountUp className="text-body-secondary" />
             )}
           </div>
         </div>

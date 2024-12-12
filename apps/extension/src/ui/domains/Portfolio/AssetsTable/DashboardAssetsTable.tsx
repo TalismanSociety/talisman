@@ -2,6 +2,7 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { IntersectRow } from "@talisman/components/IntersectRow"
 import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 import { Statistics } from "../Statistics"
@@ -103,7 +104,9 @@ export const DashboardAssetsTable = () => {
       {!!symbolBalances.length && <HeaderRow />}
 
       {symbolBalances.map(([symbol, b]) => (
-        <AssetRow key={symbol} balances={b} />
+        <IntersectRow key={symbol} className="mb-4 h-[6.6rem]" rootMargin="1000px">
+          <AssetRow balances={b} />
+        </IntersectRow>
       ))}
       {isInitialising && <AssetRowSkeleton />}
     </div>
