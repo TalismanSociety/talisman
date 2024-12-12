@@ -8,8 +8,12 @@ type GetBittensorStakeByHotKey = {
   isEnabled?: boolean
 }
 
-export const useGetBittensorStakeByHotKey = ({ address, hotkey }: GetBittensorStakeByHotKey) => {
-  const balance = useBalance(hotkey ? address : null, "bittensor-substrate-native")
+export const useGetBittensorStakeByHotKey = ({
+  address,
+  hotkey,
+  isEnabled,
+}: GetBittensorStakeByHotKey) => {
+  const balance = useBalance(isEnabled ? address : null, "bittensor-substrate-native")
 
   return useMemo(() => {
     if (!balance || !hotkey) return undefined
