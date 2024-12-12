@@ -6,29 +6,29 @@ import * as yup from "yup"
 
 import { useSelectedCurrency } from "@ui/state"
 
+import { RampCurrency } from "./hooks/types"
+import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
 
 type FormData = {
   address: string
   fiatAmount: number
   tokenId: string
-  fiatCurrencySymbol: string
-}
-
-type FiatCurrency = {
-  fiatCurrencySymbol: string
-  id: string
+  fiatCurrency: string
 }
 
 const schema = yup.object({
   address: yup.string().required(" "),
   fiatAmount: yup.number().required(" ").min(0),
   tokenId: yup.string().required(" "),
-  fiatCurrencySymbol: yup.string().required(" "),
+  fiatCurrency: yup.string().required(" "),
 })
 
 export const RampBuyForm = () => {
   const currency = useSelectedCurrency()
+  const { data: rampCurrencies } = useGetRampCurrencies()
+
+  const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
 
   const {
     register,
@@ -39,30 +39,23 @@ export const RampBuyForm = () => {
   } = useForm<FormData>({
     mode: "all",
     defaultValues: {
-      fiatCurrencySymbol: currency.toUpperCase(),
+      fiatCurrency: currency.toUpperCase(),
     },
     resolver: yupResolver(schema),
   })
 
-  const [fiatCurrencySymbol] = watch(["fiatCurrencySymbol"])
+  const [fiatCurrency] = watch(["fiatCurrency"])
   // const submit = (data: FormData) => console.log({ data })
   const submit = (data: FormData) => data
 
-  const handleFiatCurrencyChange = (fiatCurrency: FiatCurrency | null) => {
-    setValue("fiatCurrencySymbol", fiatCurrency?.fiatCurrencySymbol ?? "")
+  const handleFiatCurrencyChange = (fiatCurrency: RampCurrency | null) => {
+    setValue("fiatCurrency", fiatCurrency?.fiatCurrency ?? "")
   }
 
-  const mockedFiatCurrencies = [
-    { fiatCurrencySymbol: "USD", id: "A" },
-    { fiatCurrencySymbol: "BRL", id: "B" },
-  ]
+  const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
 
-  const selectedFiatCurrency = mockedFiatCurrencies.find(
-    (curr) => curr.fiatCurrencySymbol === fiatCurrencySymbol,
-  )
-
-  const renderFiatCurrencyItem: DropdownOptionRender<FiatCurrency> = (item) => {
-    return <div className="flex flex-col justify-center">{item.fiatCurrencySymbol}</div>
+  const renderFiatCurrencyItem: DropdownOptionRender<RampCurrency> = (item) => {
+    return <div className="flex flex-col justify-center">{item.fiatCurrency}</div>
   }
 
   const { t } = useTranslation()
@@ -78,12 +71,12 @@ export const RampBuyForm = () => {
 
           <NumberInputWithDropDown
             inputFieldProps={register("fiatAmount")}
-            inputFieldLabel={fiatCurrencySymbol}
+            inputFieldLabel={fiatCurrency}
             inputType="number"
             inputPlaceholder="100"
-            propertyKey="fiatCurrencySymbol"
+            propertyKey="fiatCurrency"
             placeholder={t("Select Currency")}
-            items={mockedFiatCurrencies}
+            items={onrampCurrencies}
             value={selectedFiatCurrency}
             renderItem={renderFiatCurrencyItem}
             onChange={handleFiatCurrencyChange}
