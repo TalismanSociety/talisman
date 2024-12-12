@@ -287,7 +287,7 @@ const Chart: FC<{
     const allPrices = prices.map(([, price]) => price)
     const minPrice = Math.min(...allPrices)
     const maxPrice = Math.max(...allPrices)
-    const suggestedMin = minPrice - (maxPrice - minPrice) * 0.2
+    const suggestedMin = minPrice - (maxPrice - minPrice) * 0.25
 
     // sometimes chart's onHover is called after mouse has left the canvas, so we need to track this
     let isHovering = false
