@@ -8,6 +8,8 @@ type GetBittensorStakeByHotKey = {
   isEnabled?: boolean
 }
 
+type Meta = { hotkey?: string } | undefined
+
 export const useGetBittensorStakeByHotKey = ({
   address,
   hotkey,
@@ -17,7 +19,7 @@ export const useGetBittensorStakeByHotKey = ({
 
   return useMemo(() => {
     if (!balance || !hotkey) return undefined
-    const value = balance?.subtensor.find((b) => (b.meta as { hotkey?: string })?.hotkey === hotkey)
+    const value = balance?.subtensor.find((b) => (b.meta as Meta)?.hotkey === hotkey)
     return value?.amount.planck
   }, [balance, hotkey])
 }

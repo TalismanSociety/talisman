@@ -43,7 +43,7 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     chainId,
   })
 
-  const { data: hotkeys } = useGetBittensorStakeHotkeys({ address, chainId })
+  const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
 
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
 

@@ -1,26 +1,20 @@
-import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
+import { useMemo } from "react"
 
-import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useBalance } from "@ui/state"
 
 type GetBittensorStakeHotkeys = {
   chainId: ChainId | null | undefined
   address: string | null | undefined
-  totalStaked?: number
 }
 
-export const useGetBittensorStakeHotkeys = ({
-  chainId,
-  address,
-  totalStaked,
-}: GetBittensorStakeHotkeys) => {
-  // this calls useScaleApi which downloads metadata from chain, we only want this to be done for bittensor
-  const { data: sapi } = useScaleApi(chainId === "bittensor" ? "bittensor" : null)
+type Meta = { hotkey?: string } | undefined
 
-  return useQuery({
-    queryKey: ["getBittensorStakeHotkeys", sapi?.id, address, totalStaked],
-    queryFn: async () =>
-      await sapi?.getStorage<string[]>("SubtensorModule", "StakingHotkeys", [address]),
-    enabled: !!sapi && !!address && chainId === "bittensor",
-  })
+export const useGetBittensorStakeHotkeys = ({ chainId, address }: GetBittensorStakeHotkeys) => {
+  const balance = useBalance(chainId === "bittensor" ? address : null, "bittensor-substrate-native")
+
+  return useMemo(() => {
+    if (!balance) return undefined
+    return balance.subtensor.map((b) => (b.meta as Meta)?.hotkey).filter((h): h is string => !!h)
+  }, [balance])
 }
