@@ -133,7 +133,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [summary, account, t, tokenBalances.each, subtensor, currency])
+  }, [summary, account, t, tokenBalances, subtensor, currency])
 
   const { evmNetwork } = balances.sorted[0]
   const relay = useChain(chain?.relay?.id)

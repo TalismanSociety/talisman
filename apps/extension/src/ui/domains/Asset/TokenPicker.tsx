@@ -84,7 +84,7 @@ const TokenRow: FC<TokenRowProps> = ({
       tokensTotal: planckToTokens(planck.toString(), token.decimals),
       isLoading: balances.each.find((b) => b.status === "cache"),
     }
-  }, [balances.each, token.decimals])
+  }, [balances, token.decimals])
 
   const isTransferable = useMemo(() => isTransferableToken(token), [token])
 
