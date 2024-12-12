@@ -11,7 +11,7 @@ import {
   usePortfolio,
 } from "@ui/state"
 
-import { usePortfolioNavigation } from "./usePortfolioNavigation"
+import { PortfolioNavigationProvider, usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const [usePreload] = bind(
   combineLatest([balancesHydrate$, remoteConfig$, authorisedSites$, portfolioAccounts$]),
@@ -24,11 +24,13 @@ export const PortfolioContainer: FC<PropsWithChildren<{ renderWhileLoading?: boo
   usePreload()
 
   return (
-    <SelectedAccountsGuard>
-      <ProvisionedPortfolioGuard renderWhileLoading={renderWhileLoading}>
-        {children}
-      </ProvisionedPortfolioGuard>
-    </SelectedAccountsGuard>
+    <PortfolioNavigationProvider>
+      <SelectedAccountsGuard>
+        <ProvisionedPortfolioGuard renderWhileLoading={renderWhileLoading}>
+          {children}
+        </ProvisionedPortfolioGuard>
+      </SelectedAccountsGuard>
+    </PortfolioNavigationProvider>
   )
 }
 
