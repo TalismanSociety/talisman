@@ -1,6 +1,7 @@
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
 
 import { IntersectRow } from "@talisman/components/IntersectRow"
 import { usePortfolio, useSelectedCurrency } from "@ui/state"
@@ -87,6 +88,8 @@ export const DashboardAssetsTable = () => {
   // group by token (symbol)
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 
+  const location = useLocation()
+
   if (!symbolBalances.length && !isInitialising) {
     return (
       <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
@@ -100,7 +103,7 @@ export const DashboardAssetsTable = () => {
   }
 
   return (
-    <div className="text-body-secondary min-w-[45rem] text-left text-base">
+    <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
       {!!symbolBalances.length && <HeaderRow />}
 
       {symbolBalances.map(([symbol, b]) => (
