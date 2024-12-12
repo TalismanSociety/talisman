@@ -182,6 +182,9 @@ const config = (env) => ({
       "process.env.TAOSTATS_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.TAOSTATS_BASE_PATH || "" : "",
       ),
+      "process.env.RAMP_BASE_PATH": JSON.stringify(
+        env.build === "dev" ? process.env.RAMP_BASE_PATH || "" : "",
+      ),
       "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : "",
       ),
