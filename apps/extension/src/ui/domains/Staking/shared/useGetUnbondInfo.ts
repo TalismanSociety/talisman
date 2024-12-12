@@ -34,7 +34,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     isEnabled: chainId !== "bittensor",
   })
 
-  const { data: bittensorPlanks } = useGetBittensorStakeByHotKey({
+  const bittensorPlanks = useGetBittensorStakeByHotKey({
     address,
     hotkey: unstakePoolId,
   })
