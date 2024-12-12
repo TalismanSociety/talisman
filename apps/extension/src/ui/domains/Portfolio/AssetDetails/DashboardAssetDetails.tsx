@@ -300,7 +300,7 @@ const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean }
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
@@ -351,7 +351,7 @@ const LockedExtra: FC<{
           tokenId={tokenId}
           address={rowAddress}
           variant="large"
-          poolId={rowMeta.poolId}
+          poolId={rowMeta.poolId ?? rowMeta.hotkey}
         />
       ) : null}
     </div>
