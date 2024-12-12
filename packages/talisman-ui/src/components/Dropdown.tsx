@@ -65,7 +65,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
               <Listbox.Options>
                 {items.map((item, i, arr) => (
                   <Listbox.Option
-                    key={item[propertyKey] as string | number}
+                    key={`${item[propertyKey]}-${i}` as string | number}
                     value={item}
                     className={classNames(
                       "bg-grey-800 hover:bg-grey-750 hover:text-grey-300 w-full max-w-full cursor-pointer overflow-hidden p-8",

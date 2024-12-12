@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { RAMP_BASE_PATH } from "extension-shared"
 
-import { RampCurrency } from "./types"
+import { RampCurrency } from "../types"
 
 const fetchRampCurrencies = async (): Promise<RampCurrency[]> => {
   try {
@@ -19,6 +19,6 @@ export const useGetRampCurrencies = () => {
   return useQuery({
     queryKey: ["useGetRampCurrencies"],
     queryFn: () => fetchRampCurrencies(),
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60 * 5,
   })
 }
