@@ -64,25 +64,28 @@ const validBalances$ = combineLatest([
   accountsMap$,
   rawBalances$.pipe(map((balances) => balances.data)),
 ]).pipe(
-  map(([tokens, chains, accounts, balances]) =>
-    balances.filter((b) => {
-      // ensure there is a matching token
-      if (!tokens[b.tokenId]) return false
+  map(
+    ([tokens, chains, accounts, balances]) =>
+      balances.filter((b) => {
+        // ensure there is a matching token
+        if (!tokens[b.tokenId]) return false
 
-      const account = accounts[b.address]
-      if (!account || !account.type) return false
+        const account = accounts[b.address]
+        if (!account || !account.type) return false
 
-      // for chain specific accounts, exclude balances from other chains
-      if ("chainId" in b && b.chainId && chains[b.chainId])
-        return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
-      if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
-      return false
-    }),
+        // for chain specific accounts, exclude balances from other chains
+        if ("chainId" in b && b.chainId && chains[b.chainId])
+          return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
+        if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
+        return false
+      }),
+    shareReplay(1),
   ),
 )
 
 const allBalances$ = combineLatest([validBalances$, balancesHydrate$]).pipe(
   map(([rawBalances, hydrate]) => new Balances(rawBalances, hydrate)),
+  shareReplay(1),
 )
 
 type BalanceQueryParams = {

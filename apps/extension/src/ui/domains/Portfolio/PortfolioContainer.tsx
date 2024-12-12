@@ -4,8 +4,6 @@ import { combineLatest } from "rxjs"
 
 import { portfolioAccounts$ } from "@ui/hooks/usePortfolioAccounts"
 import {
-  accounts$,
-  accountsCatalog$,
   authorisedSites$,
   balancesHydrate$,
   portfolioSelectedAccounts$,
@@ -16,14 +14,7 @@ import {
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const [usePreload] = bind(
-  combineLatest([
-    balancesHydrate$,
-    accounts$,
-    accountsCatalog$,
-    remoteConfig$,
-    authorisedSites$,
-    portfolioAccounts$,
-  ]),
+  combineLatest([balancesHydrate$, remoteConfig$, authorisedSites$, portfolioAccounts$]),
 )
 
 export const PortfolioContainer: FC<PropsWithChildren<{ renderWhileLoading?: boolean }>> = ({
