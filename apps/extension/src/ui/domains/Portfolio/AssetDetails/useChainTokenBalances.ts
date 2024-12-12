@@ -124,8 +124,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       })),
     )
 
-    // BITENSOR
-    const subtensor1 = tokenBalances.each.flatMap((b) =>
+    // BITTENSOR
+    const subtensor = tokenBalances.each.flatMap((b) =>
       b.subtensor.map((subtensor, index) => ({
         key: `${b.id}-subtensor-${index}`,
         title: getLockTitle({ label: "subtensor-staking" }),
@@ -140,10 +140,10 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       })),
     )
 
-    return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor1]
+    return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [summary, account, t, tokenBalances.each, currency])
+  }, [summary, account, t, tokenBalances, currency])
 
   const detailRows = useEnhanceDetailRows(rawDetailRows)
 
@@ -170,8 +170,8 @@ const useEnhanceDetailRows = (detailRows: DetailRow[]) => {
   // fetch the validator name for each subtensor staking lock, so we can display it in the description
   const hotkeys = useMemo(() => {
     return detailRows
-      .filter((row) => row.meta?.type === "subtensor-staking")
-      .flatMap((row) => (row.meta?.hotkeys as string[]) ?? [])
+      .filter((row) => row.meta?.type === "subtensor-staking" && !!row.meta?.hotkey)
+      .map((row) => row.meta?.hotkey as string)
   }, [detailRows])
 
   const { data: validators, isLoading: isLoadingValidators } = useGetBittensorValidators({
@@ -184,7 +184,7 @@ const useEnhanceDetailRows = (detailRows: DetailRow[]) => {
       if (row.meta?.type === "subtensor-staking")
         return {
           ...row,
-          description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkeys[0])?.name,
+          description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkey)?.name,
           isLoading: isLoadingValidators,
         } as DetailRow
 

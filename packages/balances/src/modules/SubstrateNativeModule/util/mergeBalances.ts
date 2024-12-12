@@ -12,12 +12,14 @@ export type { BalanceLockType } from "./balanceLockTypes"
  * @param balance1 SubNativeBalance
  * @param balance2 SubNativeBalance
  * @param source source that this merge is for (will discard previous values from that source)
+ * @param clear whether to clear the previous values from the source
  * @returns SubNativeBalance
  */
 export const mergeBalances = (
   balance1: SubNativeBalance | undefined,
   balance2: SubNativeBalance,
   source: string,
+  clear: boolean,
 ) => {
   if (balance1 === undefined) return balance2
   assert(
@@ -27,7 +29,7 @@ export const mergeBalances = (
   // locks and freezes should completely replace the previous rather than merging together
   const existingValues = Object.fromEntries(
     balance1.values
-      .filter((v) => !v.source || v.source !== source)
+      .filter((v) => !clear || !v.source || v.source !== source)
       .map((value) => [getValueId(value), value]),
   )
   const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
@@ -38,5 +40,6 @@ export const mergeBalances = (
     status: balance2.status, // only the status field should actually be different apart from the values
     values: Object.values(mergedValues),
   }
+
   return merged
 }
