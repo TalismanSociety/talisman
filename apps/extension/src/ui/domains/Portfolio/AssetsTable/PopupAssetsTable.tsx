@@ -255,7 +255,7 @@ export const PopupAssetsTable = () => {
           </>
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
-          <BalanceRows rows={available} />
+          <VirtualizedRows rows={available} />
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
@@ -278,7 +278,7 @@ export const PopupAssetsTable = () => {
             }
             fiatAmount={totalLocked}
           >
-            <BalanceRows
+            <VirtualizedRows
               key="locked"
               rows={lockedSymbolBalances}
               locked
@@ -293,7 +293,7 @@ export const PopupAssetsTable = () => {
   )
 }
 
-const BalanceRows: FC<{ rows: [string, Balances][]; locked?: boolean; overscan?: number }> = ({
+const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; overscan?: number }> = ({
   rows,
   locked,
   overscan,

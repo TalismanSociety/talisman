@@ -105,13 +105,13 @@ export const DashboardAssetsTable = () => {
   return (
     <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
       {!!symbolBalances.length && <HeaderRow />}
-      <Rows symbolBalances={symbolBalances} />
+      <VirtualizedRows symbolBalances={symbolBalances} />
       {isInitialising && <AssetRowSkeleton />}
     </div>
   )
 }
 
-const Rows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
+const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
@@ -125,20 +125,16 @@ const Rows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) 
   return (
     <div ref={ref}>
       <div
+        className="relative w-full"
         style={{
           height: `${virtualizer.getTotalSize()}px`,
-          width: "100%",
-          position: "relative",
         }}
       >
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
+            className="absolute left-0 top-0 w-full"
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
               height: `${item.size}px`,
               transform: `translateY(${item.start}px)`,
             }}
