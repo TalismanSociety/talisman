@@ -37,7 +37,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex h-28 items-center gap-6 rounded-sm px-6",
+        "bg-black-secondary mt-4 flex h-28 items-center gap-6 rounded-sm px-6",
         className,
       )}
     >
@@ -256,11 +256,6 @@ export const PopupAssetsTable = () => {
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
           <BalanceRows rows={available} />
-          {/* {available.map(([symbol, b]) => (
-            <IntersectRow key={symbol} className="h-28" rootMargin="400px">
-              <AssetRow balances={b} />
-            </IntersectRow>
-          ))} */}
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
@@ -283,7 +278,14 @@ export const PopupAssetsTable = () => {
             }
             fiatAmount={totalLocked}
           >
-            <BalanceRows key="locked" rows={lockedSymbolBalances} locked />
+            <BalanceRows
+              key="locked"
+              rows={lockedSymbolBalances}
+              locked
+              // workaround bug in the virtualizer: first few rows arent always rendered here
+              // there shouldnt be many locked row anyways
+              overscan={lockedSymbolBalances.length}
+            />
           </BalancesGroup>
         )}
       </div>
@@ -291,30 +293,28 @@ export const PopupAssetsTable = () => {
   )
 }
 
-const BalanceRows: FC<{ rows: [string, Balances][]; locked?: boolean }> = ({ rows, locked }) => {
+const BalanceRows: FC<{ rows: [string, Balances][]; locked?: boolean; overscan?: number }> = ({
+  rows,
+  locked,
+  overscan,
+}) => {
   const refContainer = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
-
-  //console.log("refContainer", { refContainer, current: refContainer?.current })
 
   const virtualizer = useVirtualizer({
     count: rows.length,
     estimateSize: () => 56,
-    overscan: 5,
+    overscan: overscan ?? 5,
     getScrollElement: () => refContainer.current,
-    //scrollMargin: 400,
     gap: 8,
-    //isScrollingResetDelay,
-    debug: true,
   })
 
   return (
     <div ref={ref}>
       <div
+        className="relative w-full"
         style={{
           height: `${virtualizer.getTotalSize()}px`,
-          width: "100%",
-          position: "relative",
         }}
       >
         {virtualizer.getVirtualItems().map((item) => (
@@ -322,11 +322,6 @@ const BalanceRows: FC<{ rows: [string, Balances][]; locked?: boolean }> = ({ row
             key={item.key}
             className="absolute left-0 top-0 h-28 w-full"
             style={{
-              // position: "absolute",
-              // top: 0,
-              // left: 0,
-              // width: "100%",
-              // height: `${item.size}px`,
               transform: `translateY(${item.start}px)`,
             }}
           >
