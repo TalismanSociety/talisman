@@ -1,9 +1,10 @@
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { Balances } from "extension-core"
+import { FC, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
-import { IntersectRow } from "@talisman/components/IntersectRow"
 import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 import { Statistics } from "../Statistics"
@@ -16,7 +17,7 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
+        "text-body-secondary bg-grey-850 mb-4 mt-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
         className,
       )}
     >
@@ -85,7 +86,6 @@ export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolio()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
-  // group by token (symbol)
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 
   const location = useLocation()
@@ -105,13 +105,48 @@ export const DashboardAssetsTable = () => {
   return (
     <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
       {!!symbolBalances.length && <HeaderRow />}
-
-      {symbolBalances.map(([symbol, b]) => (
-        <IntersectRow key={symbol} className="mb-4 h-[6.6rem]" rootMargin="1000px">
-          <AssetRow balances={b} />
-        </IntersectRow>
-      ))}
+      <Rows symbolBalances={symbolBalances} />
       {isInitialising && <AssetRowSkeleton />}
+    </div>
+  )
+}
+
+const Rows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: symbolBalances.length,
+    estimateSize: () => 66,
+    overscan: 5,
+    getScrollElement: () => document.getElementById("main"),
+    gap: 8,
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            {symbolBalances[item.index] && <AssetRow balances={symbolBalances[item.index][1]} />}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

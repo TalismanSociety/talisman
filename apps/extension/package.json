@@ -47,6 +47,7 @@
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "@tanstack/react-query": "5.59.16",
+    "@tanstack/react-virtual": "^3.11.1",
     "@types/blueimp-md5": "2.18.2",
     "@types/chrome": "0.0.279",
     "@types/color": "3.0.6",

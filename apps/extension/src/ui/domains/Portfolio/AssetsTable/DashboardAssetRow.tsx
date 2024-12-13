@@ -45,7 +45,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <div className="relative mb-4">
+    <div className="relative">
       <button
         type="button"
         className={classNames(

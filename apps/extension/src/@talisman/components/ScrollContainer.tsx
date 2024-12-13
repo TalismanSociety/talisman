@@ -1,6 +1,8 @@
 import { classNames } from "@talismn/util"
 import { forwardRef, RefObject, useEffect, useMemo, useRef, useState } from "react"
 
+import { provideContext } from "@talisman/util/provideContext"
+
 type ScrollContainerProps = {
   className?: string
   children?: React.ReactNode
@@ -67,7 +69,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
             innerClassName,
           )}
         >
-          {children}
+          <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
         </div>
         <div
           className={classNames(
@@ -86,3 +88,17 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
   },
 )
 ScrollContainer.displayName = "ScrollContainer"
+
+const useScrollContainerProvider = ({
+  refContainer,
+}: {
+  refContainer: RefObject<HTMLDivElement>
+}) => {
+  return refContainer
+}
+
+const [ScrollContainerProvider, useScrollContainerContext] = provideContext(
+  useScrollContainerProvider,
+)
+
+export const useScrollContainer = useScrollContainerContext

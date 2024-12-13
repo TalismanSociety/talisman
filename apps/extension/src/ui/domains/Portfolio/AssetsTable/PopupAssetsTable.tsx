@@ -1,12 +1,13 @@
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ReactNode, useCallback, useMemo } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { FC, ReactNode, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { IntersectRow } from "@talisman/components/IntersectRow"
+import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -95,88 +96,86 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <>
-      <button
-        type="button"
-        className="bg-grey-850 hover:bg-grey-800 group flex h-28 w-full items-center rounded-sm"
-        onClick={handleClick}
-      >
-        <div className="p-6 text-xl">
-          <TokenLogo tokenId={token.id} />
-        </div>
-        <div className="relative flex grow items-center gap-4 pr-6">
-          <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
-            <div className="flex items-center gap-3">
-              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                {token.symbol}
-                {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                    {t("Testnet")}
-                  </span>
-                )}
-              </div>
-              {!!networkIds.length && (
-                <div className="text-base">
-                  <NetworksLogoStack networkIds={networkIds} max={3} />
-                </div>
+    <button
+      type="button"
+      className="bg-grey-850 hover:bg-grey-800 group flex h-28 w-full items-center rounded-sm"
+      onClick={handleClick}
+    >
+      <div className="p-6 text-xl">
+        <TokenLogo tokenId={token.id} />
+      </div>
+      <div className="relative flex grow items-center gap-4 pr-6">
+        <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
+          <div className="flex items-center gap-3">
+            <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
+              {token.symbol}
+              {!!token.isTestnet && (
+                <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                  {t("Testnet")}
+                </span>
               )}
             </div>
+            {!!networkIds.length && (
+              <div className="text-base">
+                <NetworksLogoStack networkIds={networkIds} max={3} />
+              </div>
+            )}
+          </div>
 
-            {isUniswapV2LpToken && typeof tvl === "number" && (
-              <div className="text-body-secondary whitespace-nowrap text-xs">
-                <Fiat amount={tvl} noCountUp /> <span className="text-[0.8rem]">TVL</span>
-              </div>
-            )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} noCountUp className="text-body-secondary text-xs" />
-            )}
-          </div>
-          <div
-            className={classNames(
-              "flex shrink-0 flex-col items-end gap-2 text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity",
-            )}
-          >
-            <>
-              <div
-                className={classNames(
-                  "whitespace-nowrap text-sm font-bold",
-                  locked ? "text-body-secondary" : "text-white",
-                  showStakingButton && "group-hover:hidden",
-                )}
-              >
-                <Tokens
-                  amount={tokens}
-                  symbol={isUniswapV2LpToken ? "" : token?.symbol}
-                  noCountUp
-                  isBalance
-                />
-                {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
-                <StaleBalancesIcon
-                  className="alert ml-2 inline align-baseline text-sm"
-                  staleChains={status.status === "stale" ? status.staleChains : []}
-                />
-              </div>
-              <div
-                className={classNames(
-                  "text-body-secondary leading-base text-xs",
-                  showStakingButton && "group-hover:hidden",
-                )}
-              >
-                {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp />}
-              </div>
-              {showStakingButton && (
-                <BondPillButton
-                  tokenId={token.id}
-                  balances={balances}
-                  className="hidden group-hover:block"
-                />
-              )}
-            </>
-          </div>
+          {isUniswapV2LpToken && typeof tvl === "number" && (
+            <div className="text-body-secondary whitespace-nowrap text-xs">
+              <Fiat amount={tvl} noCountUp /> <span className="text-[0.8rem]">TVL</span>
+            </div>
+          )}
+          {!isUniswapV2LpToken && typeof rate === "number" && (
+            <Fiat amount={rate} noCountUp className="text-body-secondary text-xs" />
+          )}
         </div>
-      </button>
-    </>
+        <div
+          className={classNames(
+            "flex shrink-0 flex-col items-end gap-2 text-right",
+            status.status === "fetching" && "animate-pulse transition-opacity",
+          )}
+        >
+          <>
+            <div
+              className={classNames(
+                "whitespace-nowrap text-sm font-bold",
+                locked ? "text-body-secondary" : "text-white",
+                showStakingButton && "group-hover:hidden",
+              )}
+            >
+              <Tokens
+                amount={tokens}
+                symbol={isUniswapV2LpToken ? "" : token?.symbol}
+                noCountUp
+                isBalance
+              />
+              {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
+              <StaleBalancesIcon
+                className="alert ml-2 inline align-baseline text-sm"
+                staleChains={status.status === "stale" ? status.staleChains : []}
+              />
+            </div>
+            <div
+              className={classNames(
+                "text-body-secondary leading-base text-xs",
+                showStakingButton && "group-hover:hidden",
+              )}
+            >
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp />}
+            </div>
+            {showStakingButton && (
+              <BondPillButton
+                tokenId={token.id}
+                balances={balances}
+                className="hidden group-hover:block"
+              />
+            )}
+          </>
+        </div>
+      </div>
+    </button>
   )
 }
 
@@ -206,7 +205,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
         </div>
       </button>
       <Accordion alwaysRender isOpen={isOpen}>
-        <div className="flex flex-col gap-4">{children}</div>
+        {children}
       </Accordion>
     </div>
   )
@@ -256,11 +255,12 @@ export const PopupAssetsTable = () => {
           </>
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
-          {available.map(([symbol, b]) => (
+          <BalanceRows rows={available} />
+          {/* {available.map(([symbol, b]) => (
             <IntersectRow key={symbol} className="h-28" rootMargin="400px">
               <AssetRow balances={b} />
             </IntersectRow>
-          ))}
+          ))} */}
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
@@ -283,14 +283,57 @@ export const PopupAssetsTable = () => {
             }
             fiatAmount={totalLocked}
           >
-            {lockedSymbolBalances.map(([symbol, b]) => (
-              <IntersectRow key={symbol} className="h-28" rootMargin="400px">
-                <AssetRow balances={b} locked />
-              </IntersectRow>
-            ))}
+            <BalanceRows key="locked" rows={lockedSymbolBalances} locked />
           </BalancesGroup>
         )}
       </div>
     </FadeIn>
+  )
+}
+
+const BalanceRows: FC<{ rows: [string, Balances][]; locked?: boolean }> = ({ rows, locked }) => {
+  const refContainer = useScrollContainer()
+  const ref = useRef<HTMLDivElement>(null)
+
+  //console.log("refContainer", { refContainer, current: refContainer?.current })
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    estimateSize: () => 56,
+    overscan: 5,
+    getScrollElement: () => refContainer.current,
+    //scrollMargin: 400,
+    gap: 8,
+    //isScrollingResetDelay,
+    debug: true,
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 h-28 w-full"
+            style={{
+              // position: "absolute",
+              // top: 0,
+              // left: 0,
+              // width: "100%",
+              // height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            {rows[item.index] && <AssetRow balances={rows[item.index][1]} locked={locked} />}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
