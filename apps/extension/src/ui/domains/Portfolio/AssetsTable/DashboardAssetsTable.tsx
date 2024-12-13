@@ -139,7 +139,7 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
               transform: `translateY(${item.start}px)`,
             }}
           >
-            {symbolBalances[item.index] && <AssetRow balances={symbolBalances[item.index][1]} />}
+            {!!symbolBalances[item.index] && <AssetRow balances={symbolBalances[item.index][1]} />}
           </div>
         ))}
       </div>

@@ -325,7 +325,7 @@ const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; oversc
               transform: `translateY(${item.start}px)`,
             }}
           >
-            {rows[item.index] && <AssetRow balances={rows[item.index][1]} locked={locked} />}
+            {!!rows[item.index] && <AssetRow balances={rows[item.index][1]} locked={locked} />}
           </div>
         ))}
       </div>
