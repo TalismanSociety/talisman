@@ -16,9 +16,17 @@ const fetchRampAssetsByCurrency = async (currencyCode: string): Promise<RampCurr
   }
 }
 
-export const useGetRampAssetsByCurrency = ({ currencyCode }: { currencyCode: string }) => {
+export const useGetRampAssetsByCurrency = ({
+  currencyCode,
+  fiatAmount,
+  tokenAmount,
+}: {
+  currencyCode: string
+  fiatAmount: string
+  tokenAmount: string
+}) => {
   return useQuery({
-    queryKey: ["useGetRampAssets", currencyCode],
+    queryKey: ["useGetRampAssets", currencyCode, fiatAmount, tokenAmount],
     queryFn: () => fetchRampAssetsByCurrency(currencyCode),
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,

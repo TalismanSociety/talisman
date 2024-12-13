@@ -6,6 +6,7 @@ export type NumberInputWithDropDownProps<T extends DropdownOption> = DropdownPro
     React.InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   >
+  onInputChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
   inputFieldLabel: string | number
   inputType: "string" | "number"
   inputPlaceholder: string
@@ -20,8 +21,9 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
   placeholder,
   items,
   value,
-  renderItem,
+  onInputChange,
   onChange,
+  renderItem,
 }: NumberInputWithDropDownProps<T>) => {
   return (
     <div className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-xl border-[1px] p-4">
@@ -35,6 +37,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
             "text-md peer min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white",
           )}
           {...inputFieldProps}
+          onChange={onInputChange}
         />
         <div className="text-xs">{inputFieldLabel ?? ""}</div>
       </div>

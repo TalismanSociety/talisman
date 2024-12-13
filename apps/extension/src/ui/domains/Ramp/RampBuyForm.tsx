@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Button, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
+import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useSelectedCurrency } from "@ui/state"
 
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
@@ -32,6 +33,8 @@ const schema = yup.object({
 
 export const RampBuyForm = () => {
   const currency = useSelectedCurrency()
+  const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
+  const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
   const {
     register,
     handleSubmit,
@@ -52,6 +55,8 @@ export const RampBuyForm = () => {
   const { data: rampCurrencies } = useGetRampCurrencies()
   const { data: rampCurrencyWithAssets } = useGetRampAssetsByCurrency({
     currencyCode: fiatCurrency,
+    fiatAmount: debouncedFiatAmount,
+    tokenAmount: debouncedTokenAmount,
   })
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
@@ -64,6 +69,10 @@ export const RampBuyForm = () => {
 
   const handleFiatCurrencyChange = (fiatCurrency: RampCurrency | null) => {
     setValue("fiatCurrency", fiatCurrency?.fiatCurrency ?? "")
+  }
+
+  const handleFiatAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDebouncedFiatAmount(e.target.value)
   }
 
   const handleTokenChange = (rampAsset: RampAsset | null) => {
@@ -96,6 +105,11 @@ export const RampBuyForm = () => {
             inputFieldLabel={fiatCurrency}
             inputType="number"
             inputPlaceholder="100"
+            onInputChange={(e) => {
+              // setDebouncedFiatAmount(e.target.value)
+              handleFiatAmountChange(e)
+              register("fiatAmount").onChange(e)
+            }}
             propertyKey="fiatCurrency"
             placeholder={t("Select Currency")}
             items={onrampCurrencies}
@@ -112,6 +126,10 @@ export const RampBuyForm = () => {
             inputFieldLabel={"$"}
             inputType="string"
             inputPlaceholder="0"
+            onInputChange={(e) => {
+              setDebouncedTokenAmount(e.target.value)
+              register("tokenAmount").onChange(e)
+            }}
             propertyKey="address"
             placeholder={t("Select token")}
             items={rampCurrencyWithAssets?.assets ?? []}
