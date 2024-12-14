@@ -87,8 +87,8 @@ const TxHistoryAccountFilter = () => {
 
 export const TxHistory = () => {
   return (
-    <DashboardLayout sidebar="accounts">
-      <PortfolioContainer>
+    <PortfolioContainer>
+      <DashboardLayout sidebar="accounts">
         <TxHistoryProvider>
           <TxHistoryAccountFilter />
           <div className="min-w-[60rem]">
@@ -97,7 +97,7 @@ export const TxHistory = () => {
             <TxHistoryList />
           </div>
         </TxHistoryProvider>
-      </PortfolioContainer>
-    </DashboardLayout>
+      </DashboardLayout>
+    </PortfolioContainer>
   )
 }

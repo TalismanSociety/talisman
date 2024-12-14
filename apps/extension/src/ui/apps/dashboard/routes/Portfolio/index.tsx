@@ -31,9 +31,10 @@ const BuyTokensOpener = () => {
 }
 
 export const PortfolioRoutes = () => (
-  <DashboardLayout sidebar="accounts">
-    <BuyTokensOpener />
-    <PortfolioContainer>
+  <PortfolioContainer>
+    <DashboardLayout sidebar="accounts">
+      <BuyTokensOpener />
+
       {/* share layout to prevent tabs flickering */}
       <PortfolioLayout toolbar={<PortfolioToolbar />}>
         <Routes>
@@ -44,8 +45,8 @@ export const PortfolioRoutes = () => (
           <Route path="*" element={<NavigateWithQuery url="tokens" />} />
         </Routes>
       </PortfolioLayout>
-    </PortfolioContainer>
-  </DashboardLayout>
+    </DashboardLayout>
+  </PortfolioContainer>
 )
 
 const PortfolioToolbar = () => (
