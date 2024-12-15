@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import React, { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, DropdownOptionRender } from "talisman-ui"
@@ -50,34 +51,72 @@ export const RampBuyForm = () => {
     },
     resolver: yupResolver(schema),
   })
-  const [fiatCurrency, tokenId, chain] = watch(["fiatCurrency", "tokenId", "chain"])
+  const [fiatCurrency, fiatAmount, tokenId, chain, tokenAmount] = watch([
+    "fiatCurrency",
+    "fiatAmount",
+    "tokenId",
+    "chain",
+    "tokenAmount",
+  ])
 
   const { data: rampCurrencies } = useGetRampCurrencies()
   const { data: rampCurrencyWithAssets } = useGetRampAssetsByCurrency({
     currencyCode: fiatCurrency,
     fiatAmount: debouncedFiatAmount,
     tokenAmount: debouncedTokenAmount,
+    tokenId,
   })
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
-  const tokenRateByCurrency = rampCurrencyWithAssets?.assets.find(
-    (asset) => asset.symbol === tokenId && asset.chain === chain,
-  )?.price[fiatCurrency]
 
-  // const submit = (data: FormData) => console.log({ data })
+  const getTokenRateByCurrency = useCallback(
+    ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
+      rampCurrencyWithAssets?.assets.find(
+        (asset) => asset.symbol === tokenId && asset.chain === chain,
+      )?.price[fiatCurrency],
+    [rampCurrencyWithAssets?.assets],
+  )
+
+  const tokenRateByCurrency = useMemo(
+    () => getTokenRateByCurrency({ fiatCurrency, tokenId, chain }),
+    [getTokenRateByCurrency, fiatCurrency, tokenId, chain],
+  )
+
   const submit = (data: FormData) => data
 
   const handleFiatCurrencyChange = (fiatCurrency: RampCurrency | null) => {
-    setValue("fiatCurrency", fiatCurrency?.fiatCurrency ?? "")
+    const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
+    setValue("fiatCurrency", newFiatCurrency)
+
+    const newTokenRate = getTokenRateByCurrency({ fiatCurrency: newFiatCurrency, tokenId, chain })
+    const fiatAmount = (newTokenRate ?? 0) * tokenAmount
+    setValue("fiatAmount", truncateToSignificantDigits(fiatAmount))
   }
 
   const handleFiatAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDebouncedFiatAmount(e.target.value)
+    const newTokenAmount = Number(e.target.value) / (tokenRateByCurrency ?? 0)
+    setValue("tokenAmount", truncateToSignificantDigits(newTokenAmount))
   }
 
   const handleTokenChange = (rampAsset: RampAsset | null) => {
     setValue("tokenId", rampAsset?.symbol ?? "")
     setValue("chain", rampAsset?.chain ?? "")
+
+    const newTokenRate = getTokenRateByCurrency({
+      fiatCurrency,
+      tokenId: rampAsset?.symbol ?? "",
+      chain: rampAsset?.chain ?? "",
+    })
+    const newTokenAmount = fiatAmount / (newTokenRate ?? 0)
+
+    setValue("tokenAmount", truncateToSignificantDigits(newTokenAmount))
+  }
+
+  const handleTokenAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDebouncedTokenAmount(e.target.value)
+    const fiatAmount = (tokenRateByCurrency ?? 0) * Number(e.target.value)
+    setValue("fiatAmount", truncateToSignificantDigits(fiatAmount))
   }
 
   const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
@@ -106,7 +145,6 @@ export const RampBuyForm = () => {
             inputType="number"
             inputPlaceholder="100"
             onInputChange={(e) => {
-              // setDebouncedFiatAmount(e.target.value)
               handleFiatAmountChange(e)
               register("fiatAmount").onChange(e)
             }}
@@ -127,7 +165,7 @@ export const RampBuyForm = () => {
             inputType="string"
             inputPlaceholder="0"
             onInputChange={(e) => {
-              setDebouncedTokenAmount(e.target.value)
+              handleTokenAmountChange(e)
               register("tokenAmount").onChange(e)
             }}
             propertyKey="address"

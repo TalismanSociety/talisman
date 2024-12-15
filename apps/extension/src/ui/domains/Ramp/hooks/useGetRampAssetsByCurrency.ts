@@ -20,13 +20,15 @@ export const useGetRampAssetsByCurrency = ({
   currencyCode,
   fiatAmount,
   tokenAmount,
+  tokenId,
 }: {
   currencyCode: string
   fiatAmount: string
   tokenAmount: string
+  tokenId: string
 }) => {
   return useQuery({
-    queryKey: ["useGetRampAssets", currencyCode, fiatAmount, tokenAmount],
+    queryKey: ["useGetRampAssets", currencyCode, fiatAmount, tokenAmount, tokenId],
     queryFn: () => fetchRampAssetsByCurrency(currencyCode),
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,
