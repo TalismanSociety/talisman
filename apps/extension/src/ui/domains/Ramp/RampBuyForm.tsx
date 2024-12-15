@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
 import React, { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -25,24 +26,32 @@ import { truncateToSignificantDigits } from "./utils"
 const TALISMAN_LOGO_URL =
   "https://raw.githubusercontent.com/TalismanSociety/talisman-web/0fa6f5a99b4729f740c1a68bbe3d2ca9c85c9daa/apps/portal/public/talisman.svg"
 
+type RampTokenAsset = {
+  symbol: string
+  chain: string
+  decimals: number
+}
+
 type FormData = {
   address: string
   fiatAmount: number
   fiatCurrency: string
-  tokenId: string
-  chain: string
   tokenAmount: number
   dirtyAmountField: string
+  rampTokenAsset: RampTokenAsset
 }
 
 const schema = yup.object({
   address: yup.string().required(" "),
   fiatAmount: yup.number().required(" ").min(0),
   tokenAmount: yup.number().required(" ").min(0),
-  tokenId: yup.string().required(" "),
   fiatCurrency: yup.string().required(" "),
-  chain: yup.string().required(" "),
   dirtyAmountField: yup.string().required(" "),
+  rampTokenAsset: yup.object().shape({
+    symbol: yup.string().required(),
+    chain: yup.string().required(),
+    decimals: yup.number().required(),
+  }),
 })
 
 export const RampBuyForm = () => {
@@ -60,18 +69,28 @@ export const RampBuyForm = () => {
     mode: "all",
     defaultValues: {
       fiatCurrency: currency.toUpperCase(),
-      chain: "DOT",
-      tokenId: "DOT",
+      rampTokenAsset: {
+        symbol: "DOT",
+        chain: "DOT",
+        decimals: 10,
+      },
       dirtyAmountField: "fiatAmount",
     },
     resolver: yupResolver(schema),
   })
-  const [address, fiatCurrency, fiatAmount, tokenId, chain, tokenAmount] = watch([
+  const [
+    address,
+    fiatCurrency,
+    fiatAmount,
+    rampTokenAssetSymbol,
+    rampTokenAssetChain,
+    tokenAmount,
+  ] = watch([
     "address",
     "fiatCurrency",
     "fiatAmount",
-    "tokenId",
-    "chain",
+    "rampTokenAsset.symbol",
+    "rampTokenAsset.chain",
     "tokenAmount",
   ])
 
@@ -80,7 +99,7 @@ export const RampBuyForm = () => {
     currencyCode: fiatCurrency,
     fiatAmount: debouncedFiatAmount,
     tokenAmount: debouncedTokenAmount,
-    tokenId,
+    tokenId: rampTokenAssetSymbol,
   })
 
   const getTokenRateByCurrency = useCallback(
@@ -92,18 +111,23 @@ export const RampBuyForm = () => {
   )
 
   const tokenRateByCurrency = useMemo(
-    () => getTokenRateByCurrency({ fiatCurrency, tokenId, chain }),
-    [getTokenRateByCurrency, fiatCurrency, tokenId, chain],
+    () =>
+      getTokenRateByCurrency({
+        fiatCurrency,
+        tokenId: rampTokenAssetSymbol,
+        chain: rampTokenAssetChain,
+      }),
+    [getTokenRateByCurrency, fiatCurrency, rampTokenAssetChain, rampTokenAssetSymbol],
   )
 
   const submit = (data: FormData) => {
-    const { fiatCurrency, tokenId, chain, dirtyAmountField, tokenAmount, fiatAmount } = data
+    const { fiatCurrency, rampTokenAsset, dirtyAmountField, tokenAmount, fiatAmount } = data
 
     const params = new URLSearchParams({
       hostApiKey: RAMP_API_KEY,
       hostLogoUrl: TALISMAN_LOGO_URL,
       enabledFlows: "ONRAMP",
-      swapAsset: `${chain}_${tokenId}`,
+      swapAsset: `${rampTokenAsset.chain}_${rampTokenAsset.symbol}`,
       userAddress: address,
       fiatCurrency: fiatCurrency,
     })
@@ -112,14 +136,15 @@ export const RampBuyForm = () => {
     if (dirtyAmountField === "fiatAmount") {
       params.append("fiatValue", fiatAmount.toString())
     } else {
-      params.append("swapAmount", tokenAmount.toString())
+      params.append(
+        "swapAmount",
+        tokensToPlanck(tokenAmount.toString(), rampTokenAsset.decimals).toString(),
+      )
     }
 
     const url = `${RAMP_BASE_PATH}/?${params.toString()}`
 
     window.open(url, "_blank")
-
-    return data
   }
 
   const handleFiatAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,7 +166,11 @@ export const RampBuyForm = () => {
   const handleFiatCurrencyChange = (fiatCurrency: RampCurrency | null) => {
     const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
 
-    const newTokenRate = getTokenRateByCurrency({ fiatCurrency: newFiatCurrency, tokenId, chain })
+    const newTokenRate = getTokenRateByCurrency({
+      fiatCurrency: newFiatCurrency,
+      tokenId: rampTokenAssetSymbol,
+      chain: rampTokenAssetChain,
+    })
     const fiatAmount = (newTokenRate ?? 0) * tokenAmount
 
     setValue("fiatCurrency", newFiatCurrency)
@@ -149,8 +178,11 @@ export const RampBuyForm = () => {
   }
 
   const handleTokenChange = (rampAsset: RampAsset | null) => {
-    setValue("tokenId", rampAsset?.symbol ?? "")
-    setValue("chain", rampAsset?.chain ?? "")
+    setValue("rampTokenAsset", {
+      symbol: rampAsset?.symbol ?? "",
+      chain: rampAsset?.chain ?? "",
+      decimals: rampAsset?.decimals ?? 0,
+    })
 
     const newTokenRate = getTokenRateByCurrency({
       fiatCurrency,
@@ -186,7 +218,9 @@ export const RampBuyForm = () => {
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
   const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
-  const selectedToken = rampCurrencyWithAssets?.assets.find((asset) => asset.symbol === tokenId)
+  const selectedToken = rampCurrencyWithAssets?.assets.find(
+    (asset) => asset.symbol === rampTokenAssetSymbol,
+  )
   const selectedAccount = useMemo(
     () => accounts.find((acc) => acc.address === address),
     [accounts, address],
@@ -235,7 +269,7 @@ export const RampBuyForm = () => {
           />
           <div className="flex justify-between">
             <div className="text-xs">{t("You're receiving (estimate)")}</div>
-            <div className="text-xs">{`1 ${tokenId} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency}`}</div>
+            <div className="text-xs">{`1 ${rampTokenAssetSymbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency}`}</div>
           </div>
           <NumberInputWithDropDown
             inputFieldProps={register("tokenAmount")}
