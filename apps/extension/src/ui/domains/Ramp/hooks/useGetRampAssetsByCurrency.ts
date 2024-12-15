@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { RAMP_BASE_PATH } from "extension-shared"
+import { RAMP_API_BASE_PATH } from "extension-shared"
 
 import { RampCurrencyWithAssets } from "../types"
 
@@ -7,7 +7,7 @@ import { RampCurrencyWithAssets } from "../types"
 const fetchRampAssetsByCurrency = async (currencyCode: string): Promise<RampCurrencyWithAssets> => {
   try {
     return await (
-      await fetch(`${RAMP_BASE_PATH}/assets?currencyCode=${currencyCode.toUpperCase()}`, {
+      await fetch(`${RAMP_API_BASE_PATH}/assets?currencyCode=${currencyCode.toUpperCase()}`, {
         method: "GET",
       })
     ).json()
