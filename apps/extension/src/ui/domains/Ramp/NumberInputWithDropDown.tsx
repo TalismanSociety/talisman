@@ -26,7 +26,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
   renderItem,
 }: NumberInputWithDropDownProps<T>) => {
   return (
-    <div className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-xl border-[1px] p-4">
+    <div className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-lg border-[1px] p-4">
       <div className="flex flex-col justify-center">
         <input
           type={inputType}

@@ -2,11 +2,18 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import React, { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, DropdownOptionRender } from "talisman-ui"
+import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
+import {
+  AccountJsonAny,
+  // activeChainsStore,
+  // activeEvmNetworksStore,
+  // activeTokensStore,
+} from "@extension/core"
+import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { useSelectedCurrency } from "@ui/state"
+import { useAccounts, useSelectedCurrency } from "@ui/state"
 
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
@@ -34,6 +41,7 @@ const schema = yup.object({
 
 export const RampBuyForm = () => {
   const currency = useSelectedCurrency()
+  const accounts = useAccounts("portfolio")
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
   const {
@@ -51,7 +59,8 @@ export const RampBuyForm = () => {
     },
     resolver: yupResolver(schema),
   })
-  const [fiatCurrency, fiatAmount, tokenId, chain, tokenAmount] = watch([
+  const [address, fiatCurrency, fiatAmount, tokenId, chain, tokenAmount] = watch([
+    "address",
     "fiatCurrency",
     "fiatAmount",
     "tokenId",
@@ -66,8 +75,6 @@ export const RampBuyForm = () => {
     tokenAmount: debouncedTokenAmount,
     tokenId,
   })
-
-  const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
@@ -119,8 +126,35 @@ export const RampBuyForm = () => {
     setValue("fiatAmount", truncateToSignificantDigits(fiatAmount))
   }
 
+  // const handleAccountChange = useCallback(
+  //   (acc: AccountJsonAny | null) => {
+  //     if (!acc) return
+
+  //     if (tokenId && ethereumTokenIds.includes(tokenId) && !isEthereumAddress(acc.address))
+  //       setValue("tokenId", "")
+  //     if (tokenId && substrateTokenIds.includes(tokenId) && isEthereumAddress(acc.address))
+  //       setValue("tokenId", "")
+
+  //     setValue("address", acc?.address, { shouldValidate: true })
+  //   },
+  //   [ethereumTokenIds, setValue, substrateTokenIds, tokenId],
+  // )
+  const handleAccountChange = useCallback(
+    (acc: AccountJsonAny | null) => {
+      if (!acc) return
+
+      setValue("address", acc?.address, { shouldValidate: true })
+    },
+    [setValue],
+  )
+
+  const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
   const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
   const selectedToken = rampCurrencyWithAssets?.assets.find((asset) => asset.symbol === tokenId)
+  const selectedAccount = useMemo(
+    () => accounts.find((acc) => acc.address === address),
+    [accounts, address],
+  )
 
   const renderFiatCurrencyItem: DropdownOptionRender<RampCurrency> = (item) => {
     return <div className="flex flex-col justify-center">{item.fiatCurrency}</div>
@@ -129,11 +163,19 @@ export const RampBuyForm = () => {
     return <div className="flex flex-col justify-center">{item.symbol}</div>
   }
 
+  const renderAccountItem: DropdownOptionRender<AccountJsonAny> = (account) => {
+    return (
+      <div className="flex flex-col justify-center">
+        <FormattedAddress address={account.address} withSource />
+      </div>
+    )
+  }
+
   const { t } = useTranslation()
   return (
     <div className="text-body-secondary h-[30rem] w-[32rem] xl:w-[64rem]">
-      <form onSubmit={handleSubmit(submit)}>
-        <div className="border-grey-750 space-y-6 rounded-2xl border-[1px] p-6">
+      <form className="space-y-6" onSubmit={handleSubmit(submit)}>
+        <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step1")}</div>
             <div>{t("Select Asset")}</div>
@@ -161,7 +203,7 @@ export const RampBuyForm = () => {
           </div>
           <NumberInputWithDropDown
             inputFieldProps={register("tokenAmount")}
-            inputFieldLabel={"$"}
+            inputFieldLabel={`$${fiatAmount}`}
             inputType="string"
             inputPlaceholder="0"
             onInputChange={(e) => {
@@ -176,8 +218,27 @@ export const RampBuyForm = () => {
             onChange={handleTokenChange}
           />
         </div>
-        <Button type="submit" primary disabled={!isValid}>
-          {t("Continue")}
+        <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
+          <div className="flex gap-4">
+            <div className="font-bold text-white">{t("Step2")}</div>
+            <div>{t("Select Account")}</div>
+          </div>
+          <div className="text-xs">{t("Deposit Account")}</div>
+          <Dropdown
+            items={accounts as AccountJsonAny[]}
+            propertyKey="address"
+            renderItem={renderAccountItem}
+            onChange={handleAccountChange}
+            placeholder={t("Select Account")}
+            value={selectedAccount}
+            key={address} // uncontrolled component, will reset if value changes
+            className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-lg border-[1px] p-4"
+            buttonClassName="bg-black-secondary"
+            optionClassName="h-24 py-0"
+          />
+        </div>
+        <Button type="submit" className="w-full" primary disabled={!isValid}>
+          {t("Buy with Ramp")}
         </Button>
       </form>
     </div>
