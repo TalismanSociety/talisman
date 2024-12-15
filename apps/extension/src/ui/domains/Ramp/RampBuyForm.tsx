@@ -243,8 +243,8 @@ export const RampBuyForm = () => {
 
   const { t } = useTranslation()
   return (
-    <div className="text-body-secondary h-[30rem] w-[32rem] xl:w-[64rem]">
-      <form className="space-y-6" onSubmit={handleSubmit(submit)}>
+    <div className="text-body-secondary flex h-[30rem] justify-center">
+      <form className="w-[47rem] space-y-6" onSubmit={handleSubmit(submit)}>
         <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step1")}</div>

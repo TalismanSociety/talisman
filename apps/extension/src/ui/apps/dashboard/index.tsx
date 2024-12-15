@@ -25,7 +25,6 @@ import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
 import { PortfolioRoutes } from "./routes/Portfolio"
-import { RampRoutes } from "./routes/Ramp"
 import { AboutPage } from "./routes/Settings/AboutPage"
 import { AccountsPage } from "./routes/Settings/Accounts"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
@@ -53,7 +52,6 @@ const DashboardInner = () => {
     <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
       <Routes>
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
-        <Route path="ramp/*" element={<RampRoutes />} />
         <Route path="tx-history/*" element={<TxHistory />} />
         <Route path="accounts">
           <Route path="add">

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Route, Routes, useSearchParams } from "react-router-dom"
+import { Route, Routes, useLocation, useSearchParams } from "react-router-dom"
 
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
@@ -12,7 +12,10 @@ import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
+import { RampRoutes } from "./Ramp"
 import { PortfolioLayout } from "./Shared/PortfolioLayout"
+
+const RAMP_ROUTE = "/portfolio/ramp"
 
 const BuyTokensOpener = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -30,23 +33,29 @@ const BuyTokensOpener = () => {
   return null
 }
 
-export const PortfolioRoutes = () => (
-  <DashboardLayout sidebar="accounts">
-    <BuyTokensOpener />
-    <PortfolioContainer>
-      {/* share layout to prevent tabs flickering */}
-      <PortfolioLayout toolbar={<PortfolioToolbar />}>
-        <Routes>
-          <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-          <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
-          <Route path="tokens" element={<PortfolioAssets />} />
-          <Route path="nfts" element={<PortfolioNfts />} />
-          <Route path="*" element={<NavigateWithQuery url="tokens" />} />
-        </Routes>
-      </PortfolioLayout>
-    </PortfolioContainer>
-  </DashboardLayout>
-)
+export const PortfolioRoutes = () => {
+  const location = useLocation()
+  const isRampRoute = location.pathname.includes(RAMP_ROUTE)
+
+  return (
+    <DashboardLayout sidebar={isRampRoute ? "ramp" : "accounts"}>
+      <BuyTokensOpener />
+      <PortfolioContainer>
+        {/* share layout to prevent tabs flickering */}
+        <PortfolioLayout toolbar={<PortfolioToolbar />} isRampRoute={isRampRoute}>
+          <Routes>
+            <Route path="ramp/*" element={<RampRoutes />} />
+            <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+            <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+            <Route path="tokens" element={<PortfolioAssets />} />
+            <Route path="nfts" element={<PortfolioNfts />} />
+            <Route path="*" element={<NavigateWithQuery url="tokens" />} />
+          </Routes>
+        </PortfolioLayout>
+      </PortfolioContainer>
+    </DashboardLayout>
+  )
+}
 
 const PortfolioToolbar = () => (
   <Routes>

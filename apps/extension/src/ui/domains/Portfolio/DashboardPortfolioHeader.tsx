@@ -295,7 +295,7 @@ const TopActions: FC = () => {
               label: t("Buy"),
               icon: CreditCardIcon,
               // onClick: () => api.modalOpen({ modalType: "buy" }), // TODO: remove old buy modal components
-              onClick: () => navigate("/ramp/buy"),
+              onClick: () => navigate("/portfolio/ramp/buy"),
               disabled: disableActions,
               disabledReason,
             }

@@ -49,19 +49,19 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
-export const PortfolioLayout: FC<PropsWithChildren & { toolbar?: ReactNode }> = ({
-  toolbar,
-  children,
-}) => {
+export const PortfolioLayout: FC<
+  PropsWithChildren & { toolbar?: ReactNode; isRampRoute: boolean }
+> = ({ toolbar, isRampRoute, children }) => {
   return (
     <div className="relative flex w-full flex-col gap-6 pb-12">
       <Suspense
         fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
       >
-        <DashboardPortfolioHeader />
+        {!isRampRoute && <DashboardPortfolioHeader />}
         <PortfolioAccountCheck>
           <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
-            <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
+            {!isRampRoute && <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />}
+
             <div className="shrink-0">
               <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
                 {toolbar}
