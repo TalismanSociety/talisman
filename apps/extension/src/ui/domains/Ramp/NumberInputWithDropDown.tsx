@@ -17,16 +17,11 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
   inputFieldLabel,
   inputType,
   inputPlaceholder,
-  propertyKey,
-  placeholder,
-  items,
-  value,
   onInputChange,
-  onChange,
-  renderItem,
+  ...dropdownProps
 }: NumberInputWithDropDownProps<T>) => {
   return (
-    <div className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-lg border-[1px] p-4">
+    <div className="border-grey-750 bg-black-secondary flex h-[5.5rem] justify-between rounded-lg border-[1px] p-3 pl-8">
       <div className="flex flex-col justify-center">
         <input
           type={inputType}
@@ -39,18 +34,9 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
           {...inputFieldProps}
           onChange={onInputChange}
         />
-        <div className="text-xs">{inputFieldLabel ?? ""}</div>
+        <div className="text-tiny">{inputFieldLabel ?? ""}</div>
       </div>
-      <Dropdown
-        items={items}
-        propertyKey={propertyKey}
-        renderItem={renderItem}
-        onChange={onChange}
-        placeholder={placeholder}
-        value={value}
-        buttonClassName="h-full"
-        optionClassName="flex flex-col justify-center"
-      />
+      <Dropdown {...dropdownProps} />
     </div>
   )
 }

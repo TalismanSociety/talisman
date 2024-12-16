@@ -227,10 +227,21 @@ export const RampBuyForm = () => {
   )
 
   const renderFiatCurrencyItem: DropdownOptionRender<RampCurrency> = (item) => {
-    return <div className="flex flex-col justify-center">{item.fiatCurrency}</div>
+    return <div className="flex w-[5rem] items-center text-white">{item.fiatCurrency}</div>
   }
+
   const renderTokenItem: DropdownOptionRender<RampAsset> = (item) => {
-    return <div className="flex flex-col justify-center">{item.symbol}</div>
+    return (
+      <div className="flex w-[9rem] items-center gap-4">
+        <div className="flex-shrink-0">
+          <img src={item.logoUrl} alt={item.symbol} className="h-[28px] w-[28px] rounded-full" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-white">{item.symbol}</div>
+          <div className="text-tiny max-w-[9rem] truncate">{item.name}</div>
+        </div>
+      </div>
+    )
   }
 
   const renderAccountItem: DropdownOptionRender<AccountJsonAny> = (account) => {
@@ -261,11 +272,13 @@ export const RampBuyForm = () => {
               register("fiatAmount").onChange(e)
             }}
             propertyKey="fiatCurrency"
-            placeholder={t("Select Currency")}
+            placeholder={t("Select")}
             items={onrampCurrencies}
             value={selectedFiatCurrency}
             renderItem={renderFiatCurrencyItem}
             onChange={handleFiatCurrencyChange}
+            buttonClassName="px-6 py-3 h-full"
+            optionClassName="p-6"
           />
           <div className="flex justify-between">
             <div className="text-xs">{t("You're receiving (estimate)")}</div>
@@ -286,6 +299,8 @@ export const RampBuyForm = () => {
             value={selectedToken}
             renderItem={renderTokenItem}
             onChange={handleTokenChange}
+            buttonClassName="px-6 py-3 h-full"
+            optionClassName="px-6 py-3"
           />
         </div>
         <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
@@ -304,7 +319,6 @@ export const RampBuyForm = () => {
             key={address} // uncontrolled component, will reset if value changes
             className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-lg border-[1px] p-4"
             buttonClassName="bg-black-secondary"
-            optionClassName="h-24 py-0"
           />
         </div>
         <Button type="submit" className="w-full" primary disabled={!isValid}>

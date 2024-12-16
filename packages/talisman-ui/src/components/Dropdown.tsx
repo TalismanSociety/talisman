@@ -47,7 +47,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
     {({ open }) => (
       <div className={className}>
         {label && <Listbox.Label className="text-body-secondary mb-8 block">{label}</Listbox.Label>}
-        <div className={"text-body-secondary inline-block max-h-[20rem] w-full"}>
+        <div className={"text-body-secondary inline-block h-full max-h-[20rem] w-full"}>
           <Listbox.Button
             className={classNames(
               "bg-grey-800 enabled:hover:text-grey-300 disabled:bg-field disabled:text-body-disabled flex w-full items-center gap-8 p-8 text-left",
