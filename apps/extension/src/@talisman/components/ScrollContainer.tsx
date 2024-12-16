@@ -17,6 +17,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
       () => (forwardedRef || localRef) as RefObject<HTMLDivElement>,
       [forwardedRef, localRef],
     )
+    const [isCountUpEnabled, setIsCountUpEnabled] = useState<boolean>(true)
     const [more, setMore] = useState<{ top: boolean; bottom: boolean }>({
       top: false,
       bottom: false,
@@ -69,7 +70,13 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
             innerClassName,
           )}
         >
-          <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
+          <ScrollContainerProvider
+            refContainer={refDiv}
+            isCountUpEnabled={isCountUpEnabled}
+            setIsCountUpEnabled={setIsCountUpEnabled}
+          >
+            {children}
+          </ScrollContainerProvider>
         </div>
         <div
           className={classNames(
@@ -91,10 +98,14 @@ ScrollContainer.displayName = "ScrollContainer"
 
 const useScrollContainerProvider = ({
   refContainer,
+  isCountUpEnabled,
+  setIsCountUpEnabled,
 }: {
   refContainer: RefObject<HTMLDivElement>
+  isCountUpEnabled: boolean
+  setIsCountUpEnabled: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  return refContainer
+  return { refContainer, isCountUpEnabled, setIsCountUpEnabled }
 }
 
 const [ScrollContainerProvider, useScrollContainer] = provideContext(useScrollContainerProvider)

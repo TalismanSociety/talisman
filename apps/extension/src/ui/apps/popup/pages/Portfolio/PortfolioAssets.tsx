@@ -1,4 +1,4 @@
-import { FC, Suspense, useCallback, useEffect, useState } from "react"
+import { FC, Suspense, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
 import { Button } from "talisman-ui"
@@ -48,7 +48,6 @@ const PopupAnalyticsEvent: FC<{ name: string }> = ({ name }) => {
 }
 
 const MainContent: FC = () => {
-  const [isCountUpEnabled, setIsCountUpEnabled] = useState<boolean>(true)
   const { evmNetworks, chains } = usePortfolio()
   const { selectedAccount: account } = usePortfolioNavigation()
 
@@ -68,10 +67,7 @@ const MainContent: FC = () => {
   if (matchTokens)
     return (
       <>
-        <PopupAssetsTable
-          isCountUpEnabled={isCountUpEnabled}
-          setIsCountUpEnabled={setIsCountUpEnabled}
-        />
+        <PopupAssetsTable />
         <PopupAnalyticsEvent name="portfolio assets" />
       </>
     )
