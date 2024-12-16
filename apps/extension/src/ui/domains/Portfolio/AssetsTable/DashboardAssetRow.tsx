@@ -1,6 +1,6 @@
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useCallback } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
@@ -18,11 +18,10 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
-type AssetRowProps = {
-  balances: Balances
-}
-
-export const AssetRow = ({ balances }: AssetRowProps) => {
+export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
+  balances,
+  noCountUp,
+}) => {
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
@@ -75,11 +74,11 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             </div>
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <div className="text-body-secondary whitespace-nowrap">
-                <Fiat amount={tvl} noCountUp /> <span className="text-tiny">TVL</span>
+                <Fiat amount={tvl} noCountUp={noCountUp} /> <span className="text-tiny">TVL</span>
               </div>
             )}
             {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} noCountUp className="text-body-secondary" />
+              <Fiat amount={rate} noCountUp={noCountUp} className="text-body-secondary" />
             )}
           </div>
         </div>
@@ -95,6 +94,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
               "noPadRight",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
+            noCountUp={noCountUp}
           />
         </div>
         <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 text-right">
@@ -122,6 +122,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
               canBondNomPool && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
+            noCountUp={noCountUp}
           />
         </div>
       </button>

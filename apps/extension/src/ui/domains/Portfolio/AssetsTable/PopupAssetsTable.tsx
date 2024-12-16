@@ -1,7 +1,7 @@
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, ReactNode, useCallback, useMemo, useRef } from "react"
+import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
@@ -28,11 +28,6 @@ import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
-type AssetRowProps = {
-  balances: Balances
-  locked?: boolean
-}
-
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <div
@@ -56,7 +51,11 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   )
 }
 
-const AssetRow = ({ balances, locked }: AssetRowProps) => {
+const AssetRow: FC<{
+  balances: Balances
+  noCountUp: boolean
+  locked?: boolean
+}> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -124,11 +123,11 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
           {isUniswapV2LpToken && typeof tvl === "number" && (
             <div className="text-body-secondary whitespace-nowrap text-xs">
-              <Fiat amount={tvl} noCountUp /> <span className="text-[0.8rem]">TVL</span>
+              <Fiat amount={tvl} noCountUp={noCountUp} /> <span className="text-[0.8rem]">TVL</span>
             </div>
           )}
           {!isUniswapV2LpToken && typeof rate === "number" && (
-            <Fiat amount={rate} noCountUp className="text-body-secondary text-xs" />
+            <Fiat amount={rate} noCountUp={noCountUp} className="text-body-secondary text-xs" />
           )}
         </div>
         <div
@@ -148,7 +147,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               <Tokens
                 amount={tokens}
                 symbol={isUniswapV2LpToken ? "" : token?.symbol}
-                noCountUp
+                noCountUp={noCountUp}
                 isBalance
               />
               {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
@@ -163,7 +162,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 showStakingButton && "group-hover:hidden",
               )}
             >
-              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp />}
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
             </div>
             {showStakingButton && (
               <BondPillButton
@@ -298,15 +297,26 @@ const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; oversc
   locked,
   overscan,
 }) => {
+  const [noCountUp, setNoCountUp] = useState(false)
   const refContainer = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // we only want count up on the first rendering of the table
+      // ex: sorting or filtering rows using search box should not trigger count up
+      setNoCountUp(true)
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [])
+
   const virtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 56,
     overscan: overscan ?? 5,
-    getScrollElement: () => refContainer.current,
     gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => refContainer.current,
   })
 
   return (
@@ -325,7 +335,9 @@ const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; oversc
               transform: `translateY(${item.start}px)`,
             }}
           >
-            {!!rows[item.index] && <AssetRow balances={rows[item.index][1]} locked={locked} />}
+            {!!rows[item.index] && (
+              <AssetRow balances={rows[item.index][1]} locked={locked} noCountUp={noCountUp} />
+            )}
           </div>
         ))}
       </div>

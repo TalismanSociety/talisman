@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Balances } from "extension-core"
-import { FC, useMemo, useRef } from "react"
+import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
@@ -112,14 +112,25 @@ export const DashboardAssetsTable = () => {
 }
 
 const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
+  const [noCountUp, setNoCountUp] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // we only want count up on the first rendering of the table
+      // ex: sorting or filtering rows using search box should not trigger count up
+      setNoCountUp(true)
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [])
 
   const virtualizer = useVirtualizer({
     count: symbolBalances.length,
-    estimateSize: () => 66,
     overscan: 5,
-    getScrollElement: () => document.getElementById("main"),
     gap: 8,
+    estimateSize: () => 66,
+    getScrollElement: () => document.getElementById("main"),
   })
 
   return (
@@ -139,7 +150,9 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
               transform: `translateY(${item.start}px)`,
             }}
           >
-            {!!symbolBalances[item.index] && <AssetRow balances={symbolBalances[item.index][1]} />}
+            {!!symbolBalances[item.index] && (
+              <AssetRow balances={symbolBalances[item.index][1]} noCountUp={noCountUp} />
+            )}
           </div>
         ))}
       </div>
