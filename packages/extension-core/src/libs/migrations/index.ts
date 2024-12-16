@@ -17,7 +17,6 @@ import {
 } from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
-import { migrateTokenRates } from "../../domains/tokenRates/migrations"
 import { Migrations } from "./types"
 
 export { MigrationRunner } from "./runner"
@@ -35,7 +34,6 @@ export const migrations: Migrations = [
   migrateAutoLockTimeoutToMinutes,
   migrateAnaliticsPurgePendingCaptures,
   migrateAssetDiscoveryV2,
-  migrateTokenRates,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
