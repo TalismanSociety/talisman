@@ -105,11 +105,11 @@ class AssetDiscoveryScanner {
     combineLatest([chaindataProvider.evmNetworksByIdObservable, activeEvmNetworksStore.observable])
       .pipe(
         debounceTime(500),
-        map(([networksById, activeNetworks]) => {
-          return Object.keys(activeNetworks)
+        map(([networksById, activeNetworks]) =>
+          Object.keys(activeNetworks)
             .filter((k) => !!activeNetworks[k] && networksById[k] && !networksById.isTestnet)
-            .sort()
-        }),
+            .sort(),
+        ),
         distinct((allActiveNetworkIds) => allActiveNetworkIds.join("")),
       )
       .subscribe((allActiveNetworkIds) => {
