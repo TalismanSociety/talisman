@@ -22,10 +22,10 @@ export const useSendFundsPopup = (
   const { t } = useTranslation()
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
-  const transferableBalances = useMemo(
-    () => new Balances(balances.each.filter((b) => !tokenId || b.tokenId === tokenId)),
-    [balances, tokenId],
-  )
+  const transferableBalance = useMemo(() => {
+    const owned = new Balances(balances.each.filter((b) => !tokenId || b.tokenId === tokenId))
+    return owned.sum.planck.transferable
+  }, [balances, tokenId])
 
   const { canSendFunds, cannotSendFundsReason } = useMemo<{
     canSendFunds: boolean
@@ -46,7 +46,7 @@ export const useSendFundsPopup = (
         canSendFunds: false,
         cannotSendFundsReason: t(`Please send funds on Signet: ${account.signetUrl}`),
       }
-    if (tokenId && transferableBalances.sum.planck.transferable === 0n)
+    if (tokenId && transferableBalance === 0n)
       return {
         canSendFunds: false,
         cannotSendFundsReason: t("No tokens available to send"),
@@ -70,7 +70,7 @@ export const useSendFundsPopup = (
         }
     }
     return { canSendFunds: true }
-  }, [account, accounts, t, to, tokenId, transferableBalances.sum.planck.transferable])
+  }, [account, accounts, t, to, tokenId, transferableBalance])
 
   const openSendFundsPopup = useCallback(() => {
     if (!canSendFunds) return

@@ -1,6 +1,8 @@
 import { classNames } from "@talismn/util"
 import { forwardRef, RefObject, useEffect, useMemo, useRef, useState } from "react"
 
+import { provideContext } from "@talisman/util/provideContext"
+
 type ScrollContainerProps = {
   className?: string
   children?: React.ReactNode
@@ -67,7 +69,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
             innerClassName,
           )}
         >
-          {children}
+          <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
         </div>
         <div
           className={classNames(
@@ -86,3 +88,17 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
   },
 )
 ScrollContainer.displayName = "ScrollContainer"
+
+const useScrollContainerProvider = ({
+  refContainer,
+}: {
+  refContainer: RefObject<HTMLDivElement>
+}) => {
+  return refContainer
+}
+
+const [ScrollContainerProvider, useScrollContainer] = provideContext(useScrollContainerProvider)
+
+// this hook will provite a way for its children to access the ref of the scrollable element
+// mainly useful when using a virtualizer or other scroll related libraries
+export { useScrollContainer }

@@ -193,7 +193,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
               balances.sum.fiat("usd").total >= 1
           : () => true,
       )
-  }, [balances.each, currency, hideDust])
+  }, [balances, currency, hideDust])
 
   const availableSymbolBalances = useMemo(() => {
     const available = symbolBalances

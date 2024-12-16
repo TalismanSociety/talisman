@@ -99,7 +99,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
       balancesByAddress.get(balance.address)?.push(balance)
     })
     return balancesByAddress
-  }, [allBalances.each])
+  }, [allBalances])
 
   const balances = useMemo(
     () =>

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHistory"
 import { useTxHistory } from "@ui/domains/Transactions/TxHistory/TxHistoryContext"
@@ -86,15 +87,17 @@ const TxHistoryAccountFilter = () => {
 
 export const TxHistory = () => {
   return (
-    <DashboardLayout sidebar="accounts">
-      <TxHistoryProvider>
-        <TxHistoryAccountFilter />
-        <div className="min-w-[60rem]">
-          <Header />
-          <div className="h-8"></div>
-          <TxHistoryList />
-        </div>
-      </TxHistoryProvider>
-    </DashboardLayout>
+    <PortfolioContainer>
+      <DashboardLayout sidebar="accounts">
+        <TxHistoryProvider>
+          <TxHistoryAccountFilter />
+          <div className="min-w-[60rem]">
+            <Header />
+            <div className="h-8"></div>
+            <TxHistoryList />
+          </div>
+        </TxHistoryProvider>
+      </DashboardLayout>
+    </PortfolioContainer>
   )
 }

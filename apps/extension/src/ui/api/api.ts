@@ -19,7 +19,7 @@ export const api: MessageTypes = {
   changePassword: (currentPw, newPw, newPwConfirm) =>
     messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
   changePasswordSubscribe: (currentPw, newPw, newPwConfirm, cb) =>
-    messageService.sendMessage(
+    messageService.subscribe(
       "pri(app.changePassword.subscribe)",
       { currentPw, newPw, newPwConfirm },
       cb,

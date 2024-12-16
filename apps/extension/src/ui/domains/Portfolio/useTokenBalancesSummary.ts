@@ -128,7 +128,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     )
 
     return summary
-  }, [currency, tokenBalanceRates, tokenBalances.count, tokenBalances.each])
+  }, [currency, tokenBalanceRates, tokenBalances])
 
   return {
     token,

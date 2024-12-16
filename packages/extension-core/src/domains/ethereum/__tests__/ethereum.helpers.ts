@@ -92,14 +92,14 @@ describe("Test ethereum helpers", () => {
   })
 
   test("isSafeImageUrl", () => {
-    expect(isSafeImageUrl("https://localhost/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("https://127.0.0.1/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("https://192.168.0.1/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("https://172.19.0.1/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("https://10.0.0.1/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("https://legit-domain:666/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("http://legit-domain/evilsvgfile_(1).svg")).toEqual(false)
-    expect(isSafeImageUrl("https://legit-domain/evilsvgfile_(1).js")).toEqual(false)
-    expect(isSafeImageUrl("https://legit-domain/chadsvgfile_(1).svg")).toEqual(true)
+    expect(isSafeImageUrl("https://localhost/anysvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://127.0.0.1/anysvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://192.168.0.1/anysvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://172.19.0.1/anysvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://10.0.0.1/anysvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://legit-domain:666/anysvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("http://legit-domain/anysvgfile_(1).svg")).toEqual(false) // uses http
+    expect(isSafeImageUrl("https://legit-domain/anysvgfile_(1).js")).toEqual(false)
+    expect(isSafeImageUrl("https://legit-domain/anysvgfile_(1).svg")).toEqual(true)
   })
 })

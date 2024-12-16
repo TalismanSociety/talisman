@@ -148,7 +148,9 @@ export const SubNativeModule: NewBalanceModule<
         { pallet: "Staking", items: ["Ledger"] },
         { pallet: "Crowdloan", items: ["Funds"] },
         { pallet: "Paras", items: ["Parachains"] },
-        { pallet: "SubtensorModule", items: ["TotalColdkeyStake"] },
+        // TotalColdkeyStake is used until v.2.2.1, then it is replaced by StakingHotkeys+Stake
+        // Need to keep TotalColdkeyStake for a while so chaindata keeps including it in miniMetadatas, so it doesnt break old versions of the wallet
+        { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys", "Stake"] },
       ])
 
       const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
@@ -280,7 +282,7 @@ export const SubNativeModule: NewBalanceModule<
               .filter((b) => b.values.length > 0)
               .reduce<Record<string, SubNativeBalance>>((acc, b) => {
                 const bId = getBalanceId(b)
-                acc[bId] = mergeBalances(acc[bId], b, source)
+                acc[bId] = mergeBalances(acc[bId], b, source, false)
                 return acc
               }, {})
 
@@ -288,7 +290,7 @@ export const SubNativeModule: NewBalanceModule<
             const mergedBalances: Record<string, SubNativeBalance> = {}
             Object.entries(accumulatedUpdates).forEach(([bId, b]) => {
               // merge the values from the new balance into the existing balance, if there is one
-              mergedBalances[bId] = mergeBalances(currentBalances[bId], b, source)
+              mergedBalances[bId] = mergeBalances(currentBalances[bId], b, source, true)
 
               // update initialisingBalances to remove balances which have been updated
               const intialisingForToken = initialisingBalances.get(b.tokenId)

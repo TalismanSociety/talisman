@@ -9,10 +9,9 @@ import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
-import { combineLatest, debounceTime, distinctUntilKeyChanged, skip } from "rxjs"
+import { combineLatest, debounceTime, distinct, distinctUntilKeyChanged, map, skip } from "rxjs"
 import { PublicClient } from "viem"
 
-import { sentry } from "../../config/sentry"
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -67,53 +66,69 @@ class AssetDiscoveryScanner {
     let prevAllAddresses: string[] | null = null
 
     // identify newly added accounts and scan those
-    keyring.accounts.subject.pipe(debounceTime(500)).subscribe(async (accounts) => {
-      try {
-        const allAddresses = Object.keys(accounts)
+    keyring.accounts.subject
+      .pipe(
+        debounceTime(500),
+        map((accounts) => Object.keys(accounts).sort()),
+        distinct((addresses) => addresses.join("")),
+      )
+      .subscribe(async (allAddresses) => {
+        try {
+          if (prevAllAddresses && !this.#preventAutoStart) {
+            const addresses = allAddresses.filter(
+              (k) => !(prevAllAddresses as string[]).includes(k),
+            )
 
-        if (prevAllAddresses && !this.#preventAutoStart) {
-          const addresses = allAddresses.filter((k) => !(prevAllAddresses as string[]).includes(k))
-          const networkIds = await getActiveNetworkIdsToScan()
+            if (addresses.length) {
+              const networkIds = await getActiveNetworkIdsToScan()
 
-          log.debug("[AssetDiscovery] New accounts detected, starting scan", {
-            addresses,
-            networkIds,
-          })
+              log.debug("[AssetDiscovery] New accounts detected, starting scan", {
+                addresses,
+                networkIds,
+              })
 
-          this.startScan({ networkIds, addresses })
+              this.startScan({ networkIds, addresses })
+            }
+          }
+
+          prevAllAddresses = allAddresses // update reference
+        } catch (err) {
+          log.error("[AssetDiscovery] Failed to start scan after account creation", { err })
         }
-
-        prevAllAddresses = allAddresses // update reference
-      } catch (err) {
-        log.error("[AssetDiscovery] Failed to start scan after account creation", { err })
-      }
-    })
+      })
   }
 
-  private watchEnabledNetworks = async () => {
+  private watchEnabledNetworks = () => {
     let prevAllActiveNetworkIds: string[] | null = null
 
     // identify newly enabled networks and scan those
     combineLatest([chaindataProvider.evmNetworksByIdObservable, activeEvmNetworksStore.observable])
-      .pipe(debounceTime(500))
-      .subscribe(([networksById, activeNetworks]) => {
+      .pipe(
+        debounceTime(500),
+        map(([networksById, activeNetworks]) =>
+          Object.keys(activeNetworks)
+            .filter((k) => !!activeNetworks[k] && networksById[k] && !networksById.isTestnet)
+            .sort(),
+        ),
+        distinct((allActiveNetworkIds) => allActiveNetworkIds.join("")),
+      )
+      .subscribe((allActiveNetworkIds) => {
         try {
-          const allActiveNetworkIds = Object.keys(activeNetworks).filter(
-            (k) => !!activeNetworks[k] && networksById[k] && !networksById.isTestnet,
-          )
-
           if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
             const networkIds = allActiveNetworkIds.filter(
               (k) => !(prevAllActiveNetworkIds as string[]).includes(k),
             )
-            const addresses = keyring.getAccounts().map((acc) => acc.address)
 
-            log.debug("[AssetDiscovery] New enabled networks detected, starting scan", {
-              addresses,
-              networkIds,
-            })
+            if (networkIds.length) {
+              const addresses = keyring.getAccounts().map((acc) => acc.address)
 
-            this.startScan({ networkIds, addresses })
+              log.debug("[AssetDiscovery] New enabled networks detected, starting scan", {
+                addresses,
+                networkIds,
+              })
+
+              this.startScan({ networkIds, addresses })
+            }
           }
 
           prevAllActiveNetworkIds = allActiveNetworkIds
@@ -549,7 +564,6 @@ const getEvmTokenBalancesWithoutAggregator = async (
 
         throw new Error(`Failed to scan ${token.id} (Timeout)`)
       } catch (err) {
-        sentry.captureException(err)
         log.error(`Failed to scan ${token.id} for ${address}: `, { err })
         return "0"
       }
