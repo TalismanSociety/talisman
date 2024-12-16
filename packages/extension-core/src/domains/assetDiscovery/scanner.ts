@@ -124,7 +124,7 @@ class AssetDiscoveryScanner {
 
               log.debug("[AssetDiscovery] New enabled networks detected, starting scan", {
                 addresses,
-                networkIds: networkIds,
+                networkIds,
               })
 
               this.startScan({ networkIds, addresses })
