@@ -285,6 +285,8 @@ const TopActions: FC = () => {
           label: t("Swap"),
           icon: RepeatIcon,
           onClick: () => window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"),
+          disabled: disableActions,
+          disabledReason,
         },
         canBuy
           ? {
