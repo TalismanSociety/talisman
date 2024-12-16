@@ -1,7 +1,7 @@
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, ReactNode, useCallback, useMemo, useRef } from "react"
+import { ReactNode, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
@@ -28,9 +28,21 @@ import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
+type PopupAssetsTableProps = {
+  isCountUpEnabled: boolean
+  setIsCountUpEnabled: React.Dispatch<React.SetStateAction<boolean>>
+}
+
 type AssetRowProps = {
   balances: Balances
   locked?: boolean
+  isCountUpEnabled: boolean
+}
+
+type VirtualizedRowsProps = PopupAssetsTableProps & {
+  rows: [string, Balances][]
+  locked?: boolean
+  overscan?: number
 }
 
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
@@ -56,7 +68,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   )
 }
 
-const AssetRow = ({ balances, locked }: AssetRowProps) => {
+const AssetRow = ({ balances, locked, isCountUpEnabled }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -124,11 +136,16 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
           {isUniswapV2LpToken && typeof tvl === "number" && (
             <div className="text-body-secondary whitespace-nowrap text-xs">
-              <Fiat amount={tvl} noCountUp /> <span className="text-[0.8rem]">TVL</span>
+              <Fiat amount={tvl} noCountUp={!isCountUpEnabled} />{" "}
+              <span className="text-[0.8rem]">TVL</span>
             </div>
           )}
           {!isUniswapV2LpToken && typeof rate === "number" && (
-            <Fiat amount={rate} noCountUp className="text-body-secondary text-xs" />
+            <Fiat
+              amount={rate}
+              className="text-body-secondary text-xs"
+              noCountUp={!isCountUpEnabled}
+            />
           )}
         </div>
         <div
@@ -147,8 +164,8 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
             >
               <Tokens
                 amount={tokens}
+                noCountUp={!isCountUpEnabled}
                 symbol={isUniswapV2LpToken ? "" : token?.symbol}
-                noCountUp
                 isBalance
               />
               {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
@@ -163,7 +180,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 showStakingButton && "group-hover:hidden",
               )}
             >
-              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp />}
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={!isCountUpEnabled} />}
             </div>
             {showStakingButton && (
               <BondPillButton
@@ -211,7 +228,10 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-export const PopupAssetsTable = () => {
+export const PopupAssetsTable = ({
+  isCountUpEnabled,
+  setIsCountUpEnabled,
+}: PopupAssetsTableProps) => {
   const { t } = useTranslation()
   const { selectedAccount: account } = usePortfolioNavigation()
 
@@ -255,7 +275,11 @@ export const PopupAssetsTable = () => {
           </>
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
-          <VirtualizedRows rows={available} />
+          <VirtualizedRows
+            rows={available}
+            isCountUpEnabled={isCountUpEnabled}
+            setIsCountUpEnabled={setIsCountUpEnabled}
+          />
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
@@ -285,6 +309,8 @@ export const PopupAssetsTable = () => {
               // workaround bug in the virtualizer: first few rows arent always rendered here
               // there shouldnt be many locked row anyways
               overscan={lockedSymbolBalances.length}
+              isCountUpEnabled={isCountUpEnabled}
+              setIsCountUpEnabled={setIsCountUpEnabled}
             />
           </BalancesGroup>
         )}
@@ -293,20 +319,29 @@ export const PopupAssetsTable = () => {
   )
 }
 
-const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; overscan?: number }> = ({
+const VirtualizedRows = ({
   rows,
   locked,
   overscan,
-}) => {
+  isCountUpEnabled,
+  setIsCountUpEnabled,
+}: VirtualizedRowsProps) => {
   const refContainer = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
+  const ESTIMATE_SIZE = 56
+
   const virtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 56,
+    estimateSize: () => ESTIMATE_SIZE,
     overscan: overscan ?? 5,
     getScrollElement: () => refContainer.current,
     gap: 8,
+    onChange: ({ scrollOffset }) => {
+      if (isCountUpEnabled && (scrollOffset ?? 0) * 3 >= ESTIMATE_SIZE) {
+        setIsCountUpEnabled(false)
+      }
+    },
   })
 
   return (
@@ -325,7 +360,13 @@ const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; oversc
               transform: `translateY(${item.start}px)`,
             }}
           >
-            {!!rows[item.index] && <AssetRow balances={rows[item.index][1]} locked={locked} />}
+            {!!rows[item.index] && (
+              <AssetRow
+                balances={rows[item.index][1]}
+                locked={locked}
+                isCountUpEnabled={isCountUpEnabled}
+              />
+            )}
           </div>
         ))}
       </div>
