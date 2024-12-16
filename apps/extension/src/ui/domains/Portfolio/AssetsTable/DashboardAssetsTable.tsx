@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Balances } from "extension-core"
-import { FC, useMemo, useRef } from "react"
+import { FC, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
@@ -113,13 +113,21 @@ export const DashboardAssetsTable = () => {
 
 const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
   const ref = useRef<HTMLDivElement>(null)
+  const [isCountUpEnabled, setIsCountUpEnabled] = useState<boolean>(true)
+
+  const ESTIMATE_SIZE = 66
 
   const virtualizer = useVirtualizer({
     count: symbolBalances.length,
-    estimateSize: () => 66,
+    estimateSize: () => ESTIMATE_SIZE,
     overscan: 5,
     getScrollElement: () => document.getElementById("main"),
     gap: 8,
+    onChange: ({ scrollOffset }) => {
+      if (isCountUpEnabled && (scrollOffset ?? 0) * 3 >= ESTIMATE_SIZE) {
+        setIsCountUpEnabled(false)
+      }
+    },
   })
 
   return (
@@ -139,7 +147,12 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
               transform: `translateY(${item.start}px)`,
             }}
           >
-            {!!symbolBalances[item.index] && <AssetRow balances={symbolBalances[item.index][1]} />}
+            {!!symbolBalances[item.index] && (
+              <AssetRow
+                balances={symbolBalances[item.index][1]}
+                isCountUpEnabled={isCountUpEnabled}
+              />
+            )}
           </div>
         ))}
       </div>
