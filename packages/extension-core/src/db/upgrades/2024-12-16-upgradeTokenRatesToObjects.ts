@@ -7,7 +7,7 @@ type OldDbTokenRates = {
   rates: Record<TokenRateCurrency, number>
 }
 
-// For DB version 10, Wallet version 2.2.0
+// For DB version 10, Wallet version 2.3.0
 export const upgradeTokenRatesToObjects = async (tx: DbTransaction) => {
   try {
     const oldTokenRates = await tx.table<OldDbTokenRates>("tokenRates").toArray()
