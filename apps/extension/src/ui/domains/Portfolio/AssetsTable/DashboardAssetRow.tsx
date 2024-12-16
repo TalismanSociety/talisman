@@ -45,15 +45,15 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   if (!token || !summary) return null
 
   return (
-    <div className="relative">
+    <div className="group relative h-[6.6rem] w-full">
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 group grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base",
         )}
         onClick={handleClick}
       >
-        <div className="flex h-[6.6rem]">
+        <div className="flex h-full">
           <div className="shrink-0 p-8 text-xl">
             <TokenLogo tokenId={token.id} />
           </div>
@@ -99,20 +99,6 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           />
         </div>
         <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 text-right">
-          {canBondNomPool && (
-            <>
-              <BondPillButton
-                tokenId={token.id}
-                balances={balances}
-                className="[>svg]:text-[2rem] mr-8 hidden text-base group-hover:block"
-              />
-              <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-                <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
-                  <ZapFastIcon className="size-6" />
-                </div>
-              </div>
-            </>
-          )}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -127,6 +113,22 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           />
         </div>
       </button>
+      {canBondNomPool && (
+        <>
+          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+            <BondPillButton
+              tokenId={token.id}
+              balances={balances}
+              className="[>svg]:text-[2rem] text-base"
+            />
+          </div>
+          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
+            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+              <ZapFastIcon className="size-6" />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
