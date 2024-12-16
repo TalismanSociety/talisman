@@ -13,18 +13,21 @@ import {
   // activeEvmNetworksStore,
   // activeTokensStore,
 } from "@extension/core"
-import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts, useSelectedCurrency } from "@ui/state"
 
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
+import { RampAccountOption } from "./RampAccountOption"
 import { RampAsset, RampCurrency } from "./types"
 import { truncateToSignificantDigits } from "./utils"
 
 const TALISMAN_LOGO_URL =
   "https://raw.githubusercontent.com/TalismanSociety/talisman-web/0fa6f5a99b4729f740c1a68bbe3d2ca9c85c9daa/apps/portal/public/talisman.svg"
+
+export type AccountWithBalance = AccountJsonAny & { total: number }
 
 type RampTokenAsset = {
   symbol: string
@@ -59,6 +62,13 @@ export const RampBuyForm = () => {
   const accounts = useAccounts("portfolio")
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
+  const { balanceTotalPerAccount } = usePortfolioAccounts()
+
+  const accountsWithBalance = useMemo(
+    () => accounts.map((acc) => ({ ...acc, total: balanceTotalPerAccount[acc.address] })),
+    [accounts, balanceTotalPerAccount],
+  )
+
   const {
     register,
     handleSubmit,
@@ -222,8 +232,8 @@ export const RampBuyForm = () => {
     (asset) => asset.symbol === rampTokenAssetSymbol,
   )
   const selectedAccount = useMemo(
-    () => accounts.find((acc) => acc.address === address),
-    [accounts, address],
+    () => accountsWithBalance.find((acc) => acc.address === address),
+    [accountsWithBalance, address],
   )
 
   const renderFiatCurrencyItem: DropdownOptionRender<RampCurrency> = (item) => {
@@ -240,14 +250,6 @@ export const RampBuyForm = () => {
           <div className="text-white">{item.symbol}</div>
           <div className="text-tiny max-w-[9rem] truncate">{item.name}</div>
         </div>
-      </div>
-    )
-  }
-
-  const renderAccountItem: DropdownOptionRender<AccountJsonAny> = (account) => {
-    return (
-      <div className="flex flex-col justify-center">
-        <FormattedAddress address={account.address} withSource />
       </div>
     )
   }
@@ -310,15 +312,16 @@ export const RampBuyForm = () => {
           </div>
           <div className="text-xs">{t("Deposit Account")}</div>
           <Dropdown
-            items={accounts as AccountJsonAny[]}
+            items={accountsWithBalance.filter((acc) => acc.address !== selectedAccount?.address)}
             propertyKey="address"
-            renderItem={renderAccountItem}
+            renderItem={(item) => <RampAccountOption account={item} />}
             onChange={handleAccountChange}
             placeholder={t("Select Account")}
             value={selectedAccount}
             key={address} // uncontrolled component, will reset if value changes
-            className="border-grey-750 bg-black-secondary flex h-[7rem] justify-between rounded-lg border-[1px] p-4"
-            buttonClassName="bg-black-secondary"
+            buttonClassName="bg-black-secondary h-full px-6 py-3"
+            optionClassName="px-6 py-3"
+            className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-lg border-[1px]"
           />
         </div>
         <Button type="submit" className="w-full" primary disabled={!isValid}>
