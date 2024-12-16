@@ -176,10 +176,10 @@ const FiatInput = () => {
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token && tokenRates?.[currency] && e.target.value) {
+      if (token && tokenRates?.[currency]?.price && e.target.value) {
         try {
           const fiat = parseFloat(e.target.value)
-          const tokens = (fiat / tokenRates[currency]!).toFixed(Math.ceil(token.decimals / 3))
+          const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(token.decimals / 3))
           const plancks = tokensToPlanck(tokens, token.decimals)
           return setPlancks(BigInt(plancks))
         } catch (err) {

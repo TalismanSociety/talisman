@@ -6,7 +6,7 @@ import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
+import { Balance, Balances } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
@@ -30,20 +30,17 @@ import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
 import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
-import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
+import { BalanceDetailRow, useTokenBalances } from "./useTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 
-type AssetRowProps = {
-  chainId: ChainId | EvmNetworkId
-  balances: Balances
-}
-
-const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, tokenId, detailRows, status, networkType } =
-    useChainTokenBalances({ chainId, balances })
+const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, balances }) => {
+  const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
+    tokenId,
+    balances,
+  })
 
   // wait for data to load
-  if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
+  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
   const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
 
@@ -65,7 +62,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <span className="mr-2 truncate">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
+                <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} shouldClose />
               </Suspense>
             </div>
           </div>
@@ -91,7 +88,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         balances.sorted
           .filter((balance) => balance.total.planck > 0n)
           .map((balance, i, balances) => (
-            <ChainTokenBalancesUniswapV2Row
+            <TokenBalancesUniswapV2Row
               key={balance.id}
               balance={balance}
               isLastBalance={balances.length === i + 1}
@@ -102,11 +99,11 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         detailRows
           .filter((row) => row.tokens.gt(0))
           .map((row, i, rows) => (
-            <ChainTokenBalancesDetailRow
+            <TokenBalancesDetailRow
               key={row.key}
               row={row}
               isLastRow={rows.length === i + 1}
-              symbol={symbol}
+              symbol={token.symbol}
               status={status}
               tokenId={tokenId}
             />
@@ -115,7 +112,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
   )
 }
 
-const ChainTokenBalancesUniswapV2Row = ({
+const TokenBalancesUniswapV2Row = ({
   balance,
   isLastBalance,
   status,
@@ -184,18 +181,18 @@ const ChainTokenBalancesUniswapV2Row = ({
   )
 }
 
-const ChainTokenBalancesDetailRow = ({
+const TokenBalancesDetailRow = ({
   row,
   isLastRow,
   status,
   symbol,
   tokenId,
 }: {
-  row: DetailRow
+  row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-  tokenId?: TokenId // unsafe, there could be multiple aggregated here
+  tokenId?: TokenId
 }) => (
   <div
     className={classNames(
@@ -320,11 +317,6 @@ const LockedExtra: FC<{
   )
 }
 
-type AssetsTableProps = {
-  balances: Balances
-  symbol: string
-}
-
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { t } = useTranslation()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
@@ -370,8 +362,11 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   )
 }
 
-export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain: rows } = useAssetDetails(balances)
+export const PopupAssetDetails: FC<{
+  balances: Balances
+  symbol: string
+}> = ({ balances, symbol }) => {
+  const { balancesByToken: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
     [rows],
@@ -382,8 +377,8 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   return (
     <FadeIn>
       <div className="flex flex-col gap-8">
-        {rows.map(([chainId, bal]) => (
-          <ChainTokenBalances key={chainId} chainId={chainId} balances={bal} />
+        {rows.map(([tokenId, bal]) => (
+          <TokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
         ))}
       </div>
     </FadeIn>

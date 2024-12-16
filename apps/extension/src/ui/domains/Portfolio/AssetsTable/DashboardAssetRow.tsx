@@ -4,6 +4,7 @@ import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/useBondButton"
@@ -37,7 +38,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   }, [genericEvent, navigate, token])
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
 
@@ -77,8 +78,8 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
                 <Fiat amount={tvl} noCountUp={noCountUp} /> <span className="text-tiny">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} noCountUp={noCountUp} className="text-body-secondary" />
+            {!isUniswapV2LpToken && !!rate && (
+              <AssetPrice tokenId={token.id} className="text-body-secondary" />
             )}
           </div>
         </div>

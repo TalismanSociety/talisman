@@ -9,6 +9,7 @@ import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
@@ -87,7 +88,7 @@ const AssetRow: FC<{
   const { t } = useTranslation()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
@@ -126,9 +127,7 @@ const AssetRow: FC<{
               <Fiat amount={tvl} noCountUp={noCountUp} /> <span className="text-[0.8rem]">TVL</span>
             </div>
           )}
-          {!isUniswapV2LpToken && typeof rate === "number" && (
-            <Fiat amount={rate} noCountUp={noCountUp} className="text-body-secondary text-xs" />
-          )}
+          {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
         </div>
         <div
           className={classNames(

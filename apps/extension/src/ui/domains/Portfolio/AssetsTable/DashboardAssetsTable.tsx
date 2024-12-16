@@ -54,6 +54,8 @@ const HeaderRow = () => {
     unavailable: locked,
   } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
 
+  if (!balances.count) return null
+
   return (
     <div className="text-body-secondary bg-grey-850 mb-4 rounded p-8 text-left text-base">
       <div className="grid grid-cols-[40%_30%_30%]">

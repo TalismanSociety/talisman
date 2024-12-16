@@ -1,5 +1,5 @@
 import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
-import { NewTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
+import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 
@@ -457,16 +457,17 @@ export class Balance {
             currency,
             // tvl (in a given currency) == reserve0*currencyRate0 + reserve1*currencyRate1
             BigNumber.sum(
-              reserve0Tokens.times(rates0[currency] ?? 0),
-              reserve1Tokens.times(rates1[currency] ?? 0),
+              reserve0Tokens.times(rates0[currency]?.price ?? 0),
+              reserve1Tokens.times(rates1[currency]?.price ?? 0),
             ),
           ] as const,
       )
 
-      const lpTokenRates = NewTokenRates()
+      const lpTokenRates = newTokenRates()
       totalValueLocked.forEach(([currency, tvl]) => {
         // divide `the value of all lp tokens` by `the number of lp tokens` to get `the value per token`
-        if (!totalSupplyTokens.eq(0)) lpTokenRates[currency] = tvl.div(totalSupplyTokens).toNumber()
+        if (!totalSupplyTokens.eq(0))
+          lpTokenRates[currency] = { price: tvl.div(totalSupplyTokens).toNumber() }
       })
 
       return lpTokenRates
@@ -684,7 +685,7 @@ export class BalanceValueGetter {
 export class BalanceFormatter {
   #planck: string
   #decimals: number
-  #fiatRatios: TokenRates | null
+  #tokenRates: TokenRates | null
 
   constructor(
     planck: string | bigint | undefined,
@@ -693,7 +694,7 @@ export class BalanceFormatter {
   ) {
     this.#planck = isBigInt(planck) ? planck.toString() : (planck ?? "0")
     this.#decimals = decimals || 0
-    this.#fiatRatios = fiatRatios || null
+    this.#tokenRates = fiatRatios || null
   }
 
   toJSON = () => this.#planck
@@ -707,12 +708,12 @@ export class BalanceFormatter {
   }
 
   fiat(currency: TokenRateCurrency) {
-    if (!this.#fiatRatios) return null
+    if (!this.#tokenRates) return null
 
-    const ratio = this.#fiatRatios[currency]
+    const ratio = this.#tokenRates[currency]
     if (!ratio) return null
 
-    return parseFloat(this.tokens) * ratio
+    return parseFloat(this.tokens) * ratio.price
   }
 }
 
@@ -850,6 +851,75 @@ export class SumBalancesFormatter {
 
   fiat(currency: TokenRateCurrency) {
     return new FiatSumBalancesFormatter(this.#balances, currency)
+  }
+
+  change24h(currency: TokenRateCurrency) {
+    return new Change24hCurrencyFormatter(this.#balances, currency)
+  }
+}
+
+export class Change24hCurrencyFormatter {
+  #balances: Balances
+  #currency: TokenRateCurrency
+
+  constructor(balances: Balances, currency: TokenRateCurrency) {
+    this.#balances = balances
+    this.#currency = currency
+  }
+
+  #change24h = (
+    balanceField: {
+      [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
+    }[keyof Balance],
+  ) => {
+    const output = this.#balances.filterMirrorTokens().each.reduce(
+      // add the total amount to the fiat amount of each balance
+      (acc, balance) => {
+        const change24h = balance.rates?.[this.#currency]?.change24h
+        if (typeof change24h !== "number") return acc
+        const fiat = balance[balanceField].fiat(this.#currency)
+        if (!fiat) return acc
+
+        return {
+          totalFiatDiff: acc.totalFiatDiff + fiat * change24h,
+          totalFiat: acc.totalFiat + fiat,
+        }
+      },
+      // start with a total of 0
+      { totalFiatDiff: 0, totalFiat: 0 },
+    )
+
+    return output.totalFiat === 0
+      ? null
+      : {
+          diff: output.totalFiatDiff / 100,
+          ratio: output.totalFiatDiff / output.totalFiat,
+        }
+  }
+
+  get total() {
+    return this.#change24h("total")
+  }
+  get free() {
+    return this.#change24h("free")
+  }
+  get reserved() {
+    return this.#change24h("reserved")
+  }
+  get locked() {
+    return this.#change24h("locked")
+  }
+  get frozen() {
+    return this.#change24h("frozen")
+  }
+  get transferable() {
+    return this.#change24h("transferable")
+  }
+  get unavailable() {
+    return this.#change24h("unavailable")
+  }
+  get feePayable() {
+    return this.#change24h("feePayable")
   }
 }
 

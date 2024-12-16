@@ -71,6 +71,7 @@
     "bignumber.js": "^9.1.2",
     "blueimp-md5": "2.19.0",
     "buffer": "^6.0.3",
+    "chart.js": "^4.4.7",
     "check-password-strength": "^2.0.10",
     "date-fns": "^4.1.0",
     "dcent-web-connector": "^0.16.0",
