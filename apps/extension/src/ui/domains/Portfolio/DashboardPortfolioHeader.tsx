@@ -271,14 +271,13 @@ const TopActions: FC = () => {
         {
           analyticsName: "Goto",
           analyticsAction: "open receive",
-          label: t("Receive"),
+          label: !!selectedAccount && !isOwnedAccount(selectedAccount) ? t("Copy") : t("Receive"),
           icon: ArrowDownIcon,
           onClick: () =>
             openCopyAddressModal({
               address: selectedAddress,
             }),
-          disabled: disableActions,
-          disabledReason,
+          disabled: !selectedAccounts.length, // always allow, as long as there is at least one account
         },
         {
           analyticsName: "Goto",
@@ -299,7 +298,17 @@ const TopActions: FC = () => {
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, selectedAddress, openCopyAddressModal, symbol, t],
+    [
+      t,
+      disableActions,
+      disabledReason,
+      selectedAccount,
+      selectedAccounts.length,
+      canBuy,
+      selectedAddress,
+      symbol,
+      openCopyAddressModal,
+    ],
   )
 
   return (
