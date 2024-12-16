@@ -97,10 +97,8 @@ const useScrollContainerProvider = ({
   return refContainer
 }
 
-const [ScrollContainerProvider, useScrollContainerContext] = provideContext(
-  useScrollContainerProvider,
-)
+const [ScrollContainerProvider, useScrollContainer] = provideContext(useScrollContainerProvider)
 
 // this hook will provite a way for its children to access the ref of the scrollable element
 // mainly useful when using a virtualizer or other scroll related libraries
-export const useScrollContainer = useScrollContainerContext
+export { useScrollContainer }
