@@ -2,7 +2,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 
-import { AccountWithBalance } from "./RampBuyForm"
+import { AccountWithBalance } from "./RampForm"
 
 type RampAccountOptionProps = {
   account: AccountWithBalance

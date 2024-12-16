@@ -19,6 +19,7 @@ import { useAccounts, useSelectedCurrency } from "@ui/state"
 
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
+import { useGetRampOfframpAssetsByCurrency } from "./hooks/useGetRampOfframpAssetsByCurrency"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
 import { RampAccountOption } from "./RampAccountOption"
 import { RampAsset, RampCurrency } from "./types"
@@ -57,12 +58,19 @@ const schema = yup.object({
   }),
 })
 
-export const RampBuyForm = () => {
+type RampFormProps = {
+  formType: "buy" | "sell"
+}
+
+export const RampForm = ({ formType }: RampFormProps) => {
   const currency = useSelectedCurrency()
   const accounts = useAccounts("portfolio")
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
+  const { t } = useTranslation()
   const { balanceTotalPerAccount } = usePortfolioAccounts()
+
+  const isBuyForm = formType === "buy"
 
   const accountsWithBalance = useMemo(
     () => accounts.map((acc) => ({ ...acc, total: balanceTotalPerAccount[acc.address] })),
@@ -110,14 +118,27 @@ export const RampBuyForm = () => {
     fiatAmount: debouncedFiatAmount,
     tokenAmount: debouncedTokenAmount,
     tokenId: rampTokenAssetSymbol,
+    isEnabled: isBuyForm,
   })
+  const { data: rampCurrencyWithOfframpAssets } = useGetRampOfframpAssetsByCurrency({
+    currencyCode: fiatCurrency,
+    fiatAmount: debouncedFiatAmount,
+    tokenAmount: debouncedTokenAmount,
+    tokenId: rampTokenAssetSymbol,
+    isEnabled: !isBuyForm,
+  })
+
+  const rampAvailableCurrencies = useCallback(
+    () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
+    [isBuyForm, rampCurrencyWithAssets, rampCurrencyWithOfframpAssets],
+  )()
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
-      rampCurrencyWithAssets?.assets.find(
+      rampAvailableCurrencies?.assets.find(
         (asset) => asset.symbol === tokenId && asset.chain === chain,
       )?.price[fiatCurrency],
-    [rampCurrencyWithAssets?.assets],
+    [rampAvailableCurrencies?.assets],
   )
 
   const tokenRateByCurrency = useMemo(
@@ -136,7 +157,7 @@ export const RampBuyForm = () => {
     const params = new URLSearchParams({
       hostApiKey: RAMP_API_KEY,
       hostLogoUrl: TALISMAN_LOGO_URL,
-      enabledFlows: "ONRAMP",
+      enabledFlows: isBuyForm ? "ONRAMP" : "OFFRAMP",
       swapAsset: `${rampTokenAsset.chain}_${rampTokenAsset.symbol}`,
       userAddress: address,
       fiatCurrency: fiatCurrency,
@@ -228,7 +249,7 @@ export const RampBuyForm = () => {
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
   const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
-  const selectedToken = rampCurrencyWithAssets?.assets.find(
+  const selectedToken = rampAvailableCurrencies?.assets.find(
     (asset) => asset.symbol === rampTokenAssetSymbol,
   )
   const selectedAccount = useMemo(
@@ -254,7 +275,48 @@ export const RampBuyForm = () => {
     )
   }
 
-  const { t } = useTranslation()
+  const fiatAmountInput = (
+    <NumberInputWithDropDown
+      inputFieldProps={register("fiatAmount")}
+      inputFieldLabel={fiatCurrency}
+      inputType="string"
+      inputPlaceholder="100"
+      onInputChange={(e) => {
+        handleFiatAmountChange(e)
+        register("fiatAmount").onChange(e)
+      }}
+      propertyKey="fiatCurrency"
+      placeholder={t("Select")}
+      items={onrampCurrencies}
+      value={selectedFiatCurrency}
+      renderItem={renderFiatCurrencyItem}
+      onChange={handleFiatCurrencyChange}
+      buttonClassName="px-6 py-3 h-full"
+      optionClassName="p-6"
+    />
+  )
+
+  const tokenAmountInput = (
+    <NumberInputWithDropDown
+      inputFieldProps={register("tokenAmount")}
+      inputFieldLabel={`$${fiatAmount}`}
+      inputType="string"
+      inputPlaceholder="0"
+      onInputChange={(e) => {
+        handleTokenAmountChange(e)
+        register("tokenAmount").onChange(e)
+      }}
+      propertyKey="address"
+      placeholder={t("Select token")}
+      items={rampAvailableCurrencies?.assets ?? []}
+      value={selectedToken}
+      renderItem={renderTokenItem}
+      onChange={handleTokenChange}
+      buttonClassName="px-6 py-3 h-full"
+      optionClassName="px-6 py-3"
+    />
+  )
+
   return (
     <div className="text-body-secondary flex h-[30rem] justify-center">
       <form className="w-[47rem] space-y-6" onSubmit={handleSubmit(submit)}>
@@ -263,47 +325,13 @@ export const RampBuyForm = () => {
             <div className="font-bold text-white">{t("Step1")}</div>
             <div>{t("Select Asset")}</div>
           </div>
-          <div className="text-xs">{t("You Pay")}</div>
-          <NumberInputWithDropDown
-            inputFieldProps={register("fiatAmount")}
-            inputFieldLabel={fiatCurrency}
-            inputType="string"
-            inputPlaceholder="100"
-            onInputChange={(e) => {
-              handleFiatAmountChange(e)
-              register("fiatAmount").onChange(e)
-            }}
-            propertyKey="fiatCurrency"
-            placeholder={t("Select")}
-            items={onrampCurrencies}
-            value={selectedFiatCurrency}
-            renderItem={renderFiatCurrencyItem}
-            onChange={handleFiatCurrencyChange}
-            buttonClassName="px-6 py-3 h-full"
-            optionClassName="p-6"
-          />
+          <div className="text-xs">{isBuyForm ? t("You Pay") : t("You Sell")}</div>
+          {isBuyForm ? fiatAmountInput : tokenAmountInput}
           <div className="flex justify-between">
             <div className="text-xs">{t("You're receiving (estimate)")}</div>
             <div className="text-xs">{`1 ${rampTokenAssetSymbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency}`}</div>
           </div>
-          <NumberInputWithDropDown
-            inputFieldProps={register("tokenAmount")}
-            inputFieldLabel={`$${fiatAmount}`}
-            inputType="string"
-            inputPlaceholder="0"
-            onInputChange={(e) => {
-              handleTokenAmountChange(e)
-              register("tokenAmount").onChange(e)
-            }}
-            propertyKey="address"
-            placeholder={t("Select token")}
-            items={rampCurrencyWithAssets?.assets ?? []}
-            value={selectedToken}
-            renderItem={renderTokenItem}
-            onChange={handleTokenChange}
-            buttonClassName="px-6 py-3 h-full"
-            optionClassName="px-6 py-3"
-          />
+          {isBuyForm ? tokenAmountInput : fiatAmountInput}
         </div>
         <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
           <div className="flex gap-4">
@@ -325,7 +353,7 @@ export const RampBuyForm = () => {
           />
         </div>
         <Button type="submit" className="w-full" primary disabled={!isValid}>
-          {t("Buy with Ramp")}
+          {isBuyForm ? t("Buy with Ramp") : t("Sell with Ramp")}
         </Button>
       </form>
     </div>
