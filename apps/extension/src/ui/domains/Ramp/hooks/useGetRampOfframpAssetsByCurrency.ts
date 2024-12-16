@@ -4,19 +4,24 @@ import { RAMP_API_BASE_PATH } from "extension-shared"
 import { RampCurrencyWithAssets } from "../types"
 
 // note: currencyCode must be upper case
-const fetchRampAssetsByCurrency = async (currencyCode: string): Promise<RampCurrencyWithAssets> => {
+const fetchRampOfframpAssetsByCurrency = async (
+  currencyCode: string,
+): Promise<RampCurrencyWithAssets> => {
   try {
     return await (
-      await fetch(`${RAMP_API_BASE_PATH}/assets?currencyCode=${currencyCode.toUpperCase()}`, {
-        method: "GET",
-      })
+      await fetch(
+        `${RAMP_API_BASE_PATH}/offramp/assets?currencyCode=${currencyCode.toUpperCase()}`,
+        {
+          method: "GET",
+        },
+      )
     ).json()
   } catch (cause) {
-    throw new Error("Failed to fetch Ramp assets", { cause })
+    throw new Error("Failed to fetch Ramp offramp assets", { cause })
   }
 }
 
-export const useGetRampAssetsByCurrency = ({
+export const useGetRampOfframpAssetsByCurrency = ({
   currencyCode,
   fiatAmount,
   tokenAmount,
@@ -30,8 +35,8 @@ export const useGetRampAssetsByCurrency = ({
   isEnabled: boolean
 }) => {
   return useQuery({
-    queryKey: ["useGetRampAssets", currencyCode, fiatAmount, tokenAmount, tokenId],
-    queryFn: () => fetchRampAssetsByCurrency(currencyCode),
+    queryKey: ["useGetRampOfframpAssets", currencyCode, fiatAmount, tokenAmount, tokenId],
+    queryFn: () => fetchRampOfframpAssetsByCurrency(currencyCode),
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,
     enabled: isEnabled,
