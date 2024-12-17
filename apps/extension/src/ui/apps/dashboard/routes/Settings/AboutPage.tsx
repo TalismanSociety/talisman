@@ -79,7 +79,7 @@ const Content = () => {
         <CtaButton
           title={t("Help and Support")}
           subtitle={t("For help and support please visit our Discord")}
-          to="https://discord.gg/talisman"
+          to="https://discord.gg/EF3Zf4R5bD"
           iconLeft={HelpCircleIcon}
           iconRight={ExternalLinkIcon}
         />
