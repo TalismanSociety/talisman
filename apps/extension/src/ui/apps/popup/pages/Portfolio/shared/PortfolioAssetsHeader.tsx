@@ -127,13 +127,13 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
   }, [backBtnTo, location.search, navigate])
 
   return (
-    <div className="flex w-full gap-8">
-      <div className="flex w-full items-center gap-4 overflow-hidden">
+    <div className="flex h-[3.6rem] w-full items-center gap-8">
+      <div className="flex h-full grow items-center gap-4 overflow-hidden">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>
         <div className="flex flex-col justify-center">
-          <CurrentAccountAvatar className="!text-2xl" />
+          <CurrentAccountAvatar className="!text-[2.8rem]" />
         </div>
         <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
           <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
           </div>
         </div>
       </div>
-      <div className="flex grow items-center justify-end">
+      <div className="flex h-full items-center justify-end">
         <Suspense fallback={<SuspenseTracker name="PortfolioAssetHeader.Buttons" />}>
           <CopyAddressButton account={account} />
           <SendFundsButton account={account} />
