@@ -116,6 +116,7 @@ const Scanner = ({
     if (!codeReader) return
     if (!preview.current) return
 
+    // @dev: in dev mode, because of React.StrictMode, the stream wont be closed properly on unmount
     const aborted = new AbortController()
     let abortedSignalSet = false
     codeReader
