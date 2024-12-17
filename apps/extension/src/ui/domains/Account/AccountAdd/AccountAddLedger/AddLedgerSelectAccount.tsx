@@ -186,10 +186,17 @@ export const AddLedgerSelectAccount = () => {
               />
             )}
             {data.substrateAppType === AddSubstrateLedgerAppType.Generic && (
-              <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} />
+              <LedgerSubstrateGenericAccountPicker
+                onChange={handleAccountsChange}
+                chainId={data.chainId}
+              />
             )}
             {data.substrateAppType === AddSubstrateLedgerAppType.Migration && !!app && (
-              <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} app={app} />
+              <LedgerSubstrateGenericAccountPicker
+                onChange={handleAccountsChange}
+                app={app}
+                chainId={data.chainId}
+              />
             )}
           </>
         )}

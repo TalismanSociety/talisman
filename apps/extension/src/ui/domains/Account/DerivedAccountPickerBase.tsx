@@ -1,6 +1,6 @@
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, encodeAnyAddress } from "@talismn/util"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 
@@ -54,6 +54,7 @@ const AccountButton: FC<AccountButtonProps> = ({
   onClick,
   withBalances,
   isBalanceLoading,
+  addressPrefix,
 }) => {
   const totalFiat = useBalancesFiatTotal(balances)
 
@@ -67,6 +68,11 @@ const AccountButton: FC<AccountButtonProps> = ({
     [balances.each, isBalanceLoading],
   )
 
+  const formattedAddress = useMemo(
+    () => encodeAnyAddress(address, addressPrefix ?? undefined),
+    [address, addressPrefix],
+  )
+
   return (
     <button
       type="button"
@@ -76,11 +82,11 @@ const AccountButton: FC<AccountButtonProps> = ({
       disabled={connected}
       onClick={onClick}
     >
-      <AccountIcon address={address} genesisHash={genesisHash} className="text-xl" />
+      <AccountIcon address={formattedAddress} genesisHash={genesisHash} className="text-xl" />
       <div className="flex flex-grow flex-col gap-2 overflow-hidden">
         <div className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</div>
         <div className="text-body-secondary text-sm">
-          <Address address={address} startCharCount={6} endCharCount={6} />
+          <Address address={formattedAddress} startCharCount={6} endCharCount={6} />
         </div>
       </div>
       <div className="flex items-center justify-end gap-2">
@@ -121,6 +127,7 @@ export type DerivedAccountBase = AccountJson & {
 
 type AccountButtonProps = DerivedAccountBase & {
   withBalances: boolean
+  addressPrefix?: number | null
   onClick: () => void
 }
 
@@ -129,6 +136,7 @@ type DerivedAccountPickerBaseProps = {
   withBalances: boolean
   canPageBack?: boolean
   disablePaging?: boolean
+  addressPrefix?: number | null
   onPagerFirstClick?: () => void
   onPagerPrevClick?: () => void
   onPagerNextClick?: () => void
@@ -139,6 +147,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   accounts = [],
   disablePaging,
   canPageBack,
+  addressPrefix,
   onPagerFirstClick,
   onPagerPrevClick,
   onPagerNextClick,
@@ -171,6 +180,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
               key={`${keyPrefix}::${account.address}`}
               withBalances={withBalances}
               isBalanceLoading={account.isBalanceLoading}
+              addressPrefix={addressPrefix}
               {...account}
               onClick={handleToggleAccount(account)}
             />
