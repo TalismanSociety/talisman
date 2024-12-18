@@ -250,7 +250,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
   const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
   const selectedToken = rampAvailableCurrencies?.assets.find(
-    (asset) => asset.symbol === rampTokenAssetSymbol,
+    (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
   )
   const selectedAccount = useMemo(
     () => accountsWithBalance.find((acc) => acc.address === address),
