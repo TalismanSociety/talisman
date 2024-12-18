@@ -291,7 +291,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
-      // TODO: "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues
+      // TODO: fix "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues on Popup view
       buttonClassName="px-6 py-3 h-full inline-block md:flex"
       optionClassName="p-6"
     />
@@ -313,16 +313,16 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
-      // TODO: "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues
+      // TODO: fix "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues on Popup view
       buttonClassName="px-6 py-3 h-full inline-block md:flex"
       optionClassName="px-6 py-3"
     />
   )
 
   return (
-    <div className="text-body-secondary flex h-[30rem] justify-center">
-      <form className="w-[47rem] space-y-6" onSubmit={handleSubmit(submit)}>
-        <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
+    <div className="text-body-secondary flex h-[47.5rem] justify-center md:h-auto">
+      <form className="flex w-auto flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
+        <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step1")}</div>
             <div>{t("Select Asset")}</div>
@@ -335,7 +335,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
           </div>
           {isBuyForm ? tokenAmountInput : fiatAmountInput}
         </div>
-        <div className="border-grey-750 space-y-6 rounded-xl border-[1px] p-6">
+        <div className="md:border-grey-750 bg-black-secondary mt-6 space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step2")}</div>
             <div>{t("Select Account")}</div>
@@ -354,7 +354,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
             className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-lg border-[1px]"
           />
         </div>
-        <Button type="submit" className="w-full" primary disabled={!isValid}>
+        <Button type="submit" className="mt-auto w-full md:mt-6" primary disabled={!isValid}>
           {isBuyForm ? t("Buy with Ramp") : t("Sell with Ramp")}
         </Button>
       </form>
