@@ -46,6 +46,7 @@ const Container: FC<{ className?: string; onClick?: () => void; children?: React
   else return <div className={className}>{children}</div>
 }
 
+// TODO cleanup unused properties
 export const LedgerConnectionStatus = ({
   status,
   message,

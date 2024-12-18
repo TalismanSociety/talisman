@@ -12,9 +12,10 @@ import {
 } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 
-import { getPolkadotLedgerDerivationPath, LedgerError } from "./common"
-import { getTalismanLedgerError } from "./errors"
+import { getPolkadotLedgerDerivationPath } from "./common"
+import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
 
 type UseLedgerSubstrateGenericProps = {
   legacyApp?: SubstrateAppParams | null
@@ -84,6 +85,7 @@ const signPayload = async (
 }
 
 export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
+  const { t } = useTranslation()
   const refTransport = useRef<Transport | null>(null)
   const refIsBusy = useRef(false)
 
@@ -112,7 +114,7 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
       registry?: TypeRegistry | null,
       txMetadata?: string | null,
     ) => {
-      if (refIsBusy.current) throw new Error("Ledger is busy")
+      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
 
       refIsBusy.current = true
 
@@ -123,20 +125,17 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
         return await signPayload(ledger, payload, account, legacyApp, registry, txMetadata)
       } catch (err) {
         await closeTransport()
-        throw getTalismanLedgerError(
-          err as LedgerError,
-          legacyApp ? "Polkadot Migration" : "Polkadot",
-        )
+        throw getTalismanLedgerError(err, legacyApp ? "Polkadot Migration" : "Polkadot")
       } finally {
         refIsBusy.current = false
       }
     },
-    [legacyApp, closeTransport, ensureTransport],
+    [t, ensureTransport, legacyApp, closeTransport],
   )
 
   const getAddress = useCallback(
     async (bip44path: string, ss58prefix = 42) => {
-      if (refIsBusy.current) throw new Error("Ledger is busy")
+      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
 
       refIsBusy.current = true
 
@@ -147,15 +146,12 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
         return await ledger.getAddress(bip44path, ss58prefix, false)
       } catch (err) {
         await closeTransport()
-        throw getTalismanLedgerError(
-          err as LedgerError,
-          legacyApp ? "Polkadot Migration" : "Polkadot",
-        )
+        throw getTalismanLedgerError(err, legacyApp ? "Polkadot Migration" : "Polkadot")
       } finally {
         refIsBusy.current = false
       }
     },
-    [legacyApp, closeTransport, ensureTransport],
+    [t, ensureTransport, closeTransport, legacyApp],
   )
 
   useEffect(() => {

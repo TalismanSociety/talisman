@@ -27,7 +27,7 @@ export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProp
   const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
   const { t } = useTranslation("admin")
 
-  // this busy check prevents double connect attempt in dev mode
+  // flag to prevents double connect attempt in dev mode
   const refIsBusy = useRef(false)
 
   const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
@@ -40,13 +40,15 @@ export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProp
     refIsBusy.current = true
 
     try {
-      onReadyChanged?.(true)
+      onReadyChanged?.(false)
       setConnectionStatus({
         status: "connecting",
         message: t("Connecting to Ledger..."),
       })
+
       const bip44path = getPolkadotLedgerDerivationPath({ legacyApp })
       await getAddress(bip44path)
+
       setConnectionStatus({
         status: "ready",
         message: t("Successfully connected to Ledger."),

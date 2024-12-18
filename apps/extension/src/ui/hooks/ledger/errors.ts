@@ -39,17 +39,14 @@ export const getCustomTalismanLedgerError = (errorOrMessage: unknown): TalismanL
   return getTalismanLedgerError(errorOrMessage as NativeLedgerError, "substrate")
 }
 
-export const getTalismanLedgerError = (
-  error: NativeLedgerError,
-  appName: string,
-): TalismanLedgerError => {
+export const getTalismanLedgerError = (error: unknown, appName: string): TalismanLedgerError => {
   log.log("getTalismanLedgerError", { error })
 
-  const cause = error
+  const cause = error as NativeLedgerError
 
   // Generic errors
-  if (error.name) {
-    switch (error.name) {
+  if (cause.name) {
+    switch (cause.name) {
       case "SecurityError":
         // happens on some browser when ledger is plugged after browser is launched
         // when this happens, the only way to connect is to restart all instances of the browser
@@ -83,28 +80,8 @@ export const getTalismanLedgerError = (
           { cause },
         )
 
-      case "TransportStatusError": {
-        switch (error.statusCode) {
-          case 27404: // locked
-          case 27010:
-            return new TalismanLedgerError("Locked", t("Please unlock your Ledger"), { cause })
-
-          case 28160: // non-compatible app
-          case 28161: // home screen on Flex
-          case 25831: // home screen
-          case 25873:
-          case 27906:
-          case 57346:
-          default:
-            return new TalismanLedgerError(
-              "InvalidApp",
-              t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
-                appName: capitalize(appName),
-              }),
-              { cause },
-            )
-        }
-      }
+      case "TransportStatusError":
+        return getErrorFromCode(cause.statusCode, appName, cause)
 
       case "TransportOpenUserCancelled": // occurs when user doesn't select a device in the browser popup (also noticed it when device is turned off or sleeping)
         return new TalismanLedgerError("Unknown", t("Failed to connect to your Ledger"), { cause })
@@ -118,40 +95,13 @@ export const getTalismanLedgerError = (
         )
     }
   }
-  if (error.returnCode) {
-    switch (error.returnCode) {
-      case 27014:
-        return new TalismanLedgerError(
-          "UserRejected",
-          t("Transaction was rejected by the Ledger device."),
-          { cause },
-        )
 
-      case 27404: // locked
-      case 27010:
-        return new TalismanLedgerError("Locked", t("Please unlock your Ledger"), { cause })
-
-      case 28160: // non-compatible app
-      case 28161: // home screen on Flex
-      case 25831: // home screen
-      case 25873:
-      case 27906:
-      case 57346:
-      default:
-        return new TalismanLedgerError(
-          "InvalidApp",
-          t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
-            appName: capitalize(appName),
-          }),
-          { cause },
-        )
-    }
-  }
+  if (cause.returnCode) return getErrorFromCode(cause.returnCode, appName, cause)
 
   // Polkadot specific errors, wrapped in simple Error object
   // only message is available
   // TODO Check if still a thing since ledger generic app
-  switch (error.message) {
+  switch (cause.message) {
     case "Timeout": // this one is throw by Talisman in case of timeout when calling ledger.getAddress
       return new TalismanLedgerError("Timeout", t("Failed to connect to your Ledger (timeout)"), {
         cause,
@@ -222,4 +172,34 @@ export const getTalismanLedgerError = (
     t("Failed to connect to your Ledger. Click here to retry."),
     { cause },
   )
+}
+
+const getErrorFromCode = (code: number | undefined, appName: string, cause: unknown) => {
+  switch (code) {
+    case 27014:
+      return new TalismanLedgerError(
+        "UserRejected",
+        t("Transaction was rejected by the Ledger device."),
+        { cause },
+      )
+
+    case 27404: // locked
+    case 27010:
+      return new TalismanLedgerError("Locked", t("Please unlock your Ledger"), { cause })
+
+    case 28160: // non-compatible app
+    case 28161: // home screen on Flex
+    case 25831: // home screen
+    case 25873:
+    case 27906:
+    case 57346:
+    default:
+      return new TalismanLedgerError(
+        "InvalidApp",
+        t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
+          appName: capitalize(appName),
+        }),
+        { cause },
+      )
+  }
 }
