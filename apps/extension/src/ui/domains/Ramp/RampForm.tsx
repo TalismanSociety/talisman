@@ -291,7 +291,8 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
-      buttonClassName="px-6 py-3 h-full"
+      // TODO: "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues
+      buttonClassName="px-6 py-3 h-full inline-block md:flex"
       optionClassName="p-6"
     />
   )
@@ -312,7 +313,8 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
-      buttonClassName="px-6 py-3 h-full"
+      // TODO: "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues
+      buttonClassName="px-6 py-3 h-full inline-block md:flex"
       optionClassName="px-6 py-3"
     />
   )

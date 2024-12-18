@@ -15,6 +15,7 @@ import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
+import { PortfolioRamp } from "./PortfolioRamp"
 
 const PortfolioRoutes = () => (
   <>
@@ -23,6 +24,7 @@ const PortfolioRoutes = () => (
       <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
       <Route path="nfts" element={<PortfolioAssets />} />
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+      <Route path="ramp/*" element={<PortfolioRamp />} />
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
     <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>
