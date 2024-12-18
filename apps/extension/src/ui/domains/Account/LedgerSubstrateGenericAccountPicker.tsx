@@ -1,6 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import { GenericeResponseAddress, SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { AccountJsonAny, ChainId, SubstrateLedgerAppType } from "extension-core"
 import { log } from "extension-shared"
 import {
@@ -19,7 +19,8 @@ import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from 
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
+import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGenericNew"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useChain, useChains } from "@ui/state"
 
@@ -28,13 +29,13 @@ import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
 import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
+import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
 const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
   pageIndex: number,
   itemsPerPage: number,
-  app?: SubstrateAppParams | null,
+  legacyApp?: SubstrateAppParams | null,
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -42,53 +43,98 @@ const useLedgerSubstrateGenericAccounts = (
   const [ledgerAccounts, setLedgerAccounts] = useState<
     (LedgerSubstrateGenericAccount | undefined)[]
   >([...Array(itemsPerPage)])
-  const [isBusy, setIsBusy] = useState(false)
-  const [error, setError] = useState<string>()
+  const refIsBusy = useRef(false)
+
+  // derivation path => address cache, used when going back to previous page
+  const refAddressCache = useRef<Record<string, GenericeResponseAddress>>({})
+  useEffect(() => {
+    refAddressCache.current = {} // reset if app changes
+  }, [legacyApp])
+
   const chains = useChains({ activeOnly: true, includeTestnets: false })
   const withBalances = useMemo(() => chains.some((chain) => chain.hasCheckMetadataHash), [chains])
 
-  const { isReady, ledger, getAddress, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
+  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
 
-  const loadPage = useCallback(async () => {
-    if (!ledger || !isReady) return
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Fetching account addresses..."),
+  })
 
-    setIsBusy(true)
-    setError(undefined)
+  // keep page index as ref to allow for cancelling current page load when changing page
+  const refPageIndex = useRef(pageIndex)
+  useEffect(() => {
+    refPageIndex.current = pageIndex
+  }, [pageIndex])
 
-    const skip = pageIndex * itemsPerPage
+  const loadPage = useCallback(
+    async (pageIndex: number, force = false) => {
+      if (!force && refIsBusy.current) return
+      refIsBusy.current = true
 
-    try {
-      const newAccounts: (LedgerSubstrateGenericAccount | undefined)[] = [...Array(itemsPerPage)]
+      //  setError(undefined)
+      setConnectionStatus({
+        status: "connecting",
+        message: t("Fetching account addresses..."),
+      })
 
-      for (let i = 0; i < itemsPerPage; i++) {
-        const accountIndex = skip + i
-        const addressOffset = 0
+      const skip = pageIndex * itemsPerPage
 
-        const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset, app })
-
-        const genericAddress = await getAddress(path, app?.ss58_addr_type ?? 42)
-        if (!genericAddress) throw new Error("Unable to get address")
-
-        newAccounts[i] = {
-          accountIndex,
-          addressOffset,
-          address: genericAddress.address,
-          name: t("Ledger {{appName}} {{accountIndex}}", {
-            appName: app?.name ?? "Polkadot",
-            accountIndex: accountIndex + 1,
-          }),
-          migrationAppName: app?.name,
-        } as LedgerSubstrateGenericAccount
-
+      try {
+        const newAccounts: (LedgerSubstrateGenericAccount | undefined)[] = [...Array(itemsPerPage)]
         setLedgerAccounts([...newAccounts])
-      }
-    } catch (err) {
-      log.error("Failed to load page", { err })
-      setError((err as Error).message)
-    }
 
-    setIsBusy(false)
-  }, [app, isReady, itemsPerPage, ledger, getAddress, pageIndex, t])
+        for (let i = 0; i < itemsPerPage; i++) {
+          if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
+
+          const accountIndex = skip + i
+          const addressOffset = 0
+
+          const path = getPolkadotLedgerDerivationPath({
+            accountIndex,
+            addressOffset,
+            legacyApp: legacyApp,
+          })
+
+          const genericAddress =
+            refAddressCache.current[path] ??
+            (await getAddress(path, legacyApp?.ss58_addr_type ?? 42))
+          if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
+          if (!genericAddress) throw new Error("Unable to get address")
+          refAddressCache.current[path] = genericAddress
+
+          newAccounts[i] = {
+            accountIndex,
+            addressOffset,
+            address: genericAddress.address,
+            name: t("Ledger {{appName}} {{accountIndex}}", {
+              appName: legacyApp?.name ?? "Polkadot",
+              accountIndex: accountIndex + 1,
+            }),
+            migrationAppName: legacyApp?.name,
+          } as LedgerSubstrateGenericAccount
+
+          setLedgerAccounts([...newAccounts])
+        }
+
+        setConnectionStatus({
+          status: "ready",
+          message: t("Ledger is ready."),
+        })
+      } catch (err) {
+        const error = getCustomTalismanLedgerError(err)
+        log.error("Failed to load page", { err })
+        setConnectionStatus({
+          status: "error",
+          message: error.message,
+          onRetryClick: () => loadPage(pageIndex),
+        })
+      } finally {
+        refIsBusy.current = false
+      }
+    },
+    [t, itemsPerPage, legacyApp, getAddress],
+  )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const balanceDefs = useMemo<AccountImportDef[]>(
@@ -131,14 +177,13 @@ const useLedgerSubstrateGenericAccounts = (
 
   useEffect(() => {
     // refresh on every page change
-    loadPage()
-  }, [loadPage])
+    loadPage(pageIndex)
+  }, [loadPage, pageIndex])
 
   return {
-    ledger,
     accounts,
-    isBusy,
-    error,
+    // isBusy,
+    //error,
     connectionStatus,
     withBalances,
   }
@@ -157,23 +202,26 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
   app,
   chainId,
 }) => {
-  const { t } = useTranslation()
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateGeneric[]>([])
-  const { accounts, error, isBusy, connectionStatus, withBalances } =
-    useLedgerSubstrateGenericAccounts(selectedAccounts, pageIndex, itemsPerPage, app)
+  const { accounts, connectionStatus, withBalances } = useLedgerSubstrateGenericAccounts(
+    selectedAccounts,
+    pageIndex,
+    itemsPerPage,
+    app,
+  )
   const chain = useChain(chainId)
 
-  // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
-  const refInitialized = useRef(false)
-  useEffect(() => {
-    if (!refInitialized.current && connectionStatus.status === "error") {
-      refInitialized.current = true
-      connectionStatus.refresh()
-      return
-    }
-  }, [connectionStatus])
+  // // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
+  // const refInitialized = useRef(false)
+  // useEffect(() => {
+  //   if (!refInitialized.current && connectionStatus.status === "error") {
+  //     refInitialized.current = true
+  //     connectionStatus.refresh()
+  //     return
+  //   }
+  // }, [connectionStatus])
 
   const handleToggleAccount = useCallback(
     (acc: DerivedAccountBase) => {
@@ -211,16 +259,13 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
         accounts={accounts}
         withBalances={withBalances}
         addressPrefix={chain?.prefix}
-        disablePaging={isBusy}
+        // disablePaging={isBusy}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
         onPagerPrevClick={handlePagePrev}
         onPagerNextClick={handlePageNext}
       />
-      <p className="text-alert-error">
-        {error ? t("An error occured, Ledger might be locked.") : null}
-      </p>
     </>
   )
 }
@@ -258,23 +303,29 @@ const getNextAccountDetails = (
 
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
-  app: SubstrateAppParams | null | undefined,
+  legacyApp: SubstrateAppParams | null | undefined,
 ) => {
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
+  const { t } = useTranslation()
+  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
 
-  // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
-  const refInitialized = useRef(false)
-  useEffect(() => {
-    if (!refInitialized.current && connectionStatus.status === "error") {
-      refInitialized.current = true
-      connectionStatus.refresh()
-      return
-    }
-  }, [connectionStatus])
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Fetching account address..."),
+  })
+
+  // // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
+  // const refInitialized = useRef(false)
+  // useEffect(() => {
+  //   if (!refInitialized.current && connectionStatus.status === "error") {
+  //     refInitialized.current = true
+  //     connectionStatus.refresh()
+  //     return
+  //   }
+  // }, [connectionStatus])
 
   const [state, setState] = useState<{
     isBusy: boolean
-    error: string | undefined
+    error: string | undefined // TODO vraiment besoin ?
     account: CustomAccountDetails | undefined
     address: string | undefined
   }>({
@@ -286,23 +337,42 @@ const useLedgerAccountAddress = (
 
   // this system makes sure that if input changes, we don't fetch the address until ledger has returned previous result
   const loadAccountInfo = useCallback(async () => {
-    if (!ledger || !isReady || !account || state.isBusy) return
+    if (!account || state.isBusy) return
     if (state.account === account && state.address) return // result is up to date
 
     setState({ account, isBusy: true, error: undefined, address: undefined })
+    setConnectionStatus({
+      status: "connecting",
+      message: t("Fetching account address..."),
+    })
 
     try {
       const { accountIndex, addressOffset } = account
-      const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset, app })
+      const path = getPolkadotLedgerDerivationPath({
+        accountIndex,
+        addressOffset,
+        legacyApp: legacyApp,
+      })
 
-      const res = await ledger.getAddress(path, app?.ss58_addr_type ?? 42, false)
+      const res = await getAddress(path, legacyApp?.ss58_addr_type ?? 42)
 
       setState((prev) => ({ ...prev, address: res.address, isBusy: false }))
+      setConnectionStatus({
+        status: "ready",
+        message: t("Ledger is ready."),
+      })
     } catch (err) {
+      const error = getCustomTalismanLedgerError(err)
+      log.error("Failed to load page", { err })
+      setConnectionStatus({
+        status: "error",
+        message: error.message,
+        onRetryClick: loadAccountInfo,
+      })
       log.error("Failed to load account info", { err })
-      setState((prev) => ({ ...prev, error: (err as Error).message, isBusy: false }))
+      setState((prev) => ({ ...prev, error: error.message, isBusy: false }))
     }
-  }, [ledger, isReady, account, state.isBusy, state.account, state.address, app])
+  }, [account, state.isBusy, state.account, state.address, t, legacyApp, getAddress])
 
   useEffect(() => {
     loadAccountInfo()
@@ -312,7 +382,7 @@ const useLedgerAccountAddress = (
     return {
       isBusy: state.isBusy,
       address: state.account === account ? state.address : undefined,
-      error: state.account === account ? state.error : undefined,
+      error: state.account === account ? state.error : undefined, // TODO vraiment besoin ?
       connectionStatus,
     }
   }, [state, account, connectionStatus])

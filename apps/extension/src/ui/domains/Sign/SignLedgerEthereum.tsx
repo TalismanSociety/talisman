@@ -243,7 +243,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
             </SignApproveButton>
           ) : (
             !isSigned && (
-              <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
+              <LedgerConnectionStatus {...{ ...connectionStatus }} onRetryClick={_onRefresh} />
             )
           )}
         </>

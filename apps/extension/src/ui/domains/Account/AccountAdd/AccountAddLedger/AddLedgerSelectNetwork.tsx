@@ -271,7 +271,7 @@ export const AddLedgerSelectNetwork = () => {
                 <ConnectLedgerSubstrateGeneric
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
-                  appName={chain?.ledgerAppName}
+                  legacyAppName={chain?.ledgerAppName}
                 />
               )}
             </>

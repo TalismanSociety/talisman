@@ -65,6 +65,7 @@ export const renderTalisman = (
           </Suspense>
         </ErrorBoundaryDatabaseMigration>
       </ErrorBoundary>
+      ,
     </React.StrictMode>,
   )
 }

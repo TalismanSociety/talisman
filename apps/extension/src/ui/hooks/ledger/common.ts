@@ -55,7 +55,7 @@ export class LedgerError extends Error {
 
   constructor(message?: string, name?: string, statusCode?: number) {
     super(message)
-    this.name = name || "Error"
+    this.name = name || "Unknown"
     this.statusCode = statusCode
   }
 }
@@ -204,15 +204,15 @@ export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerEr
 export const getPolkadotLedgerDerivationPath = ({
   accountIndex = 0,
   addressOffset = 0,
-  app,
+  legacyApp,
 }: {
   accountIndex?: number
   addressOffset?: number
-  app?: SubstrateAppParams | null
+  legacyApp?: SubstrateAppParams | null
 }) => {
-  if (!app) app = supportedApps.find((a) => a.name === "Polkadot")!
+  if (!legacyApp) legacyApp = supportedApps.find((a) => a.name === "Polkadot")!
 
-  const slip = app.slip0044 - LEDGER_HARDENED_OFFSET
+  const slip = legacyApp.slip0044 - LEDGER_HARDENED_OFFSET
 
   //354 for polkadot
   return `m/44'/${slip}'/${accountIndex}'/0'/${addressOffset}'`

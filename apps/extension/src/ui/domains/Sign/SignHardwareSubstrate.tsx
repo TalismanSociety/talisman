@@ -8,8 +8,8 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
+import SignLedgerSubstrateGeneric from "./SignLedgerSubstrateGenericNew"
 
-const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
 const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
 
 export type SignHardwareSubstrateProps = {

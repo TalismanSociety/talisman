@@ -40,7 +40,7 @@ const sign = async (
   registry?: TypeRegistry | null,
   txMetadata?: string | null,
 ) => {
-  const path = getPolkadotLedgerDerivationPath({ ...account, app })
+  const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp: app })
 
   if (isJsonPayload(payload)) {
     if (!txMetadata) throw new Error("Missing metadata")
@@ -176,7 +176,9 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
               {t("Approve on Ledger")}
             </Button>
           ) : (
-            !isSigned && <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={onRefresh} />
+            !isSigned && (
+              <LedgerConnectionStatus {...{ ...connectionStatus }} onRetryClick={onRefresh} />
+            )
           )}
         </>
       )}

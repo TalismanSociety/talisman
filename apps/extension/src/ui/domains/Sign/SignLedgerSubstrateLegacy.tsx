@@ -158,7 +158,7 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
       {!error && (
         <LedgerConnectionStatus
           {...{ ...connectionStatus }}
-          refresh={onRefresh}
+          onRetryClick={onRefresh}
           hideOnSuccess={true}
         />
       )}

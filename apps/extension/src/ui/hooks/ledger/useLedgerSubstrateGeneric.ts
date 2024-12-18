@@ -123,7 +123,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
 
         const ledger = new PolkadotGenericApp(refTransport.current)
 
-        const bip44path = getPolkadotLedgerDerivationPath({ app })
+        const bip44path = getPolkadotLedgerDerivationPath({ legacyApp: app })
 
         // verify that Ledger connection is ready by querying first address
         await Promise.race([

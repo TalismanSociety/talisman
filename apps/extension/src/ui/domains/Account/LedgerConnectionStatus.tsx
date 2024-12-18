@@ -1,6 +1,7 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { LedgerStatus } from "@ui/hooks/ledger/common"
 
@@ -10,7 +11,7 @@ export type LedgerConnectionStatusProps = {
   requiresManualRetry?: boolean
   hideOnSuccess?: boolean
   className?: string
-  refresh: () => void
+  onRetryClick?: () => void
 }
 
 const wrapStrong = (text: string) => {
@@ -51,8 +52,9 @@ export const LedgerConnectionStatus = ({
   requiresManualRetry,
   hideOnSuccess = false,
   className,
-  refresh,
+  onRetryClick,
 }: LedgerConnectionStatusProps) => {
+  const { t } = useTranslation()
   const [hide, setHide] = useState<boolean>(false)
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export const LedgerConnectionStatus = ({
         requiresManualRetry && "hover:bg-grey-800",
         className,
       )}
-      onClick={requiresManualRetry ? refresh : undefined}
+      onClick={requiresManualRetry ? onRetryClick : undefined}
     >
       {status === "ready" && (
         <CheckCircleIcon className="text-alert-success min-w-[1em] shrink-0 text-[2rem]" />
@@ -83,7 +85,16 @@ export const LedgerConnectionStatus = ({
       {status === "connecting" && (
         <LoaderIcon className="animate-spin-slow min-w-[1em] shrink-0 text-[2rem] text-white" />
       )}
-      <div className="text-left leading-[2rem]">{wrapStrong(message)}</div>
+      <div className="grow text-left leading-[2rem]">{wrapStrong(message)}</div>
+      {!!onRetryClick && (
+        <button
+          type="button"
+          onClick={onRetryClick}
+          className="bg-grey-800 hover:bg-grey-750 text-body border-body-disabled hover:border-body-inactive h-20 rounded border px-8"
+        >
+          {t("Retry")}
+        </button>
+      )}
     </Container>
   )
 }
