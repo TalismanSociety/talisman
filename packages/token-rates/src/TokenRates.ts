@@ -1,6 +1,6 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 
-import { NewTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
+import { newTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
 
 export class TokenRatesError extends Error {
   response?: Response
@@ -21,8 +21,8 @@ export type CoingeckoConfig = {
 }
 
 // api returns a 414 error if the url is too long, max length is about 8100 characters
-// so use 8000 to be safe
-const MAX_COINGECKO_URL_LENGTH = 8000
+// so use 7900 to be safe
+const MAX_COINGECKO_URL_LENGTH = 7900
 
 export const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
   apiUrl: "https://api.coingecko.com",
@@ -89,7 +89,7 @@ export async function fetchTokenRates(
 
   const safelyGetCoingeckoUrls = (coingeckoIds: string[]): string[] => {
     const idsSerialized = coingeckoIds.join(",")
-    const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}`
+    const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}&include_market_cap=true&include_24hr_change=true`
     if (queryUrl.length > MAX_COINGECKO_URL_LENGTH) {
       const half = Math.floor(coingeckoIds.length / 2)
       return [
@@ -105,6 +105,8 @@ export async function fetchTokenRates(
   // {
   //   [coingeckoId]: {
   //     [currency]: rate
+  //     [currency_24h_change]: percent
+  //     [currency_market_cap]: value
   //   }
   // }
 
@@ -128,10 +130,15 @@ export async function fetchTokenRates(
   const ratesList: TokenRatesList = Object.fromEntries(
     coingeckoIds.flatMap((coingeckoId) => {
       const tokenIds = coingeckoIdToTokenIds[coingeckoId]
-      const rates = NewTokenRates()
+      const rates = newTokenRates()
 
       for (const currency of coingeckoCurrencies) {
-        rates[currency] = ((coingeckoPrices || {})[coingeckoId] || {})[currency] || null
+        if (coingeckoPrices[coingeckoId]?.[currency])
+          rates[currency] = {
+            price: coingeckoPrices[coingeckoId][currency],
+            marketCap: coingeckoPrices[coingeckoId][`${currency}_market_cap`],
+            change24h: coingeckoPrices[coingeckoId][`${currency}_24h_change`],
+          }
       }
 
       return tokenIds.map((tokenId) => [tokenId, rates])

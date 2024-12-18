@@ -1,4 +1,4 @@
-import { ErrorBoundary } from "@sentry/react"
+import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 
 import { SUMMARY_COMPONENTS } from "../summary/calls"
 import { DecodedCallComponent } from "../types"
@@ -10,8 +10,8 @@ export const SubSignDecodedCallSummaryBlock: DecodedCallComponent<unknown> = (pr
   if (!Component) return null
 
   return (
-    <ErrorBoundary>
+    <FallbackErrorBoundary fallback={null}>
       <Component {...props} mode="block" />
-    </ErrorBoundary>
+    </FallbackErrorBoundary>
   )
 }

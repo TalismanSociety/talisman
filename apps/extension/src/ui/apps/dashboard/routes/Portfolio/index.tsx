@@ -3,12 +3,13 @@ import { Route, Routes, useLocation, useSearchParams } from "react-router-dom"
 
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
+import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 
 import { DashboardLayout } from "../../layout"
-import { PortfolioAsset } from "./PortfolioAsset"
+import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
@@ -36,13 +37,17 @@ const BuyTokensOpener = () => {
 export const PortfolioRoutes = () => {
   const location = useLocation()
   const isRampRoute = location.pathname.includes(RAMP_ROUTE)
-
   return (
-    <DashboardLayout sidebar={isRampRoute ? "ramp" : "accounts"}>
-      <BuyTokensOpener />
-      <PortfolioContainer>
+    <PortfolioContainer>
+      <DashboardLayout sidebar={isRampRoute ? "ramp" : "accounts"}>
+        <BuyTokensOpener />
+
         {/* share layout to prevent tabs flickering */}
-        <PortfolioLayout toolbar={<PortfolioToolbar />} isRampRoute={isRampRoute}>
+        <PortfolioLayout
+          toolbar={<PortfolioToolbar />}
+          header={<PortfolioHeader />}
+          isRampRoute={isRampRoute}
+        >
           <Routes>
             <Route path="ramp/*" element={<RampRoutes />} />
             <Route path="tokens/:symbol" element={<PortfolioAsset />} />
@@ -52,8 +57,8 @@ export const PortfolioRoutes = () => {
             <Route path="*" element={<NavigateWithQuery url="tokens" />} />
           </Routes>
         </PortfolioLayout>
-      </PortfolioContainer>
-    </DashboardLayout>
+      </DashboardLayout>
+    </PortfolioContainer>
   )
 }
 
@@ -61,5 +66,12 @@ const PortfolioToolbar = () => (
   <Routes>
     <Route path="tokens" element={<PortfolioToolbarTokens />} />
     <Route path="nfts" element={<PortfolioToolbarNfts />} />
+  </Routes>
+)
+
+const PortfolioHeader = () => (
+  <Routes>
+    <Route path="tokens/:symbol" element={<PortfolioAssetHeader />} />
+    <Route path="*" element={<DashboardPortfolioHeader />} />
   </Routes>
 )

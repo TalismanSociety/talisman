@@ -1,17 +1,17 @@
-import { Token } from "@talismn/chaindata-provider"
+import { Token, TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { t } from "i18next"
+import { uniq } from "lodash"
 import { FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Balances } from "@extension/core"
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
@@ -23,7 +23,6 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { usePortfolio, useSetting } from "@ui/state"
 
 const HeaderRow: FC<{
@@ -32,6 +31,8 @@ const HeaderRow: FC<{
 }> = ({ token, summary }) => {
   const { t } = useTranslation()
   const canHaveLockedState = Boolean(token?.chain?.id)
+
+  if (summary.totalTokens.isZero()) return null
 
   return (
     <div className="text-body-secondary bg-grey-850 rounded p-8 text-left text-base">
@@ -103,17 +104,11 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
 }
 
 const TokenBreadcrumb: FC<{
-  balances: Balances
   symbol: string
-  token: Token | undefined
-  rate: number | null | undefined
-}> = ({ balances, symbol, token, rate }) => {
+}> = ({ symbol }) => {
   const { t } = useTranslation()
 
   const navigate = useNavigateWithQuery()
-
-  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
   const items = useMemo(() => {
     return [
@@ -122,24 +117,11 @@ const TokenBreadcrumb: FC<{
         onClick: () => navigate("/portfolio/tokens"),
       },
       {
-        label: (
-          <div className="flex items-center gap-2">
-            <TokenLogo tokenId={token?.id} className="text-md" />
-            <div className="text-body font-bold">{token?.symbol ?? symbol}</div>
-            {isUniswapV2LpToken && typeof tvl === "number" && (
-              <div className="text-body-secondary whitespace-nowrap">
-                <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
-              </div>
-            )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} className="text-body-secondary" />
-            )}
-          </div>
-        ),
+        label: <div className="text-body font-bold">{symbol}</div>,
         onClick: undefined,
       },
     ]
-  }, [t, token?.id, token?.symbol, symbol, isUniswapV2LpToken, tvl, rate, navigate])
+  }, [t, symbol, navigate])
 
   return (
     <div className="flex h-20 items-center justify-between">
@@ -149,10 +131,9 @@ const TokenBreadcrumb: FC<{
   )
 }
 
-export const PortfolioAsset = () => {
+const usePortfolioAsset = () => {
   const { symbol } = useParams()
   const { allBalances } = usePortfolio()
-  const { pageOpenEvent } = useAnalytics()
   const [isTestnet] = useSetting("useTestnets")
 
   const balances = useMemo(
@@ -165,6 +146,13 @@ export const PortfolioAsset = () => {
   const { token, rate, summary } = useTokenBalancesSummary(balances)
   const balancesToDisplay = useDisplayBalances(balances)
 
+  return { symbol, token, rate, balances, balancesToDisplay, summary }
+}
+
+export const PortfolioAsset = () => {
+  const { symbol, token, balancesToDisplay, summary } = usePortfolioAsset()
+  const { pageOpenEvent } = useAnalytics()
+
   useEffect(() => {
     pageOpenEvent("portfolio asset", { symbol })
   }, [pageOpenEvent, symbol])
@@ -173,9 +161,25 @@ export const PortfolioAsset = () => {
 
   return (
     <>
-      <TokenBreadcrumb token={token} rate={rate} balances={balances} symbol={symbol} />
+      <TokenBreadcrumb symbol={symbol} />
       <HeaderRow token={token} summary={summary} />
       <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
     </>
   )
+}
+
+export const PortfolioAssetHeader = () => {
+  const { balances } = usePortfolioAsset()
+
+  // all tokenIds that match the symbol and have a coingeckoId
+  const tokenIds = useMemo(() => {
+    return uniq(balances.each.filter((b) => !!b.token?.coingeckoId).map((b) => b.token?.id)).filter(
+      Boolean,
+    ) as TokenId[]
+  }, [balances])
+
+  // no chart to display, use default header
+  if (!tokenIds.length) return <DashboardPortfolioHeader />
+
+  return <AssetPriceChart tokenIds={tokenIds} variant="large" />
 }

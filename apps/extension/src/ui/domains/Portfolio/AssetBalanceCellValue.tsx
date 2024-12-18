@@ -19,6 +19,7 @@ type Props = {
   className?: string
   tooltip?: ReactNode
   balancesStatus?: BalancesStatus
+  noCountUp?: boolean
 }
 
 export const AssetBalanceCellValue = ({
@@ -30,6 +31,7 @@ export const AssetBalanceCellValue = ({
   className,
   tooltip,
   balancesStatus,
+  noCountUp,
 }: Props) => {
   if (!render) return null
   return (
@@ -47,7 +49,7 @@ export const AssetBalanceCellValue = ({
           )}
         >
           <div>
-            <Tokens amount={tokens} symbol={symbol} isBalance />
+            <Tokens amount={tokens} symbol={symbol} isBalance noCountUp={noCountUp} />
           </div>
           {locked ? (
             <div className="pb-1">
@@ -60,7 +62,7 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance />}</div>
+        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}</div>
       </div>
     </WithTooltip>
   )

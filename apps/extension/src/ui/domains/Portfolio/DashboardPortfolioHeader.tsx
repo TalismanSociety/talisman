@@ -48,7 +48,7 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
   if (account)
     return (
       <div className="flex h-14 w-full items-center gap-6 text-base">
-        <div className="flex grow items-center gap-3 overflow-hidden">
+        <div className="flex h-14 grow items-center gap-3 overflow-hidden">
           <AccountIcon
             className="shrink-0 text-[2rem]"
             address={account.address}
@@ -272,14 +272,13 @@ const TopActions: FC = () => {
         {
           analyticsName: "Goto",
           analyticsAction: "open receive",
-          label: t("Receive"),
+          label: !!selectedAccount && !isOwnedAccount(selectedAccount) ? t("Copy") : t("Receive"),
           icon: ArrowDownIcon,
           onClick: () =>
             openCopyAddressModal({
               address: selectedAddress,
             }),
-          disabled: disableActions,
-          disabledReason,
+          disabled: !selectedAccounts.length, // always allow, as long as there is at least one account
         },
         {
           analyticsName: "Goto",
@@ -287,6 +286,8 @@ const TopActions: FC = () => {
           label: t("Swap"),
           icon: RepeatIcon,
           onClick: () => window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"),
+          disabled: disableActions,
+          disabledReason,
         },
         canBuy
           ? {
@@ -305,6 +306,8 @@ const TopActions: FC = () => {
       t,
       disableActions,
       disabledReason,
+      selectedAccount,
+      selectedAccounts.length,
       canBuy,
       selectedAddress,
       symbol,

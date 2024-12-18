@@ -31,6 +31,21 @@ export const tokens = [
     coingeckoId: "tether",
   },
   {
+    id: "kusama-asset-hub-substrate-assets-50000002-dusd",
+    type: "substrate-assets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "dUSD",
+    decimals: 6,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dusd.webp",
+    existentialDeposit: "1",
+    assetId: "50000002",
+    isFrozen: false,
+    chain: {
+      id: "kusama-asset-hub",
+    },
+  },
+  {
     id: "kusama-asset-hub-substrate-assets-8-rmrk",
     type: "substrate-assets",
     isTestnet: false,

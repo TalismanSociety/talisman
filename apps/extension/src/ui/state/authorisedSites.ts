@@ -1,17 +1,17 @@
 import { bind } from "@react-rxjs/core"
 import { AuthorizedSites } from "extension-core"
-import { Observable, shareReplay } from "rxjs"
+import { Observable } from "rxjs"
 
 import { api } from "@ui/api"
 
-import { debugObservable } from "./util/debugObservable"
+export const [useAuthorisedSites, authorisedSites$] = bind(
+  new Observable<AuthorizedSites>((subscriber) => {
+    const unsubscribe = api.authorizedSitesSubscribe((sites) => {
+      subscriber.next(sites)
+    })
 
-export const authorisedSites$ = new Observable<AuthorizedSites>((subscriber) => {
-  const unsubscribe = api.authorizedSitesSubscribe((sites) => {
-    subscriber.next(sites)
-  })
-
-  return () => unsubscribe()
-}).pipe(debugObservable("authorisedSites$"), shareReplay({ bufferSize: 1, refCount: true }))
-
-export const [useAuthorisedSites] = bind(authorisedSites$)
+    return () => {
+      unsubscribe()
+    }
+  }),
+)

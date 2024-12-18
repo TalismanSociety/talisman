@@ -206,6 +206,8 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           label: t("Swap"),
           icon: RepeatIcon,
           onClick: () => handleSwapClick(),
+          disabled: disableActions,
+          disabledReason,
         },
         canBuy
           ? {

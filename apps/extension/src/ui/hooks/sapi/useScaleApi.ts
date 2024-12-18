@@ -9,6 +9,11 @@ import { api } from "@ui/api"
 import { useChain, useChainByGenesisHash, useToken } from "@ui/state"
 import { getScaleApi, ScaleApi } from "@ui/util/scaleApi"
 
+/**
+ * useScaleApi instantiates a ScaleApi object for a given chainIdOrHash, specVersion, and blockHash.
+ * Calling this hook will download the metadata for the given chainIdOrHash, which can cause performance issues.
+ * It is recommended to use this hook only when necessary and not in a loop where it may be called many times for many chains.
+ */
 export const useScaleApi = (
   chainIdOrHash: ChainId | HexString | null | undefined,
   specVersion?: number,

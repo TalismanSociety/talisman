@@ -1,10 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { NewTokenRates, TokenRates } from "@talismn/token-rates"
+import { newTokenRates, TokenRates } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
 
 import { fetchFromCoingecko } from "@extension/core"
 
-const CURRENCIES = Object.keys(NewTokenRates()).join(",")
+const CURRENCIES = Object.keys(newTokenRates()).join(",")
 
 const getCoinGeckoTokenRates = async (coingeckoId?: string) => {
   if (!coingeckoId) return null

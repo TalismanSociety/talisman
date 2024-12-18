@@ -1,5 +1,5 @@
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -7,15 +7,15 @@ import { useTranslation } from "react-i18next"
 import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
-import { useCombineBittensorStakeInfo } from "@ui/domains/Staking/hooks/bittensor/useCombineBittensorStakeInfo"
+import { useGetBittensorValidators } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorValidator"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
-import { useChain, useSelectedCurrency } from "@ui/state"
+import { useChain, useSelectedCurrency, useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
-export type DetailRow = {
+export type BalanceDetailRow = {
   key: string | BalanceLockType
   title: string
   description?: string
@@ -27,26 +27,22 @@ export type DetailRow = {
   isLoading?: boolean
 }
 
-type ChainTokenBalancesParams = {
-  chainId: ChainId | EvmNetworkId
+type TokenBalancesParams = {
+  tokenId: TokenId
   balances: Balances
 }
 
-export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesParams) => {
-  const chain = useChain(chainId)
+export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
+  const token = useToken(tokenId)
+  const chain = useChain(token?.chain?.id)
 
   const { selectedAccount: account } = usePortfolioNavigation()
-  const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
+  const { summary, tokenBalances } = useTokenBalancesSummary(balances)
   const { t } = useTranslation()
 
   const currency = useSelectedCurrency()
 
-  const { combinedStakeInfo: subtensor } = useCombineBittensorStakeInfo({
-    address: account?.address,
-    balances: balances,
-  })
-
-  const detailRows = useMemo((): DetailRow[] => {
+  const rawDetailRows = useMemo((): BalanceDetailRow[] => {
     if (!summary) return []
 
     // AVAILABLE
@@ -130,12 +126,31 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       })),
     )
 
+    // BITTENSOR
+    const subtensor = tokenBalances.each.flatMap((b) =>
+      b.subtensor.map((subtensor, index) => ({
+        key: `${b.id}-subtensor-${index}`,
+        title: getLockTitle({ label: "subtensor-staking" }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (subtensor.meta as any)?.description ?? undefined,
+        tokens: BigNumber(subtensor.amount.tokens),
+        fiat: subtensor.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: subtensor.meta,
+      })),
+    )
+
     return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [summary, account, t, tokenBalances.each, subtensor, currency])
+  }, [summary, account, t, tokenBalances, currency])
 
-  const { evmNetwork } = balances.sorted[0]
+  const detailRows = useEnhanceDetailRows(rawDetailRows)
+
+  const { evmNetwork } = useMemo(() => balances.sorted[0], [balances])
+
   const relay = useChain(chain?.relay?.id)
   const networkType = useNetworkCategory({ chain, evmNetwork, relay })
 
@@ -143,8 +158,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
   return {
     summary,
-    tokenId: token?.id, // there could be more than one token with same symbol, use this only for icon
-    symbol: token?.symbol,
+    token,
     detailRows,
     evmNetwork,
     chain,
@@ -152,4 +166,31 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     networkType,
     chainOrNetwork: chain || evmNetwork,
   }
+}
+
+const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
+  // fetch the validator name for each subtensor staking lock, so we can display it in the description
+  const hotkeys = useMemo(() => {
+    return detailRows
+      .filter((row) => row.meta?.type === "subtensor-staking" && !!row.meta?.hotkey)
+      .map((row) => row.meta?.hotkey as string)
+  }, [detailRows])
+
+  const { data: validators, isLoading: isLoadingValidators } = useGetBittensorValidators({
+    hotkeys,
+    isEnabled: !!hotkeys.length,
+  })
+
+  return useMemo(() => {
+    return detailRows.map((row) => {
+      if (row.meta?.type === "subtensor-staking")
+        return {
+          ...row,
+          description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkey)?.name,
+          isLoading: isLoadingValidators,
+        } as BalanceDetailRow
+
+      return row
+    })
+  }, [detailRows, isLoadingValidators, validators])
 }

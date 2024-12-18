@@ -58,14 +58,15 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   ),
 )
 
-const validBalances$ = combineLatest([
+const allBalances$ = combineLatest([
   getTokensMap$(BALANCES_CHAINDATA_QUERY),
   getChainsMap$(BALANCES_CHAINDATA_QUERY),
   accountsMap$,
   rawBalances$.pipe(map((balances) => balances.data)),
+  balancesHydrate$,
 ]).pipe(
-  map(([tokens, chains, accounts, balances]) =>
-    balances.filter((b) => {
+  map(([tokens, chains, accounts, balances, hydrate]) => {
+    const validBalances = balances.filter((b) => {
       // ensure there is a matching token
       if (!tokens[b.tokenId]) return false
 
@@ -77,12 +78,9 @@ const validBalances$ = combineLatest([
         return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
       if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
       return false
-    }),
-  ),
-)
-
-const allBalances$ = combineLatest([validBalances$, balancesHydrate$]).pipe(
-  map(([rawBalances, hydrate]) => new Balances(rawBalances, hydrate)),
+    })
+    return new Balances(validBalances, hydrate)
+  }, shareReplay(1)),
 )
 
 type BalanceQueryParams = {

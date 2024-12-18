@@ -3,13 +3,13 @@ import { Balances } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useIntersection } from "react-use"
 
 import { Address } from "@extension/core"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
   useAccountByAddress,
@@ -67,6 +67,74 @@ const TokenRowSkeleton = () => (
   </div>
 )
 
+type TokenData = {
+  id: string
+  token: Token
+  balances: Balances
+  chainNameSearch: string | null | undefined
+  chainName: string
+  chainLogo: string | null | undefined
+  hasFiatRate: boolean
+}
+
+const TokenRows: FC<{
+  tokens: TokenData[]
+  selectedTokenId?: TokenId
+  allowUntransferable?: boolean
+  onTokenClick: (tokenId: TokenId) => void
+}> = ({ tokens, selectedTokenId, allowUntransferable, onTokenClick }) => {
+  const refContainer = useScrollContainer()
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: tokens.length,
+    estimateSize: () => 58,
+    overscan: 5,
+    getScrollElement: () => refContainer.current,
+  })
+
+  if (!tokens.length) return null
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const tokenData = tokens[item.index]
+          if (!tokenData) return null
+
+          return (
+            <div
+              key={item.key}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start}px)`,
+              }}
+            >
+              <TokenRow
+                key={item.key}
+                selected={tokenData.token.id === selectedTokenId}
+                token={tokenData.token}
+                balances={tokenData.balances}
+                chainName={tokenData.chainName}
+                chainLogo={tokenData.chainLogo}
+                hasFiatRate={tokenData.hasFiatRate}
+                allowUntransferable={allowUntransferable}
+                onClick={() => onTokenClick(tokenData.token.id)}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const TokenRow: FC<TokenRowProps> = ({
   token,
   selected,
@@ -84,23 +152,15 @@ const TokenRow: FC<TokenRowProps> = ({
       tokensTotal: planckToTokens(planck.toString(), token.decimals),
       isLoading: balances.each.find((b) => b.status === "cache"),
     }
-  }, [balances.each, token.decimals])
+  }, [balances, token.decimals])
 
   const isTransferable = useMemo(() => isTransferableToken(token), [token])
-
-  // there are more than 250 tokens so we should render only visible tokens to prevent performance issues
-  const refButton = useRef<HTMLButtonElement>(null)
-  const intersection = useIntersection(refButton, {
-    root: null,
-    rootMargin: "1000px",
-  })
 
   const currency = useSelectedCurrency()
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
 
   return (
     <button
-      ref={refButton}
       disabled={!allowUntransferable && !isTransferable}
       title={
         allowUntransferable || isTransferable
@@ -117,53 +177,49 @@ const TokenRow: FC<TokenRowProps> = ({
         selected && "bg-grey-800 text-body-secondary",
       )}
     >
-      {intersection?.isIntersecting && (
-        <>
-          <div className="w-16 shrink-0">
-            <TokenLogo tokenId={token.id} className="!text-xl" />
+      <div className="w-16 shrink-0">
+        <TokenLogo tokenId={token.id} className="!text-xl" />
+      </div>
+      <div className="grow space-y-[5px]">
+        <div
+          className={classNames(
+            "flex w-full justify-between text-sm font-bold",
+            selected ? "text-body-secondary" : "text-body",
+          )}
+        >
+          <div className="flex items-center">
+            <span>{token.symbol}</span>
+            <TokenTypePill type={token.type} className="rounded-xs ml-3 px-1 py-0.5" />
+            {selected && <CheckCircleIcon className="ml-3 inline align-text-top" />}
           </div>
-          <div className="grow space-y-[5px]">
-            <div
-              className={classNames(
-                "flex w-full justify-between text-sm font-bold",
-                selected ? "text-body-secondary" : "text-body",
-              )}
-            >
-              <div className="flex items-center">
-                <span>{token.symbol}</span>
-                <TokenTypePill type={token.type} className="rounded-xs ml-3 px-1 py-0.5" />
-                {selected && <CheckCircleIcon className="ml-3 inline align-text-top" />}
-              </div>
-              <div className={classNames(isLoading && "animate-pulse")}>
-                <Tokens
-                  amount={tokensTotal}
-                  decimals={token.decimals}
-                  symbol={isUniswapV2LpToken ? "" : token.symbol}
-                  isBalance
-                  noCountUp
-                />
-              </div>
-            </div>
-            <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
-              <div className="flex flex-col justify-center">
-                <ChainLogoBase
-                  logo={chainLogo}
-                  name={chainName ?? ""}
-                  className="inline-block text-sm"
-                />
-              </div>
-              <div>{chainName}</div>
-              <div className={classNames("grow", isLoading && "animate-pulse")}>
-                {hasFiatRate ? (
-                  <Fiat amount={balances.sum.fiat(currency).transferable} isBalance noCountUp />
-                ) : (
-                  "-"
-                )}
-              </div>
-            </div>
+          <div className={classNames(isLoading && "animate-pulse")}>
+            <Tokens
+              amount={tokensTotal}
+              decimals={token.decimals}
+              symbol={isUniswapV2LpToken ? "" : token.symbol}
+              isBalance
+              noCountUp
+            />
           </div>
-        </>
-      )}
+        </div>
+        <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
+          <div className="flex flex-col justify-center">
+            <ChainLogoBase
+              logo={chainLogo}
+              name={chainName ?? ""}
+              className="inline-block text-sm"
+            />
+          </div>
+          <div>{chainName}</div>
+          <div className={classNames("grow", isLoading && "animate-pulse")}>
+            {hasFiatRate ? (
+              <Fiat amount={balances.sum.fiat(currency).transferable} isBalance noCountUp />
+            ) : (
+              "-"
+            )}
+          </div>
+        </div>
+      </div>
     </button>
   )
 }
@@ -258,7 +314,7 @@ const TokensList: FC<TokensListProps> = ({
     tokenRatesMap,
   ])
 
-  const tokensWithBalances = useMemo(() => {
+  const tokensWithBalances = useMemo<TokenData[]>(() => {
     // wait until balances are loaded
     if (!accountBalances.count) return []
 
@@ -336,9 +392,9 @@ const TokensList: FC<TokensListProps> = ({
       })
   }, [search, tokensWithBalances])
 
-  const handleAccountClick = useCallback(
-    (address: string) => () => {
-      onSelect?.(address)
+  const handleTokenClick = useCallback(
+    (tokenId: string) => {
+      onSelect?.(tokenId)
     },
     [onSelect],
   )
@@ -347,19 +403,13 @@ const TokensList: FC<TokensListProps> = ({
     <div className="min-h-full">
       {accountBalances.count ? (
         <>
-          {tokens?.map(({ token, balances, chainName, chainLogo, hasFiatRate }) => (
-            <TokenRow
-              key={token.id}
-              selected={token.id === selected}
-              token={token}
-              balances={balances}
-              chainName={chainName}
-              chainLogo={chainLogo}
-              hasFiatRate={hasFiatRate}
-              allowUntransferable={allowUntransferable}
-              onClick={handleAccountClick(token.id)}
-            />
-          ))}
+          <TokenRows
+            tokens={tokens}
+            selectedTokenId={selected}
+            onTokenClick={handleTokenClick}
+            allowUntransferable={allowUntransferable}
+          />
+
           {!tokens?.length && (
             <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
               {t("No token matches your search")}

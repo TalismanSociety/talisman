@@ -1,30 +1,33 @@
+import { TokenId } from "@talismn/chaindata-provider"
+import { uniq } from "lodash"
 import { useMemo } from "react"
 
-import { Balances, ChainId, EvmNetworkId } from "@extension/core"
-import { usePortfolio } from "@ui/state"
+import { Balances } from "@extension/core"
+import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 export const useAssetDetails = (balances: Balances) => {
   const { hydrate } = usePortfolio()
+  const currency = useSelectedCurrency()
 
-  const chainIds = useMemo<Array<ChainId | EvmNetworkId>>(
-    () => [...new Set(balances.each.flatMap((b) => b.chainId ?? b.evmNetworkId ?? []))],
+  const tokenIds = useMemo<TokenId[]>(
+    () => uniq(balances.each.map((b) => b.tokenId)),
     [balances.each],
   )
 
-  const balancesByChain = useMemo(
+  const balancesByToken = useMemo(
     () =>
-      chainIds
-        .map<[ChainId | EvmNetworkId, Balances]>((chainId) => [
-          chainId,
-          new Balances(
-            balances.find((b) => b.chainId === chainId || b.evmNetworkId === chainId),
-            hydrate,
-          ),
+      tokenIds
+        .map<[TokenId, Balances]>((tokenId) => [
+          tokenId,
+          new Balances(balances.find({ tokenId }), hydrate),
         ])
-        .sort(([aChainId, aBalances], [bChainId, bBalances]) => {
-          // sort by planck value (in asset details all values are of the same token)
-          if (aBalances.sum.planck.total > bBalances.sum.planck.total) return -1
-          if (aBalances.sum.planck.total < bBalances.sum.planck.total) return 1
+        .sort(([aTokenId, aBalances], [bTokenId, bBalances]) => {
+          const aTotal = aBalances.sum.fiat(currency).total
+          const bTotal = bBalances.sum.fiat(currency).total
+
+          // sort by fiat value
+          if (aTotal > bTotal) return -1
+          if (aTotal < bTotal) return 1
 
           // sort by "has a balance or not" (values don't matter)
           const aHasBalance = !!aBalances.each.find((b) => b.transferable.planck > 0n)
@@ -33,16 +36,16 @@ export const useAssetDetails = (balances: Balances) => {
           if (!aHasBalance && bHasBalance) return 1
 
           // polkadot and kusama should appear first
-          if (aChainId.toLowerCase() === "polkadot") return -1
-          if (bChainId.toLowerCase() === "polkadot") return 1
-          if (aChainId.toLowerCase() === "kusama") return -1
-          if (bChainId.toLowerCase() === "kusama") return 1
+          if (aTokenId.toLowerCase() === "polkadot-substrate-native") return -1
+          if (bTokenId.toLowerCase() === "polkadot-substrate-native") return 1
+          if (aTokenId.toLowerCase() === "kusama-substrate-native") return -1
+          if (bTokenId.toLowerCase() === "kusama-substrate-native") return 1
 
           // keep alphabetical sort
           return 0
         }),
-    [balances, chainIds, hydrate],
+    [balances, currency, hydrate, tokenIds],
   )
 
-  return { balancesByChain }
+  return { balancesByToken }
 }

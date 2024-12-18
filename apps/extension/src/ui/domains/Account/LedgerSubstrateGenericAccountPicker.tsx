@@ -1,7 +1,7 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { AccountJsonAny, SubstrateLedgerAppType } from "extension-core"
+import { AccountJsonAny, ChainId, SubstrateLedgerAppType } from "extension-core"
 import { log } from "extension-shared"
 import {
   ChangeEventHandler,
@@ -21,7 +21,7 @@ import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useChains } from "@ui/state"
+import { useAccounts, useChain, useChains } from "@ui/state"
 
 import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
@@ -147,6 +147,7 @@ const useLedgerSubstrateGenericAccounts = (
 type LedgerSubstrateGenericAccountPickerProps = {
   onChange?: (accounts: LedgerAccountDefSubstrateGeneric[]) => void
   app?: SubstrateAppParams | null
+  chainId?: ChainId
 }
 
 type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstrateGeneric
@@ -154,6 +155,7 @@ type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstr
 const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
   app,
+  chainId,
 }) => {
   const { t } = useTranslation()
   const itemsPerPage = 5
@@ -161,6 +163,7 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateGeneric[]>([])
   const { accounts, error, isBusy, connectionStatus, withBalances } =
     useLedgerSubstrateGenericAccounts(selectedAccounts, pageIndex, itemsPerPage, app)
+  const chain = useChain(chainId)
 
   // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
   const refInitialized = useRef(false)
@@ -207,6 +210,7 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances={withBalances}
+        addressPrefix={chain?.prefix}
         disablePaging={isBusy}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
@@ -505,6 +509,7 @@ const ModeButton: FC<{ selected: boolean; onClick: () => void; children: ReactNo
 export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
   app,
+  chainId,
 }) => {
   const { t } = useTranslation()
   const [mode, setMode] = useState<DerivationMode>("default")
@@ -535,9 +540,17 @@ export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccou
         </div>
       </div>
       {mode === "default" ? (
-        <LedgerSubstrateGenericAccountPickerDefault onChange={onChange} app={app} />
+        <LedgerSubstrateGenericAccountPickerDefault
+          onChange={onChange}
+          app={app}
+          chainId={chainId}
+        />
       ) : (
-        <LedgerSubstrateGenericAccountPickerCustom onChange={onChange} app={app} />
+        <LedgerSubstrateGenericAccountPickerCustom
+          onChange={onChange}
+          app={app}
+          chainId={chainId}
+        />
       )}
     </div>
   )

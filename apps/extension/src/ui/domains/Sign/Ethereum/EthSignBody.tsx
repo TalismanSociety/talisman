@@ -1,6 +1,6 @@
-import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
 
+import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
@@ -71,8 +71,6 @@ const getComponentFromKnownContractCall = (decodedTx: DecodedEvmTransaction) => 
   }
 }
 
-const Fallback: FallbackRender = () => <EthSignBodyDefault />
-
 export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
   if (!isReady || !decodedTx) return <SignViewBodyShimmer />
 
@@ -80,9 +78,9 @@ export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
 
   if (Component)
     return (
-      <ErrorBoundary fallback={Fallback}>
+      <FallbackErrorBoundary fallback={<EthSignBodyDefault />}>
         <Component />
-      </ErrorBoundary>
+      </FallbackErrorBoundary>
     )
 
   return <EthSignBodyDefault />

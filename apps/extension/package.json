@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -47,6 +47,7 @@
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "@tanstack/react-query": "5.59.16",
+    "@tanstack/react-virtual": "^3.11.1",
     "@types/blueimp-md5": "2.18.2",
     "@types/chrome": "0.0.279",
     "@types/color": "3.0.6",
@@ -70,6 +71,7 @@
     "bignumber.js": "^9.1.2",
     "blueimp-md5": "2.19.0",
     "buffer": "^6.0.3",
+    "chart.js": "^4.4.7",
     "check-password-strength": "^2.0.10",
     "date-fns": "^4.1.0",
     "dcent-web-connector": "^0.16.0",

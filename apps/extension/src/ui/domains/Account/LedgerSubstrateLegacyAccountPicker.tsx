@@ -170,7 +170,7 @@ export const LedgerSubstrateLegacyAccountPicker: FC<LedgerSubstrateAccountPicker
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateLegacy[]>([])
-  const { accounts, withBalances, error, isBusy } = useLedgerChainAccounts(
+  const { accounts, withBalances, error, isBusy, chain } = useLedgerChainAccounts(
     chainId,
     selectedAccounts,
     pageIndex,
@@ -207,6 +207,7 @@ export const LedgerSubstrateLegacyAccountPicker: FC<LedgerSubstrateAccountPicker
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances={withBalances}
+        addressPrefix={chain?.prefix}
         disablePaging={isBusy}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}

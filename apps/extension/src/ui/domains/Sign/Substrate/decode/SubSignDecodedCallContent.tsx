@@ -1,6 +1,5 @@
-import { ErrorBoundary } from "@sentry/react"
 import { LoaderIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames, encodeAnyAddress, isAscii } from "@talismn/util"
 import DOMPurify from "dompurify"
 import { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
@@ -12,6 +11,7 @@ import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CodeBlock } from "@talisman/components/CodeBlock"
+import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { SubSignDecodedCallSummaryBlock } from "./SubSignDecodedCallSummaryBlock"
@@ -21,7 +21,7 @@ export const SubSignDecodedCallContent: FC<{
   sapi: ScaleApi
   payload: SignerPayloadJSON
 }> = ({ decodedCall, sapi, payload }) => (
-  <ErrorBoundary fallback={() => <ErrorFallback decodedCall={decodedCall} sapi={sapi} />}>
+  <FallbackErrorBoundary fallback={<ErrorFallback decodedCall={decodedCall} sapi={sapi} />}>
     <Suspense fallback={<LoadingShimmer />}>
       <div className="text-body-secondary flex flex-col gap-4 text-sm">
         {/* Summary can suspense to fetch additional data, and break if a chain uses incompatible types */}
@@ -29,7 +29,7 @@ export const SubSignDecodedCallContent: FC<{
         <DefaultView decodedCall={decodedCall} sapi={sapi} />
       </div>
     </Suspense>
-  </ErrorBoundary>
+  </FallbackErrorBoundary>
 )
 
 const ErrorFallback: FC<{
@@ -129,8 +129,10 @@ const formatArgs = (args: unknown): unknown => {
   if (typeof args === "bigint") return args.toString() + "n"
   if (Array.isArray(args)) return args.map(formatArgs)
 
-  // TODO fallback to asHex if any weird characters are present
-  if (args instanceof Binary) return args.asText()
+  if (args instanceof Binary) {
+    const text = args.asText()
+    return isAscii(text) ? text : args.asHex()
+  }
 
   if (typeof args === "object") {
     // workaround for AccountId32 - asText() returns glyphs so we need to decode it manually

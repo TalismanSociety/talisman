@@ -1,5 +1,6 @@
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict } from "date-fns"
 import {
   BalanceFormatter,
@@ -22,6 +23,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
@@ -35,6 +37,7 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
+import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -64,7 +67,7 @@ export const TxHistoryList = () => {
   const [activeTxHash, setActiveTxHash] = useState<string>()
 
   const handleContextMenuOpen = useCallback(
-    (hash: string) => () => {
+    (hash: string) => {
       if (activeTxHash) return
       setActiveTxHash(hash)
     },
@@ -72,7 +75,7 @@ export const TxHistoryList = () => {
   )
 
   const handleContextMenuClose = useCallback(
-    (hash: string) => () => {
+    (hash: string) => {
       if (hash !== activeTxHash) return
       setActiveTxHash(undefined)
     },
@@ -80,22 +83,69 @@ export const TxHistoryList = () => {
   )
 
   return (
-    <div className="flex w-full flex-col gap-4 pb-4">
-      {transactions.map((tx) => (
-        <TransactionRow
-          key={tx.hash}
-          tx={tx}
-          enabled={!activeTxHash || activeTxHash === tx.hash}
-          onContextMenuOpen={handleContextMenuOpen(tx.hash)}
-          onContextMenuClose={handleContextMenuClose(tx.hash)}
-        />
-      ))}
+    <div className="pb-4">
+      <TransactionRows
+        transactions={transactions}
+        activeTxHash={activeTxHash}
+        onContextMenuOpen={handleContextMenuOpen}
+        onContextMenuClose={handleContextMenuClose}
+      />
+
       {!isLoading && !transactions.length && (
         <div className="text-body-disabled bg-grey-900 flex h-40 w-full flex-col items-center justify-center rounded-sm text-sm">
           {t("No transactions found")}
         </div>
       )}
       {isLoading && <TransactionRowShimmer />}
+    </div>
+  )
+}
+
+const TransactionRows: FC<{
+  transactions: WalletTransaction[]
+  activeTxHash?: string
+  onContextMenuOpen: (hash: string) => void
+  onContextMenuClose: (hash: string) => void
+}> = ({ transactions, activeTxHash, onContextMenuOpen, onContextMenuClose }) => {
+  const refContainer = useScrollContainer() // used/defined in popup only
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: transactions.length,
+    estimateSize: () => (IS_POPUP ? 52 : 58),
+    overscan: 5,
+    getScrollElement: () => refContainer.current ?? document.getElementById("main"), // fallback to main, the container for dashboard
+    gap: 8,
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            {!!transactions[item.index] && (
+              <TransactionRow
+                tx={transactions[item.index]}
+                enabled={!activeTxHash || activeTxHash === transactions[item.index].hash}
+                onContextMenuOpen={() => onContextMenuOpen(transactions[item.index].hash)}
+                onContextMenuClose={() => onContextMenuClose(transactions[item.index].hash)}
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

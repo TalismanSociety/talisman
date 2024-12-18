@@ -5,7 +5,7 @@ import groupBy from "lodash/groupBy"
 
 export const useUniswapV2LpTokenTotalValueLocked = (
   token?: Token,
-  tokenRate?: number | null,
+  tokenPrice?: number | null,
   balances?: Balances,
 ) => {
   if (token?.type !== "evm-uniswapv2") return null
@@ -15,7 +15,7 @@ export const useUniswapV2LpTokenTotalValueLocked = (
     extractTvlFromBalance(
       chainBalances?.find?.((b) => b.isSource("evm-uniswapv2")),
       token,
-      tokenRate,
+      tokenPrice,
     ),
   )
 
@@ -24,7 +24,7 @@ export const useUniswapV2LpTokenTotalValueLocked = (
   return BigNumber.sum(...chainTvls).toNumber()
 }
 
-const extractTvlFromBalance = (balance?: Balance, token?: Token, tokenRate?: number | null) => {
+const extractTvlFromBalance = (balance?: Balance, token?: Token, tokenPrice?: number | null) => {
   const extra = balance?.extra
   const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
   const totalSupply = BigNumber(
@@ -32,5 +32,5 @@ const extractTvlFromBalance = (balance?: Balance, token?: Token, tokenRate?: num
   )
   const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * (token?.decimals ?? 0)))
 
-  return BigNumber(tokenRate ?? 0).times(totalSupplyTokens)
+  return BigNumber(tokenPrice ?? 0).times(totalSupplyTokens)
 }

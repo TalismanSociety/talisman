@@ -1,12 +1,15 @@
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ReactNode, useCallback, useMemo } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
@@ -26,16 +29,11 @@ import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
-type AssetRowProps = {
-  balances: Balances
-  locked?: boolean
-}
-
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex h-28 items-center gap-6 rounded-sm px-6",
+        "bg-black-secondary mt-4 flex h-28 items-center gap-6 rounded-sm px-6",
         className,
       )}
     >
@@ -54,7 +52,11 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   )
 }
 
-const AssetRow = ({ balances, locked }: AssetRowProps) => {
+const AssetRow: FC<{
+  balances: Balances
+  noCountUp: boolean
+  locked?: boolean
+}> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -86,7 +88,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { t } = useTranslation()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
@@ -94,10 +96,10 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <>
+    <div className="group relative h-28 w-full">
       <button
         type="button"
-        className="bg-grey-850 hover:bg-grey-800 group flex h-28 w-full items-center rounded-sm"
+        className="bg-grey-850 hover:bg-grey-800 flex w-full items-center rounded-sm"
         onClick={handleClick}
       >
         <div className="p-6 text-xl">
@@ -123,12 +125,11 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
             {isUniswapV2LpToken && typeof tvl === "number" && (
               <div className="text-body-secondary whitespace-nowrap text-xs">
-                <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
+                <Fiat amount={tvl} noCountUp={noCountUp} />{" "}
+                <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && typeof rate === "number" && (
-              <Fiat amount={rate} className="text-body-secondary text-xs" />
-            )}
+            {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
           </div>
           <div
             className={classNames(
@@ -136,45 +137,46 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
-            <>
-              <div
-                className={classNames(
-                  "whitespace-nowrap text-sm font-bold",
-                  locked ? "text-body-secondary" : "text-white",
-                  showStakingButton && "group-hover:hidden",
-                )}
-              >
-                <Tokens
-                  amount={tokens}
-                  symbol={isUniswapV2LpToken ? "" : token?.symbol}
-                  isBalance
-                />
-                {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
-                <StaleBalancesIcon
-                  className="alert ml-2 inline align-baseline text-sm"
-                  staleChains={status.status === "stale" ? status.staleChains : []}
-                />
-              </div>
-              <div
-                className={classNames(
-                  "text-body-secondary leading-base text-xs",
-                  showStakingButton && "group-hover:hidden",
-                )}
-              >
-                {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
-              </div>
-              {showStakingButton && (
-                <BondPillButton
-                  tokenId={token.id}
-                  balances={balances}
-                  className="hidden group-hover:block"
-                />
+            <div
+              className={classNames(
+                "whitespace-nowrap text-sm font-bold",
+                locked ? "text-body-secondary" : "text-white",
+                showStakingButton && "group-hover:hidden",
               )}
-            </>
+            >
+              <Tokens
+                amount={tokens}
+                symbol={isUniswapV2LpToken ? "" : token?.symbol}
+                noCountUp={noCountUp}
+                isBalance
+              />
+              {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
+              <StaleBalancesIcon
+                className="alert ml-2 inline align-baseline text-sm"
+                staleChains={status.status === "stale" ? status.staleChains : []}
+              />
+            </div>
+            <div
+              className={classNames(
+                "text-body-secondary leading-base text-xs",
+                showStakingButton && "group-hover:hidden",
+              )}
+            >
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
+            </div>
           </div>
         </div>
       </button>
-    </>
+      {showStakingButton && (
+        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+          <BondPillButton
+            tokenId={token.id}
+            balances={balances}
+            className="[>svg]:text-[2rem] text-base"
+          />
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -204,7 +206,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
         </div>
       </button>
       <Accordion alwaysRender isOpen={isOpen}>
-        <div className="flex flex-col gap-4">{children}</div>
+        {children}
       </Accordion>
     </div>
   )
@@ -254,9 +256,7 @@ export const PopupAssetsTable = () => {
           </>
         )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
-          {available.map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} />
-          ))}
+          <VirtualizedRows rows={available} />
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
@@ -279,12 +279,70 @@ export const PopupAssetsTable = () => {
             }
             fiatAmount={totalLocked}
           >
-            {lockedSymbolBalances.map(([symbol, b]) => (
-              <AssetRow key={symbol} balances={b} locked />
-            ))}
+            <VirtualizedRows
+              key="locked"
+              rows={lockedSymbolBalances}
+              locked
+              // workaround bug in the virtualizer: first few rows arent always rendered here
+              // there shouldnt be many locked row anyways
+              overscan={lockedSymbolBalances.length}
+            />
           </BalancesGroup>
         )}
       </div>
     </FadeIn>
+  )
+}
+
+const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; overscan?: number }> = ({
+  rows,
+  locked,
+  overscan,
+}) => {
+  const [noCountUp, setNoCountUp] = useState(false)
+  const refContainer = useScrollContainer()
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // we only want count up on the first rendering of the table
+      // ex: sorting or filtering rows using search box should not trigger count up
+      setNoCountUp(true)
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [])
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    overscan: overscan ?? 5,
+    gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => refContainer.current,
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 h-28 w-full"
+            style={{
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            {!!rows[item.index] && (
+              <AssetRow balances={rows[item.index][1]} locked={locked} noCountUp={noCountUp} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

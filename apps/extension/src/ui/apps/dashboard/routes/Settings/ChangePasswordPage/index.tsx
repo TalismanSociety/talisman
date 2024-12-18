@@ -92,17 +92,24 @@ const Content = () => {
   const subscribeChangePassword = useCallback(
     async ({ currentPw, newPw, newPwConfirm }: FormData) => {
       // sets up a custom promise, resolving when the password change is done or there is an error
-      return await new Promise<void>((resolve, reject) =>
-        api.changePasswordSubscribe(currentPw, newPw, newPwConfirm, ({ status, message }) => {
-          setProgress(status)
-          if (status === ChangePasswordStatusUpdateStatus.ERROR) {
-            reject(new Error(message))
-          }
-          if (status === ChangePasswordStatusUpdateStatus.DONE) {
-            resolve()
-          }
-        }),
-      ).catch((err) => {
+      return await new Promise<void>((resolve, reject) => {
+        const unsub = api.changePasswordSubscribe(
+          currentPw,
+          newPw,
+          newPwConfirm,
+          ({ status, message }) => {
+            setProgress(status)
+            if (status === ChangePasswordStatusUpdateStatus.ERROR) {
+              unsub()
+              reject(new Error(message))
+            }
+            if (status === ChangePasswordStatusUpdateStatus.DONE) {
+              unsub()
+              resolve()
+            }
+          },
+        )
+      }).catch((err) => {
         switch (err.message) {
           case "Incorrect password":
             setError("currentPw", { message: err.message })

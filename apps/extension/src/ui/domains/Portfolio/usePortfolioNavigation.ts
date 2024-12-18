@@ -3,9 +3,10 @@ import { AccountJsonAny, Tree, TreeAccount, TreeFolder, TreeItem } from "extensi
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
+import { provideContext } from "@talisman/util/provideContext"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
-export const usePortfolioNavigation = () => {
+const usePortfolioNavigationProvider = () => {
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
   const [searchParams, updateSearchParams] = useSearchParams()
 
@@ -93,6 +94,10 @@ export const usePortfolioNavigation = () => {
     setFolderId,
   }
 }
+
+export const [PortfolioNavigationProvider, usePortfolioNavigation] = provideContext(
+  usePortfolioNavigationProvider,
+)
 
 const isAddressInTree = (tree: Tree, address: string): boolean => {
   try {

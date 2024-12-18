@@ -64,6 +64,10 @@ module.exports = {
         850: "#1B1B1B", // rgb(27, 27, 27)
         900: "#181818", // rgb(24, 24, 24)
       },
+      price: {
+        up: "#8AEB94", // rgba(138, 235, 148, 1)
+        down: "#FF5C5F", // rgba(255, 92, 92, 1)
+      },
     },
     lineHeight: {
       3: "0.6rem",
