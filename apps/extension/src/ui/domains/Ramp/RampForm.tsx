@@ -291,8 +291,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
-      // TODO: fix "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues on Popup view
-      buttonClassName="px-6 py-3 h-full inline-block md:flex"
+      buttonClassName="px-6 py-3 h-full flex"
       optionClassName="p-6"
     />
   )
@@ -313,15 +312,14 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
-      // TODO: fix "inline-block md:flex" is a temp hack to fix dropdown margins overflow issues on Popup view
-      buttonClassName="px-6 py-3 h-full inline-block md:flex"
+      buttonClassName="px-6 py-3 h-full flex"
       optionClassName="px-6 py-3"
     />
   )
 
   return (
     <div className="text-body-secondary flex h-[47.5rem] justify-center md:h-auto">
-      <form className="flex w-auto flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
+      <form className="flex w-full flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
         <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step1")}</div>

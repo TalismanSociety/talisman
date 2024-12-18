@@ -29,7 +29,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
           placeholder={inputPlaceholder}
           autoComplete="off"
           className={classNames(
-            "text-md peer min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white",
+            "text-md peer min-w-0 max-w-[15rem] appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit",
           )}
           {...inputFieldProps}
           onChange={onInputChange}
@@ -37,6 +37,19 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
         <div className="text-tiny">{inputFieldLabel ?? ""}</div>
       </div>
       <Dropdown {...dropdownProps} />
+      {/* <div className="flex w-[9rem] items-center gap-4">
+        <div className="flex-shrink-0">
+          <img
+            src={"https://assets.ramp.network/crypto-assets/polkadot.svg"}
+            alt={"test"}
+            className="h-[28px] w-[28px] rounded-full"
+          />
+        </div>
+        <div className="min-w-0">
+          <div className="text-white">DOT</div>
+          <div className="text-tiny max-w-[9rem] truncate">Polkadot</div>
+        </div>
+      </div> */}
     </div>
   )
 }
