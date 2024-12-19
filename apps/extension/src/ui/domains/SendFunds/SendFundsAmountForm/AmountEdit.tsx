@@ -56,7 +56,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
       if (refTokensInput.current.value !== expectedInputValue)
         refTokensInput.current.value = expectedInputValue
     }
-  }, [amount, sendMax, token, maxAmount?.tokens])
+  }, [amount, sendMax, token, maxAmount])
 
   const defaultValue = useMemo(
     () =>
