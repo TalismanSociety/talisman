@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 
 import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
   EvmNetworkForm,
   SubNetworkFormAdd,
@@ -10,7 +11,6 @@ import {
 } from "@ui/domains/Settings/ManageNetworks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
-import { DashboardLayout } from "../../layout"
 import { useNetworksType } from "./useNetworksType"
 
 const ANALYTICS_PAGE: AnalyticsPage = {

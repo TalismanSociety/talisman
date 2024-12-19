@@ -59,7 +59,11 @@ export const AccountTypeSelector = ({
           "border",
         )}
         icon={<EthereumCircleLogo />}
-        subtitle={t("Ethereum, Arbitrum, Moonbeam etc.")}
+        subtitle={
+          <div className="line-clamp-2">
+            {t("Ethereum, Base, zkSync, Arbitrum, BSC, and EVM chains")}
+          </div>
+        }
         onClick={handleClick("ethereum")}
       />
       <AccountTypeButton
@@ -69,7 +73,11 @@ export const AccountTypeSelector = ({
           "border",
         )}
         icon={<PolkadotCircleLogo />}
-        subtitle={t(`Polkadot, Kusama & Parachains`)}
+        subtitle={
+          <div className="line-clamp-2">
+            {t("Polkadot, AssetHub, Bittensor, and Polkadot chains")}
+          </div>
+        }
         onClick={handleClick("sr25519")}
       />
     </div>

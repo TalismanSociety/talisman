@@ -5,6 +5,7 @@ import { getAddressType } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
@@ -19,6 +20,9 @@ import { useAccounts } from "@ui/state"
 
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
+  // get type paramter from url
+  const [params] = useSearchParams()
+  const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
 
@@ -67,6 +71,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
+    defaultValues: { type: urlParamType },
   })
 
   const { type, searchAddress } = watch()
@@ -136,10 +141,15 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     }
   }, [setFocus, type])
 
+  useEffect(() => {
+    // if we have a type in the url, set it
+    if (urlParamType) handleTypeChange(urlParamType)
+  }, [urlParamType, handleTypeChange])
+
   return (
     <form onSubmit={handleSubmit(submit)}>
       <div className="mb-12 flex flex-col gap-8">
-        <AccountTypeSelector onChange={handleTypeChange} />
+        <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
         <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">

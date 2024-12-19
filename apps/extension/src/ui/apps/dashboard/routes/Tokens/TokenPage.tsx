@@ -21,6 +21,7 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
@@ -31,8 +32,6 @@ import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-
-import { DashboardLayout } from "../../layout"
 
 const ConfirmRemove = ({
   open,
