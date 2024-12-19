@@ -182,8 +182,6 @@ const useLedgerSubstrateGenericAccounts = (
 
   return {
     accounts,
-    // isBusy,
-    //error,
     connectionStatus,
     withBalances,
   }
@@ -249,7 +247,6 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
         accounts={accounts}
         withBalances={withBalances}
         addressPrefix={chain?.prefix}
-        // disablePaging={isBusy}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}

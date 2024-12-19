@@ -23,10 +23,10 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   shortMetadata,
   registry,
 }) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(payload?.address)
   const legacyApp = useLedgerSubstrateAppByName(account?.migrationAppName as string)
 
-  const { t } = useTranslation("request")
   const [{ status, error }, setState] = useState<{
     status: "ready" | "signing" | "signed"
     error: TalismanLedgerError | null

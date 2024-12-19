@@ -1,11 +1,15 @@
-import { FC, useEffect } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { log } from "extension-shared"
+import { FC, useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Spacer } from "@talisman/components/Spacer"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
-import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import {
+  LedgerConnectionStatus,
+  LedgerConnectionStatusProps,
+} from "@ui/domains/Account/LedgerConnectionStatus"
+import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { useChain, useToken } from "@ui/state"
+import { useChain } from "@ui/state"
 
 type ConnectLedgerSubstrateLegacyProps = {
   chainId: string
@@ -18,39 +22,62 @@ export const ConnectLedgerSubstrateLegacy: FC<ConnectLedgerSubstrateLegacyProps>
   onReadyChanged,
   className,
 }) => {
-  const chain = useChain(chainId)
-  const token = useToken(chain?.nativeToken?.id)
-  const ledger = useLedgerSubstrateLegacy(chain?.genesisHash, true)
-  const app = useLedgerSubstrateAppByChain(chain)
   const { t } = useTranslation("admin")
+  const chain = useChain(chainId)
+  const { app, getAddress } = useLedgerSubstrateLegacy(chain?.genesisHash)
+
+  // flag to prevents double connect attempt in dev mode
+  const refIsBusy = useRef(false)
+
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Connecting to Ledger..."),
+  })
+
+  const connect = useCallback(async () => {
+    if (refIsBusy.current) return
+    refIsBusy.current = true
+
+    try {
+      onReadyChanged?.(false)
+      setConnectionStatus({
+        status: "connecting",
+        message: t("Connecting to Ledger..."),
+      })
+
+      await getAddress(0, 0)
+
+      setConnectionStatus({
+        status: "ready",
+        message: t("Successfully connected to Ledger."),
+      })
+      onReadyChanged?.(true)
+    } catch (err) {
+      const error = getCustomTalismanLedgerError(err)
+      log.error("ConnectLedgerSubstrateGeneric", { error })
+      setConnectionStatus({
+        status: "error",
+        message: error.message,
+        onRetryClick: connect,
+      })
+    } finally {
+      refIsBusy.current = false
+    }
+  }, [getAddress, onReadyChanged, t])
 
   useEffect(() => {
-    onReadyChanged?.(ledger.isReady)
-
-    return () => {
-      onReadyChanged?.(false)
-    }
-  }, [ledger.isReady, onReadyChanged])
-
-  if (!app) return null
+    connect()
+  }, [connect, getAddress, onReadyChanged])
 
   return (
     <div className={className}>
       <div className="text-body-secondary m-0">
-        <Trans
-          t={t}
-          components={{
-            AppName: (
-              <span className="text-body">
-                {app.name + (token?.symbol ? ` (${token.symbol})` : "")}
-              </span>
-            ),
-          }}
-          defaults="Connect and unlock your Ledger, then open the <AppName /> app on your Ledger."
-        />
+        {t("Connect and unlock your Ledger, then open the {{appName}} app on your Ledger.", {
+          appName: app?.name ?? "UNKNOWN_APP",
+        })}
       </div>
       <Spacer small />
-      <LedgerConnectionStatus {...ledger} />
+      {!!connectionStatus && <LedgerConnectionStatus {...connectionStatus} />}
     </div>
   )
 }

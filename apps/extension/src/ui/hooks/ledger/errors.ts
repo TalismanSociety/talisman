@@ -23,6 +23,7 @@ type TalismanLedgerErrorName =
   | "Network"
   | "InvalidRequest"
   | "UserRejected"
+  | "GenericAppRequired"
 
 export class TalismanLedgerError extends Error {
   constructor(name: TalismanLedgerErrorName, message: string, options?: ErrorOptions) {

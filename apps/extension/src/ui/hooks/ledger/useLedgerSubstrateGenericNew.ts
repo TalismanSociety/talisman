@@ -1,5 +1,3 @@
-import Transport from "@ledgerhq/hw-transport"
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
@@ -10,44 +8,18 @@ import {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { getPolkadotLedgerDerivationPath } from "./common"
 import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
+import { useLedgerTransport } from "./useLedgerTransport"
 
 type UseLedgerSubstrateGenericProps = {
   legacyApp?: SubstrateAppParams | null
 }
 
 const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}
-
-const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
-
-const safelyCreateTransport = async (attempt = 1): Promise<Transport> => {
-  if (attempt > 5) throw new Error("Unable to connect to Ledger")
-  try {
-    return await TransportWebUSB.create()
-  } catch (e) {
-    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
-      await new Promise((resolve) => setTimeout(resolve, 200 * attempt))
-      return await safelyCreateTransport(attempt + 1)
-    } else throw e
-  }
-}
-
-const safelyCloseTransport = async (transport: Transport | null, attempt = 1): Promise<void> => {
-  if (attempt > 5) throw new Error("Unable to disconnect Ledger")
-  try {
-    await transport?.close()
-  } catch (e) {
-    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
-      await new Promise((resolve) => setTimeout(resolve, 100 * attempt))
-      return await safelyCloseTransport(transport, attempt + 1)
-    } else throw e
-  }
-}
 
 const signPayload = async (
   ledger: PolkadotGenericApp,
@@ -59,7 +31,7 @@ const signPayload = async (
 ) => {
   if (!ledger) throw new Error("Ledger not connected")
 
-  const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp: legacyApp })
+  const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp })
 
   if (isJsonPayload(payload)) {
     if (!txMetadata) throw new Error("Missing metadata")
@@ -86,26 +58,10 @@ const signPayload = async (
 
 export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
   const { t } = useTranslation()
-  const refTransport = useRef<Transport | null>(null)
+
   const refIsBusy = useRef(false)
 
-  const ensureTransport = useCallback(async () => {
-    if (!refTransport.current) {
-      refTransport.current = await safelyCreateTransport()
-      refTransport.current.on("disconnect", () => {
-        refTransport.current = null
-      })
-    }
-
-    return refTransport.current!
-  }, [])
-
-  const closeTransport = useCallback(async () => {
-    if (!refTransport.current) return
-
-    await safelyCloseTransport(refTransport.current)
-    refTransport.current = null
-  }, [])
+  const { ensureTransport, closeTransport } = useLedgerTransport()
 
   const sign = useCallback(
     async (
@@ -153,12 +109,6 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
     },
     [t, ensureTransport, closeTransport, legacyApp],
   )
-
-  useEffect(() => {
-    return () => {
-      if (refTransport.current) safelyCloseTransport(refTransport.current).catch(log.error)
-    }
-  }, [])
 
   return {
     getAddress,
