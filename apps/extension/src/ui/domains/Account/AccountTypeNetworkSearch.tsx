@@ -105,6 +105,7 @@ export function AccountTypeNetworkSearch({
       immediate
       value={selected}
       onChange={setSelected}
+      onClick={selected ? () => setSelected(null) : undefined}
     >
       {({ open }) => (
         <div
