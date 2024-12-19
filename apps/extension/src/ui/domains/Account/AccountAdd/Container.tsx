@@ -305,7 +305,6 @@ function AccountTypeMethodButton({
           <div>{t("Networks supported")}</div>
         </div>
       }
-      networks={[]}
       to={to}
       disabled={disabled}
     />
@@ -325,7 +324,7 @@ function AccountCreateMethodButton({
 }: {
   title: ReactNode
   subtitle: ReactNode
-  networks: Array<"ethereum" | "polkadot">
+  networks?: Array<"ethereum" | "polkadot">
   disabled?: boolean
   to?: string
 }) {
@@ -345,7 +344,7 @@ function AccountCreateMethodButton({
     >
       <span className="border-grey-800 w-full border-b pb-3 text-start">{title}</span>
       <span className="text-body-secondary flex items-center gap-2 pr-8 text-sm">
-        {networks.map((network, i) => (
+        {networks?.map((network, i) => (
           <span key={network} className={classNames(i + 1 < networks.length && "-mr-[0.8rem]")}>
             {networkChoices[network]}
           </span>
