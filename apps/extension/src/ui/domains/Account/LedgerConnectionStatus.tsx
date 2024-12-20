@@ -1,6 +1,5 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { LedgerStatus } from "@ui/hooks/ledger/common"
@@ -32,47 +31,22 @@ const wrapStrong = (text: string) => {
   })
 }
 
-const Container: FC<{ className?: string; onClick?: () => void; children?: ReactNode }> = ({
-  className,
-  onClick,
-  children,
-}) => {
-  if (onClick)
-    return (
-      <button type="button" onClick={onClick} className={className}>
-        {children}
-      </button>
-    )
-  else return <div className={className}>{children}</div>
-}
-
-// TODO cleanup unused properties
 export const LedgerConnectionStatus = ({
   status,
   message,
-  requiresManualRetry,
-  hideOnSuccess = false,
   className,
   onRetryClick,
 }: LedgerConnectionStatusProps) => {
   const { t } = useTranslation()
-  const [hide, setHide] = useState<boolean>(false)
-
-  useEffect(() => {
-    if (status === "ready" && hideOnSuccess) setTimeout(() => setHide(true), 1000)
-  }, [status, hideOnSuccess])
 
   if (!status || status === "unknown") return null
 
   return (
-    <Container
+    <div
       className={classNames(
         "text-body-secondary bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm p-8",
-        hide && "invisible",
-        requiresManualRetry && "hover:bg-grey-800",
         className,
       )}
-      onClick={requiresManualRetry ? onRetryClick : undefined}
     >
       {status === "ready" && (
         <CheckCircleIcon className="text-alert-success min-w-[1em] shrink-0 text-[2rem]" />
@@ -96,6 +70,6 @@ export const LedgerConnectionStatus = ({
           {t("Retry")}
         </button>
       )}
-    </Container>
+    </div>
   )
 }

@@ -18,10 +18,10 @@ export const ConnectLedgerEthereum: FC<{
 
   return (
     <ConnectLedgerBase
-      isReadyCheck={isReadyCheck}
       appName="Ethereum"
-      onReadyChanged={onReadyChanged}
       className={className}
+      isReadyCheck={isReadyCheck}
+      onReadyChanged={onReadyChanged}
     />
   )
 }

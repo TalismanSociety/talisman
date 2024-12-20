@@ -17,10 +17,10 @@ export const ConnectLedgerSubstrateLegacy: FC<{
 
   return (
     <ConnectLedgerBase
-      isReadyCheck={isReadyCheck}
       appName={app?.name ?? "Unknown App"}
-      onReadyChanged={onReadyChanged}
       className={className}
+      isReadyCheck={isReadyCheck}
+      onReadyChanged={onReadyChanged}
     />
   )
 }
