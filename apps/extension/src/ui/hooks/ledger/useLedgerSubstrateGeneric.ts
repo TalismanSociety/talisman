@@ -15,11 +15,68 @@ import { getPolkadotLedgerDerivationPath } from "./common"
 import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
 import { useLedgerTransport } from "./useLedgerTransport"
 
+type LedgerRequest<T> = (ledger: PolkadotGenericApp) => Promise<T>
+
 type UseLedgerSubstrateGenericProps = {
   legacyApp?: SubstrateAppParams | null
 }
 
 const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}
+
+export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
+  const { t } = useTranslation()
+  const refIsBusy = useRef(false)
+  const { ensureTransport, closeTransport } = useLedgerTransport()
+
+  const withLedger = useCallback(
+    async <T>(request: LedgerRequest<T>): Promise<T> => {
+      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
+
+      refIsBusy.current = true
+
+      try {
+        const transport = await ensureTransport()
+        const ledger = new PolkadotGenericApp(transport)
+
+        return await request(ledger)
+      } catch (err) {
+        await closeTransport()
+        throw getTalismanLedgerError(err, legacyApp ? "Polkadot Migration" : "Polkadot")
+      } finally {
+        refIsBusy.current = false
+      }
+    },
+    [closeTransport, ensureTransport, legacyApp, t],
+  )
+
+  const sign = useCallback(
+    (
+      payload: SignerPayloadJSON | SignerPayloadRaw,
+      account: AccountJsonHardwareSubstrate,
+      registry?: TypeRegistry | null,
+      txMetadata?: string | null,
+    ) => {
+      return withLedger((ledger) => {
+        return signPayload(ledger, payload, account, legacyApp, registry, txMetadata)
+      })
+    },
+    [withLedger, legacyApp],
+  )
+
+  const getAddress = useCallback(
+    (bip44path: string, ss58prefix = 42) => {
+      return withLedger((ledger) => {
+        return ledger.getAddress(bip44path, ss58prefix, false)
+      })
+    },
+    [withLedger],
+  )
+
+  return {
+    getAddress,
+    sign,
+  }
+}
 
 const signPayload = async (
   ledger: PolkadotGenericApp,
@@ -53,65 +110,5 @@ const signPayload = async (
 
     // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
     return u8aToHex(new Uint8Array(signature.slice(1)))
-  }
-}
-
-export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
-  const { t } = useTranslation()
-
-  const refIsBusy = useRef(false)
-
-  const { ensureTransport, closeTransport } = useLedgerTransport()
-
-  const sign = useCallback(
-    async (
-      payload: SignerPayloadJSON | SignerPayloadRaw,
-      account: AccountJsonHardwareSubstrate,
-      registry?: TypeRegistry | null,
-      txMetadata?: string | null,
-    ) => {
-      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
-
-      refIsBusy.current = true
-
-      try {
-        const transport = await ensureTransport()
-        const ledger = new PolkadotGenericApp(transport)
-
-        return await signPayload(ledger, payload, account, legacyApp, registry, txMetadata)
-      } catch (err) {
-        await closeTransport()
-        throw getTalismanLedgerError(err, legacyApp ? "Polkadot Migration" : "Polkadot")
-      } finally {
-        refIsBusy.current = false
-      }
-    },
-    [t, ensureTransport, legacyApp, closeTransport],
-  )
-
-  const getAddress = useCallback(
-    async (bip44path: string, ss58prefix = 42) => {
-      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
-
-      refIsBusy.current = true
-
-      try {
-        const transport = await ensureTransport()
-        const ledger = new PolkadotGenericApp(transport)
-
-        return await ledger.getAddress(bip44path, ss58prefix, false)
-      } catch (err) {
-        await closeTransport()
-        throw getTalismanLedgerError(err, legacyApp ? "Polkadot Migration" : "Polkadot")
-      } finally {
-        refIsBusy.current = false
-      }
-    },
-    [t, ensureTransport, closeTransport, legacyApp],
-  )
-
-  return {
-    getAddress,
-    sign,
   }
 }

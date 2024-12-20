@@ -3,9 +3,13 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useRef } from "react"
 
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
+
 const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
 
 const safelyCreateTransport = async (attempt = 1): Promise<Transport> => {
+  if (!getIsLedgerCapable()) throw new Error("Ledger is not supported on your browser.")
+
   if (attempt > 5) throw new Error("Unable to connect to Ledger")
   try {
     return await TransportWebUSB.create()

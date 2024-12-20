@@ -18,58 +18,53 @@ import { EthSignMessageMethod, getTransactionSerializable } from "@extension/cor
 import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
 import { useLedgerTransport } from "./useLedgerTransport"
 
+type LedgerRequest<T> = (ledger: LedgerEthereumApp) => Promise<T>
+
 export const useLedgerEthereum = () => {
   const { t } = useTranslation()
-
   const refIsBusy = useRef(false)
-
   const { ensureTransport, closeTransport } = useLedgerTransport()
 
+  const withLedger = useCallback(
+    async <T>(request: LedgerRequest<T>): Promise<T> => {
+      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
+
+      refIsBusy.current = true
+
+      try {
+        const transport = await ensureTransport()
+        const ledger = new LedgerEthereumApp(transport)
+
+        return await request(ledger)
+      } catch (err) {
+        await closeTransport()
+        throw getTalismanLedgerError(err, "Ethereum")
+      } finally {
+        refIsBusy.current = false
+      }
+    },
+    [closeTransport, ensureTransport, t],
+  )
+
   const sign = useCallback(
-    async (
+    (
       chainId: number,
       method: EthSignMessageMethod | "eth_sendTransaction",
       payload: unknown,
       derivationPath: string,
     ) => {
-      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
-
-      refIsBusy.current = true
-
-      try {
-        const transport = await ensureTransport()
-        const ledger = new LedgerEthereumApp(transport)
-
-        return await signWithLedger(ledger, chainId, method, payload, derivationPath)
-      } catch (err) {
-        await closeTransport()
-        throw getTalismanLedgerError(err, "Ethereum")
-      } finally {
-        refIsBusy.current = false
-      }
+      return withLedger((ledger) =>
+        signWithLedger(ledger, chainId, method, payload, derivationPath),
+      )
     },
-    [t, ensureTransport, closeTransport],
+    [withLedger],
   )
 
   const getAddress = useCallback(
-    async (derivationPath: string) => {
-      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
-
-      refIsBusy.current = true
-
-      try {
-        const transport = await ensureTransport()
-        const ledger = new LedgerEthereumApp(transport)
-
-        return await ledger.getAddress(derivationPath, false)
-      } catch (err) {
-        await closeTransport()
-        throw getTalismanLedgerError(err, "Ethereum")
-      } finally {
-        refIsBusy.current = false
-      }
+    (derivationPath: string) => {
+      return withLedger((ledger) => ledger.getAddress(derivationPath, false))
     },
-    [t, ensureTransport, closeTransport],
+    [withLedger],
   )
 
   return {

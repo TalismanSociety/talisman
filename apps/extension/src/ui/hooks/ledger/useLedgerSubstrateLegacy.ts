@@ -1,5 +1,5 @@
 import { TypeRegistry } from "@polkadot/types"
-import { assert, u8aToHex, u8aWrapBytes } from "@polkadot/util"
+import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { SubstrateApp } from "@zondax/ledger-substrate"
 import {
   AccountJsonHardwareSubstrate,
@@ -12,18 +12,19 @@ import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useChainByGenesisHash } from "@ui/state"
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
+import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE } from "./common"
 import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
   ERROR_LEDGER_NO_APP,
-  LEDGER_HARDENED_OFFSET,
-  LEDGER_SUCCESS_CODE,
-  LedgerError,
-} from "./common"
-import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
+  getCustomNativeLedgerError,
+  getTalismanLedgerError,
+  TalismanLedgerError,
+} from "./errors"
 import { useLedgerSubstrateAppByChain } from "./useLedgerSubstrateApp"
 import { useLedgerTransport } from "./useLedgerTransport"
+
+type LedgerRequest<T> = (ledger: SubstrateApp) => Promise<T>
 
 export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
   const { t } = useTranslation()
@@ -32,21 +33,21 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
   const { ensureTransport, closeTransport } = useLedgerTransport()
   const refIsBusy = useRef(false)
 
-  const getAddress = useCallback(
-    async (accountIndex = 0, addressIndex = 0) => {
+  const withLedger = useCallback(
+    async <T>(request: LedgerRequest<T>): Promise<T> => {
       if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
 
       refIsBusy.current = true
 
       try {
-        assert(getIsLedgerCapable(), t("Sorry, Ledger is not supported on your browser."))
-        assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
-        assert(app?.cla, ERROR_LEDGER_NO_APP)
+        if (chain?.account === "secp256k1")
+          throw new TalismanLedgerError("Unknown", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
+        if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
 
         const transport = await ensureTransport()
         const ledger = new SubstrateApp(transport, app.cla, app.slip0044)
 
-        return await getAccountAddress(ledger, accountIndex, addressIndex)
+        return await request(ledger)
       } catch (err) {
         await closeTransport()
         throw getTalismanLedgerError(err, app?.name ?? "Unknown app")
@@ -54,40 +55,29 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
         refIsBusy.current = false
       }
     },
-    [app, chain, closeTransport, ensureTransport, t],
+    [app, chain?.account, closeTransport, ensureTransport, t],
+  )
+
+  const getAddress = useCallback(
+    (accountIndex = 0, addressIndex = 0) => {
+      return withLedger((ledger) => getAccountAddress(ledger, accountIndex, addressIndex))
+    },
+    [withLedger],
   )
 
   const sign = useCallback(
-    async (
+    (
       payload: SignerPayloadJSON | SignerPayloadRaw,
       account: AccountJsonHardwareSubstrate,
       registry: TypeRegistry,
     ) => {
-      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
-
-      refIsBusy.current = true
-
-      try {
-        assert(getIsLedgerCapable(), t("Sorry, Ledger is not supported on your browser."))
-        assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
-        assert(app?.cla, ERROR_LEDGER_NO_APP)
-
-        const transport = await ensureTransport()
-        const ledger = new SubstrateApp(transport, app.cla, app.slip0044)
-
-        if (isJsonPayload(payload)) {
-          return signJsonPayload(ledger, payload, account, registry)
-        } else {
-          return signRawPayload(ledger, payload, account)
-        }
-      } catch (err) {
-        await closeTransport()
-        throw getTalismanLedgerError(err, app?.name ?? "Unknown app")
-      } finally {
-        refIsBusy.current = false
-      }
+      return withLedger((ledger) =>
+        isJsonPayload(payload)
+          ? signJsonPayload(ledger, payload, account, registry)
+          : signRawPayload(ledger, payload, account),
+      )
     },
-    [app, chain, closeTransport, ensureTransport, t],
+    [withLedger],
   )
 
   return {
@@ -112,9 +102,8 @@ const getAccountAddress = async (
   )
 
   if (!address)
-    throw new LedgerError(
+    throw getCustomNativeLedgerError(
       error_message || "Ledger provided an empty address",
-      "GetAddressError",
       return_code,
     )
 
@@ -132,7 +121,7 @@ const signJsonPayload = async (
     throw new TalismanLedgerError(
       "GenericAppRequired",
       "This network requires the Polkadot Generic app",
-    ) // TODO this error message is handled in the rendering component because of a link to docs
+    )
 
   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
     version: payload.version,
@@ -152,7 +141,7 @@ const signJsonPayload = async (
   )
 
   if (return_code !== LEDGER_SUCCESS_CODE)
-    throw new LedgerError(error_message, "SignError", return_code)
+    throw getCustomNativeLedgerError(error_message, return_code)
 
   return u8aToHex(new Uint8Array(signatureBuffer))
 }
@@ -163,7 +152,11 @@ const signRawPayload = async (
   account: AccountJsonHardwareSubstrate,
 ) => {
   const unsigned = u8aWrapBytes(payload.data)
-  if (unsigned.length > 256) throw new Error(t("The message is too long to be signed with Ledger."))
+  if (unsigned.length > 256)
+    throw new TalismanLedgerError(
+      "InvalidRequest",
+      t("The message is too long to be signed with Ledger."),
+    )
 
   const {
     signature: signatureBuffer,
@@ -177,7 +170,7 @@ const signRawPayload = async (
   )
 
   if (return_code !== LEDGER_SUCCESS_CODE)
-    throw new LedgerError(error_message, "SignError", return_code)
+    throw getCustomNativeLedgerError(error_message, return_code)
 
   // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
   return u8aToHex(new Uint8Array(signatureBuffer.slice(1)))

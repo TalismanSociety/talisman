@@ -2,7 +2,9 @@ import { DEBUG, log } from "extension-shared"
 import { t } from "i18next"
 import { capitalize } from "lodash"
 
-import { ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE, ERROR_LEDGER_NO_APP } from "./common"
+export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
+  "This transaction cannot be signed via an Ethereum Ledger account."
+export const ERROR_LEDGER_NO_APP = "There is no Ledger app available for this network."
 
 type NativeLedgerError = {
   message: string
@@ -11,12 +13,24 @@ type NativeLedgerError = {
   returnCode?: number // if error raised by @ledgerhq/hw-transport
 }
 
+// used to generate an error-like object when using an api (substrate legacy app) that returns error message as part of the response without throwing it
+export const getCustomNativeLedgerError = (
+  message: string,
+  statusCode?: number,
+): NativeLedgerError => {
+  const error = new Error(message) as NativeLedgerError
+  error.name = "Unknown"
+  error.statusCode = statusCode
+  error.returnCode = statusCode
+  return error
+}
+
 type TalismanLedgerErrorName =
+  | "Unknown"
   | "UnsupportedVersion"
   | "InvalidApp"
   | "NotFound"
   | "Timeout"
-  | "Unknown"
   | "Locked"
   | "BrowserSecurity"
   | "Busy"
