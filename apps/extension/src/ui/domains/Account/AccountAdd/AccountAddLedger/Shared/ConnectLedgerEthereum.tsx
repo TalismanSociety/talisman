@@ -1,8 +1,14 @@
-import { useEffect } from "react"
+import { getEthLedgerDerivationPath } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { Spacer } from "@talisman/components/Spacer"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
+import {
+  LedgerConnectionStatus,
+  LedgerConnectionStatusProps,
+} from "@ui/domains/Account/LedgerConnectionStatus"
+import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 
 export const ConnectLedgerEthereum = ({
@@ -13,15 +19,51 @@ export const ConnectLedgerEthereum = ({
   className?: string
 }) => {
   const { t } = useTranslation("admin")
-  const ledger = useLedgerEthereum(true)
+  const { getAddress } = useLedgerEthereum()
+
+  // flag to prevents double connect attempt in dev mode
+  const refIsBusy = useRef(false)
+
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Connecting to Ledger..."),
+  })
+
+  const connect = useCallback(async () => {
+    if (refIsBusy.current) return
+    refIsBusy.current = true
+
+    try {
+      onReadyChanged?.(false)
+      setConnectionStatus({
+        status: "connecting",
+        message: t("Connecting to Ledger..."),
+      })
+
+      const derivationPath = getEthLedgerDerivationPath("LedgerLive")
+      await getAddress(derivationPath)
+
+      setConnectionStatus({
+        status: "ready",
+        message: t("Successfully connected to Ledger."),
+      })
+      onReadyChanged?.(true)
+    } catch (err) {
+      const error = getCustomTalismanLedgerError(err)
+      log.error("ConnectLedgerSubstrateGeneric", { error })
+      setConnectionStatus({
+        status: "error",
+        message: error.message,
+        onRetryClick: connect,
+      })
+    } finally {
+      refIsBusy.current = false
+    }
+  }, [getAddress, onReadyChanged, t])
 
   useEffect(() => {
-    onReadyChanged?.(ledger.isReady)
-
-    return () => {
-      onReadyChanged?.(false)
-    }
-  }, [ledger.isReady, onReadyChanged])
+    connect()
+  }, [connect, getAddress, onReadyChanged])
 
   return (
     <div className={className}>
@@ -32,7 +74,7 @@ export const ConnectLedgerEthereum = ({
         </Trans>
       </div>
       <Spacer small />
-      <LedgerConnectionStatus {...ledger} />
+      <LedgerConnectionStatus {...connectionStatus} />
     </div>
   )
 }

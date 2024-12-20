@@ -23,9 +23,9 @@ export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProp
   className,
   legacyAppName,
 }) => {
+  const { t } = useTranslation("admin")
   const legacyApp = useLedgerSubstrateAppByName(legacyAppName)
   const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
-  const { t } = useTranslation("admin")
 
   // flag to prevents double connect attempt in dev mode
   const refIsBusy = useRef(false)

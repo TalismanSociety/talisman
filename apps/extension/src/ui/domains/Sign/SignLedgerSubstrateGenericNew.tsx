@@ -92,7 +92,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   return (
     <div
       className={classNames(
-        "grid w-full grid-cols-2 gap-8",
+        "grid w-full gap-8",
         onCancel ? "grid-cols-2" : "grid-cols-1",
         className,
       )}
