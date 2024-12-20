@@ -129,7 +129,7 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
 
   const virtualizer = useVirtualizer({
     count: symbolBalances.length,
-    overscan: 5,
+    overscan: 6,
     gap: 8,
     estimateSize: () => 66,
     getScrollElement: () => document.getElementById("main"),

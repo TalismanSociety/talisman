@@ -47,6 +47,9 @@ export const TALISMAN_QUEST_APP_URL = "https://quest.talisman.xyz"
 export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
+// Wallet-specific invite link
+export const DISCORD_TALISMAN_URL = "https://discord.gg/EF3Zf4R5bD"
+
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"

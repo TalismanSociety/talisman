@@ -51,12 +51,12 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   useInputAutoWidth(refTokensInput)
 
   useEffect(() => {
-    if (sendMax && refTokensInput.current && transfer?.tokens) {
-      const expectedInputValue = normalizeStringNumber(transfer.tokens, token?.decimals)
+    if (sendMax && refTokensInput.current && maxAmount?.tokens) {
+      const expectedInputValue = normalizeStringNumber(maxAmount.tokens, token?.decimals)
       if (refTokensInput.current.value !== expectedInputValue)
         refTokensInput.current.value = expectedInputValue
     }
-  }, [amount, transfer, sendMax, token])
+  }, [amount, sendMax, token, maxAmount])
 
   const defaultValue = useMemo(
     () =>
@@ -125,12 +125,12 @@ const FiatInput = () => {
   const currency = useSelectedCurrency()
 
   useEffect(() => {
-    if (sendMax && refFiatInput.current && typeof transfer?.fiat(currency) === "number") {
-      const expectedInputValue = transfer?.fiat(currency)?.toString() ?? ""
+    if (sendMax && refFiatInput.current && typeof maxAmount?.fiat(currency) === "number") {
+      const expectedInputValue = maxAmount?.fiat(currency)?.toString() ?? ""
       if (refFiatInput.current.value !== expectedInputValue)
         refFiatInput.current.value = expectedInputValue
     }
-  }, [transfer, sendMax, currency])
+  }, [sendMax, currency, maxAmount])
 
   const defaultValue = useMemo(
     () =>

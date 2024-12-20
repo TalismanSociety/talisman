@@ -1,5 +1,5 @@
 import { LoaderIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames, encodeAnyAddress, isAscii } from "@talismn/util"
 import DOMPurify from "dompurify"
 import { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
@@ -129,8 +129,10 @@ const formatArgs = (args: unknown): unknown => {
   if (typeof args === "bigint") return args.toString() + "n"
   if (Array.isArray(args)) return args.map(formatArgs)
 
-  // TODO fallback to asHex if any weird characters are present
-  if (args instanceof Binary) return args.asText()
+  if (args instanceof Binary) {
+    const text = args.asText()
+    return isAscii(text) ? text : args.asHex()
+  }
 
   if (typeof args === "object") {
     // workaround for AccountId32 - asText() returns glyphs so we need to decode it manually

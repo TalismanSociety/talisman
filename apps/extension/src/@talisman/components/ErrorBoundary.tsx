@@ -4,7 +4,7 @@ import { DexieError } from "dexie"
 import { FC, ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
 
-import { DEBUG } from "@extension/shared"
+import { DEBUG, DISCORD_TALISMAN_URL } from "@extension/shared"
 
 const ErrorMessage: FC<{ error: unknown }> = ({ error }) => {
   const isDbVersionError = (error as DexieError)?.inner?.name === "VersionError"
@@ -32,7 +32,7 @@ const ErrorMessage: FC<{ error: unknown }> = ({ error }) => {
           {!canClearDatabases && (
             <a
               className="text-primary/80 hover:text-primary focus:text-primary"
-              href="https://discord.gg/talisman"
+              href={DISCORD_TALISMAN_URL}
               target="_blank"
               rel="noreferrer noopener"
             >

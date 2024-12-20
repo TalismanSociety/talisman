@@ -36,7 +36,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   return (
     <>
-      <div className="text-body flex h-12 w-full items-center gap-4 text-base font-bold">
+      <div className="text-body flex h-[3.6rem] w-full items-center gap-4 text-base font-bold">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>

@@ -127,60 +127,63 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
   }, [backBtnTo, location.search, navigate])
 
   return (
-    <div className="flex w-full gap-8">
-      <div className="flex w-full items-center gap-4 overflow-hidden">
-        <IconButton onClick={handleBackBtnClick}>
-          <ChevronLeftIcon />
-        </IconButton>
-        <div className="flex flex-col justify-center">
-          <CurrentAccountAvatar className="!text-2xl" />
-        </div>
-        <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
-          <div className="flex items-center gap-3">
-            <div className={classNames("truncate", account ? "" : "text-body-secondary")}>
-              {account
-                ? (account.name ?? t("Unnamed Account"))
-                : folder
-                  ? folder.name
-                  : t("Total Portfolio")}
+    // top margin hack is to prevent account genesis hash icon from being truncated
+    <div className="-mt-4">
+      <div className="mt-4 flex h-[4.4rem] w-full items-center gap-8">
+        <div className="flex h-full grow items-center gap-4 overflow-hidden">
+          <IconButton onClick={handleBackBtnClick}>
+            <ChevronLeftIcon />
+          </IconButton>
+          <div className="flex flex-col justify-center">
+            <CurrentAccountAvatar className="!text-[3.6rem]" />
+          </div>
+          <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
+            <div className="flex items-center gap-3">
+              <div className={classNames("truncate", account ? "" : "text-body-secondary")}>
+                {account
+                  ? (account.name ?? t("Unnamed Account"))
+                  : folder
+                    ? folder.name
+                    : t("Total Portfolio")}
+              </div>
+              <AccountTypeIcon
+                className="text-primary"
+                origin={account?.origin}
+                signetUrl={account?.signetUrl as string}
+              />
             </div>
-            <AccountTypeIcon
-              className="text-primary"
-              origin={account?.origin}
-              signetUrl={account?.signetUrl as string}
-            />
-          </div>
-          <div className={classNames("truncate", account ? "text-body-secondary" : "")}>
-            {account ? (
-              <Address address={formattedAddress} />
-            ) : (
-              <Fiat amount={balances.sum.fiat(currency).total} isBalance />
-            )}
+            <div className={classNames("truncate", account ? "text-body-secondary" : "")}>
+              {account ? (
+                <Address address={formattedAddress} />
+              ) : (
+                <Fiat amount={balances.sum.fiat(currency).total} isBalance />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex grow items-center justify-end">
-        <Suspense fallback={<SuspenseTracker name="PortfolioAssetHeader.Buttons" />}>
-          <CopyAddressButton account={account} />
-          <SendFundsButton account={account} />
-          {account && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AccountContextMenu
-                  analyticsFrom="popup portfolio"
-                  address={account?.address}
-                  hideManageAccounts
-                  trigger={
-                    <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
-                      <MoreHorizontalIcon />
-                    </ContextMenuTrigger>
-                  }
-                />
-              </TooltipTrigger>
-              <TooltipContent>{t("More options")}</TooltipContent>
-            </Tooltip>
-          )}
-        </Suspense>
+        <div className="flex h-full items-center justify-end">
+          <Suspense fallback={<SuspenseTracker name="PortfolioAssetHeader.Buttons" />}>
+            <CopyAddressButton account={account} />
+            <SendFundsButton account={account} />
+            {account && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AccountContextMenu
+                    analyticsFrom="popup portfolio"
+                    address={account?.address}
+                    hideManageAccounts
+                    trigger={
+                      <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                        <MoreHorizontalIcon />
+                      </ContextMenuTrigger>
+                    }
+                  />
+                </TooltipTrigger>
+                <TooltipContent>{t("More options")}</TooltipContent>
+              </Tooltip>
+            )}
+          </Suspense>
+        </div>
       </div>
     </div>
   )

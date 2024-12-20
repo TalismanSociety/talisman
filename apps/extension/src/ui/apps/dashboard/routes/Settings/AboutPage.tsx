@@ -10,6 +10,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
 import {
+  DISCORD_TALISMAN_URL,
   PRIVACY_POLICY_URL,
   RELEASE_NOTES_URL,
   TALISMAN_DOCS_URL_PREFIX,
@@ -79,7 +80,7 @@ const Content = () => {
         <CtaButton
           title={t("Help and Support")}
           subtitle={t("For help and support please visit our Discord")}
-          to="https://discord.gg/EF3Zf4R5bD"
+          to={DISCORD_TALISMAN_URL}
           iconLeft={HelpCircleIcon}
           iconRight={ExternalLinkIcon}
         />

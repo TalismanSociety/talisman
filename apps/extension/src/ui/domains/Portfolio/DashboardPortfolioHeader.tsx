@@ -48,7 +48,7 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
   if (account)
     return (
       <div className="flex h-14 w-full items-center gap-6 text-base">
-        <div className="flex grow items-center gap-3 overflow-hidden">
+        <div className="flex h-14 grow items-center gap-3 overflow-hidden">
           <AccountIcon
             className="shrink-0 text-[2rem]"
             address={account.address}

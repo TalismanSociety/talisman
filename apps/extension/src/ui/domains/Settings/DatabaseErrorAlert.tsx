@@ -1,4 +1,5 @@
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
+import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -73,7 +74,7 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
                 If this problem continues, please contact our support team on{" "}
                 <a
                   className="text-body underline"
-                  href="https://discord.gg/talisman"
+                  href={DISCORD_TALISMAN_URL}
                   target="_blank"
                   rel="noreferrer noopener"
                 >

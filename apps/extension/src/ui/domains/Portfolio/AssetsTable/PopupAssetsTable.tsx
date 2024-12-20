@@ -96,46 +96,47 @@ const AssetRow: FC<{
   if (!token || !summary) return null
 
   return (
-    <button
-      type="button"
-      className="bg-grey-850 hover:bg-grey-800 group flex h-28 w-full items-center rounded-sm"
-      onClick={handleClick}
-    >
-      <div className="p-6 text-xl">
-        <TokenLogo tokenId={token.id} />
-      </div>
-      <div className="relative flex grow items-center gap-4 pr-6">
-        <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
-          <div className="flex items-center gap-3">
-            <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-              {token.symbol}
-              {!!token.isTestnet && (
-                <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                  {t("Testnet")}
-                </span>
+    <div className="group relative h-28 w-full">
+      <button
+        type="button"
+        className="bg-grey-850 hover:bg-grey-800 flex w-full items-center rounded-sm"
+        onClick={handleClick}
+      >
+        <div className="p-6 text-xl">
+          <TokenLogo tokenId={token.id} />
+        </div>
+        <div className="relative flex grow items-center gap-4 pr-6">
+          <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
+            <div className="flex items-center gap-3">
+              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
+                {token.symbol}
+                {!!token.isTestnet && (
+                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                    {t("Testnet")}
+                  </span>
+                )}
+              </div>
+              {!!networkIds.length && (
+                <div className="text-base">
+                  <NetworksLogoStack networkIds={networkIds} max={3} />
+                </div>
               )}
             </div>
-            {!!networkIds.length && (
-              <div className="text-base">
-                <NetworksLogoStack networkIds={networkIds} max={3} />
+
+            {isUniswapV2LpToken && typeof tvl === "number" && (
+              <div className="text-body-secondary whitespace-nowrap text-xs">
+                <Fiat amount={tvl} noCountUp={noCountUp} />{" "}
+                <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
+            {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
           </div>
-
-          {isUniswapV2LpToken && typeof tvl === "number" && (
-            <div className="text-body-secondary whitespace-nowrap text-xs">
-              <Fiat amount={tvl} noCountUp={noCountUp} /> <span className="text-[0.8rem]">TVL</span>
-            </div>
-          )}
-          {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
-        </div>
-        <div
-          className={classNames(
-            "flex shrink-0 flex-col items-end gap-2 text-right",
-            status.status === "fetching" && "animate-pulse transition-opacity",
-          )}
-        >
-          <>
+          <div
+            className={classNames(
+              "flex shrink-0 flex-col items-end gap-2 text-right",
+              status.status === "fetching" && "animate-pulse transition-opacity",
+            )}
+          >
             <div
               className={classNames(
                 "whitespace-nowrap text-sm font-bold",
@@ -163,17 +164,19 @@ const AssetRow: FC<{
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
             </div>
-            {showStakingButton && (
-              <BondPillButton
-                tokenId={token.id}
-                balances={balances}
-                className="hidden group-hover:block"
-              />
-            )}
-          </>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+      {showStakingButton && (
+        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+          <BondPillButton
+            tokenId={token.id}
+            balances={balances}
+            className="[>svg]:text-[2rem] text-base"
+          />
+        </div>
+      )}
+    </div>
   )
 }
 

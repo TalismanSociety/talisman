@@ -321,6 +321,11 @@ const LockedExtra: FC<{
     [accountStatus?.canWithdrawIn, rowMeta.unbonding],
   )
 
+  const canUnbond = useMemo(
+    () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === "bittensor-substrate-native",
+    [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+  )
+
   if (!rowAddress) return null
 
   return (
@@ -343,7 +348,7 @@ const LockedExtra: FC<{
             )}
           </>
         )
-      ) : accountStatus?.canUnstake || tokenId === "bittensor-substrate-native" ? (
+      ) : canUnbond ? (
         <UnbondButton
           tokenId={tokenId}
           address={rowAddress}
