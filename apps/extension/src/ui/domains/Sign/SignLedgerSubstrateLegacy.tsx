@@ -12,7 +12,7 @@ import { useAccountByAddress } from "@ui/state"
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 
-const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
+export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   className = "",
   onSigned,
   onSentToDevice,
@@ -81,6 +81,3 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     </div>
   )
 }
-
-// default export to allow for lazy loading
-export default SignLedgerSubstrateLegacy

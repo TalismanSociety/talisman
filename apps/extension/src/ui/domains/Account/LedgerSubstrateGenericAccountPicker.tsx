@@ -20,7 +20,7 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { getCustomTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGenericNew"
+import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useChain, useChains } from "@ui/state"
 

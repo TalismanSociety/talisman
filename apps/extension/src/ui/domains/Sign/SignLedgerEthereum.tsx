@@ -11,7 +11,7 @@ import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
-const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
+export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   evmNetworkId,
   account,
   className = "",
@@ -94,6 +94,3 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     </div>
   )
 }
-
-// default export to allow for lazy loading
-export default SignLedgerEthereum

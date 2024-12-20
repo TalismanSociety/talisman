@@ -10,7 +10,7 @@ import {
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGenericNew"
+import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 
 type ConnectLedgerSubstrateGenericProps = {
   onReadyChanged?: (ready: boolean) => void
