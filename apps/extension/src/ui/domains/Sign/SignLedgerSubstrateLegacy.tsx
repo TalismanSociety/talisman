@@ -24,14 +24,14 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   const account = useAccountByAddress(payload?.address)
   const { sign } = useLedgerSubstrateLegacy(account?.genesisHash)
 
-  const { status, error, setStatus, setError } = useSignLedgerBase({ payload })
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
     if (!registry) return setError(getCustomTalismanLedgerError(t("Missing registry.")))
 
     onSentToDevice?.(true)
-    setStatus("signing")
+    setIsSigning(true)
 
     try {
       const signature = await sign(payload, account as AccountJsonHardwareSubstrate, registry)
@@ -45,12 +45,12 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     } finally {
       onSentToDevice?.(false)
     }
-  }, [payload, onSigned, account, registry, setError, t, onSentToDevice, setStatus, sign])
+  }, [payload, onSigned, account, registry, setError, t, onSentToDevice, setIsSigning, sign])
 
   return (
     <SignLedgerBase
       containerId={containerId}
-      isProcessing={status !== "ready"}
+      isProcessing={isSigning}
       error={error}
       className={className}
       onSignClick={signWithLedger}

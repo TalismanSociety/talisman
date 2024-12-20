@@ -23,7 +23,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const { status, error, setStatus, setError } = useSignLedgerBase({ payload })
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
 
   const { sign } = useLedgerEthereum()
 
@@ -31,7 +31,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     if (!payload || !onSigned || !account) return
 
     onSentToDevice?.(true)
-    setStatus("signing")
+    setIsSigning(true)
 
     try {
       const signature = await sign(
@@ -67,7 +67,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     onSigned,
     payload,
     setError,
-    setStatus,
+    setIsSigning,
     sign,
     t,
   ])
@@ -75,7 +75,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   return (
     <SignLedgerBase
       containerId={containerId}
-      isProcessing={status !== "ready"}
+      isProcessing={isSigning}
       error={error}
       className={className}
       onSignClick={signWithLedger}

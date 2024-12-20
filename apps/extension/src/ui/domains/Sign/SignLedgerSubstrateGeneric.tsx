@@ -27,7 +27,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   const legacyApp = useLedgerSubstrateAppByName(account?.migrationAppName as string)
   const { sign } = useLedgerSubstrateGeneric({ legacyApp })
 
-  const { status, error, setStatus, setError } = useSignLedgerBase({ payload })
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
@@ -56,7 +56,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     }
 
     onSentToDevice?.(true)
-    setStatus("signing")
+    setIsSigning(true)
 
     try {
       const signature = await sign(
@@ -80,7 +80,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     onSigned,
     account,
     onSentToDevice,
-    setStatus,
+    setIsSigning,
     setError,
     t,
     registry,
@@ -91,7 +91,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   return (
     <SignLedgerBase
       containerId={containerId}
-      isProcessing={status !== "ready"}
+      isProcessing={isSigning}
       error={error}
       className={className}
       onSignClick={signWithLedger}
