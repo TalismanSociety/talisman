@@ -7,8 +7,6 @@ import { LedgerStatus } from "@ui/hooks/ledger/common"
 export type LedgerConnectionStatusProps = {
   status: LedgerStatus
   message: string
-  requiresManualRetry?: boolean
-  hideOnSuccess?: boolean
   className?: string
   onRetryClick?: () => void
 }
