@@ -8,11 +8,12 @@ import {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "extension-core"
+import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { getPolkadotLedgerDerivationPath } from "./common"
-import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
+import { getCustomTalismanLedgerError, getTalismanLedgerError, TalismanLedgerError } from "./errors"
 import { useLedgerTransport } from "./useLedgerTransport"
 
 type LedgerRequest<T> = (ledger: PolkadotGenericApp) => Promise<T>
@@ -91,8 +92,20 @@ const signPayload = async (
   const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp })
 
   if (isJsonPayload(payload)) {
-    if (!txMetadata) throw new Error("Missing metadata")
-    if (!registry) throw new Error("Missing registry")
+    if (!payload.withSignedTransaction)
+      throw getCustomTalismanLedgerError(
+        t("This dapp needs to be updated in order to support Ledger signing."),
+      )
+    if (!registry) throw getCustomTalismanLedgerError(t("Missing registry."))
+
+    const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
+      (ext) => ext.identifier.toString() === "CheckMetadataHash",
+    )
+    if (!hasCheckMetadataHash)
+      throw getCustomTalismanLedgerError(
+        t("This network doesn't support Ledger Polkadot Generic App."),
+      )
+    if (!txMetadata) throw getCustomTalismanLedgerError(t("Missing short metadata"))
 
     const unsigned = registry.createType("ExtrinsicPayload", payload)
 

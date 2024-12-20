@@ -1,7 +1,6 @@
 import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
 
-import { AccountJsonHardwareSubstrate, isJsonPayload } from "@extension/core"
+import { AccountJsonHardwareSubstrate } from "@extension/core"
 import { log } from "@extension/shared"
 import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
@@ -22,7 +21,6 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   shortMetadata,
   registry,
 }) => {
-  const { t } = useTranslation()
   const account = useAccountByAddress(payload?.address)
   const legacyApp = useLedgerSubstrateAppByName(account?.migrationAppName as string)
   const { sign } = useLedgerSubstrateGeneric({ legacyApp })
@@ -31,29 +29,6 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
-
-    // move this inside sign ?
-    if (isJsonPayload(payload)) {
-      if (!payload.withSignedTransaction)
-        return setError(
-          getCustomTalismanLedgerError(
-            t("This dapp needs to be updated in order to support Ledger signing."),
-          ),
-        )
-      if (!registry) return setError(getCustomTalismanLedgerError(t("Missing registry.")))
-
-      const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
-        (ext) => ext.identifier.toString() === "CheckMetadataHash",
-      )
-      if (!hasCheckMetadataHash)
-        return setError(
-          getCustomTalismanLedgerError(
-            t("This network doesn't support Ledger Polkadot Generic App."),
-          ),
-        )
-
-      if (!shortMetadata) return setError(getCustomTalismanLedgerError(t("Missing short metadata")))
-    }
 
     onSentToDevice?.(true)
     setIsSigning(true)
@@ -82,7 +57,6 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     onSentToDevice,
     setIsSigning,
     setError,
-    t,
     registry,
     shortMetadata,
     sign,
