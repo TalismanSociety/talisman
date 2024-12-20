@@ -1,15 +1,14 @@
-import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { AccountJsonHardwareEthereum } from "@extension/core"
 import { log } from "@extension/shared"
-import { getCustomTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 
-import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
+import { SignLedgerBase } from "./SignLedgerBase"
+import { useSignLedgerBase } from "./useSignLedgerBase"
 
 export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   evmNetworkId,
@@ -24,27 +23,15 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const [{ status, error }, setState] = useState<{
-    status: "ready" | "signing" | "signed"
-    error: TalismanLedgerError | null
-  }>({ status: "ready", error: null })
+  const { status, error, setStatus, setError } = useSignLedgerBase({ payload })
 
   const { sign } = useLedgerEthereum()
-
-  // reset
-  useEffect(() => {
-    setState({ status: "ready", error: null })
-  }, [payload])
-
-  const setError = useCallback((error: TalismanLedgerError | null) => {
-    setState({ status: "ready", error })
-  }, [])
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
 
     onSentToDevice?.(true)
-    setState({ status: "signing", error: null })
+    setStatus("signing")
 
     try {
       const signature = await sign(
@@ -72,25 +59,28 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     } finally {
       onSentToDevice?.(false)
     }
-  }, [account, evmNetworkId, method, onSentToDevice, onSigned, payload, setError, sign, t])
+  }, [
+    account,
+    evmNetworkId,
+    method,
+    onSentToDevice,
+    onSigned,
+    payload,
+    setError,
+    setStatus,
+    sign,
+    t,
+  ])
 
   return (
-    <div
-      className={classNames(
-        "grid w-full gap-8",
-        onCancel ? "grid-cols-2" : "grid-cols-1",
-        className,
-      )}
-    >
-      {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
-      <Button primary processing={status !== "ready"} onClick={signWithLedger} className="px-4">
-        {t("Approve on Ledger")}
-      </Button>
-      <ErrorMessageDrawer
-        message={error?.message}
-        containerId={containerId}
-        onDismiss={() => setError(null)}
-      />
-    </div>
+    <SignLedgerBase
+      containerId={containerId}
+      isProcessing={status !== "ready"}
+      error={error}
+      className={className}
+      onSignClick={signWithLedger}
+      onDismissErrorClick={() => setError(null)}
+      onCancel={onCancel}
+    />
   )
 }

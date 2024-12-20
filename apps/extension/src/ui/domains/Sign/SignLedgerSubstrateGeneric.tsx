@@ -1,17 +1,16 @@
-import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { AccountJsonHardwareSubstrate, isJsonPayload } from "@extension/core"
 import { log } from "@extension/shared"
-import { getCustomTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { useAccountByAddress } from "@ui/state"
 
-import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
+import { SignLedgerBase } from "./SignLedgerBase"
+import { useSignLedgerBase } from "./useSignLedgerBase"
 
 export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   className = "",
@@ -26,25 +25,14 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(payload?.address)
   const legacyApp = useLedgerSubstrateAppByName(account?.migrationAppName as string)
-
-  const [{ status, error }, setState] = useState<{
-    status: "ready" | "signing" | "signed"
-    error: TalismanLedgerError | null
-  }>({ status: "ready", error: null })
   const { sign } = useLedgerSubstrateGeneric({ legacyApp })
 
-  // reset
-  useEffect(() => {
-    setState({ status: "ready", error: null })
-  }, [payload])
-
-  const setError = useCallback((error: TalismanLedgerError | null) => {
-    setState({ status: "ready", error })
-  }, [])
+  const { status, error, setStatus, setError } = useSignLedgerBase({ payload })
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
 
+    // move this inside sign ?
     if (isJsonPayload(payload)) {
       if (!payload.withSignedTransaction)
         return setError(
@@ -68,7 +56,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     }
 
     onSentToDevice?.(true)
-    setState({ status: "signing", error: null })
+    setStatus("signing")
 
     try {
       const signature = await sign(
@@ -87,25 +75,28 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     } finally {
       onSentToDevice?.(false)
     }
-  }, [payload, onSigned, account, onSentToDevice, setError, t, registry, shortMetadata, sign])
+  }, [
+    payload,
+    onSigned,
+    account,
+    onSentToDevice,
+    setStatus,
+    setError,
+    t,
+    registry,
+    shortMetadata,
+    sign,
+  ])
 
   return (
-    <div
-      className={classNames(
-        "grid w-full gap-8",
-        onCancel ? "grid-cols-2" : "grid-cols-1",
-        className,
-      )}
-    >
-      {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
-      <Button primary processing={status !== "ready"} onClick={signWithLedger} className="px-4">
-        {t("Approve on Ledger")}
-      </Button>
-      <ErrorMessageDrawer
-        message={error?.message}
-        containerId={containerId}
-        onDismiss={() => setError(null)}
-      />
-    </div>
+    <SignLedgerBase
+      containerId={containerId}
+      isProcessing={status !== "ready"}
+      error={error}
+      className={className}
+      onSignClick={signWithLedger}
+      onDismissErrorClick={() => setError(null)}
+      onCancel={onCancel}
+    />
   )
 }

@@ -1,16 +1,15 @@
-import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { AccountJsonHardwareSubstrate } from "@extension/core"
 import { log } from "@extension/shared"
-import { getCustomTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/state"
 
-import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
+import { SignLedgerBase } from "./SignLedgerBase"
+import { useSignLedgerBase } from "./useSignLedgerBase"
 
 export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   className = "",
@@ -23,29 +22,16 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(payload?.address)
-
-  const [{ status, error }, setState] = useState<{
-    status: "ready" | "signing" | "signed"
-    error: TalismanLedgerError | null
-  }>({ status: "ready", error: null })
-
-  // reset
-  useEffect(() => {
-    setState({ status: "ready", error: null })
-  }, [payload])
-
-  const setError = useCallback((error: TalismanLedgerError | null) => {
-    setState({ status: "ready", error })
-  }, [])
-
   const { sign } = useLedgerSubstrateLegacy(account?.genesisHash)
+
+  const { status, error, setStatus, setError } = useSignLedgerBase({ payload })
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
     if (!registry) return setError(getCustomTalismanLedgerError(t("Missing registry.")))
 
     onSentToDevice?.(true)
-    setState({ status: "signing", error: null })
+    setStatus("signing")
 
     try {
       const signature = await sign(payload, account as AccountJsonHardwareSubstrate, registry)
@@ -59,25 +45,17 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     } finally {
       onSentToDevice?.(false)
     }
-  }, [payload, onSigned, account, onSentToDevice, setError, t, registry, sign])
+  }, [payload, onSigned, account, registry, setError, t, onSentToDevice, setStatus, sign])
 
   return (
-    <div
-      className={classNames(
-        "grid w-full gap-8",
-        onCancel ? "grid-cols-2" : "grid-cols-1",
-        className,
-      )}
-    >
-      {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
-      <Button primary processing={status !== "ready"} onClick={signWithLedger} className="px-4">
-        {t("Approve on Ledger")}
-      </Button>
-      <ErrorMessageDrawer
-        message={error?.message}
-        containerId={containerId}
-        onDismiss={() => setError(null)}
-      />
-    </div>
+    <SignLedgerBase
+      containerId={containerId}
+      isProcessing={status !== "ready"}
+      error={error}
+      className={className}
+      onSignClick={signWithLedger}
+      onDismissErrorClick={() => setError(null)}
+      onCancel={onCancel}
+    />
   )
 }
