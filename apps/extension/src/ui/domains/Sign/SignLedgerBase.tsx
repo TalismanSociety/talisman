@@ -39,6 +39,7 @@ export const SignLedgerBase: FC<{
         {t("Approve on Ledger")}
       </Button>
       <ErrorMessageDrawer
+        name={error?.name}
         message={error?.message}
         containerId={containerId}
         onDismiss={onDismissErrorClick}

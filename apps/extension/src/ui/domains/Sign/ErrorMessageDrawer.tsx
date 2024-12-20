@@ -1,13 +1,15 @@
 import { XCircleIcon } from "@talismn/icons"
+import { CONNECT_LEDGER_DOCS_URL } from "extension-shared"
 import { FC, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 export const ErrorMessageDrawer: FC<{
   message: string | undefined
+  name?: string // identifies specific errors, some require specific UI
   containerId: string | undefined
   onDismiss: () => void
-}> = ({ message, containerId, onDismiss }) => {
+}> = ({ message, name, containerId, onDismiss }) => {
   const { t } = useTranslation()
 
   // keep message in memory to prevent flickering on slide out
@@ -26,12 +28,35 @@ export const ErrorMessageDrawer: FC<{
     >
       <div className="bg-grey-800 flex w-full flex-col items-center gap-4 rounded-t-xl p-12">
         <XCircleIcon className={"text-alert-error text-[3rem]"} />
-        <p className="text-body-secondary mt-4">{wrapStrong(content)}</p>
+        <p className="text-body-secondary mt-4">
+          {name === "GenericAppRequired" ? <LedgerGenericRequired /> : wrapStrong(content)}
+        </p>
         <Button className="mt-8 w-full" primary onClick={onDismiss}>
           {t("Close")}
         </Button>
       </div>
     </Drawer>
+  )
+}
+
+const LedgerGenericRequired = () => {
+  const { t } = useTranslation()
+  return (
+    <Trans
+      t={t}
+      defaults="This network requires a new Ledger app. <br />Use the Polkadot Migration Ledger app to migrate your existing accounts. <DocsLink>Learn more.</DocsLink>"
+      components={{
+        DocsLink: (
+          // eslint-disable-next-line jsx-a11y/anchor-has-content
+          <a
+            href={CONNECT_LEDGER_DOCS_URL}
+            target="_blank"
+            className="text-body cursor-pointer"
+            rel="noreferrer noopener"
+          ></a>
+        ),
+      }}
+    />
   )
 }
 
