@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useChainsMap, useEvmNetworksMap } from "@ui/state"
+import { useChainsMap, useEvmNetworksMap, useTokensMap } from "@ui/state"
 
 export function AccountTypeNetworkSearch({
   setAccountType,
@@ -30,6 +30,7 @@ export function AccountTypeNetworkSearch({
 
   const chainsMap = useChainsMap()
   const evmNetworksMap = useEvmNetworksMap()
+  const tokensMap = useTokensMap()
   const allNetworks = useMemo(
     () =>
       [
@@ -37,24 +38,30 @@ export function AccountTypeNetworkSearch({
           if (chain.isTestnet) return []
           const relay = chain.relay?.id ? chainsMap[chain.relay.id] : null
           const { label, type } = getNetworkInfo(t, { chain, relay })
+          const symbol = tokensMap[chain.nativeToken?.id ?? ""]?.symbol
 
-          return { id: chain.id, label, type, account: chain.account }
+          return { id: chain.id, label, type, symbol, account: chain.account }
         }),
         ...Object.values(evmNetworksMap).flatMap((evmNetwork) => {
           if (evmNetwork.isTestnet) return []
           const { label, type } = getNetworkInfo(t, { evmNetwork })
+          const symbol = tokensMap[evmNetwork.nativeToken?.id ?? ""]?.symbol
 
-          return { id: evmNetwork.id, label, type }
+          return { id: evmNetwork.id, label, type, symbol }
         }),
       ].sort((a, b) => a.label?.localeCompare(b.label ?? "") ?? 0),
 
-    [chainsMap, evmNetworksMap, t],
+    [t, chainsMap, evmNetworksMap, tokensMap],
   )
   type Network = (typeof networks)[number]
 
   const networks = useMemo(() => {
     if (!search) return allNetworks
-    return allNetworks.filter((network) => network.label?.toLowerCase().includes(search))
+    return allNetworks.filter(
+      (network) =>
+        network.label?.toLowerCase().includes(search.toLowerCase()) ||
+        network.symbol?.toLowerCase().includes(search.toLowerCase()),
+    )
   }, [allNetworks, search])
 
   const [selected, setSelected] = useState<Network | null>(null)
