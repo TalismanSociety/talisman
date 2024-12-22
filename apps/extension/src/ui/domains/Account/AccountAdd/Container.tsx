@@ -244,7 +244,7 @@ function SelectAccountTypeSectionHeader() {
       <div className="text-md text-bold col-span-2 text-white">{t("Select account type")}</div>
       <div className="col-span-2 -mt-2 text-sm text-white/40">
         {t(
-          "If you don't know which to pick, search for the network you want to use and Talisman will automatically pick the correct account type.",
+          "If you don't know which to pick, search for the network you want to use and Talisman will recommend the account type.",
         )}
       </div>
     </>
