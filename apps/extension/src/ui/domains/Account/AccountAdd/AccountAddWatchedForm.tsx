@@ -23,6 +23,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   // get type paramter from url
   const [params] = useSearchParams()
   const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
+  const disableOtherTypes = params.has("disableOtherTypes")
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
 
@@ -149,7 +150,11 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   return (
     <form onSubmit={handleSubmit(submit)}>
       <div className="mb-12 flex flex-col gap-8">
-        <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
+        <AccountTypeSelector
+          defaultType={urlParamType}
+          disableOtherTypes={disableOtherTypes}
+          onChange={handleTypeChange}
+        />
         <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">

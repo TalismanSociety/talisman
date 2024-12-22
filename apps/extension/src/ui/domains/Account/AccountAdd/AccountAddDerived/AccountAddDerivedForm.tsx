@@ -101,6 +101,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   // get type paramter from url
   const [params] = useSearchParams()
   const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
+  const disableOtherTypes = params.has("disableOtherTypes")
   const mnemonics = useMnemonics()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
@@ -253,7 +254,11 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(submit)}>
-      <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
+      <AccountTypeSelector
+        defaultType={urlParamType}
+        disableOtherTypes={disableOtherTypes}
+        onChange={handleTypeChange}
+      />
       <Spacer small />
       <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
         {!!mnemonics.length && (
