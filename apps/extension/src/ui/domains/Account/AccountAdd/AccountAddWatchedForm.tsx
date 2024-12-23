@@ -18,6 +18,8 @@ import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
 
+import { BackToAddAccountButton } from "./BackToAddAccountButton"
+
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
@@ -206,7 +208,8 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             </div>
           </div>
         </div>
-        <div className="flex w-full justify-end">
+        <div className="flex w-full justify-between">
+          <BackToAddAccountButton methodType="watched" />
           <Button
             icon={ArrowRightIcon}
             type="submit"

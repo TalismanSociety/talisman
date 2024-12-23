@@ -37,6 +37,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { useAccounts, useMnemonics } from "@ui/state"
 
+import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
@@ -311,7 +312,8 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         </AdvancedSettings>
         <Spacer small />
 
-        <div className="flex w-full items-center justify-end">
+        <div className="flex w-full items-center justify-between">
+          <BackToAddAccountButton />
           <Button
             icon={ArrowRightIcon}
             type="submit"
