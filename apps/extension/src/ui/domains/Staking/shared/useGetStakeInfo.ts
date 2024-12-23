@@ -1,4 +1,5 @@
-import { ChainId } from "extension-core"
+import { UseQueryResult } from "@tanstack/react-query"
+import { ChainId, SignerPayloadJSON } from "extension-core"
 import { useMemo } from "react"
 
 import { ScaleApi } from "@ui/util/scaleApi"
@@ -24,6 +25,15 @@ type GetStakeInfo = {
 
 type BondType = "bittensor" | "nomPools"
 
+type StakeInfo = {
+  payloadInfo: UseQueryResult<{
+    payload: SignerPayloadJSON
+    txMetadata?: Uint8Array
+  } | null>
+  bondType: BondType
+  currentPoolId: string | number | undefined | null
+}
+
 export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakeInfo) => {
   const { data: minJoinBond } = useGetMinJoinBond(chainId)
 
@@ -47,12 +57,9 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
 
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
 
-  let payloadInfo
-  let bondType: BondType
-  let currentPoolId: string | number | undefined | null = 0
-
   // we must craft a different extrinsic if the user is already staking in a pool
-  const hasJoinedNomPool = useMemo(() => !!currentPoolId, [currentPoolId])
+  const { data: currentNomPool } = useNomPoolByMember(chainId, address)
+  const hasJoinedNomPool = Boolean(currentNomPool?.pool_id)
 
   const withSetClaimPermission = useMemo(() => {
     switch (claimPermission) {
@@ -75,27 +82,38 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     minJoinBond,
   })
 
-  const { data: currentNomPool } = useNomPoolByMember(chainId, address)
   const { data: isSoloStaking } = useIsSoloStaking(chainId, address)
   const { data: poolState } = useNomPoolState(chainId, poolId)
 
-  switch (chainId) {
-    case "bittensor":
-      payloadInfo = bittensorStakingPayload
-      bondType = "bittensor"
-      currentPoolId = hotkeys?.[0] ?? poolId
-      break
-    default:
-      payloadInfo = nomPoolStakingPayload
-      bondType = "nomPools"
-      currentPoolId = currentNomPool?.pool_id
-      break
-  }
+  const stakeInfo: StakeInfo = useMemo(() => {
+    switch (chainId) {
+      case "bittensor":
+        return {
+          payloadInfo: bittensorStakingPayload,
+          bondType: "bittensor" as const,
+          currentPoolId: hotkeys?.[0] ?? poolId,
+        }
+      default:
+        return {
+          payloadInfo: nomPoolStakingPayload,
+          bondType: "nomPools" as const,
+          currentPoolId: currentNomPool?.pool_id,
+        }
+    }
+  }, [
+    chainId,
+    bittensorStakingPayload,
+    nomPoolStakingPayload,
+    hotkeys,
+    poolId,
+    currentNomPool?.pool_id,
+  ])
+
   const {
     data: payloadAndMetadata,
     isLoading: isLoadingPayload,
     error: errorPayload,
-  } = payloadInfo || {}
+  } = stakeInfo?.payloadInfo || {}
 
   const { payload, txMetadata } = payloadAndMetadata || {}
 
@@ -113,8 +131,8 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    bondType,
-    currentPoolId,
+    bondType: stakeInfo?.bondType,
+    currentPoolId: stakeInfo?.currentPoolId,
     hasJoinedNomPool,
     minJoinBond,
     isSoloStaking,

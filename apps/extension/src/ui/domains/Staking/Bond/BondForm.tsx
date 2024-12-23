@@ -425,7 +425,7 @@ export const BondForm = () => {
           </div>
         </div>
       </div>
-      <div></div>
+
       <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
         {t("Review")}
       </Button>
