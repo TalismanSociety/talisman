@@ -151,7 +151,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
   return (
     <form onSubmit={handleSubmit(submit)}>
-      <div className="mb-12 flex flex-col gap-8">
+      <div className="flex flex-col gap-16">
         <AccountTypeSelector
           defaultType={urlParamType}
           disableOtherTypes={disableOtherTypes}
