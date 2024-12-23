@@ -116,7 +116,7 @@ function NewAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("New Ethereum Account")}
             tooltip={t(
-              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all other EVM chains.",
+              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains.",
             )}
           />
         }
@@ -129,7 +129,7 @@ function NewAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("New Polkadot Account")}
             tooltip={t(
-              "Pick this option for Polkadot, AssetHub, Bittensor, and most Polkadot ecosystem chains.",
+              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains.",
             )}
           />
         }
@@ -213,7 +213,7 @@ function WatchedAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("Watch Ethereum Account")}
             tooltip={t(
-              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all other EVM chains.",
+              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains.",
             )}
           />
         }
@@ -226,7 +226,7 @@ function WatchedAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("Watch Polkadot Account")}
             tooltip={t(
-              "Pick this option for Polkadot, AssetHub, Bittensor, and most Polkadot ecosystem chains.",
+              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains.",
             )}
           />
         }

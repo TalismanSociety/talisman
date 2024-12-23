@@ -67,7 +67,7 @@ export const AccountTypeSelector = ({
         title={t("Ethereum")}
         subtitle={
           <div className="line-clamp-2">
-            {t("Ethereum, Base, zkSync, Arbitrum, BSC, and all other EVM chains")}
+            {t("Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains")}
           </div>
         }
         disabled={disableOtherTypes && defaultType !== "ethereum"}
@@ -82,7 +82,7 @@ export const AccountTypeSelector = ({
         title={t("Polkadot")}
         subtitle={
           <div className="line-clamp-2">
-            {t("Polkadot, AssetHub, Bittensor, and most Polkadot ecosystem chains")}
+            {t("Relay Chain, Asset Hub, Bittensor, and most Polkadot chains")}
           </div>
         }
         disabled={disableOtherTypes && defaultType !== "sr25519"}
