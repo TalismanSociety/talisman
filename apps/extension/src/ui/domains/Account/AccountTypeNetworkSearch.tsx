@@ -59,8 +59,8 @@ export function AccountTypeNetworkSearch({
     if (!search) return allNetworks
     return allNetworks.filter(
       (network) =>
-        network.label?.toLowerCase().includes(search.toLowerCase()) ||
-        network.symbol?.toLowerCase().includes(search.toLowerCase()),
+        network.label?.toLowerCase().includes(search.toLowerCase().trim()) ||
+        network.symbol?.toLowerCase().includes(search.toLowerCase().trim()),
     )
   }, [allNetworks, search])
 
