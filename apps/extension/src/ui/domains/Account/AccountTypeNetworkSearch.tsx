@@ -117,7 +117,7 @@ export function AccountTypeNetworkSearch({
       {({ open }) => (
         <div
           className={classNames(
-            "bg-grey-850 text-body-secondary/50 col-span-2 flex w-full items-center justify-start gap-4 rounded-sm p-8 text-xs",
+            "bg-grey-850 text-body-secondary/50 col-span-2 flex w-full items-center justify-start gap-4 rounded-sm p-8 text-sm",
             open && "rounded-b-none",
           )}
         >
