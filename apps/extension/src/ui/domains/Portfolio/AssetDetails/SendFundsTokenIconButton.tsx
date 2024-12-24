@@ -9,7 +9,7 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
-export const SendFundsButton = ({
+export const SendFundsTokenButton = ({
   tokenId,
   shouldClose,
 }: {
