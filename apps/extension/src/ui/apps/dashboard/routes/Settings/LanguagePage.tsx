@@ -5,8 +5,7 @@ import { languages } from "@common/i18nConfig"
 import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-
-import { DashboardLayout } from "../../layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 
 const Content = () => {
   const { t, i18n } = useTranslation()

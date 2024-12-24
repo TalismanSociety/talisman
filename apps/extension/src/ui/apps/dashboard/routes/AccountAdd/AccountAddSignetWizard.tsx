@@ -1,7 +1,6 @@
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddSignetWizard } from "@ui/domains/Account/AccountAdd/AccountAddSignet/index"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-
-import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")

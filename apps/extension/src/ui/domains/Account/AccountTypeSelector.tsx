@@ -6,19 +6,23 @@ import { useTranslation } from "react-i18next"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 
 const AccountTypeButton: FC<{
-  title: ReactNode
   className?: string
   icon: ReactNode
+  title: ReactNode
   subtitle: ReactNode
+  disabled?: boolean
   onClick: () => void
-}> = ({ icon, title, subtitle, className, onClick }) => (
+}> = ({ className, icon, title, subtitle, disabled, onClick }) => (
   <button
     type="button"
-    onClick={onClick}
     className={classNames(
-      "bg-field hover:bg-grey-800 allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
+      "bg-field allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
+      disabled && "text-body-secondary opacity-40",
+      !disabled && "hover:bg-grey-800",
       className,
     )}
+    disabled={disabled}
+    onClick={onClick}
   >
     <div className="text-xl">{icon}</div>
     <div className="flex flex-grow flex-col justify-center gap-2">
@@ -30,12 +34,14 @@ const AccountTypeButton: FC<{
 
 type AccountTypeSelectorProps = {
   defaultType?: UiAccountAddressType
+  disableOtherTypes?: boolean
   onChange: (type: UiAccountAddressType) => void
   className?: string
 }
 
 export const AccountTypeSelector = ({
   defaultType,
+  disableOtherTypes,
   onChange,
   className,
 }: AccountTypeSelectorProps) => {
@@ -53,23 +59,33 @@ export const AccountTypeSelector = ({
   return (
     <div className={classNames("grid w-full grid-cols-2 gap-10", className)}>
       <AccountTypeButton
-        title={t("Ethereum")}
         className={classNames(
           type === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
           "border",
         )}
         icon={<EthereumCircleLogo />}
-        subtitle={t("Ethereum, Arbitrum, Moonbeam etc.")}
+        title={t("Ethereum")}
+        subtitle={
+          <div className="line-clamp-2">
+            {t("Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains")}
+          </div>
+        }
+        disabled={disableOtherTypes && defaultType !== "ethereum"}
         onClick={handleClick("ethereum")}
       />
       <AccountTypeButton
-        title={t("Polkadot")}
         className={classNames(
           type === "sr25519" ? "border-body" : "border-body-secondary border-opacity-20",
           "border",
         )}
         icon={<PolkadotCircleLogo />}
-        subtitle={t(`Polkadot, Kusama & Parachains`)}
+        title={t("Polkadot")}
+        subtitle={
+          <div className="line-clamp-2">
+            {t("Relay Chain, Asset Hub, Bittensor, and most Polkadot chains")}
+          </div>
+        }
+        disabled={disableOtherTypes && defaultType !== "sr25519"}
         onClick={handleClick("sr25519")}
       />
     </div>
