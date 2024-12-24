@@ -8,9 +8,8 @@ import {
 import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
 import startCase from "lodash/startCase"
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -73,25 +72,6 @@ export function AccountTypeNetworkSearch({
     setAccountType(getAccountType(network))
   }, [chainsMap, evmNetworksMap, selected, setAccountType])
 
-  const refContainer = useRef<HTMLDivElement>(null)
-  const virtualizer = useVirtualizer({
-    count: networks.length,
-    estimateSize: () => 40,
-    overscan: 5,
-    getScrollElement: () => refContainer.current,
-  })
-
-  const Recalculate = useMemo(
-    () =>
-      function Recalculate({ open }: { open: boolean }) {
-        useLayoutEffect(() => {
-          if (!open) return
-          virtualizer.measure()
-        }, [open])
-        return null
-      },
-    [virtualizer],
-  )
   const ClearSearch = useMemo(
     () =>
       function ClearSearch({ open }: { open: boolean }) {
@@ -104,11 +84,17 @@ export function AccountTypeNetworkSearch({
     [setSearch],
   )
 
+  const networksWithHeader = useMemo(
+    () => [{ id: "combobox-header", label: null, type: "", symbol: "" }, ...networks],
+    [networks],
+  )
+
   return (
     <Combobox
-      className="relative col-span-2 flex w-full cursor-text flex-col justify-start gap-4"
+      className="relative col-span-2 w-full cursor-text"
       as="label"
       htmlFor={inputId}
+      virtual={{ options: networksWithHeader }}
       immediate
       value={selected}
       onChange={setSelected}
@@ -117,11 +103,10 @@ export function AccountTypeNetworkSearch({
       {({ open }) => (
         <div
           className={classNames(
-            "bg-grey-850 text-body-secondary/50 col-span-2 flex w-full items-center justify-start gap-4 rounded-sm p-8 text-sm",
+            "bg-grey-850 text-body-secondary/50 flex h-24 w-full items-center gap-4 rounded-sm px-8 text-sm",
             open && "rounded-b-none",
           )}
         >
-          <Recalculate open={open} />
           <ClearSearch open={open} />
 
           <SearchIcon className="shrink-0 text-base" />
@@ -147,38 +132,32 @@ export function AccountTypeNetworkSearch({
           {selected && (
             <CloseIcon className="cursor-pointer text-base" onClick={() => setSelected(null)} />
           )}
-          <ComboboxOptions className="bg-grey-850 absolute bottom-0 left-0 z-10 flex w-full translate-y-full flex-col gap-4 overflow-hidden rounded-b">
-            <div className="flex items-center justify-between gap-4 px-8">
-              <div>{t("Network")}</div>
-              <div>{t("Account Type")}</div>
-            </div>
-            <div ref={refContainer} className="max-h-[30rem] overflow-scroll">
-              <div
-                className="relative w-full"
-                style={{ height: `${virtualizer.getTotalSize()}px` }}
-              >
-                {virtualizer.getVirtualItems().map((item) => {
-                  const network = networks[item.index]
-                  return (
-                    <ComboboxOption
-                      key={item.key}
-                      className="hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800 absolute left-0 top-0 flex w-full cursor-pointer items-center gap-4 px-8 text-base"
-                      value={network}
-                      style={{
-                        height: `${item.size}px`,
-                        transform: `translateY(${item.start}px)`,
-                      }}
-                    >
-                      <ChainLogo id={network.id} className="text-md" />
-                      <span className="text-white">{network.label}</span>
-                      <span className="text-body-secondary/50 text-base">{network.type}</span>
-                      <div className="flex-grow" />
-                      <span className="text-white">{startCase(getAccountType(network))}</span>
-                    </ComboboxOption>
-                  )
-                })}
-              </div>
-            </div>
+          <ComboboxOptions className="bg-grey-850 absolute left-0 top-24 z-10 h-[30rem] w-full overflow-scroll rounded-b">
+            {({ option: network }) =>
+              network.id === "combobox-header" ? (
+                <ComboboxOption
+                  key={network.id}
+                  className="flex h-24 w-full items-center justify-between gap-4 px-8 text-base"
+                  value={network}
+                  disabled
+                >
+                  <div>{t("Network")}</div>
+                  <div>{t("Account Type")}</div>
+                </ComboboxOption>
+              ) : (
+                <ComboboxOption
+                  key={network.id}
+                  className="hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800 flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base"
+                  value={network}
+                >
+                  <ChainLogo id={network.id} className="text-md" />
+                  <span className="text-white">{network.label}</span>
+                  <span className="text-body-secondary/50 text-base">{network.type}</span>
+                  <div className="flex-grow" />
+                  <span className="text-white">{startCase(getAccountType(network))}</span>
+                </ComboboxOption>
+              )
+            }
           </ComboboxOptions>
         </div>
       )}
