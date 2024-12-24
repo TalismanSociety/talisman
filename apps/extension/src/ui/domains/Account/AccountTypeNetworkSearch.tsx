@@ -73,7 +73,7 @@ export function AccountTypeNetworkSearch({
     setAccountType(getAccountType(network))
   }, [chainsMap, evmNetworksMap, selected, setAccountType])
 
-  const refContainer = useRef(null)
+  const refContainer = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
     count: networks.length,
     estimateSize: () => 40,
@@ -137,6 +137,7 @@ export function AccountTypeNetworkSearch({
             placeholder={t("Search for network")}
             onChange={(e) => setSearch(e.target.value)}
             value={search}
+            autoComplete="off"
           />
           <div className="flex-grow" />
           <ComboboxButton>
@@ -151,7 +152,7 @@ export function AccountTypeNetworkSearch({
               <div>{t("Network")}</div>
               <div>{t("Account Type")}</div>
             </div>
-            <div ref={refContainer} className="h-[30rem] overflow-scroll">
+            <div ref={refContainer} className="max-h-[30rem] overflow-scroll">
               <div
                 className="relative w-full"
                 style={{ height: `${virtualizer.getTotalSize()}px` }}
