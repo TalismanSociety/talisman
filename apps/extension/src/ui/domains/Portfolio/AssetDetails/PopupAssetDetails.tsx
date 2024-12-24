@@ -62,7 +62,7 @@ const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, 
               <span className="mr-2 truncate">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                <SendFundsButton tokenId={token.id} networkId={chainOrNetwork.id} shouldClose />
+                <SendFundsButton tokenId={token.id} shouldClose />
               </Suspense>
             </div>
           </div>

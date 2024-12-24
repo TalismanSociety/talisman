@@ -1,42 +1,25 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useSetting, useTokens } from "@ui/state"
+import { useSetting, useTokensMap } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 export const SendFundsButton = ({
-  networkId,
+  tokenId,
   shouldClose,
-  ...tokenLookup
 }: {
-  networkId: ChainId | EvmNetworkId
+  tokenId: TokenId
   shouldClose?: boolean
-} & ({ tokenId: string } | { symbol: string })) => {
-  const tokenId = "tokenId" in tokenLookup ? tokenLookup.tokenId : undefined
-  const symbol = "symbol" in tokenLookup ? tokenLookup.symbol : undefined
-
+}) => {
   const { selectedAccount } = usePortfolioNavigation()
   const [includeTestnets] = useSetting("useTestnets")
-  const tokens = useTokens({ activeOnly: true, includeTestnets })
-
-  const token = tokens?.find(
-    typeof tokenId === "string"
-      ? // search by tokenId
-        (t) =>
-          t.id === tokenId &&
-          isTransferableToken(t) &&
-          (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
-      : // search by token symbol
-        (t) =>
-          t.symbol === symbol &&
-          isTransferableToken(t) &&
-          (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId),
-  )
+  const tokensMap = useTokensMap({ activeOnly: true, includeTestnets })
+  const token = isTransferableToken(tokensMap[tokenId]) ? tokensMap[tokenId] : undefined
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     selectedAccount,
