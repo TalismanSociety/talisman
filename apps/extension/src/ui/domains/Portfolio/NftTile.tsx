@@ -2,7 +2,7 @@ import { StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 
-import { PortfolioNetworksLogoStack } from "./AssetsTable/PortfolioNetworksLogoStack"
+import { NetworksLogoStack } from "./AssetsTable/NetworksLogoStack"
 import { NftImage } from "./NftImage"
 
 export const NftTile: FC<{
@@ -40,7 +40,7 @@ export const NftTile: FC<{
       </div>
       <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
         <div className="grow truncate text-base">{label}</div>
-        <PortfolioNetworksLogoStack className="shrink-0" networkIds={networkIds} />
+        <NetworksLogoStack className="shrink-0" networkIds={networkIds} />
       </div>
     </button>
   )

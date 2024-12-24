@@ -10,7 +10,6 @@ import { log } from "@extension/shared"
 import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { FadeIn } from "@talisman/components/FadeIn"
 
-import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { useJsonAccountImport } from "./context"
 
 type FormData = {
@@ -87,8 +86,7 @@ export const UnlockJsonFileForm: FC = () => {
             after={<CapsLockWarningIcon />}
           />
         </FormFieldContainer>
-        <div className="mt-8 flex w-full justify-between">
-          <BackToAddAccountButton methodType="import" />
+        <div className="mt-8 flex w-full justify-end">
           <Button type="submit" primary disabled={!isValid} processing={isSubmitting}>
             {t("Unlock JSON file")}
           </Button>

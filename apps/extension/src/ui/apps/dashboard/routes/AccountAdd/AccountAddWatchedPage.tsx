@@ -1,27 +1,23 @@
 import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
 
-import { AccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddWatchedForm } from "@ui/domains/Account/AccountAdd/AccountAddWatchedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
+import { DashboardLayout } from "../../layout"
+
 export const Content = () => {
   const { t } = useTranslation("admin")
-  // get type paramter from url
-  const [params] = useSearchParams()
-  const urlParamType = (params.get("type") ?? undefined) as AccountAddressType | undefined
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   return (
     <>
       <HeaderBlock
-        title={t("Add a watched account")}
-        text={!urlParamType && t("What type of account would you like to create?")}
+        title={t("Choose account type")}
+        text={t("What type of account would you like to add?")}
       />
-      <Spacer small />
+      <Spacer />
       <AccountAddWatchedForm onSuccess={setAddress} />
     </>
   )

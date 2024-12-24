@@ -31,7 +31,6 @@ import { Spacer } from "@talisman/components/Spacer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -45,6 +44,8 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances, useChainByGenesisHash } from "@ui/state"
+
+import { DashboardLayout } from "../../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

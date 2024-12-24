@@ -7,7 +7,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 
 import { PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
-export const PortfolioNetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
+export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
   const tooltip = useMemo(
     () => `${network?.label} (${network?.type})`,
     [network?.label, network?.type],
@@ -36,7 +36,7 @@ const MoreNetworksTooltip = ({ networks }: { networks: PortfolioNetwork[] }) => 
   )
 }
 
-export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork[] }) => {
+export const NetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork[] }) => {
   if (!networks.length) return null
 
   return (
@@ -52,7 +52,7 @@ export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: Portfol
 
 type Props = { networkIds?: (ChainId | EvmNetworkId)[]; className?: string; max?: number }
 
-export const PortfolioNetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => {
+export const NetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => {
   const { networks } = usePortfolioNetworks(networkIds)
 
   const { visibleNetworks, moreNetworks } = useMemo(() => {
@@ -65,9 +65,9 @@ export const PortfolioNetworksLogoStack = ({ networkIds, className, max = 4 }: P
   return (
     <div className={classNames("h-[1em] pl-[0.25rem]", className)}>
       {visibleNetworks.map((network, idx) => (
-        <PortfolioNetworksLogoStackItem key={`${network}-${idx}`} network={network} />
+        <NetworksLogoStackItem key={`${network}-${idx}`} network={network} />
       ))}
-      <PortfolioNetworksLogoStackMore networks={moreNetworks} />
+      <NetworksLogoStackMore networks={moreNetworks} />
     </div>
   )
 }

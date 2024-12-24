@@ -1,5 +1,6 @@
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AuthorisedSites } from "@ui/domains/Settings/AuthorisedSites/AuthorisedSites"
+
+import { DashboardLayout } from "../../layout"
 
 export const ConnectedSitesPage = () => (
   <DashboardLayout sidebar="settings">

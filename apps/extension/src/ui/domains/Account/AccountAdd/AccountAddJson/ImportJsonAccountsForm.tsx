@@ -20,7 +20,6 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/state"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
-import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { JsonImportAccount, useJsonAccountImport } from "./context"
 import { UnlockJsonAccountsButton } from "./UnlockJsonAccountsButton"
 
@@ -131,7 +130,6 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     selectAll,
     selectNone,
     importAccounts,
-    requiresFilePassword,
   } = useJsonAccountImport()
 
   const { selectedCount, totalCount } = useMemo(() => {
@@ -188,8 +186,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     return !accounts.filter((a) => !a.isExisting && a.isPrivateKeyAvailable).length
   }, [accounts])
 
-  if (requiresFilePassword) return null
-  if (!accounts?.length) return <BackToAddAccountButton methodType="import" />
+  if (!accounts?.length) return null
 
   return (
     <FadeIn>
@@ -235,21 +232,18 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
           <JsonAccount key={i} account={acc} onSelect={handleSelect(acc.id)} />
         ))}
       </div>
-      <div className="mt-16 flex w-full justify-between">
-        <BackToAddAccountButton methodType="import" />
-        <div className="flex justify-end gap-8">
-          <UnlockJsonAccountsButton />
-          <Button
-            icon={ArrowRightIcon}
-            type="button"
-            primary
-            disabled={!canImport}
-            onClick={handleImportClick}
-            processing={isImporting}
-          >
-            {t("Import")}
-          </Button>
-        </div>
+      <div className="mt-16 flex w-full justify-end gap-8">
+        <UnlockJsonAccountsButton />
+        <Button
+          icon={ArrowRightIcon}
+          type="button"
+          primary
+          disabled={!canImport}
+          onClick={handleImportClick}
+          processing={isImporting}
+        >
+          {t("Import")}
+        </Button>
       </div>
     </FadeIn>
   )

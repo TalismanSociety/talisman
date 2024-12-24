@@ -2,9 +2,10 @@ import { useTranslation } from "react-i18next"
 import { Toggle } from "talisman-ui"
 
 import { Setting } from "@talisman/components/Setting"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/state"
+
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")

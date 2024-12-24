@@ -9,7 +9,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useEvmNetworksMap, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
 
-import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
+import { NetworksLogoStack } from "../AssetsTable/NetworksLogoStack"
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
@@ -104,7 +104,7 @@ const NftCollectionRowInner: FC<{
             {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
           </div>
           <div className="flex w-full gap-2 overflow-hidden text-base">
-            <PortfolioNetworksLogoStack networkIds={networkIds} />
+            <NetworksLogoStack networkIds={networkIds} />
             <div className="text-body-secondary text-sm">{networkName}</div>
           </div>
         </div>

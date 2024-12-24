@@ -16,7 +16,7 @@ import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTok
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
-import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
+import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
 export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
@@ -69,7 +69,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
               </div>
               {!!networkIds.length && (
                 <div>
-                  <PortfolioNetworksLogoStack networkIds={networkIds} max={3} />
+                  <NetworksLogoStack networkIds={networkIds} max={3} />
                 </div>
               )}
             </div>

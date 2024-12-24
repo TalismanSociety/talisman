@@ -26,7 +26,6 @@ import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { useAccounts } from "@ui/state"
 import { isUiAccountAddressType } from "@ui/util/typeCheckers"
 
-import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
@@ -217,67 +216,62 @@ export const AccountAddMnemonicForm = () => {
   return (
     <div className="flex w-full flex-col gap-8">
       <HeaderBlock
-        title={t("Import via Recovery Phrase")}
+        title={t("Choose account type")}
         text={t("What type of account would you like to import?")}
       />
 
       <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
 
-      <form onSubmit={handleSubmit(submit)}>
-        <div className={classNames(!type && "hidden")}>
-          <FormFieldContainer error={errors.name?.message}>
-            <FormFieldInputText
-              {...register("name")}
-              placeholder={t("Choose a name")}
-              spellCheck={false}
-              autoComplete="off"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              data-lpignore
-              after={
-                targetAddress ? (
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <AccountIcon address={targetAddress} className="text-xl" />
-                    </TooltipTrigger>
-                    <TooltipContent>{targetAddress}</TooltipContent>
-                  </Tooltip>
-                ) : null
-              }
-            />
-          </FormFieldContainer>
-          <FormFieldTextarea
-            {...register("mnemonic")}
-            placeholder={t("Enter your 12 or 24 word recovery phrase")}
-            rows={5}
-            data-lpignore
+      <form className={classNames(type ? "visible" : "invisible")} onSubmit={handleSubmit(submit)}>
+        <FormFieldContainer error={errors.name?.message}>
+          <FormFieldInputText
+            {...register("name")}
+            placeholder={t("Choose a name")}
             spellCheck={false}
+            autoComplete="off"
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+            data-lpignore
+            after={
+              targetAddress ? (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <AccountIcon address={targetAddress} className="text-xl" />
+                  </TooltipTrigger>
+                  <TooltipContent>{targetAddress}</TooltipContent>
+                </Tooltip>
+              ) : null
+            }
           />
-          <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
-            <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
-            <div className="text-alert-warn grow truncate text-right">
-              {errors.mnemonic?.message}
-            </div>
-          </div>
-          <Spacer small />
-          <DerivationModeDropdown value={mode} onChange={handleModeChange} />
-          <FormFieldContainer
-            className={classNames("mt-2", mode !== "custom" && "invisible")}
-            error={errors.derivationPath?.message}
-          >
-            <FormFieldInputText
-              {...register("derivationPath")}
-              placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
-              spellCheck={false}
-              autoComplete="off"
-              className="font-mono"
-              data-lpignore
-            />
-          </FormFieldContainer>
-          <Spacer small />
+        </FormFieldContainer>
+        <FormFieldTextarea
+          {...register("mnemonic")}
+          placeholder={t("Enter your 12 or 24 word recovery phrase")}
+          rows={5}
+          data-lpignore
+          spellCheck={false}
+        />
+        <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
+          <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
+          <div className="text-alert-warn grow truncate text-right">{errors.mnemonic?.message}</div>
         </div>
-        <div className="mt-1 flex w-full justify-between">
-          <BackToAddAccountButton methodType="import" />
+        <Spacer small />
+        <DerivationModeDropdown value={mode} onChange={handleModeChange} />
+        <FormFieldContainer
+          className={classNames("mt-2", mode !== "custom" && "invisible")}
+          error={errors.derivationPath?.message}
+        >
+          <FormFieldInputText
+            {...register("derivationPath")}
+            placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+            spellCheck={false}
+            autoComplete="off"
+            className="font-mono"
+            data-lpignore
+          />
+        </FormFieldContainer>
+        <Spacer small />
+        <div className="mt-1 flex w-full justify-end">
           <Button
             className="w-[24rem]"
             type="submit"

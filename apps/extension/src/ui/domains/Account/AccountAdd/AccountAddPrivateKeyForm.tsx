@@ -25,7 +25,6 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
 
-import { BackToAddAccountButton } from "./BackToAddAccountButton"
 import { AccountAddPageProps } from "./types"
 
 /**
@@ -214,8 +213,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           </div>
         </div>
         <Spacer small />
-        <div className="mt-1 flex w-full justify-between">
-          <BackToAddAccountButton methodType="import" />
+        <div className="mt-1 flex w-full justify-end">
           <Button
             className="w-[24rem]"
             type="submit"

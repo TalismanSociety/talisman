@@ -10,7 +10,6 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
   MnemonicCreateModal,
   MnemonicCreateModalProvider,
@@ -21,6 +20,8 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState, useBalancesHydrate, useChains, useMnemonic } from "@ui/state"
+
+import { DashboardLayout } from "../../layout"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation("admin")

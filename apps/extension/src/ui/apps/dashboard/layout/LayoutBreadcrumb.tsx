@@ -4,8 +4,6 @@ import { FC, Fragment, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, To, useLocation } from "react-router-dom"
 
-import { MethodType } from "@ui/domains/Account/AccountAdd/context"
-
 const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> => {
   const { t } = useTranslation()
 
@@ -15,10 +13,7 @@ const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> =>
     // reusables
     const settings = { label: t("Settings"), to: "/settings/general" }
     const accounts = { label: t("Accounts"), to: "/settings/accounts" }
-    const accountsAdd = (methodType?: MethodType) => ({
-      label: t("Add Account"),
-      to: `/accounts/add${methodType ? `?methodType=${methodType}` : ""}`,
-    })
+    const accountsAdd = { label: t("Add Account"), to: "/accounts/add" }
     const securityAndPrivacy = {
       label: t("Security & Privacy"),
       to: "/settings/security-privacy-settings",
@@ -27,53 +22,53 @@ const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> =>
 
     return {
       "/settings/accounts": [settings, accounts],
-      "/accounts/add": [settings, accounts, accountsAdd()],
+      "/accounts/add": [settings, accounts, accountsAdd],
       "/accounts/add/derived": [
         settings,
         accounts,
-        accountsAdd(),
+        accountsAdd,
         { label: t("New"), to: "/accounts/add/derived" },
       ],
       "/accounts/add/mnemonic": [
         settings,
         accounts,
-        accountsAdd("import"),
+        accountsAdd,
         { label: t("Recovery Phrase"), to: "/accounts/add/mnemonic" },
       ],
       "/accounts/add/pk": [
         settings,
         accounts,
-        accountsAdd("import"),
+        accountsAdd,
         { label: t("Private Key"), to: "/accounts/add/pk" },
       ],
       "/accounts/add/json": [
         settings,
         accounts,
-        accountsAdd("import"),
+        accountsAdd,
         { label: t("JSON"), to: "/accounts/add/json" },
       ],
       "/accounts/add/ledger": [
         settings,
         accounts,
-        accountsAdd("connect"),
+        accountsAdd,
         { label: t("Ledger"), to: "/accounts/add/ledger" },
       ],
       "/accounts/add/qr": [
         settings,
         accounts,
-        accountsAdd("connect"),
+        accountsAdd,
         { label: t("Polkadot Vault"), to: "/accounts/add/qr" },
       ],
       "/accounts/add/signet": [
         settings,
         accounts,
-        accountsAdd("connect"),
+        accountsAdd,
         { label: t("Signet Vault"), to: "/accounts/add/signet" },
       ],
       "/accounts/add/watched": [
         settings,
         accounts,
-        accountsAdd("watched"),
+        accountsAdd,
         { label: t("Watched Account"), to: "/accounts/add/watched" },
       ],
 

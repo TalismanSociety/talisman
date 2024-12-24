@@ -4,9 +4,10 @@ import { useSearchParams } from "react-router-dom"
 import { AccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+
+import { DashboardLayout } from "../../layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")

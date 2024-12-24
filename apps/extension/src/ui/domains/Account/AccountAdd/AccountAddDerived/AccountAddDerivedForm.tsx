@@ -33,11 +33,10 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { useAccounts, useMnemonics } from "@ui/state"
 
-import { BackToAddAccountButton } from "../BackToAddAccountButton"
+import { AccountIcon } from "../../AccountIcon"
 import { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
@@ -102,7 +101,6 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   // get type paramter from url
   const [params] = useSearchParams()
   const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
-  const disableOtherTypes = params.has("disableOtherTypes")
   const mnemonics = useMnemonics()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
@@ -255,11 +253,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(submit)}>
-      <AccountTypeSelector
-        defaultType={urlParamType}
-        disableOtherTypes={disableOtherTypes}
-        onChange={handleTypeChange}
-      />
+      <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
       <Spacer small />
       <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
         {!!mnemonics.length && (
@@ -312,8 +306,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         </AdvancedSettings>
         <Spacer small />
 
-        <div className="flex w-full items-center justify-between">
-          <BackToAddAccountButton />
+        <div className="flex w-full items-center justify-end">
           <Button
             icon={ArrowRightIcon}
             type="submit"

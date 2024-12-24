@@ -42,7 +42,6 @@ import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -71,6 +70,7 @@ import {
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
+import { DashboardLayout } from "../../../layout"
 import {
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRates,

@@ -17,10 +17,11 @@ import { SPIRIT_KEYS_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useAppState, useSetting } from "@ui/state"
+
+import { DashboardLayout } from "../../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
