@@ -303,13 +303,9 @@ const useLedgerAccountAddress = (
   })
 
   const [state, setState] = useState<{
-    // isBusy: boolean
-    // error: string | undefined // TODO vraiment besoin ?
     account: CustomAccountDetails | undefined
     address: string | undefined
   }>({
-    // isBusy: false,
-    // error: undefined,
     account: account,
     address: undefined,
   })
@@ -363,9 +359,7 @@ const useLedgerAccountAddress = (
 
   return useMemo(() => {
     return {
-      // isBusy: state.isBusy,
       address: state.account === account ? state.address : undefined,
-      // error: state.account === account ? state.error : undefined, // TODO vraiment besoin ?
       connectionStatus,
     }
   }, [state, account, connectionStatus])
