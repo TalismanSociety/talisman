@@ -10,23 +10,32 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 export const SendFundsButton = ({
-  symbol,
   networkId,
   shouldClose,
+  ...tokenLookup
 }: {
-  symbol: string
   networkId: ChainId | EvmNetworkId
   shouldClose?: boolean
-}) => {
+} & ({ tokenId: string } | { symbol: string })) => {
+  const tokenId = "tokenId" in tokenLookup ? tokenLookup.tokenId : undefined
+  const symbol = "symbol" in tokenLookup ? tokenLookup.symbol : undefined
+
   const { selectedAccount } = usePortfolioNavigation()
   const [includeTestnets] = useSetting("useTestnets")
   const tokens = useTokens({ activeOnly: true, includeTestnets })
 
   const token = tokens?.find(
-    (t) =>
-      t.symbol === symbol &&
-      isTransferableToken(t) &&
-      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId),
+    typeof tokenId === "string"
+      ? // search by tokenId
+        (t) =>
+          t.id === tokenId &&
+          isTransferableToken(t) &&
+          (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
+      : // search by token symbol
+        (t) =>
+          t.symbol === symbol &&
+          isTransferableToken(t) &&
+          (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId),
   )
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(

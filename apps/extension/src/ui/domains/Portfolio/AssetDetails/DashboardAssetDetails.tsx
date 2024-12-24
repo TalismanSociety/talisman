@@ -102,7 +102,7 @@ const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, 
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
+                <SendFundsButton tokenId={token.id} networkId={chainOrNetwork.id} />
                 {tokenId && (
                   <TokenContextMenu
                     tokenId={tokenId}
