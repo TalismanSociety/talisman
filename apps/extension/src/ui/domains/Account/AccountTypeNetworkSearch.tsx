@@ -9,12 +9,14 @@ import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import startCase from "lodash/startCase"
-import { useEffect, useId, useMemo, useState } from "react"
+import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useChainsMap, useEvmNetworksMap, useTokensMap } from "@ui/state"
+
+const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
 export function AccountTypeNetworkSearch({
   setAccountType,
@@ -64,24 +66,19 @@ export function AccountTypeNetworkSearch({
   }, [allNetworks, search])
 
   const [selected, setSelected] = useState<Network | null>(null)
-  useEffect(() => {
-    if (!selected) return setAccountType()
 
-    const network: Chain | SimpleEvmNetwork | undefined =
-      chainsMap[selected.id] ?? evmNetworksMap[selected.id] ?? undefined
-    setAccountType(getAccountType(network))
-  }, [chainsMap, evmNetworksMap, selected, setAccountType])
+  const handleChange = useCallback(
+    (option: Network | null) => {
+      setSelected(option)
+      setSearch("")
 
-  const ClearSearch = useMemo(
-    () =>
-      function ClearSearch({ open }: { open: boolean }) {
-        useEffect(() => {
-          if (open) return
-          setSearch("")
-        }, [open])
-        return null
-      },
-    [setSearch],
+      if (!option || option.id === DEFAULT_COMBO_BOX_HEADER_ID) return setAccountType()
+
+      const network: Chain | SimpleEvmNetwork | undefined =
+        chainsMap[option.id] ?? evmNetworksMap[option.id] ?? undefined
+      setAccountType(getAccountType(network))
+    },
+    [chainsMap, evmNetworksMap, setAccountType],
   )
 
   const networksWithHeader = useMemo(
@@ -97,7 +94,7 @@ export function AccountTypeNetworkSearch({
       virtual={{ options: networksWithHeader }}
       immediate
       value={selected}
-      onChange={setSelected}
+      onChange={handleChange}
       onClick={selected ? () => setSelected(null) : undefined}
     >
       {({ open }) => (
@@ -107,10 +104,8 @@ export function AccountTypeNetworkSearch({
             open && "rounded-b-none",
           )}
         >
-          <ClearSearch open={open} />
-
           <SearchIcon className="shrink-0 text-base" />
-          {selected && (
+          {selected && selected.id !== DEFAULT_COMBO_BOX_HEADER_ID && (
             <div className="flex items-center gap-4">
               <ChainLogo id={selected.id} className="text-md" />
               <span className="text-base text-white">{selected.label}</span>
