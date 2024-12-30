@@ -8,13 +8,20 @@ import {
 import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { isChainActive, isEvmNetworkActive } from "extension-core"
 import startCase from "lodash/startCase"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useChainsMap, useEvmNetworksMap, useTokensMap } from "@ui/state"
+import {
+  useActiveChainsState,
+  useActiveEvmNetworksState,
+  useChainsMap,
+  useEvmNetworksMap,
+  useTokensMap,
+} from "@ui/state"
 
 const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
@@ -32,6 +39,9 @@ export function AccountTypeNetworkSearch({
   const chainsMap = useChainsMap()
   const evmNetworksMap = useEvmNetworksMap()
   const tokensMap = useTokensMap()
+  const activeEvmNetworks = useActiveEvmNetworksState()
+  const activePolkadotNetworks = useActiveChainsState()
+
   const allNetworks = useMemo(
     () =>
       [
@@ -40,19 +50,27 @@ export function AccountTypeNetworkSearch({
           const relay = chain.relay?.id ? chainsMap[chain.relay.id] : null
           const { label, type } = getNetworkInfo(t, { chain, relay })
           const symbol = tokensMap[chain.nativeToken?.id ?? ""]?.symbol
+          const isActive = isChainActive(chain, activePolkadotNetworks)
 
-          return { id: chain.id, label, type, symbol, account: chain.account }
+          return { id: chain.id, label, type, symbol, account: chain.account, isActive }
         }),
         ...Object.values(evmNetworksMap).flatMap((evmNetwork) => {
           if (evmNetwork.isTestnet) return []
           const { label, type } = getNetworkInfo(t, { evmNetwork })
           const symbol = tokensMap[evmNetwork.nativeToken?.id ?? ""]?.symbol
-
-          return { id: evmNetwork.id, label, type, symbol }
+          const isActive = isEvmNetworkActive(evmNetwork, activeEvmNetworks)
+          return { id: evmNetwork.id, label, type, symbol, isActive }
         }),
-      ].sort((a, b) => a.label?.localeCompare(b.label ?? "") ?? 0),
+      ].sort((a, b) => {
+        // First sort by isActive (true values first)
+        if (a.isActive !== b.isActive) {
+          return a.isActive ? -1 : 1
+        }
+        // Then sort alphabetically by label
+        return a.label?.localeCompare(b.label ?? "") ?? 0
+      }),
 
-    [t, chainsMap, evmNetworksMap, tokensMap],
+    [t, chainsMap, evmNetworksMap, tokensMap, activeEvmNetworks, activePolkadotNetworks],
   )
   type Network = (typeof networks)[number]
 
@@ -82,7 +100,10 @@ export function AccountTypeNetworkSearch({
   )
 
   const networksWithHeader = useMemo(
-    () => [{ id: "combobox-header", label: null, type: "", symbol: "" }, ...networks],
+    () => [
+      { id: "combobox-header", label: null, type: "", symbol: "", isActive: false },
+      ...networks,
+    ],
     [networks],
   )
 
