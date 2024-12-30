@@ -90,6 +90,7 @@ export function AccountTypeNetworkSearch({
     <Combobox
       className="relative col-span-2 w-full cursor-text"
       as="label"
+      spellCheck={false}
       htmlFor={inputId}
       virtual={{ options: networksWithHeader }}
       immediate
