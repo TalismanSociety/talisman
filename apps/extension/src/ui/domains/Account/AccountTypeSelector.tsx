@@ -34,14 +34,12 @@ const AccountTypeButton: FC<{
 
 type AccountTypeSelectorProps = {
   defaultType?: UiAccountAddressType
-  disableOtherTypes?: boolean
   onChange: (type: UiAccountAddressType) => void
   className?: string
 }
 
 export const AccountTypeSelector = ({
   defaultType,
-  disableOtherTypes,
   onChange,
   className,
 }: AccountTypeSelectorProps) => {
@@ -70,7 +68,6 @@ export const AccountTypeSelector = ({
             {t("Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains")}
           </div>
         }
-        disabled={disableOtherTypes && defaultType !== "ethereum"}
         onClick={handleClick("ethereum")}
       />
       <AccountTypeButton
@@ -85,7 +82,6 @@ export const AccountTypeSelector = ({
             {t("Relay Chain, Asset Hub, Bittensor, and most Polkadot chains")}
           </div>
         }
-        disabled={disableOtherTypes && defaultType !== "sr25519"}
         onClick={handleClick("sr25519")}
       />
     </div>

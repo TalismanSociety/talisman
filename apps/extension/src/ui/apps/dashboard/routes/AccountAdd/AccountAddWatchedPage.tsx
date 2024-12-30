@@ -15,10 +15,21 @@ export const Content = () => {
   const urlParamType = (params.get("type") ?? undefined) as AccountAddressType | undefined
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
+  const accountTypeString = () => {
+    switch (urlParamType) {
+      case "ethereum":
+        return " Ethereum"
+      case "sr25519":
+        return " Polkadot"
+      default:
+        return ""
+    }
+  }
+
   return (
     <>
       <HeaderBlock
-        title={t("Add a watched account")}
+        title={t(`Add a watched${accountTypeString()} account`)}
         text={!urlParamType && t("What type of account would you like to create?")}
       />
       <Spacer small />
