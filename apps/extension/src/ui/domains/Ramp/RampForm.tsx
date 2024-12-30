@@ -20,6 +20,7 @@ import { useAccounts, useSelectedCurrency } from "@ui/state"
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
 import { useGetRampOfframpAssetsByCurrency } from "./hooks/useGetRampOfframpAssetsByCurrency"
+import { useGetRampQuote } from "./hooks/useGetRampQuote"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
 import { RampAccountOption } from "./RampAccountOption"
 import { RampAsset, RampCurrency } from "./types"
@@ -101,15 +102,19 @@ export const RampForm = ({ formType }: RampFormProps) => {
     fiatCurrency,
     fiatAmount,
     rampTokenAssetSymbol,
+    rampTokenDecimals,
     rampTokenAssetChain,
     tokenAmount,
+    dirtyAmountField,
   ] = watch([
     "address",
     "fiatCurrency",
     "fiatAmount",
     "rampTokenAsset.symbol",
+    "rampTokenAsset.decimals",
     "rampTokenAsset.chain",
     "tokenAmount",
+    "dirtyAmountField",
   ])
 
   const { data: rampCurrencies } = useGetRampCurrencies()
@@ -127,6 +132,17 @@ export const RampForm = ({ formType }: RampFormProps) => {
     tokenId: rampTokenAssetSymbol,
     isEnabled: !isBuyForm,
   })
+
+  const { data: rampQuote } = useGetRampQuote({
+    currencyCode: fiatCurrency,
+    swapAsset: `${rampTokenAssetChain}_${rampTokenAssetSymbol}`,
+    tokenAmount: tokensToPlanck(debouncedTokenAmount || "0", rampTokenDecimals)?.toString(),
+    fiatAmount: Number(debouncedFiatAmount),
+    isFiatQuote: dirtyAmountField === "fiatAmount",
+  })
+
+  // console.log({ rampQuote })
+  rampQuote
 
   const rampAvailableCurrencies = useCallback(
     () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
