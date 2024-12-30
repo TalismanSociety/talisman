@@ -65,7 +65,7 @@ export const AccountAddMnemonicDropdown: FC<{
 
   return (
     <Dropdown
-      className="mt-8 [&>label]:mb-4"
+      className="[&>label]:mb-4"
       items={mnemonicOptions}
       label={label ?? t("Recovery phrase")}
       propertyKey="value"

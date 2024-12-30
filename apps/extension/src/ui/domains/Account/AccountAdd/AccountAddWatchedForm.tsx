@@ -154,6 +154,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         {!urlParamType && (
           <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
         )}
+
         <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">
@@ -205,7 +206,8 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             </div>
           </div>
         </div>
-        <div className="flex w-full justify-between">
+
+        <div className="flex w-full items-center justify-between">
           <BackToAddAccountButton methodType="watched" />
           <Button
             icon={ArrowRightIcon}
