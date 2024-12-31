@@ -1,11 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, Dropdown } from "talisman-ui"
+import { Button, Dropdown, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
 
 import { Chain, UiAccountAddressType } from "@extension/core"
@@ -205,9 +206,37 @@ export const AddLedgerSelectNetwork = () => {
             </div>
             {!!chain && (
               <div className="bg-black-secondary mt-12 rounded p-12">
-                <h2 className="text-body-secondary leading-paragraph text-base">
-                  {t("2. Choose Ledger App")}
-                </h2>
+                <div className="flex justify-between">
+                  <h2 className="text-body-secondary leading-paragraph text-base">
+                    {t("2. Choose Ledger App")}
+                  </h2>
+
+                  {chain.supportedLedgerApps.length > 1 && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="text-body-secondary flex items-center gap-2 align-middle text-xs">
+                          <InfoIcon />
+                          <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                            Which one should I choose?
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="rounded-xs text-body-secondary border-grey-700 z-20 max-w-[32rem] border-[0.5px] bg-black p-3 text-xs shadow">
+                        <Trans
+                          t={t}
+                          defaults={
+                            "<P><bold>Choose the Polkadot App</bold> if you want to create a new account on {{chainName}}, or want to access an existing account that was created with the Polkadot App.</P><P><bold>Choose the Migration App</bold> if you want to access an existing account that was previously created with the chain-specific {{chainName}} app. The purpose of the Migration app is to allow you to migrate your funds to the new generic Polkadot App.</P>"
+                          }
+                          components={{
+                            P: <div className="mb-2"></div>,
+                            bold: <span className="font-bold"></span>,
+                          }}
+                          values={{ chainName: chain.name }}
+                        />
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
                 <div className="mt-6 grid grid-cols-3 gap-8">
                   {chain.supportedLedgerApps.includes(AddSubstrateLedgerAppType.Generic) && (
                     <AppVersionButton
