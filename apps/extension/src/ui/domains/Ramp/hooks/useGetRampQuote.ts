@@ -9,12 +9,14 @@ const fetchRampQuote = async ({
   tokenAmount,
   fiatAmount,
   isFiatQuote,
+  isBuyForm,
 }: {
   currencyCode: string
   swapAsset: string
   tokenAmount: string
   fiatAmount: number
   isFiatQuote: boolean
+  isBuyForm: boolean
 }): Promise<RampQuote> => {
   try {
     const requestBody: Record<string, string | number> = {
@@ -29,13 +31,16 @@ const fetchRampQuote = async ({
     }
 
     return await (
-      await fetch(`${RAMP_API_BASE_PATH}/onramp/quote/all/?hostApiKey=${RAMP_API_KEY}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await fetch(
+        `${RAMP_API_BASE_PATH}/${isBuyForm ? "onramp" : "offramp"}/quote/all/?hostApiKey=${RAMP_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      })
+      )
     ).json()
   } catch (cause) {
     throw new Error("Failed to fetch Ramp assets", { cause })
@@ -48,17 +53,26 @@ export const useGetRampQuote = ({
   tokenAmount,
   fiatAmount,
   isFiatQuote,
+  isBuyForm,
 }: {
   currencyCode: string
   swapAsset: string
   tokenAmount: string
   fiatAmount: number
   isFiatQuote: boolean
+  isBuyForm: boolean
 }) => {
   return useQuery({
-    queryKey: ["useGetRampQuote", currencyCode, swapAsset, tokenAmount, isFiatQuote, fiatAmount],
+    queryKey: [
+      "useGetRampQuote",
+      currencyCode,
+      swapAsset,
+      tokenAmount,
+      fiatAmount,
+      { isFiatQuote, isBuyForm },
+    ],
     queryFn: () =>
-      fetchRampQuote({ currencyCode, swapAsset, tokenAmount, fiatAmount, isFiatQuote }),
+      fetchRampQuote({ currencyCode, swapAsset, tokenAmount, fiatAmount, isFiatQuote, isBuyForm }),
     staleTime: 1000 * 60,
 
     enabled: !!currencyCode && isFiatQuote ? fiatAmount > 0 : Number(tokenAmount) > 0,

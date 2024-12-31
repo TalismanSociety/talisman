@@ -44,7 +44,9 @@ type PaymentMethod = {
 }
 
 export type RampQuote = {
-  CARD_PAYMENT: PaymentMethod
-  APPLE_PAY: PaymentMethod
+  CARD_PAYMENT?: PaymentMethod
+  APPLE_PAY?: PaymentMethod
+  CARD?: PaymentMethod
+  AMERICAN_BANK_TRANSFER?: PaymentMethod
   asset: RampAsset
 }

@@ -139,27 +139,34 @@ export const RampForm = ({ formType }: RampFormProps) => {
     tokenAmount: tokensToPlanck(debouncedTokenAmount || "0", rampTokenDecimals)?.toString(),
     fiatAmount: Number(debouncedFiatAmount),
     isFiatQuote: dirtyAmountField === "fiatAmount",
+    isBuyForm,
   })
 
   useEffect(() => {
-    const { CARD_PAYMENT, asset } = rampQuote ?? {}
+    if (!rampQuote || isRampQuoteLoading) return
 
-    if (!CARD_PAYMENT || !asset || isRampQuoteLoading) return
+    const { CARD_PAYMENT, CARD, asset } = rampQuote ?? {}
 
-    const { fiatValue, cryptoAmount } = CARD_PAYMENT
+    const { fiatValue: onrampFiatValue, cryptoAmount: onrampCryptoAmount } = CARD_PAYMENT ?? {}
+    const { fiatValue: offrampFiatValue, cryptoAmount: offrampCryptoAmount } = CARD ?? {}
 
     if (dirtyAmountField === "fiatAmount") {
       const tokenQuoteAmount = Number(
         truncateToSignificantDigits(
-          Number(planckToTokens(cryptoAmount ?? "0", asset?.decimals ?? 0)),
-        ).toFixed(1),
+          Number(
+            planckToTokens(
+              (isBuyForm ? onrampCryptoAmount : offrampCryptoAmount) ?? "0",
+              asset?.decimals ?? 0,
+            ),
+          ),
+        ),
       )
 
       setValue("tokenAmount", truncateToSignificantDigits(tokenQuoteAmount))
     } else {
-      setValue("fiatAmount", fiatValue)
+      setValue("fiatAmount", (isBuyForm ? onrampFiatValue : offrampFiatValue) ?? 0)
     }
-  }, [rampQuote, dirtyAmountField, isRampQuoteLoading, setValue, fiatAmount])
+  }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue])
 
   const rampAvailableCurrencies = useCallback(
     () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
