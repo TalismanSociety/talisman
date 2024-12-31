@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { tokensToPlanck } from "@talismn/util"
+import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
-import React, { useCallback, useMemo } from "react"
+import React, { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
@@ -133,7 +133,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
     isEnabled: !isBuyForm,
   })
 
-  const { data: rampQuote } = useGetRampQuote({
+  const { data: rampQuote, isLoading: isRampQuoteLoading } = useGetRampQuote({
     currencyCode: fiatCurrency,
     swapAsset: `${rampTokenAssetChain}_${rampTokenAssetSymbol}`,
     tokenAmount: tokensToPlanck(debouncedTokenAmount || "0", rampTokenDecimals)?.toString(),
@@ -141,8 +141,25 @@ export const RampForm = ({ formType }: RampFormProps) => {
     isFiatQuote: dirtyAmountField === "fiatAmount",
   })
 
-  // console.log({ rampQuote })
-  rampQuote
+  useEffect(() => {
+    const { CARD_PAYMENT, asset } = rampQuote ?? {}
+
+    if (!CARD_PAYMENT || !asset || isRampQuoteLoading) return
+
+    const { fiatValue, cryptoAmount } = CARD_PAYMENT
+
+    if (dirtyAmountField === "fiatAmount") {
+      const tokenQuoteAmount = Number(
+        truncateToSignificantDigits(
+          Number(planckToTokens(cryptoAmount ?? "0", asset?.decimals ?? 0)),
+        ).toFixed(1),
+      )
+
+      setValue("tokenAmount", truncateToSignificantDigits(tokenQuoteAmount))
+    } else {
+      setValue("fiatAmount", fiatValue)
+    }
+  }, [rampQuote, dirtyAmountField, isRampQuoteLoading, setValue, fiatAmount])
 
   const rampAvailableCurrencies = useCallback(
     () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
@@ -195,18 +212,14 @@ export const RampForm = ({ formType }: RampFormProps) => {
   }
 
   const handleFiatAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTokenAmount = Number(e.target.value) / (tokenRateByCurrency ?? 0)
-
     setDebouncedFiatAmount(e.target.value)
-    setValue("tokenAmount", truncateToSignificantDigits(newTokenAmount))
+
     setValue("dirtyAmountField", "fiatAmount")
   }
 
   const handleTokenAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fiatAmount = (tokenRateByCurrency ?? 0) * Number(e.target.value)
-
     setDebouncedTokenAmount(e.target.value)
-    setValue("fiatAmount", truncateToSignificantDigits(fiatAmount))
+
     setValue("dirtyAmountField", "tokenAmount")
   }
 
@@ -330,6 +343,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       onChange={handleTokenChange}
       buttonClassName="px-6 py-3 h-full flex"
       optionClassName="px-6 py-3"
+      isLoading={isRampQuoteLoading && dirtyAmountField === "fiatAmount"}
     />
   )
 

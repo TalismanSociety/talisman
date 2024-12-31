@@ -1,7 +1,7 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { RAMP_API_BASE_PATH, RAMP_API_KEY } from "extension-shared"
 
-import { RampCurrencyWithAssets } from "../types"
+import { RampQuote } from "../types"
 
 const fetchRampQuote = async ({
   currencyCode,
@@ -15,7 +15,7 @@ const fetchRampQuote = async ({
   tokenAmount: string
   fiatAmount: number
   isFiatQuote: boolean
-}): Promise<RampCurrencyWithAssets> => {
+}): Promise<RampQuote> => {
   try {
     const requestBody: Record<string, string | number> = {
       fiatCurrency: currencyCode,
@@ -60,7 +60,7 @@ export const useGetRampQuote = ({
     queryFn: () =>
       fetchRampQuote({ currencyCode, swapAsset, tokenAmount, fiatAmount, isFiatQuote }),
     staleTime: 1000 * 60,
-    placeholderData: keepPreviousData,
+
     enabled: !!currencyCode && isFiatQuote ? fiatAmount > 0 : Number(tokenAmount) > 0,
   })
 }

@@ -34,3 +34,17 @@ export type RampCurrencyWithAssets = {
   maxFeePercent: number
   assets: RampAsset[]
 }
+
+type PaymentMethod = {
+  fiatCurrency: string
+  cryptoAmount: string
+  fiatValue: number
+  baseRampFee: number
+  appliedFee: number
+}
+
+export type RampQuote = {
+  CARD_PAYMENT: PaymentMethod
+  APPLE_PAY: PaymentMethod
+  asset: RampAsset
+}
