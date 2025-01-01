@@ -133,6 +133,14 @@ export const RampForm = ({ formType }: RampFormProps) => {
     isEnabled: !isBuyForm,
   })
 
+  const rampAvailableCurrencies = useMemo(
+    () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
+    [isBuyForm, rampCurrencyWithAssets, rampCurrencyWithOfframpAssets],
+  )
+  const selectedToken = rampAvailableCurrencies?.assets.find(
+    (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
+  )
+
   const { data: rampQuote, isLoading: isRampQuoteLoading } = useGetRampQuote({
     currencyCode: fiatCurrency,
     swapAsset: `${rampTokenAssetChain}_${rampTokenAssetSymbol}`,
@@ -140,7 +148,12 @@ export const RampForm = ({ formType }: RampFormProps) => {
     fiatAmount: Number(debouncedFiatAmount),
     isFiatQuote: dirtyAmountField === "fiatAmount",
     isBuyForm,
+    isEnabled: !!selectedToken,
   })
+
+  useEffect(() => {
+    if (!selectedToken && tokenAmount > 0) setValue("tokenAmount", 0)
+  }, [selectedToken, setValue, tokenAmount])
 
   useEffect(() => {
     if (!rampQuote || isRampQuoteLoading) return
@@ -167,11 +180,6 @@ export const RampForm = ({ formType }: RampFormProps) => {
       setValue("fiatAmount", (isBuyForm ? onrampFiatValue : offrampFiatValue) ?? 0)
     }
   }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue])
-
-  const rampAvailableCurrencies = useCallback(
-    () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
-    [isBuyForm, rampCurrencyWithAssets, rampCurrencyWithOfframpAssets],
-  )()
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
@@ -285,9 +293,6 @@ export const RampForm = ({ formType }: RampFormProps) => {
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
   const selectedFiatCurrency = onrampCurrencies.find((curr) => curr.fiatCurrency === fiatCurrency)
-  const selectedToken = rampAvailableCurrencies?.assets.find(
-    (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
-  )
   const selectedAccount = useMemo(
     () => accountsWithBalance.find((acc) => acc.address === address),
     [accountsWithBalance, address],

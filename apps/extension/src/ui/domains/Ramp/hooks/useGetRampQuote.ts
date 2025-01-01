@@ -54,6 +54,7 @@ export const useGetRampQuote = ({
   fiatAmount,
   isFiatQuote,
   isBuyForm,
+  isEnabled,
 }: {
   currencyCode: string
   swapAsset: string
@@ -61,6 +62,7 @@ export const useGetRampQuote = ({
   fiatAmount: number
   isFiatQuote: boolean
   isBuyForm: boolean
+  isEnabled: boolean
 }) => {
   return useQuery({
     queryKey: [
@@ -75,6 +77,6 @@ export const useGetRampQuote = ({
       fetchRampQuote({ currencyCode, swapAsset, tokenAmount, fiatAmount, isFiatQuote, isBuyForm }),
     staleTime: 1000 * 60,
 
-    enabled: !!currencyCode && isFiatQuote ? fiatAmount > 0 : Number(tokenAmount) > 0,
+    enabled: isEnabled && !!currencyCode && isFiatQuote ? fiatAmount > 0 : Number(tokenAmount) > 0,
   })
 }
