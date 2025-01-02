@@ -3,7 +3,7 @@ import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
 
-import { SearchInput } from "./SearchInput"
+import { SearchInput } from "@talisman/components/SearchInput"
 
 export type DropdownOption = Record<string, unknown>
 
