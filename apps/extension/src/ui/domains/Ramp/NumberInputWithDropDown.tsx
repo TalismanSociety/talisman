@@ -15,6 +15,7 @@ export type NumberInputWithDropDownProps<T extends DropdownOption> = DropdownPro
   isSearchable?: boolean
   searchPlaceholder?: string
   searchLabel?: string
+  minStep?: string
 }
 
 export const NumberInputWithDropDown = <T extends DropdownOption>({
@@ -24,9 +25,10 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
   inputPlaceholder,
   isLoading,
   searchPlaceholder,
+  searchLabel,
+  minStep,
   onInputChange,
   handleSearchChange,
-  searchLabel,
   ...dropdownProps
 }: NumberInputWithDropDownProps<T>) => {
   return (
@@ -35,6 +37,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
         <input
           type={inputType}
           inputMode={inputType === "number" ? "decimal" : "text"}
+          step={inputType === "number" ? (minStep ?? "0.01") : undefined}
           placeholder={inputPlaceholder}
           autoComplete="off"
           className={classNames(

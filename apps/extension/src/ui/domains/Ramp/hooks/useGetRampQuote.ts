@@ -30,7 +30,7 @@ const fetchRampQuote = async ({
       requestBody.cryptoAmount = tokenAmount
     }
 
-    return await (
+    const response = await (
       await fetch(
         `${RAMP_API_BASE_PATH}/${isBuyForm ? "onramp" : "offramp"}/quote/all/?hostApiKey=${RAMP_API_KEY}`,
         {
@@ -42,6 +42,11 @@ const fetchRampQuote = async ({
         },
       )
     ).json()
+    // Hacky way to throw an error because POST method is being used instead of a GET for this API call
+    if (response.code || response.statusCode) {
+      throw new Error(response)
+    }
+    return response
   } catch (cause) {
     throw new Error("Failed to fetch Ramp assets", { cause })
   }

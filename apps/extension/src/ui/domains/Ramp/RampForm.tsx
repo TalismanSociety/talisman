@@ -106,7 +106,6 @@ export const RampForm = ({ formType }: RampFormProps) => {
     rampTokenAssetSymbol,
     rampTokenDecimals,
     rampTokenAssetChain,
-    tokenAmount,
     dirtyAmountField,
   ] = watch([
     "address",
@@ -115,7 +114,6 @@ export const RampForm = ({ formType }: RampFormProps) => {
     "rampTokenAsset.symbol",
     "rampTokenAsset.decimals",
     "rampTokenAsset.chain",
-    "tokenAmount",
     "dirtyAmountField",
   ])
 
@@ -143,7 +141,11 @@ export const RampForm = ({ formType }: RampFormProps) => {
     (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
   )
 
-  const { data: rampQuote, isLoading: isRampQuoteLoading } = useGetRampQuote({
+  const {
+    data: rampQuote,
+    isLoading: isRampQuoteLoading,
+    isError: isRampQuoteError,
+  } = useGetRampQuote({
     currencyCode: fiatCurrency,
     swapAsset: `${rampTokenAssetChain}_${rampTokenAssetSymbol}`,
     tokenAmount: tokensToPlanck(debouncedTokenAmount || "0", rampTokenDecimals)?.toString(),
@@ -154,10 +156,9 @@ export const RampForm = ({ formType }: RampFormProps) => {
   })
 
   useEffect(() => {
-    if (!selectedToken && tokenAmount > 0) setValue("tokenAmount", 0)
-  }, [selectedToken, setValue, tokenAmount])
+    // Handles cases where users switch between buy and sell forms and the token is not available for the selected currency/action
+    if (!selectedToken) setValue("tokenAmount", 0)
 
-  useEffect(() => {
     if (!rampQuote || isRampQuoteLoading) return
 
     const { CARD_PAYMENT, CARD, asset } = rampQuote ?? {}
@@ -166,22 +167,20 @@ export const RampForm = ({ formType }: RampFormProps) => {
     const { fiatValue: offrampFiatValue, cryptoAmount: offrampCryptoAmount } = CARD ?? {}
 
     if (dirtyAmountField === "fiatAmount") {
-      const tokenQuoteAmount = Number(
-        truncateToSignificantDigits(
-          Number(
-            planckToTokens(
-              (isBuyForm ? onrampCryptoAmount : offrampCryptoAmount) ?? "0",
-              asset?.decimals ?? 0,
-            ),
+      const tokenQuoteAmount = truncateToSignificantDigits(
+        Number(
+          planckToTokens(
+            (isBuyForm ? onrampCryptoAmount : offrampCryptoAmount) ?? "0",
+            asset?.decimals ?? 0,
           ),
         ),
-      )
+      ).toString()
 
-      setValue("tokenAmount", truncateToSignificantDigits(tokenQuoteAmount))
+      setValue("tokenAmount", Number(tokenQuoteAmount))
     } else {
       setValue("fiatAmount", (isBuyForm ? onrampFiatValue : offrampFiatValue) ?? 0)
     }
-  }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue])
+  }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue, selectedToken])
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
@@ -243,32 +242,19 @@ export const RampForm = ({ formType }: RampFormProps) => {
   const handleFiatCurrencyChange = (fiatCurrency: RampCurrency | null) => {
     const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
 
-    const newTokenRate = getTokenRateByCurrency({
-      fiatCurrency: newFiatCurrency,
-      tokenId: rampTokenAssetSymbol,
-      chain: rampTokenAssetChain,
-    })
-    const fiatAmount = (newTokenRate ?? 0) * tokenAmount
-
     setValue("fiatCurrency", newFiatCurrency)
-    setValue("fiatAmount", truncateToSignificantDigits(fiatAmount))
   }
 
   const handleTokenChange = (rampAsset: RampAsset | null) => {
-    setValue("rampTokenAsset", {
-      symbol: rampAsset?.symbol ?? "",
-      chain: rampAsset?.chain ?? "",
-      decimals: rampAsset?.decimals ?? 0,
-    })
-
-    const newTokenRate = getTokenRateByCurrency({
-      fiatCurrency,
-      tokenId: rampAsset?.symbol ?? "",
-      chain: rampAsset?.chain ?? "",
-    })
-    const newTokenAmount = fiatAmount / (newTokenRate ?? 0)
-
-    setValue("tokenAmount", truncateToSignificantDigits(newTokenAmount))
+    setValue(
+      "rampTokenAsset",
+      {
+        symbol: rampAsset?.symbol ?? "",
+        chain: rampAsset?.chain ?? "",
+        decimals: rampAsset?.decimals ?? 0,
+      },
+      { shouldValidate: true },
+    )
   }
 
   // const handleAccountChange = useCallback(
@@ -322,7 +308,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
     <NumberInputWithDropDown
       inputFieldProps={register("fiatAmount")}
       inputFieldLabel={fiatCurrency}
-      inputType="string"
+      inputType="number"
       inputPlaceholder="100"
       onInputChange={(e) => {
         handleFiatAmountChange(e)
@@ -342,6 +328,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       handleSearchChange={setFiatSearch}
       searchPlaceholder={t("Search currency")}
       searchLabel={t(`Available now (${onrampCurrencies.length}):`)}
+      minStep="0.01"
     />
   )
 
@@ -349,7 +336,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
     <NumberInputWithDropDown
       inputFieldProps={register("tokenAmount")}
       inputFieldLabel={`$${fiatAmount}`}
-      inputType="string"
+      inputType="number"
       inputPlaceholder="0"
       onInputChange={(e) => {
         handleTokenAmountChange(e)
@@ -372,6 +359,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       handleSearchChange={setTokenSearch}
       searchPlaceholder={t("Search asset")}
       searchLabel={t(`Available now (${rampAvailableCurrencies?.assets.length}):`)}
+      minStep={`1e-${rampTokenDecimals}`}
     />
   )
 
@@ -410,7 +398,12 @@ export const RampForm = ({ formType }: RampFormProps) => {
             className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-lg border-[1px]"
           />
         </div>
-        <Button type="submit" className="mt-auto w-full md:mt-6" primary disabled={!isValid}>
+        <Button
+          type="submit"
+          className="mt-auto w-full md:mt-6"
+          primary
+          disabled={!isValid || isRampQuoteError || isRampQuoteLoading}
+        >
           {isBuyForm ? t("Buy with Ramp") : t("Sell with Ramp")}
         </Button>
       </form>
