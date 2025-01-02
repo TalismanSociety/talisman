@@ -4,13 +4,15 @@ import { RAMP_API_BASE_PATH } from "extension-shared"
 import { RampCurrencyWithAssets } from "../types"
 
 // note: currencyCode must be upper case
-const fetchRampAssetsByCurrency = async (currencyCode: string): Promise<RampCurrencyWithAssets> => {
+const fetchRampAssetsByCurrency = async (
+  currencyCode: string | undefined,
+): Promise<RampCurrencyWithAssets> => {
   try {
-    return await (
-      await fetch(`${RAMP_API_BASE_PATH}/assets?currencyCode=${currencyCode.toUpperCase()}`, {
-        method: "GET",
-      })
-    ).json()
+    const apiUrl = currencyCode
+      ? `${RAMP_API_BASE_PATH}/assets?currencyCode=${currencyCode.toUpperCase()}`
+      : `${RAMP_API_BASE_PATH}/assets`
+
+    return await (await fetch(apiUrl)).json()
   } catch (cause) {
     throw new Error("Failed to fetch Ramp assets", { cause })
   }
@@ -23,7 +25,7 @@ export const useGetRampAssetsByCurrency = ({
   tokenId,
   isEnabled,
 }: {
-  currencyCode: string
+  currencyCode: string | undefined
   fiatAmount: string
   tokenAmount: string
   tokenId: string

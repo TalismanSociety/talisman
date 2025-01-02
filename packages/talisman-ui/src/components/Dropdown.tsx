@@ -23,7 +23,7 @@ export type DropdownProps<T extends DropdownOption> = {
   propertyLabel?: keyof T
   renderItem?: DropdownOptionRender<T>
   value?: T | null | undefined
-  placeholder?: string
+  placeholder?: string | ReactNode
   onChange?: (item: T | null) => void
   disabled?: boolean
   className?: string

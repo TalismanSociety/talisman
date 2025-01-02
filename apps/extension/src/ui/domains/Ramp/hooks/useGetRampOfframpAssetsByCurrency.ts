@@ -5,16 +5,16 @@ import { RampCurrencyWithAssets } from "../types"
 
 // note: currencyCode must be upper case
 const fetchRampOfframpAssetsByCurrency = async (
-  currencyCode: string,
+  currencyCode: string | undefined,
 ): Promise<RampCurrencyWithAssets> => {
   try {
+    const apiUrl = currencyCode
+      ? `${RAMP_API_BASE_PATH}/offramp/assets?currencyCode=${currencyCode.toUpperCase()}`
+      : `${RAMP_API_BASE_PATH}/offramp/assets`
     return await (
-      await fetch(
-        `${RAMP_API_BASE_PATH}/offramp/assets?currencyCode=${currencyCode.toUpperCase()}`,
-        {
-          method: "GET",
-        },
-      )
+      await fetch(apiUrl, {
+        method: "GET",
+      })
     ).json()
   } catch (cause) {
     throw new Error("Failed to fetch Ramp offramp assets", { cause })
@@ -28,7 +28,7 @@ export const useGetRampOfframpAssetsByCurrency = ({
   tokenId,
   isEnabled,
 }: {
-  currencyCode: string
+  currencyCode: string | undefined
   fiatAmount: string
   tokenAmount: string
   tokenId: string

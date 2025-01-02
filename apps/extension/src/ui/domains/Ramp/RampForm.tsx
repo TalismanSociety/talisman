@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { PlusIcon } from "@talismn/icons"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
 import React, { useCallback, useEffect, useMemo } from "react"
@@ -15,7 +16,7 @@ import {
 } from "@extension/core"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useAccounts, useSelectedCurrency } from "@ui/state"
+import { useAccounts } from "@ui/state"
 
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
@@ -64,7 +65,6 @@ type RampFormProps = {
 }
 
 export const RampForm = ({ formType }: RampFormProps) => {
-  const currency = useSelectedCurrency()
   const accounts = useAccounts("portfolio")
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
@@ -89,12 +89,12 @@ export const RampForm = ({ formType }: RampFormProps) => {
   } = useForm<FormData>({
     mode: "all",
     defaultValues: {
-      fiatCurrency: currency.toUpperCase(),
-      rampTokenAsset: {
-        symbol: "DOT",
-        chain: "DOT",
-        decimals: 10,
-      },
+      // fiatCurrency: currency.toUpperCase(),
+      // rampTokenAsset: {
+      //   symbol: "DOT",
+      //   chain: "DOT",
+      //   decimals: 10,
+      // },
       dirtyAmountField: "fiatAmount",
     },
     resolver: yupResolver(schema),
@@ -315,15 +315,22 @@ export const RampForm = ({ formType }: RampFormProps) => {
         register("fiatAmount").onChange(e)
       }}
       propertyKey="fiatCurrency"
-      placeholder={t("Select")}
       items={onrampCurrencies.filter((curr) =>
         curr.fiatCurrency.includes(fiatSearch.toUpperCase()),
       )}
+      placeholder={
+        <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
+            <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
+          </div>
+          <div className="text-xs text-white">{t("Select currency")}</div>
+        </div>
+      }
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
-      buttonClassName="px-6 py-3 h-full flex"
-      optionClassName="p-6"
+      buttonClassName="px-3 py-3 h-full flex"
+      optionClassName="px-6"
       isSearchable
       handleSearchChange={setFiatSearch}
       searchPlaceholder={t("Search currency")}
@@ -343,7 +350,14 @@ export const RampForm = ({ formType }: RampFormProps) => {
         register("tokenAmount").onChange(e)
       }}
       propertyKey="address"
-      placeholder={t("Select token")}
+      placeholder={
+        <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
+            <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
+          </div>
+          <div className="text-xs text-white">{t("Select token")}</div>
+        </div>
+      }
       items={
         rampAvailableCurrencies?.assets.filter((asset) =>
           asset.symbol.includes(tokenSearch.toUpperCase()),
@@ -352,8 +366,8 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
-      buttonClassName="px-6 py-3 h-full flex"
-      optionClassName="px-6 py-3"
+      buttonClassName="px-3 py-3 h-full flex"
+      optionClassName="px-6"
       isLoading={isRampQuoteLoading && dirtyAmountField === "fiatAmount"}
       isSearchable
       handleSearchChange={setTokenSearch}
@@ -375,7 +389,9 @@ export const RampForm = ({ formType }: RampFormProps) => {
           {isBuyForm ? fiatAmountInput : tokenAmountInput}
           <div className="flex justify-between">
             <div className="text-xs">{t("You're receiving (estimate)")}</div>
-            <div className="text-xs">{`1 ${rampTokenAssetSymbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency}`}</div>
+            {rampTokenAssetSymbol && (
+              <div className="text-xs">{`1 ${rampTokenAssetSymbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency}`}</div>
+            )}
           </div>
           {isBuyForm ? tokenAmountInput : fiatAmountInput}
         </div>
