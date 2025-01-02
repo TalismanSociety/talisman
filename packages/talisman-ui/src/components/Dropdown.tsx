@@ -3,6 +3,8 @@ import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
 
+import { SearchInput } from "./SearchInput"
+
 export type DropdownOption = Record<string, unknown>
 
 export type DropdownOptionRender<T extends DropdownOption> = (
@@ -27,6 +29,10 @@ export type DropdownProps<T extends DropdownOption> = {
   className?: string
   buttonClassName?: string
   optionClassName?: string
+  isSearchable?: boolean
+  handleSearchChange?: (event: React.SetStateAction<string>) => void
+  searchPlaceholder?: string
+  searchLabel?: string
 }
 
 export const Dropdown = <T extends Record<string, unknown>>({
@@ -40,8 +46,12 @@ export const Dropdown = <T extends Record<string, unknown>>({
   items,
   value,
   placeholder,
+  isSearchable,
+  searchPlaceholder,
+  searchLabel,
   renderItem = DEFAULT_RENDER,
   onChange,
+  handleSearchChange,
 }: DropdownProps<T>) => (
   <Listbox disabled={disabled} value={value} onChange={onChange}>
     {({ open }) => (
@@ -61,22 +71,41 @@ export const Dropdown = <T extends Record<string, unknown>>({
             {!disabled && <ChevronDownIcon className="shrink-0 text-[1.2em]" />}
           </Listbox.Button>
           <div className="relative w-full">
-            <div className="bg-grey-800 scrollable scrollable-700 absolute left-0 top-0 z-10 max-h-[30rem] w-full overflow-y-auto overflow-x-hidden rounded-b-sm">
-              <Listbox.Options>
-                {items.map((item, i, arr) => (
-                  <Listbox.Option
-                    key={`${item[propertyKey]}-${i}` as string | number}
-                    value={item}
-                    className={classNames(
-                      "bg-grey-800 hover:bg-grey-750 hover:text-grey-300 w-full max-w-full cursor-pointer overflow-hidden p-8",
-                      "flex-grow flex-col justify-center",
-                      i === arr.length - 1 && "rounded-b-sm",
-                      optionClassName,
+            <div className="scrollable scrollable-700 w-full">
+              <Listbox.Options
+                className={classNames(
+                  "bg-grey-800 absolute right-0 top-0 z-10 rounded-sm",
+                  !isSearchable && "w-full rounded-b-sm",
+                )}
+              >
+                {isSearchable && (
+                  <div className="sticky top-0 z-10 space-y-6 px-6 pb-3 pt-6">
+                    {searchLabel && (
+                      <div className="text-body-secondary text-xs">{searchLabel}</div>
                     )}
-                  >
-                    {renderItem(item, propertyLabel)}
-                  </Listbox.Option>
-                ))}
+                    <SearchInput
+                      placeholder={searchPlaceholder ?? "Search..."}
+                      onChange={handleSearchChange}
+                      initialValue=""
+                    />
+                  </div>
+                )}
+                <div className="max-h-[30rem] overflow-y-auto overflow-x-hidden">
+                  {items.map((item, i, arr) => (
+                    <Listbox.Option
+                      key={`${item[propertyKey]}-${i}` as string | number}
+                      value={item}
+                      className={classNames(
+                        "bg-grey-800 hover:bg-grey-750 hover:text-grey-300 w-full max-w-full cursor-pointer overflow-hidden p-8",
+                        "flex-grow flex-col justify-center",
+                        i === arr.length - 1 && "rounded-b-sm",
+                        optionClassName,
+                      )}
+                    >
+                      {renderItem(item, propertyLabel)}
+                    </Listbox.Option>
+                  ))}
+                </div>
               </Listbox.Options>
             </div>
           </div>

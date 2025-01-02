@@ -68,6 +68,8 @@ export const RampForm = ({ formType }: RampFormProps) => {
   const accounts = useAccounts("portfolio")
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
+  const [fiatSearch, setFiatSearch] = React.useState<string>("")
+  const [tokenSearch, setTokenSearch] = React.useState<string>("")
   const { t } = useTranslation()
   const { balanceTotalPerAccount } = usePortfolioAccounts()
 
@@ -328,12 +330,18 @@ export const RampForm = ({ formType }: RampFormProps) => {
       }}
       propertyKey="fiatCurrency"
       placeholder={t("Select")}
-      items={onrampCurrencies}
+      items={onrampCurrencies.filter((curr) =>
+        curr.fiatCurrency.includes(fiatSearch.toUpperCase()),
+      )}
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
       buttonClassName="px-6 py-3 h-full flex"
       optionClassName="p-6"
+      isSearchable
+      handleSearchChange={setFiatSearch}
+      searchPlaceholder={t("Search currency")}
+      searchLabel={t(`Available now (${onrampCurrencies.length}):`)}
     />
   )
 
@@ -349,13 +357,21 @@ export const RampForm = ({ formType }: RampFormProps) => {
       }}
       propertyKey="address"
       placeholder={t("Select token")}
-      items={rampAvailableCurrencies?.assets ?? []}
+      items={
+        rampAvailableCurrencies?.assets.filter((asset) =>
+          asset.symbol.includes(tokenSearch.toUpperCase()),
+        ) ?? []
+      }
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
       buttonClassName="px-6 py-3 h-full flex"
       optionClassName="px-6 py-3"
       isLoading={isRampQuoteLoading && dirtyAmountField === "fiatAmount"}
+      isSearchable
+      handleSearchChange={setTokenSearch}
+      searchPlaceholder={t("Search asset")}
+      searchLabel={t(`Available now (${rampAvailableCurrencies?.assets.length}):`)}
     />
   )
 

@@ -7,10 +7,14 @@ export type NumberInputWithDropDownProps<T extends DropdownOption> = DropdownPro
     HTMLInputElement
   >
   onInputChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  handleSearchChange?: (event: React.SetStateAction<string>) => void
   inputFieldLabel: string | number
   inputType: "string" | "number"
   inputPlaceholder: string
   isLoading?: boolean
+  isSearchable?: boolean
+  searchPlaceholder?: string
+  searchLabel?: string
 }
 
 export const NumberInputWithDropDown = <T extends DropdownOption>({
@@ -19,7 +23,10 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
   inputType,
   inputPlaceholder,
   isLoading,
+  searchPlaceholder,
   onInputChange,
+  handleSearchChange,
+  searchLabel,
   ...dropdownProps
 }: NumberInputWithDropDownProps<T>) => {
   return (
@@ -39,7 +46,13 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
         />
         <div className="text-tiny">{inputFieldLabel ?? ""}</div>
       </div>
-      <Dropdown {...dropdownProps} />
+      <Dropdown
+        {...dropdownProps}
+        isSearchable
+        handleSearchChange={handleSearchChange}
+        searchPlaceholder={searchPlaceholder}
+        searchLabel={searchLabel}
+      />
     </div>
   )
 }
