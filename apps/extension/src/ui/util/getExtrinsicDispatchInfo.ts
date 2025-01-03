@@ -1,6 +1,5 @@
 import { GenericExtrinsic } from "@polkadot/types"
 import { assert } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
 
 import { stateCall } from "./stateCall"
 
@@ -12,7 +11,6 @@ type ExtrinsicDispatchInfo = {
 export const getExtrinsicDispatchInfo = async (
   chainId: string,
   signedExtrinsic: GenericExtrinsic,
-  blockHash?: HexString,
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
@@ -23,7 +21,7 @@ export const getExtrinsicDispatchInfo = async (
     "TransactionPaymentApi_query_info",
     "RuntimeDispatchInfo",
     [signedExtrinsic, len],
-    blockHash,
+    undefined,
     true,
   )
 
