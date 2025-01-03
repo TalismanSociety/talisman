@@ -8,13 +8,13 @@ import {
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
+  SearchInput,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
 
-import { SearchInput } from "@talisman/components/SearchInput"
 import { usePortfolio, useSetting } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 

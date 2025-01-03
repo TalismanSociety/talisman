@@ -14,13 +14,13 @@ import {
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
+  SearchInput,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
 
-import { SearchInput } from "@talisman/components/SearchInput"
 import {
   NftVisibilityFilter,
   setNftNetworkFilter,

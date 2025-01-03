@@ -12,13 +12,13 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
   Dropdown,
+  SearchInput,
   Toggle,
 } from "talisman-ui"
 import urlJoin from "url-join"
 
 import { activeTokensStore, isTokenActive } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

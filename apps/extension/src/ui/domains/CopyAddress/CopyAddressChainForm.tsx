@@ -4,10 +4,16 @@ import { isEthereumAddress } from "@talismn/util"
 import { SubstrateLedgerAppType } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
+import {
+  IconButton,
+  SearchInput,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"

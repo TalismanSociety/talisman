@@ -13,7 +13,7 @@ import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { BehaviorSubject } from "rxjs"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { IconButton, SearchInput, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import {
   AccountJsonAny,
@@ -22,7 +22,6 @@ import {
   TreeFolder,
   TreeItem,
 } from "@extension/core"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

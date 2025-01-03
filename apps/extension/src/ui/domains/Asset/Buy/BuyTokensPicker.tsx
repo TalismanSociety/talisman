@@ -5,10 +5,10 @@ import { classNames } from "@talismn/util"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
+import { SearchInput } from "talisman-ui"
 
 import { Address } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import {
   useAccountByAddress,
   useChains,

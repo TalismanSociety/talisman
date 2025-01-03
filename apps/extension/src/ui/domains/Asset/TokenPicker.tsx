@@ -7,10 +7,10 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { SearchInput } from "talisman-ui"
 
 import { Address } from "@extension/core"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import {
   useAccountByAddress,
   useBalances,
