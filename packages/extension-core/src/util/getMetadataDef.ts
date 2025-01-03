@@ -55,6 +55,10 @@ const getMetadataDefInner = async (
 ): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
 
+  // blockHash being equal to genesisHash happens when trying to decode payload of immortal transactions
+  // in that case, blockHash must be used as block reference when fetching data
+  if (blockHash && blockHash === genesisHash) blockHash = undefined
+
   const cacheKey = getResultCacheKey(genesisHash, specVersion)
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
 
