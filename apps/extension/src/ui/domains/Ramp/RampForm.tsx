@@ -201,10 +201,12 @@ export const RampForm = ({ formType }: RampFormProps) => {
     const params = new URLSearchParams({
       hostApiKey: RAMP_API_KEY,
       hostLogoUrl: TALISMAN_LOGO_URL,
-      enabledFlows: isBuyForm ? "ONRAMP" : "OFFRAMP",
+      defaultFlow: isBuyForm ? "ONRAMP" : "OFFRAMP",
+      enabledFlows: "ONRAMP,OFFRAMP",
       swapAsset: `${rampTokenAsset.chain}_${rampTokenAsset.symbol}`,
       userAddress: address,
       fiatCurrency: fiatCurrency,
+      hostAppName: "Talisman",
     })
 
     // Dynamically add the amount parameter based on the dirtyAmountField
