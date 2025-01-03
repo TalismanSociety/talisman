@@ -18,6 +18,7 @@ import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts } from "@ui/state"
 
+import { currencyInfo } from "./currencyInfo"
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
 import { useGetRampOfframpAssetsByCurrency } from "./hooks/useGetRampOfframpAssetsByCurrency"
@@ -89,12 +90,6 @@ export const RampForm = ({ formType }: RampFormProps) => {
   } = useForm<FormData>({
     mode: "all",
     defaultValues: {
-      // fiatCurrency: currency.toUpperCase(),
-      // rampTokenAsset: {
-      //   symbol: "DOT",
-      //   chain: "DOT",
-      //   decimals: 10,
-      // },
       dirtyAmountField: "fiatAmount",
     },
     resolver: yupResolver(schema),
@@ -287,18 +282,33 @@ export const RampForm = ({ formType }: RampFormProps) => {
   )
 
   const renderFiatCurrencyItem: DropdownOptionRender<RampCurrency> = (item) => {
-    return <div className="flex w-[5rem] items-center text-white">{item.fiatCurrency}</div>
+    const fiatCurrencyIfo = currencyInfo[item.fiatCurrency ?? ""]
+    return (
+      <div className="flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <img
+            src={`https://assets.ramp.network/flags/${fiatCurrencyIfo.countryCode}.svg`}
+            alt={item.fiatCurrency}
+            className="h-[28px] w-[28px] rounded-full"
+          />
+        </div>
+        <div className="min-w-0">
+          <div className="text-white">{item.fiatCurrency}</div>
+          <div className="text-tiny truncate">{item.name}</div>
+        </div>
+      </div>
+    )
   }
 
   const renderTokenItem: DropdownOptionRender<RampAsset> = (item) => {
     return (
-      <div className="flex w-[9rem] items-center gap-4">
+      <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <img src={item.logoUrl} alt={item.symbol} className="h-[28px] w-[28px] rounded-full" />
         </div>
         <div className="min-w-0">
           <div className="text-white">{item.symbol}</div>
-          <div className="text-tiny max-w-[9rem] truncate">{item.name}</div>
+          <div className="text-tiny truncate">{item.name}</div>
         </div>
       </div>
     )
@@ -329,8 +339,8 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
-      buttonClassName="px-3 py-3 h-full flex"
-      optionClassName="px-6"
+      buttonClassName="px-3 py-3 h-full flex w-[16rem] gap-0"
+      optionClassName="px-6 py-[8px] border-b border-grey-750"
       isSearchable
       handleSearchChange={setFiatSearch}
       searchPlaceholder={t("Search currency")}
@@ -342,7 +352,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
   const tokenAmountInput = (
     <NumberInputWithDropDown
       inputFieldProps={register("tokenAmount")}
-      inputFieldLabel={`$${fiatAmount}`}
+      inputFieldLabel={`$${fiatAmount || "0"}`}
       inputType="number"
       inputPlaceholder="0"
       onInputChange={(e) => {
@@ -366,8 +376,8 @@ export const RampForm = ({ formType }: RampFormProps) => {
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
-      buttonClassName="px-3 py-3 h-full flex"
-      optionClassName="px-6"
+      buttonClassName="px-3 py-3 h-full flex w-[16rem] gap-0"
+      optionClassName="px-6 py-[8px] border-b border-grey-750"
       isLoading={isRampQuoteLoading && dirtyAmountField === "fiatAmount"}
       isSearchable
       handleSearchChange={setTokenSearch}

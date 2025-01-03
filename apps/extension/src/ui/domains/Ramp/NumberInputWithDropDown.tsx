@@ -47,7 +47,9 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
           {...inputFieldProps}
           onChange={onInputChange}
         />
-        <div className="text-tiny">{inputFieldLabel ?? ""}</div>
+        <div className={classNames("text-tiny", !inputFieldLabel && "invisible")}>
+          {inputFieldLabel ?? "..."}
+        </div>
       </div>
       <Dropdown
         {...dropdownProps}
