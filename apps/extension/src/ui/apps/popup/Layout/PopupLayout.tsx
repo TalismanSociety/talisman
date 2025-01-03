@@ -10,8 +10,8 @@ import {
 } from "react"
 import { useLocation } from "react-router-dom"
 
-import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundary"
 import { HandMonoLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 
@@ -89,7 +89,7 @@ export const PopupLayout: FC<ContainerProps> = ({ className, children, ...props 
       {...props}
       className={classNames("relative flex h-full w-full flex-col overflow-hidden", className)}
     >
-      <ErrorBoundary>{children}</ErrorBoundary>
+      <TalismanErrorBoundary>{children}</TalismanErrorBoundary>
     </main>
   )
 }

@@ -2,15 +2,15 @@ import "@talisman/theme/styles.css"
 
 import { Subscribe } from "@react-rxjs/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import React, { ReactNode, Suspense } from "react"
+import { ReactNode, StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { FontFamily, preloadFonts } from "talisman-ui"
 
-import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundary"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import { KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
 
@@ -50,8 +50,8 @@ export const renderTalisman = (
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
   root.render(
-    <React.StrictMode>
-      <ErrorBoundary>
+    <StrictMode>
+      <TalismanErrorBoundary>
         <ErrorBoundaryDatabaseMigration>
           <Suspense fallback={<SuspenseTracker name="Root" />}>
             <KeepBackgroundOpen />
@@ -64,7 +64,7 @@ export const renderTalisman = (
             </Subscribe>
           </Suspense>
         </ErrorBoundaryDatabaseMigration>
-      </ErrorBoundary>
-    </React.StrictMode>,
+      </TalismanErrorBoundary>
+    </StrictMode>,
   )
 }

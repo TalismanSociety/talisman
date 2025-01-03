@@ -1,9 +1,9 @@
-import { Component, ErrorInfo, FC, ReactNode } from "react"
+import { Component, ErrorInfo, ReactNode } from "react"
 import { ProcessAnimation } from "talisman-ui"
 
 import { MIGRATION_ERROR_MSG } from "@extension/core"
 
-const ErrorMessage: FC = () => (
+const ErrorMessage = () => (
   <div className="text-whit mx-auto flex h-[60rem] w-[40rem] flex-col px-12 py-16 text-center">
     <div className="flex grow flex-col justify-center font-bold">
       <div className="text-xl">Updating Talisman</div>
