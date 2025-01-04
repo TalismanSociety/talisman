@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PlusIcon } from "@talismn/icons"
-import { planckToTokens, tokensToPlanck } from "@talismn/util"
+import { convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
 import React, { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -23,9 +23,10 @@ import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
 import { useGetRampOfframpAssetsByCurrency } from "./hooks/useGetRampOfframpAssetsByCurrency"
 import { useGetRampQuote } from "./hooks/useGetRampQuote"
+import useSupportedTokens from "./hooks/useSupportedTokens"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
 import { RampAccountOption } from "./RampAccountOption"
-import { RampAsset, RampCurrency } from "./types"
+import { RampAssetWithTokenAndChain, RampCurrency } from "./types"
 import { truncateToSignificantDigits } from "./utils"
 
 const TALISMAN_LOGO_URL =
@@ -41,6 +42,7 @@ type RampTokenAsset = {
 
 type FormData = {
   address: string
+  formattedAddress: string
   fiatAmount: number
   fiatCurrency: string
   tokenAmount: number
@@ -50,6 +52,7 @@ type FormData = {
 
 const schema = yup.object({
   address: yup.string().required(" "),
+  formattedAddress: yup.string().required(" "),
   fiatAmount: yup.number().required(" ").min(0),
   tokenAmount: yup.number().required(" ").min(0),
   fiatCurrency: yup.string().required(" "),
@@ -132,7 +135,10 @@ export const RampForm = ({ formType }: RampFormProps) => {
     () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
     [isBuyForm, rampCurrencyWithAssets, rampCurrencyWithOfframpAssets],
   )
-  const selectedToken = rampAvailableCurrencies?.assets.find(
+
+  const supportedTokens = useSupportedTokens({ rampAssets: rampAvailableCurrencies?.assets ?? [] })
+
+  const selectedToken = supportedTokens?.find(
     (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
   )
 
@@ -179,10 +185,10 @@ export const RampForm = ({ formType }: RampFormProps) => {
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
-      rampAvailableCurrencies?.assets.find(
-        (asset) => asset.symbol === tokenId && asset.chain === chain,
-      )?.price[fiatCurrency],
-    [rampAvailableCurrencies?.assets],
+      supportedTokens.find((asset) => asset.symbol === tokenId && asset.chain === chain)?.price[
+        fiatCurrency
+      ],
+    [supportedTokens],
   )
 
   const tokenRateByCurrency = useMemo(
@@ -196,7 +202,14 @@ export const RampForm = ({ formType }: RampFormProps) => {
   )
 
   const submit = (data: FormData) => {
-    const { fiatCurrency, rampTokenAsset, dirtyAmountField, tokenAmount, fiatAmount } = data
+    const {
+      fiatCurrency,
+      rampTokenAsset,
+      dirtyAmountField,
+      tokenAmount,
+      fiatAmount,
+      formattedAddress,
+    } = data
 
     const params = new URLSearchParams({
       hostApiKey: RAMP_API_KEY,
@@ -204,7 +217,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       defaultFlow: isBuyForm ? "ONRAMP" : "OFFRAMP",
       enabledFlows: "ONRAMP,OFFRAMP",
       swapAsset: `${rampTokenAsset.chain}_${rampTokenAsset.symbol}`,
-      userAddress: address,
+      userAddress: formattedAddress,
       fiatCurrency: fiatCurrency,
       hostAppName: "Talisman",
     })
@@ -242,17 +255,27 @@ export const RampForm = ({ formType }: RampFormProps) => {
     setValue("fiatCurrency", newFiatCurrency)
   }
 
-  const handleTokenChange = (rampAsset: RampAsset | null) => {
-    setValue(
-      "rampTokenAsset",
-      {
-        symbol: rampAsset?.symbol ?? "",
-        chain: rampAsset?.chain ?? "",
-        decimals: rampAsset?.decimals ?? 0,
-      },
-      { shouldValidate: true },
-    )
-  }
+  const handleTokenChange = useCallback(
+    (rampAsset: RampAssetWithTokenAndChain | null) => {
+      setValue(
+        "rampTokenAsset",
+        {
+          symbol: rampAsset?.symbol ?? "",
+          chain: rampAsset?.chain ?? "",
+          decimals: rampAsset?.decimals ?? 0,
+        },
+        { shouldValidate: true },
+      )
+
+      if (address) {
+        const convertedAddress =
+          convertAddress(address, rampAsset?.tokenChain?.prefix ?? 0) || address
+
+        setValue("formattedAddress", convertedAddress, { shouldValidate: true })
+      }
+    },
+    [address, setValue],
+  )
 
   // const handleAccountChange = useCallback(
   //   (acc: AccountJsonAny | null) => {
@@ -272,8 +295,18 @@ export const RampForm = ({ formType }: RampFormProps) => {
       if (!acc) return
 
       setValue("address", acc?.address, { shouldValidate: true })
+
+      const convertedAddress =
+        convertAddress(acc.address, selectedToken?.tokenChain?.prefix ?? 0) || acc.address
+
+      setValue(
+        "formattedAddress",
+        convertedAddress,
+
+        { shouldValidate: true },
+      )
     },
-    [setValue],
+    [selectedToken, setValue],
   )
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
@@ -302,7 +335,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
     )
   }
 
-  const renderTokenItem: DropdownOptionRender<RampAsset> = (item) => {
+  const renderTokenItem: DropdownOptionRender<RampAssetWithTokenAndChain> = (item) => {
     return (
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
@@ -310,7 +343,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
         </div>
         <div className="min-w-0">
           <div className="text-white">{item.symbol}</div>
-          <div className="text-tiny truncate">{item.name}</div>
+          <div className="text-tiny truncate">{item.tokenChain?.chainName}</div>
         </div>
       </div>
     )
@@ -371,9 +404,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
         </div>
       }
       items={
-        rampAvailableCurrencies?.assets.filter((asset) =>
-          asset.symbol.includes(tokenSearch.toUpperCase()),
-        ) ?? []
+        supportedTokens.filter((asset) => asset.symbol.includes(tokenSearch.toUpperCase())) ?? []
       }
       value={selectedToken}
       renderItem={renderTokenItem}
@@ -384,7 +415,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
       isSearchable
       handleSearchChange={setTokenSearch}
       searchPlaceholder={t("Search asset")}
-      searchLabel={t(`Available now (${rampAvailableCurrencies?.assets.length}):`)}
+      searchLabel={t(`Available now (${supportedTokens.length}):`)}
       minStep={`1e-${rampTokenDecimals}`}
     />
   )

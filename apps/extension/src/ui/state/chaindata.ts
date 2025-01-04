@@ -25,7 +25,7 @@ import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 
-type AnyChain = Chain | CustomChain
+export type AnyChain = Chain | CustomChain
 
 export type ChaindataQueryOptions = {
   activeOnly: boolean

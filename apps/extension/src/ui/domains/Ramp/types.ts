@@ -1,3 +1,5 @@
+import { AnyChain } from "@ui/state"
+
 export type RampCurrency = {
   fiatCurrency: string
   name: string
@@ -49,4 +51,9 @@ export type RampQuote = {
   CARD?: PaymentMethod
   AMERICAN_BANK_TRANSFER?: PaymentMethod
   asset: RampAsset
+}
+
+export type RampAssetWithTokenAndChain = RampAsset & {
+  id: string
+  tokenChain: AnyChain | undefined
 }
