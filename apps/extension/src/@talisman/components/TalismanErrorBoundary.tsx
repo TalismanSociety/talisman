@@ -29,7 +29,7 @@ function ErrorMessage({ error, eventId }: { error: unknown; eventId?: string }) 
   return (
     <section className="max-w-screen text-body-secondary mx-auto flex h-[60rem] max-h-screen w-[40rem] flex-col overflow-hidden p-10 text-center">
       <div className="flex w-full flex-grow flex-col items-center justify-center gap-16">
-        <h1 className="m-0 text-3xl font-bold">Oops!</h1>
+        <h1 className="m-0 text-3xl font-bold text-white">Oops!</h1>
         <TalismanDeadHandIcon className="text-[16rem]" />
         <div className="flex flex-col gap-2">
           <div>{errorMessage}</div>
