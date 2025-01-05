@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { PlusIcon } from "@talismn/icons"
 import { convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
@@ -10,9 +11,9 @@ import * as yup from "yup"
 
 import {
   AccountJsonAny,
-  // activeChainsStore,
-  // activeEvmNetworksStore,
-  // activeTokensStore,
+  activeChainsStore,
+  activeEvmNetworksStore,
+  activeTokensStore,
 } from "@extension/core"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
@@ -35,14 +36,17 @@ const TALISMAN_LOGO_URL =
 export type AccountWithBalance = AccountJsonAny & { total: number }
 
 type RampTokenAsset = {
+  id: string
   symbol: string
   chain: string
   decimals: number
+  chainId: string
+  isEvm: boolean
+  chainPrefix?: number | null | undefined
 }
 
 type FormData = {
   address: string
-  formattedAddress: string
   fiatAmount: number
   fiatCurrency: string
   tokenAmount: number
@@ -52,15 +56,18 @@ type FormData = {
 
 const schema = yup.object({
   address: yup.string().required(" "),
-  formattedAddress: yup.string().required(" "),
   fiatAmount: yup.number().required(" ").min(0),
   tokenAmount: yup.number().required(" ").min(0),
   fiatCurrency: yup.string().required(" "),
   dirtyAmountField: yup.string().required(" "),
   rampTokenAsset: yup.object().shape({
+    id: yup.string().required(),
     symbol: yup.string().required(),
     chain: yup.string().required(),
     decimals: yup.number().required(),
+    chainId: yup.string().required(),
+    isEvm: yup.boolean().required(),
+    chainPrefix: yup.number().nullable().optional(),
   }),
 })
 
@@ -104,6 +111,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
     rampTokenAssetSymbol,
     rampTokenDecimals,
     rampTokenAssetChain,
+    rampTokenIsEvm,
     dirtyAmountField,
   ] = watch([
     "address",
@@ -112,6 +120,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
     "rampTokenAsset.symbol",
     "rampTokenAsset.decimals",
     "rampTokenAsset.chain",
+    "rampTokenAsset.isEvm",
     "dirtyAmountField",
   ])
 
@@ -202,14 +211,17 @@ export const RampForm = ({ formType }: RampFormProps) => {
   )
 
   const submit = (data: FormData) => {
-    const {
-      fiatCurrency,
-      rampTokenAsset,
-      dirtyAmountField,
-      tokenAmount,
-      fiatAmount,
-      formattedAddress,
-    } = data
+    const { fiatCurrency, rampTokenAsset, dirtyAmountField, tokenAmount, fiatAmount, address } =
+      data
+
+    const formattedAddress = convertAddress(address, rampTokenAsset.chainPrefix ?? 0) || address
+
+    activeTokensStore.setActive(rampTokenAsset.id, true)
+    if (rampTokenAsset.isEvm) {
+      activeEvmNetworksStore.setActive(rampTokenAsset.chainId, true)
+    } else {
+      activeChainsStore.setActive(rampTokenAsset.chainId, true)
+    }
 
     const params = new URLSearchParams({
       hostApiKey: RAMP_API_KEY,
@@ -260,53 +272,51 @@ export const RampForm = ({ formType }: RampFormProps) => {
       setValue(
         "rampTokenAsset",
         {
+          id: rampAsset?.tokenData.id ?? "",
           symbol: rampAsset?.symbol ?? "",
           chain: rampAsset?.chain ?? "",
           decimals: rampAsset?.decimals ?? 0,
+          isEvm: !!rampAsset?.tokenData.token?.evmNetwork?.id,
+          chainId: rampAsset?.tokenData.chain?.id ?? "",
+          chainPrefix:
+            rampAsset?.tokenData?.chain && "prefix" in rampAsset.tokenData.chain
+              ? rampAsset.tokenData.chain.prefix
+              : null,
         },
         { shouldValidate: true },
       )
-
-      if (address) {
-        const convertedAddress =
-          convertAddress(address, rampAsset?.tokenChain?.prefix ?? 0) || address
-
-        setValue("formattedAddress", convertedAddress, { shouldValidate: true })
+      if (!!rampAsset?.tokenData.token?.evmNetwork?.id !== isEthereumAddress(address)) {
+        setValue("address", "")
       }
     },
+
     [address, setValue],
   )
 
-  // const handleAccountChange = useCallback(
-  //   (acc: AccountJsonAny | null) => {
-  //     if (!acc) return
-
-  //     if (tokenId && ethereumTokenIds.includes(tokenId) && !isEthereumAddress(acc.address))
-  //       setValue("tokenId", "")
-  //     if (tokenId && substrateTokenIds.includes(tokenId) && isEthereumAddress(acc.address))
-  //       setValue("tokenId", "")
-
-  //     setValue("address", acc?.address, { shouldValidate: true })
-  //   },
-  //   [ethereumTokenIds, setValue, substrateTokenIds, tokenId],
-  // )
   const handleAccountChange = useCallback(
     (acc: AccountJsonAny | null) => {
       if (!acc) return
 
       setValue("address", acc?.address, { shouldValidate: true })
 
-      const convertedAddress =
-        convertAddress(acc.address, selectedToken?.tokenChain?.prefix ?? 0) || acc.address
-
-      setValue(
-        "formattedAddress",
-        convertedAddress,
-
-        { shouldValidate: true },
-      )
+      if (rampTokenIsEvm !== isEthereumAddress(acc.address)) {
+        setValue(
+          "rampTokenAsset",
+          {
+            id: "",
+            symbol: "",
+            chain: "",
+            decimals: 0,
+            isEvm: false,
+            chainId: "",
+            chainPrefix: null,
+          },
+          { shouldValidate: true },
+        )
+      }
     },
-    [selectedToken, setValue],
+
+    [rampTokenIsEvm, setValue],
   )
 
   const onrampCurrencies = rampCurrencies?.filter((curr) => curr.onrampAvailable) ?? []
@@ -343,7 +353,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
         </div>
         <div className="min-w-0">
           <div className="text-white">{item.symbol}</div>
-          <div className="text-tiny truncate">{item.tokenChain?.chainName}</div>
+          <div className="text-tiny truncate">{item.tokenData.chain?.name}</div>
         </div>
       </div>
     )

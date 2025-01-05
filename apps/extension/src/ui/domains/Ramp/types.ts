@@ -1,3 +1,6 @@
+import { Token } from "@talismn/chaindata-provider"
+
+import { EvmNetwork } from "@extension/core"
 import { AnyChain } from "@ui/state"
 
 export type RampCurrency = {
@@ -53,7 +56,14 @@ export type RampQuote = {
   asset: RampAsset
 }
 
-export type RampAssetWithTokenAndChain = RampAsset & {
+export type SupportedTokenInfo = {
   id: string
-  tokenChain: AnyChain | undefined
+}
+
+export type RampAssetWithTokenAndChain = RampAsset & {
+  tokenData: {
+    chain: AnyChain | EvmNetwork | undefined
+    token: Token
+    id: string
+  }
 }
