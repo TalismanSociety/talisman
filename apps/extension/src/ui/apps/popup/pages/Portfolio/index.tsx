@@ -4,7 +4,6 @@ import { Route, Routes, useLocation } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundary"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
@@ -51,15 +50,13 @@ const Content: FC<PropsWithChildren> = ({ children }) => {
 export const Portfolio = () => (
   <PortfolioContainer renderWhileLoading>
     <div id="main" className="relative size-full overflow-hidden">
-      <TalismanErrorBoundary>
-        <Content>
-          <div className="flex size-full flex-col gap-4 py-8">
-            <PortfolioRoutes />
-            <BottomNav />
-          </div>
-        </Content>
-        <NavigationDrawer />
-      </TalismanErrorBoundary>
+      <Content>
+        <div className="flex size-full flex-col gap-4 py-8">
+          <PortfolioRoutes />
+          <BottomNav />
+        </div>
+      </Content>
+      <NavigationDrawer />
     </div>
   </PortfolioContainer>
 )
