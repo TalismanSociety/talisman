@@ -56,7 +56,7 @@ const getMetadataDefInner = async (
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
 
   // blockHash being equal to genesisHash happens when trying to decode payload of immortal transactions
-  // in that case, blockHash must be used as block reference when fetching data
+  // in that case, blockHash must not be used as block reference when fetching data
   if (blockHash && blockHash === genesisHash) blockHash = undefined
 
   const cacheKey = getResultCacheKey(genesisHash, specVersion)
