@@ -3,14 +3,13 @@ import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
 
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHistory"
 import { useTxHistory } from "@ui/domains/Transactions/TxHistory/TxHistoryContext"
 import { TxHistoryNetworkPicker } from "@ui/domains/Transactions/TxHistory/TxHistoryNetworkPicker"
-
-import { DashboardLayout } from "../layout"
 
 const NetworkFilterButton = () => {
   const { t } = useTranslation()

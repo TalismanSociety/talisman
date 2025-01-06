@@ -26,17 +26,17 @@ import {
 import { log } from "@extension/shared"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import { api } from "@ui/api"
 import {
   MnemonicCreateModal,
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { useAccounts, useMnemonics } from "@ui/state"
 
-import { AccountIcon } from "../../AccountIcon"
+import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
@@ -253,60 +253,68 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(submit)}>
-      <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
-      <Spacer small />
-      <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
-        {!!mnemonics.length && (
-          <AccountAddMnemonicDropdown value={mnemonicId} onChange={handleMnemonicChange} />
+      <div className="flex flex-col gap-16">
+        {!urlParamType && (
+          <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
         )}
-        <FormFieldContainer className="mt-8" label={t("Account name")} error={errors.name?.message}>
-          <FormFieldInputText
-            {...register("name")}
-            placeholder={t("Choose a name")}
-            spellCheck={false}
-            autoComplete="off"
-            data-lpignore
-            after={
-              address ? (
-                <Tooltip>
-                  <TooltipTrigger>
-                    <AccountIcon address={address} className="text-xl" />
-                  </TooltipTrigger>
-                  <TooltipContent>{address}</TooltipContent>
-                </Tooltip>
-              ) : null
-            }
-          />
-        </FormFieldContainer>
-        <Spacer small />
-        <AdvancedSettings>
-          <Checkbox
-            {...register("isCustomDerivationPath")}
-            className="text-body-secondary hover:text-body-secondary"
-          >
-            {t("Custom derivation path")}
-          </Checkbox>
-          <FormFieldContainer
-            className={classNames(
-              "mt-2",
-              !isCustomDerivationPath && "block cursor-not-allowed select-none opacity-50",
-            )}
-            error={errors.derivationPath?.message}
-          >
+
+        <div
+          className={classNames(
+            "flex flex-col gap-8 transition-opacity",
+            type ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {!!mnemonics.length && (
+            <AccountAddMnemonicDropdown value={mnemonicId} onChange={handleMnemonicChange} />
+          )}
+          <FormFieldContainer label={t("Account name")} error={errors.name?.message}>
             <FormFieldInputText
-              {...register("derivationPath")}
-              placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+              {...register("name")}
+              placeholder={t("Choose a name")}
               spellCheck={false}
-              disabled={!isCustomDerivationPath}
               autoComplete="off"
-              className="font-mono disabled:cursor-not-allowed disabled:select-none"
               data-lpignore
+              after={
+                address ? (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <AccountIcon address={address} className="text-xl" />
+                    </TooltipTrigger>
+                    <TooltipContent>{address}</TooltipContent>
+                  </Tooltip>
+                ) : null
+              }
             />
           </FormFieldContainer>
-        </AdvancedSettings>
-        <Spacer small />
 
-        <div className="flex w-full items-center justify-end">
+          <AdvancedSettings>
+            <Checkbox
+              {...register("isCustomDerivationPath")}
+              className="text-body-secondary hover:text-body-secondary"
+            >
+              {t("Custom derivation path")}
+            </Checkbox>
+            <FormFieldContainer
+              className={classNames(
+                !isCustomDerivationPath && "block cursor-not-allowed select-none opacity-50",
+              )}
+              error={errors.derivationPath?.message}
+            >
+              <FormFieldInputText
+                {...register("derivationPath")}
+                placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+                spellCheck={false}
+                disabled={!isCustomDerivationPath}
+                autoComplete="off"
+                className="font-mono disabled:cursor-not-allowed disabled:select-none"
+                data-lpignore
+              />
+            </FormFieldContainer>
+          </AdvancedSettings>
+        </div>
+
+        <div className="flex w-full items-center justify-between">
+          <BackToAddAccountButton />
           <Button
             icon={ArrowRightIcon}
             type="submit"

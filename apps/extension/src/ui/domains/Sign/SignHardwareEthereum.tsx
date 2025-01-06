@@ -1,13 +1,12 @@
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { FC, lazy, Suspense } from "react"
+import { FC, Suspense } from "react"
 
 import { AccountJsonAny, AccountType, EthSignMessageMethod } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
-
-const SignLedgerEthereum = lazy(() => import("./SignLedgerEthereum"))
+import { SignLedgerEthereum } from "./SignLedgerEthereum"
 
 export type SignHardwareEthereumProps = {
   evmNetworkId?: EvmNetworkId

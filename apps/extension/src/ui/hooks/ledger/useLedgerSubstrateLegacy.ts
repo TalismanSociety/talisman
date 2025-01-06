@@ -1,234 +1,177 @@
-import Transport from "@ledgerhq/hw-transport"
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
-import { assert } from "@polkadot/util"
-import { throwAfter } from "@talismn/util"
+import { TypeRegistry } from "@polkadot/types"
+import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { SubstrateApp } from "@zondax/ledger-substrate"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  AccountJsonHardwareSubstrate,
+  isJsonPayload,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "extension-core"
+import { t } from "i18next"
+import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useChainByGenesisHash } from "@ui/state"
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
-import { useSetInterval } from "../useSetInterval"
+import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE } from "./common"
 import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
   ERROR_LEDGER_NO_APP,
-  getLedgerErrorProps,
-  LEDGER_HARDENED_OFFSET,
-  LedgerError,
-  LedgerStatus,
-} from "./common"
+  getCustomNativeLedgerError,
+  getTalismanLedgerError,
+  TalismanLedgerError,
+} from "./errors"
 import { useLedgerSubstrateAppByChain } from "./useLedgerSubstrateApp"
+import { useLedgerTransport } from "./useLedgerTransport"
 
-const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
+type LedgerRequest<T> = (ledger: SubstrateApp) => Promise<T>
 
-const safelyCreateTransport = async (attempt = 1): Promise<Transport> => {
-  if (attempt > 5) throw new Error("Unable to connect to Ledger")
-  try {
-    return await TransportWebUSB.create()
-  } catch (e) {
-    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
-      await new Promise((resolve) => setTimeout(resolve, 200 * attempt))
-      return await safelyCreateTransport(attempt + 1)
-    } else throw e
-  }
-}
-
-const safelyCloseTransport = async (transport: Transport | null, attempt = 1): Promise<void> => {
-  if (attempt > 5) throw new Error("Unable to disconnect Ledger")
-  try {
-    await transport?.close()
-  } catch (e) {
-    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
-      await new Promise((resolve) => setTimeout(resolve, 100 * attempt))
-      return await safelyCloseTransport(transport, attempt + 1)
-    } else throw e
-  }
-}
-
-const safelyGetAddress = async (
-  ledger: SubstrateApp,
-  accountIndex: number,
-  addressIndex: number,
-  attempt = 1,
-): Promise<{ address: string }> => {
-  if (!ledger) throw new Error("Ledger not connected")
-
-  if (attempt > 5) throw new Error("Unable to connect to Ledger")
-  try {
-    const change = 0
-    const addressOffset = 0
-
-    const { address, error_message, return_code } = await ledger.getAddress(
-      LEDGER_HARDENED_OFFSET + accountIndex,
-      LEDGER_HARDENED_OFFSET + change,
-      LEDGER_HARDENED_OFFSET + addressOffset,
-      false,
-    )
-    if (!address) throw new LedgerError(error_message, "GetAddressError", return_code)
-    return { address }
-  } catch (err) {
-    if (
-      (err as Error).message.includes(LEDGER_IN_PROGRESS_ERROR) ||
-      (err as Error).message === "Unknown transport error"
-    ) {
-      await new Promise((resolve) => setTimeout(resolve, 200 * attempt))
-      return await safelyGetAddress(ledger, accountIndex, addressIndex, attempt + 1)
-    } else throw err
-  }
-}
-
-export const useLedgerSubstrateLegacy = (genesis?: string | null, persist = false) => {
+export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
   const { t } = useTranslation()
   const chain = useChainByGenesisHash(genesis)
   const app = useLedgerSubstrateAppByChain(chain)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error>()
-  const [isReady, setIsReady] = useState(false)
-  const [ledger, setLedger] = useState<SubstrateApp | null>(null)
+  const { ensureTransport, closeTransport } = useLedgerTransport()
+  const refIsBusy = useRef(false)
 
-  const refConnecting = useRef(false)
-  const refTransport = useRef<Transport | null>(null)
+  const withLedger = useCallback(
+    async <T>(request: LedgerRequest<T>): Promise<T> => {
+      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
 
-  useEffect(() => {
-    return () => {
-      // ensures the transport is closed on unmount, allowing other tabs to access the ledger
-      // the persist argument can be used to prevent this behaviour, when the hook is used
-      // in two components that need to share the ledger connection
-      if (!persist && ledger?.transport) {
-        safelyCloseTransport(ledger.transport as Transport).then(() => {
-          refTransport.current = null
-          setLedger(null)
-        })
-      }
-    }
-  }, [ledger, persist])
-
-  const getAddress = useCallback(
-    async (accountIndex = 0, addressIndex = 0) => {
-      if (!ledger) return
-
-      return await Promise.race([
-        safelyGetAddress(ledger, accountIndex, addressIndex),
-        throwAfter(5_000, "Timeout on Ledger Substrate Legacy getAddress"),
-      ])
-    },
-    [ledger],
-  )
-
-  const connectLedger = useCallback(
-    async (resetError?: boolean) => {
-      if (refConnecting.current) return
-      refConnecting.current = true
-
-      setIsReady(false)
-      setIsLoading(true)
-      // when displaying an error and polling silently, on the UI we don't want the error to disappear
-      // so error should be cleared explicitly
-      if (resetError) setError(undefined)
+      refIsBusy.current = true
 
       try {
-        assert(getIsLedgerCapable(), t("Sorry, Ledger is not supported on your browser."))
-        assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
-        assert(app?.cla, ERROR_LEDGER_NO_APP)
+        if (chain?.account === "secp256k1")
+          throw new TalismanLedgerError("Unknown", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
+        if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
 
-        refTransport.current = await safelyCreateTransport()
+        const transport = await ensureTransport()
+        const ledger = new SubstrateApp(transport, app.cla, app.slip0044)
 
-        const ledger = new SubstrateApp(refTransport.current, app.cla, app.slip0044)
-
-        // verify that Ledger connection is ready by querying first address
-        await Promise.race([
-          safelyGetAddress(ledger, 0, 0),
-          throwAfter(5_000, "Timeout on Ledger Substrate connection"),
-        ])
-
-        setLedger(ledger)
-        setError(undefined)
-        setIsReady(true)
+        return await request(ledger)
       } catch (err) {
-        log.error("connectLedger Substrate Legacy " + (err as Error).message, { err })
-
-        try {
-          if (
-            refTransport.current &&
-            "device" in refTransport.current &&
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (refTransport.current.device as any).opened // TODO look into this
-          )
-            await refTransport.current?.close()
-          refTransport.current = null
-        } catch (err2) {
-          log.error("Can't close ledger transport", err2)
-          // ignore
-        }
-
-        setLedger(null)
-        setError(err as Error)
+        await closeTransport()
+        throw getTalismanLedgerError(err, app?.name ?? "Unknown app")
+      } finally {
+        refIsBusy.current = false
       }
-
-      refConnecting.current = false
-      setIsLoading(false)
     },
-    [app, chain, t],
+    [app, chain?.account, closeTransport, ensureTransport, t],
   )
 
-  const { status, message, requiresManualRetry } = useMemo<{
-    status: LedgerStatus
-    message: string
-    requiresManualRetry: boolean
-  }>(() => {
-    if (error) return getLedgerErrorProps(error, app?.name ?? t("Unknown app"))
+  const getAddress = useCallback(
+    (accountIndex = 0, addressIndex = 0) => {
+      return withLedger((ledger) => getAccountAddress(ledger, accountIndex, addressIndex))
+    },
+    [withLedger],
+  )
 
-    if (isLoading)
-      return {
-        status: "connecting",
-        message: t(`Connecting to Ledger...`),
-        requiresManualRetry: false,
-      }
-
-    if (isReady)
-      return {
-        status: "ready",
-        message: t("Successfully connected to Ledger."),
-        requiresManualRetry: false,
-      }
-
-    return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [isReady, isLoading, error, app, t])
-
-  // automatic connection (startup + polling)
-  // use a ref to avoid re-renders when refreshCounter changes
-  const refreshCounterRef = useRef(0)
-
-  // automatic connection (startup + polling)
-  useEffect(() => {
-    connectLedger()
-  }, [connectLedger])
-
-  // if not connected, poll every 2 seconds
-  // this will recreate the ledger instance which triggers automatic connection
-  useSetInterval(() => {
-    if (!isLoading && !requiresManualRetry && ["warning", "error", "unknown"].includes(status)) {
-      refreshCounterRef.current += 1
-      connectLedger()
-    }
-  }, 2000)
-
-  // manual connection
-  const refresh = useCallback(() => {
-    connectLedger(true)
-  }, [connectLedger])
+  const sign = useCallback(
+    (
+      payload: SignerPayloadJSON | SignerPayloadRaw,
+      account: AccountJsonHardwareSubstrate,
+      registry: TypeRegistry,
+    ) => {
+      return withLedger((ledger) =>
+        isJsonPayload(payload)
+          ? signJsonPayload(ledger, payload, account, registry)
+          : signRawPayload(ledger, payload, account),
+      )
+    },
+    [withLedger],
+  )
 
   return {
-    isLoading,
-    isReady,
-    requiresManualRetry,
-    status,
-    message,
-    network: app,
-    ledger,
-    refresh,
+    sign,
     getAddress,
+    app,
   }
+}
+
+const getAccountAddress = async (
+  ledger: SubstrateApp,
+  accountIndex: number,
+  addressIndex: number,
+): Promise<{ address: string }> => {
+  const change = 0
+
+  const { address, error_message, return_code } = await ledger.getAddress(
+    LEDGER_HARDENED_OFFSET + accountIndex,
+    LEDGER_HARDENED_OFFSET + change,
+    LEDGER_HARDENED_OFFSET + addressIndex,
+    false,
+  )
+
+  if (!address)
+    throw getCustomNativeLedgerError(
+      error_message || "Ledger provided an empty address",
+      return_code,
+    )
+
+  return { address }
+}
+
+const signJsonPayload = async (
+  ledger: SubstrateApp,
+  payload: SignerPayloadJSON,
+  account: AccountJsonHardwareSubstrate,
+  registry: TypeRegistry,
+) => {
+  // Legacy dapps don't support the CheckMetadataHash signed extension
+  if (payload.signedExtensions.includes("CheckMetadataHash"))
+    throw new TalismanLedgerError(
+      "GenericAppRequired",
+      "This network requires the Polkadot Generic app",
+    )
+
+  const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+    version: payload.version,
+  })
+
+  const unsigned = extrinsicPayload.toU8a(true)
+
+  const {
+    signature: signatureBuffer,
+    error_message,
+    return_code,
+  } = await ledger.sign(
+    LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+    LEDGER_HARDENED_OFFSET + 0,
+    LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
+    Buffer.from(unsigned),
+  )
+
+  if (return_code !== LEDGER_SUCCESS_CODE)
+    throw getCustomNativeLedgerError(error_message, return_code)
+
+  return u8aToHex(new Uint8Array(signatureBuffer))
+}
+
+const signRawPayload = async (
+  ledger: SubstrateApp,
+  payload: SignerPayloadRaw,
+  account: AccountJsonHardwareSubstrate,
+) => {
+  const unsigned = u8aWrapBytes(payload.data)
+  if (unsigned.length > 256)
+    throw new TalismanLedgerError(
+      "InvalidRequest",
+      t("The message is too long to be signed with Ledger."),
+    )
+
+  const {
+    signature: signatureBuffer,
+    error_message,
+    return_code,
+  } = await ledger.signRaw(
+    LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+    LEDGER_HARDENED_OFFSET + 0,
+    LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
+    Buffer.from(unsigned),
+  )
+
+  if (return_code !== LEDGER_SUCCESS_CODE)
+    throw getCustomNativeLedgerError(error_message, return_code)
+
+  // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
+  return u8aToHex(new Uint8Array(signatureBuffer.slice(1)))
 }

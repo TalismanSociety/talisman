@@ -1,33 +1,25 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useSetting, useTokens } from "@ui/state"
+import { useSetting, useTokensMap } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
-export const SendFundsButton = ({
-  symbol,
-  networkId,
+export const SendFundsTokenButton = ({
+  tokenId,
   shouldClose,
 }: {
-  symbol: string
-  networkId: ChainId | EvmNetworkId
+  tokenId: TokenId
   shouldClose?: boolean
 }) => {
   const { selectedAccount } = usePortfolioNavigation()
   const [includeTestnets] = useSetting("useTestnets")
-  const tokens = useTokens({ activeOnly: true, includeTestnets })
-
-  const token = tokens?.find(
-    (t) =>
-      t.symbol === symbol &&
-      isTransferableToken(t) &&
-      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId),
-  )
+  const tokensMap = useTokensMap({ activeOnly: true, includeTestnets })
+  const token = isTransferableToken(tokensMap[tokenId]) ? tokensMap[tokenId] : undefined
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     selectedAccount,

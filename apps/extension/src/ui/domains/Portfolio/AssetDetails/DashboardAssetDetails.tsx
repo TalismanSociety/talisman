@@ -24,7 +24,7 @@ import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
-import { SendFundsButton } from "./SendFundsIconButton"
+import { SendFundsTokenButton } from "./SendFundsTokenIconButton"
 import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
 import { BalanceDetailRow, useTokenBalances } from "./useTokenBalances"
@@ -102,7 +102,7 @@ const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, 
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
+                <SendFundsTokenButton tokenId={token.id} />
                 {tokenId && (
                   <TokenContextMenu
                     tokenId={tokenId}

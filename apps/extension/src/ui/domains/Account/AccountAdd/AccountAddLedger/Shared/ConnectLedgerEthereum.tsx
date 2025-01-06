@@ -1,38 +1,27 @@
-import { useEffect } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { getEthLedgerDerivationPath } from "extension-core"
+import { FC, useCallback } from "react"
 
-import { Spacer } from "@talisman/components/Spacer"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 
-export const ConnectLedgerEthereum = ({
-  onReadyChanged,
-  className,
-}: {
-  onReadyChanged?: (ready: boolean) => void
+import { ConnectLedgerBase } from "./ConnectLedgerBase"
+
+export const ConnectLedgerEthereum: FC<{
+  onReadyChanged: (ready: boolean) => void
   className?: string
-}) => {
-  const { t } = useTranslation("admin")
-  const ledger = useLedgerEthereum(true)
+}> = ({ onReadyChanged, className }) => {
+  const { getAddress } = useLedgerEthereum()
 
-  useEffect(() => {
-    onReadyChanged?.(ledger.isReady)
-
-    return () => {
-      onReadyChanged?.(false)
-    }
-  }, [ledger.isReady, onReadyChanged])
+  const isReadyCheck = useCallback(() => {
+    const derivationPath = getEthLedgerDerivationPath("LedgerLive")
+    return getAddress(derivationPath)
+  }, [getAddress])
 
   return (
-    <div className={className}>
-      <div className="text-body-secondary m-0">
-        <Trans t={t}>
-          Connect and unlock your Ledger, then open the <span className="text-body">Ethereum</span>{" "}
-          app on your Ledger.
-        </Trans>
-      </div>
-      <Spacer small />
-      <LedgerConnectionStatus {...ledger} />
-    </div>
+    <ConnectLedgerBase
+      appName="Ethereum"
+      className={className}
+      isReadyCheck={isReadyCheck}
+      onReadyChanged={onReadyChanged}
+    />
   )
 }

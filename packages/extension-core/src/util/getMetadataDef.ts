@@ -254,10 +254,12 @@ export const getLatestMetadataRpc = async (
 
     return metadataFromOpaque(opaqueMetadata)
   } catch (err) {
-    // maybe the chain doesn't have metadata_versions or metadata_at_version runtime calls - ex: crust standalone
-    // fetch metadata the old way
-    if ((err as { message?: string })?.message?.includes("is not found"))
-      return await getLegacyMetadataRpc(chainId, blockHash)
+    const message = (err as { message?: string })?.message
+    if (
+      message?.includes("is not found") || // crust standalone
+      message?.includes("Module doesn't have export Metadata_metadata_versions") // 3DPass
+    )
+      return await getLegacyMetadataRpc(chainId, blockHash) // fetch metadata the old way
 
     // eslint-disable-next-line no-console
     console.error("getLatestMetadataRpc", { err })

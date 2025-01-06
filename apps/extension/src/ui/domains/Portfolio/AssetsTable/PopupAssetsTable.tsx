@@ -25,7 +25,7 @@ import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
-import { NetworksLogoStack } from "./NetworksLogoStack"
+import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
@@ -118,7 +118,7 @@ const AssetRow: FC<{
               </div>
               {!!networkIds.length && (
                 <div className="text-base">
-                  <NetworksLogoStack networkIds={networkIds} max={3} />
+                  <PortfolioNetworksLogoStack networkIds={networkIds} max={3} />
                 </div>
               )}
             </div>

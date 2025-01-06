@@ -11,6 +11,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import {
@@ -20,7 +21,6 @@ import {
   getSettingValue$,
 } from "@ui/state"
 
-import { DashboardLayout } from "../../layout"
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"

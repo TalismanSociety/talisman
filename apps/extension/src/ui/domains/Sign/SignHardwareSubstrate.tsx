@@ -1,16 +1,14 @@
 import { TypeRegistry } from "@polkadot/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
-import { FC, lazy, Suspense } from "react"
+import { FC } from "react"
 
 import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
-
-const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
-const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
+import { SignLedgerSubstrateGeneric } from "./SignLedgerSubstrateGeneric"
+import { SignLedgerSubstrateLegacy } from "./SignLedgerSubstrateLegacy"
 
 export type SignHardwareSubstrateProps = {
   payload: SignerPayloadRaw | SignerPayloadJSON | undefined
@@ -51,9 +49,5 @@ export const SignHardwareSubstrate: FC<SignHardwareSubstrateProps> = (props) => 
 
   if (!SignHardwareComponent) return null
 
-  return (
-    <Suspense fallback={<SuspenseTracker name="SignHardwareSubstrate" />}>
-      <SignHardwareComponent {...props} />
-    </Suspense>
-  )
+  return <SignHardwareComponent {...props} />
 }

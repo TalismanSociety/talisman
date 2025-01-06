@@ -17,8 +17,7 @@ import {
   TERMS_OF_USE_URL,
 } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-
-import { DashboardLayout } from "../../layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 
 const Content = () => {
   const { t } = useTranslation("admin")

@@ -2,11 +2,11 @@ import { TFunction } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Chain, EvmNetwork } from "@extension/core"
+import { Chain, SimpleEvmNetwork } from "@extension/core"
 
 export type NetworkInfoProps = {
   chain?: Chain | null
-  evmNetwork?: EvmNetwork | null
+  evmNetwork?: SimpleEvmNetwork | null
   relay?: Chain | null
 }
 

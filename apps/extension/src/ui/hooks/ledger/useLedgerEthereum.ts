@@ -1,135 +1,161 @@
+import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
-import Transport from "@ledgerhq/hw-transport"
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
-import { throwAfter } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
+import { t } from "i18next"
+import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { gte } from "semver"
+import {
+  hexToBigInt,
+  isHex,
+  serializeTransaction,
+  Signature,
+  signatureToHex,
+  TransactionRequest,
+} from "viem"
 
-import { getEthLedgerDerivationPath } from "@extension/core"
-import { LEDGER_ETHEREUM_MIN_VERSION, log } from "@extension/shared"
+import { EthSignMessageMethod, getTransactionSerializable } from "@extension/core"
 
-import { useSetInterval } from "../useSetInterval"
-import { getLedgerErrorProps, LedgerError, LedgerStatus } from "./common"
+import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
+import { useLedgerTransport } from "./useLedgerTransport"
 
-export const useLedgerEthereum = (persist = false) => {
+type LedgerRequest<T> = (ledger: LedgerEthereumApp) => Promise<T>
+
+export const useLedgerEthereum = () => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [refreshCounter, setRefreshCounter] = useState(0)
-  const [ledgerError, setLedgerError] = useState<LedgerError>()
-  const [isReady, setIsReady] = useState(false)
-  const [ledger, setLedger] = useState<LedgerEthereumApp | null>(null)
-  const refConnecting = useRef(false)
-  const refTransport = useRef<Transport | null>(null)
+  const refIsBusy = useRef(false)
+  const { ensureTransport, closeTransport } = useLedgerTransport()
 
-  useEffect(() => {
-    return () => {
-      // ensures the transport is closed on unmount, allowing other tabs to access the ledger
-      // the persist argument can be used to prevent this behaviour, when the hook is used
-      // in two components that need to share the ledger connection
-      if (!persist && ledger?.transport) {
-        ledger.transport.close()
-      }
-    }
-  }, [ledger?.transport, persist])
+  const withLedger = useCallback(
+    async <T>(request: LedgerRequest<T>): Promise<T> => {
+      if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
 
-  const connectLedger = useCallback(async (resetError?: boolean) => {
-    if (refConnecting.current) return
-    refConnecting.current = true
-
-    setIsLoading(true)
-    setIsReady(false)
-
-    // when displaying an error and polling silently, on the UI we don't want the error to disappear
-    // so error should be cleared explicitly
-    if (resetError) setLedgerError(undefined)
-
-    try {
-      refTransport.current = await TransportWebUSB.create()
-
-      const ledger = new LedgerEthereumApp(refTransport.current)
-      // this may hang at this point just after plugging the ledger
-      await Promise.race([
-        ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
-        throwAfter(5_000, "Timeout on Ledger Ethereum connection"),
-      ])
-
-      const { version } = await ledger.getAppConfiguration()
-      if (!gte(version, LEDGER_ETHEREUM_MIN_VERSION))
-        throw new LedgerError("Unsupported version", "UnsupportedVersion")
-
-      setLedgerError(undefined)
-      setLedger(ledger)
-      setIsReady(true)
-    } catch (err) {
-      log.error("connectLedger Ethereum : " + (err as LedgerError).message, { err })
+      refIsBusy.current = true
 
       try {
-        await refTransport.current?.close()
-        refTransport.current = null
-      } catch (err2) {
-        log.error("Can't close ledger transport", err2)
-        // ignore
+        const transport = await ensureTransport()
+        const ledger = new LedgerEthereumApp(transport)
+
+        return await request(ledger)
+      } catch (err) {
+        await closeTransport()
+        throw getTalismanLedgerError(err, "Ethereum")
+      } finally {
+        refIsBusy.current = false
       }
-      setLedger(null)
-      setLedgerError(err as LedgerError)
-    }
+    },
+    [closeTransport, ensureTransport, t],
+  )
 
-    refConnecting.current = false
-    setIsLoading(false)
-  }, [])
+  const sign = useCallback(
+    (
+      chainId: number,
+      method: EthSignMessageMethod | "eth_sendTransaction",
+      payload: unknown,
+      derivationPath: string,
+    ) => {
+      return withLedger((ledger) =>
+        signWithLedger(ledger, chainId, method, payload, derivationPath),
+      )
+    },
+    [withLedger],
+  )
 
-  const { status, message, requiresManualRetry } = useMemo<{
-    status: LedgerStatus
-    message: string
-    requiresManualRetry: boolean
-  }>(() => {
-    if (ledgerError) return getLedgerErrorProps(ledgerError, "Ethereum")
-
-    if (isLoading)
-      return {
-        status: "connecting",
-        message: t(`Connecting to Ledger...`),
-        requiresManualRetry: false,
-      }
-
-    if (isReady)
-      return {
-        status: "ready",
-        message: t("Successfully connected to Ledger."),
-        requiresManualRetry: false,
-      }
-
-    return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [ledgerError, isLoading, isReady, t])
-
-  // if not connected, poll every 2 seconds
-  // this will recreate the ledger instance which triggers automatic connection
-  useSetInterval(() => {
-    if (
-      !isLoading &&
-      !requiresManualRetry &&
-      ["warning", "error", "unknown", "connecting"].includes(status)
-    )
-      setRefreshCounter((idx) => idx + 1)
-  }, 2000)
-
-  // manual connection
-  const refresh = useCallback(() => {
-    connectLedger(true)
-  }, [connectLedger])
-
-  useEffect(() => {
-    connectLedger()
-  }, [connectLedger, refreshCounter])
+  const getAddress = useCallback(
+    (derivationPath: string) => {
+      return withLedger((ledger) => ledger.getAddress(derivationPath, false))
+    },
+    [withLedger],
+  )
 
   return {
-    isLoading,
-    isReady,
-    requiresManualRetry,
-    status,
-    message,
-    ledger,
-    refresh,
+    getAddress,
+    sign,
+  }
+}
+
+const signWithLedger = async (
+  ledger: LedgerEthereumApp,
+  chainId: number,
+  method: EthSignMessageMethod | "eth_sendTransaction",
+  payload: unknown,
+  accountPath: string,
+): Promise<`0x${string}`> => {
+  switch (method) {
+    case "eth_signTypedData_v3":
+    case "eth_signTypedData_v4": {
+      const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
+
+      try {
+        // Nano S doesn't support signEIP712Message, fallback to signEIP712HashedMessage in case of error
+        // see https://github.com/LedgerHQ/ledger-live/tree/develop/libs/ledgerjs/packages/hw-app-eth#signeip712message
+
+        // eslint-disable-next-line no-var
+        var sig = await ledger.signEIP712Message(accountPath, jsonMessage)
+      } catch {
+        // fallback for ledger Nano S
+        const { domain, types, primaryType, message } = TypedDataUtils.sanitizeData(jsonMessage)
+        const domainSeparatorHex = TypedDataUtils.hashStruct(
+          "EIP712Domain",
+          domain,
+          types,
+          SignTypedDataVersion.V4,
+        ).toString("hex")
+        const hashStructMessageHex = TypedDataUtils.hashStruct(
+          primaryType as string,
+          message,
+          types,
+          SignTypedDataVersion.V4,
+        ).toString("hex")
+
+        sig = await ledger.signEIP712HashedMessage(
+          accountPath,
+          domainSeparatorHex,
+          hashStructMessageHex,
+        )
+      }
+
+      return signatureToHex(toSignature(sig))
+    }
+
+    case "personal_sign": {
+      // ensure that it is hex encoded
+      const messageHex = isHex(payload) ? payload : Buffer.from(payload as string).toString("hex")
+
+      const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
+
+      return signatureToHex(toSignature(sig))
+    }
+
+    case "eth_sendTransaction": {
+      const txRequest = payload as TransactionRequest
+      const baseTx = getTransactionSerializable(txRequest, chainId)
+      const serialized = serializeTransaction(baseTx)
+
+      const sig = await ledger.signTransaction(accountPath, stripHexPrefix(serialized), null)
+
+      return serializeTransaction(baseTx, toSignature(sig))
+    }
+
+    default: {
+      throw new Error(t("This type of message cannot be signed with ledger."))
+    }
+  }
+}
+
+const toSignature = ({ v, r, s }: { v: string | number; r: string; s: string }): Signature => {
+  const parseV = (v: string | number) => {
+    const parsed = typeof v === "string" ? hexToBigInt(`0x${v}`) : BigInt(v)
+
+    // ideally this should be done in viem
+    if (parsed === 0n) return 27n
+    if (parsed === 1n) return 28n
+
+    return parsed
+  }
+
+  return {
+    v: parseV(v),
+    r: `0x${r}`,
+    s: `0x${s}`,
   }
 }
