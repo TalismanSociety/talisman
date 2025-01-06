@@ -8,7 +8,6 @@ import { IconButton } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAccounts, useAppState } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
@@ -119,7 +118,6 @@ const useGetStarted = () => {
   const hasAccounts = useMemo(() => !!ownedAccounts.length, [ownedAccounts])
 
   const navigate = useNavigate()
-  const { open: openBuyTokensModal } = useBuyTokensModal()
   const { open: onCopyAddressModal } = useCopyAddressModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
@@ -159,11 +157,8 @@ const useGetStarted = () => {
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add funds" })
 
-    if (IS_POPUP) api.dashboardOpen(`/portfolio?buyTokens`)
-    else openBuyTokensModal()
-
-    closeIfEmbeddedPopup()
-  }, [openBuyTokensModal])
+    navigate("/portfolio/ramp/buy")
+  }, [navigate])
 
   const onLearnMoreClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })

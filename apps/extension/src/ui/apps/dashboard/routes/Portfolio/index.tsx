@@ -1,8 +1,6 @@
-import { useEffect } from "react"
-import { Route, Routes, useSearchParams } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
@@ -16,28 +14,10 @@ import { PortfolioNfts } from "./PortfolioNfts"
 import { RampRoutes } from "./Ramp"
 import { PortfolioLayout } from "./Shared/PortfolioLayout"
 
-const BuyTokensOpener = () => {
-  const [searchParams, updateSearchParams] = useSearchParams()
-  const { open: openBuyTokensModal } = useBuyTokensModal()
-
-  useEffect(() => {
-    const buyTokens = searchParams.get("buyTokens")
-    if (buyTokens === null) return
-
-    openBuyTokensModal()
-    searchParams.delete("buyTokens")
-    updateSearchParams(searchParams, { replace: true })
-  }, [openBuyTokensModal, searchParams, updateSearchParams])
-
-  return null
-}
-
 export const PortfolioRoutes = () => {
   return (
     <PortfolioContainer>
       <DashboardLayout sidebar={"accounts"}>
-        <BuyTokensOpener />
-
         {/* share layout to prevent tabs flickering */}
         <PortfolioLayout toolbar={<PortfolioToolbar />} header={<PortfolioHeader />}>
           <Routes>
