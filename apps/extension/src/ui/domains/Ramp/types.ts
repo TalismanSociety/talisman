@@ -56,10 +56,6 @@ export type RampQuote = {
   asset: RampAsset
 }
 
-export type SupportedTokenInfo = {
-  id: string
-}
-
 export type RampAssetWithTokenAndChain = RampAsset & {
   tokenData: {
     chain: AnyChain | EvmNetwork | undefined

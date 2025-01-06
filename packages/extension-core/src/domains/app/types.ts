@@ -6,6 +6,7 @@ import { PostHogCaptureProperties } from "../analytics/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
+  rampSupportedTokenIds: Record<string, string>
   buyTokens: {
     tokenIds: TokenId[]
   }
