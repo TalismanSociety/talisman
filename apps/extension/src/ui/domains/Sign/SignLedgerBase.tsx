@@ -36,7 +36,7 @@ export const SignLedgerBase: FC<{
     >
       {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
       <Button primary processing={isProcessing} onClick={onSignClick} className="px-4">
-        {t("Approve on Ledger")}
+        {t("Sign on Ledger")}
       </Button>
       <ErrorMessageDrawer
         name={error?.name}
