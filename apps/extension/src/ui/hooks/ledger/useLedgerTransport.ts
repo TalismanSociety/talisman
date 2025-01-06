@@ -1,35 +1,55 @@
 import Transport from "@ledgerhq/hw-transport"
+import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+import { sleep } from "@talismn/util"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useRef } from "react"
 
-import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
+import { getIsLedgerCapable, LedgerTransportType } from "@ui/util/getIsLedgerCapable"
+
+import { getTalismanLedgerError } from "./errors"
 
 const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
 
-const safelyCreateTransport = async (attempt = 1): Promise<Transport> => {
-  if (!getIsLedgerCapable()) throw new Error("Ledger is not supported on your browser.")
+const IS_USB_SUPPORTED = getIsLedgerCapable("usb")
+const IS_HID_SUPPORTED = getIsLedgerCapable("hid")
 
-  if (attempt > 5) throw new Error("Unable to connect to Ledger")
+const safelyCreateTransport = async (type: LedgerTransportType, attempt = 1) => {
+  if (attempt > 5) throw getTalismanLedgerError("Unable to connect to Ledger")
+
   try {
-    return await TransportWebUSB.create()
-  } catch (e) {
-    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
-      await new Promise((resolve) => setTimeout(resolve, 200 * attempt))
-      return await safelyCreateTransport(attempt + 1)
-    } else throw e
+    switch (type) {
+      case "usb":
+        return await TransportWebUSB.create()
+      case "hid":
+        return await TransportWebHID.create()
+    }
+  } catch (err) {
+    // in onboarding wizards, might need to wait for previous page/component to finish closing previous transport
+    if ((err as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
+      await sleep(200) // it should be almost instant but just in case, wait 1 second max (5 x 200ms)
+      return safelyCreateTransport(type, attempt + 1)
+    }
+    throw getTalismanLedgerError(err)
   }
 }
 
-const safelyCloseTransport = async (transport: Transport | null, attempt = 1): Promise<void> => {
-  if (attempt > 5) throw new Error("Unable to disconnect Ledger")
+const createTransport = async (): Promise<Transport> => {
   try {
-    await transport?.close()
-  } catch (e) {
-    if ((e as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
-      await new Promise((resolve) => setTimeout(resolve, 100 * attempt))
-      return await safelyCloseTransport(transport, attempt + 1)
-    } else throw e
+    if (IS_USB_SUPPORTED) {
+      try {
+        return await safelyCreateTransport("usb")
+      } catch (err) {
+        if (!IS_HID_SUPPORTED) throw err
+        return await safelyCreateTransport("hid")
+      }
+    } else if (IS_HID_SUPPORTED) {
+      return await safelyCreateTransport("hid")
+    }
+
+    throw getTalismanLedgerError("Ledger is not supported on your browser.")
+  } catch (err) {
+    throw getTalismanLedgerError(err)
   }
 }
 
@@ -38,7 +58,7 @@ export const useLedgerTransport = () => {
 
   const ensureTransport = useCallback(async () => {
     if (!refTransport.current) {
-      refTransport.current = await safelyCreateTransport()
+      refTransport.current = await createTransport()
       refTransport.current.on("disconnect", () => {
         refTransport.current = null
       })
@@ -50,13 +70,20 @@ export const useLedgerTransport = () => {
   const closeTransport = useCallback(async () => {
     if (!refTransport.current) return
 
-    await safelyCloseTransport(refTransport.current)
-    refTransport.current = null
+    try {
+      await refTransport.current.close()
+    } catch (err) {
+      log.error("Failed to close transport", { err })
+    } finally {
+      refTransport.current = null
+    }
   }, [])
 
   useEffect(() => {
     return () => {
-      if (refTransport.current) safelyCloseTransport(refTransport.current).catch(log.error)
+      refTransport.current?.close().catch((err) => {
+        log.error("Failed to close transport on unmount", { err })
+      })
     }
   }, [])
 

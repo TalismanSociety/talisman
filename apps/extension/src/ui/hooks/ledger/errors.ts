@@ -11,6 +11,7 @@ type NativeLedgerError = {
   name?: string // if error raised by @zondax/*
   statusCode?: number // if error raised by @zondax/*
   returnCode?: number // if error raised by @ledgerhq/hw-transport
+  code?: number // if error raised by @ledgerhq/hw-transport-webusb
 }
 
 // used to generate an error-like object when using an api (substrate legacy app) that returns error message as part of the response without throwing it
@@ -84,7 +85,7 @@ export const getTalismanLedgerError = (
       case "InvalidStateError":
         return new TalismanLedgerError(
           "Unknown",
-          t("Failed to connect to Ledger (invalid state)"),
+          t("Failed to connect to Ledger (invalid state). Ledger might be busy."),
           { cause },
         )
 
@@ -198,6 +199,7 @@ const getErrorFromCode = (code: number | undefined, appName: string, cause: unkn
 
     case 27404: // locked
     case 27010:
+    case 21781:
       return new TalismanLedgerError("Locked", t("Please unlock your Ledger"), { cause })
 
     case 28160: // non-compatible app

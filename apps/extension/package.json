@@ -14,6 +14,7 @@
     "@hookform/resolvers": "3.9.0",
     "@ledgerhq/hw-app-eth": "6.40.2",
     "@ledgerhq/hw-transport": "6.31.4",
+    "@ledgerhq/hw-transport-webhid": "^6.30.0",
     "@ledgerhq/hw-transport-webusb": "6.29.4",
     "@metamask/eth-sig-util": "8.0.0",
     "@polkadot-api/descriptors": "workspace:*",
