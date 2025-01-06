@@ -167,7 +167,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
 
   useEffect(() => {
     // Handles cases where users switch between buy and sell forms and the token is not available for the selected currency/action
-    if (!selectedToken) setValue("tokenAmount", 0)
+    if (!selectedToken && fiatAmount > 0) setValue("tokenAmount", 0)
 
     if (!rampQuote || isRampQuoteLoading) return
 
@@ -190,7 +190,15 @@ export const RampForm = ({ formType }: RampFormProps) => {
     } else {
       setValue("fiatAmount", (isBuyForm ? onrampFiatValue : offrampFiatValue) ?? 0)
     }
-  }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue, selectedToken])
+  }, [
+    dirtyAmountField,
+    isBuyForm,
+    isRampQuoteLoading,
+    rampQuote,
+    setValue,
+    selectedToken,
+    fiatAmount,
+  ])
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
@@ -362,7 +370,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
   const fiatAmountInput = (
     <NumberInputWithDropDown
       inputFieldProps={register("fiatAmount")}
-      inputFieldLabel={fiatCurrency}
+      inputFieldLabel={fiatCurrency ?? "$0"}
       inputType="number"
       inputPlaceholder="100"
       onInputChange={(e) => {
