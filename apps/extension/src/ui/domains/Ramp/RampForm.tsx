@@ -3,7 +3,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { PlusIcon } from "@talismn/icons"
 import { convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
-import React, { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
@@ -27,6 +27,7 @@ import { useGetRampQuote } from "./hooks/useGetRampQuote"
 import useSupportedTokens from "./hooks/useSupportedTokens"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
 import { RampAccountOption } from "./RampAccountOption"
+import { RampOptionSwitchHeader } from "./RampOptionSwitchHeader"
 import { RampAssetWithTokenAndChain, RampCurrency } from "./types"
 import { truncateToSignificantDigits } from "./utils"
 
@@ -71,20 +72,17 @@ const schema = yup.object({
   }),
 })
 
-type RampFormProps = {
-  formType: "buy" | "sell"
-}
-
-export const RampForm = ({ formType }: RampFormProps) => {
+export const RampForm = () => {
   const accounts = useAccounts("portfolio")
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
-  const [fiatSearch, setFiatSearch] = React.useState<string>("")
-  const [tokenSearch, setTokenSearch] = React.useState<string>("")
+  const [fiatSearch, setFiatSearch] = useState<string>("")
+  const [tokenSearch, setTokenSearch] = useState<string>("")
+  const [selectedFormType, setSelectedFormType] = useState<"buy" | "sell">("buy")
   const { t } = useTranslation()
   const { balanceTotalPerAccount } = usePortfolioAccounts()
 
-  const isBuyForm = formType === "buy"
+  const isBuyForm = selectedFormType === "buy"
 
   const accountsWithBalance = useMemo(
     () => accounts.map((acc) => ({ ...acc, total: balanceTotalPerAccount[acc.address] })),
@@ -439,11 +437,12 @@ export const RampForm = ({ formType }: RampFormProps) => {
   )
 
   return (
-    <div className="text-body-secondary flex h-[47.5rem] justify-center md:h-auto">
+    <div className="text-body-secondary flex h-[49.5rem] justify-center md:h-auto">
       <form className="flex w-full flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
+        <RampOptionSwitchHeader setSelectedFormType={setSelectedFormType} />
         <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
-            <div className="font-bold text-white">{t("Step1")}</div>
+            <div className="font-bold text-white">{t("Step 1")}</div>
             <div>{t("Select Asset")}</div>
           </div>
           <div className="text-xs">{isBuyForm ? t("You Pay") : t("You Sell")}</div>
@@ -458,7 +457,7 @@ export const RampForm = ({ formType }: RampFormProps) => {
         </div>
         <div className="md:border-grey-750 bg-black-secondary mt-6 space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
-            <div className="font-bold text-white">{t("Step2")}</div>
+            <div className="font-bold text-white">{t("Step 2")}</div>
             <div>{t("Select Account")}</div>
           </div>
           <div className="text-xs">{t("Deposit Account")}</div>

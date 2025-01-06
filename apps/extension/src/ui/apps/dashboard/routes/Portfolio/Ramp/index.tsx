@@ -6,8 +6,7 @@ export const RampRoutes = () => {
   return (
     <Routes>
       <Route path="*" element={<Navigate to="buy" />} />
-      <Route path="buy" element={<RampForm formType="buy" />} />
-      <Route path="sell" element={<RampForm formType="sell" />} />
+      <Route path="buy" element={<RampForm />} />
     </Routes>
   )
 }

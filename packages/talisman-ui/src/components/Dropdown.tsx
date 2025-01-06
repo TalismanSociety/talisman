@@ -75,7 +75,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
               <Listbox.Options
                 className={classNames(
                   "bg-grey-800 absolute right-0 top-0 z-10 rounded-sm",
-                  !isSearchable && "rounded-b-sm",
+                  !isSearchable && "w-full rounded-b-sm",
                 )}
               >
                 {isSearchable && (
