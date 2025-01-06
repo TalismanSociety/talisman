@@ -11,7 +11,6 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 
 import { DashboardAccountsSidebar } from "./DashboardAccountsSidebar"
-import { DashboardRampSidebar } from "./DashboardRampSidebar"
 import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
 import { LayoutBreadcrumb } from "./LayoutBreadcrumb"
 import { DashboardNotificationsAndModals } from "./notifications/DashboardNotificationsAndModals"
@@ -19,7 +18,7 @@ import { DashboardNotificationsAndModals } from "./notifications/DashboardNotifi
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardLayout: FC<{
   children?: ReactNode
-  sidebar: "accounts" | "settings" | "ramp"
+  sidebar: "accounts" | "settings"
 }> = ({ children, sidebar }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
@@ -34,7 +33,6 @@ export const DashboardLayout: FC<{
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
               {sidebar === "accounts" && <DashboardAccountsSidebar />}
               {sidebar === "settings" && <DashboardSettingsSidebar />}
-              {sidebar === "ramp" && <DashboardRampSidebar />}
             </Suspense>
           </div>
           {/* Main area */}

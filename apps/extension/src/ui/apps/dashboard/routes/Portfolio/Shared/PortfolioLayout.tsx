@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren, ReactNode, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -9,6 +9,8 @@ import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolio } from "@ui/state"
+
+const RAMP_ROUTE = "/portfolio/ramp"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
@@ -50,8 +52,10 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
 }
 
 export const PortfolioLayout: FC<
-  PropsWithChildren & { toolbar?: ReactNode; header?: ReactNode; isRampRoute?: boolean }
-> = ({ header, isRampRoute, toolbar, children }) => {
+  PropsWithChildren & { toolbar?: ReactNode; header?: ReactNode }
+> = ({ header, toolbar, children }) => {
+  const location = useLocation()
+  const isRampRoute = location.pathname.includes(RAMP_ROUTE)
   return (
     <div className="relative flex w-full flex-col gap-6 pb-12">
       <Suspense
@@ -59,15 +63,17 @@ export const PortfolioLayout: FC<
       >
         {!isRampRoute && (header ?? <DashboardPortfolioHeader />)}
         <PortfolioAccountCheck>
-          <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
-            {!isRampRoute && <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />}
+          {!isRampRoute && (
+            <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
+              <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
 
-            <div className="shrink-0">
-              <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
-                {toolbar}
-              </Suspense>
+              <div className="shrink-0">
+                <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
+                  {toolbar}
+                </Suspense>
+              </div>
             </div>
-          </div>
+          )}
           <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>
             {children}
           </Suspense>

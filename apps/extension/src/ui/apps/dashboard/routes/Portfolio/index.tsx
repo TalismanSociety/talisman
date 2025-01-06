@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Route, Routes, useLocation, useSearchParams } from "react-router-dom"
+import { Route, Routes, useSearchParams } from "react-router-dom"
 
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
@@ -15,8 +15,6 @@ import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
 import { RampRoutes } from "./Ramp"
 import { PortfolioLayout } from "./Shared/PortfolioLayout"
-
-const RAMP_ROUTE = "/portfolio/ramp"
 
 const BuyTokensOpener = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -35,19 +33,13 @@ const BuyTokensOpener = () => {
 }
 
 export const PortfolioRoutes = () => {
-  const location = useLocation()
-  const isRampRoute = location.pathname.includes(RAMP_ROUTE)
   return (
     <PortfolioContainer>
-      <DashboardLayout sidebar={isRampRoute ? "ramp" : "accounts"}>
+      <DashboardLayout sidebar={"accounts"}>
         <BuyTokensOpener />
 
         {/* share layout to prevent tabs flickering */}
-        <PortfolioLayout
-          toolbar={<PortfolioToolbar />}
-          header={<PortfolioHeader />}
-          isRampRoute={isRampRoute}
-        >
+        <PortfolioLayout toolbar={<PortfolioToolbar />} header={<PortfolioHeader />}>
           <Routes>
             <Route path="ramp/*" element={<RampRoutes />} />
             <Route path="tokens/:symbol" element={<PortfolioAsset />} />
