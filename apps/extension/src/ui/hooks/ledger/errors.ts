@@ -182,19 +182,11 @@ export const getTalismanLedgerError = (error: unknown, appName: string): Talisma
   // eslint-disable-next-line no-console
   DEBUG && console.warn("unmanaged ledger error", { error })
 
-  return new TalismanLedgerError(
-    "Unknown",
-    // this will attempt to display relevant info about the error, useful if users ask for help with a screenshot.
-    t(
-      "[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}",
-      {
-        label: cause.name ?? cause.returnCode ?? cause.statusCode,
-        message: cause.message,
-        appName: capitalize(appName),
-      },
-    ),
-    { cause },
-  )
+  // At this point either the error most likely not a Ledger error (custom Talisman message) or it is an error that we don't manage
+  // either way, we want to display the original error message
+  return new TalismanLedgerError("Unknown", cause.message ?? "Failed to connect to your Ledger", {
+    cause,
+  })
 }
 
 const getErrorFromCode = (code: number | undefined, appName: string, cause: unknown) => {
