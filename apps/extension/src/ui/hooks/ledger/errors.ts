@@ -184,7 +184,15 @@ export const getTalismanLedgerError = (error: unknown, appName: string): Talisma
 
   return new TalismanLedgerError(
     "Unknown",
-    t("Failed to connect to your Ledger. Click here to retry."),
+    // this will attempt to display relevant info about the error, useful if users ask for help with a screenshot.
+    t(
+      "[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}",
+      {
+        label: cause.name ?? cause.returnCode ?? cause.statusCode,
+        message: cause.message,
+        appName: capitalize(appName),
+      },
+    ),
     { cause },
   )
 }
