@@ -7,7 +7,7 @@ import {
   LedgerConnectionStatus,
   LedgerConnectionStatusProps,
 } from "@ui/domains/Account/LedgerConnectionStatus"
-import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 
 type ConnectLedgerBaseProps = {
   appName: string
@@ -51,7 +51,7 @@ export const ConnectLedgerBase: FC<ConnectLedgerBaseProps> = ({
       })
       onReadyChanged?.(true)
     } catch (err) {
-      const error = getCustomTalismanLedgerError(err)
+      const error = getTalismanLedgerError(err)
       log.error("ConnectLedgerSubstrateGeneric", { error })
       setConnectionStatus({
         status: "error",

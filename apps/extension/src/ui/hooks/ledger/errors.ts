@@ -26,6 +26,7 @@ export const getCustomNativeLedgerError = (
 }
 
 type TalismanLedgerErrorName =
+  | "Custom"
   | "Unknown"
   | "UnsupportedVersion"
   | "InvalidApp"
@@ -46,15 +47,14 @@ export class TalismanLedgerError extends Error {
   }
 }
 
-export const getCustomTalismanLedgerError = (errorOrMessage: unknown): TalismanLedgerError => {
-  if (errorOrMessage instanceof TalismanLedgerError) return errorOrMessage
+export const getTalismanLedgerError = (
+  error: unknown,
+  appName: string = "Unknown App",
+): TalismanLedgerError => {
+  if (error instanceof TalismanLedgerError) return error
 
-  if (typeof errorOrMessage === "string") return new TalismanLedgerError("Unknown", errorOrMessage)
+  if (typeof error === "string") return new TalismanLedgerError("Custom", error)
 
-  return getTalismanLedgerError(errorOrMessage as NativeLedgerError, "substrate")
-}
-
-export const getTalismanLedgerError = (error: unknown, appName: string): TalismanLedgerError => {
   log.log("getTalismanLedgerError", { error })
 
   const cause = error as NativeLedgerError
@@ -115,7 +115,6 @@ export const getTalismanLedgerError = (error: unknown, appName: string): Talisma
 
   // Polkadot specific errors, wrapped in simple Error object
   // only message is available
-  // TODO Check if still a thing since ledger generic app
   switch (cause.message) {
     case "Timeout": // this one is throw by Talisman in case of timeout when calling ledger.getAddress
       return new TalismanLedgerError("Timeout", t("Failed to connect to your Ledger (timeout)"), {
@@ -182,8 +181,7 @@ export const getTalismanLedgerError = (error: unknown, appName: string): Talisma
   // eslint-disable-next-line no-console
   DEBUG && console.warn("unmanaged ledger error", { error })
 
-  // At this point either the error most likely not a Ledger error (custom Talisman message) or it is an error that we don't manage
-  // either way, we want to display the original error message
+  // If available, display the actual error message so our help-desk can understand what s going on
   return new TalismanLedgerError("Unknown", cause.message ?? "Failed to connect to your Ledger", {
     cause,
   })

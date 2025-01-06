@@ -2,7 +2,7 @@ import { FC, useCallback } from "react"
 
 import { AccountJsonHardwareSubstrate } from "@extension/core"
 import { log } from "@extension/shared"
-import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { useAccountByAddress } from "@ui/state"
@@ -44,7 +44,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       // await to keep loader spinning until popup closes
       await onSigned({ signature })
     } catch (err) {
-      const error = getCustomTalismanLedgerError(err)
+      const error = getTalismanLedgerError(err)
       log.error("signLedger", { error })
       setError(error)
     } finally {

@@ -5,7 +5,7 @@ import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "@extens
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
-import { getCustomTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useEvmNetworks } from "@ui/state"
@@ -93,7 +93,7 @@ const useLedgerEthereumAccounts = (
           message: t("Ledger is ready."),
         })
       } catch (err) {
-        const error = getCustomTalismanLedgerError(err)
+        const error = getTalismanLedgerError(err)
         log.error("Failed to load page", { err })
         setConnectionStatus({
           status: "error",
