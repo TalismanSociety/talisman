@@ -482,7 +482,7 @@ export const RampForm = () => {
         IS_POPUP && "flex-col",
       )}
     >
-      <form className="flex h-full w-full flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
+      <form className="flex h-full w-full max-w-[47rem] flex-col" onSubmit={handleSubmit(submit)}>
         <RampOptionSwitchHeader setSelectedFormType={setSelectedFormType} />
         <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">

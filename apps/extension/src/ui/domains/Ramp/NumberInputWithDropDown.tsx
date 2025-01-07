@@ -44,7 +44,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
             placeholder={inputPlaceholder}
             autoComplete="off"
             className={classNames(
-              "text-md peer min-w-0 max-w-[15rem] appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit",
+              "text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit",
               isLoading && "text-body-disabled animate-pulse",
             )}
             {...inputFieldProps}
