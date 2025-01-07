@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { PlusIcon } from "@talismn/icons"
-import { convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { classNames, convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -18,6 +18,7 @@ import {
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { currencyInfo } from "./currencyInfo"
 import { useGetRampAssetsByCurrency } from "./hooks/useGetRampAssetsByCurrency"
@@ -475,8 +476,13 @@ export const RampForm = () => {
   )
 
   return (
-    <div className="text-body-secondary flex h-[49.5rem] justify-center md:h-auto">
-      <form className="flex w-full flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
+    <div
+      className={classNames(
+        "text-body-secondary flex justify-center md:h-auto",
+        IS_POPUP && "flex-col",
+      )}
+    >
+      <form className="flex h-full w-full flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
         <RampOptionSwitchHeader setSelectedFormType={setSelectedFormType} />
         <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
@@ -514,7 +520,7 @@ export const RampForm = () => {
         </div>
         <Button
           type="submit"
-          className="mt-auto w-full md:mt-6"
+          className="mt-[1.8rem] h-[46px] w-full rounded-[16px]"
           primary
           disabled={
             !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount
