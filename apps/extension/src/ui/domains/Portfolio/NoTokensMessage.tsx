@@ -45,7 +45,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
           <PillButton
             size="sm"
             icon={CreditCardIcon}
-            onClick={() => navigate("/portfolio/ramp/buy")}
+            onClick={() => navigate("/portfolio/buysell")}
           >
             {t("Buy Crypto")}
           </PillButton>

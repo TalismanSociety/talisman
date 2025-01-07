@@ -157,7 +157,7 @@ const useGetStarted = () => {
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add funds" })
 
-    navigate("/portfolio/ramp/buy")
+    navigate("/portfolio/buysell")
   }, [navigate])
 
   const onLearnMoreClick = useCallback(() => {

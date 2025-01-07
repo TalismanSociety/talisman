@@ -21,7 +21,7 @@ export const PortfolioRoutes = () => {
         {/* share layout to prevent tabs flickering */}
         <PortfolioLayout toolbar={<PortfolioToolbar />} header={<PortfolioHeader />}>
           <Routes>
-            <Route path="ramp/*" element={<RampRoutes />} />
+            <Route path="buysell/*" element={<RampRoutes />} />
             <Route path="tokens/:symbol" element={<PortfolioAsset />} />
             <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
             <Route path="tokens" element={<PortfolioAssets />} />

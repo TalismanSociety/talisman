@@ -295,7 +295,7 @@ const TopActions: FC = () => {
               analyticsAction: "Buy Crypto button",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => navigate("/portfolio/ramp/buy"),
+              onClick: () => navigate("/portfolio/buysell"),
               disabled: disableActions,
               disabledReason,
             }

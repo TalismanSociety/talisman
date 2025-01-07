@@ -10,7 +10,7 @@ import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolio } from "@ui/state"
 
-const RAMP_ROUTE = "/portfolio/ramp"
+const RAMP_ROUTE = "/portfolio/buysell"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
