@@ -293,9 +293,8 @@ const TopActions: FC = () => {
           ? {
               analyticsName: "Goto",
               analyticsAction: "Buy Crypto button",
-              label: t("Buy"),
+              label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              // onClick: () => api.modalOpen({ modalType: "buy" }), // TODO: remove old buy modal components
               onClick: () => navigate("/portfolio/ramp/buy"),
               disabled: disableActions,
               disabledReason,

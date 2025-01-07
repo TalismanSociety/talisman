@@ -213,9 +213,8 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           ? {
               analyticsName: "Goto",
               analyticsAction: "Buy Crypto button",
-              label: t("Buy"),
+              label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              // onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
               onClick: () => navigate("/portfolio/ramp"),
               disabled: disableActions,
               disabledReason,

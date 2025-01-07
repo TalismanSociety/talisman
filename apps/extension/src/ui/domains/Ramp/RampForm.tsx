@@ -370,7 +370,7 @@ export const RampForm = () => {
       inputFieldProps={register("fiatAmount")}
       inputFieldLabel={fiatCurrency ?? "$0"}
       inputType="number"
-      inputPlaceholder="100"
+      inputPlaceholder="0"
       onInputChange={(e) => {
         handleFiatAmountChange(e)
         register("fiatAmount").onChange(e)
@@ -390,6 +390,7 @@ export const RampForm = () => {
       value={selectedFiatCurrency}
       renderItem={renderFiatCurrencyItem}
       onChange={handleFiatCurrencyChange}
+      className="rounded-[12px]"
       buttonClassName="px-3 py-3 h-full flex w-[16rem] gap-0"
       optionClassName="px-6 py-[8px] border-b border-grey-750"
       isSearchable
@@ -425,6 +426,7 @@ export const RampForm = () => {
       value={selectedToken}
       renderItem={renderTokenItem}
       onChange={handleTokenChange}
+      className="rounded-[12px]"
       buttonClassName="px-3 py-3 h-full flex w-[16rem] gap-0"
       optionClassName="px-6 py-[8px] border-b border-grey-750"
       isLoading={isRampQuoteLoading && dirtyAmountField === "fiatAmount"}
@@ -440,10 +442,10 @@ export const RampForm = () => {
     <div className="text-body-secondary flex h-[49.5rem] justify-center md:h-auto">
       <form className="flex w-full flex-col md:w-[47rem]" onSubmit={handleSubmit(submit)}>
         <RampOptionSwitchHeader setSelectedFormType={setSelectedFormType} />
-        <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
+        <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step 1")}</div>
-            <div>{t("Select Asset")}</div>
+            <div>{t("Select asset")}</div>
           </div>
           <div className="text-xs">{isBuyForm ? t("You Pay") : t("You Sell")}</div>
           {isBuyForm ? fiatAmountInput : tokenAmountInput}
@@ -455,10 +457,10 @@ export const RampForm = () => {
           </div>
           {isBuyForm ? tokenAmountInput : fiatAmountInput}
         </div>
-        <div className="md:border-grey-750 bg-black-secondary mt-6 space-y-6 rounded-xl border-0 p-6 md:border-[1px] md:bg-inherit">
+        <div className="md:border-grey-750 bg-black-secondary mt-6 space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
           <div className="flex gap-4">
             <div className="font-bold text-white">{t("Step 2")}</div>
-            <div>{t("Select Account")}</div>
+            <div>{t("Select account")}</div>
           </div>
           <div className="text-xs">{t("Deposit Account")}</div>
           <Dropdown
@@ -466,12 +468,12 @@ export const RampForm = () => {
             propertyKey="address"
             renderItem={(item) => <RampAccountOption account={item} />}
             onChange={handleAccountChange}
-            placeholder={t("Select Account")}
+            placeholder={t("Select account")}
             value={selectedAccount}
             key={address} // uncontrolled component, will reset if value changes
-            buttonClassName="bg-black-secondary h-full px-6 py-3"
+            buttonClassName="bg-black-secondary h-full px-6 py-3 rounded-[12px]"
             optionClassName="px-6 py-3"
-            className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-lg border-[1px]"
+            className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-[12px] border-[1px]"
           />
         </div>
         <Button

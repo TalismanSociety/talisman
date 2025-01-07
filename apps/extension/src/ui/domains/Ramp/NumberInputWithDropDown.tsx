@@ -32,7 +32,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
   ...dropdownProps
 }: NumberInputWithDropDownProps<T>) => {
   return (
-    <div className="border-grey-750 bg-black-secondary flex h-[5.5rem] justify-between rounded-lg border-[1px] p-3 pl-8">
+    <div className="border-grey-750 bg-black-secondary flex h-[5.5rem] justify-between rounded-[12px] border-[1px] p-3 pl-8">
       <div className="flex flex-col justify-center">
         <input
           type={inputType}
