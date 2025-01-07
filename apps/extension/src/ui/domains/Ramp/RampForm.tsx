@@ -44,6 +44,7 @@ type RampTokenAsset = {
   chainId: string
   isEvm: boolean
   chainPrefix?: number | null | undefined
+  minPurchaseAmount: number
 }
 
 type FormData = {
@@ -69,6 +70,7 @@ const schema = yup.object({
     chainId: yup.string().required(),
     isEvm: yup.boolean().required(),
     chainPrefix: yup.number().nullable().optional(),
+    minPurchaseAmount: yup.number().required(" ").min(0),
   }),
 })
 
@@ -110,6 +112,7 @@ export const RampForm = () => {
     rampTokenDecimals,
     rampTokenAssetChain,
     rampTokenIsEvm,
+    rampTokenMinPurchaseAmount,
     dirtyAmountField,
   ] = watch([
     "address",
@@ -119,6 +122,7 @@ export const RampForm = () => {
     "rampTokenAsset.decimals",
     "rampTokenAsset.chain",
     "rampTokenAsset.isEvm",
+    "rampTokenAsset.minPurchaseAmount",
     "dirtyAmountField",
   ])
 
@@ -149,6 +153,22 @@ export const RampForm = () => {
     (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
   )
 
+  useEffect(() => {
+    setValue("rampTokenAsset.minPurchaseAmount", selectedToken?.minPurchaseAmount ?? 0)
+  }, [selectedToken?.minPurchaseAmount, setValue])
+
+  const isFiatAboveMinPurchaseAmount = useMemo(() => {
+    if (
+      !rampTokenMinPurchaseAmount ||
+      !rampTokenMinPurchaseAmount ||
+      Number(debouncedFiatAmount) === 0
+    ) {
+      return true
+    }
+
+    return Number(debouncedFiatAmount) > rampTokenMinPurchaseAmount
+  }, [debouncedFiatAmount, rampTokenMinPurchaseAmount])
+
   const {
     data: rampQuote,
     isLoading: isRampQuoteLoading,
@@ -160,7 +180,7 @@ export const RampForm = () => {
     fiatAmount: Number(debouncedFiatAmount),
     isFiatQuote: dirtyAmountField === "fiatAmount",
     isBuyForm,
-    isEnabled: !!selectedToken,
+    isEnabled: !!selectedToken && isFiatAboveMinPurchaseAmount,
   })
 
   useEffect(() => {
@@ -186,7 +206,9 @@ export const RampForm = () => {
 
       setValue("tokenAmount", Number(tokenQuoteAmount))
     } else {
-      setValue("fiatAmount", (isBuyForm ? onrampFiatValue : offrampFiatValue) ?? 0)
+      const fiatValue = isBuyForm ? onrampFiatValue : offrampFiatValue
+      setValue("fiatAmount", fiatValue ?? 0)
+      setDebouncedFiatAmount(fiatValue?.toString() ?? "0")
     }
   }, [
     dirtyAmountField,
@@ -196,6 +218,7 @@ export const RampForm = () => {
     setValue,
     selectedToken,
     fiatAmount,
+    setDebouncedFiatAmount,
   ])
 
   const getTokenRateByCurrency = useCallback(
@@ -261,16 +284,20 @@ export const RampForm = () => {
     setValue("dirtyAmountField", "fiatAmount")
   }
 
+  const handleFiatCurrencyChange = useMemo(
+    () => (fiatCurrency: RampCurrency | null) => {
+      const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
+
+      setValue("fiatCurrency", newFiatCurrency)
+      setValue("rampTokenAsset.minPurchaseAmount", selectedToken?.minPurchaseAmount ?? 0)
+    },
+    [selectedToken?.minPurchaseAmount, setValue],
+  )
+
   const handleTokenAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDebouncedTokenAmount(e.target.value)
 
     setValue("dirtyAmountField", "tokenAmount")
-  }
-
-  const handleFiatCurrencyChange = (fiatCurrency: RampCurrency | null) => {
-    const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
-
-    setValue("fiatCurrency", newFiatCurrency)
   }
 
   const handleTokenChange = useCallback(
@@ -288,6 +315,7 @@ export const RampForm = () => {
             rampAsset?.tokenData?.chain && "prefix" in rampAsset.tokenData.chain
               ? rampAsset.tokenData.chain.prefix
               : null,
+          minPurchaseAmount: rampAsset?.minPurchaseAmount ?? 0,
         },
         { shouldValidate: true },
       )
@@ -316,6 +344,7 @@ export const RampForm = () => {
             isEvm: false,
             chainId: "",
             chainPrefix: null,
+            minPurchaseAmount: 0,
           },
           { shouldValidate: true },
         )
@@ -398,6 +427,13 @@ export const RampForm = () => {
       searchPlaceholder={t("Search currency")}
       searchLabel={t(`Available now (${onrampCurrencies.length}):`)}
       minStep="0.01"
+      errorMessage={
+        !isFiatAboveMinPurchaseAmount
+          ? t(
+              `The minimum purchase amount for ${rampTokenAssetSymbol} is ${rampTokenMinPurchaseAmount.toFixed(2)} ${fiatCurrency}`,
+            )
+          : ""
+      }
     />
   )
 
@@ -480,7 +516,9 @@ export const RampForm = () => {
           type="submit"
           className="mt-auto w-full md:mt-6"
           primary
-          disabled={!isValid || isRampQuoteError || isRampQuoteLoading}
+          disabled={
+            !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount
+          }
         >
           {isBuyForm ? t("Buy with Ramp") : t("Sell with Ramp")}
         </Button>
