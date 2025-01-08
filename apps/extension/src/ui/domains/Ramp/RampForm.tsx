@@ -462,7 +462,7 @@ export const RampForm = () => {
       }
       onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.stopPropagation()
-        setValue("fiatCurrency", "")
+        setValue("fiatCurrency", "", { shouldValidate: true })
       }}
     />
   )
@@ -567,7 +567,7 @@ export const RampForm = () => {
               className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-[12px] border-[1px]"
               onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
                 e.stopPropagation()
-                setValue("address", "")
+                setValue("address", "", { shouldValidate: true })
               }}
             />
           )}
