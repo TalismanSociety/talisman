@@ -75,9 +75,11 @@ export const Dropdown = <T extends Record<string, unknown>>({
                 {value ? renderItem(value, propertyLabel) : placeholder}
               </div>
               {!disabled && canClear ? (
-                <XIcon className="shrink-0 text-[1.2em]" onClick={onClear} />
+                <button onClick={onClear}>
+                  <XIcon className="shrink-0 text-[1.2em]" />
+                </button>
               ) : (
-                <ChevronDownIcon className="shrink-0 text-[1.2em]" />
+                !disabled && <ChevronDownIcon className="shrink-0 text-[1.2em]" />
               )}
             </Listbox.Button>
             <div className="relative w-full">

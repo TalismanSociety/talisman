@@ -27,6 +27,7 @@ import { useGetRampQuote } from "./hooks/useGetRampQuote"
 import useSupportedTokens from "./hooks/useSupportedTokens"
 import { NumberInputWithDropDown } from "./NumberInputWithDropDown"
 import { RampAccountOption } from "./RampAccountOption"
+import { RampConnectAccount } from "./RampConnectAccount"
 import { RampOptionSwitchHeader } from "./RampOptionSwitchHeader"
 import { RampAssetWithTokenAndChain, RampCurrency } from "./types"
 import { truncateToSignificantDigits } from "./utils"
@@ -550,22 +551,26 @@ export const RampForm = () => {
             <div>{t("Select account")}</div>
           </div>
           <div className="text-xs">{t("Deposit Account")}</div>
-          <Dropdown
-            items={accountsWithBalance.filter((acc) => acc.address !== selectedAccount?.address)}
-            propertyKey="address"
-            renderItem={(item) => <RampAccountOption account={item} />}
-            onChange={handleAccountChange}
-            placeholder={t("Select account")}
-            value={selectedAccount}
-            key={address} // uncontrolled component, will reset if value changes
-            buttonClassName="bg-black-secondary h-full px-6 py-3 rounded-[12px]"
-            optionClassName="px-6 py-3"
-            className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-[12px] border-[1px]"
-            onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-              e.stopPropagation()
-              setValue("address", "")
-            }}
-          />
+          {rampTokenAssetSymbol && accountsWithBalance.length === 0 ? (
+            <RampConnectAccount isEvm={rampTokenIsEvm} />
+          ) : (
+            <Dropdown
+              items={accountsWithBalance.filter((acc) => acc.address !== selectedAccount?.address)}
+              propertyKey="address"
+              renderItem={(item) => <RampAccountOption account={item} />}
+              onChange={handleAccountChange}
+              placeholder={t("Select account")}
+              value={selectedAccount}
+              key={address} // uncontrolled component, will reset if value changes
+              buttonClassName="bg-black-secondary h-full px-6 py-3 rounded-[12px]"
+              optionClassName="px-6 py-3"
+              className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-[12px] border-[1px]"
+              onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                e.stopPropagation()
+                setValue("address", "")
+              }}
+            />
+          )}
         </div>
         <Button
           type="submit"

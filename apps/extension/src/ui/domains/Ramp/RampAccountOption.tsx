@@ -12,11 +12,7 @@ export const RampAccountOption = ({ account }: RampAccountOptionProps) => {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-5">
-        <AccountIcon
-          className="!text-xl"
-          address={account.address}
-          genesisHash={account.genesisHash}
-        />
+        <AccountIcon className="!text-xl" address={account.address} />
         <div>
           <div className="text-white">{account.name}</div>
           <div className="text-tiny">{shortenAddress(account.address)}</div>
