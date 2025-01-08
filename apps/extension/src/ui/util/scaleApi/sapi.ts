@@ -73,8 +73,8 @@ export const getScaleApi = (
     getConstant: <T>(pallet: string, constant: string) =>
       getConstantValue<T>(chainId, metadata, builder, pallet, constant),
 
-    getStorage: <T>(pallet: string, entry: string, keys: unknown[]) =>
-      getStorageValue<T>(chainId, builder, pallet, entry, keys),
+    getStorage: <T>(pallet: string, entry: string, keys: unknown[], at?: string) =>
+      getStorageValue<T>(chainId, builder, pallet, entry, keys, at),
 
     getDecodedCall: (pallet: string, method: string, args: unknown) =>
       getDecodedCall(pallet, method, args),
@@ -483,11 +483,12 @@ const getStorageValue = async <T>(
   pallet: string,
   entry: string,
   keys: unknown[],
+  at?: string,
 ) => {
   const storageCodec = scaleBuilder.buildStorage(pallet, entry)
   const stateKey = storageCodec.enc(...keys)
 
-  const hexValue = await api.subSend<string | null>(chainId, "state_getStorage", [stateKey])
+  const hexValue = await api.subSend<string | null>(chainId, "state_getStorage", [stateKey, at])
   if (!hexValue) return null as T // caller will need to expect null when applicable
 
   return storageCodec.dec(hexValue) as T
