@@ -6,6 +6,7 @@ import { PostHogCaptureProperties } from "../analytics/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
+  rampConfig: RampConfig
   rampSupportedTokenIds: Record<string, string>
   buyTokens: {
     tokenIds: TokenId[]
@@ -120,4 +121,10 @@ export interface AppMessages {
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
+}
+
+type RampConfig = {
+  rampBasePath: string
+  rampApiBasePath: string
+  rampApiKey: string
 }

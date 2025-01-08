@@ -34,10 +34,6 @@ export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nft
 export const TAOSTATS_BASE_PATH =
   process.env.TAOSTATS_BASE_PATH || "https://taostats-api-proxy.talismn.workers.dev"
 export const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY
-export const RAMP_API_BASE_PATH =
-  process.env.RAMP_API_BASE_PATH || "https://api.ramp.network/api/host-api/v3"
-export const RAMP_BASE_PATH = process.env.RAMP_BASE_PATH || "https://app.ramp.network"
-export const RAMP_API_KEY = process.env.RAMP_API_KEY || ""
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"

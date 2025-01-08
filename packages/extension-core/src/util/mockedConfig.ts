@@ -11,8 +11,13 @@ QUEST_LINK = true               # enables quest link in portfolio header
 
 # RISK_ANALYSIS = true          # enables risk analysis feature
 
+[rampConfig]
+rampBasePath = "https://app.ramp.network"
+rampApiBasePath = "https://api.ramp.network/api/host-api/v3"
+rampApiKey = "5ga4dyv63auqe9t2ytrcz8jaaudmq4m2js8egzsh"
+
 [rampSupportedTokenIds]
-# Key naming convention is CHAIN_SYMBOL
+# To support more tokens add "CHAIN_SYMBOL: tokenId". Get the "chain" key and token "symbol" from Ramp's API response, and the tokenId from our chain data.
 POLKADOT_DOT = "polkadot-substrate-native"
 DOT_DOT = "polkadot-asset-hub-substrate-native"
 KUSAMA_KSM = "kusama-substrate-native"

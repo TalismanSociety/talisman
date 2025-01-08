@@ -1,16 +1,21 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { RAMP_API_BASE_PATH } from "extension-shared"
+
+import { useRemoteConfig } from "@ui/state"
 
 import { RampCurrencyWithAssets } from "../types"
 
 // note: currencyCode must be upper case
-const fetchRampOfframpAssetsByCurrency = async (
-  currencyCode: string | undefined,
-): Promise<RampCurrencyWithAssets> => {
+const fetchRampOfframpAssetsByCurrency = async ({
+  currencyCode,
+  rampApiBasePath,
+}: {
+  currencyCode: string | undefined
+  rampApiBasePath: string
+}): Promise<RampCurrencyWithAssets> => {
   try {
     const apiUrl = currencyCode
-      ? `${RAMP_API_BASE_PATH}/offramp/assets?currencyCode=${currencyCode.toUpperCase()}`
-      : `${RAMP_API_BASE_PATH}/offramp/assets`
+      ? `${rampApiBasePath}/offramp/assets?currencyCode=${currencyCode.toUpperCase()}`
+      : `${rampApiBasePath}/offramp/assets`
     return await (
       await fetch(apiUrl, {
         method: "GET",
@@ -34,9 +39,12 @@ export const useGetRampOfframpAssetsByCurrency = ({
   tokenId: string
   isEnabled: boolean
 }) => {
+  const {
+    rampConfig: { rampApiBasePath },
+  } = useRemoteConfig()
   return useQuery({
     queryKey: ["useGetRampOfframpAssets", currencyCode, fiatAmount, tokenAmount, tokenId],
-    queryFn: () => fetchRampOfframpAssetsByCurrency(currencyCode),
+    queryFn: () => fetchRampOfframpAssetsByCurrency({ currencyCode, rampApiBasePath }),
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,
     enabled: isEnabled,

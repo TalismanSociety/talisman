@@ -2,7 +2,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { PlusIcon } from "@talismn/icons"
 import { classNames, convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
-import { RAMP_API_KEY, RAMP_BASE_PATH } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,7 +16,7 @@ import {
 } from "@extension/core"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useRemoteConfig } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { currencyInfo } from "./currencyInfo"
@@ -84,6 +83,9 @@ export const RampForm = () => {
   const [selectedFormType, setSelectedFormType] = useState<"buy" | "sell">("buy")
   const { t } = useTranslation()
   const { balanceTotalPerAccount } = usePortfolioAccounts()
+  const {
+    rampConfig: { rampBasePath, rampApiKey },
+  } = useRemoteConfig()
 
   const isBuyForm = selectedFormType === "buy"
 
@@ -254,7 +256,7 @@ export const RampForm = () => {
     }
 
     const params = new URLSearchParams({
-      hostApiKey: RAMP_API_KEY,
+      hostApiKey: rampApiKey,
       hostLogoUrl: TALISMAN_LOGO_URL,
       defaultFlow: isBuyForm ? "ONRAMP" : "OFFRAMP",
       enabledFlows: "ONRAMP,OFFRAMP",
@@ -274,7 +276,7 @@ export const RampForm = () => {
       )
     }
 
-    const url = `${RAMP_BASE_PATH}/?${params.toString()}`
+    const url = `${rampBasePath}/?${params.toString()}`
 
     window.open(url, "_blank")
   }

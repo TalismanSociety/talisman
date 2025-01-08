@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { RAMP_API_BASE_PATH, RAMP_API_KEY } from "extension-shared"
+
+import { useRemoteConfig } from "@ui/state"
 
 import { RampQuote } from "../types"
 
@@ -10,6 +11,8 @@ const fetchRampQuote = async ({
   fiatAmount,
   isFiatQuote,
   isBuyForm,
+  rampApiBasePath,
+  rampApiKey,
 }: {
   currencyCode: string
   swapAsset: string
@@ -17,6 +20,8 @@ const fetchRampQuote = async ({
   fiatAmount: number
   isFiatQuote: boolean
   isBuyForm: boolean
+  rampApiBasePath: string | undefined
+  rampApiKey: string | undefined
 }): Promise<RampQuote> => {
   try {
     const requestBody: Record<string, string | number> = {
@@ -32,7 +37,7 @@ const fetchRampQuote = async ({
 
     const response = await (
       await fetch(
-        `${RAMP_API_BASE_PATH}/${isBuyForm ? "onramp" : "offramp"}/quote/all/?hostApiKey=${RAMP_API_KEY}`,
+        `${rampApiBasePath}/${isBuyForm ? "onramp" : "offramp"}/quote/all/?hostApiKey=${rampApiKey}`,
         {
           method: "POST",
           headers: {
@@ -69,6 +74,10 @@ export const useGetRampQuote = ({
   isBuyForm: boolean
   isEnabled: boolean
 }) => {
+  const {
+    rampConfig: { rampApiBasePath, rampApiKey },
+  } = useRemoteConfig()
+
   return useQuery({
     queryKey: [
       "useGetRampQuote",
@@ -79,7 +88,16 @@ export const useGetRampQuote = ({
       { isFiatQuote, isBuyForm },
     ],
     queryFn: () =>
-      fetchRampQuote({ currencyCode, swapAsset, tokenAmount, fiatAmount, isFiatQuote, isBuyForm }),
+      fetchRampQuote({
+        currencyCode,
+        swapAsset,
+        tokenAmount,
+        fiatAmount,
+        isFiatQuote,
+        isBuyForm,
+        rampApiBasePath,
+        rampApiKey,
+      }),
     staleTime: 1000 * 60,
 
     enabled: isEnabled && !!currencyCode && isFiatQuote ? fiatAmount > 0 : Number(tokenAmount) > 0,

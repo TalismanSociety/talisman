@@ -1,12 +1,17 @@
 import { useQuery } from "@tanstack/react-query"
-import { RAMP_API_BASE_PATH } from "extension-shared"
+
+import { useRemoteConfig } from "@ui/state"
 
 import { RampCurrency } from "../types"
 
-const fetchRampCurrencies = async (): Promise<RampCurrency[]> => {
+const fetchRampCurrencies = async ({
+  rampApiBasePath,
+}: {
+  rampApiBasePath: string
+}): Promise<RampCurrency[]> => {
   try {
     return await (
-      await fetch(`${RAMP_API_BASE_PATH}/currencies`, {
+      await fetch(`${rampApiBasePath}/currencies`, {
         method: "GET",
       })
     ).json()
@@ -16,9 +21,13 @@ const fetchRampCurrencies = async (): Promise<RampCurrency[]> => {
 }
 
 export const useGetRampCurrencies = () => {
+  const {
+    rampConfig: { rampApiBasePath },
+  } = useRemoteConfig()
+
   return useQuery({
     queryKey: ["useGetRampCurrencies"],
-    queryFn: () => fetchRampCurrencies(),
+    queryFn: () => fetchRampCurrencies({ rampApiBasePath }),
     staleTime: 1000 * 60 * 5,
   })
 }
