@@ -11,45 +11,67 @@ export default function useSupportedTokens({ rampAssets }: { rampAssets: RampAss
   const evmNetworksMap = useEvmNetworksMap({ activeOnly: false, includeTestnets: false })
   const { rampSupportedTokenIds } = useRemoteConfig()
 
-  const supportedRampTokens = useMemo(
+  const { ethereumTokens, substrateTokens } = useMemo(
     () =>
-      rampAssets.reduce<RampAssetWithTokenAndChain[]>((acc, asset) => {
-        const key = `${asset.chain}_${asset.symbol}`
-        if (key in rampSupportedTokenIds) {
-          const supportedTokenId = rampSupportedTokenIds[key]
-          const token = tokensMap[supportedTokenId]
-          if (!token) {
-            if (DEBUG)
-              // eslint-disable-next-line no-console
-              console.error(`Token not found for tokenId ${supportedTokenId}`)
-            return acc
-          }
+      // rampAssets.reduce<RampAssetWithTokenAndChain[]>((acc, asset) => {
+      rampAssets.reduce<{
+        ethereumTokens: RampAssetWithTokenAndChain[]
+        substrateTokens: RampAssetWithTokenAndChain[]
+      }>(
+        (acc, asset) => {
+          const key = `${asset.chain}_${asset.symbol}`
+          if (key in rampSupportedTokenIds) {
+            const supportedTokenId = rampSupportedTokenIds[key]
+            const token = tokensMap[supportedTokenId]
+            if (!token) {
+              if (DEBUG)
+                // eslint-disable-next-line no-console
+                console.error(`Token not found for tokenId ${supportedTokenId}`)
+              return acc
+            }
 
-          const chain = token?.evmNetwork
-            ? evmNetworksMap[token.evmNetwork.id]
-            : chainsMap[token.chain?.id ?? 0]
+            const chain = token?.evmNetwork
+              ? evmNetworksMap[token.evmNetwork.id]
+              : chainsMap[token.chain?.id ?? 0]
 
-          if (!chain) {
-            if (DEBUG)
-              // eslint-disable-next-line no-console
-              console.error(
-                `Chain not found for chainId ${token?.chain?.id} and tokenId ${supportedTokenId}}`,
-              )
-            return acc
+            if (!chain) {
+              if (DEBUG)
+                // eslint-disable-next-line no-console
+                console.error(
+                  `Chain not found for chainId ${token?.chain?.id} and tokenId ${supportedTokenId}}`,
+                )
+              return acc
+            }
+            if (token?.evmNetwork) {
+              acc.ethereumTokens.push({
+                ...asset,
+                tokenData: {
+                  id: supportedTokenId,
+                  token,
+                  chain,
+                },
+              })
+            } else {
+              acc.substrateTokens.push({
+                ...asset,
+                tokenData: {
+                  id: supportedTokenId,
+                  token,
+                  chain,
+                },
+              })
+            }
           }
-          acc.push({
-            ...asset,
-            tokenData: {
-              id: supportedTokenId,
-              token,
-              chain,
-            },
-          })
-        }
-        return acc
-      }, []),
+          return acc
+        },
+        { ethereumTokens: [], substrateTokens: [] },
+      ),
     [chainsMap, evmNetworksMap, rampAssets, rampSupportedTokenIds, tokensMap],
   )
 
-  return supportedRampTokens
+  return {
+    ethereumTokens,
+    substrateTokens,
+    allSupportedTokens: [...ethereumTokens, ...substrateTokens],
+  }
 }

@@ -60,6 +60,7 @@ export const NumberInputWithDropDown = <T extends DropdownOption>({
           handleSearchChange={handleSearchChange}
           searchPlaceholder={searchPlaceholder}
           searchLabel={searchLabel}
+          onClear={dropdownProps.onClear}
         />
       </div>
       {errorMessage && <div className="text-tiny mt-1 text-red-500">{errorMessage}</div>}

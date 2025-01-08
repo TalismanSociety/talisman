@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { PlusIcon } from "@talismn/icons"
 import { classNames, convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
@@ -70,7 +70,7 @@ const schema = yup.object({
     chainId: yup.string().required(),
     isEvm: yup.boolean().required(),
     chainPrefix: yup.number().nullable().optional(),
-    minPurchaseAmount: yup.number().required(" ").min(0),
+    minPurchaseAmount: yup.number().required(" "),
   }),
 })
 
@@ -88,11 +88,6 @@ export const RampForm = () => {
   } = useRemoteConfig()
 
   const isBuyForm = selectedFormType === "buy"
-
-  const accountsWithBalance = useMemo(
-    () => accounts.map((acc) => ({ ...acc, total: balanceTotalPerAccount[acc.address] })),
-    [accounts, balanceTotalPerAccount],
-  )
 
   const {
     register,
@@ -145,12 +140,33 @@ export const RampForm = () => {
     isEnabled: !isBuyForm,
   })
 
+  const accountsWithBalance = useMemo(() => {
+    const accountsWithBalance = accounts.map((acc) => ({
+      ...acc,
+      total: balanceTotalPerAccount[acc.address],
+    }))
+    if (!rampTokenAssetSymbol) {
+      return accountsWithBalance
+    }
+    const evmByTokenChainType = accountsWithBalance.filter((acc) =>
+      rampTokenIsEvm ? isEthereumAddress(acc.address) : !isEthereumAddress(acc.address),
+    )
+    return evmByTokenChainType
+  }, [accounts, balanceTotalPerAccount, rampTokenAssetSymbol, rampTokenIsEvm])
+
   const rampAvailableCurrencies = useMemo(
     () => (isBuyForm ? rampCurrencyWithAssets : rampCurrencyWithOfframpAssets),
     [isBuyForm, rampCurrencyWithAssets, rampCurrencyWithOfframpAssets],
   )
 
-  const supportedTokens = useSupportedTokens({ rampAssets: rampAvailableCurrencies?.assets ?? [] })
+  const { allSupportedTokens, ethereumTokens, substrateTokens } = useSupportedTokens({
+    rampAssets: rampAvailableCurrencies?.assets ?? [],
+  })
+
+  const supportedTokens = useMemo(() => {
+    if (!address) return allSupportedTokens
+    return isEthereumAddress(address) ? ethereumTokens : substrateTokens
+  }, [address, ethereumTokens, substrateTokens, allSupportedTokens])
 
   const selectedToken = supportedTokens?.find(
     (asset) => asset.symbol === rampTokenAssetSymbol && asset.chain === rampTokenAssetChain,
@@ -305,6 +321,7 @@ export const RampForm = () => {
 
   const handleTokenChange = useCallback(
     (rampAsset: RampAssetWithTokenAndChain | null) => {
+      const isEvmToken = !!rampAsset?.tokenData.token?.evmNetwork?.id
       setValue(
         "rampTokenAsset",
         {
@@ -312,7 +329,7 @@ export const RampForm = () => {
           symbol: rampAsset?.symbol ?? "",
           chain: rampAsset?.chain ?? "",
           decimals: rampAsset?.decimals ?? 0,
-          isEvm: !!rampAsset?.tokenData.token?.evmNetwork?.id,
+          isEvm: isEvmToken,
           chainId: rampAsset?.tokenData.chain?.id ?? "",
           chainPrefix:
             rampAsset?.tokenData?.chain && "prefix" in rampAsset.tokenData.chain
@@ -322,12 +339,17 @@ export const RampForm = () => {
         },
         { shouldValidate: true },
       )
-      if (!!rampAsset?.tokenData.token?.evmNetwork?.id !== isEthereumAddress(address)) {
-        setValue("address", "")
+      if (isEvmToken && (!address || !isEthereumAddress(address))) {
+        const acc = accounts.find((acc) => isEthereumAddress(acc.address))
+        setValue("address", acc?.address ?? "", { shouldValidate: true })
+      }
+      if (!isEvmToken && (!address || isEthereumAddress(address))) {
+        const acc = accounts.find((acc) => !isEthereumAddress(acc.address))
+        setValue("address", acc?.address ?? "", { shouldValidate: true })
       }
     },
 
-    [address, setValue],
+    [accounts, address, setValue],
   )
 
   const handleAccountChange = useCallback(
@@ -437,6 +459,10 @@ export const RampForm = () => {
             )
           : ""
       }
+      onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.stopPropagation()
+        setValue("fiatCurrency", "")
+      }}
     />
   )
 
@@ -474,6 +500,23 @@ export const RampForm = () => {
       searchPlaceholder={t("Search asset")}
       searchLabel={t(`Available now (${supportedTokens.length}):`)}
       minStep={`1e-${rampTokenDecimals}`}
+      onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.stopPropagation()
+        setValue(
+          "rampTokenAsset",
+          {
+            id: "",
+            symbol: "",
+            chain: "",
+            decimals: 0,
+            isEvm: false,
+            chainId: "",
+            chainPrefix: null,
+            minPurchaseAmount: 0,
+          },
+          { shouldValidate: true },
+        )
+      }}
     />
   )
 
@@ -496,7 +539,7 @@ export const RampForm = () => {
           <div className="flex justify-between">
             <div className="text-xs">{t("You're receiving (estimate)")}</div>
             {rampTokenAssetSymbol && (
-              <div className="text-xs">{`1 ${rampTokenAssetSymbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency}`}</div>
+              <div className="text-xs">{`1 ${rampTokenAssetSymbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency || "$"}`}</div>
             )}
           </div>
           {isBuyForm ? tokenAmountInput : fiatAmountInput}
@@ -518,6 +561,10 @@ export const RampForm = () => {
             buttonClassName="bg-black-secondary h-full px-6 py-3 rounded-[12px]"
             optionClassName="px-6 py-3"
             className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-[12px] border-[1px]"
+            onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+              e.stopPropagation()
+              setValue("address", "")
+            }}
           />
         </div>
         <Button
