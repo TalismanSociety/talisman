@@ -1,12 +1,12 @@
 import { CopyIcon, CreditCardIcon } from "@talismn/icons"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { PillButton } from "talisman-ui"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
+import { useBuyTokensModal } from "../Asset/Buy/useBuyTokensModal"
 import { useCopyAddressModal } from "../CopyAddress"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
@@ -19,7 +19,6 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { genericEvent } = useAnalytics()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { open } = useCopyAddressModal()
-  const navigate = useNavigate()
 
   const handleCopy = useCallback(() => {
     open({ address: selectedAccount?.address, qr: true })
@@ -27,6 +26,10 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   }, [selectedAccount?.address, genericEvent, open])
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
+  const { open: openBuyCrypto } = useBuyTokensModal()
+  const handleBuyCryptoClick = useCallback(() => {
+    openBuyCrypto()
+  }, [openBuyCrypto])
 
   return (
     <div className="bg-field text-body-secondary flex flex-col items-center justify-center rounded py-36">
@@ -42,11 +45,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
           {t("Copy Address")}
         </PillButton>
         {showBuyCrypto && (
-          <PillButton
-            size="sm"
-            icon={CreditCardIcon}
-            onClick={() => navigate("/portfolio/buysell")}
-          >
+          <PillButton size="sm" icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
             {t("Buy Crypto")}
           </PillButton>
         )}
