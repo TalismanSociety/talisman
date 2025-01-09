@@ -3,9 +3,9 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { Address } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { ScaleApi } from "sapi"
 
 import { useChain, useToken } from "@ui/state"
-import { ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"

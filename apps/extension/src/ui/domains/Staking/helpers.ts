@@ -1,8 +1,7 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { range } from "lodash"
 import { Binary } from "polkadot-api"
-
-import { ScaleApi } from "@ui/util/scaleApi"
+import { ScaleApi } from "sapi"
 
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n

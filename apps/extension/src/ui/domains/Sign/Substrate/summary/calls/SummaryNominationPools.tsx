@@ -3,10 +3,10 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { Binary } from "polkadot-api"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { ScaleApi } from "sapi"
 
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useChain } from "@ui/state"
-import { ScaleApi } from "@ui/util/scaleApi"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent, SummarySeparator } from "../shared/SummaryContainer"

@@ -1,6 +1,5 @@
 import { useMemo } from "react"
-
-import { DecodedCall } from "@ui/util/scaleApi"
+import { DecodedCall } from "sapi"
 
 import { DecodedBatchArgs, DecodedCallComponent, isBatchCall } from "../types"
 import { SubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawer"

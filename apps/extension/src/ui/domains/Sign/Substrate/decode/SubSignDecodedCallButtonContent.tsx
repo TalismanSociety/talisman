@@ -1,7 +1,7 @@
 import { FC } from "react"
+import { DecodedCall } from "sapi"
 
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
-import { DecodedCall } from "@ui/util/scaleApi"
 
 import { SUMMARY_COMPONENTS } from "../summary/calls"
 import { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"

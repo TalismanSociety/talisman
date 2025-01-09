@@ -1,6 +1,5 @@
 import { useMemo } from "react"
-
-import { DecodedCall } from "@ui/util/scaleApi"
+import { DecodedCall } from "sapi"
 
 import { DecodedCallComponentDefs } from "../types"
 

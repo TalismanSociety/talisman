@@ -1,6 +1,5 @@
 import { ChainId } from "extension-core"
-
-import { ScaleApi } from "@ui/util/scaleApi"
+import { ScaleApi } from "sapi"
 
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeByHotKey } from "../hooks/bittensor/useGetBittensorStakeByHotKey"

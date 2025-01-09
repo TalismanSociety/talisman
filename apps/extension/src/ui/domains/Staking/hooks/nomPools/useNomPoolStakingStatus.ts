@@ -2,11 +2,11 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { useMemo } from "react"
+import { ScaleApi } from "sapi"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBalances, useToken } from "@ui/state"
-import { ScaleApi } from "@ui/util/scaleApi"
 
 import { getStakingEraDurationMs } from "../../helpers"
 import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
