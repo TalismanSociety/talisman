@@ -7,9 +7,8 @@ import { HexString } from "@polkadot/util/types"
 import { JsonRpcRequestSend } from "../types"
 import { Chain } from "./types"
 
-// this type structure is compatible with V1 result object
 type ExtrinsicDispatchInfo = {
-  partialFee: string // planck
+  partialFee: string
 }
 
 // used for chains that dont have metadata v15 yet

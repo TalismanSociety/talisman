@@ -15,7 +15,7 @@ export type JsonRpcRequestSend = (
 ) => Promise<unknown>
 
 export type SapiConnectorProps = {
-  chainId: string // indicational only, only used for traces
+  chainId: string // indicational only, used for logs
   send: JsonRpcRequestSend
   submit?: (
     payload: SignerPayloadJSON,

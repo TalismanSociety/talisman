@@ -73,7 +73,6 @@ const getSubstratePayloadMetadata = async ({
               send: (...args) => api.subSend(chain.id, ...args),
               submit: api.subSubmit,
             },
-
             metadataRpc,
             token,
             chain.hasCheckMetadataHash,

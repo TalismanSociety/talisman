@@ -16,7 +16,6 @@ type DryRunResult = Awaited<
 export const getDryRunCall = async (
   chain: Chain,
   from: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   decodedCall: DecodedCall<unknown>,
 ) => {
   const stop = log.timer("[sapi] getDryRun")

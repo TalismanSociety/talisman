@@ -1,4 +1,4 @@
-import { IRuntimeVersionBase, SignerPayloadJSON } from "@polkadot/types/types"
+import { IRuntimeVersionBase, SignatureOptions, SignerPayloadJSON } from "@polkadot/types/types"
 import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
 
@@ -26,8 +26,7 @@ export const getFeeEstimate = async (
       transactionVersion: chainInfo.transactionVersion,
       // other fields aren't necessary for signing
     } as IRuntimeVersionBase,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any)
+  } as SignatureOptions)
 
   const bytes = extrinsic.toU8a(true)
   const binary = Binary.fromBytes(bytes)
