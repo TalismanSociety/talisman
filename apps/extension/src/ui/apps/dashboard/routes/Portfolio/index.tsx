@@ -13,7 +13,6 @@ import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
-import { RampRoutes } from "./Ramp"
 import { PortfolioLayout } from "./Shared/PortfolioLayout"
 
 const BuyTokensOpener = () => {
@@ -41,7 +40,6 @@ export const PortfolioRoutes = () => {
         {/* share layout to prevent tabs flickering */}
         <PortfolioLayout toolbar={<PortfolioToolbar />} header={<PortfolioHeader />}>
           <Routes>
-            <Route path="buysell/*" element={<RampRoutes />} />
             <Route path="tokens/:symbol" element={<PortfolioAsset />} />
             <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
             <Route path="tokens" element={<PortfolioAssets />} />

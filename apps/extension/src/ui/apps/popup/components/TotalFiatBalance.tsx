@@ -11,11 +11,11 @@ import { classNames } from "@talismn/util"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -163,10 +163,10 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { open: openBuyTokensModal } = useBuyTokensModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
-  const navigate = useNavigate()
 
   const handleSwapClick = useCallback(() => {
     window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
@@ -215,13 +215,21 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
               analyticsAction: "Buy Crypto button",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => navigate("/portfolio/ramp"),
+              onClick: () => openBuyTokensModal(),
               disabled: disableActions,
               disabledReason,
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, handleSwapClick, navigate, openCopyAddressModal, t],
+    [
+      canBuy,
+      disableActions,
+      disabledReason,
+      handleSwapClick,
+      openBuyTokensModal,
+      openCopyAddressModal,
+      t,
+    ],
   )
 
   return (

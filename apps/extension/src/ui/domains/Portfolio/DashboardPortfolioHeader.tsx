@@ -13,7 +13,7 @@ import { AccountJsonAny, AccountType, TreeFolder } from "extension-core"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useMatch, useNavigate } from "react-router-dom"
+import { useMatch } from "react-router-dom"
 import {
   ContextMenuTrigger,
   IconButton,
@@ -37,6 +37,7 @@ import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { AccountContextMenu } from "../Account/AccountContextMenu"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { FolderContextMenu } from "../Account/FolderContextMenu"
+import { useBuyTokensModal } from "../Asset/Buy/useBuyTokensModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder | null }> = ({
@@ -231,9 +232,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
-  const navigate = useNavigate()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { open: openBuyTokensModal } = useBuyTokensModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
 
@@ -289,13 +290,14 @@ const TopActions: FC = () => {
           disabled: disableActions,
           disabledReason,
         },
+
         canBuy
           ? {
               analyticsName: "Goto",
               analyticsAction: "Buy Crypto button",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => navigate("/portfolio/buysell"),
+              onClick: () => openBuyTokensModal(),
               disabled: disableActions,
               disabledReason,
             }
@@ -311,7 +313,7 @@ const TopActions: FC = () => {
       selectedAddress,
       symbol,
       openCopyAddressModal,
-      navigate,
+      openBuyTokensModal,
     ],
   )
 
