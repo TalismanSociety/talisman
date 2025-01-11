@@ -10,6 +10,7 @@ import { truncateToSignificantDigits } from "../../utils/truncateToSignificantDi
 import { BuyTokensLayout } from "../BuyTokensLayout"
 import { BuyTokensConnectAccount } from "./BuyTokensConnectAccount"
 import { BuyTokensFiatAmountInput } from "./BuyTokensFiatAmountInput"
+import { BuyTokensTokenAmountInput } from "./BuyTokensTokenAmountInput"
 
 export const BuyTokensForm = () => {
   const { t } = useTranslation()
@@ -59,14 +60,14 @@ export const BuyTokensForm = () => {
               <div>{t("Select asset")}</div>
             </div>
             <div className="text-xs">{isBuyForm ? t("You Pay") : t("You Sell")}</div>
-            {isBuyForm ? <BuyTokensFiatAmountInput /> : <div>tokenAmountInput</div>}
+            {isBuyForm ? <BuyTokensFiatAmountInput /> : <BuyTokensTokenAmountInput />}
             <div className="flex justify-between">
               <div className="text-xs">{t("You're receiving (estimate)")}</div>
               {symbol && (
                 <div className="text-xs">{`1 ${symbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency || "$"}`}</div>
               )}
             </div>
-            {isBuyForm ? <div>tokenAmountInput</div> : <BuyTokensFiatAmountInput />}
+            {isBuyForm ? <BuyTokensTokenAmountInput /> : <BuyTokensFiatAmountInput />}
           </div>
           <div className="md:border-grey-750 bg-black-secondary mt-6 space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
             <div className="flex gap-4">

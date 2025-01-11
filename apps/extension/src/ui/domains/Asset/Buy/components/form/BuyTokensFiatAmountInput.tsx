@@ -1,3 +1,4 @@
+import { PlusIcon } from "@talismn/icons"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown, DropdownOptionRender } from "talisman-ui"
@@ -6,7 +7,6 @@ import { RampCurrency } from "../../types"
 import { useBuyTokensWizard } from "../../useBuyTokensWizard"
 import { currencyInfo } from "../../utils/currencyInfo"
 import { InputWithSideComponent } from "../InputWithSideComponent"
-import { BuyTokensSelectPill } from "./BuyTokensSelectPill"
 
 export const BuyTokensFiatAmountInput = () => {
   const [fiatSearch, setFiatSearch] = useState<string>("")
@@ -52,7 +52,7 @@ export const BuyTokensFiatAmountInput = () => {
             className="h-[28px] w-[28px] rounded-full"
           />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 text-[16px]">
           <div className="text-white">{item.fiatCurrency}</div>
           <div className="text-tiny truncate">{item.name}</div>
         </div>
@@ -76,7 +76,14 @@ export const BuyTokensFiatAmountInput = () => {
           items={supportedRampCurrencies.filter((curr) =>
             curr.fiatCurrency.includes(fiatSearch.toUpperCase()),
           )}
-          placeholder={<BuyTokensSelectPill label={t("Select currency")} />}
+          placeholder={
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
+                <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
+              </div>
+              <div className="text-xs text-white">{t("Select currency")}</div>
+            </div>
+          }
           value={selectedFiatCurrency}
           renderItem={renderFiatCurrencyItem}
           onChange={handleFiatCurrencyChange}
@@ -87,7 +94,7 @@ export const BuyTokensFiatAmountInput = () => {
           handleSearchChange={setFiatSearch}
           searchPlaceholder={t("Search currency")}
           searchLabel={t(`Available now (${supportedRampCurrencies.length}):`)}
-          onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+          onClear={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.stopPropagation()
             setValue("fiatCurrency", "", { shouldValidate: true })
           }}

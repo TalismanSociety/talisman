@@ -1,0 +1,33 @@
+import { useBuyTokensWizard } from "../../useBuyTokensWizard"
+import { InputWithSideComponent } from "../InputWithSideComponent"
+import { BuyTokensSelectTokenPill } from "./BuyTokensSelectTokenPill"
+
+export const BuyTokensTokenAmountInput = () => {
+  const {
+    setDebouncedTokenAmount,
+    buySellForm: { setValue, register, watch },
+  } = useBuyTokensWizard()
+
+  const handleTokenAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDebouncedTokenAmount(e.target.value)
+
+    setValue("dirtyAmountField", "tokenAmount")
+  }
+
+  const [fiatAmount, { decimals }] = watch(["fiatAmount", "rampTokenAsset"])
+
+  return (
+    <InputWithSideComponent
+      inputFieldProps={register("tokenAmount")}
+      inputFieldLabel={`$${fiatAmount || "0"}`}
+      inputType="number"
+      inputPlaceholder="0"
+      onInputChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        handleTokenAmountChange(e)
+        register("tokenAmount").onChange(e)
+      }}
+      minStep={`1e-${decimals}`}
+      sideComponent={<BuyTokensSelectTokenPill />}
+    />
+  )
+}

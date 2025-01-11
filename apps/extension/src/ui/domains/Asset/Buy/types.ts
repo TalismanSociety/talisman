@@ -70,10 +70,12 @@ export type RampTokenAsset = {
   id: string
   symbol: string
   chain: string
+  chainPrefix?: number | null | undefined
+  chainName?: string
+  logo?: string
   decimals: number
   chainId: string
   isEvm: boolean
-  chainPrefix?: number | null | undefined
   minPurchaseAmount: number
 }
 

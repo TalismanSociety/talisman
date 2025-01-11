@@ -25,7 +25,7 @@ export type DropdownProps<T extends DropdownOption> = {
   value?: T | null | undefined
   placeholder?: string | ReactNode
   onChange?: (item: T | null) => void
-  onClear?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  onClear?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   disabled?: boolean
   className?: string
   buttonClassName?: string
@@ -75,9 +75,9 @@ export const Dropdown = <T extends Record<string, unknown>>({
                 {value ? renderItem(value, propertyLabel) : placeholder}
               </div>
               {!disabled && canClear ? (
-                <button onClick={onClear}>
+                <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
                   <XIcon className="shrink-0 text-[1.2em]" />
-                </button>
+                </div>
               ) : (
                 !disabled && <ChevronDownIcon className="shrink-0 text-[1.2em]" />
               )}
