@@ -1,9 +1,8 @@
 import { classNames } from "@talismn/util"
 import { Modal } from "talisman-ui"
 
-import { BuySell } from "@ui/domains/Ramp"
-
-import { useBuyTokensModal } from "./useBuyTokensModal"
+import { BuyTokensWizard } from "./components/BuyTokensWizard"
+import { useBuyTokensModal } from "./hooks/useBuyTokensModal"
 
 // This control is injected directly in the layout of dashboard
 export const BuyTokensModal = () => {
@@ -19,8 +18,7 @@ export const BuyTokensModal = () => {
       )}
       containerId={window.location.pathname === "/popup.html" ? "main" : undefined}
     >
-      <div></div>
-      <BuySell />
+      <BuyTokensWizard />
     </Modal>
   )
 }
