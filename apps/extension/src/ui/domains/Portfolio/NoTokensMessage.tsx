@@ -6,7 +6,7 @@ import { PillButton } from "talisman-ui"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
-import { useBuyTokensModal } from "../Asset/Buy/useBuyTokensModal"
+import { useBuyTokensModal } from "../Asset/Buy/hooks/useBuyTokensModal"
 import { useCopyAddressModal } from "../CopyAddress"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 

@@ -37,7 +37,7 @@ import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { AccountContextMenu } from "../Account/AccountContextMenu"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { FolderContextMenu } from "../Account/FolderContextMenu"
-import { useBuyTokensModal } from "../Asset/Buy/useBuyTokensModal"
+import { useBuyTokensModal } from "../Asset/Buy/hooks/useBuyTokensModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder | null }> = ({

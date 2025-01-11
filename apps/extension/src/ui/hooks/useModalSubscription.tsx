@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 
 import { api } from "@ui/api"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 
 const focusCurrentTab = async () => {
   // ensure tab is active
