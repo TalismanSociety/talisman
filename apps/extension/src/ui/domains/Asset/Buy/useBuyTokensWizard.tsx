@@ -64,7 +64,7 @@ export const useBuyTokensWizardProvider = () => {
     // console.log("Handle sumibit", { data })
   })
 
-  const accountsWithBalance = useMemo(() => {
+  const supportedAccountsWithBalance = useMemo(() => {
     const accountsWithBalance = accounts.map((acc) => ({
       ...acc,
       total: balanceTotalPerAccount[acc.address],
@@ -146,7 +146,7 @@ export const useBuyTokensWizardProvider = () => {
     debouncedFiatAmount,
     debouncedTokenAmount,
     isBuyForm,
-    accountsWithBalance,
+    supportedAccountsWithBalance,
     supportedTokens,
     isFormDisabled,
     supportedRampCurrencies,

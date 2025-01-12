@@ -1,6 +1,6 @@
 import { Token } from "@talismn/chaindata-provider"
 
-import { EvmNetwork } from "@extension/core"
+import { AccountJsonAny, EvmNetwork } from "@extension/core"
 import { AnyChain } from "@ui/state"
 
 export type RampCurrency = {
@@ -87,3 +87,5 @@ export type FormData = {
   dirtyAmountField: string
   rampTokenAsset: RampTokenAsset
 }
+
+export type AccountWithBalance = AccountJsonAny & { total: number; balance?: undefined }
