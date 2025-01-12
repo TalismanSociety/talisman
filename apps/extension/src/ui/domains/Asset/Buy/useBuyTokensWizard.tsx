@@ -226,24 +226,26 @@ export const useBuyTokensWizardProvider = () => {
   const handleToggleFormType = useCallback(
     (option: "buy" | "sell") => {
       const isBuyForm = option === "buy"
-
-      const isSelectedTokenSupported = allSupportedTokens.some((token) => token.tokenData.id === id)
+      const isSelectedTokenSupported = supportedTokens.some((token) => token.tokenData.id === id)
 
       if (id && !isSelectedTokenSupported) {
         setValue("rampTokenAsset", DEFAULT_RAMP_TOKEN_ASSET)
       }
-
       const isFiatCurrencySupported = supportedRampCurrencies.some(
         (curr) => curr.fiatCurrency === fiatCurrency,
       )
-
       if (fiatCurrency && !isFiatCurrencySupported) {
         setValue("fiatCurrency", "")
       }
 
+      // Reset the address field if no token is supported for the selected chain
+      if (address && supportedTokens.length === 0) {
+        setValue("address", "")
+      }
+
       setIsBuyForm(isBuyForm)
     },
-    [allSupportedTokens, fiatCurrency, id, setValue, supportedRampCurrencies],
+    [supportedTokens, id, supportedRampCurrencies, fiatCurrency, address, setValue],
   )
 
   const isFormDisabled = useMemo(

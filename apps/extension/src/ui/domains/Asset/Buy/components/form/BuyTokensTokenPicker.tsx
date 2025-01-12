@@ -19,7 +19,7 @@ export const BuyTokensTokenPicker = () => {
     setRoute,
   } = useBuyTokensWizard()
 
-  const [address] = watch(["address"])
+  const [address, { id }] = watch(["address", "rampTokenAsset"])
 
   const supportedTokensIds = useMemo(
     () => supportedTokens.map((token) => token.tokenData.id),
@@ -74,9 +74,8 @@ export const BuyTokensTokenPicker = () => {
       <ScrollContainer className="border-grey-700 scrollable h-full w-full grow overflow-x-hidden">
         <TokenPicker
           ownedOnly
-          address={""}
           showEmptyBalances
-          selected={""}
+          selected={id}
           onSelect={handleTokenSelect}
           tokenFilter={tokenFilter}
         />
