@@ -6,7 +6,7 @@ import { useBuyTokensWizard } from "../../useBuyTokensWizard"
 
 export const BuyTokensOptionSwitch = () => {
   const { t } = useTranslation()
-  const { setIsBuyForm, isBuyForm } = useBuyTokensWizard()
+  const { isBuyForm, handleToggleFormType } = useBuyTokensWizard()
 
   return (
     <OptionSwitch
@@ -16,7 +16,7 @@ export const BuyTokensOptionSwitch = () => {
       ]}
       className="bg-[#464646] text-xs text-white [&>div]:h-full"
       defaultOption={isBuyForm ? "buy" : "sell"}
-      onChange={(option) => setIsBuyForm(option === "buy")}
+      onChange={(option) => handleToggleFormType(option)}
     />
   )
 }

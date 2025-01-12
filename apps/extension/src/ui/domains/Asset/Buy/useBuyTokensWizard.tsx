@@ -19,6 +19,19 @@ import { FormData, FormRoute } from "./types"
 import { schema } from "./utils/schema"
 import { truncateToSignificantDigits } from "./utils/truncateToSignificantDigits"
 
+const DEFAULT_RAMP_TOKEN_ASSET = {
+  id: "",
+  symbol: "",
+  chain: "",
+  chainPrefix: 0,
+  chainId: "",
+  chainName: "",
+  logo: "",
+  decimals: 0,
+  isEvm: false,
+  minPurchaseAmount: 0,
+}
+
 export const useBuyTokensWizardProvider = () => {
   const [route, setRoute] = useState<FormRoute>("mainForm")
   const [isBuyForm, setIsBuyForm] = useState<boolean>(true)
@@ -33,16 +46,7 @@ export const useBuyTokensWizardProvider = () => {
     mode: "all",
     defaultValues: {
       dirtyAmountField: "fiatAmount",
-      rampTokenAsset: {
-        id: "",
-        symbol: "",
-        chain: "",
-        chainId: "",
-        decimals: 0,
-        isEvm: false,
-        chainPrefix: 0,
-        minPurchaseAmount: 0,
-      },
+      rampTokenAsset: DEFAULT_RAMP_TOKEN_ASSET,
     },
     resolver: yupResolver(schema),
   })
@@ -56,7 +60,7 @@ export const useBuyTokensWizardProvider = () => {
 
   const [
     fiatCurrency,
-    { isEvm, symbol, chain, decimals, minPurchaseAmount },
+    { isEvm, symbol, chain, decimals, minPurchaseAmount, id },
     address,
     dirtyAmountField,
   ] = watch(["fiatCurrency", "rampTokenAsset", "address", "dirtyAmountField"])
@@ -87,16 +91,20 @@ export const useBuyTokensWizardProvider = () => {
 
   const { data: rampCurrencies } = useGetRampCurrencies()
 
-  const supportedRampCurrencies =
-    rampCurrencies?.filter((curr) => (isBuyForm ? curr.onrampAvailable : curr.offrampAvailable)) ??
-    []
+  const supportedRampCurrencies = useMemo(
+    () =>
+      rampCurrencies?.filter((curr) =>
+        isBuyForm ? curr.onrampAvailable : curr.offrampAvailable,
+      ) ?? [],
+    [isBuyForm, rampCurrencies],
+  )
 
   const { data: rampCurrencyWithOffRampAssets } = useGetRampOnrampAssetsByCurrency({
     currencyCode: fiatCurrency,
     fiatAmount: debouncedFiatAmount,
     tokenAmount: debouncedTokenAmount,
     tokenId: symbol,
-    isEnabled: isBuyForm,
+    isEnabled: true,
   })
 
   const { data: rampCurrencyWithOfframpAssets } = useGetRampOfframpAssetsByCurrency({
@@ -104,7 +112,7 @@ export const useBuyTokensWizardProvider = () => {
     fiatAmount: debouncedFiatAmount,
     tokenAmount: debouncedTokenAmount,
     tokenId: symbol,
-    isEnabled: !isBuyForm,
+    isEnabled: true,
   })
 
   const isFiatAboveMinPurchaseAmount = useMemo(() => {
@@ -173,6 +181,29 @@ export const useBuyTokensWizardProvider = () => {
     return isEthereumAddress(address) ? ethereumTokens : substrateTokens
   }, [address, ethereumTokens, substrateTokens, allSupportedTokens])
 
+  const handleToggleFormType = useCallback(
+    (option: "buy" | "sell") => {
+      const isBuyForm = option === "buy"
+
+      const isSelectedTokenSupported = allSupportedTokens.some((token) => token.tokenData.id === id)
+
+      if (id && !isSelectedTokenSupported) {
+        setValue("rampTokenAsset", DEFAULT_RAMP_TOKEN_ASSET)
+      }
+
+      const isFiatCurrencySupported = supportedRampCurrencies.some(
+        (curr) => curr.fiatCurrency === fiatCurrency,
+      )
+
+      if (fiatCurrency && !isFiatCurrencySupported) {
+        setValue("fiatCurrency", "")
+      }
+
+      setIsBuyForm(isBuyForm)
+    },
+    [allSupportedTokens, fiatCurrency, id, setValue, supportedRampCurrencies],
+  )
+
   const isFormDisabled =
     !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount
 
@@ -195,6 +226,7 @@ export const useBuyTokensWizardProvider = () => {
     open,
     close,
     submit,
+    handleToggleFormType,
   }
 
   return ctx

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
 import { RampTokenAsset } from "../../types"
-import { useBuyTokensWizard } from "../../useBuyTokensWizard"
+import { DEFAULT_RAMP_TOKEN_ASSET, useBuyTokensWizard } from "../../useBuyTokensWizard"
 
 const RenderSelectedToken = ({ item }: { item: RampTokenAsset }) => {
   const {
@@ -11,20 +11,7 @@ const RenderSelectedToken = ({ item }: { item: RampTokenAsset }) => {
   } = useBuyTokensWizard()
   const handleClear = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation()
-    setValue(
-      "rampTokenAsset",
-      {
-        id: "",
-        symbol: "",
-        chain: "",
-        decimals: 0,
-        isEvm: false,
-        chainId: "",
-        chainPrefix: null,
-        minPurchaseAmount: 0,
-      },
-      { shouldValidate: true },
-    )
+    setValue("rampTokenAsset", DEFAULT_RAMP_TOKEN_ASSET, { shouldValidate: true })
   }
   return (
     <div className="flex w-full items-center justify-between">
