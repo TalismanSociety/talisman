@@ -1,15 +1,16 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { planckToTokens, tokensToPlanck } from "@talismn/util"
+import { convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 
+import { activeChainsStore, activeEvmNetworksStore, activeTokensStore } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { useGetRampOfframpAssetsByCurrency } from "@ui/domains/Asset/Buy/hooks/useGetRampOfframpAssetsByCurrency"
 import { useGetRampOnrampAssetsByCurrency } from "@ui/domains/Asset/Buy/hooks/useGetRampOnrampAssetsByCurrency"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useRemoteConfig } from "@ui/state"
 
 import { useBuyTokensModal } from "./hooks/useBuyTokensModal"
 import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
@@ -19,7 +20,10 @@ import { FormData, FormRoute } from "./types"
 import { schema } from "./utils/schema"
 import { truncateToSignificantDigits } from "./utils/truncateToSignificantDigits"
 
-const DEFAULT_RAMP_TOKEN_ASSET = {
+const TALISMAN_LOGO_URL =
+  "https://raw.githubusercontent.com/TalismanSociety/talisman-web/0fa6f5a99b4729f740c1a68bbe3d2ca9c85c9daa/apps/portal/public/talisman.svg"
+
+export const DEFAULT_RAMP_TOKEN_ASSET = {
   id: "",
   symbol: "",
   chain: "",
@@ -41,6 +45,10 @@ export const useBuyTokensWizardProvider = () => {
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
   const accounts = useAccounts("portfolio")
   const { balanceTotalPerAccount } = usePortfolioAccounts()
+
+  const {
+    rampConfig: { rampBasePath, rampApiKey },
+  } = useRemoteConfig()
 
   const buySellForm = useForm<FormData>({
     mode: "all",
@@ -69,9 +77,43 @@ export const useBuyTokensWizardProvider = () => {
     setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0)
   }, [minPurchaseAmount, setValue])
 
-  const submit = handleSubmit((data) => {
-    return data
-    // console.log("Handle sumibit", { data })
+  const submit = handleSubmit((data: FormData) => {
+    const { fiatCurrency, rampTokenAsset, dirtyAmountField, tokenAmount, fiatAmount, address } =
+      data
+
+    const formattedAddress = convertAddress(address, rampTokenAsset.chainPrefix ?? 0) || address
+
+    activeTokensStore.setActive(rampTokenAsset.id, true)
+    if (rampTokenAsset.isEvm) {
+      activeEvmNetworksStore.setActive(rampTokenAsset.chainId, true)
+    } else {
+      activeChainsStore.setActive(rampTokenAsset.chainId, true)
+    }
+
+    const params = new URLSearchParams({
+      hostApiKey: rampApiKey,
+      hostLogoUrl: TALISMAN_LOGO_URL,
+      defaultFlow: isBuyForm ? "ONRAMP" : "OFFRAMP",
+      enabledFlows: "ONRAMP,OFFRAMP",
+      swapAsset: `${rampTokenAsset.chain}_${rampTokenAsset.symbol}`,
+      userAddress: formattedAddress,
+      fiatCurrency: fiatCurrency,
+      hostAppName: "Talisman",
+    })
+
+    // Dynamically add the amount parameter based on the dirtyAmountField
+    if (dirtyAmountField === "fiatAmount") {
+      params.append("fiatValue", fiatAmount.toString())
+    } else {
+      params.append(
+        "swapAmount",
+        tokensToPlanck(tokenAmount.toString(), rampTokenAsset.decimals).toString(),
+      )
+    }
+
+    const url = `${rampBasePath}/?${params.toString()}`
+
+    window.open(url, "_blank")
   })
 
   const supportedAccountsWithBalance = useMemo(() => {
@@ -204,8 +246,10 @@ export const useBuyTokensWizardProvider = () => {
     [allSupportedTokens, fiatCurrency, id, setValue, supportedRampCurrencies],
   )
 
-  const isFormDisabled =
-    !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount
+  const isFormDisabled = useMemo(
+    () => !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount,
+    [isFiatAboveMinPurchaseAmount, isRampQuoteError, isRampQuoteLoading, isValid],
+  )
 
   const ctx = {
     route,
