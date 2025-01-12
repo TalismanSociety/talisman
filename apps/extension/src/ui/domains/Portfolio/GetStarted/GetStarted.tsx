@@ -159,10 +159,7 @@ const useGetStarted = () => {
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add funds" })
 
-    if (IS_POPUP) api.dashboardOpen(`/portfolio?buyTokens`)
-    else openBuyTokensModal()
-
-    closeIfEmbeddedPopup()
+    openBuyTokensModal()
   }, [openBuyTokensModal])
 
   const onLearnMoreClick = useCallback(() => {
