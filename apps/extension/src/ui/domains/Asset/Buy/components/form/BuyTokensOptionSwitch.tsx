@@ -6,7 +6,7 @@ import { useBuyTokensWizard } from "../../useBuyTokensWizard"
 
 export const BuyTokensOptionSwitch = () => {
   const { t } = useTranslation()
-  const { setIsBuyForm } = useBuyTokensWizard()
+  const { setIsBuyForm, isBuyForm } = useBuyTokensWizard()
 
   return (
     <OptionSwitch
@@ -15,7 +15,7 @@ export const BuyTokensOptionSwitch = () => {
         ["sell", t("Sell")],
       ]}
       className="bg-[#464646] text-xs text-white [&>div]:h-full"
-      defaultOption={"buy"}
+      defaultOption={isBuyForm ? "buy" : "sell"}
       onChange={(option) => setIsBuyForm(option === "buy")}
     />
   )
