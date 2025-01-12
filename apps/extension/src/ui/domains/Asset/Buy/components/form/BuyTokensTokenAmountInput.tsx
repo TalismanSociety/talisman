@@ -9,7 +9,12 @@ export const BuyTokensTokenAmountInput = () => {
   } = useBuyTokensWizard()
 
   const handleTokenAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDebouncedTokenAmount(e.target.value)
+    const amount = e.target.value
+    setDebouncedTokenAmount(amount)
+
+    if (!amount) {
+      setValue("fiatAmount", 0)
+    }
 
     setValue("dirtyAmountField", "tokenAmount")
   }

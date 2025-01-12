@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { tokensToPlanck } from "@talismn/util"
-import { useMemo, useState } from "react"
+import { planckToTokens, tokensToPlanck } from "@talismn/util"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { provideContext } from "@talisman/util/provideContext"
@@ -17,6 +17,7 @@ import { useGetRampQuote } from "./hooks/useGetRampQuote"
 import { useSupportedTokens } from "./hooks/useSupportedTokens"
 import { FormData, FormRoute } from "./types"
 import { schema } from "./utils/schema"
+import { truncateToSignificantDigits } from "./utils/truncateToSignificantDigits"
 
 export const useBuyTokensWizardProvider = () => {
   const [route, setRoute] = useState<FormRoute>("mainForm")
@@ -49,6 +50,7 @@ export const useBuyTokensWizardProvider = () => {
   const {
     handleSubmit,
     watch,
+    setValue,
     formState: { isValid },
   } = buySellForm
 
@@ -58,6 +60,10 @@ export const useBuyTokensWizardProvider = () => {
     address,
     dirtyAmountField,
   ] = watch(["fiatCurrency", "rampTokenAsset", "address", "dirtyAmountField"])
+
+  useEffect(() => {
+    setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0)
+  }, [minPurchaseAmount, setValue])
 
   const submit = handleSubmit((data) => {
     return data
@@ -122,6 +128,36 @@ export const useBuyTokensWizardProvider = () => {
     isBuyForm,
     isEnabled: !!symbol && isFiatAboveMinPurchaseAmount,
   })
+
+  const quoteUpdateHandler = useCallback(() => {
+    if (!rampQuote || isRampQuoteLoading) return
+
+    const { CARD_PAYMENT, CARD, asset } = rampQuote ?? {}
+
+    const { fiatValue: onrampFiatValue, cryptoAmount: onrampCryptoAmount } = CARD_PAYMENT ?? {}
+    const { fiatValue: offrampFiatValue, cryptoAmount: offrampCryptoAmount } = CARD ?? {}
+
+    if (dirtyAmountField === "fiatAmount") {
+      const tokenQuoteAmount = truncateToSignificantDigits(
+        Number(
+          planckToTokens(
+            (isBuyForm ? onrampCryptoAmount : offrampCryptoAmount) ?? "0",
+            asset?.decimals ?? 0,
+          ),
+        ),
+      )
+
+      setValue("tokenAmount", tokenQuoteAmount)
+    } else {
+      const fiatQuoteAmount = isBuyForm ? onrampFiatValue : offrampFiatValue
+
+      setValue("fiatAmount", fiatQuoteAmount ?? 0)
+    }
+  }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue])
+
+  useEffect(() => {
+    quoteUpdateHandler()
+  }, [quoteUpdateHandler])
 
   const rampAvailableCurrencies = useMemo(
     () => (isBuyForm ? rampCurrencyWithOffRampAssets : rampCurrencyWithOfframpAssets),

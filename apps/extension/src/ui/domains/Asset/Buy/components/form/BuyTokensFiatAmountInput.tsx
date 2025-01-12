@@ -36,7 +36,12 @@ export const BuyTokensFiatAmountInput = () => {
   )
 
   const handleFiatAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDebouncedFiatAmount(e.target.value)
+    const amount = e.target.value
+    setDebouncedFiatAmount(amount)
+
+    if (!amount) {
+      setValue("tokenAmount", 0)
+    }
 
     setValue("dirtyAmountField", "fiatAmount")
   }
