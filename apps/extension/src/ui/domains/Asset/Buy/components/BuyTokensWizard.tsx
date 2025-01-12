@@ -1,5 +1,6 @@
 import { BuyTokensWizardProvider, useBuyTokensWizard } from "../useBuyTokensWizard"
 import { BuyTokensForm } from "./form/BuyTokensForm"
+import { BuyTokensTokenPicker } from "./form/BuyTokensTokenPicker"
 
 const Routes = () => {
   const { route } = useBuyTokensWizard()
@@ -8,7 +9,7 @@ const Routes = () => {
     case "mainForm":
       return <BuyTokensForm />
     case "pickToken":
-      return <div>pickToken</div>
+      return <BuyTokensTokenPicker />
     case "pickWallet":
       return <div>pickWallet</div>
   }

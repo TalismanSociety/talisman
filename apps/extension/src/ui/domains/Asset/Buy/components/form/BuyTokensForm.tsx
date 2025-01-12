@@ -46,15 +46,15 @@ export const BuyTokensForm = () => {
 
   return (
     <BuyTokensLayout title={t("Buy/Sell")} withBackLink>
+      {/* TODO: check if this div is required after completion */}
       <div
         className={classNames(
-          "text-body-secondary flex justify-center md:h-auto",
+          "text-body-secondary flex justify-center px-10 md:h-auto",
           IS_POPUP && "flex-col",
         )}
       >
         <form className="flex h-full w-full max-w-[47rem] flex-col" onSubmit={submit}>
-          {/* <RampOptionSwitchHeader setIsBuyForm={setIsBuyForm} /> */}
-          <div className="md:border-grey-750 bg-black-secondary space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
+          <div className="bg-black-secondary space-y-6 rounded-[16px] border-0 p-6">
             <div className="flex gap-4">
               <div className="font-bold text-white">{t("Step 1")}</div>
               <div>{t("Select asset")}</div>
@@ -69,7 +69,7 @@ export const BuyTokensForm = () => {
             </div>
             {isBuyForm ? <BuyTokensTokenAmountInput /> : <BuyTokensFiatAmountInput />}
           </div>
-          <div className="md:border-grey-750 bg-black-secondary mt-6 space-y-6 rounded-[16px] border-0 p-6 md:border-[1px] md:bg-inherit">
+          <div className="bg-black-secondary mt-6 space-y-6 rounded-[16px] border-0 p-6">
             <div className="flex gap-4">
               <div className="font-bold text-white">{t("Step 2")}</div>
               <div>{t("Select account")}</div>
