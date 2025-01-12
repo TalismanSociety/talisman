@@ -8,8 +8,8 @@ import { IS_POPUP } from "@ui/util/constants"
 import { useBuyTokensWizard } from "../../useBuyTokensWizard"
 import { truncateToSignificantDigits } from "../../utils/truncateToSignificantDigits"
 import { BuyTokensLayout } from "../BuyTokensLayout"
-import { BuyTokensConnectAccount } from "./BuyTokensConnectAccount"
 import { BuyTokensFiatAmountInput } from "./BuyTokensFiatAmountInput"
+import { BuyTokensSelectAccountInput } from "./BuyTokensSelectAccountInput"
 import { BuyTokensTokenAmountInput } from "./BuyTokensTokenAmountInput"
 
 export const BuyTokensForm = () => {
@@ -18,13 +18,12 @@ export const BuyTokensForm = () => {
     supportedTokens,
     isBuyForm,
     isFormDisabled,
-    accountsWithBalance,
+
     buySellForm: { watch },
     submit,
-    setRoute,
   } = useBuyTokensWizard()
 
-  const [{ symbol, chain, isEvm }, fiatCurrency] = watch(["rampTokenAsset", "fiatCurrency"])
+  const [{ symbol, chain }, fiatCurrency] = watch(["rampTokenAsset", "fiatCurrency"])
 
   const getTokenRateByCurrency = useCallback(
     ({ fiatCurrency, tokenId, chain }: { fiatCurrency: string; tokenId: string; chain: string }) =>
@@ -75,27 +74,7 @@ export const BuyTokensForm = () => {
               <div>{t("Select account")}</div>
             </div>
             <div className="text-xs">{t("Deposit Account")}</div>
-            {symbol && accountsWithBalance.length === 0 ? (
-              <BuyTokensConnectAccount isEvm={isEvm} />
-            ) : (
-              <button onClick={() => setRoute("pickWallet")}>Select account</button>
-              // <Dropdown
-              //   items={accountsWithBalance.filter((acc) => acc.address !== selectedAccount?.address)}
-              //   propertyKey="address"
-              //   renderItem={(item) => <RampAccountOption account={item} />}
-              //   onChange={handleAccountChange}
-              //   placeholder={t("Select account")}
-              //   value={selectedAccount}
-              //   key={address} // uncontrolled component, will reset if value changes
-              //   buttonClassName="bg-black-secondary h-full px-6 py-3 rounded-[12px]"
-              //   optionClassName="px-6 py-3"
-              //   className="border-grey-750 bg-black-secondary flex h-[5.5rem] rounded-[12px] border-[1px]"
-              //   onClear={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-              //     e.stopPropagation()
-              //     setValue("address", "", { shouldValidate: true })
-              //   }}
-              // />
-            )}
+            <BuyTokensSelectAccountInput />
           </div>
           <Button
             type="submit"
