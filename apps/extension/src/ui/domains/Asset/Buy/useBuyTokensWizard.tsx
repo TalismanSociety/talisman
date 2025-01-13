@@ -73,10 +73,6 @@ export const useBuyTokensWizardProvider = () => {
     dirtyAmountField,
   ] = watch(["fiatCurrency", "rampTokenAsset", "address", "dirtyAmountField"])
 
-  useEffect(() => {
-    setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0, { shouldValidate: true })
-  }, [minPurchaseAmount, setValue])
-
   const submit = handleSubmit((data: FormData) => {
     const { fiatCurrency, rampTokenAsset, dirtyAmountField, tokenAmount, fiatAmount, address } =
       data
@@ -222,6 +218,17 @@ export const useBuyTokensWizardProvider = () => {
     if (!address) return allSupportedTokens
     return isEthereumAddress(address) ? ethereumTokens : substrateTokens
   }, [address, ethereumTokens, substrateTokens, allSupportedTokens])
+
+  useEffect(() => {
+    const newMinPurchaseAmount = supportedTokens.find(
+      (token) => token.tokenData.id === id,
+    )?.minPurchaseAmount
+    if (fiatCurrency && minPurchaseAmount && newMinPurchaseAmount !== minPurchaseAmount) {
+      setValue("rampTokenAsset.minPurchaseAmount", newMinPurchaseAmount ?? 0, {
+        shouldValidate: true,
+      })
+    }
+  }, [minPurchaseAmount, setValue, id, supportedTokens, fiatCurrency])
 
   const handleToggleFormType = useCallback(
     (option: "buy" | "sell") => {
