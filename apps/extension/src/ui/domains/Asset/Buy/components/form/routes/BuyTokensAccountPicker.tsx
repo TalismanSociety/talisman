@@ -6,9 +6,9 @@ import { SearchInput } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { AccountRow } from "@ui/domains/SendFunds/AccountRow"
 
-import { AccountWithBalance } from "../../types"
-import { useBuyTokensWizard } from "../../useBuyTokensWizard"
-import { BuyTokensLayout } from "../BuyTokensLayout"
+import { AccountWithBalance } from "../../../types"
+import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
+import { BuyTokensLayout } from "../../BuyTokensLayout"
 
 export const BuyTokensAccountPicker = () => {
   const [filteredAccounts, setFilteredAccounts] = useState<AccountWithBalance[]>([])

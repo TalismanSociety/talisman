@@ -2,12 +2,12 @@ import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { useBuyTokensWizard } from "../../useBuyTokensWizard"
-import { truncateToSignificantDigits } from "../../utils/truncateToSignificantDigits"
-import { BuyTokensLayout } from "../BuyTokensLayout"
-import { BuyTokensFiatAmountInput } from "./BuyTokensFiatAmountInput"
-import { BuyTokensSelectAccountInput } from "./BuyTokensSelectAccountInput"
-import { BuyTokensTokenAmountInput } from "./BuyTokensTokenAmountInput"
+import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
+import { truncateToSignificantDigits } from "../../../utils/truncateToSignificantDigits"
+import { BuyTokensLayout } from "../../BuyTokensLayout"
+import { BuyTokensFiatAmountInput } from "../BuyTokensFiatAmountInput"
+import { BuyTokensSelectAccountInput } from "../BuyTokensSelectAccountInput"
+import { BuyTokensTokenAmountInput } from "../BuyTokensTokenAmountInput"
 
 export const BuyTokensForm = () => {
   const { t } = useTranslation()

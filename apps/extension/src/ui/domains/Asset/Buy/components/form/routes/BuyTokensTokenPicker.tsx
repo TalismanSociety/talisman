@@ -7,8 +7,8 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { useAccounts } from "@ui/state"
 
-import { useBuyTokensWizard } from "../../useBuyTokensWizard"
-import { BuyTokensLayout } from "../BuyTokensLayout"
+import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
+import { BuyTokensLayout } from "../../BuyTokensLayout"
 
 export const BuyTokensTokenPicker = () => {
   const { t } = useTranslation()

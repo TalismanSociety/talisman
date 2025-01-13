@@ -64,7 +64,7 @@ export type RampAssetWithTokenAndChain = RampAsset & {
   }
 }
 
-export type FormRoute = "mainForm" | "pickToken" | "pickWallet"
+export type FormRoute = "mainForm" | "pickFiat" | "pickToken" | "pickWallet"
 
 export type RampTokenAsset = {
   id: string
