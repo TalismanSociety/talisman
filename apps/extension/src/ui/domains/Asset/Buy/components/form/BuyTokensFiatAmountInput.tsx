@@ -25,8 +25,8 @@ export const BuyTokensFiatAmountInput = () => {
     () => (fiatCurrency: RampCurrency | null) => {
       const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
 
-      setValue("fiatCurrency", newFiatCurrency)
-      setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0)
+      setValue("fiatCurrency", newFiatCurrency, { shouldValidate: true })
+      setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0, { shouldValidate: true })
     },
     [minPurchaseAmount, setValue],
   )
@@ -40,10 +40,10 @@ export const BuyTokensFiatAmountInput = () => {
     setDebouncedFiatAmount(amount)
 
     if (!amount) {
-      setValue("tokenAmount", 0)
+      setValue("tokenAmount", 0, { shouldValidate: true })
     }
 
-    setValue("dirtyAmountField", "fiatAmount")
+    setValue("dirtyAmountField", "fiatAmount", { shouldValidate: true })
   }
 
   const renderFiatCurrencyItem: DropdownOptionRender<RampCurrency> = (item) => {

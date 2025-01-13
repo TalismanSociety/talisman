@@ -74,7 +74,7 @@ export const useBuyTokensWizardProvider = () => {
   ] = watch(["fiatCurrency", "rampTokenAsset", "address", "dirtyAmountField"])
 
   useEffect(() => {
-    setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0)
+    setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0, { shouldValidate: true })
   }, [minPurchaseAmount, setValue])
 
   const submit = handleSubmit((data: FormData) => {
@@ -197,11 +197,11 @@ export const useBuyTokensWizardProvider = () => {
         ),
       )
 
-      setValue("tokenAmount", tokenQuoteAmount)
+      setValue("tokenAmount", tokenQuoteAmount, { shouldValidate: true })
     } else {
       const fiatQuoteAmount = isBuyForm ? onrampFiatValue : offrampFiatValue
 
-      setValue("fiatAmount", fiatQuoteAmount ?? 0)
+      setValue("fiatAmount", fiatQuoteAmount ?? 0, { shouldValidate: true })
     }
   }, [dirtyAmountField, isBuyForm, isRampQuoteLoading, rampQuote, setValue])
 
@@ -229,18 +229,19 @@ export const useBuyTokensWizardProvider = () => {
       const isSelectedTokenSupported = supportedTokens.some((token) => token.tokenData.id === id)
 
       if (id && !isSelectedTokenSupported) {
-        setValue("rampTokenAsset", DEFAULT_RAMP_TOKEN_ASSET)
+        setValue("rampTokenAsset", DEFAULT_RAMP_TOKEN_ASSET, { shouldValidate: true })
+        setValue("tokenAmount", 0, { shouldValidate: true })
       }
       const isFiatCurrencySupported = supportedRampCurrencies.some(
         (curr) => curr.fiatCurrency === fiatCurrency,
       )
       if (fiatCurrency && !isFiatCurrencySupported) {
-        setValue("fiatCurrency", "")
+        setValue("fiatCurrency", "", { shouldValidate: true })
       }
 
       // Reset the address field if no token is supported for the selected chain
       if (address && supportedTokens.length === 0) {
-        setValue("address", "")
+        setValue("address", "", { shouldValidate: true })
       }
 
       setIsBuyForm(isBuyForm)

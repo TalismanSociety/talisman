@@ -13,10 +13,10 @@ export const BuyTokensTokenAmountInput = () => {
     setDebouncedTokenAmount(amount)
 
     if (!amount) {
-      setValue("fiatAmount", 0)
+      setValue("fiatAmount", 0, { shouldValidate: true })
     }
 
-    setValue("dirtyAmountField", "tokenAmount")
+    setValue("dirtyAmountField", "tokenAmount", { shouldValidate: true })
   }
 
   const [fiatAmount, { decimals }] = watch(["fiatAmount", "rampTokenAsset"])
