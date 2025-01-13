@@ -9,7 +9,7 @@ const RenderFiatCurrencyItem = ({ item }: { item: RampCurrency | undefined }) =>
   if (!item) return
   const fiatCurrencyIfo = currencyInfo[item.fiatCurrency ?? ""]
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 truncate text-left">
       <div className="flex-shrink-0">
         <img
           src={`https://assets.ramp.network/flags/${fiatCurrencyIfo.countryCode}.svg`}
@@ -28,7 +28,7 @@ const RenderFiatCurrencyItem = ({ item }: { item: RampCurrency | undefined }) =>
 export const BuyTokensSelectFiatButton = () => {
   const { t } = useTranslation()
   const {
-    buySellForm: { watch },
+    buySellForm: { watch, setValue },
     setRoute,
     supportedRampCurrencies,
   } = useBuyTokensWizard()
@@ -38,9 +38,15 @@ export const BuyTokensSelectFiatButton = () => {
     (curr) => curr.fiatCurrency === fiatCurrency,
   )
 
+  const handleClear = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation()
+    setValue("fiatCurrency", "", { shouldValidate: true })
+  }
+
   return (
     <BuyTokensButton
       onClick={() => setRoute("pickFiat")}
+      onClear={handleClear}
       shouldRenderSelected={!!fiatCurrency}
       selectedItem={<RenderFiatCurrencyItem item={selectedFiatCurrency} />}
       label={t("Select currency")}
