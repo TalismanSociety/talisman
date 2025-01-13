@@ -25,7 +25,9 @@ export const getSignerPayloadJSON = async (
   if (blockNumber === null) throw new Error("Block number not found")
 
   const [account, genesisHash, blockHash] = await Promise.all([
-    getStorageValue<{ nonce: number }>(chain, "System", "Account", [signerConfig.address]), // TODO if V15 available, use a runtime call instead : AccountNonceApi/account_nonce
+    // TODO if V15 available, use a runtime call instead : AccountNonceApi/account_nonce
+    // about nonce https://github.com/paritytech/json-rpc-interface-spec/issues/156
+    getStorageValue<{ nonce: number }>(chain, "System", "Account", [signerConfig.address]),
     getStorageValue<Binary>(chain, "System", "BlockHash", [0]),
     getSendRequestResult<`0x${string}`>(chain, "chain_getBlockHash", [blockNumber], false), // TODO find the right way to fetch this with new RPC api, this is not available in storage yet
   ])
