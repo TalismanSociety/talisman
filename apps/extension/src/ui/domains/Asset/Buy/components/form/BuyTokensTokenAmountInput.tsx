@@ -1,6 +1,6 @@
 import { useBuyTokensWizard } from "../../useBuyTokensWizard"
 import { InputWithSideComponent } from "../InputWithSideComponent"
-import { BuyTokensSelectTokenPill } from "./BuyTokensSelectTokenPill"
+import { BuyTokensSelectTokenButton } from "./BuyTokensSelectTokenButton"
 
 export const BuyTokensTokenAmountInput = () => {
   const {
@@ -32,7 +32,7 @@ export const BuyTokensTokenAmountInput = () => {
         register("tokenAmount").onChange(e)
       }}
       minStep={`1e-${decimals}`}
-      sideComponent={<BuyTokensSelectTokenPill />}
+      sideComponent={<BuyTokensSelectTokenButton />}
     />
   )
 }

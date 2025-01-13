@@ -1,9 +1,9 @@
-import { ChevronDownIcon, PlusIcon, XIcon } from "@talismn/icons"
+import { XIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { IconButton } from "talisman-ui"
 
 import { RampTokenAsset } from "../../types"
 import { DEFAULT_RAMP_TOKEN_ASSET, useBuyTokensWizard } from "../../useBuyTokensWizard"
+import { BuyTokensButton } from "./BuyTokensButton"
 
 const RenderSelectedToken = ({ item }: { item: RampTokenAsset }) => {
   const {
@@ -31,7 +31,7 @@ const RenderSelectedToken = ({ item }: { item: RampTokenAsset }) => {
   )
 }
 
-export const BuyTokensSelectTokenPill = () => {
+export const BuyTokensSelectTokenButton = () => {
   const { t } = useTranslation()
   const {
     setRoute,
@@ -41,21 +41,11 @@ export const BuyTokensSelectTokenPill = () => {
   const [rampTokenAsset] = watch(["rampTokenAsset"])
 
   return (
-    <IconButton
+    <BuyTokensButton
       onClick={() => setRoute("pickToken")}
-      className="border-grey-750 bg-grey-800 flex h-full w-[16rem] items-center gap-4 rounded-[12px] px-3 py-3"
-    >
-      {rampTokenAsset.symbol ? (
-        <RenderSelectedToken item={rampTokenAsset} />
-      ) : (
-        <div className="flex w-full items-center justify-between">
-          <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
-            <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
-          </div>
-          <div className="text-xs text-white">{t("Select token")}</div>
-          <ChevronDownIcon className="shrink-0 text-[2rem]" />
-        </div>
-      )}
-    </IconButton>
+      shouldRenderSelected={!!rampTokenAsset.symbol}
+      selectedItem={<RenderSelectedToken item={rampTokenAsset} />}
+      label={t("Select token")}
+    />
   )
 }
