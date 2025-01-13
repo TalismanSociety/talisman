@@ -39,8 +39,8 @@ export const BuyTokensFiatPicker = () => {
       const filteredCurrencies = supportedRampCurrencies.filter(
         (currency) =>
           !value ||
-          currency.name.toLowerCase().includes(value) ||
-          currency.fiatCurrency.toLowerCase().includes(value),
+          currency.name.toLowerCase().includes(value.toLowerCase()) ||
+          currency.fiatCurrency.toLowerCase().includes(value.toLowerCase()),
       )
       setFilteredCurrency(filteredCurrencies)
     },
