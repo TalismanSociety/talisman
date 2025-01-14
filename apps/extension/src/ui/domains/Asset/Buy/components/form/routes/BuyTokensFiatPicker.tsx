@@ -26,9 +26,11 @@ export const BuyTokensFiatPicker = () => {
   useEffect(() => {
     // selected currency first
     const sortedCurrencies = supportedRampCurrencies.sort((a, b) => {
+      // Sort by selected currency
       if (a.fiatCurrency === fiatCurrency) return -1
       if (b.fiatCurrency === fiatCurrency) return 1
-      return 0
+      // Then sort alphabetically
+      return a.fiatCurrency.localeCompare(b.fiatCurrency)
     })
 
     setFilteredCurrency(sortedCurrencies)
