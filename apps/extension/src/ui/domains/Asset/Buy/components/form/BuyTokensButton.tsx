@@ -20,7 +20,7 @@ export const BuyTokensButton = ({
   return (
     <IconButton
       onClick={onClick}
-      className="border-grey-750 bg-grey-800 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-3 py-3"
+      className="border-grey-750 bg-grey-800 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-4 py-3"
     >
       {shouldRenderSelected ? (
         <div className="flex w-full items-center">
@@ -36,7 +36,7 @@ export const BuyTokensButton = ({
           </div>
         </div>
       ) : (
-        <div className="flex w-full items-center justify-between">
+        <div className="flex w-full items-center gap-3">
           <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
             <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
           </div>
