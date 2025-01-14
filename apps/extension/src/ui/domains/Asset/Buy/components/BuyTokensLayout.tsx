@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, XIcon } from "@talismn/icons"
+import { ChevronLeftIcon } from "@talismn/icons"
 import { FC, ReactNode } from "react"
 import { IconButton } from "talisman-ui"
 
@@ -31,13 +31,7 @@ export const BuyTokensLayout: FC<BuyTokensLayoutProps> = ({ title, children, wit
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {route === "mainForm" ? (
-            <BuyTokensOptionSwitch />
-          ) : (
-            <IconButton onClick={close}>
-              <XIcon />
-            </IconButton>
-          )}
+          {route === "mainForm" && <BuyTokensOptionSwitch />}
         </div>
       </div>
       <div className="w-full grow overflow-hidden">{children}</div>
