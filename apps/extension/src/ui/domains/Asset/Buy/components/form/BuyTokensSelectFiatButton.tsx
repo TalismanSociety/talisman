@@ -28,6 +28,7 @@ const RenderFiatCurrencyItem = ({ item }: { item: RampCurrency | undefined }) =>
 export const BuyTokensSelectFiatButton = () => {
   const { t } = useTranslation()
   const {
+    isRampNotSupported,
     buySellForm: { watch, setValue },
     setRoute,
     supportedRampCurrencies,
@@ -45,6 +46,7 @@ export const BuyTokensSelectFiatButton = () => {
 
   return (
     <BuyTokensButton
+      isDisabled={isRampNotSupported}
       onClick={() => setRoute("pickFiat")}
       onClear={handleClear}
       shouldRenderSelected={!!fiatCurrency}

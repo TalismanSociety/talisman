@@ -7,6 +7,7 @@ import { BuyTokensSelectFiatButton } from "./BuyTokensSelectFiatButton"
 export const BuyTokensFiatAmountInput = () => {
   const { t } = useTranslation()
   const {
+    isRampNotSupported,
     buySellForm: { register, watch, setValue },
     setDebouncedFiatAmount,
     isFiatAboveMinPurchaseAmount,
@@ -37,6 +38,7 @@ export const BuyTokensFiatAmountInput = () => {
       }}
       sideComponent={<BuyTokensSelectFiatButton />}
       minStep="0.01"
+      isDisabled={isRampNotSupported}
       errorMessage={
         !isFiatAboveMinPurchaseAmount
           ? t(`The minimum purchase amount for ${symbol} is ${minPurchaseAmount} ${fiatCurrency}`)

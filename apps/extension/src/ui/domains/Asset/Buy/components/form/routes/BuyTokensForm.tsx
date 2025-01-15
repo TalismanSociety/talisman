@@ -1,3 +1,5 @@
+import { ExternalLinkIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -12,10 +14,10 @@ import { BuyTokensTokenAmountInput } from "../BuyTokensTokenAmountInput"
 export const BuyTokensForm = () => {
   const { t } = useTranslation()
   const {
+    isRampNotSupported,
     supportedTokens,
     isBuyForm,
     isFormDisabled,
-
     buySellForm: { watch },
     submit,
   } = useBuyTokensWizard()
@@ -71,11 +73,14 @@ export const BuyTokensForm = () => {
         </div>
         <Button
           type="submit"
-          className="mt-auto h-[46px] w-full rounded-[16px]"
+          className={classNames("mt-auto w-full", isRampNotSupported && "cursor-not-allowed")}
           primary
           disabled={isFormDisabled}
         >
-          {isBuyForm ? t("Buy with Ramp") : t("Sell with Ramp")}
+          <div className="flex items-center justify-center gap-2">
+            {isRampNotSupported ? t("Not available") : t("Continue to Ramp")}
+            {!isRampNotSupported && <ExternalLinkIcon />}
+          </div>
         </Button>
       </form>
     </BuyTokensLayout>

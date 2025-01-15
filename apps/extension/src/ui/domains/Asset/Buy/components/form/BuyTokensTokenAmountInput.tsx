@@ -4,6 +4,7 @@ import { BuyTokensSelectTokenButton } from "./BuyTokensSelectTokenButton"
 
 export const BuyTokensTokenAmountInput = () => {
   const {
+    isRampNotSupported,
     setDebouncedTokenAmount,
     buySellForm: { setValue, register, watch },
   } = useBuyTokensWizard()
@@ -33,6 +34,7 @@ export const BuyTokensTokenAmountInput = () => {
       }}
       minStep={`1e-${decimals}`}
       sideComponent={<BuyTokensSelectTokenButton />}
+      isDisabled={isRampNotSupported}
     />
   )
 }

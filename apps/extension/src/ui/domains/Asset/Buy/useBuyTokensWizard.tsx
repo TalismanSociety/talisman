@@ -175,6 +175,17 @@ export const useBuyTokensWizardProvider = () => {
     isEnabled: !!symbol && isFiatAboveMinPurchaseAmount,
   })
 
+  // Check if Ramp is supported in the user's region
+  const { isError: isRampNotSupported } = useGetRampQuote({
+    currencyCode: "USD",
+    swapAsset: "ETH_ETH",
+    tokenAmount: (1e18).toString(), // 1 ETH
+    fiatAmount: 0,
+    isFiatQuote: false,
+    isBuyForm,
+    isEnabled: true,
+  })
+
   const quoteUpdateHandler = useCallback(() => {
     if (!rampQuote || isRampQuoteLoading) return
 
@@ -257,8 +268,19 @@ export const useBuyTokensWizardProvider = () => {
   )
 
   const isFormDisabled = useMemo(
-    () => !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount,
-    [isFiatAboveMinPurchaseAmount, isRampQuoteError, isRampQuoteLoading, isValid],
+    () =>
+      !isValid ||
+      isRampQuoteError ||
+      isRampQuoteLoading ||
+      !isFiatAboveMinPurchaseAmount ||
+      isRampNotSupported,
+    [
+      isFiatAboveMinPurchaseAmount,
+      isRampNotSupported,
+      isRampQuoteError,
+      isRampQuoteLoading,
+      isValid,
+    ],
   )
 
   const ctx = {
@@ -273,6 +295,7 @@ export const useBuyTokensWizardProvider = () => {
     supportedRampCurrencies,
     isFiatAboveMinPurchaseAmount,
     rampQuote,
+    isRampNotSupported,
     setIsBuyForm,
     setDebouncedFiatAmount,
     setDebouncedTokenAmount,
