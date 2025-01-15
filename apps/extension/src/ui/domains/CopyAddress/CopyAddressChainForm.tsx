@@ -1,4 +1,3 @@
-import { ChainId } from "@talismn/chaindata-provider"
 import { CopyIcon, QrIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
 import { SubstrateLedgerAppType } from "extension-core"
@@ -16,35 +15,64 @@ import { useAccountByAddress, useBalancesByAddress, useChains, useSetting } from
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
+import {
+  ChainFormat,
+  CopyAddressFormatPickerDrawer,
+  isMigratedFormat,
+  MigratedChainFormat,
+} from "./CopyAddressFormatPickerDrawer"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
-
-type ChainFormat = {
-  key: string
-  chainId: ChainId | null
-  prefix: number | null
-  name: string
-  address: string
-}
 
 const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   const { t } = useTranslation()
   const { setChainId, copySpecific } = useCopyAddressWizard()
-
-  const handleQrClick = useCallback(() => {
-    setChainId(format.chainId)
-  }, [format.chainId, setChainId])
-
   const { open: openWarning, isOpen: isWarningOpen, close: closeWarning } = useOpenClose()
 
+  const [migratedFormatPicker, setMigratedFormatPicker] = useState<{
+    format: MigratedChainFormat
+    mode: "copy" | "qr"
+  }>()
+
+  const handleQrClick = useCallback(() => {
+    if (isMigratedFormat(format)) setMigratedFormatPicker({ format, mode: "qr" })
+    else setChainId(format.chainId)
+  }, [format, setChainId])
+
   const handleCopyClick = useCallback(() => {
-    if (format.chainId === null && !isEthereumAddress(format.address)) openWarning()
-    else copySpecific(format.address, format.chainId)
-  }, [copySpecific, format.address, format.chainId, openWarning])
+    if (format.chainId === null && !isEthereumAddress(format.address)) {
+      openWarning()
+    } else if (isMigratedFormat(format)) {
+      setMigratedFormatPicker({ format, mode: "copy" })
+    } else {
+      copySpecific(format.address, format.chainId)
+    }
+  }, [copySpecific, format, openWarning])
 
   const handleWarningContinueClick = useCallback(() => {
     copySpecific(format.address, format.chainId)
   }, [copySpecific, format.address, format.chainId])
+
+  const handleFormatPickerSelect = useCallback(
+    (legacyFormat: boolean) => {
+      if (!migratedFormatPicker) return
+      const { format, mode } = migratedFormatPicker
+
+      if (mode === "copy")
+        copySpecific(
+          legacyFormat ? format.oldAddress : format.address,
+          format.chainId,
+          legacyFormat,
+        )
+      if (mode === "qr") {
+        setChainId(format.chainId, legacyFormat)
+      }
+
+      // close drawer
+      setMigratedFormatPicker(undefined)
+    },
+    [copySpecific, migratedFormatPicker, setChainId],
+  )
 
   return (
     <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
@@ -90,6 +118,11 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
         isOpen={isWarningOpen}
         onDismiss={closeWarning}
         onContinue={handleWarningContinueClick}
+      />
+      <CopyAddressFormatPickerDrawer
+        format={migratedFormatPicker?.format}
+        onDismiss={() => setMigratedFormatPicker(undefined)}
+        onSelect={handleFormatPickerSelect}
       />
     </div>
   )
@@ -149,8 +182,10 @@ export const CopyAddressChainForm = () => {
         key: chain.id,
         chainId: chain.id,
         prefix: chain.prefix,
+        oldPrefix: chain.oldPrefix,
         name: chain.name ?? "unknown",
         address: convertAddress(address, chain.prefix),
+        oldAddress: chain.oldPrefix ? convertAddress(address, chain.oldPrefix) : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
   }, [address, chains, SUBSTRATE_FORMAT, account?.ledgerApp, balancesPerNetwork, accountChain])

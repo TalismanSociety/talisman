@@ -170,14 +170,22 @@ export const CopyAddressCopyForm = () => {
     logo,
     chain,
     isLogoLoaded,
+    legacyFormat,
     goToAddressPage,
-    goToNetworkOrTokenPage,
+    goToNetworkPage,
   } = useCopyAddressWizard()
 
   const isEthereum = useMemo(
     () => !chain && formattedAddress && isEthereumAddress(formattedAddress),
     [chain, formattedAddress],
   )
+
+  const isMigratedChain = useMemo(() => {
+    if (!chain) return false
+    const { oldPrefix, prefix } = chain
+    return typeof oldPrefix === "number" && typeof prefix === "number" && oldPrefix !== prefix
+  }, [chain])
+
   const genesisHash = chain?.genesisHash
 
   const { t } = useTranslation()
@@ -204,9 +212,17 @@ export const CopyAddressCopyForm = () => {
               <div>
                 <NetworkPillButton
                   chainId={networkId}
-                  onClick={goToNetworkOrTokenPage}
+                  onClick={goToNetworkPage}
                   address={formattedAddress}
                 />
+              </div>
+            </div>
+          )}
+          {isMigratedChain && (
+            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+              <div>{t("Format")}</div>
+              <div>
+                <FormatIndicator legacyFormat={legacyFormat} />
               </div>
             </div>
           )}
@@ -332,5 +348,23 @@ export const CopyAddressCopyForm = () => {
         <CopyButton />
       </div>
     </CopyAddressLayout>
+  )
+}
+
+const FormatIndicator: FC<{ legacyFormat?: boolean }> = ({ legacyFormat }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="text-body flex items-center gap-2">
+          <span>{legacyFormat ? t("Legacy format") : t("New format")}</span>
+          <InfoIcon />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {t("You may need to use legacy format when sending from some exchanges.")}
+      </TooltipContent>
+    </Tooltip>
   )
 }

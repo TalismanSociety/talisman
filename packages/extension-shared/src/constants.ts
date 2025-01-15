@@ -68,6 +68,8 @@ export const BRAVE_BALANCES_URL = `${TALISMAN_DOCS_URL_PREFIX}/help-and-support/
 export const TOKEN_APPROVALS_URL = `${TALISMAN_DOCS_URL_PREFIX}/navigate/using-talisman-with-a-website-dapp/token-approvals`
 export const SPIRIT_KEYS_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/introduction/talisman-portal/spirit-keys-and-commendations#sprit-keys`
 export const CONNECT_LEDGER_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/importing-external-wallets/import-from-ledger`
+export const UNIFIED_ADDRESS_FORMAT_DOCS_URL =
+  "https://forum.polkadot.network/t/unifying-polkadot-ecosystem-address-format/10042"
 
 // Images
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
