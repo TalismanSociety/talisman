@@ -62,6 +62,7 @@ export const useGetRampQuote = ({
   isFiatQuote,
   isBuyForm,
   isEnabled,
+  retry = true,
 }: {
   currencyCode: string
   swapAsset: string
@@ -70,6 +71,7 @@ export const useGetRampQuote = ({
   isFiatQuote: boolean
   isBuyForm: boolean
   isEnabled: boolean
+  retry?: boolean
 }) => {
   const {
     rampConfig: { rampApiBasePath, rampApiKey },
@@ -96,7 +98,7 @@ export const useGetRampQuote = ({
         rampApiKey,
       }),
     staleTime: 1000 * 60,
-
+    retry,
     enabled: isEnabled && !!currencyCode && isFiatQuote ? fiatAmount > 0 : Number(tokenAmount) > 0,
   })
 }

@@ -184,6 +184,7 @@ export const useBuyTokensWizardProvider = () => {
     isFiatQuote: false,
     isBuyForm,
     isEnabled: true,
+    retry: false,
   })
 
   const quoteUpdateHandler = useCallback(() => {
