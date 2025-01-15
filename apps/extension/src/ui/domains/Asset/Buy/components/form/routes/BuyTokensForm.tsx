@@ -8,6 +8,7 @@ import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
 import { truncateToSignificantDigits } from "../../../utils/truncateToSignificantDigits"
 import { BuyTokensLayout } from "../../BuyTokensLayout"
 import { BuyTokensFiatAmountInput } from "../BuyTokensFiatAmountInput"
+import { BuyTokensNotAvailableDrawer } from "../BuyTokensNotAvailableDrawer"
 import { BuyTokensSelectAccountInput } from "../BuyTokensSelectAccountInput"
 import { BuyTokensTokenAmountInput } from "../BuyTokensTokenAmountInput"
 
@@ -18,6 +19,7 @@ export const BuyTokensForm = () => {
     supportedTokens,
     isBuyForm,
     isFormDisabled,
+    close,
     buySellForm: { watch },
     submit,
   } = useBuyTokensWizard()
@@ -71,6 +73,13 @@ export const BuyTokensForm = () => {
           <div className="text-xs">{t("Deposit Account")}</div>
           <BuyTokensSelectAccountInput />
         </div>
+        {isRampNotSupported && (
+          <BuyTokensNotAvailableDrawer
+            containerId="buy-tokens-modal"
+            isOpen={isRampNotSupported}
+            onDismiss={close}
+          />
+        )}
         <Button
           type="submit"
           className={classNames("mt-auto w-full", isRampNotSupported && "cursor-not-allowed")}

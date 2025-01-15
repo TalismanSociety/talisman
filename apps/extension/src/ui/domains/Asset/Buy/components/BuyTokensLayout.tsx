@@ -18,7 +18,7 @@ export const BuyTokensLayout: FC<BuyTokensLayoutProps> = ({ title, children, wit
   }
 
   return (
-    <div id="main" className="relative flex h-full w-full flex-col">
+    <div id="buy-tokens-modal" className="relative flex h-full w-full flex-col">
       <div className="flex items-center justify-between px-10">
         <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center">
           {withBackLink && (
