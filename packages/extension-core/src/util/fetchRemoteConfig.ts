@@ -2,7 +2,6 @@ import { log, TALISMAN_CONFIG_URL } from "extension-shared"
 import toml from "toml"
 
 import { RemoteConfigStoreData } from "../domains/app/types"
-import { mockedConfig } from "./mockedConfig"
 
 export const fetchRemoteConfig = async () => {
   log.debug("Fetching config.toml")
@@ -11,9 +10,7 @@ export const fetchRemoteConfig = async () => {
   if (!response.ok)
     throw new Error(`Unable to fetch config.toml: ${response.status} ${response.statusText}`)
 
-  // const text = await response.text()
-  // TODO: Delete this once talisman-config PR-10 is merged
-  const text = mockedConfig
+  const text = await response.text()
 
   try {
     return toml.parse(text) as RemoteConfigStoreData
