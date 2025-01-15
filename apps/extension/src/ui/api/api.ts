@@ -36,8 +36,6 @@ export const api: MessageTypes = {
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------
-  modalOpen: (request) => messageService.sendMessage("pri(app.modalOpen.request)", request),
-  modalOpenSubscribe: (cb) => messageService.subscribe("pri(app.modalOpen.subscribe)", null, cb),
   analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
   sendFundsOpen: (request = {}) => messageService.sendMessage("pri(app.sendFunds.open)", request),
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),

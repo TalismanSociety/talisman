@@ -298,14 +298,8 @@ export default class AppHandler extends ExtensionHandler {
       case "pri(app.promptLogin)":
         return this.promptLogin()
 
-      case "pri(app.modalOpen.request)":
-        return this.openModal(request as ModalOpenRequest)
-
       case "pri(app.sendFunds.open)":
         return this.openSendFunds(request as RequestTypes["pri(app.sendFunds.open)"])
-
-      case "pri(app.modalOpen.subscribe)":
-        return genericSubscription<"pri(app.modalOpen.subscribe)">(id, port, this.#modalOpenRequest)
 
       case "pri(app.analyticsCapture)": {
         const { eventName, options } = request as AnalyticsCaptureRequest

@@ -9,7 +9,6 @@ import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui
 import { Balance, Balances } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -337,7 +336,6 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
-    await api.modalOpen({ modalType: "buy" })
     window.close()
   }, [])
 
