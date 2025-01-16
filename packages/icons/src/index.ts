@@ -24,6 +24,7 @@ export { ReactComponent as NetworkUsageHighIcon } from "./icons/network-usage-hi
 export { ReactComponent as NetworkUsageIdleIcon } from "./icons/network-usage-idle.svg"
 export { ReactComponent as NetworkUsageIncreasingIcon } from "./icons/network-usage-increasing.svg"
 export { ReactComponent as PinIcon } from "./icons/pin.svg"
+export { ReactComponent as PolkadotIcon } from "./icons/polkadot.svg"
 export { ReactComponent as PolkadotVaultIcon } from "./icons/polkadot-vault.svg"
 export { ReactComponent as PopupIcon } from "./icons/popup.svg"
 export { ReactComponent as QrIcon } from "./icons/qr.svg"

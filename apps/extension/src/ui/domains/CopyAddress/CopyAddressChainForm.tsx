@@ -1,7 +1,8 @@
-import { CopyIcon, QrIcon } from "@talismn/icons"
+import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
 import { SubstrateLedgerAppType } from "extension-core"
-import { useCallback, useMemo, useState } from "react"
+import { UNIFIED_ADDRESS_FORMAT_DOCS_URL } from "extension-shared"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -10,7 +11,13 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useChains, useSetting } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalancesByAddress,
+  useChains,
+  useFeatureFlag,
+  useSetting,
+} from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -204,9 +211,40 @@ export const CopyAddressChainForm = () => {
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+          <UnifiedAddressMigrationBanner formats={filteredFormats} />
           <ChainFormatsList formats={filteredFormats} />
         </ScrollContainer>
       </div>
     </CopyAddressLayout>
+  )
+}
+
+export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ formats }) => {
+  const { t } = useTranslation()
+  const allowBanner = useFeatureFlag("UNIFIED_ADDRESS_BANNER")
+
+  const showBanner = useMemo(
+    () => allowBanner && formats.some(isMigratedFormat),
+    [allowBanner, formats],
+  )
+
+  const handleClick = useCallback(() => {
+    window.open(UNIFIED_ADDRESS_FORMAT_DOCS_URL, "_blank", "noopener noreferrer")
+  }, [])
+
+  if (!showBanner) return null
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="text-body flex w-full items-center gap-4 bg-gradient-to-r from-[#9F7998] to-[#EB5D93] px-12 py-4 text-left text-sm"
+    >
+      <div className="grow">
+        <PolkadotIcon className="mr-2 inline-block shrink-0 align-text-top" />
+        {t("Polkadot introduces new address formatting")}
+      </div>
+      <ArrowUpRightIcon className="text-body shrink-0 text-[2rem]" />
+    </button>
   )
 }
