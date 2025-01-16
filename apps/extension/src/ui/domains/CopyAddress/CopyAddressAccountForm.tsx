@@ -2,10 +2,11 @@ import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/ic
 import { classNames, isEthereumAddress, normalizeAddress } from "@talismn/util"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, SearchInput, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountJsonAny, isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccounts, useChainByGenesisHash } from "@ui/state"

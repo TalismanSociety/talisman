@@ -2,9 +2,10 @@ import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal, SearchInput } from "talisman-ui"
+import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { NetworkOption, usePortfolio } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 

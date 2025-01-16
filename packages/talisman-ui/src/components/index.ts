@@ -22,6 +22,5 @@ export * from "./Radio"
 export * from "./UnsafeImage"
 export * from "./Toggle"
 export * from "./Tooltip"
-export * from "./SearchInput"
 
 export const MysticalBackground = MysticalBackgroundV3

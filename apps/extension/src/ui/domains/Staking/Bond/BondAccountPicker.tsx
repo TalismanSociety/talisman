@@ -2,9 +2,10 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Modal, SearchInput } from "talisman-ui"
+import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { useAccounts, useChain } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
