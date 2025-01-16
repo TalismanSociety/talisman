@@ -1,9 +1,9 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { SearchInput } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { AccountRow } from "@ui/domains/SendFunds/AccountRow"
 
 import { AccountWithBalance } from "../../../types"

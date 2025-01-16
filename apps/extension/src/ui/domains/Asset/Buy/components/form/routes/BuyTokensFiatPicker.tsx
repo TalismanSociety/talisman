@@ -2,9 +2,9 @@ import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { SearchInput } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 
 import { RampCurrency } from "../../../types"
 import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
