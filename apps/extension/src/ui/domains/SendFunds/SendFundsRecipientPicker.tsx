@@ -116,7 +116,9 @@ export const SendFundsRecipientPicker = () => {
     if (!chain) return true
     if (!search || search.trim() === "" || !isValidAddressInput) return true
     const isGenericFormat = convertAddress(search, null) === search
-    const isChainFormat = convertAddress(search, chain.prefix) === search
+    const isChainFormat =
+      convertAddress(search, chain.prefix) === search ||
+      (typeof chain.oldPrefix === "number" && convertAddress(search, chain.oldPrefix) === search)
     if (isValidSubstrateAddress(search)) return isChainFormat || isGenericFormat
     return true
   }, [chain, search, isValidAddressInput])
