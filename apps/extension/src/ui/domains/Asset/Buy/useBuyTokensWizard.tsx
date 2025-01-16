@@ -36,7 +36,7 @@ export const DEFAULT_RAMP_TOKEN_ASSET = {
   minPurchaseAmount: 0,
 }
 
-export const useBuyTokensWizardProvider = () => {
+const useBuyTokensWizardProvider = () => {
   const [route, setRoute] = useState<FormRoute>("mainForm")
   const [isBuyForm, setIsBuyForm] = useState<boolean>(true)
 
