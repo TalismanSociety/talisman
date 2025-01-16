@@ -192,7 +192,10 @@ export const CopyAddressChainForm = () => {
         oldPrefix: chain.oldPrefix,
         name: chain.name ?? "unknown",
         address: convertAddress(address, chain.prefix),
-        oldAddress: chain.oldPrefix ? convertAddress(address, chain.oldPrefix) : undefined,
+        oldAddress:
+          typeof chain.oldPrefix === "number"
+            ? convertAddress(address, chain.oldPrefix)
+            : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
   }, [address, chains, SUBSTRATE_FORMAT, account?.ledgerApp, balancesPerNetwork, accountChain])

@@ -477,17 +477,10 @@ export class ChaindataProvider implements IChaindataProvider {
         var chains = util.addCustomChainRpcs(await fetchChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
 
         // TODO REMOVE BEFORE MERGE, PREFIX MIGRATION TESTING ONLY
-        {
-          for (const chain of chains) {
-            const relayId = chain.relay?.id
-            if (!relayId) continue
-
-            const relay = chains.find((c) => c.id === relayId)
-            if (!relay) continue
-
-            chain.prefix = relay.prefix
-          }
-        }
+        for (const parachain of chains.filter(
+          (c) => c.relay?.id === "polkadot" && typeof c.oldPrefix === "number",
+        ))
+          parachain.prefix = 0
 
         if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
       } catch (error) {
