@@ -2,7 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "extension-shared"
-import { BehaviorSubject, Subject } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -10,7 +10,6 @@ import type {
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,
-  ModalOpenRequest,
   RequestLogin,
   RequestOnboardCreatePassword,
   RequestRoute,
@@ -29,8 +28,6 @@ import { PasswordStoreData } from "./store.password"
 import { ChangePasswordStatusUpdateStatus } from "./types"
 
 export default class AppHandler extends ExtensionHandler {
-  #modalOpenRequest = new Subject<ModalOpenRequest>()
-
   private async createPassword({
     pass,
     passConfirm,
@@ -219,17 +216,6 @@ export default class AppHandler extends ExtensionHandler {
     await windowManager.popupOpen(`#/send?${params.toString()}`)
 
     return true
-  }
-
-  private async openModal(request: ModalOpenRequest): Promise<void> {
-    const queryUrl = chrome.runtime.getURL("dashboard.html")
-    const [tab] = await chrome.tabs.query({ url: queryUrl })
-    if (!tab) {
-      await windowManager.openDashboard({ route: "/portfolio" })
-      // wait for newly created page to load and subscribe to backend (max 5 seconds)
-      for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
-    }
-    this.#modalOpenRequest.next(request)
   }
 
   private onboardOpen(): boolean {

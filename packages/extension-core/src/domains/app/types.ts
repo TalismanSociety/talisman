@@ -34,10 +34,6 @@ export interface RequestRoute {
   route: string
 }
 
-export type ModalOpenRequestBuy = {
-  modalType: "buy"
-}
-export type ModalOpenRequest = ModalOpenRequestBuy
 export type SendFundsOpenRequest = {
   from?: Address
   tokenId?: TokenId
