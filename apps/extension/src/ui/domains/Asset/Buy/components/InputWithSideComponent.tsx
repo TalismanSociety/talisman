@@ -5,7 +5,6 @@ export type InputWithSideComponentProps = {
     React.InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   >
-  inputFieldLabel: string | number
   inputType: "string" | "number"
   inputPlaceholder: string
   isLoading?: boolean
@@ -18,7 +17,6 @@ export type InputWithSideComponentProps = {
 
 export const InputWithSideComponent = ({
   inputFieldProps,
-  inputFieldLabel,
   inputType,
   inputPlaceholder,
   isLoading,
@@ -47,9 +45,6 @@ export const InputWithSideComponent = ({
             {...inputFieldProps}
             onChange={onInputChange}
           />
-          <div className={classNames("text-tiny", !inputFieldLabel && "invisible")}>
-            {inputFieldLabel ?? "..."}
-          </div>
         </div>
         {sideComponent}
       </div>

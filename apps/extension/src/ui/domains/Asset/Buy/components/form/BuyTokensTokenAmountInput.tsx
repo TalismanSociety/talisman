@@ -20,12 +20,11 @@ export const BuyTokensTokenAmountInput = () => {
     setValue("dirtyAmountField", "tokenAmount", { shouldValidate: true })
   }
 
-  const [fiatAmount, { decimals }] = watch(["fiatAmount", "rampTokenAsset"])
+  const { decimals } = watch("rampTokenAsset")
 
   return (
     <InputWithSideComponent
       inputFieldProps={register("tokenAmount")}
-      inputFieldLabel={`$${fiatAmount || "0"}`}
       inputType="number"
       inputPlaceholder="0"
       onInputChange={(e: React.ChangeEvent<HTMLInputElement>) => {

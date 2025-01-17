@@ -29,7 +29,6 @@ export const BuyTokensFiatAmountInput = () => {
   return (
     <InputWithSideComponent
       inputFieldProps={register("fiatAmount")}
-      inputFieldLabel={fiatCurrency || "$0"}
       inputType="number"
       inputPlaceholder="0"
       onInputChange={(e) => {
