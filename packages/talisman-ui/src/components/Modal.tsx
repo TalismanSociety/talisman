@@ -60,7 +60,8 @@ export const Modal: FC<ModalProps> = ({
         <TransitionChild
           as="div"
           className={classNames(
-            "pointer-events-auto max-h-[100dvh] max-w-[dvw] overflow-hidden",
+            "pointer-events-auto overflow-hidden",
+            containerId ? "max-h-full max-w-full" : "max-h-[100dvh] max-w-[dvw]",
             className,
           )}
           enter="ease-out duration-200"
