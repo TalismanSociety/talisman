@@ -147,6 +147,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.export)", { address, password, exportPw }),
   accountExportPrivateKey: (address, password) =>
     messageService.sendMessage("pri(accounts.export.pk)", { address, password }),
+  accountExportAll: (password, exportPw) =>
+    messageService.sendMessage("pri(accounts.export.all)", { password, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>

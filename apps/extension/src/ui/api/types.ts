@@ -1,6 +1,7 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import type { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
-import { KeypairType } from "@polkadot/util-crypto/types"
 import { BalanceJson } from "@talismn/balances"
 import {
   Chain,
@@ -170,6 +171,10 @@ export default interface MessageTypes {
     password: string,
     exportPw: string,
   ) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountExportAll: (
+    password: string,
+    exportPw: string,
+  ) => Promise<{ exportedJson: KeyringPairs$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>

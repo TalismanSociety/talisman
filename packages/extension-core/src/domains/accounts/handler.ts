@@ -1,3 +1,4 @@
+import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
 import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
@@ -19,6 +20,7 @@ import type {
   RequestAccountCreateSignet,
   RequestAccountCreateWatched,
   RequestAccountExport,
+  RequestAccountExportAll,
   RequestAccountExportPrivateKey,
   RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
@@ -508,6 +510,19 @@ export default class AccountsHandler extends ExtensionHandler {
     return val
   }
 
+  private async accountExportAll({
+    password,
+    exportPw,
+  }: RequestAccountExportAll): Promise<ResponseAccountsExport> {
+    await this.stores.password.checkPassword(password)
+
+    const addresses = keyring.getPairs().map(({ address }) => address)
+
+    const exportedJson = await keyring.backupAccounts(addresses, exportPw)
+
+    return { exportedJson }
+  }
+
   private async accountExportPrivateKey({
     address,
     password,
@@ -658,6 +673,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":
         return this.accountExport(request as RequestAccountExport)
+      case "pri(accounts.export.all)":
+        return this.accountExportAll(request as RequestAccountExportAll)
       case "pri(accounts.export.pk)":
         return this.accountExportPrivateKey(request as RequestAccountExportPrivateKey)
       case "pri(accounts.rename)":
