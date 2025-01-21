@@ -35,22 +35,22 @@ export const Button: FC<ButtonProps> = ({
 
     if (disabled)
       return classNames(
-        "bg-black-tertiary text-body-disabled",
+        "bg-black-tertiary text-body-disabled ",
         effectiveColor === "default" ? " border" : "",
       )
 
     switch (effectiveColor) {
       case "default":
-        return "bg-transparent text-white border border-white enabled:hover:bg-white enabled:hover:text-black focus:outline-none focus:ring-white focus:ring-2 enabled:hover:active:bg-black enabled:hover:active:text-white"
+        return "bg-transparent text-white border focus:border-2 border-white enabled:hover:bg-white enabled:hover:text-black focus:outline-none focus:border-white enabled:hover:active:bg-black enabled:hover:active:text-white"
 
       case "primary":
-        return "bg-primary-500 text-black border border-transparent focus:outline-none enabled:hover:bg-primary-700 focus:ring-white focus:ring-2 enabled:hover:active:bg-primary"
+        return "bg-primary-500 text-black border-2 border-transparent focus:outline-none enabled:hover:bg-primary-700 focus:border-white enabled:hover:active:bg-primary"
 
       case "orange":
-        return "bg-orange-500 text-black border border-transparent focus:outline-none enabled:hover:bg-orange/90 focus:ring-white focus:ring-2 enabled:hover:active:bg-orange"
+        return "bg-orange-500 text-black border-2 border-transparent focus:outline-none enabled:hover:bg-orange/90 focus:border-white enabled:hover:active:bg-orange"
 
       case "red":
-        return "bg-brand-orange text-black border border-transparent focus:outline-none enabled:hover:bg-brand-orange/90 focus:ring-white focus:ring-2 enabled:hover:active:bg-brand-orange"
+        return "bg-brand-orange text-black border-2 border-transparent focus:outline-none enabled:hover:bg-brand-orange/90 focus:border-white  enabled:hover:active:bg-brand-orange"
     }
   }, [color, disabled, primary])
 

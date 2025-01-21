@@ -11,8 +11,8 @@ export const PortfolioToolbarButton = forwardRef<
       type="button"
       {...props}
       className={classNames(
-        "bg-grey-900 hover:bg-grey-800 text-body-secondary flex items-center justify-center rounded-sm",
-        "border-grey-700 size-16 ring-transparent focus-visible:border",
+        "bg-grey-900 hover:bg-grey-800 text-body-secondary border-content flex items-center justify-center rounded-sm",
+        "focus-visible:border-grey-700 size-16 border border-transparent ring-transparent",
         props.className,
       )}
     />
