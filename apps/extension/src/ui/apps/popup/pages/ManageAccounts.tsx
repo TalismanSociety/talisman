@@ -38,7 +38,7 @@ const Header = () => {
       <IconButton onClick={goToPortfolio}>
         <ChevronLeftIcon />
       </IconButton>
-      <div className="grow font-bold">{t("Manage Accounts")}</div>
+      <div className="font-bold">{t("Manage Accounts")}</div>
     </header>
   )
 }

@@ -53,17 +53,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
             />
             <div className="flex grow flex-col gap-2 overflow-hidden">
               <div className="flex w-full items-center gap-1 overflow-hidden text-base">
-                <div className="truncate">
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                  {account.name}
-                </div>
+                <div className="truncate">{account.name}</div>
                 <div className="shrink-0">
                   <AccountTypeIcon
                     className="text-primary inline-block"
