@@ -1,48 +1,18 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { classNames } from "@talismn/util"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  Button,
-  FormFieldContainer,
-  FormFieldInputText,
-  Modal,
-  ModalDialog,
-  useOpenClose,
-} from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
-import { useAccounts } from "@ui/state"
 
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-export const ExportAllAccountsButton: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation()
-  const accounts = useAccounts()
-  const { isOpen, open, close } = useOpenClose()
-
-  if (!accounts.length) return null
-
-  return (
-    <>
-      <button
-        type="button"
-        className={classNames("text-grey-400 hover:text-body", className)}
-        onClick={open}
-      >
-        {t("Export all")}
-      </button>
-      <ExportAllAccountsModal isOpen={isOpen} onClose={close} />
-    </>
-  )
-}
-
-const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }> = ({
+export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }> = ({
   isOpen,
   onClose,
 }) => {

@@ -6,7 +6,6 @@ import { IconButton } from "talisman-ui"
 
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { ExportAllAccountsButton } from "@ui/domains/Account/ExportAllAccountsButton"
 import {
   ManageAccountsLists,
   ManageAccountsProvider,
@@ -40,7 +39,6 @@ const Header = () => {
         <ChevronLeftIcon />
       </IconButton>
       <div className="grow font-bold">{t("Manage Accounts")}</div>
-      <ExportAllAccountsButton className="text-xs" />
     </header>
   )
 }

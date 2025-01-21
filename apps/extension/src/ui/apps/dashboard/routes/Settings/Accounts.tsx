@@ -7,7 +7,6 @@ import { Spacer } from "@talisman/components/Spacer"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { ExportAllAccountsButton } from "@ui/domains/Account/ExportAllAccountsButton"
 import {
   ManageAccountsLists,
   ManageAccountsProvider,
@@ -37,15 +36,7 @@ const Content = () => {
 
   return (
     <>
-      <HeaderBlock
-        title={
-          <div className="flex w-full items-center">
-            <div className="grow">{t("Manage Accounts")}</div>
-            <ExportAllAccountsButton className="text-sm" />
-          </div>
-        }
-        text={t("Organise and sort your accounts")}
-      />
+      <HeaderBlock title={t("Manage Accounts")} text={t("Organise and sort your accounts")} />
       <Spacer large />
       <ManageAccountsProvider>
         <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />

@@ -1,17 +1,28 @@
-import { FolderPlusIcon, PlusIcon } from "@talismn/icons"
+import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
+import { useAccounts } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { ExportAllAccountsModal } from "../ExportAllAccountsModal"
 import { useManageAccounts } from "./ManageAccountsProvider"
 
 export const ManageAccountsToolbar: FC<{
@@ -54,6 +65,7 @@ export const ManageAccountsToolbar: FC<{
       </div>
       <ToolbarButton icon={FolderPlusIcon} onClick={openNewFolderModal} label={t("Add Folder")} />
       <ToolbarButton icon={PlusIcon} onClick={addNewAccountClick} label={t("Add Account")} />
+      <AccountsContextMenu />
     </div>
   )
 }
@@ -79,3 +91,31 @@ const ToolbarButton: FC<{
     {IS_POPUP && !label && <TooltipContent>{label}</TooltipContent>}
   </Tooltip>
 )
+
+const AccountsContextMenu = () => {
+  const { t } = useTranslation()
+  const accounts = useAccounts()
+  const { isOpen: isOpenExportAll, open: openExportAll, close: closeExportAll } = useOpenClose()
+
+  if (!accounts.length) return null
+
+  return (
+    <>
+      <ContextMenu placement="bottom-end">
+        <ContextMenuTrigger
+          className={classNames(
+            "bg-grey-900 hover:bg-grey-800 text-body-secondary border-content flex items-center justify-center rounded-sm",
+            "focus-visible:border-grey-700 border border-transparent ring-transparent",
+            "@2xl:size-[4.4rem] size-[3.6rem]",
+          )}
+        >
+          <MoreHorizontalIcon />
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={openExportAll}>{t("Export all")}</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+      <ExportAllAccountsModal isOpen={isOpenExportAll} onClose={closeExportAll} />
+    </>
+  )
+}
