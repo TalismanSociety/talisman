@@ -106,16 +106,19 @@ export const customTokensFilter = (tokens: Token[]) =>
 type ObservableReturnType<O> = O extends Observable<infer T> ? T : O
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const wrapObservableWithGetter = async <O extends Observable<any>>(
+export const wrapObservableWithGetter = <O extends Observable<any>>(
   errorReason: string,
   observable: O,
 ): Promise<ObservableReturnType<O>> => {
-  return await withErrorReason(errorReason, () => firstValueFrom(observable))
+  return withErrorReason(errorReason, () => firstValueFrom(observable))
 }
 
-export const withErrorReason = <T>(reason: string, task: () => T): T => {
+export const withErrorReason = async <T>(
+  reason: string,
+  task: () => Promise<T> | T,
+): Promise<T> => {
   try {
-    return task()
+    return await task()
   } catch (cause) {
     throw new Error(reason, { cause })
   }
