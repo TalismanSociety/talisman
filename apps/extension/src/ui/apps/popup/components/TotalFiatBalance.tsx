@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -162,6 +163,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { open: openBuyTokensModal } = useBuyTokensModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
@@ -211,15 +213,23 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           ? {
               analyticsName: "Goto",
               analyticsAction: "Buy Crypto button",
-              label: t("Buy"),
+              label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+              onClick: () => openBuyTokensModal(),
               disabled: disableActions,
               disabledReason,
             }
           : null,
       ].filter(Boolean) as Array<ActionProps>,
-    [canBuy, disableActions, disabledReason, handleSwapClick, openCopyAddressModal, t],
+    [
+      canBuy,
+      disableActions,
+      disabledReason,
+      handleSwapClick,
+      openBuyTokensModal,
+      openCopyAddressModal,
+      t,
+    ],
   )
 
   return (

@@ -9,7 +9,6 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
-import { useModalSubscription } from "@ui/hooks/useModalSubscription"
 
 import { AccountAddMenu } from "./routes/AccountAdd"
 import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
@@ -46,8 +45,6 @@ import { TokensPage } from "./routes/Tokens/TokensPage"
 import { TxHistory } from "./routes/TxHistory"
 
 const DashboardInner = () => {
-  useModalSubscription()
-
   return (
     <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
       <Routes>

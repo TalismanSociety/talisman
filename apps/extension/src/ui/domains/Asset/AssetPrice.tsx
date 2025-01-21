@@ -32,10 +32,13 @@ const [useDisplayAssetPrice] = bind((tokenId: TokenId | null | undefined) =>
           : rawChange24h
         : undefined
 
+      const changeClassName = getPriceChangeClassName(change24h)
+
       return {
         compact,
         full,
         change24h,
+        changeClassName,
       }
     }),
   ),
@@ -68,13 +71,7 @@ export const AssetPrice: FC<{
         <Container className={classNames("whitespace-nowrap", className)}>
           <span className={priceClassName}>{price.compact} </span>
           {!noChange && price.change24h ? (
-            <span
-              className={classNames(
-                price.change24h.startsWith("+") && "text-price-up",
-                price.change24h.startsWith("-") && "text-price-down",
-                changeClassName,
-              )}
-            >
+            <span className={classNames(price.changeClassName, changeClassName)}>
               {price.change24h}
             </span>
           ) : null}
@@ -83,4 +80,17 @@ export const AssetPrice: FC<{
       {!noTooltip && <TooltipContent>{price.full}</TooltipContent>}
     </Tooltip>
   )
+}
+
+const getPriceChangeClassName = (change24h: string | undefined) => {
+  switch (change24h?.[0]) {
+    case "+":
+      return "text-price-up"
+    case "-":
+      return "text-price-down"
+    case "0": // 0.0%
+      return "text-body-inactive"
+    default:
+      return null
+  }
 }

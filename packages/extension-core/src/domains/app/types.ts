@@ -6,6 +6,8 @@ import { PostHogCaptureProperties } from "../analytics/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
+  rampConfig: RampConfig
+  rampSupportedTokenIds: Record<string, string>
   buyTokens: {
     tokenIds: TokenId[]
   }
@@ -32,10 +34,6 @@ export interface RequestRoute {
   route: string
 }
 
-export type ModalOpenRequestBuy = {
-  modalType: "buy"
-}
-export type ModalOpenRequest = ModalOpenRequestBuy
 export type SendFundsOpenRequest = {
   from?: Address
   tokenId?: TokenId
@@ -111,12 +109,16 @@ export interface AppMessages {
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [string | undefined, boolean]
-  "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
-  "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]
   "pri(app.promptLogin)": [null, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
+}
+
+type RampConfig = {
+  rampBasePath: string
+  rampApiBasePath: string
+  rampApiKey: string
 }

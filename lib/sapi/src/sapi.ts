@@ -65,8 +65,8 @@ export const getScaleApi = (
     getConstant: <T>(pallet: string, constant: string) =>
       getConstantValue<T>(chain, pallet, constant),
 
-    getStorage: <T>(pallet: string, entry: string, keys: unknown[]) =>
-      getStorageValue<T>(chain, pallet, entry, keys),
+    getStorage: <T>(pallet: string, entry: string, keys: unknown[], at?: string) =>
+      getStorageValue<T>(chain, pallet, entry, keys, at),
 
     getDecodedCall: (pallet: string, method: string, args: unknown) =>
       getDecodedCall(pallet, method, args),

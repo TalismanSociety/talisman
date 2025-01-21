@@ -3,7 +3,7 @@ import { Route, Routes, useSearchParams } from "react-router-dom"
 
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"

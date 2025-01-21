@@ -210,6 +210,7 @@ export const tokens = [
     chain: {
       id: "polkadot-asset-hub",
     },
+    coingeckoId: "gavun-wud",
   },
   {
     id: "polkadot-asset-hub-substrate-assets-555-game",
