@@ -39,7 +39,7 @@ export type {
   EthereumRpc,
 } from "@talismn/chaindata-provider"
 
-// define here the rpc methods that do not exist in viem or that need to be overriden
+// define here the rpc methods that do not exist in viem or that need to be overridden
 type TalismanRpcSchema = [
   {
     Method: "personal_ecRecover"

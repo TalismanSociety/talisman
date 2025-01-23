@@ -128,7 +128,7 @@ export const updateTransactionStatus = async (
   confirmed?: boolean,
 ) => {
   try {
-    // this can be called after the tx has been overriden/replaced, check status first
+    // this can be called after the tx has been overridden/replaced, check status first
     const existing = await db.transactions.get(hash)
     if (
       ["success", "error", "replaced"].includes(existing?.status ?? "") &&

@@ -48,7 +48,7 @@ i18next
       // should always be true, so 'en', but I added a check here just in case 'en' isn't in the list
       locales.includes("en") ? "en" : "dev",
 
-    // the `t` funtion should always return a string or undefined
+    // the `t` function should always return a string or undefined
     returnNull: false,
     returnEmptyString: false,
 

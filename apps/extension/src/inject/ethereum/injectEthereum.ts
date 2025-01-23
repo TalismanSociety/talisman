@@ -55,7 +55,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
 
           // allow all other wallets to override window.ethereum
           currentWindowEthereum = newValue
-          log.debug("window.ethereum overriden with", { newValue })
+          log.debug("window.ethereum overridden with", { newValue })
         },
         configurable: false,
       })

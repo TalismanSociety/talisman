@@ -6,7 +6,7 @@ import { StorageProvider } from "../../libs/Store"
 export type ActiveTokens = Record<TokenId, boolean>
 
 /**
- * Stores the active state of each token, if and only if the user has overriden it.
+ * Stores the active state of each token, if and only if the user has overridden it.
  * Active state is stored aside of the database table, to allow for bulk reset of the table on a regular basis
  * Default active state is stored in the chaindata-provider, in the isDefault property.
  * We only store overrides here to reduce storage consumption.
