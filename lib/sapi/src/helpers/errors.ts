@@ -1,14 +1,9 @@
 import { getLookupFn } from "@polkadot-api/metadata-builders"
-import { ChainId } from "extension-core"
 import { log } from "extension-shared"
 
-import { ScaleMetadata } from "./types"
+import { Chain } from "./types"
 
-export const getDispatchErrorMessage = (
-  chainId: ChainId,
-  metadata: ScaleMetadata,
-  err: unknown,
-): string | null => {
+export const getDispatchErrorMessage = (chain: Chain, err: unknown): string | null => {
   try {
     if (!err) return null
 
@@ -18,7 +13,7 @@ export const getDispatchErrorMessage = (
     const lv1 = DISPATCH_ERROR[error.type as keyof typeof DISPATCH_ERROR]
     if (!lv1) throw new Error("Unknown dispatch error")
     if (lv1 === ERROR_METADATA_LOOKUP)
-      return getModuleErrorMessage(chainId, metadata, error.value as UnsafeModuleError)
+      return getModuleErrorMessage(chain, error.value as UnsafeModuleError)
     if (typeof lv1 === "string") return lv1
 
     const lv2 = lv1[error.value?.type as keyof typeof lv1]
@@ -27,7 +22,7 @@ export const getDispatchErrorMessage = (
 
     throw new Error("Unknown dispatch error")
   } catch (cause) {
-    log.error("Failed to parse runtime error", { chainId, cause, err })
+    log.error("Failed to parse runtime error", { chainId: chain.connector.chainId, cause, err })
     return tryFormatError(err)
   }
 }
@@ -107,18 +102,14 @@ type UnsafeModuleError = {
   }
 }
 
-const getModuleErrorMessage = (
-  chainId: ChainId,
-  metadata: ScaleMetadata,
-  error: UnsafeModuleError,
-): string => {
+const getModuleErrorMessage = (chain: Chain, error: UnsafeModuleError): string => {
   try {
-    if (!metadata) throw new Error("Could not fetch metadata")
+    if (!chain.metadata) throw new Error("Could not fetch metadata")
 
-    const pallet = metadata.pallets.find((p) => p.name === error.type)
+    const pallet = chain.metadata.pallets.find((p) => p.name === error.type)
     if (typeof pallet?.errors !== "number") throw new Error("Unknown pallet")
 
-    const lookup = getLookupFn(metadata)
+    const lookup = getLookupFn(chain.metadata)
 
     const palletErrors = lookup(pallet.errors)
     if (palletErrors.type !== "enum" || !palletErrors.innerDocs[error.value.type]?.length)
@@ -127,7 +118,7 @@ const getModuleErrorMessage = (
     // biome-ignore lint/style/noNonNullAssertion: <explanation>
     return palletErrors.innerDocs[error.value.type]!.join(" ")
   } catch (err) {
-    log.error("Failed to parse module error", { chainId, error, err })
+    log.error("Failed to parse module error", { chainId: chain.connector.chainId, error, err })
     return [error.type, error.value.type].join(": ")
   }
 }

@@ -3,11 +3,12 @@ import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { SignerPayloadJSON } from "extension-core"
+import { getScaleApi } from "sapi"
 
 import { log } from "@extension/shared"
+import { api } from "@ui/api"
 import { useChainByGenesisHash, useToken } from "@ui/state"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
-import { getScaleApi } from "@ui/util/scaleApi"
 
 export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
@@ -67,7 +68,11 @@ const getSubstratePayloadMetadata = async ({
     const sapi =
       metadata.version > 14
         ? getScaleApi(
-            chain.id,
+            {
+              chainId: chain.id,
+              send: (...args) => api.subSend(chain.id, ...args),
+              submit: api.subSubmit,
+            },
             metadataRpc,
             token,
             chain.hasCheckMetadataHash,

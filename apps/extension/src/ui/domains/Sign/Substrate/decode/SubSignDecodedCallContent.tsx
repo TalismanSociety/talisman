@@ -9,10 +9,10 @@ import { marked } from "marked"
 import { Binary } from "polkadot-api"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { DecodedCall, ScaleApi } from "sapi"
 
 import { CodeBlock } from "@talisman/components/CodeBlock"
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
-import { DecodedCall, ScaleApi } from "@ui/util/scaleApi"
 
 import { SubSignDecodedCallSummaryBlock } from "./SubSignDecodedCallSummaryBlock"
 

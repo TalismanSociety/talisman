@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 import { getMetadataRpcFromDef } from "extension-shared"
 import { useMemo } from "react"
+import { getScaleApi, ScaleApi } from "sapi"
 
 import { api } from "@ui/api"
 import { useChain, useChainByGenesisHash, useToken } from "@ui/state"
-import { getScaleApi, ScaleApi } from "@ui/util/scaleApi"
 
 /**
  * useScaleApi instantiates a ScaleApi object for a given chainIdOrHash, specVersion, and blockHash.
@@ -36,7 +36,11 @@ export const useScaleApi = (
       if (!metadataRpc) return null
 
       return getScaleApi(
-        chain.id,
+        {
+          chainId: chain.id,
+          send: (...args) => api.subSend(chain.id, ...args),
+          submit: api.subSubmit,
+        },
         metadataRpc,
         token,
         chain.hasCheckMetadataHash,

@@ -17,6 +17,7 @@
     "extension-core",
     "extension-shared",
     "playground",
-    "talisman-ui"
+    "talisman-ui",
+    "sapi"
   ]
 }

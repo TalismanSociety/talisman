@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { DecodedCall } from "sapi"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { DecodedCall } from "@ui/util/scaleApi"
 
 import { DecodedBatchCall } from "../types"
 

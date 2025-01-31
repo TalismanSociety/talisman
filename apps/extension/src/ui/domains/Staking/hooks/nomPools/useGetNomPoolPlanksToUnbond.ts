@@ -1,7 +1,6 @@
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
-
-import { ScaleApi } from "@ui/util/scaleApi"
+import { ScaleApi } from "sapi"
 
 import { NomPoolMember } from "../../types"
 

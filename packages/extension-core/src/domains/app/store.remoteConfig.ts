@@ -7,6 +7,12 @@ import { RemoteConfigStoreData } from "./types"
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
+  rampConfig: {
+    rampBasePath: "",
+    rampApiBasePath: "",
+    rampApiKey: "",
+  },
+  rampSupportedTokenIds: {},
   buyTokens: {
     tokenIds: [],
   },

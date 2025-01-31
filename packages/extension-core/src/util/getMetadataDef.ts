@@ -132,11 +132,9 @@ const getMetadataDefInner = async (
     return CACHE_RESULTS.get(cacheKey)
   } catch (cause) {
     if ((cause as Error).message !== "RPC connect timeout reached") {
-      // not a useful error, do not log to sentry
-      const message = `Failed to update metadata for chain ${genesisHash}`
-      const error = new Error(message, { cause })
+      const error = new Error("Failed to update metadata", { cause })
       log.error(error)
-      sentry.captureException(error, { extra: { genesisHash } })
+      sentry.captureException(error, { extra: { genesisHash, chainId: chain?.id ?? "UNKNOWN" } })
     }
     metadataUpdatesStore.set(genesisHash, false)
   }

@@ -76,7 +76,7 @@ const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<stri
   return combineLatest([dataObservable, activeStoreObservable, settingsStore.observable]).pipe(
     map(([data, active, { useTestnets }]) => {
       return data
-        .filter((item) => isActiveFn(item, active))
+        .filter((item) => !!item && isActiveFn(item, active))
         .filter((item) => (useTestnets ? true : !item.isTestnet))
     }),
   )

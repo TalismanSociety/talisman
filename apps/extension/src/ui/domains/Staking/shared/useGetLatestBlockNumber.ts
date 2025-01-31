@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-
-import { ScaleApi } from "@ui/util/scaleApi"
+import { ScaleApi } from "sapi"
 
 type GetLatestBlockNumber = {
   sapi: ScaleApi | undefined | null

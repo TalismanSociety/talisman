@@ -113,9 +113,12 @@ export const wrapObservableWithGetter = async <O extends Observable<any>>(
   return await withErrorReason(errorReason, () => firstValueFrom(observable))
 }
 
-export const withErrorReason = <T>(reason: string, task: () => T): T => {
+export const withErrorReason = async <T>(
+  reason: string,
+  task: () => Promise<T> | T,
+): Promise<T> => {
   try {
-    return task()
+    return await task()
   } catch (cause) {
     throw new Error(reason, { cause })
   }

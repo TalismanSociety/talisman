@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
@@ -22,6 +23,7 @@ const PortfolioRoutes = () => (
       <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
       <Route path="nfts" element={<PortfolioAssets />} />
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+      <Route path="ramp/*" element={<BuyTokensModal />} />
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
     <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>

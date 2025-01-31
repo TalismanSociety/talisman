@@ -41,7 +41,6 @@ import {
   EvmAddress,
   LoggedinType,
   MetadataUpdateStatus,
-  ModalOpenRequest,
   NftData,
   ProviderType,
   RequestAccountCreateLedgerSubstrate,
@@ -119,8 +118,6 @@ export default interface MessageTypes {
   cancelEncryptRequest: (id: DecryptRequestId | EncryptRequestId) => Promise<boolean>
 
   // app message types -------------------------------------------------------
-  modalOpen: (modal: ModalOpenRequest) => Promise<boolean>
-  modalOpenSubscribe: (cb: (val: ModalOpenRequest) => void) => UnsubscribeFn
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
   sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
   resetWallet: () => Promise<boolean>

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-
-import { ScaleApi } from "@ui/util/scaleApi"
+import { ScaleApi } from "sapi"
 
 import { getBittensorStakingPayload } from "../../helpers"
 
