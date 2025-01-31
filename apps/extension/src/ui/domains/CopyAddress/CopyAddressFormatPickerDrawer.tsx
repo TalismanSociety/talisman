@@ -1,12 +1,12 @@
 import { InfoIcon } from "@talismn/icons"
 import { ChainId } from "extension-core"
-import { UNIFIED_ADDRESS_FORMAT_DOCS_URL } from "extension-shared"
+import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useChain } from "@ui/state"
+import { useChain, useRemoteConfig } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
@@ -101,10 +101,19 @@ const DrawerContent: FC<{
 
 const LearnMore = () => {
   const { t } = useTranslation()
+  const remoteConfig = useRemoteConfig()
 
-  const handleClick = () => {
-    window.open(UNIFIED_ADDRESS_FORMAT_DOCS_URL, "_blank", "nooppener noreferrer")
-  }
+  const handleClick = useCallback(() => {
+    try {
+      window.open(
+        remoteConfig.documentation.unifiedAddressDocsUrl,
+        "_blank",
+        "nooppener noreferrer",
+      )
+    } catch (err) {
+      log.error("Unable to open unified address docs", { cause: err })
+    }
+  }, [remoteConfig.documentation.unifiedAddressDocsUrl])
 
   return (
     <button

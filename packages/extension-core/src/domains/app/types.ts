@@ -19,6 +19,9 @@ export type RemoteConfigStoreData = {
   nominationPools: Record<ChainId, number[]>
   stakingPools: Record<ChainId, (number | string)[]>
   postHogUrl: string
+  documentation: {
+    unifiedAddressDocsUrl: string
+  }
 }
 
 export interface RequestOnboardCreatePassword {

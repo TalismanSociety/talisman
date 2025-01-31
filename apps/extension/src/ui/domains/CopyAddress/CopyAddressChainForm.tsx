@@ -1,7 +1,7 @@
 import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
 import { SubstrateLedgerAppType } from "extension-core"
-import { UNIFIED_ADDRESS_FORMAT_DOCS_URL } from "extension-shared"
+import { log } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
@@ -16,6 +16,7 @@ import {
   useBalancesByAddress,
   useChains,
   useFeatureFlag,
+  useRemoteConfig,
   useSetting,
 } from "@ui/state"
 
@@ -225,6 +226,7 @@ export const CopyAddressChainForm = () => {
 export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ formats }) => {
   const { t } = useTranslation()
   const allowBanner = useFeatureFlag("UNIFIED_ADDRESS_BANNER")
+  const remoteConfig = useRemoteConfig()
 
   const showBanner = useMemo(
     () => allowBanner && formats.some(isMigratedFormat),
@@ -232,8 +234,16 @@ export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ 
   )
 
   const handleClick = useCallback(() => {
-    window.open(UNIFIED_ADDRESS_FORMAT_DOCS_URL, "_blank", "noopener noreferrer")
-  }, [])
+    try {
+      window.open(
+        remoteConfig.documentation.unifiedAddressDocsUrl,
+        "_blank",
+        "nooppener noreferrer",
+      )
+    } catch (err) {
+      log.error("Unable to open unified address docs", { cause: err })
+    }
+  }, [remoteConfig.documentation.unifiedAddressDocsUrl])
 
   if (!showBanner) return null
 
