@@ -59,7 +59,7 @@ export const GetStarted = () => {
         <div className="leading-paragraph @2xl:text-base text-xs">
           {hasAccounts
             ? t("To begin your journey across Polkadot and Ethereum")
-            : t("Your launchpad to Polkadot and Ethereum")}
+            : t("Add an account and add funds to get started")}
         </div>
       </div>
 
