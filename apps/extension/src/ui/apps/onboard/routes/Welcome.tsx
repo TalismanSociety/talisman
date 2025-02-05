@@ -136,7 +136,7 @@ export const WelcomePage = () => {
           </div>
           <div className="welcome-subtitle text-[2rem] lg:text-[2.8rem]">
             {t(
-              "Talisman supports Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic",
+              "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic",
             )}
           </div>
           <div className="justify flex justify-between gap-2 py-10 align-middle">
