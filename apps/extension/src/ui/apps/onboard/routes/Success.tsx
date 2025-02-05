@@ -27,7 +27,9 @@ export const SuccessPage = () => {
           {t("Welcome, brave Seeker!")}
         </div>
         <ImgSuccess className="h-[16.6rem] w-[24.9rem]" />
-        <div className="text-body-secondary text-center">{t("Your wallet is ready to go.")}</div>
+        <div className="text-body-secondary text-center">
+          {t("Your Talisman wallet awakens. Let the journey begin.")}
+        </div>
         <Button primary onClick={completeOnboarding}>
           {t("Enter Talisman")}
         </Button>
