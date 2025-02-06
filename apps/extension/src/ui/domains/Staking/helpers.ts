@@ -3,6 +3,8 @@ import { range } from "lodash"
 import { Binary } from "polkadot-api"
 import { ScaleApi } from "sapi"
 
+import { ROOT_NETUID } from "./Bittensor/constants"
+
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
   const eraDuration = getStakingEraDurationMs(sapi)
@@ -83,6 +85,7 @@ export const getBittensorStakingPayload = async ({
       calls: [
         sapi.getDecodedCall("SubtensorModule", "add_stake", {
           hotkey: poolId,
+          netuid: ROOT_NETUID,
           amount_staked: amount,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
