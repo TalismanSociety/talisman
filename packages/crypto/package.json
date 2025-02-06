@@ -1,0 +1,58 @@
+{
+  "name": "@talismn/crypto",
+  "version": "0.0.0",
+  "author": "Talisman",
+  "homepage": "https://talisman.xyz",
+  "license": "GPL-3.0-or-later",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "packages/crypto",
+    "type": "git",
+    "url": "https://github.com/talismansociety/talisman.git"
+  },
+  "main": "dist/talismn-crypto.cjs.js",
+  "module": "dist/talismn-crypto.esm.js",
+  "files": [
+    "/dist",
+    "/plugins"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src --max-warnings 0",
+    "clean": "rm -rf dist plugins/dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "@scure/base": "^1.2.4",
+    "@scure/bip32": "^1.6.2",
+    "@scure/bip39": "^1.5.4",
+    "micro-sr25519": "^0.1.0",
+    "scale-ts": "^1.6.1"
+  },
+  "devDependencies": {
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
+    "@types/jest": "^29.5.14",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
+  },
+  "preconstruct": {
+    "entrypoints": [
+      "index.ts"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@talismn/eslint-config/base"
+    ]
+  }
+}
