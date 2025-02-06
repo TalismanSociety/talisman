@@ -8,6 +8,7 @@ import {
   Keyring,
   Mnemonic,
 } from "@talismn/keyring"
+import { log } from "extension-shared"
 import { isEqual } from "lodash"
 import {
   distinctUntilChanged,
@@ -181,3 +182,10 @@ class KeyringStore {
 }
 
 export const keyringStore = new KeyringStore()
+
+keyringStore.accounts$.subscribe((accounts) => {
+  log.log("[KeyringStore] accounts$", accounts)
+})
+keyringStore.mnemonics$.subscribe((mnemonics) => {
+  log.log("[KeyringStore] mnemonics$", mnemonics)
+})
