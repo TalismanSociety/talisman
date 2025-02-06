@@ -3,7 +3,6 @@ import type {
   RequestAccountCreateHardware,
   RequestAccountSubscribe,
   ResponseAccountExport,
-  ResponseAccountsExport,
 } from "@polkadot/extension-base/background/types"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
@@ -16,7 +15,17 @@ import { Address } from "../../types/base"
 export type { ResponseAccountExport, AccountJson }
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
 
-export type { RequestAccountList } from "@polkadot/extension-base/background/types"
+export type {
+  RequestAccountList,
+  RequestAccountBatchExport,
+  RequestAccountChangePassword,
+  RequestAccountCreateSuri,
+  RequestAccountEdit,
+  RequestAccountShow,
+  RequestAccountTie,
+  RequestAccountValidate,
+  ResponseJsonGetAccountInfo,
+} from "@polkadot/extension-base/background/types"
 
 // account types ----------------------------------
 
@@ -200,11 +209,6 @@ export interface RequestAccountExport {
   exportPw: string
 }
 
-export interface RequestAccountExportAll {
-  password: string
-  exportPw: string
-}
-
 export interface RequestAccountExportPrivateKey {
   address: string
   password: string
@@ -270,7 +274,6 @@ export interface AccountsMessages {
   "pri(accounts.create.signet)": [RequestAccountCreateSignet, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
-  "pri(accounts.export.all)": [RequestAccountExportAll, ResponseAccountsExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]
   "pri(accounts.rename)": [RequestAccountRename, boolean]
   "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
