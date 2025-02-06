@@ -29,6 +29,7 @@ const LOCAL_STORAGE_KEY = "keyring"
  * Also provides observables for accounts and mnemonics.
  */
 class KeyringStore {
+  #lock = false
   #serialized$ = new ReplaySubject<string>(1)
   #keyring$: Observable<Readonly<Keyring>>
   #accounts$: Observable<Account[]>
@@ -91,6 +92,16 @@ class KeyringStore {
     return serialized ? Keyring.load(serialized) : Keyring.create()
   }
 
+  private async withLock<T>(fn: () => T): Promise<T> {
+    if (this.#lock) throw new Error("Another change is already in progress")
+    this.#lock = true
+    try {
+      return await fn()
+    } finally {
+      this.#lock = false
+    }
+  }
+
   /**
    * Wraps an atomic change that requires password to be provided
    * @param change
@@ -99,14 +110,17 @@ class KeyringStore {
   private async changeWithPassword<T>(
     change: (keyring: Keyring, password: string) => T | Promise<T>,
   ) {
-    const password = await passwordStore.getPassword()
-    assert(password, "Not logged in")
+    return this.withLock(async () => {
+      const password = await passwordStore.getPassword()
+      assert(password, "Not logged in")
 
-    const keyring = await this.loadNew()
-    const returnValue = await change(keyring, password)
-    await this.save(keyring)
+      const keyring = await this.loadNew()
+      const returnValue = await change(keyring, password)
 
-    return returnValue as T
+      await this.save(keyring)
+
+      return returnValue as T
+    })
   }
 
   /**
@@ -115,11 +129,14 @@ class KeyringStore {
    * @returns
    */
   private async changeWithoutPassword<T>(change: (keyring: Keyring) => T | Promise<T>) {
-    const keyring = await this.loadNew()
-    const returnValue = await change(keyring)
-    await this.save(keyring)
+    return this.withLock(async () => {
+      const keyring = await this.loadNew()
+      const returnValue = await change(keyring)
 
-    return returnValue as T
+      await this.save(keyring)
+
+      return returnValue as T
+    })
   }
 
   public addMnemonic(options: AddMnemonicOptions) {
