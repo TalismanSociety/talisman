@@ -1,5 +1,25 @@
-import { Keyring } from "@talismn/keyring"
-import { firstValueFrom, map, ReplaySubject, shareReplay } from "rxjs"
+import { assert } from "@polkadot/util"
+import {
+  Account,
+  AddAccountDeriveOptions,
+  AddAccountExternalOptions,
+  AddAccountKeypairOptions,
+  AddMnemonicOptions,
+  Keyring,
+  Mnemonic,
+} from "@talismn/keyring"
+import { isEqual } from "lodash"
+import {
+  distinctUntilChanged,
+  firstValueFrom,
+  map,
+  Observable,
+  ReplaySubject,
+  shareReplay,
+} from "rxjs"
+
+import { isBackgroundPage } from "../../util/isBackgroundPage"
+import { passwordStore } from "../app/store.password"
 
 const LOCAL_STORAGE_KEY = "keyring"
 
@@ -8,57 +28,142 @@ const LOCAL_STORAGE_KEY = "keyring"
  * Also provides observables for accounts and mnemonics.
  */
 class KeyringStore {
-  #keyring = new ReplaySubject<Keyring>(1)
+  #serialized$ = new ReplaySubject<string>(1)
+  #keyring$: Observable<Readonly<Keyring>>
+  #accounts$: Observable<Account[]>
+  #mnemonics$: Observable<Mnemonic[]>
 
   constructor() {
-    this.load()
+    if (!isBackgroundPage())
+      throw new Error("Keyring store can only be accessed from the background process")
+
+    this.#keyring$ = this.#serialized$.pipe(
+      map((s) => (s ? Keyring.load(s) : Keyring.create())),
+      map((keyring) => Object.freeze(keyring)),
+      shareReplay(1),
+    )
+
+    this.#accounts$ = this.#keyring$.pipe(
+      map((keyring) => keyring.getAccounts()),
+      distinctUntilChanged(isEqual),
+      shareReplay(1),
+    )
+
+    this.#mnemonics$ = this.#keyring$.pipe(
+      map((keyring) => keyring.getMnemonics()),
+      distinctUntilChanged(isEqual),
+      shareReplay(1),
+    )
+
+    this.init()
   }
 
-  /**
-   * Used automatically when initializing the store from storage, can also be called to revert changes
-   */
-  public async load() {
+  public get accounts$() {
+    return this.#accounts$
+  }
+
+  public get mnemonics$() {
+    return this.#mnemonics$
+  }
+
+  private async init() {
     try {
       const data = await chrome.storage.local.get(LOCAL_STORAGE_KEY)
-
-      const keyring = data[LOCAL_STORAGE_KEY]
-        ? Keyring.load(data[LOCAL_STORAGE_KEY])
-        : Keyring.create()
-
-      this.#keyring.next(keyring)
+      this.#serialized$.next(data[LOCAL_STORAGE_KEY])
     } catch (cause) {
       throw new Error("Failed to load keyring", { cause })
     }
   }
 
-  public async save() {
+  private async save(keyring: Keyring) {
     try {
-      const keyring = await firstValueFrom(this.#keyring)
-
-      await chrome.storage.local.set({ [LOCAL_STORAGE_KEY]: keyring.toString() })
-
-      this.#keyring.next(keyring)
-    } catch (cause) {
-      throw new Error("Failed to save keyring", { cause })
+      const serialized = keyring.toString()
+      await chrome.storage.local.set({ [LOCAL_STORAGE_KEY]: serialized })
+      this.#serialized$.next(serialized)
+    } catch (err) {
+      throw new Error("Failed to save keyring", { cause: err })
     }
   }
 
-  public get accounts$() {
-    return this.#keyring.pipe(
-      map((keyring) => keyring.getAccounts()),
-      shareReplay(1),
+  private async loadNew() {
+    const serialized = await firstValueFrom(this.#serialized$)
+    return serialized ? Keyring.load(serialized) : Keyring.create()
+  }
+
+  /**
+   * Wraps an atomic change that requires password to be provided
+   * @param change
+   * @returns
+   */
+  private async changeWithPassword<T>(
+    change: (keyring: Keyring, password: string) => T | Promise<T>,
+  ) {
+    const password = await passwordStore.getPassword()
+    assert(password, "Not logged in")
+
+    const keyring = await this.loadNew()
+    const returnValue = await change(keyring, password)
+    await this.save(keyring)
+
+    return returnValue as T
+  }
+
+  /**
+   * Wraps an atomic change that does not require password to be provided
+   * @param change
+   * @returns
+   */
+  private async changeWithoutPassword<T>(change: (keyring: Keyring) => T | Promise<T>) {
+    const keyring = await this.loadNew()
+    const returnValue = await change(keyring)
+    await this.save(keyring)
+
+    return returnValue as T
+  }
+
+  public addMnemonic(options: AddMnemonicOptions) {
+    return this.changeWithPassword((keyring, password) => keyring.addMnemonic(options, password))
+  }
+
+  public async getMnemonic(id: string) {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getMnemonic(id)
+  }
+
+  public async getMnemonicText(id: string, password: string) {
+    const hash = await passwordStore.getHashedPassword(password)
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getMnemonicText(id, hash)
+  }
+
+  public updateMnemonic(id: string, name: string) {
+    return this.changeWithoutPassword((keyring) => keyring.updateMnemonic(id, name))
+  }
+
+  public removeMnemonic(id: string) {
+    return this.changeWithoutPassword((keyring) => keyring.removeMnemonic(id))
+  }
+
+  public addAccountExternal(options: AddAccountExternalOptions) {
+    return this.changeWithoutPassword((keyring) => keyring.addAccountExternal(options))
+  }
+
+  public async addAccountDerive(options: AddAccountDeriveOptions) {
+    return this.changeWithPassword((keyring, password) =>
+      keyring.addAccountDerive(options, password),
     )
   }
 
-  public get mnemonics$() {
-    return this.#keyring.pipe(
-      map((keyring) => keyring.getMnemonics()),
-      shareReplay(1),
+  public async addAccountKeypair(options: AddAccountKeypairOptions) {
+    return this.changeWithPassword((keyring, password) =>
+      keyring.addAccountKeypair(options, password),
     )
   }
 
-  public get keyring$() {
-    return this.#keyring.asObservable()
+  public async getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
+    const hash = await passwordStore.getHashedPassword(password)
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getAccountSecretKey(address, hash)
   }
 }
 

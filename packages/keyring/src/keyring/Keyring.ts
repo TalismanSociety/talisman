@@ -114,6 +114,12 @@ export class Keyring {
     mnemonic.name = name
   }
 
+  public removeMnemonic(id: string) {
+    const index = this.#storage.mnemonics.findIndex((mnemonic) => mnemonic.id == id)
+    if (index === -1) throw new Error("Mnemonic not found")
+    this.#storage.mnemonics.splice(index, 1)
+  }
+
   async getMnemonicText(id: string, password: string): Promise<string> {
     const mnemonic = this.#storage.mnemonics.find((s) => s.id === id)
     if (!mnemonic) throw new Error("Mnemonic not found")

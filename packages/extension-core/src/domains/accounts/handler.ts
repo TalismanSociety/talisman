@@ -5,7 +5,7 @@ import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
-import { combineLatest } from "rxjs"
+import { combineLatest, firstValueFrom } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -38,6 +38,7 @@ import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getPrivateKey } from "../../util/getPrivateKey"
 import { isValidDerivationPath } from "../../util/isValidDerivationPath"
+import { keyringStore } from "../keyring/store"
 import { MnemonicSource } from "../mnemonics/store"
 import {
   formatSuri,
@@ -94,6 +95,9 @@ export default class AccountsHandler extends ExtensionHandler {
       if (err) throw new Error(val)
       else derivationPath = val
     }
+
+    // TODO REMOVE
+    await firstValueFrom(keyringStore.accounts$)
 
     const suri = formatSuri(mnemonic, derivationPath)
     const resultingAddress = encodeAnyAddress(addressFromSuri(suri, type))
