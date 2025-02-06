@@ -380,7 +380,7 @@ const schemaAddEthereumRequest = yup.object().shape({
     .object()
     .shape({
       name: yup.string().required().max(50).test("noScriptTag", testNoScriptTag),
-      symbol: yup.string().required().min(2).max(11).test("noScriptTag", testNoScriptTag),
+      symbol: yup.string().required().min(1).max(11).test("noScriptTag", testNoScriptTag),
       decimals: yup.number().required().integer(),
     })
     .required(),

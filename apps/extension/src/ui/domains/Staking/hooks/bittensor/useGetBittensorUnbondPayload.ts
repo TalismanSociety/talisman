@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { ScaleApi } from "sapi"
 
+import { ROOT_NETUID } from "../../Bittensor/constants"
+
 type GetBittensorUnbondPayload = {
   sapi: ScaleApi | undefined | null
   isEnabled: boolean
@@ -25,6 +27,7 @@ export const useGetBittensorUnbondPayload = ({
         "remove_stake",
         {
           hotkey: hotkey,
+          netuid: ROOT_NETUID,
           amount_unstaked: plancks,
         },
         { address },
