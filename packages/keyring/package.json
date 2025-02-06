@@ -26,15 +26,13 @@
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist plugins/dist .turbo node_modules"
   },
-  "dependencies": {
-    
-  },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^29.5.14",
     "eslint": "^8.57.1",
     "jest": "^29.7.0",
+    "jest-fixed-jsdom": "^0.0.9",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },

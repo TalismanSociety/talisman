@@ -1,0 +1,45 @@
+import type { Account, AccountType } from "./account"
+
+export type AccountOfType<Type extends AccountType> = Extract<Account, { type: Type }>
+
+export const isAccountOfType = <Type extends AccountType>(
+  account: Account,
+  type: Type,
+): account is AccountOfType<Type> => {
+  return account.type === type
+}
+
+export const isAccountInTypes = <Types extends AccountType[]>(
+  account: Account,
+  types: Types,
+): account is AccountOfType<Types[number]> => {
+  return types.includes(account.type)
+}
+
+const ACCOUNT_TYPES_OWNED = [
+  "keypair",
+  "ledger-ethereum",
+  "ledger-polkadot",
+  "polkadot-vault",
+] as const
+
+const ACCOUNT_TYPES_EXTERNAL = [
+  "contact",
+  "watch-only",
+  "ledger-ethereum",
+  "ledger-polkadot",
+  "polkadot-vault",
+] as const
+
+export const isAccountExternal = (
+  account: Account,
+): account is AccountOfType<(typeof ACCOUNT_TYPES_EXTERNAL)[number]> =>
+  isAccountInTypes(account, ACCOUNT_TYPES_EXTERNAL as unknown as AccountType[])
+
+export const isAccountOwned = (
+  account: Account,
+): account is AccountOfType<(typeof ACCOUNT_TYPES_OWNED)[number]> =>
+  isAccountInTypes(account, ACCOUNT_TYPES_OWNED as unknown as AccountType[])
+
+export const isAccountPortfolio = (account: Account) =>
+  isAccountOwned(account) || (isAccountOfType(account, "watch-only") && account.isPortfolio)
