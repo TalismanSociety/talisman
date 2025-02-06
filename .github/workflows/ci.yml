@@ -30,8 +30,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
@@ -90,8 +90,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
@@ -126,8 +126,8 @@ jobs:
           # fetch all branches on the repo
           # (we need this in order to compare the changes between this PR and the default branch)
           fetch-depth: 0
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
@@ -264,8 +264,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
