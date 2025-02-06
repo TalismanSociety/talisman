@@ -144,17 +144,30 @@ class KeyringStore {
     return this.changeWithoutPassword((keyring) => keyring.removeMnemonic(id))
   }
 
+  public async getAccount(address: string) {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getAccount(address)
+  }
+
+  public updateAccount(id: string, name: string) {
+    return this.changeWithoutPassword((keyring) => keyring.updateAccount(id, name))
+  }
+
+  public removeAccount(address: string) {
+    return this.changeWithoutPassword((keyring) => keyring.removeAccount(address))
+  }
+
   public addAccountExternal(options: AddAccountExternalOptions) {
     return this.changeWithoutPassword((keyring) => keyring.addAccountExternal(options))
   }
 
-  public async addAccountDerive(options: AddAccountDeriveOptions) {
+  public addAccountDerive(options: AddAccountDeriveOptions) {
     return this.changeWithPassword((keyring, password) =>
       keyring.addAccountDerive(options, password),
     )
   }
 
-  public async addAccountKeypair(options: AddAccountKeypairOptions) {
+  public addAccountKeypair(options: AddAccountKeypairOptions) {
     return this.changeWithPassword((keyring, password) =>
       keyring.addAccountKeypair(options, password),
     )

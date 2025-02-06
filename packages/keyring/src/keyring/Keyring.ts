@@ -112,6 +112,7 @@ export class Keyring {
     if (!mnemonic) throw new Error("Mnemonic not found")
     if (!name) throw new Error("Name is required")
     mnemonic.name = name
+    return mnemonicFromStorage(mnemonic)
   }
 
   public removeMnemonic(id: string) {
@@ -136,6 +137,14 @@ export class Keyring {
   public getAccount(address: string): Account | null {
     const account = this.#storage.accounts.find((s) => isAddressEqual(s.address, address))
     return account ? accountFromStorage(account) : null
+  }
+
+  public updateAccount(address: string, name: string) {
+    const account = this.#storage.accounts.find((s) => s.address === address)
+    if (!account) throw new Error("Account not found")
+    if (!name) throw new Error("Name is required")
+    account.name = name
+    return accountFromStorage(account)
   }
 
   public removeAccount(address: string) {
@@ -231,11 +240,11 @@ const hashBlake3Base64 = (input: Uint8Array) => {
 const mnemonicFromStorage = (data: MnemonicStorage): Mnemonic => {
   const copy = structuredClone(data) as Mnemonic
   if ("entropy" in copy) delete copy.entropy
-  return copy
+  return Object.freeze(copy)
 }
 
 const accountFromStorage = (data: AccountStorage): Account => {
   const copy = structuredClone(data) as Account
   if ("secretKey" in copy) delete copy.secretKey
-  return copy
+  return Object.freeze(copy)
 }
