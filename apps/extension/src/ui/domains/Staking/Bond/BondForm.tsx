@@ -24,6 +24,7 @@ import { Fiat } from "../../Asset/Fiat"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import Tokens from "../../Asset/Tokens"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
+import { STAKING_APR_UNAVAILABLE } from "../helpers"
 import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
 import { useStakingAPR } from "../hooks/nomPools/useStakingAPR"
 import { BondPoolName } from "../shared/BondPoolName"
@@ -313,7 +314,8 @@ const StakeApr = () => {
   let data,
     isLoading = false,
     isError = false,
-    apr = 0
+    apr = 0,
+    error: Error | null
 
   const hookMap = {
     nominationPool: useStakingAPR,
@@ -322,11 +324,11 @@ const StakeApr = () => {
 
   switch (token?.chain?.id) {
     case "bittensor":
-      ;({ data, isLoading, isError } = hookMap["bittensor"](poolId))
+      ;({ data, isLoading, isError, error } = hookMap["bittensor"](poolId))
       apr = Number(data?.data?.[0].apr)
       break
     default:
-      ;({ data, isLoading, isError } = hookMap["nominationPool"](token?.chain?.id))
+      ;({ data, isLoading, isError, error } = hookMap["nominationPool"](token?.chain?.id))
       apr = Number(data)
       break
   }
@@ -336,7 +338,10 @@ const StakeApr = () => {
   if (isLoading)
     return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
 
-  if (isError) return <div className="text-alert-warn">Unable to fetch APR data</div>
+  if (isError) {
+    if (error?.message === STAKING_APR_UNAVAILABLE) return "APR Unavailable"
+    return <div className="text-alert-warn">Unable to fetch APR data</div>
+  }
 
   return (
     <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>
