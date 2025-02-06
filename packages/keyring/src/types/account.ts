@@ -8,7 +8,6 @@ export type AccountBase = {
   // for bitcoin, store the xPub
   address: string
   name: string
-  description: string // user notes
   createdAt: number
 }
 

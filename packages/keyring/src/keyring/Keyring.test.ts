@@ -78,7 +78,6 @@ describe("keyring", () => {
       type: "watch-only",
       address: "D85kXmhRyMQGC7jg59n523H7sb6ZBj3Mn3puusP2TshQLGx",
       name: "My contact",
-      description: "account description",
       isPortfolio: true,
     })
 
@@ -90,7 +89,6 @@ describe("keyring", () => {
       type: "contact",
       address: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
       name: "My contact",
-      description: "account description",
       networkId: "1",
     })
 
@@ -132,7 +130,6 @@ const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) =>
       curve,
       secretKey: pair.secretKey,
       name: "My account",
-      description: "account description",
     },
     VALID_PASSWORD,
   )
@@ -149,7 +146,6 @@ const testAddFromMnemonic = async (curve: KeypairCurve, derivationPath: string) 
       curve,
       derivationPath,
       name: "My account",
-      description: "account description",
     },
     VALID_PASSWORD,
   )

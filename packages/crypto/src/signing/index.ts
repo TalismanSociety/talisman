@@ -24,10 +24,10 @@ export const sign = (
     case "ed25519":
     case "solana":
       return signEd25519(payload, secretKey)
-    case "ecdsa": // ecdsa (polkadot) signs blake2 hashes
-      return signSecp256k1(payload, secretKey, "blake2")
-    case "ethereum": // ethereum signs keccak hashes
-      return signSecp256k1(payload, secretKey, "keccak")
+    case "ecdsa": // TODO pjs signs blake2 hashes - should we handle this?
+      return signSecp256k1(payload, secretKey)
+    case "ethereum": // TODO pjs signs keccak hashes - should we handle this?
+      return signSecp256k1(payload, secretKey)
     default:
       throw new Error(`Unsupported curve: ${curve}`)
   }

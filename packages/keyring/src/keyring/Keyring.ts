@@ -36,7 +36,7 @@ type KeyringStorage = {
 export class Keyring {
   #storage: KeyringStorage
 
-  private constructor(data: KeyringStorage) {
+  protected constructor(data: KeyringStorage) {
     this.#storage = data
   }
 
@@ -77,7 +77,7 @@ export class Keyring {
   }
 
   public async addMnemonic(
-    { name, description, mnemonic }: AddMnemonicOptions,
+    { name, mnemonic }: AddMnemonicOptions,
     password: string,
   ): Promise<Mnemonic> {
     if (!name) throw new Error("Name is required")
@@ -93,7 +93,6 @@ export class Keyring {
     const storage: MnemonicStorage = {
       id,
       name,
-      description,
       entropy: await encryptData(entropy, password),
       createdAt: Date.now(),
     }
@@ -108,12 +107,11 @@ export class Keyring {
     return mnemonic ? mnemonicFromStorage(mnemonic) : null
   }
 
-  public updateMnemonic(id: string, name: string, description: string) {
+  public updateMnemonic(id: string, name: string) {
     const mnemonic = this.#storage.mnemonics.find((s) => s.id === id)
     if (!mnemonic) throw new Error("Mnemonic not found")
     if (!name) throw new Error("Name is required")
     mnemonic.name = name
-    mnemonic.description = description
   }
 
   async getMnemonicText(id: string, password: string): Promise<string> {
@@ -159,7 +157,7 @@ export class Keyring {
   }
 
   public async addAccountDerive(
-    { curve, mnemonicId, derivationPath, name, description }: AddAccountDeriveOptions,
+    { curve, mnemonicId, derivationPath, name }: AddAccountDeriveOptions,
     password: string,
   ): Promise<Account> {
     const mnemonic = this.#storage.mnemonics.find((s) => s.id === mnemonicId)
@@ -175,7 +173,6 @@ export class Keyring {
       type: "keypair",
       curve,
       name,
-      description,
       address: normalizeAddress(pair.address),
       secretKey: await encryptData(pair.secretKey, password),
       createdAt: Date.now(),
@@ -187,7 +184,7 @@ export class Keyring {
   }
 
   public async addAccountKeypair(
-    { curve, name, description, secretKey }: AddAccountKeypairOptions,
+    { curve, name, secretKey }: AddAccountKeypairOptions,
     password: string,
   ): Promise<Account> {
     const publicKey = getPublicKeyFromSecret(secretKey, curve)
@@ -200,7 +197,6 @@ export class Keyring {
       type: "keypair",
       curve,
       name,
-      description,
       address: normalizeAddress(address),
       secretKey: await encryptData(secretKey, password),
       createdAt: Date.now(),
