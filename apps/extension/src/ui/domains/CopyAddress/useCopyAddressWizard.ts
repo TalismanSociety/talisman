@@ -66,12 +66,17 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
   return "copy"
 }
 
-const getFormattedAddress = (address?: Address, chain?: Chain | null) => {
+const getFormattedAddress = (address?: Address, chain?: Chain | null, legacyFormat?: boolean) => {
   if (address) {
     try {
       if (isEthereumAddress(address)) return getAddress(address) // enforces format for checksum
 
-      return convertAddress(address, chain?.prefix ?? null)
+      const prefix =
+        legacyFormat && typeof chain?.oldPrefix === "number"
+          ? chain.oldPrefix
+          : (chain?.prefix ?? null)
+
+      return convertAddress(address, prefix)
     } catch (err) {
       log.error("Failed to format address", { err })
     }
@@ -124,8 +129,8 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const evmNetwork = useEvmNetwork(state.networkId)
 
   const formattedAddress = useMemo(
-    () => getFormattedAddress(state.address, chain),
-    [state.address, chain],
+    () => getFormattedAddress(state.address, chain, state.legacyFormat),
+    [chain, state],
   )
 
   const [isLogoLoaded, setIsLogoLoaded] = useState(false)
@@ -149,7 +154,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
-    (chainId: ChainId | null) => {
+    (chainId: ChainId | null, legacyFormat?: boolean) => {
       // if account & chain are not compatible, clear address
       const address = isAccountCompatibleWithChain(
         accounts,
@@ -161,7 +166,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
         ? state.address
         : undefined
 
-      setStateAndUpdateRoute({ networkId: chainId, address })
+      setStateAndUpdateRoute({ networkId: chainId, address, legacyFormat })
     },
     [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.address],
   )
@@ -204,19 +209,26 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     if (!formattedAddress) return
 
     const onQrClick = () => {
-      open({ address: state.address, networkId: state.networkId, qr: true })
+      open({
+        address: state.address,
+        networkId: state.networkId,
+        legacyFormat: state.legacyFormat,
+        qr: true,
+      })
     }
 
     if (await copyAddress(formattedAddress, onQrClick)) close()
-  }, [close, formattedAddress, open, state.address, state.networkId])
+  }, [close, formattedAddress, open, state])
 
   // shortcut called before the last screen of the wizard
   const copySpecific = useCallback(
-    async (address: string, chainId?: string | null) => {
+    async (address: string, chainId?: string | null, legacyFormat?: boolean) => {
       const chain = chainId ? chainsMap[chainId] : null
-      const formattedAddress = chain ? convertAddress(address, chain.prefix) : address
+      const formattedAddress = chain
+        ? convertAddress(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
+        : address
       const onQrClick = () => {
-        open({ address, networkId: chainId, qr: true })
+        open({ address, networkId: chainId, qr: true, legacyFormat })
       }
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
@@ -230,7 +242,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     formattedAddress,
     logo,
     goToAddressPage,
-    goToNetworkOrTokenPage: goToNetworkPage,
+    goToNetworkPage,
     setChainId,
     setAddress,
     chain,

@@ -1,8 +1,8 @@
-import { ChainId } from "@talismn/chaindata-provider"
-import { CopyIcon, QrIcon } from "@talismn/icons"
+import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
 import { SubstrateLedgerAppType } from "extension-core"
-import { useCallback, useMemo, useState } from "react"
+import { log } from "extension-shared"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -11,40 +11,76 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useChains, useSetting } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalancesByAddress,
+  useChains,
+  useFeatureFlag,
+  useRemoteConfig,
+  useSetting,
+} from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
+import {
+  ChainFormat,
+  CopyAddressFormatPickerDrawer,
+  isMigratedFormat,
+  MigratedChainFormat,
+} from "./CopyAddressFormatPickerDrawer"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
-
-type ChainFormat = {
-  key: string
-  chainId: ChainId | null
-  prefix: number | null
-  name: string
-  address: string
-}
 
 const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   const { t } = useTranslation()
   const { setChainId, copySpecific } = useCopyAddressWizard()
-
-  const handleQrClick = useCallback(() => {
-    setChainId(format.chainId)
-  }, [format.chainId, setChainId])
-
   const { open: openWarning, isOpen: isWarningOpen, close: closeWarning } = useOpenClose()
 
+  const [migratedFormatPicker, setMigratedFormatPicker] = useState<{
+    format: MigratedChainFormat
+    mode: "copy" | "qr"
+  }>()
+
+  const handleQrClick = useCallback(() => {
+    if (isMigratedFormat(format)) setMigratedFormatPicker({ format, mode: "qr" })
+    else setChainId(format.chainId)
+  }, [format, setChainId])
+
   const handleCopyClick = useCallback(() => {
-    if (format.chainId === null && !isEthereumAddress(format.address)) openWarning()
-    else copySpecific(format.address, format.chainId)
-  }, [copySpecific, format.address, format.chainId, openWarning])
+    if (format.chainId === null && !isEthereumAddress(format.address)) {
+      openWarning()
+    } else if (isMigratedFormat(format)) {
+      setMigratedFormatPicker({ format, mode: "copy" })
+    } else {
+      copySpecific(format.address, format.chainId)
+    }
+  }, [copySpecific, format, openWarning])
 
   const handleWarningContinueClick = useCallback(() => {
     copySpecific(format.address, format.chainId)
   }, [copySpecific, format.address, format.chainId])
+
+  const handleFormatPickerSelect = useCallback(
+    (legacyFormat: boolean) => {
+      if (!migratedFormatPicker) return
+      const { format, mode } = migratedFormatPicker
+
+      if (mode === "copy")
+        copySpecific(
+          legacyFormat ? format.oldAddress : format.address,
+          format.chainId,
+          legacyFormat,
+        )
+      if (mode === "qr") {
+        setChainId(format.chainId, legacyFormat)
+      }
+
+      // close drawer
+      setMigratedFormatPicker(undefined)
+    },
+    [copySpecific, migratedFormatPicker, setChainId],
+  )
 
   return (
     <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
@@ -90,6 +126,11 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
         isOpen={isWarningOpen}
         onDismiss={closeWarning}
         onContinue={handleWarningContinueClick}
+      />
+      <CopyAddressFormatPickerDrawer
+        format={migratedFormatPicker?.format}
+        onDismiss={() => setMigratedFormatPicker(undefined)}
+        onSelect={handleFormatPickerSelect}
       />
     </div>
   )
@@ -149,8 +190,13 @@ export const CopyAddressChainForm = () => {
         key: chain.id,
         chainId: chain.id,
         prefix: chain.prefix,
+        oldPrefix: chain.oldPrefix,
         name: chain.name ?? "unknown",
         address: convertAddress(address, chain.prefix),
+        oldAddress:
+          typeof chain.oldPrefix === "number"
+            ? convertAddress(address, chain.oldPrefix)
+            : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
   }, [address, chains, SUBSTRATE_FORMAT, account?.ledgerApp, balancesPerNetwork, accountChain])
@@ -169,9 +215,49 @@ export const CopyAddressChainForm = () => {
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+          <UnifiedAddressMigrationBanner formats={filteredFormats} />
           <ChainFormatsList formats={filteredFormats} />
         </ScrollContainer>
       </div>
     </CopyAddressLayout>
+  )
+}
+
+export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ formats }) => {
+  const { t } = useTranslation()
+  const allowBanner = useFeatureFlag("UNIFIED_ADDRESS_BANNER")
+  const remoteConfig = useRemoteConfig()
+
+  const showBanner = useMemo(
+    () => allowBanner && formats.some(isMigratedFormat),
+    [allowBanner, formats],
+  )
+
+  const handleClick = useCallback(() => {
+    try {
+      window.open(
+        remoteConfig.documentation.unifiedAddressDocsUrl,
+        "_blank",
+        "nooppener noreferrer",
+      )
+    } catch (err) {
+      log.error("Unable to open unified address docs", { cause: err })
+    }
+  }, [remoteConfig.documentation.unifiedAddressDocsUrl])
+
+  if (!showBanner) return null
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="text-body flex w-full items-center gap-4 bg-gradient-to-r from-[#9F7998] to-[#EB5D93] px-12 py-4 text-left text-sm"
+    >
+      <div className="grow">
+        <PolkadotIcon className="mr-2 inline-block shrink-0 align-text-top" />
+        {t("Polkadot introduces new address formatting")}
+      </div>
+      <ArrowUpRightIcon className="text-body shrink-0 text-[2rem]" />
+    </button>
   )
 }

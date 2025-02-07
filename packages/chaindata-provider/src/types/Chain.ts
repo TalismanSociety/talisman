@@ -11,6 +11,7 @@ export type Chain = {
   sortIndex: number | null // The sortIndex of this chain
   genesisHash: `0x${string}` | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
+  oldPrefix?: number // temporarily used for providing pre-migration address format
   name: string | null // The name of this chain
   themeColor: string | null // The theme color for this chain
   logo: string | null // A url to the logo of this chain

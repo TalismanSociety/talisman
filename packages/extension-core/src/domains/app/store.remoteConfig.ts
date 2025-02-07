@@ -32,6 +32,10 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     // "vara-testnet": [1],
     // "aleph-zero-testnet": [1],
   },
+  documentation: {
+    unifiedAddressDocsUrl:
+      "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes

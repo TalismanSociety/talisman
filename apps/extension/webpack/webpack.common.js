@@ -229,8 +229,15 @@ const config = (env) => ({
         }),
     ),
     new CaseSensitivePathsPlugin(),
-    new ForkTsCheckerWebpackPlugin(),
-    new ForkTsCheckerNotifierWebpackPlugin({ title: "TypeScript", excludeWarnings: false }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        memoryLimit: 4096, // defaults to 2048, on some machines it is insufficient and causes errors when making change to backend
+      },
+    }),
+    new ForkTsCheckerNotifierWebpackPlugin({
+      title: "TypeScript",
+      excludeWarnings: false,
+    }),
     new EslintWebpackPlugin({ context: "../", extensions: ["ts", "tsx"] }),
     new webpack.ProvidePlugin({ Buffer: ["buffer", "Buffer"] }),
   ],

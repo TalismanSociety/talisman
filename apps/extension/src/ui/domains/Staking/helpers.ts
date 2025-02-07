@@ -3,6 +3,8 @@ import { range } from "lodash"
 import { Binary } from "polkadot-api"
 import { ScaleApi } from "sapi"
 
+import { ROOT_NETUID } from "./Bittensor/constants"
+
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
   const eraDuration = getStakingEraDurationMs(sapi)
@@ -38,6 +40,8 @@ export const getStakingBondingDurationMs = (sapi: ScaleApi) => {
   return BigInt(bondingDuration) * eraDuration
 }
 
+export const STAKING_APR_UNAVAILABLE = "APR Unavailable"
+
 export const getStakingAPR = async (sapi: ScaleApi) => {
   const historyDepth = sapi.getConstant<number>("Staking", "HistoryDepth")
 
@@ -57,8 +61,11 @@ export const getStakingAPR = async (sapi: ScaleApi) => {
   const erasPerYear = getStakingErasPerYear(sapi)
   const RATIO_DIGITS = 10000n
 
+  if (!eraRewards.some((reward) => reward !== null)) throw new Error(STAKING_APR_UNAVAILABLE)
+
   const totalRewards = eraRewards.reduce((acc, reward) => acc + reward, 0n)
   const totalStakes = eraTotalStakes.reduce((acc, stake) => acc + stake, 0n)
+
   const bigapr = (RATIO_DIGITS * erasPerYear * totalRewards) / totalStakes
   const apr = Number(bigapr) / Number(RATIO_DIGITS)
 
@@ -83,6 +90,7 @@ export const getBittensorStakingPayload = async ({
       calls: [
         sapi.getDecodedCall("SubtensorModule", "add_stake", {
           hotkey: poolId,
+          netuid: ROOT_NETUID,
           amount_staked: amount,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {

@@ -37,6 +37,7 @@ export type AppStoreData = {
   hideManageAccountsWelcome?: boolean
   hideGetStarted?: boolean
   bittensorUnbondBlockNumber: DelegatorsBlockNumberByAccount
+  hideUnifiedAddressBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -114,6 +115,7 @@ if (DEBUG) {
       hideBackupWarningUntil: undefined,
       hideManageAccountsWelcome: false,
       hideGetStarted: false,
+      hideUnifiedAddressBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

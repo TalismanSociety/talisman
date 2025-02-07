@@ -28,10 +28,10 @@ export const SuccessPage = () => {
         </div>
         <ImgSuccess className="h-[16.6rem] w-[24.9rem]" />
         <div className="text-body-secondary text-center">
-          {t("Your wallet has been forged in the fires of Talisman.")}
+          {t("Your Talisman wallet awakens. Let the journey begin.")}
         </div>
         <Button primary onClick={completeOnboarding}>
-          {t("Go to Portfolio")}
+          {t("Enter Talisman")}
         </Button>
       </div>
     </OnboardLayout>

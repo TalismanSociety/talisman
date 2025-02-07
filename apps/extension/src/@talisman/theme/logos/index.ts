@@ -5,4 +5,5 @@ export { ReactComponent as HandMonoSilhouetteLogo } from "./logo-hand-mono-silho
 export { ReactComponent as PolkadotCircleBorderedLogo } from "./polkadot-circle-bordered.svg"
 export { ReactComponent as PolkadotCircleLogo } from "./polkadot-circle.svg"
 export { ReactComponent as TalismanWhiteLogo } from "./talisman-white.svg"
+export { ReactComponent as TalismanColouredHandWhiteTextLogo } from "./talisman-coloured-hand-white-text.svg"
 export { ReactComponent as TalismanWhiteVerticalLogo } from "./talisman-white-vertical.svg"

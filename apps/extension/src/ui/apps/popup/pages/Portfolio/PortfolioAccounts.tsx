@@ -44,6 +44,7 @@ import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
+import { UnifiedAddressInfoBanner } from "../../components/UnifiedAddressInfoBanner"
 
 const portfolioAccountsSearch$ = new BehaviorSubject("")
 
@@ -296,6 +297,7 @@ const Accounts = ({
         <>
           <AllAccountsHeader accounts={accounts} />
           <NewFeaturesButton />
+          <UnifiedAddressInfoBanner />
         </>
       )}
 

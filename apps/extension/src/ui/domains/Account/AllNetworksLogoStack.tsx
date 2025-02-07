@@ -15,7 +15,7 @@ const prioNetworks = [
   "1", // ethereum mainnet
   "8453", // base
   "42161", // arbitrum
-  "10", // op mainnet
+  "146", // sonic
   "moonbeam",
   "mythos",
   "137", // polygon

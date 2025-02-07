@@ -52,8 +52,14 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               genesisHash={account.genesisHash}
             />
             <div className="flex grow flex-col gap-2 overflow-hidden">
-              <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base">
-                {account.name} <AccountTypeIcon origin={account.origin as AccountType} />
+              <div className="flex w-full items-center gap-1 overflow-hidden text-base">
+                <div className="truncate">{account.name}</div>
+                <div className="shrink-0">
+                  <AccountTypeIcon
+                    className="text-primary inline-block"
+                    origin={account.origin as AccountType}
+                  />
+                </div>
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>
             </div>

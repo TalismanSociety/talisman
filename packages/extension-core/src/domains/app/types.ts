@@ -19,6 +19,9 @@ export type RemoteConfigStoreData = {
   nominationPools: Record<ChainId, number[]>
   stakingPools: Record<ChainId, (number | string)[]>
   postHogUrl: string
+  documentation: {
+    unifiedAddressDocsUrl: string
+  }
 }
 
 export interface RequestOnboardCreatePassword {
@@ -54,6 +57,7 @@ export type FeatureFlags = Partial<{
   RISK_ANALYSIS: boolean
   NEW_FEATURES_HOME_BANNER: boolean
   QUEST_LINK: boolean
+  UNIFIED_ADDRESS_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

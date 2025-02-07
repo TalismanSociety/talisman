@@ -1,5 +1,5 @@
 FROM node:18
-RUN corepack enable
+RUN npm install -g corepack@latest && corepack enable
 
 WORKDIR /talisman
 COPY . ./

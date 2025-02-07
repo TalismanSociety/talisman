@@ -36,7 +36,7 @@ const Content = () => {
 
   return (
     <>
-      <HeaderBlock title={t("Accounts")} text={t("Organise and sort your accounts")} />
+      <HeaderBlock title={t("Manage Accounts")} text={t("Organise and sort your accounts")} />
       <Spacer large />
       <ManageAccountsProvider>
         <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />

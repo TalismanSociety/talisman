@@ -24,7 +24,7 @@ export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
     <div
       {...props}
       className={classNames(
-        "text-grey-300 bg-field text-md ring-grey-600 flex w-full items-center gap-4 rounded px-12 font-light leading-none focus-within:ring-1",
+        "text-grey-300 bg-field text-md focus-within:border-grey-600 flex w-full items-center gap-4 rounded border border-transparent px-12 font-light leading-none",
         small ? "h-24" : "h-28",
         className,
       )}
