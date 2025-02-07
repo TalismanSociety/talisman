@@ -49,7 +49,7 @@ export const getStakingAPR = async (sapi: ScaleApi) => {
   if (!currentEra) throw new Error("Current era unavailable")
 
   const maxErasToCheck = Math.min(15, historyDepth)
-  const eras = range(currentEra - maxErasToCheck, currentEra - 1)
+  const eras = range(currentEra - maxErasToCheck, currentEra - 1).filter((era) => era >= 0)
 
   const [eraRewards, eraTotalStakes] = await Promise.all([
     Promise.all(
