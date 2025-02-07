@@ -1,6 +1,6 @@
 import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -97,7 +97,12 @@ const AccountsContextMenu = () => {
   const accounts = useAccounts()
   const { isOpen: isOpenExportAll, open: openExportAll, close: closeExportAll } = useOpenClose()
 
-  if (!accounts.length) return null
+  const exportableAccounts = useMemo(
+    () => accounts.filter((acc) => !acc.isExternal && !acc.isHardware),
+    [accounts],
+  )
+
+  if (!exportableAccounts.length) return null
 
   return (
     <>

@@ -113,7 +113,11 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             password. This avoids exposing your Talisman password to other wallets or applications.
           </Trans>
         </p>
-
+        <p className="text-body-secondary text-sm">
+          {t(
+            "Please note that only accounts with stored private keys can be exported. Hardware, QR-based, and watch-only accounts will not be exported.",
+          )}
+        </p>
         <div className="mt-12">
           <div className="mb-6 flex h-[1.2em] items-center justify-between text-sm">
             <div className="text-body-disabled">

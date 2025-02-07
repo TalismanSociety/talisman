@@ -1,11 +1,18 @@
 import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
-import { createPair, encodeAddress } from "@polkadot/keyring"
+import Keyring, { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
-import { assert } from "@polkadot/util"
-import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import { assert, objectSpread, stringToU8a } from "@polkadot/util"
+import {
+  ethereumEncode,
+  isEthereumAddress,
+  jsonEncrypt,
+  mnemonicValidate,
+} from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
+import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
@@ -516,9 +523,49 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExportAll): Promise<ResponseAccountsExport> {
     await this.stores.password.checkPassword(password)
 
-    const addresses = keyring.getPairs().map(({ address }) => address)
+    // in the keyring, password of accounts is the hash of the current password, not the password itself. => we cannot use keyring.backupAccounts()
+    //
+    // we need to export the accounts with each of them reencrypted using the new password, or the exported file will be unusable
+    // to do so, we need to copy accounts in an temporary in-memory keyring, where passwords can be changed without altering the wallet local storage
+    // Keyring from @polkadot/keyring can be manipulated in memory, unlike the wallet's one (@polkadot/ui-keyring) where all changes are automatically persisted in storage
+    const passwordHash = await this.stores.password.getPassword()
 
-    const exportedJson = await keyring.backupAccounts(addresses, exportPw)
+    const tmpKeyring = new Keyring()
+
+    const accountsToExport = keyring
+      .getAccounts()
+      .filter((acc) => !acc.meta.isExternal && !acc.meta.isHardware) // account.toJson() fails if there is no private key
+      .map((account) => {
+        try {
+          // export original pair
+          const originalPair = keyring.getPair(account.address)
+          const json = originalPair.toJson(passwordHash)
+
+          // change password
+          const newPair = tmpKeyring.createFromJson(json)
+          newPair.decodePkcs8(passwordHash)
+          newPair.encodePkcs8(exportPw)
+
+          // export as json
+          return newPair.toJson(exportPw)
+        } catch (err) {
+          log.error("Failed to export account", { account, err })
+          return null
+        }
+      })
+      .filter((json) => !!json)
+
+    // export accounts the same way as keyring.backupAccounts() from @polkadot/ui-keyring
+    const exportedJson = objectSpread(
+      {},
+      jsonEncrypt(stringToU8a(JSON.stringify(accountsToExport)), ["batch-pkcs8"], exportPw),
+      {
+        accounts: accountsToExport.map((account) => ({
+          address: account.address,
+          meta: account.meta,
+        })),
+      },
+    ) as KeyringPairs$Json
 
     return { exportedJson }
   }
