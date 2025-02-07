@@ -121,7 +121,7 @@ export const getNomPoolStakingPayload = async (
     : undefined
 
   const call_remark = sapi.getDecodedCall("System", "remark_with_event", {
-    remark: Binary.fromText("talisman"),
+    remark: Binary.fromText("Seek the Talisman"),
   })
 
   return sapi.getExtrinsicPayload(
