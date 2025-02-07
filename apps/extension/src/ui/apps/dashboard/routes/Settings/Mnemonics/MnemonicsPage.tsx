@@ -12,7 +12,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
+import { AccountJsonAny, Mnemonic } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -21,7 +21,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
-import { Mnemonic, useAccounts, useAppState, useMnemonics } from "@ui/state"
+import { useAccounts, useAppState, useMnemonics } from "@ui/state"
 
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {

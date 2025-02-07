@@ -29,7 +29,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
 
   // TODO user should choose which one to pick
   const existingMnemonicId = useMemo(() => {
-    const existing = mnemonics.find((s) => ["legacy", "imported", "generated"].includes(s.source))
+    const existing = mnemonics[0]
     if (existing) return existing.id
     return
   }, [mnemonics])

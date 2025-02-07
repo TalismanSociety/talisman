@@ -74,6 +74,7 @@ export const api: MessageTypes = {
   cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
 
   // mnemonic messages -------------------------------------------------------
+  mnemonicsSubscribe: (cb) => messageService.subscribe("pri(mnemonic.subscribe)", null, cb),
   mnemonicUnlock: (mnemonicId, password) =>
     messageService.sendMessage("pri(mnemonic.unlock)", { mnemonicId, password }),
   mnemonicConfirm: (mnemonicId, confirmed: boolean) =>

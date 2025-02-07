@@ -107,12 +107,15 @@ export interface AccountMeta extends AccountJson {
   importSource?: AccountImportSource
 }
 
-export interface Account {
+/**
+ * @deprecated
+ */
+export interface LegacyAccount {
   address: Address
   meta: AccountMeta
 }
 
-export type AccountsList = Account[]
+export type AccountsList = LegacyAccount[]
 
 export type UiAccountAddressType = "sr25519" | "ethereum" // TODO someday: change this to ethereum/substrate, because this is what it means for the UI
 

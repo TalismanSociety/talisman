@@ -66,3 +66,4 @@ export { isJsonPayload, isRawPayload } from "./util/isJsonPayload"
 export { privacyRoundCurrency } from "./util/privacyRoundCurrency"
 
 export * from "./domains/nfts/exports"
+export * from "./domains/keyring/exports"

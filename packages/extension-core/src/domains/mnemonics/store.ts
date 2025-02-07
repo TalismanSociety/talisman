@@ -9,6 +9,10 @@ import { StorageProvider } from "../../libs/Store"
 
 const storageKey = "mnemonics"
 
+// TODO : yeet
+/**
+ * @deprecated
+ */
 export enum MnemonicSource {
   Imported = "imported",
   Generated = "generated",

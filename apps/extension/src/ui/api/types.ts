@@ -42,6 +42,7 @@ import {
   EvmAddress,
   LoggedinType,
   MetadataUpdateStatus,
+  Mnemonic,
   NftData,
   ProviderType,
   RequestAccountCreateLedgerSubstrate,
@@ -125,6 +126,7 @@ export default interface MessageTypes {
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------
+  mnemonicsSubscribe: (cb: (mnemonics: Mnemonic[]) => void) => UnsubscribeFn
   mnemonicUnlock: (mnemonicId: string, pass: string) => Promise<string>
   mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>

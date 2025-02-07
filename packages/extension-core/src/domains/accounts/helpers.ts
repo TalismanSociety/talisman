@@ -1,11 +1,12 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import type { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { canDerive } from "@polkadot/extension-base/utils"
 import keyring from "@polkadot/ui-keyring"
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
 import { Chain } from "@talismn/chaindata-provider"
+import { KeypairCurve } from "@talismn/crypto"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
@@ -14,7 +15,7 @@ import type { Address } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { AccountsCatalogStore } from "./store.catalog"
-import { Account, AccountJsonAny, AccountType } from "./types"
+import { AccountJsonAny, AccountType, LegacyAccount } from "./types"
 
 const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) => {
   const acc1Created = acc1.whenCreated
@@ -37,23 +38,15 @@ const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) =
 
 export const sortAccounts =
   (accountsCatalogStore: AccountsCatalogStore) =>
-  async (keyringAccounts: SubjectInfo): Promise<AccountJsonAny[]> => {
-    const accounts = Object.values(keyringAccounts)
-      .map(
-        ({ json: { address, meta }, type }): AccountJsonAny => ({
-          address,
-          ...meta,
-          type,
-        }),
-      )
-      .sort(sortAccountsByWhenCreated)
+  async (accounts: AccountJsonAny[]): Promise<AccountJsonAny[]> => {
+    const sorted = accounts.concat().sort(sortAccountsByWhenCreated)
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
-    await accountsCatalogStore.addAccounts(accounts)
-    await accountsCatalogStore.sortAccountsByCatalogOrder(accounts)
+    await accountsCatalogStore.addAccounts(sorted)
+    await accountsCatalogStore.sortAccountsByCatalogOrder(sorted)
 
-    return accounts
+    return sorted
   }
 
 export const getInjectedAccount = (
@@ -99,6 +92,25 @@ export const getPublicAccounts = (
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
+export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: number) => {
+  switch (curve) {
+    // substrate
+    case "ecdsa":
+    case "ed25519":
+    case "sr25519":
+      return `//${accountIndex}`
+
+    case "ethereum":
+      return getEthDerivationPath(accountIndex)
+
+    case "solana":
+      throw Error("Not implemented")
+  }
+}
+
+/**
+ * @deprecated
+ */
 export const getNextDerivationPathForMnemonic = (
   mnemonic: string,
   type: KeypairType = "sr25519",
@@ -137,7 +149,7 @@ export const getNextDerivationPathForMnemonic = (
 export const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
-    ([key, account]: [string, Account]) =>
+    ([key, account]: [string, LegacyAccount]) =>
       key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr,
   )
 }

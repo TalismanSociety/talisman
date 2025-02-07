@@ -1,4 +1,5 @@
 import { assert } from "@polkadot/util"
+import { KeypairCurve } from "@talismn/crypto"
 import {
   Account,
   AddAccountDeriveOptions,
@@ -7,6 +8,7 @@ import {
   AddMnemonicOptions,
   Keyring,
   Mnemonic,
+  UpdateMnemonicOptions,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { isEqual } from "lodash"
@@ -143,6 +145,11 @@ class KeyringStore {
     return this.changeWithPassword((keyring, password) => keyring.addMnemonic(options, password))
   }
 
+  public async getMnemonics() {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getMnemonics()
+  }
+
   public async getMnemonic(id: string) {
     const keyring = await firstValueFrom(this.#keyring$)
     return keyring.getMnemonic(id)
@@ -154,12 +161,17 @@ class KeyringStore {
     return keyring.getMnemonicText(id, hash)
   }
 
-  public updateMnemonic(id: string, name: string) {
-    return this.changeWithoutPassword((keyring) => keyring.updateMnemonic(id, name))
+  public updateMnemonic(id: string, options: UpdateMnemonicOptions) {
+    return this.changeWithoutPassword((keyring) => keyring.updateMnemonic(id, options))
   }
 
   public removeMnemonic(id: string) {
     return this.changeWithoutPassword((keyring) => keyring.removeMnemonic(id))
+  }
+
+  public async getAccounts() {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getAccounts()
   }
 
   public async getAccount(address: string) {
@@ -191,10 +203,25 @@ class KeyringStore {
     )
   }
 
+  public addAccountKeypairs(options: AddAccountKeypairOptions[]) {
+    return this.changeWithPassword((keyring, password) =>
+      Promise.all(options.map((options) => keyring.addAccountKeypair(options, password))),
+    )
+  }
+
   public async getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
-    const hash = await passwordStore.getHashedPassword(password)
     const keyring = await firstValueFrom(this.#keyring$)
-    return keyring.getAccountSecretKey(address, hash)
+    return keyring.getAccountSecretKey(address, password)
+  }
+
+  public async getDerivedAddress(
+    mnemonicId: string,
+    derivationPath: string,
+    curve: KeypairCurve,
+    password: string,
+  ): Promise<string> {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getDerivedAddress(mnemonicId, derivationPath, curve, password)
   }
 }
 

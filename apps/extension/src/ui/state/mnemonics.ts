@@ -1,32 +1,19 @@
 import { bind } from "@react-rxjs/core"
-import { MnemonicSource, mnemonicsStore } from "extension-core"
-import { map } from "rxjs"
+import { Mnemonic } from "extension-core"
+import { map, Observable, shareReplay } from "rxjs"
+
+import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 
-export type Mnemonic = {
-  id: string
-  name: string
-  confirmed: boolean
-  source: MnemonicSource
-}
+export const mnemonics$ = new Observable<Mnemonic[]>((subscriber) => {
+  const unsubscribe = api.mnemonicsSubscribe((mnemonics) => {
+    subscriber.next(mnemonics)
+  })
+  return () => unsubscribe()
+}).pipe(debugObservable("mnemonics$"), shareReplay(1))
 
-export const [useMnemonics, mnemonics$] = bind(
-  mnemonicsStore.observable.pipe(
-    map((data) =>
-      Object.values(data).map(
-        ({ id, name, confirmed, source }) =>
-          ({
-            id,
-            name,
-            confirmed,
-            source,
-          }) as Mnemonic,
-      ),
-    ),
-    debugObservable("mnemonics$"),
-  ),
-)
+export const [useMnemonics] = bind(mnemonics$)
 
 export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) =>
   mnemonics$.pipe(

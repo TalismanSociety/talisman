@@ -1,3 +1,5 @@
+import { Mnemonic } from "@talismn/keyring"
+
 import {
   RequestAccountCreateOptions,
   RequestAccountCreateOptionsExistingMnemonic,
@@ -43,6 +45,7 @@ export type RequestSetVerifierCertificateMnemonic = {
 
 export interface MnemonicMessages {
   // mnemonic message signatures
+  "pri(mnemonic.subscribe)": [null, boolean, Mnemonic[]]
   "pri(mnemonic.unlock)": [MnemonicUnlockRequest, string]
   "pri(mnemonic.confirm)": [MnemonicConfirmRequest, boolean]
   "pri(mnemonic.rename)": [MnemonicRenameRequest, boolean]

@@ -30,4 +30,10 @@ export type AddAccountKeypairOptions = Omit<AccountBase, "createdAt" | "address"
 export type AddMnemonicOptions = {
   mnemonic: string
   name: string
+  confirmed: boolean
+}
+
+export type UpdateMnemonicOptions = {
+  name?: string
+  confirmed?: boolean
 }

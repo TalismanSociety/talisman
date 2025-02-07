@@ -2,12 +2,14 @@ import { blake3 } from "@noble/hashes/blake3"
 import {
   addressEncodingFromCurve,
   addressFromPublicKey,
+  bytesToString,
   deriveKeypair,
   entropyToMnemonic,
   entropyToSeed,
   getPublicKeyFromSecret,
   isAddressEqual,
   isValidMnemonic,
+  KeypairCurve,
   mnemonicToEntropy,
   normalizeAddress,
 } from "@talismn/crypto"
@@ -18,6 +20,7 @@ import type {
   AddAccountExternalOptions,
   AddAccountKeypairOptions,
   AddMnemonicOptions,
+  UpdateMnemonicOptions,
 } from "../types/keyring"
 import type { AccountStorage, MnemonicStorage } from "./types"
 import { isAccountExternal } from "../types"
@@ -77,7 +80,7 @@ export class Keyring {
   }
 
   public async addMnemonic(
-    { name, mnemonic }: AddMnemonicOptions,
+    { name, mnemonic, confirmed }: AddMnemonicOptions,
     password: string,
   ): Promise<Mnemonic> {
     if (!name) throw new Error("Name is required")
@@ -86,7 +89,7 @@ export class Keyring {
     const entropy = mnemonicToEntropy(mnemonic)
 
     // id is a hash of the seed, helps us prevent having duplicates and allows automatic remapping of accounts/seeds if seeds are deleted then re-added
-    const id = hashBlake3Base64(entropy)
+    const id = getMnemonicId(entropy)
 
     if (this.#storage.mnemonics.find((s) => s.id === id)) throw new Error("Mnemonic already exists")
 
@@ -94,6 +97,7 @@ export class Keyring {
       id,
       name,
       entropy: await encryptData(entropy, password),
+      confirmed,
       createdAt: Date.now(),
     }
 
@@ -107,11 +111,11 @@ export class Keyring {
     return mnemonic ? mnemonicFromStorage(mnemonic) : null
   }
 
-  public updateMnemonic(id: string, name: string) {
+  public updateMnemonic(id: string, { name, confirmed }: UpdateMnemonicOptions) {
     const mnemonic = this.#storage.mnemonics.find((s) => s.id === id)
     if (!mnemonic) throw new Error("Mnemonic not found")
-    if (!name) throw new Error("Name is required")
-    mnemonic.name = name
+    if (name !== undefined) mnemonic.name = name
+    if (confirmed !== undefined) mnemonic.confirmed = confirmed
     return mnemonicFromStorage(mnemonic)
   }
 
@@ -230,11 +234,28 @@ export class Keyring {
     const secretKey = await decryptData(account.secretKey, password)
     return secretKey
   }
+
+  public async getDerivedAddress(
+    mnemonicId: string,
+    derivationPath: string,
+    curve: KeypairCurve,
+    password: string,
+  ): Promise<string> {
+    const mnemonic = this.#storage.mnemonics.find((s) => s.id === mnemonicId)
+    if (!mnemonic) throw new Error("Mnemonic not found")
+
+    const entropy = await decryptData(mnemonic.entropy, password)
+    const seed = entropyToSeed(entropy, curve)
+    const pair = deriveKeypair(seed, derivationPath, curve)
+
+    return pair.address
+  }
 }
 
-// FAF cryptographic hashing function, outputs 44 characters
-const hashBlake3Base64 = (input: Uint8Array) => {
-  return btoa(String.fromCharCode(...blake3(input)))
+const getMnemonicId = (entropy: Uint8Array) => {
+  // one way hash to help identify duplicates
+  // outputs 44 characters without special characters
+  return bytesToString("base58", blake3(entropy))
 }
 
 const mnemonicFromStorage = (data: MnemonicStorage): Mnemonic => {

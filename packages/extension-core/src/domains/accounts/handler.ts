@@ -1,12 +1,13 @@
 import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
 import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
-import keyring from "@polkadot/ui-keyring"
+import legacyKeyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
+import { Mnemonic } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
-import { combineLatest, firstValueFrom } from "rxjs"
+import { combineLatest, map } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -40,7 +41,9 @@ import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getPrivateKey } from "../../util/getPrivateKey"
 import { isValidDerivationPath } from "../../util/isValidDerivationPath"
+import { accountToLegacyJson, legacyKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
+import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { MnemonicSource } from "../mnemonics/store"
 import {
   formatSuri,
@@ -65,63 +68,43 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const allAccounts = keyring.getAccounts()
-    const existing = allAccounts.find((account) => account.meta?.name === name)
+    const accounts = await keyringStore.getAccounts()
+    const existing = accounts.find((account) => account.name === name)
     assert(!existing, "An account with this name already exists")
 
-    let derivedMnemonicId: string
-    let mnemonic: string
+    //let mnemonicId: string
+    let mnemonic: Mnemonic
     if ("mnemonicId" in options) {
-      derivedMnemonicId = options.mnemonicId
-      const mnemonicResult = await this.stores.mnemonics.getMnemonic(derivedMnemonicId, password)
-      if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
-      mnemonic = mnemonicResult.val
+      const result = await keyringStore.getMnemonic(options.mnemonicId)
+      if (!result) throw new Error("Mnemonic not stored locally")
+      mnemonic = result
     } else {
-      const newMnemonicId = await this.stores.mnemonics.add(
-        `${name} Recovery Phrase`,
-        options.mnemonic,
-        password,
-        MnemonicSource.Generated,
-        options.confirmed,
-      )
-      if (newMnemonicId.err) throw new Error("Failed to store new mnemonic")
-      derivedMnemonicId = newMnemonicId.val
-      mnemonic = options.mnemonic
+      mnemonic = await keyringStore.addMnemonic({
+        name: `${name} Recovery Phrase`,
+        mnemonic: options.mnemonic,
+        confirmed: options.confirmed,
+      })
     }
 
     let derivationPath: string
     if (typeof options.derivationPath === "string") {
       derivationPath = options.derivationPath
     } else {
-      const { val, err } = getNextDerivationPathForMnemonic(mnemonic, type)
+      const { val, err } = await getNextDerivationPathForMnemonicId(mnemonic.id, type)
       if (err) throw new Error(val)
       else derivationPath = val
     }
 
-    // TODO REMOVE
-    await firstValueFrom(keyringStore.accounts$)
-
-    const suri = formatSuri(mnemonic, derivationPath)
-    const resultingAddress = encodeAnyAddress(addressFromSuri(suri, type))
-    assert(
-      allAccounts.every((acc) => encodeAnyAddress(acc.address) !== resultingAddress),
-      "Account already exists",
-    )
-
-    const { pair } = keyring.addUri(
-      suri,
-      password,
-      {
-        name,
-        origin: AccountType.Talisman,
-        derivedMnemonicId,
-        derivationPath,
-      },
-      type,
-    )
+    const account = await keyringStore.addAccountDerive({
+      curve: legacyKeypairTypeToCurve(type),
+      derivationPath,
+      mnemonicId: mnemonic.id,
+      name,
+    })
 
     this.captureAccountCreateEvent(type, "derived")
-    return pair.address
+
+    return account.address
   }
 
   private async accountCreateSuri({
@@ -134,7 +117,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const expectedAddress = addressFromSuri(suri, type)
 
-    const notExists = !keyring
+    const notExists = !legacyKeyring
       .getAccounts()
       .some((acc) => acc.address.toLowerCase() === expectedAddress.toLowerCase())
     assert(notExists, "Account already exists")
@@ -174,7 +157,7 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     try {
-      const { pair } = keyring.addUri(
+      const { pair } = legacyKeyring.addUri(
         suri,
         password,
         meta,
@@ -197,13 +180,13 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const addresses: string[] = []
     for (const json of unlockedPairs) {
-      const pair = keyring.createFromJson(json, {
+      const pair = legacyKeyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
         origin: AccountType.Talisman,
         importSource: AccountImportSources.JSON,
       })
 
-      const notExists = !keyring
+      const notExists = !legacyKeyring
         .getAccounts()
         .some((acc) => acc.address.toLowerCase() === pair.address.toLowerCase())
 
@@ -215,7 +198,7 @@ export default class AccountsHandler extends ExtensionHandler {
       delete pair.meta.genesisHash
       pair.meta.whenCreated = Date.now()
 
-      keyring.encryptAccount(pair, password)
+      legacyKeyring.encryptAccount(pair, password)
       addresses.push(pair.address)
 
       this.captureAccountCreateEvent(pair.type, "json")
@@ -253,8 +236,8 @@ export default class AccountsHandler extends ExtensionHandler {
     )
 
     // add to the underlying keyring, allowing not to specify a password
-    keyring.keyring.addPair(pair)
-    keyring.saveAccount(pair)
+    legacyKeyring.keyring.addPair(pair)
+    legacyKeyring.saveAccount(pair)
 
     this.captureAccountCreateEvent("ethereum", "hardware")
 
@@ -304,8 +287,8 @@ export default class AccountsHandler extends ExtensionHandler {
     )
 
     // add to the underlying keyring, allowing not to specify a password
-    keyring.keyring.addPair(pair)
-    keyring.saveAccount(pair)
+    legacyKeyring.keyring.addPair(pair)
+    legacyKeyring.saveAccount(pair)
 
     this.captureAccountCreateEvent(type, "dcent")
 
@@ -328,7 +311,7 @@ export default class AccountsHandler extends ExtensionHandler {
     if (account.ledgerApp === SubstrateLedgerAppType.Generic && account.migrationAppName)
       meta.migrationAppName = account.migrationAppName
 
-    const { pair } = keyring.addHardware(address, "ledger", meta)
+    const { pair } = legacyKeyring.addHardware(address, "ledger", meta)
 
     this.captureAccountCreateEvent("substrate", "hardware")
 
@@ -343,7 +326,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const exists = keyring
+    const exists = legacyKeyring
       .getAccounts()
       .some((account) => encodeAnyAddress(account.address) === address)
     assert(!exists, "Account already exists")
@@ -368,7 +351,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const pair = createPair(
       isEthereumAddress(address)
         ? { type: "ethereum", toSS58: ethereumEncode }
-        : { type: "sr25519", toSS58: keyring.encodeAddress },
+        : { type: "sr25519", toSS58: legacyKeyring.encodeAddress },
       {
         publicKey: decodeAnyAddress(address),
         secretKey: new Uint8Array(),
@@ -385,8 +368,8 @@ export default class AccountsHandler extends ExtensionHandler {
     )
 
     // add to the underlying keyring, allowing not to specify a password
-    keyring.keyring.addPair(pair)
-    keyring.saveAccount(pair)
+    legacyKeyring.keyring.addPair(pair)
+    legacyKeyring.saveAccount(pair)
 
     this.captureAccountCreateEvent(isEthereumAddress(address) ? "ethereum" : "substrate", "qr")
 
@@ -403,7 +386,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const safeAddress = encodeAnyAddress(address)
 
-    const exists = keyring
+    const exists = legacyKeyring
       .getAccounts()
       .some((account) => encodeAnyAddress(account.address) === safeAddress)
     assert(!exists, "Account already exists")
@@ -413,7 +396,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const pair = createPair(
       isEthereumAddress(safeAddress)
         ? { type: "ethereum", toSS58: ethereumEncode }
-        : { type: "sr25519", toSS58: keyring.encodeAddress },
+        : { type: "sr25519", toSS58: legacyKeyring.encodeAddress },
       {
         publicKey: decodeAnyAddress(address),
         secretKey: new Uint8Array(),
@@ -428,8 +411,8 @@ export default class AccountsHandler extends ExtensionHandler {
     )
 
     // add to the underlying keyring, allowing not to specify a password
-    keyring.keyring.addPair(pair)
-    keyring.saveAccount(pair)
+    legacyKeyring.keyring.addPair(pair)
+    legacyKeyring.saveAccount(pair)
 
     this.captureAccountCreateEvent(
       isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
@@ -464,8 +447,8 @@ export default class AccountsHandler extends ExtensionHandler {
       null,
     )
 
-    keyring.keyring.addPair(pair)
-    keyring.saveAccount(pair)
+    legacyKeyring.keyring.addPair(pair)
+    legacyKeyring.saveAccount(pair)
 
     this.captureAccountCreateEvent("substrate", "signet")
 
@@ -474,13 +457,13 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private accountForget({ address }: RequestAccountForget): boolean {
     const encodedAddress = encodeAnyAddress(address)
-    const account = keyring.getAccount(encodedAddress)
+    const account = legacyKeyring.getAccount(encodedAddress)
     assert(account, "Unable to find account")
 
-    const { type } = keyring.getPair(account?.address)
+    const { type } = legacyKeyring.getPair(account?.address)
     talismanAnalytics.capture("account forget", { type })
 
-    keyring.forgetAccount(address)
+    legacyKeyring.forgetAccount(address)
 
     // remove associated authorizations
     this.stores.sites.forgetAccount(address)
@@ -520,9 +503,9 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExportAll): Promise<ResponseAccountsExport> {
     await this.stores.password.checkPassword(password)
 
-    const addresses = keyring.getPairs().map(({ address }) => address)
+    const addresses = legacyKeyring.getPairs().map(({ address }) => address)
 
-    const exportedJson = await keyring.backupAccounts(addresses, exportPw)
+    const exportedJson = await legacyKeyring.backupAccounts(addresses, exportPw)
 
     return { exportedJson }
   }
@@ -555,10 +538,10 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExternalSetIsPortfolio): Promise<boolean> {
     await sleep(1000)
 
-    const pair = keyring.getPair(address)
+    const pair = legacyKeyring.getPair(address)
     assert(pair, "Unable to find pair")
 
-    keyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
+    legacyKeyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
 
     return true
   }
@@ -566,16 +549,16 @@ export default class AccountsHandler extends ExtensionHandler {
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
     await sleep(1000)
 
-    const pair = keyring.getPair(address)
+    const pair = legacyKeyring.getPair(address)
     assert(pair, "Unable to find pair")
 
-    const allAccounts = keyring.getAccounts()
+    const allAccounts = legacyKeyring.getAccounts()
     const existing = allAccounts.find(
       (account) => account.address !== address && account.meta?.name === name,
     )
     assert(!existing, "An account with this name already exists")
 
-    keyring.saveAccountMeta(pair, { ...pair.meta, name })
+    legacyKeyring.saveAccountMeta(pair, { ...pair.meta, name })
 
     return true
   }
@@ -585,7 +568,13 @@ export default class AccountsHandler extends ExtensionHandler {
       id,
       port,
       // make sure the sort order is updated when the catalog changes
-      combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      //combineLatest([legacyKeyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      combineLatest([
+        keyringStore.accounts$.pipe(
+          map((accounts) => Object.values(accounts).map(accountToLegacyJson)),
+        ),
+        this.stores.accountsCatalog.observable,
+      ]),
       ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts),
     )
   }
@@ -595,7 +584,7 @@ export default class AccountsHandler extends ExtensionHandler {
       id,
       port,
       // make sure the list of accounts in the catalog is updated when the keyring changes
-      combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      combineLatest([legacyKeyring.accounts.subject, this.stores.accountsCatalog.observable]),
       async ([, catalog]): Promise<AccountsCatalogData> =>
         // on first start-up, the store (loaded from localstorage) will be empty
         //
