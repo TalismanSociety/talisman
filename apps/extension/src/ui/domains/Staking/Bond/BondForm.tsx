@@ -6,6 +6,7 @@ import {
   ChangeEventHandler,
   FC,
   PropsWithChildren,
+  ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -310,6 +311,7 @@ export const AmountEdit = () => {
 }
 
 const StakeApr = () => {
+  const { t } = useTranslation()
   const { token, poolId } = useBondWizard()
   let data,
     isLoading = false,
@@ -339,14 +341,57 @@ const StakeApr = () => {
     return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
 
   if (isError) {
-    if (error?.message === STAKING_APR_UNAVAILABLE) return "APR Unavailable"
-    return <div className="text-alert-warn">Unable to fetch APR data</div>
+    if (error?.message === STAKING_APR_UNAVAILABLE) {
+      // fallback to 55% when the yield is unavailable for Analog,
+      // as we have a link to their docs explaining the APR for their chain
+      if (token?.chain?.id === "analog-timechain") {
+        return (
+          <WithAprDocsLink>
+            <div>55%</div>
+          </WithAprDocsLink>
+        )
+      }
+
+      return t("APR Unavailable")
+    }
+    return <div className="text-alert-warn">{t("Unable to fetch APR data")}</div>
   }
 
   return (
     <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>
-      {display}
+      <WithAprDocsLink>{display}</WithAprDocsLink>
     </span>
+  )
+}
+
+/**
+ * For chains with a novel staking rewards mechanism, this component adds an info tooltip to the
+ * calculated APR which links to the rewards docs for the chain.
+ */
+const WithAprDocsLink = ({ children }: { children: ReactNode }) => {
+  const { t } = useTranslation()
+  const { token } = useBondWizard()
+
+  // return the APR
+  if (token?.chain?.id !== "analog-timechain") return children
+
+  // return the APR wrapped with a tooltip
+  return (
+    <div className="flex items-center gap-1">
+      {children}
+      <Tooltip>
+        <TooltipTrigger>
+          <a
+            href="https://docs.analog.one/documentation/analog-network/staking/rewards"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <InfoIcon />
+          </a>
+        </TooltipTrigger>
+        <TooltipContent>{t("Learn more about Analog Timechain staking rewards")}</TooltipContent>
+      </Tooltip>
+    </div>
   )
 }
 
