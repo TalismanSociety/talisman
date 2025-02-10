@@ -2,7 +2,7 @@ import { validateHexString } from "@talismn/util"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { isChainActive, SubstrateLedgerAppType } from "@extension/core"
+import { getAccountGenesisHash, isChainActive, SubstrateLedgerAppType } from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
@@ -139,7 +139,7 @@ const useLedgerChainAccounts = (
         const existingAccount = walletAccounts?.find(
           (wa) =>
             convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === wa.genesisHash,
+            acc.genesisHash === getAccountGenesisHash(wa),
         )
 
         const accountBalances = balances.balances.find(

@@ -17,7 +17,7 @@ import Tokens from "../../Asset/Tokens"
 
 export type NomPoolBondAccount = {
   address: string
-  origin?: AccountType
+  type?: AccountType
   name?: string
   genesisHash?: string | null
   balance?: Balance
@@ -107,7 +107,7 @@ const AccountRow: FC<AccountRowProps> = ({
                 <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
-            <AccountTypeIcon origin={account.origin} className="text-primary" />
+            <AccountTypeIcon type={account.type} className="text-primary" />
           </div>
           <Address className="text-body-secondary text-xs" address={displayAddress} />
         </div>

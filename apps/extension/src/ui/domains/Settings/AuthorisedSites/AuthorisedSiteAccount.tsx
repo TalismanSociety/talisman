@@ -1,3 +1,4 @@
+import { getAccountGenesisHash } from "extension-core"
 import { ChangeEventHandler, FC, useCallback } from "react"
 import { Toggle } from "talisman-ui"
 
@@ -28,12 +29,12 @@ export const AuthorisedSiteAccount: FC<{
         <AccountIcon
           className="text-lg"
           address={account.address}
-          genesisHash={account.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
         />
         <div className="text-body-secondary truncate text-base">
           {account.name ?? <Address address={account.address} />}
         </div>
-        <AccountTypeIcon origin={account.origin} className="text-primary-500 text-md" />
+        <AccountTypeIcon type={account.type} className="text-primary-500 text-md" />
       </div>
       <Toggle checked={isConnected} onChange={handleChange} />
     </div>

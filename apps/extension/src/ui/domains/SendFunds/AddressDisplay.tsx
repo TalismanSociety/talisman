@@ -2,6 +2,7 @@ import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -133,13 +134,13 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         <AccountIcon
           className="!text-lg"
           address={resolvedAddress}
-          genesisHash={account?.genesisHash ?? contact?.genesisHash}
+          genesisHash={getAccountGenesisHash(account) ?? contact?.genesisHash}
         />
         <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon
-          origin={account?.origin}
+          type={account?.type}
           className="text-primary"
-          signetUrl={account?.signetUrl as string}
+          signetUrl={isAccountOfType(account, "signet") ? account.signetUrl : undefined}
         />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">

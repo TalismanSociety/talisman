@@ -2,7 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { parseAbi } from "viem"
 
-import { AccountType } from "../domains/accounts/types"
+import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { chainConnectorEvm } from "../rpcs/chain-connector-evm"
 import { abiErc721 } from "./abi"
 
@@ -17,7 +17,7 @@ export const hasErc721Nft = async ({
 }): Promise<Record<Address, boolean>> => {
   const evmAddresses = keyring
     .getAccounts()
-    .filter(({ meta }) => meta.type === "ethereum" && meta.origin !== AccountType.Watched)
+    .filter(({ meta }) => meta.type === "ethereum" && meta.origin !== LegacyAccountOrigin.Watched)
     .map(({ address }) => address as Address)
 
   if (!evmAddresses.length) return {}

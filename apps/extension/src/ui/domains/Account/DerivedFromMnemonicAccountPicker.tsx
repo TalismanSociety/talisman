@@ -3,6 +3,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import {
   AccountAddressType,
   formatSuri,
+  getAccountGenesisHash,
   getEthDerivationPath,
   RequestAccountCreateFromSuri,
 } from "@extension/core"
@@ -89,7 +90,7 @@ const useDerivedAccounts = (
         const existingAccount = walletAccounts?.find(
           (wa) =>
             convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === wa.genesisHash,
+            acc.genesisHash === getAccountGenesisHash(wa),
         )
 
         const accountBalances = balances.balances.find(

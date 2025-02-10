@@ -1,3 +1,4 @@
+import { isAccountEthereum, isAccountPolkadot } from "extension-core"
 import { FC, Suspense, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
@@ -55,10 +56,9 @@ const MainContent: FC = () => {
   const matchNfts = useMatch("/portfolio/nfts")
 
   if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
-  if (account?.type === "sr25519" && !chains.length)
-    return <EnableNetworkMessage type="substrate" />
+  if (isAccountPolkadot(account) && !chains.length) return <EnableNetworkMessage type="substrate" />
   if (
-    account?.type === "ethereum" &&
+    isAccountEthereum(account) &&
     !evmNetworks.length &&
     !chains.filter((c) => c.account === "secp256k1").length
   )

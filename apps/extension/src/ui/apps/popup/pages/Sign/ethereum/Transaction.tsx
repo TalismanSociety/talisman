@@ -212,7 +212,7 @@ export const EthSignTransactionRequest = () => {
                 </>
               )}
             </div>
-            {account && request && account.isHardware ? (
+            {account && request && account.type === "ledger-ethereum" ? (
               <SignHardwareEthereum
                 evmNetworkId={network?.id}
                 method="eth_sendTransaction"

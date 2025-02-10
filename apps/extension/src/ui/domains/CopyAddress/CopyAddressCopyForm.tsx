@@ -2,6 +2,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address as TAddress } from "@talismn/balances"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -43,10 +44,10 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
   const account = useAccountByAddress(address as string)
   const contact = useContact(address, chainGenesisHash)
 
-  const { name, genesisHash: accountGenesisHash } = useMemo(() => {
-    if (account) return account
-    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
-    return { name: undefined, genesisHash: undefined }
+  const [name, accountGenesisHash] = useMemo(() => {
+    if (account) return [account.name, getAccountGenesisHash(account)]
+    if (contact) return [contact.name, contact.genesisHash]
+    return [undefined, undefined]
   }, [account, contact])
 
   const formattedAddress = useFormattedAddress(address ?? undefined, accountGenesisHash)
@@ -60,7 +61,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
         <div className="leading-base grow truncate">
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
-        <AccountTypeIcon origin={account?.origin} className="text-primary" />
+        <AccountTypeIcon type={account?.type} className="text-primary" />
       </div>
     </PillButton>
   )

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { isAccountCompatibleWithChainOld } from "@extension/core"
+import { isAccountCompatibleWithChain } from "@extension/core/domains/accounts/helpers"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
@@ -44,11 +44,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
             !!chain.name &&
             // account is undefined for contacts
             (account
-              ? isAccountCompatibleWithChainOld(
-                  chain,
-                  account.type ?? "sr25519",
-                  account.genesisHash,
-                )
+              ? isAccountCompatibleWithChain(chain, account)
               : isAddressCompatibleWithChain(chain, address)),
         )
         .map(

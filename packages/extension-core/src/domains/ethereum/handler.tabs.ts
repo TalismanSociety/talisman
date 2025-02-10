@@ -1,5 +1,3 @@
-import keyring from "@polkadot/ui-keyring"
-import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/balances"
@@ -28,6 +26,7 @@ import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
 import { TalismanNotOnboardedError } from "../app/utils"
+import { keyringStore } from "../keyring/store"
 import { signAndSendEth, signEth } from "../signing/requests"
 import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
@@ -169,7 +168,7 @@ export class EthTabsHandler extends TabsHandler {
     // => we have to return addresses as lowercase too
     return (
       getPublicAccounts(
-        Object.values(accountsObservable.subject.getValue()),
+        await keyringStore.getAccounts(),
         filterAccountsByAddresses(site.ethAddresses),
         { includeWatchedAccounts: await this.stores.settings.get("developerMode") },
       )
@@ -464,26 +463,16 @@ export class EthTabsHandler extends TabsHandler {
     const site = await this.getSiteDetails(url, from)
 
     const address = site.ethAddresses[0]
-    const pair = keyring.getPair(address)
+    const account = await keyringStore.getAccount(address)
 
-    if (!address || !pair || getAddress(address) !== getAddress(from)) {
+    if (!address || !account || getAddress(address) !== getAddress(from)) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
         ETH_ERROR_EIP1993_UNAUTHORIZED,
       )
     }
 
-    return signEth(
-      url,
-      method,
-      message,
-      site.ethChainId.toString(),
-      {
-        address: getAddress(address),
-        ...pair.meta,
-      },
-      port,
-    )
+    return signEth(url, method, message, site.ethChainId.toString(), account, port)
   }
 
   private addWatchAssetRequest = async (
@@ -611,25 +600,16 @@ export class EthTabsHandler extends TabsHandler {
     if (txRequest.from?.toLowerCase() !== address.toLowerCase())
       throw new EthProviderRpcError("Invalid from account", ETH_ERROR_EIP1474_INVALID_INPUT)
 
-    const pair = keyring.getPair(address)
+    const account = await keyringStore.getAccount(address)
 
-    if (!address || !pair) {
+    if (!address || !account) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
         ETH_ERROR_EIP1993_UNAUTHORIZED,
       )
     }
 
-    return signAndSendEth(
-      url,
-      txRequest,
-      site.ethChainId.toString(),
-      {
-        address,
-        ...pair.meta,
-      },
-      port,
-    )
+    return signAndSendEth(url, txRequest, site.ethChainId.toString(), account, port)
   }
 
   private async getPermissions(url: string): Promise<Web3WalletPermission[]> {

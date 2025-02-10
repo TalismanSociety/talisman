@@ -6,7 +6,7 @@ import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"
 import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
 import { isOwnedAccountOrigin } from "../../accounts/helpers"
-import { AccountType } from "../../accounts/types"
+import { LegacyAccountOrigin } from "../../accounts/types"
 import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
 import { addressBookStore } from "../store.addressBook"
 import { appStore } from "../store.app"
@@ -49,7 +49,7 @@ export const hideGetStartedIfFunded: Migration = {
     const ownedAddresses = keyring
       .getAccounts()
       .filter((account) => {
-        const origin = account.meta.origin as AccountType
+        const origin = account.meta.origin as LegacyAccountOrigin
         return isOwnedAccountOrigin(origin)
       })
       .map((account) => normalizeAddress(account.address))

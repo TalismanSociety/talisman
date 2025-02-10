@@ -1,4 +1,5 @@
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
 
@@ -28,7 +29,7 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
   const contact = useContact(address, tokenGenesisHash)
 
   const { name, genesisHash: accountGenesisHash } = useMemo(() => {
-    if (account) return account
+    if (account) return { name: account.name, genesisHash: getAccountGenesisHash(account) }
     if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
@@ -55,7 +56,7 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
             <Address address={displayAddress} startCharCount={6} endCharCount={6} />
           )}
         </div>
-        <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
+        <AccountTypeIcon type={account?.type} className="text-primary-500" />
       </div>
     </PillButton>
   )

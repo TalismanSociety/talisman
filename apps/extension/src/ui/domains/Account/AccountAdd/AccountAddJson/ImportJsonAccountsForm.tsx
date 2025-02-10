@@ -10,7 +10,6 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountType } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -55,10 +54,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               <div className="flex w-full items-center gap-1 overflow-hidden text-base">
                 <div className="truncate">{account.name}</div>
                 <div className="shrink-0">
-                  <AccountTypeIcon
-                    className="text-primary inline-block"
-                    origin={account.origin as AccountType}
-                  />
+                  <AccountTypeIcon className="text-primary inline-block" />
                 </div>
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>

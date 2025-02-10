@@ -5,7 +5,6 @@ import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountJsonQr, AccountJsonSignet, AccountType } from "@extension/core"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -40,7 +39,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
   if (!account || !request) return null
   return (
     <>
-      {account.origin === AccountType.Watched && (
+      {account.type === "watch-only" && (
         <SignAlertMessage className="mb-6" type="error">
           {t("Cannot sign with a watch-only account.")}
         </SignAlertMessage>
@@ -52,11 +51,9 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
         </>
       )}
       {(() => {
-        switch (account.origin) {
-          case AccountType.Dcent:
-          case AccountType.Ledger:
-          case // @ts-expect-error incomplete migration, remove once migration is completed
-          "HARDWARE":
+        switch (account.type) {
+          case "ledger-ethereum":
+          case "ledger-polkadot":
             return (
               <Suspense fallback={null}>
                 <SignHardwareSubstrate
@@ -70,12 +67,12 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                 />
               </Suspense>
             )
-          case AccountType.Qr:
+          case "polkadot-vault":
             return (
               <Suspense fallback={null}>
                 <QrSubstrate
                   payload={payload}
-                  account={account as AccountJsonQr}
+                  account={account}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveQr}
                   onReject={reject}
@@ -83,17 +80,17 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                 />
               </Suspense>
             )
-          case AccountType.Signet:
+          case "signet":
             return (
               <SignSignetSubstrate
-                account={account as AccountJsonSignet}
+                account={account}
                 payload={payload}
                 onApprove={approveSignet}
                 onCancel={reject}
               />
             )
-          case AccountType.Talisman:
-          default:
+          case "keypair":
+          case "watch-only":
             return (
               <div className="grid w-full grid-cols-2 gap-12">
                 <Button disabled={processing} onClick={reject}>
@@ -102,13 +99,16 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                 <Button
                   processing={processing}
                   primary
-                  disabled={account.origin === AccountType.Watched}
+                  disabled={account.type === "watch-only"}
                   onClick={approve}
                 >
                   {t("Approve")}
                 </Button>
               </div>
             )
+
+          default:
+            throw new Error("Unsupported account type")
         }
       })()}
     </>

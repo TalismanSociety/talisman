@@ -1,6 +1,6 @@
-import { FC, useCallback } from "react"
+import { FC, useCallback, useMemo } from "react"
 
-import { AccountJsonHardwareSubstrate } from "@extension/core"
+import { AccountLedgerPolkadot, isAccountOfType } from "@extension/core"
 import { log } from "@extension/shared"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
@@ -22,7 +22,13 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   registry,
 }) => {
   const account = useAccountByAddress(payload?.address)
-  const legacyApp = useLedgerSubstrateAppByName(account?.migrationAppName as string)
+
+  const migrationAppName = useMemo(
+    () => (isAccountOfType(account, "ledger-polkadot") ? account.app : null),
+    [account],
+  )
+
+  const legacyApp = useLedgerSubstrateAppByName(migrationAppName as string)
   const { sign } = useLedgerSubstrateGeneric({ legacyApp })
 
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
@@ -36,7 +42,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     try {
       const signature = await sign(
         payload,
-        account as AccountJsonHardwareSubstrate,
+        account as AccountLedgerPolkadot,
         registry,
         shortMetadata,
       )

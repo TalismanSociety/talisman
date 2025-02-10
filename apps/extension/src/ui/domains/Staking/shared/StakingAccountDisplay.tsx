@@ -1,6 +1,7 @@
 import { Address as TAddress } from "@talismn/balances"
 import { ChainId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -90,13 +91,13 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
         <AccountIcon
           className="!text-lg"
           address={resolvedAddress}
-          genesisHash={account?.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
         />
         <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon
-          origin={account?.origin}
+          type={account?.type}
           className="text-primary"
-          signetUrl={account?.signetUrl as string}
+          signetUrl={isAccountOfType(account, "signet") ? account.signetUrl : undefined}
         />
       </TooltipTrigger>
     </Tooltip>

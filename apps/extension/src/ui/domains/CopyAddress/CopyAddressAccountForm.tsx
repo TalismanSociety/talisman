@@ -4,7 +4,8 @@ import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountJsonAny, isAccountCompatibleWithChainOld } from "@extension/core"
+import { Account, getAccountGenesisHash, isAccountEthereum } from "@extension/core"
+import { isAccountCompatibleWithChain } from "@extension/core/domains/accounts/helpers"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -17,7 +18,7 @@ import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
 type AccountRowProps = {
-  account: AccountJsonAny
+  account: Account
   selected: boolean
   onClick?: () => void
   disabled?: boolean
@@ -49,7 +50,7 @@ const AccountRowContainer: FC<
 const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const { t } = useTranslation()
   const { setAddress, copySpecific, chain } = useCopyAddressWizard()
-  const accountChain = useChainByGenesisHash(account.genesisHash)
+  const accountChain = useChainByGenesisHash(getAccountGenesisHash(account))
 
   const formatted = useMemo(
     () => convertAddress(account.address, accountChain?.prefix ?? null),
@@ -73,7 +74,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
     <AccountRowContainer onClick={canCopySpecific ? undefined : handleSelectClick}>
       <AccountIcon
         address={account.address}
-        genesisHash={account.genesisHash}
+        genesisHash={getAccountGenesisHash(account)}
         className="text-xl"
       />
       <div className="mr-2 flex grow flex-col items-start gap-2 overflow-hidden">
@@ -81,7 +82,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
           <div className="text-body truncate">
             {account.name ?? shortenAddress(formatted, 6, 6)}
           </div>
-          <AccountTypeIcon className="text-primary inline-block" origin={account.origin} />
+          <AccountTypeIcon className="text-primary inline-block" type={account.type} />
           {selected && <CheckCircleIcon />}
         </div>
         <Tooltip>
@@ -122,7 +123,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
 }
 
 type AccountsListProps = {
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   selected?: string | null
   onSelect?: (address: string) => void
   header?: ReactNode
@@ -168,13 +169,8 @@ export const CopyAddressAccountForm = () => {
     () =>
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
-        .filter(
-          (account) =>
-            !chain ||
-            (account.type &&
-              isAccountCompatibleWithChainOld(chain, account.type, account.genesisHash)),
-        )
-        .filter((account) => !evmNetwork || account.type === "ethereum")
+        .filter((account) => !chain || isAccountCompatibleWithChain(chain, account))
+        .filter((account) => !evmNetwork || isAccountEthereum(account))
         // if a folder is selected in portfolio, filter to accounts in that folder
         .filter(
           (account) =>

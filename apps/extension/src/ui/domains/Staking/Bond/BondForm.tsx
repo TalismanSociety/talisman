@@ -1,7 +1,7 @@
 import { Token } from "@talismn/chaindata-provider"
 import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
-import { AccountJsonAny } from "extension-core"
+import { Account } from "extension-core"
 import {
   ChangeEventHandler,
   FC,
@@ -61,7 +61,7 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   )
 }
 
-const AvailableBalance: FC<{ token: Token; account: AccountJsonAny }> = ({ token, account }) => {
+const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
 
   if (!balance) return null

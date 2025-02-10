@@ -16,9 +16,12 @@ import { BehaviorSubject } from "rxjs"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import {
-  AccountJsonAny,
+  Account,
   AccountsCatalogTree,
   AccountType,
+  getAccountGenesisHash,
+  isAccountOfType,
+  isAccountPolkadot,
   TreeFolder,
   TreeItem,
 } from "@extension/core"
@@ -77,7 +80,7 @@ type AccountAccountOption = {
   address: string
   total?: number
   genesisHash?: string | null
-  origin?: AccountType
+  accountType?: AccountType
   isPortfolio?: boolean
   signetUrl?: string
   searchContent: string
@@ -152,7 +155,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
             <div className="truncate">{option.name}</div>
             <AccountTypeIcon
               className="text-primary"
-              origin={option.origin}
+              type={option.accountType}
               signetUrl={option.signetUrl}
             />
           </div>
@@ -278,7 +281,7 @@ const Accounts = ({
   portfolioOptions,
   watchedOptions,
 }: {
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   folder?: TreeFolder | null
   folderTotal?: number
   portfolioOptions: AccountOption[]
@@ -377,8 +380,8 @@ export const PortfolioAccounts = () => {
             ? accounts.find((account) => account.address === item.address)
             : undefined
 
-        const getSearchContent = (account?: AccountJsonAny) =>
-          [account?.name, account?.address, account?.origin?.replaceAll(/talisman/gi, "")]
+        const getSearchContent = (account?: Account) =>
+          [account?.name, account?.address, account?.type?.replaceAll(/talisman/gi, "")]
             .join(" ")
             .toLowerCase()
 
@@ -388,10 +391,10 @@ export const PortfolioAccounts = () => {
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
               total: balanceTotalPerAccount?.[item.address] ?? 0,
-              genesisHash: account?.genesisHash,
-              origin: account?.origin,
-              isPortfolio: !!account?.isPortfolio,
-              signetUrl: account?.signetUrl as string | undefined,
+              genesisHash: getAccountGenesisHash(account),
+              accountType: account?.type,
+              isPortfolio: isAccountPolkadot(account),
+              signetUrl: isAccountOfType(account, "signet") ? account.signetUrl : undefined,
               searchContent: getSearchContent(account),
             }
           : {

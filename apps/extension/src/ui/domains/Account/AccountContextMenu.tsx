@@ -11,7 +11,7 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
+import { Account, getAccountGenesisHash } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
@@ -28,9 +28,9 @@ import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
-const ViewOnExplorerMenuItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
+const ViewOnExplorerMenuItem: FC<{ account: Account }> = ({ account }) => {
   const { t } = useTranslation()
-  const { open, canOpen } = useViewOnExplorer(account.address, account?.genesisHash ?? undefined)
+  const { open, canOpen } = useViewOnExplorer(account.address, getAccountGenesisHash(account))
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
@@ -83,7 +83,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
 
-  const chain = useChainByGenesisHash(account?.genesisHash)
+  const chain = useChainByGenesisHash(getAccountGenesisHash(account))
 
   // TODO: These modal providers used to be used in multiple places,
   // hence the hectic API we've got going on here.

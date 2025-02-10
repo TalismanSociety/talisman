@@ -3,7 +3,7 @@ import { isTalismanHostname, log } from "extension-shared"
 
 import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"
-import { AccountType } from "../domains/accounts/types"
+import { LegacyAccountOrigin } from "../domains/accounts/types"
 import AppHandler from "../domains/app/handler"
 import { trackPopupSummaryData } from "../domains/app/popupSummaries"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
@@ -90,7 +90,9 @@ export default class Extension extends ExtensionHandler {
               .filter(
                 ({ json: { meta } }) =>
                   isTalismanHostname(autoAddSite.url) ||
-                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType),
+                  ![LegacyAccountOrigin.Watched, LegacyAccountOrigin.Dcent].includes(
+                    meta.origin as LegacyAccountOrigin,
+                  ),
               )
               .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)

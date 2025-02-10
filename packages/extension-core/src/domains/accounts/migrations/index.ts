@@ -3,7 +3,7 @@ import keyring from "@polkadot/ui-keyring"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
-import { AccountType, SubstrateLedgerAppType } from "../types"
+import { LegacyAccountOrigin, SubstrateLedgerAppType } from "../types"
 
 const POLKADOT_GENESIS_HASH = "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
 
@@ -81,7 +81,7 @@ export const migratePolkadotLedgerAccounts: Migration = {
           name,
           accountIndex,
           addressOffset,
-          origin: AccountType.Ledger,
+          origin: LegacyAccountOrigin.Ledger,
           ledgerApp: SubstrateLedgerAppType.Generic,
           type: "ed25519",
         }

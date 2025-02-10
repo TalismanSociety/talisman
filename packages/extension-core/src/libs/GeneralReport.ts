@@ -4,7 +4,7 @@ import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
 
 import { db } from "../db"
-import { AccountType } from "../domains/accounts/types"
+import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
 import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
@@ -92,12 +92,12 @@ async function getGeneralReport() {
 
   const accounts = keyring.getAccounts()
 
-  const ownedAccounts = accounts.filter(({ meta }) => meta.origin !== AccountType.Watched)
+  const ownedAccounts = accounts.filter(({ meta }) => meta.origin !== LegacyAccountOrigin.Watched)
   const ownedAccountsCount = ownedAccounts.length
   const ownedAddresses = ownedAccounts.map((account) => account.address)
   const ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
-  const watchedAccounts = accounts.filter(({ meta }) => meta.origin === AccountType.Watched)
+  const watchedAccounts = accounts.filter(({ meta }) => meta.origin === LegacyAccountOrigin.Watched)
   const watchedAccountsCount = watchedAccounts.length
 
   let disconnect!: () => void
@@ -143,7 +143,7 @@ async function getGeneralReport() {
   }
 
   // account type breakdown
-  const accountBreakdown: Record<Lowercase<AccountType>, number> = {
+  const accountBreakdown: Record<Lowercase<LegacyAccountOrigin>, number> = {
     talisman: 0,
     qr: 0,
     ledger: 0,
@@ -152,8 +152,8 @@ async function getGeneralReport() {
     signet: 0,
   }
   for (const account of accounts) {
-    const origin = account.meta.origin as AccountType | undefined
-    const type = origin?.toLowerCase?.() as Lowercase<AccountType> | undefined
+    const origin = account.meta.origin as LegacyAccountOrigin | undefined
+    const type = origin?.toLowerCase?.() as Lowercase<LegacyAccountOrigin> | undefined
     if (type) accountBreakdown[type] = (accountBreakdown[type] ?? 0) + 1
   }
 

@@ -8,7 +8,7 @@ import sortBy from "lodash/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Address } from "@extension/core"
+import { Address, getAccountGenesisHash } from "@extension/core"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
@@ -265,10 +265,10 @@ const TokensList: FC<TokensListProps> = ({
     [address, selected, balances],
   )
 
-  const accountChain = useMemo(
-    () => account?.genesisHash && chains.find((c) => c.genesisHash === account?.genesisHash),
-    [account?.genesisHash, chains],
-  )
+  const accountChain = useMemo(() => {
+    const genesisHash = getAccountGenesisHash(account)
+    return genesisHash && chains.find((c) => c.genesisHash === genesisHash)
+  }, [account, chains])
 
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
@@ -279,7 +279,7 @@ const TokensList: FC<TokensListProps> = ({
       if (!isEthereumAddress(address)) return !!token.chain
 
       // ethereum ledger account can only sign on evm chain
-      if (account.isHardware) return !!token.evmNetwork
+      if (account.type === "ledger-ethereum") return !!token.evmNetwork
 
       // non ledger ethereum accounts may also sign on substrate chains (MOVR, GLMR, ..)
       return !!chainsMap[token.chain?.id ?? ""] || !!token.evmNetwork

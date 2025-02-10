@@ -2,15 +2,14 @@ import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { FC, Suspense } from "react"
 
-import { AccountJsonAny, AccountType, EthSignMessageMethod } from "@extension/core"
+import { Account, EthSignMessageMethod } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
-import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
 import { SignLedgerEthereum } from "./SignLedgerEthereum"
 
 export type SignHardwareEthereumProps = {
   evmNetworkId?: EvmNetworkId
-  account: AccountJsonAny
+  account: Account
   method: EthSignMessageMethod | "eth_sendTransaction"
   payload: unknown // string message, typed object for eip712, TransactionRequest for tx
   containerId?: string
@@ -20,18 +19,16 @@ export type SignHardwareEthereumProps = {
   onSentToDevice?: (sent: boolean) => void // triggered when tx is sent to the device, or when response is received
 }
 
-const getSignHardwareComponent = (account: AccountJsonAny | null) => {
+const getSignHardwareComponent = (account: Account | null) => {
   if (!account) return null
 
-  switch (account?.origin) {
-    case AccountType.Dcent:
-      return SignDcentUnsupportedMessage
-    case AccountType.Ledger:
-    case // @ts-expect-error incomplete migration, remove once migration is completed
-    "HARDWARE":
+  switch (account?.type) {
+    // case LegacyAccountOrigin.Dcent:
+    //   return SignDcentUnsupportedMessage
+    case "ledger-ethereum":
       return SignLedgerEthereum
     default:
-      throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)
+      throw new Error(`Unknown sign hardware component for account type ${account?.type}`)
   }
 }
 

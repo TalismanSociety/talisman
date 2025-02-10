@@ -4,10 +4,10 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { AccountJsonSignet, SignerPayloadRaw } from "@extension/core"
+import { AccountSignet, SignerPayloadRaw } from "@extension/core"
 
 type Props = {
-  account: AccountJsonSignet
+  account: AccountSignet
   onCancel: () => void
   onApprove: () => Promise<void>
   payload: SignerPayloadJSON | SignerPayloadRaw

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
+import { Account, isAccountEthereum } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
@@ -15,9 +15,9 @@ import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const localAccount$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const localAccount$ = new BehaviorSubject<Account | null>(null)
 
-const setLocalAccount = (account: AccountJsonAny | null) => {
+const setLocalAccount = (account: Account | null) => {
   localAccount$.next(account)
 }
 
@@ -30,17 +30,17 @@ export const useAccountExportPrivateKeyModal = () => {
   const account = useLocalAccount() ?? selectedAccount
 
   const open = useCallback(
-    (account?: AccountJsonAny) => {
+    (account?: Account) => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
     [innerOpen],
   )
 
-  const canExportAccountFunc = (account?: AccountJsonAny | null) =>
-    account?.type === "ethereum" && !account.isExternal && !account.isHardware
+  const canExportAccountFunc = (account?: Account | null) =>
+    isAccountEthereum(account) && account.type === "keypair"
 
-  const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
+  const canExportAccount = useMemo(() => account?.type === "keypair", [account])
 
   const exportAccount = useCallback(
     async (password: string) => {

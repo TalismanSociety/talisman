@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AddressBookContact } from "extension-core"
+import { AddressBookContact, isAccountEthereum } from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -110,7 +110,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         address: normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType),
       })),
       existingAccountAddresses: accounts.map((acc) =>
-        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58"),
+        normalise(acc.address, isAccountEthereum(acc) ? "ethereum" : "ss58"),
       ),
     }),
     [contacts, accounts],

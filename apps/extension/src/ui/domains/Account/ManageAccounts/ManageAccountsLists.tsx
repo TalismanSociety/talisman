@@ -1,6 +1,6 @@
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountJsonAny } from "extension-core"
+import { Account } from "extension-core"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -65,12 +65,12 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 const searchTree = (
   tree: UiTree,
   lowerSearch: string,
-  accountsMap: Record<string, AccountJsonAny>,
+  accountsMap: Record<string, Account>,
 ): UiTree => {
   const workTree = structuredClone(tree)
 
   const setAccountVisibility = (item: UiTreeAccount) => {
-    const account = accountsMap[item.address] as AccountJsonAny | undefined // may be undefined for a moment right after deletion
+    const account = accountsMap[item.address] as Account | undefined // may be undefined for a moment right after deletion
     item.isVisible =
       account?.name?.toLowerCase().includes(lowerSearch) ??
       account?.address?.toLowerCase().includes(lowerSearch) ??

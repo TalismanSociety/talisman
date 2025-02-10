@@ -24,7 +24,7 @@ import { Port } from "../../types/base"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { validateHexString } from "../../util/validateHexString"
-import { AccountType } from "../accounts/types"
+import { LegacyAccountOrigin } from "../accounts/types"
 import { getHostName } from "../app/helpers"
 import { watchSubstrateTransaction } from "../transactions"
 
@@ -222,7 +222,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
       ? account.meta.hardwareType
-      : account?.meta.origin === AccountType.Qr
+      : account?.meta.origin === LegacyAccountOrigin.Qr
         ? "qr"
         : undefined
 
@@ -257,6 +257,7 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
+    assert(queued.account.type === "signet", "Invalid Signet account")
     assert(typeof queued.account.signetUrl === "string", "Invalid Signet account")
 
     const { request, url } = queued

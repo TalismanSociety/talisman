@@ -1,5 +1,5 @@
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { ChainId, EvmNetworkId } from "extension-core"
+import { ChainId, EvmNetworkId, getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -34,7 +34,7 @@ export const SummaryAddressDisplay: FC<{
         <AccountIcon
           className={classNames("inline-block align-sub text-[1.2em]")}
           address={address}
-          genesisHash={account?.genesisHash ?? contact?.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
         />
         <span className="ml-[0.3em] truncate">
           {account?.name ?? contact?.name ?? (
@@ -56,7 +56,7 @@ export const SummaryAddressDisplay: FC<{
             <AccountIcon
               className={classNames("inline-block align-sub text-[1.2em]")}
               address={address}
-              genesisHash={account?.genesisHash ?? contact?.genesisHash}
+              genesisHash={getAccountGenesisHash(account) ?? contact?.genesisHash}
             />
           </div>
           <div className="truncate">

@@ -3,7 +3,13 @@ import { Chain, ChainId, ChainList, Token } from "@talismn/chaindata-provider"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { getAddress } from "viem"
 
-import { AccountJsonAny, Address, AddressBookContact } from "@extension/core"
+import {
+  Account,
+  Address,
+  AddressBookContact,
+  getAccountGenesisHash,
+  isAccountEthereum,
+} from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
@@ -28,7 +34,7 @@ export type CopyAddressWizardPage = "chain" | "account" | "copy"
 type CopyAddressWizardState = CopyAddressWizardInputs & { route: CopyAddressWizardPage }
 
 const isAccountCompatibleWithChain = (
-  accounts: AccountJsonAny[],
+  accounts: Account[],
   contacts: AddressBookContact[],
   chainsMap: ChainList,
   address: Address | undefined | null,
@@ -49,10 +55,11 @@ const isAccountCompatibleWithChain = (
     return true
   }
 
-  if (account && account.genesisHash && account.genesisHash !== chain.genesisHash) return false
+  const accountGenesisHash = getAccountGenesisHash(account)
+  if (account && accountGenesisHash && accountGenesisHash !== chain.genesisHash) return false
   if (contact && contact.genesisHash && contact.genesisHash !== chain.genesisHash) return false
 
-  const isEthereum = account?.type === "ethereum" || contact?.addressType === "ethereum"
+  const isEthereum = isAccountEthereum(account) || contact?.addressType === "ethereum"
 
   if (isEthereum) return chain.account === "secp256k1"
   return chain.account !== "secp256k1"
@@ -199,7 +206,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   // If chain restricted account, automatically select the chain
   const account = useAccountByAddress(state.address)
-  const targetChain = useChainByGenesisHash(account?.genesisHash)
+  const targetChain = useChainByGenesisHash(getAccountGenesisHash(account))
   useEffect(() => {
     if (targetChain) setChainId(targetChain.id)
   }, [setChainId, targetChain])

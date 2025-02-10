@@ -1,4 +1,5 @@
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -43,7 +44,7 @@ export const FormattedAddress: FC<{
           <div>
             <AccountIcon
               address={address}
-              genesisHash={account?.genesisHash}
+              genesisHash={getAccountGenesisHash(account)}
               className="inline-block align-middle text-[1.4em]"
             />
           </div>
@@ -55,12 +56,12 @@ export const FormattedAddress: FC<{
             )}
           </span>
           {withSource && account && (
-            <AccountTypeIcon className="text-primary" origin={account.origin} />
+            <AccountTypeIcon className="text-primary" type={account.type} />
           )}
         </span>
       </TooltipTrigger>
       {!noTooltip && (
-        <FormattedAddressTooltip address={address} genesisHash={account?.genesisHash} />
+        <FormattedAddressTooltip address={address} genesisHash={getAccountGenesisHash(account)} />
       )}
     </Tooltip>
   )

@@ -3,7 +3,12 @@ import { createSignPayload } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
 
-import { AccountJsonQr, isRawPayload, SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import {
+  AccountPolkadotVault,
+  isRawPayload,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "@extension/core"
 import { useChain } from "@ui/state"
 
 import { QrCode, QrCodeError } from "./QrCode"
@@ -21,7 +26,7 @@ type Command =
 const registry = new TypeRegistry()
 
 type Props = {
-  account: AccountJsonQr
+  account: AccountPolkadotVault
   genesisHash?: string
   payload: SignerPayloadJSON | SignerPayloadRaw
 }

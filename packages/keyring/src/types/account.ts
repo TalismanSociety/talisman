@@ -30,10 +30,10 @@ export type AccountWatchOnly = AccountBase & {
 
 export type AccountLedgerPolkadot = AccountBase & {
   type: "ledger-polkadot"
-  app: string // polkadot for generic, other value for legacy app
+  app: string // polkadot for generic, other value for legacy or migration app
   accountIndex: number
   addressOffset: number
-  genesisHash?: string // if defined, it's a legacy app
+  genesisHash?: `0x${string}` // if defined, it's a legacy app
 }
 
 export type AccountLedgerEthereum = AccountBase & {
@@ -43,7 +43,13 @@ export type AccountLedgerEthereum = AccountBase & {
 
 export type AccountPolkadotVault = AccountBase & {
   type: "polkadot-vault"
-  genesisHash?: string
+  genesisHash?: `0x${string}`
+}
+
+export type AccountSignet = AccountBase & {
+  type: "signet"
+  genesisHash: `0x${string}` // TODO check if this field is required
+  signetUrl: string
 }
 
 // export type AccountHdSingle = AccountBase & {
@@ -70,5 +76,6 @@ export type Account =
   | AccountLedgerEthereum
   | AccountLedgerPolkadot
   | AccountPolkadotVault
+  | AccountSignet
 
 export type AccountType = Account["type"]

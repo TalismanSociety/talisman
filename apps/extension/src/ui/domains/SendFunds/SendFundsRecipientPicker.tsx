@@ -1,7 +1,13 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AccountType, Chain, SubstrateLedgerAppType } from "extension-core"
+import {
+  Account,
+  Chain,
+  getAccountGenesisHash,
+  isAccountOfType,
+  isAccountPortfolio,
+} from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -226,13 +232,16 @@ export const SendFundsRecipientPicker = () => {
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address)),
         )
-        .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash)
+        .filter((account) => {
+          const genesisHash = getAccountGenesisHash(account)
+          return !genesisHash || genesisHash === chain?.genesisHash
+        })
         .filter(
           (account) =>
             isFromEthereum ||
             // do not send funds to ledger generic accounts on incompatible chains
             chain?.hasCheckMetadataHash ||
-            account.ledgerApp !== SubstrateLedgerAppType.Generic,
+            !(isAccountOfType(account, "ledger-polkadot") && account.genesisHash),
         ),
     [
       allAccounts,
@@ -250,21 +259,17 @@ export const SendFundsRecipientPicker = () => {
     ],
   )
 
-  const { myAccounts, watchedAccounts } = useMemo(
-    () => ({
-      myAccounts: accounts.filter(
-        (account) =>
-          (account.origin !== AccountType.Watched || account.isPortfolio) &&
-          account.origin !== AccountType.Dcent,
-      ),
-      watchedAccounts: accounts.filter(
-        (account) =>
-          (account.origin === AccountType.Watched && !account.isPortfolio) ||
-          account.origin === AccountType.Dcent,
-      ),
-    }),
-    [accounts],
-  )
+  const { myAccounts, watchedAccounts } = useMemo(() => {
+    return accounts.reduce<{ myAccounts: Account[]; watchedAccounts: Account[] }>(
+      (acc, curr) => {
+        if (curr.type === "contact") return acc
+        if (isAccountPortfolio(curr)) acc.myAccounts.push(curr)
+        else acc.watchedAccounts.push(curr)
+        return acc
+      },
+      { myAccounts: [], watchedAccounts: [] },
+    )
+  }, [accounts])
 
   const handleSelect = useCallback(
     (address: string) => {

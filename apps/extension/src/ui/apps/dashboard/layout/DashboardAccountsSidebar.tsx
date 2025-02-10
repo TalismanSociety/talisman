@@ -1,6 +1,13 @@
 import { CheckIcon, EyeIcon, PlusIcon, UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountsCatalogTree, AccountType, TreeItem } from "extension-core"
+import {
+  AccountsCatalogTree,
+  AccountType,
+  getAccountGenesisHash,
+  isAccountOfType,
+  isAccountPortfolio,
+  TreeItem,
+} from "extension-core"
 import { FC, Fragment, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -58,10 +65,10 @@ const Accounts = () => {
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
               total: balanceTotalPerAccount?.[item.address] ?? 0,
-              genesisHash: account?.genesisHash,
-              origin: account?.origin,
-              isPortfolio: !!account?.isPortfolio,
-              signetUrl: account?.signetUrl as string | undefined,
+              genesisHash: getAccountGenesisHash(account),
+              accountType: account?.type,
+              isPortfolio: isAccountPortfolio(account),
+              signetUrl: isAccountOfType(account, "signet") ? account.signetUrl : undefined,
             }
           : {
               type: "folder",
@@ -158,7 +165,7 @@ type AccountAccountOption = {
   address: string
   total?: number
   genesisHash?: string | null
-  origin?: AccountType
+  accountType?: AccountType
   isPortfolio?: boolean
   signetUrl?: string
 }
@@ -204,7 +211,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
         label={
           <div className="flex w-full items-center gap-2">
             <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
-            <AccountTypeIcon className="text-primary shrink-0" origin={option.origin} />
+            <AccountTypeIcon className="text-primary shrink-0" type={option.accountType} />
           </div>
         }
         logo={<div className="size-20 shrink-0"></div>}

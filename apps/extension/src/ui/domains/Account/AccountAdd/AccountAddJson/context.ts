@@ -8,7 +8,7 @@ import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { AccountType } from "@extension/core"
+import { LegacyAccountOrigin } from "@extension/core"
 import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -20,7 +20,7 @@ export type JsonImportAccount = {
   address: string
   name: string
   genesisHash: string
-  origin: AccountType
+  origin: LegacyAccountOrigin
   selected: boolean
   isLocked: boolean
   isPrivateKeyAvailable: boolean
@@ -180,7 +180,7 @@ const useJsonAccountImportProvider = () => {
         address: encodeAnyAddress(pair.address, chain?.prefix ?? undefined),
         name: pair.meta.name as string,
         genesisHash: pair.meta.genesisHash as string,
-        origin: pair.meta.origin as AccountType,
+        origin: pair.meta.origin as LegacyAccountOrigin,
         isExisting,
         selected: !isExisting && selectedAccounts.includes(pair.address),
         isLocked: pair.isLocked,

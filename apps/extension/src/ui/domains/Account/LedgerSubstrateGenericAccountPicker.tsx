@@ -1,7 +1,12 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { GenericeResponseAddress, SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { AccountJsonAny, ChainId, SubstrateLedgerAppType } from "extension-core"
+import {
+  Account,
+  ChainId,
+  isAccountLedgerPolkadotGeneric,
+  SubstrateLedgerAppType,
+} from "extension-core"
 import { log } from "extension-shared"
 import {
   ChangeEventHandler,
@@ -260,18 +265,15 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
 type CustomAccountDetails = { accountIndex: number; addressOffset: number; name: string }
 
 const getNextAccountDetails = (
-  accounts: AccountJsonAny[],
+  accounts: Account[],
   app: SubstrateAppParams | null | undefined,
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
+    .filter(isAccountLedgerPolkadotGeneric)
     .filter(
-      (a) =>
-        a.ledgerApp === SubstrateLedgerAppType.Generic &&
-        a.migrationAppName === app?.name &&
-        a.addressOffset === 0,
+      (a) => a.app === app?.name && a.addressOffset === 0 && typeof a.accountIndex === "number",
     )
-    .filter((a) => typeof a.accountIndex === "number")
     .map((a) => a.accountIndex as number)
   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++)
     if (!existingAccountIndexes.includes(i)) {

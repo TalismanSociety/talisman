@@ -8,7 +8,7 @@ import { HexString } from "@polkadot/util/types"
 import { KeypairCurve, parseSecretKey, parseSuri } from "@talismn/crypto"
 import { AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
-import { combineLatest, map } from "rxjs"
+import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -43,7 +43,7 @@ import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getPrivateKey, getSecretKeyFromPjsJson } from "../../util/getPrivateKey"
 import { isValidDerivationPath } from "../../util/isValidDerivationPath"
-import { accountToLegacyJson, legacyKeypairTypeToCurve } from "../keyring/migration-utils"
+import { legacyKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import {
@@ -54,7 +54,7 @@ import {
 } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
-import { AccountType, SubstrateLedgerAppType } from "./types"
+import { LegacyAccountOrigin, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(type: string | undefined, method: string) {
@@ -214,7 +214,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         hardwareType: "ledger",
         isHardware: true,
-        origin: AccountType.Ledger,
+        origin: LegacyAccountOrigin.Ledger,
         path,
       },
       null,
@@ -242,7 +242,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const meta: KeyringPair$Meta = {
       name,
       isHardware: true,
-      origin: AccountType.Dcent,
+      origin: LegacyAccountOrigin.Dcent,
       path,
       tokenIds,
     }
@@ -287,7 +287,7 @@ export default class AccountsHandler extends ExtensionHandler {
       accountIndex,
       addressOffset,
       name,
-      origin: AccountType.Ledger,
+      origin: LegacyAccountOrigin.Ledger,
       ledgerApp,
       type: "ed25519",
     }
@@ -347,7 +347,7 @@ export default class AccountsHandler extends ExtensionHandler {
         isQr: true,
         isExternal: true,
         isPortfolio: true,
-        origin: AccountType.Qr,
+        origin: LegacyAccountOrigin.Qr,
       },
       null,
     )
@@ -390,7 +390,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         isExternal: true,
         isPortfolio: !!isPortfolio,
-        origin: AccountType.Watched,
+        origin: LegacyAccountOrigin.Watched,
       },
       null,
     )
@@ -426,7 +426,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         genesisHash,
         signetUrl,
-        origin: AccountType.Signet,
+        origin: LegacyAccountOrigin.Signet,
         isPortfolio: false,
       },
       null,
@@ -554,12 +554,7 @@ export default class AccountsHandler extends ExtensionHandler {
       port,
       // make sure the sort order is updated when the catalog changes
       //combineLatest([legacyKeyring.accounts.subject, this.stores.accountsCatalog.observable]),
-      combineLatest([
-        keyringStore.accounts$.pipe(
-          map((accounts) => Object.values(accounts).map(accountToLegacyJson)),
-        ),
-        this.stores.accountsCatalog.observable,
-      ]),
+      combineLatest([keyringStore.accounts$, this.stores.accountsCatalog.observable]),
       ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts),
     )
   }

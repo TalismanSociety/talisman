@@ -5,7 +5,7 @@ import { isAddressEqual } from "@talismn/util"
 import { t } from "i18next"
 import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
 
-import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
+import { Account, AccountAddressType, Balances, isAccountEthereum } from "@extension/core"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -51,9 +51,9 @@ const getNetworkTokenSymbols = ({
   return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
 }
 
-const getAccountsType = (accounts?: AccountJsonAny[]) => {
-  if (accounts?.every((a) => a.type === "ethereum")) return "ethereum"
-  if (accounts?.every((a) => a.type !== "ethereum")) return "sr25519" // TODO rename substrate or ss58
+const getAccountsType = (accounts?: Account[]) => {
+  if (accounts?.every(isAccountEthereum)) return "ethereum"
+  if (accounts?.every((a) => !isAccountEthereum(a))) return "sr25519" // TODO rename substrate or ss58
   return undefined
 }
 
@@ -158,9 +158,7 @@ const getFilteredBalances = ({
 }
 
 // TODO review this, we may want to use usePortfolioNavigation instead
-export const portfolioSelectedAccounts$ = new BehaviorSubject<AccountJsonAny[] | undefined>(
-  undefined,
-)
+export const portfolioSelectedAccounts$ = new BehaviorSubject<Account[] | undefined>(undefined)
 
 export const [usePortfolioSelectedAccounts] = bind(portfolioSelectedAccounts$)
 

@@ -1,3 +1,5 @@
+import { Account } from "@talismn/keyring"
+
 import type { Port } from "../../types/base"
 import type {
   DecryptPayload,
@@ -6,13 +8,12 @@ import type {
   ResponseEncryptEncrypt,
 } from "./types"
 import { requestStore } from "../../libs/requests/store"
-import { AccountJson } from "../accounts/types"
 import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "./types"
 
 export const requestEncrypt = (
   url: string,
   payload: EncryptPayload,
-  account: AccountJson,
+  account: Account,
   port: Port,
 ): Promise<ResponseEncryptEncrypt> => {
   return requestStore.createRequest(
@@ -29,7 +30,7 @@ export const requestEncrypt = (
 export const requestDecrypt = (
   url: string,
   payload: DecryptPayload,
-  account: AccountJson,
+  account: Account,
   port: Port,
 ): Promise<ResponseEncryptDecrypt> => {
   return requestStore.createRequest(

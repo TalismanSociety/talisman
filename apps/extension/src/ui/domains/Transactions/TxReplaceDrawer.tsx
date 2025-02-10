@@ -17,6 +17,7 @@ import {
 import {
   EthTransactionDetails,
   EvmWalletTransaction,
+  isAccountOfType,
   serializeTransactionRequest,
   WalletTransaction,
 } from "@extension/core"
@@ -293,7 +294,7 @@ const EvmDrawerContent: FC<{
         </div>
       </div>
       <>
-        {canReplace && account?.isHardware ? (
+        {canReplace && !!account && isAccountOfType(account, "ledger-ethereum") ? (
           <div className="w-full">
             <SignHardwareEthereum
               className="mt-6"

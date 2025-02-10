@@ -1,7 +1,7 @@
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonHardwareEthereum } from "@extension/core"
+import { AccountLedgerEthereum } from "@extension/core"
 import { log } from "@extension/shared"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
@@ -38,7 +38,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
         Number(evmNetworkId),
         method,
         payload,
-        (account as AccountJsonHardwareEthereum).path,
+        (account as AccountLedgerEthereum).derivationPath,
       )
 
       // await so we can keep the spinning loader until popup closes

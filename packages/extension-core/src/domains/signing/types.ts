@@ -3,10 +3,10 @@ import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
 } from "@polkadot/extension-base/background/types"
+import { Account } from "@talismn/keyring"
 import { RpcTransactionRequest } from "viem"
 
 import { BaseRequest, BaseRequestId } from "../../types/base"
-import { AccountJsonAny } from "../accounts/types"
 import { EthGasSettingsEip1559, EthGasSettingsLegacy, EvmNetworkId } from "../ethereum/types"
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
@@ -50,14 +50,14 @@ const SUBSTRATE_SIGN: SUBSTRATE_SIGN = "substrate-sign"
 
 export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SIGN> {
   request: RequestSign
-  account: AccountJsonAny
+  account: Account
 }
 
 export type SubstrateSignResponse = Omit<SignerResult, "id"> & { id: string }
 
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
   ethChainId: EvmNetworkId
-  account: AccountJsonAny
+  account: Account
   request: string | RpcTransactionRequest
 }
 

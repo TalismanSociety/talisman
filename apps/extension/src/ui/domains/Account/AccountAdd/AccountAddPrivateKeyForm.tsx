@@ -1,6 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
 import { encodeAnyAddress } from "@talismn/util"
+import { isAccountEthereum } from "extension-core"
 import i18next from "i18next"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -104,7 +105,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
   const { t } = useTranslation("admin")
   const allAccounts = useAccounts()
   const accountEthAddresses = useMemo(
-    () => allAccounts.filter(({ type }) => type === "ethereum").map((a) => a.address),
+    () => allAccounts.filter(isAccountEthereum).map((a) => a.address),
     [allAccounts],
   )
 

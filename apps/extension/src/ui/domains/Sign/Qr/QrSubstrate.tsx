@@ -6,7 +6,12 @@ import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountJsonQr, isJsonPayload, SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import {
+  AccountPolkadotVault,
+  isJsonPayload,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "@extension/core"
 import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
@@ -43,7 +48,7 @@ type ScanState =
   | { page: "RECEIVE" }
 
 interface Props {
-  account: AccountJsonQr
+  account: AccountPolkadotVault
   className?: string
   genesisHash?: HexString
   onSignature?: (result: { signature: `0x${string}` }) => void
@@ -253,7 +258,7 @@ const SendPage = ({
   chain,
   containerId,
 }: {
-  account: AccountJsonQr
+  account: AccountPolkadotVault
   genesisHash: HexString | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
   reject?: () => void

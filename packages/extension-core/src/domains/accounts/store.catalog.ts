@@ -1,13 +1,13 @@
+import { Account } from "@talismn/keyring"
+
 import { StorageProvider } from "../../libs/Store"
 import {
   addAccount,
-  bySortOrder,
   removeAccount,
   RequestAccountsCatalogAction,
   runActionsOnTrees,
   Trees,
 } from "./helpers.catalog"
-import { AccountJsonAny } from "./types"
 
 // AccountsCatalogData is here in case we want to use this to store anything
 // else in addition to the two `Tree` objects in the future
@@ -27,34 +27,38 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    *
    * It will also set the `folderId` and `folderName` fields on each account which is in a folder.
    */
-  sortAccountsByCatalogOrder = async (accounts: AccountJsonAny[]) => {
-    const accountsByAddress = new Map(accounts.map((account) => [account.address, account]))
+  sortAccountsByCatalogOrder = async (accounts: Account[]) => {
+    // TODO rewrite so we dont bloat account objects with utility properties
 
-    let nextSortIndex = 0
-    await this.withTrees((trees) => {
-      ;[...trees.portfolio, ...trees.watched].forEach((item) => {
-        if (item.type === "account") {
-          const account = accountsByAddress.get(item.address)
-          if (!account) return
+    return accounts
 
-          account.folderId = undefined
-          account.folderName = undefined
-          account.sortOrder = nextSortIndex++
-        }
+    // const accountsByAddress = new Map(accounts.map((account) => [account.address, account]))
 
-        if (item.type === "folder")
-          item.tree.forEach((folderItem) => {
-            const account = accountsByAddress.get(folderItem.address)
-            if (!account) return
+    // let nextSortIndex = 0
+    // await this.withTrees((trees) => {
+    //   ;[...trees.portfolio, ...trees.watched].forEach((item) => {
+    //     if (item.type === "account") {
+    //       const account = accountsByAddress.get(item.address)
+    //       if (!account) return
 
-            account.folderId = item.id
-            account.folderName = item.name
-            account.sortOrder = nextSortIndex++
-          })
-      })
-    })
+    //       account.folderId = undefined
+    //       account.folderName = undefined
+    //       account.sortOrder = nextSortIndex++
+    //     }
 
-    return accounts.sort(bySortOrder)
+    //     if (item.type === "folder")
+    //       item.tree.forEach((folderItem) => {
+    //         const account = accountsByAddress.get(folderItem.address)
+    //         if (!account) return
+
+    //         account.folderId = item.id
+    //         account.folderName = item.name
+    //         account.sortOrder = nextSortIndex++
+    //       })
+    //   })
+    // })
+
+    // return accounts.sort(bySortOrder)
   }
 
   /**

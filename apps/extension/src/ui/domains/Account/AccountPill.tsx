@@ -1,5 +1,5 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 
 import { copyAddress } from "@ui/util/copyAddress"
@@ -7,7 +7,7 @@ import { copyAddress } from "@ui/util/copyAddress"
 import { FormattedAddress } from "./FormattedAddress"
 
 type AccountPillProps = {
-  account: AccountJson
+  account: Account
   prefix?: number
   className?: string
 }

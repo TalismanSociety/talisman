@@ -1,6 +1,4 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import type { SingleAddress } from "@polkadot/ui-keyring/observable/types"
-import { canDerive } from "@polkadot/extension-base/utils"
 import keyring from "@polkadot/ui-keyring"
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
@@ -16,11 +14,11 @@ import type { Address } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { AccountsCatalogStore } from "./store.catalog"
-import { AccountJsonAny, AccountType, LegacyAccount } from "./types"
+import { LegacyAccount, LegacyAccountOrigin } from "./types"
 
-const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) => {
-  const acc1Created = acc1.whenCreated
-  const acc2Created = acc2.whenCreated
+const sortAccountsByCreationDate = (acc1: Account, acc2: Account) => {
+  const acc1Created = acc1.createdAt
+  const acc2Created = acc2.createdAt
 
   if (!acc1Created || !acc2Created) {
     return 0
@@ -39,8 +37,8 @@ const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) =
 
 export const sortAccounts =
   (accountsCatalogStore: AccountsCatalogStore) =>
-  async (accounts: AccountJsonAny[]): Promise<AccountJsonAny[]> => {
-    const sorted = accounts.concat().sort(sortAccountsByWhenCreated)
+  async (accounts: Account[]): Promise<Account[]> => {
+    const sorted = accounts.concat().sort(sortAccountsByCreationDate)
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
@@ -50,48 +48,45 @@ export const sortAccounts =
     return sorted
   }
 
-export const getInjectedAccount = (
-  {
-    json: {
-      address,
-      meta: { genesisHash, name, origin, isPortfolio },
-    },
-    type,
-  }: SingleAddress,
+export const getPjsInjectedAccount = (
+  account: Account,
   options = { includePortalOnlyInfo: false },
 ): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
-  address,
-  genesisHash,
-  name,
-  type,
+  address: account.address,
+  genesisHash: "genesisHash" in account ? account.genesisHash : undefined,
+  name: account.name,
+  type: "curve" in account ? (account.curve as KeypairType) : undefined,
   ...(options.includePortalOnlyInfo
     ? {
-        readonly: origin === AccountType.Watched,
-        partOfPortfolio: isPortfolio,
+        readonly: account.type === "watch-only",
+        partOfPortfolio: account.type === "watch-only" && account.isPortfolio,
       }
     : {}),
 })
 
 export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
-  (accounts: SingleAddress[]) =>
+  (accounts: Account[]) =>
     accounts
-      .filter(({ json: { address } }) => !!addresses.includes(address))
-      .filter(({ type }) => (anyType ? true : canDerive(type)))
+      .filter(({ address }) => !!addresses.includes(address))
+      .filter((acc) =>
+        anyType
+          ? true
+          : "curve" in acc
+            ? ["ed25519", "sr25519", "ecdsa", "ethereum"].includes(acc.curve) // from pjs's canDerive(type)
+            : false,
+      )
 
 export const getPublicAccounts = (
-  accounts: SingleAddress[],
-  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts,
+  accounts: Account[],
+  filterFn: (accounts: Account[]) => Account[] = (accounts) => accounts,
   options = { includeWatchedAccounts: false },
 ) =>
   filterFn(accounts)
-    .filter(
-      (a) =>
-        options.includeWatchedAccounts ||
-        ![AccountType.Watched, AccountType.Dcent].includes(a.json.meta.origin as AccountType),
-    )
-    .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
-    .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
+    .filter((a) => a.type !== "contact")
+    .filter((a) => options.includeWatchedAccounts || a.type !== "watch-only")
+    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)) // TODO apply catalog order ?
+    .map((x) => getPjsInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
 export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: number) => {
   switch (curve) {
@@ -151,7 +146,7 @@ export const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, LegacyAccount]) =>
-      key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr,
+      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr,
   )
 }
 
@@ -161,7 +156,12 @@ export const hasPrivateKey = (address: Address) => {
   if (!acc) return false
   if (acc.meta?.isExternal) return false
   if (acc.meta?.isHardware) return false
-  if ([AccountType.Qr, AccountType.Watched].includes(acc.meta?.origin as AccountType)) return false
+  if (
+    [LegacyAccountOrigin.Qr, LegacyAccountOrigin.Watched].includes(
+      acc.meta?.origin as LegacyAccountOrigin,
+    )
+  )
+    return false
   return true
 }
 
@@ -196,10 +196,10 @@ export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => 
   return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
-export const isOwnedAccountOrigin = (origin: AccountType) => {
+export const isOwnedAccountOrigin = (origin: LegacyAccountOrigin) => {
   switch (origin) {
-    case AccountType.Watched:
-    case AccountType.Signet:
+    case LegacyAccountOrigin.Watched:
+    case LegacyAccountOrigin.Signet:
       return false
     default:
       return true

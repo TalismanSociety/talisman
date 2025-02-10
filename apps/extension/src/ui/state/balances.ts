@@ -10,7 +10,8 @@ import {
   throttleTime,
 } from "rxjs"
 
-import { BalanceSubscriptionResponse, isAccountCompatibleWithChainOld } from "@extension/core"
+import { BalanceSubscriptionResponse, isAccountEthereum } from "@extension/core"
+import { isAccountCompatibleWithChain } from "@extension/core/domains/accounts/helpers"
 import { api } from "@ui/api"
 
 import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
@@ -75,8 +76,8 @@ const allBalances$ = combineLatest([
 
       // for chain specific accounts, exclude balances from other chains
       if ("chainId" in b && b.chainId && chains[b.chainId])
-        return isAccountCompatibleWithChainOld(chains[b.chainId], account.type, account.genesisHash)
-      if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
+        return isAccountCompatibleWithChain(chains[b.chainId], account)
+      if ("evmNetworkId" in b && b.evmNetworkId) return isAccountEthereum(account)
       return false
     })
     return new Balances(validBalances, hydrate)

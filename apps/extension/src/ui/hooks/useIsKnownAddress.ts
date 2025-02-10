@@ -1,15 +1,14 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
 import { isAddressEqual } from "@talismn/util"
 import { useMemo } from "react"
 
-import { AddressBookContact } from "@extension/core"
+import { Account, AddressBookContact } from "@extension/core"
 import { useAccountByAddress } from "@ui/state"
 
 import { useAddressBook } from "./useAddressBook"
 
 type IsKnownAccount = {
   type: "account"
-  value: AccountJson
+  value: Account
 }
 
 type IsKnownContact = {
@@ -17,6 +16,7 @@ type IsKnownContact = {
   value: AddressBookContact
 }
 
+// TODO yeet address book store
 export const useIsKnownAddress = (
   address?: string | null,
 ): IsKnownAccount | IsKnownContact | false => {
@@ -30,16 +30,17 @@ export const useIsKnownAddress = (
       null,
     [address, contacts, localAccount],
   )
-  if (localAccount)
-    return {
-      type: "account",
-      value: localAccount,
-    }
 
   if (contactAddress)
     return {
       type: "contact",
       value: contactAddress,
+    }
+
+  if (localAccount)
+    return {
+      type: "account",
+      value: localAccount,
     }
 
   return false

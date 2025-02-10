@@ -7,7 +7,7 @@ import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny, EthSignRequest } from "@extension/core"
+import { Account, EthSignRequest } from "@extension/core"
 import { log } from "@extension/shared"
 import { Message } from "@ui/domains/Sign/Message"
 import { useEvmNetwork } from "@ui/state"
@@ -94,7 +94,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
 }
 
 export type EthSignBodyMessageProps = {
-  account: AccountJsonAny
+  account: Account
   request: EthSignRequest
 }
 

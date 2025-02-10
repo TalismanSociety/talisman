@@ -30,10 +30,11 @@ import {
 import urlJoin from "url-join"
 
 import {
-  AccountJsonAny,
+  Account,
   activeEvmNetworksStore,
   activeTokensStore,
   DiscoveredBalance,
+  getAccountGenesisHash,
   isEvmNetworkActive,
   isTokenActive,
 } from "@extension/core"
@@ -93,7 +94,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
     () =>
       [...new Set(addresses)]
         .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as AccountJsonAny[],
+        .filter(Boolean) as Account[],
     [allAccounts, addresses],
   )
   const { t } = useTranslation("admin")
@@ -109,7 +110,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
           <AccountIcon
             className="shrink-0"
             address={account.address}
-            genesisHash={account.genesisHash}
+            genesisHash={getAccountGenesisHash(account)}
           />
           <div className="text-body grow truncate">{account.name}</div>
           <div>{shortenAddress(account.address)}</div>
@@ -202,7 +203,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
     () =>
       [...new Set(assets.map((a) => a.address))]
         .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as AccountJsonAny[],
+        .filter(Boolean) as Account[],
     [allAccounts, assets],
   )
 
@@ -500,7 +501,7 @@ const Header: FC = () => {
 
 const AccountsWrapper: FC<{
   children?: ReactNode
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   className?: string
 }> = ({ children, accounts, className }) => {
   return (

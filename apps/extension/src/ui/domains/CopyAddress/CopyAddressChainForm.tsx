@@ -1,6 +1,6 @@
 import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
-import { SubstrateLedgerAppType } from "extension-core"
+import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -152,10 +152,10 @@ export const CopyAddressChainForm = () => {
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)
-  const accountChain = useMemo(
-    () => account?.genesisHash && chains.find((c) => account?.genesisHash === c.genesisHash),
-    [account?.genesisHash, chains],
-  )
+  const accountChain = useMemo(() => {
+    const genesisHash = getAccountGenesisHash(account)
+    return genesisHash && chains.find((c) => genesisHash === c.genesisHash)
+  }, [account, chains])
 
   const balances = useBalancesByAddress(address)
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
@@ -176,7 +176,7 @@ export const CopyAddressChainForm = () => {
       .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
       .filter(
         // if ledger generic account, restrict to compatible chains
-        (c) => account?.ledgerApp !== SubstrateLedgerAppType.Generic || c.hasCheckMetadataHash,
+        (c) => !isAccountLedgerPolkadotGeneric(account) || c.hasCheckMetadataHash,
       )
       .sort((a, b) => {
         if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
@@ -199,7 +199,7 @@ export const CopyAddressChainForm = () => {
             : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, SUBSTRATE_FORMAT, account?.ledgerApp, balancesPerNetwork, accountChain])
+  }, [address, chains, SUBSTRATE_FORMAT, account, balancesPerNetwork, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats

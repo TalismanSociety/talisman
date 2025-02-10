@@ -17,8 +17,8 @@ import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
 import {
+  Account,
   AccountAddressType,
-  AccountJson,
   AddEthereumChainRequest,
   AddEthereumChainRequestId,
   AddressesAndEvmNetwork,
@@ -165,7 +165,7 @@ export default interface MessageTypes {
     signetUrl: string,
   ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
-  accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
+  accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
   accountsOnChainIdsResolveNames: (

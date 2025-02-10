@@ -1,5 +1,6 @@
 import { UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
 
@@ -26,9 +27,8 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
 }) => {
   const account = useAccountByAddress(address as string)
 
-  const { name, genesisHash: accountGenesisHash } = useMemo(() => {
-    if (account) return account
-    return { name: undefined, genesisHash: undefined }
+  const [name, accountGenesisHash] = useMemo(() => {
+    return [account?.name, getAccountGenesisHash(account)]
   }, [account])
 
   const formattedAddress = useFormattedAddress(
@@ -59,7 +59,7 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
         ) : (
           "Select account"
         )}
-        <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
+        <AccountTypeIcon type={account?.type} className="text-primary-500" />
       </div>
     </PillButton>
   )
