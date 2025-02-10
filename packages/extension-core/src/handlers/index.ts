@@ -22,6 +22,7 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(accounts.export.pk)",
   "pri(accounts.create)",
   "pri(accounts.create.suri)",
+  "pri(accounts.create.privateKey)",
   "pri(accounts.create.json)",
   "pri(accounts.address.lookup)",
   "pri(app.onboardCreatePassword)",

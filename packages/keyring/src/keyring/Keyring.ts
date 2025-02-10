@@ -134,6 +134,12 @@ export class Keyring {
     return entropyToMnemonic(entropy)
   }
 
+  public getExistingMnemonicId(mnemonic: string): string | null {
+    const entropy = mnemonicToEntropy(mnemonic)
+    const mnemonicId = getMnemonicId(entropy)
+    return this.#storage.mnemonics.some((s) => s.id === mnemonicId) ? mnemonicId : null
+  }
+
   public getAccounts(): Account[] {
     return this.#storage.accounts.map(accountFromStorage)
   }

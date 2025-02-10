@@ -1,44 +1,90 @@
-import { Bytes, str, Tuple, u32 } from "scale-ts"
+import { stringToBytes } from "@scure/base"
 
-import { blake2b256 } from "../common"
+import { addressEncodingFromCurve, addressFromPublicKey } from "../address"
+import { entropyToSeed, isValidMnemonic, mnemonicToEntropy } from "../mnemonic"
+import { KeypairCurve } from "../types"
+import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
+import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
+import { deriveEthereum, getPublicKeyEthereum } from "./deriveEthereum"
+import { deriveSolana, getPublicKeySolana } from "./deriveSolana"
+import { deriveSr25519, getPublicKeySr25519 } from "./deriveSr25519"
 
-// Inspired from MIT licensed @polkadot-labs/hdkd helpers
-// https://github.com/polkadot-labs/hdkd/blob/3ef6e02827212d934b59a4e566d8aa61d3ba7b27/packages/hdkd-helpers/src/parseDerivations.ts#L1
-
-const DERIVATION_RE = /(\/{1,2})(\w+)/g
-
-type DerivationDescriptor = [type: "hard" | "soft", code: string]
-
-export const parseSubstrateDerivations = (derivationsStr: string): DerivationDescriptor[] => {
-  const derivations = [] as DerivationDescriptor[]
-  if (derivations)
-    for (const [_, type, code] of derivationsStr.matchAll(DERIVATION_RE)) {
-      derivations.push([type === "//" ? "hard" : "soft", code!])
-    }
-  return derivations
+export const deriveKeypair = (seed: Uint8Array, derivationPath: string, curve: KeypairCurve) => {
+  switch (curve) {
+    case "sr25519":
+      return deriveSr25519(seed, derivationPath)
+    case "ed25519":
+      return deriveEd25519(seed, derivationPath)
+    case "ecdsa":
+      return deriveEcdsa(seed, derivationPath)
+    case "ethereum":
+      return deriveEthereum(seed, derivationPath)
+    case "solana":
+      return deriveSolana(seed, derivationPath)
+  }
 }
 
-export const createChainCode = (code: string) => {
-  const chainCode = new Uint8Array(32)
-  chainCode.set(Number.isNaN(+code) ? str.enc(code) : u32.enc(+code))
-  return chainCode
+export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurve): Uint8Array => {
+  switch (curve) {
+    case "ecdsa":
+      return getPublicKeyEcdsa(secretKey)
+    case "ethereum":
+      return getPublicKeyEthereum(secretKey)
+    case "sr25519":
+      return getPublicKeySr25519(secretKey)
+    case "ed25519":
+      return getPublicKeyEd25519(secretKey)
+    case "solana":
+      return getPublicKeySolana(secretKey)
+  }
 }
 
-const derivationCodec = /* @__PURE__ */ Tuple(str, Bytes(32), Bytes(32))
-const createSubstrateDeriveFn = (prefix: string) => (seed: Uint8Array, chainCode: Uint8Array) =>
-  blake2b256(derivationCodec.enc([prefix, seed, chainCode]))
+export const addressFromSuri = (suri: string, type: KeypairCurve) => {
+  const { mnemonic, derivationPath, password } = parseSuri(suri)
 
-export const deriveSubstrateSecretKey = (
-  seed: Uint8Array,
-  derivationPath: string,
-  prefix: string,
-) => {
-  const derivations = parseSubstrateDerivations(derivationPath)
-  const derive = createSubstrateDeriveFn(prefix)
+  const entropy = mnemonicToEntropy(mnemonic)
+  const seed = entropyToSeed(entropy, type, password) // ~80ms
+  const { secretKey } = deriveKeypair(seed, derivationPath, type)
+  const publicKey = getPublicKeyFromSecret(secretKey, type)
+  const encoding = addressEncodingFromCurve(type)
 
-  return derivations.reduce((seed, [type, chainCode]) => {
-    const code = createChainCode(chainCode)
-    if (type === "soft") throw new Error("Soft derivations are not supported")
-    return derive(seed, code)
-  }, seed)
+  return addressFromPublicKey(publicKey, encoding)
+}
+
+// @dev: we only expect suri to contain a mnemonic and derivation path
+// for other cases see https://polkadot.js.org/docs/keyring/start/suri/
+export const parseSuri = (suri: string) => {
+  // extract password if any
+  const indexOfPassword = suri.indexOf("///")
+  const password = indexOfPassword === -1 ? undefined : suri.slice(indexOfPassword + 3)
+  if (password) suri = suri.slice(0, indexOfPassword)
+
+  // split mnemonic and derivation path
+  const indexOfSlash = suri.indexOf("/")
+  const mnemonic = indexOfSlash === -1 ? suri : suri.slice(0, indexOfSlash)
+  let derivationPath = indexOfSlash === -1 ? "" : suri.slice(indexOfSlash)
+
+  // if BIP44, leading slash must be removed
+  if (derivationPath.startsWith("/m/")) derivationPath = derivationPath.slice(1)
+
+  if (!isValidMnemonic(mnemonic)) throw new Error("Invalid mnemonic")
+
+  return { mnemonic, derivationPath, password }
+}
+
+export const removeHexPrefix = (secretKey: string) => {
+  if (secretKey.startsWith("0x")) return secretKey.slice(2)
+  return secretKey
+}
+
+export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
+  switch (curve) {
+    case "ethereum":
+      return stringToBytes("hex", removeHexPrefix(secretKey))
+    case "ed25519":
+    case "sr25519":
+    case "ecdsa":
+    case "solana":
+      throw new Error("Not implemented")
+  }
 }

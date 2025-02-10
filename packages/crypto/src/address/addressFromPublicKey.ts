@@ -1,10 +1,5 @@
-import type { AddressEncoding, Keypair } from "../types"
-import {
-  addressEncodingFromCurve,
-  encodeAddressBase58,
-  encodeAddressEthereum,
-  encodeAddressSs58,
-} from "./encoding"
+import type { AddressEncoding } from "../types"
+import { encodeAddressBase58, encodeAddressEthereum, encodeAddressSs58 } from "./encoding"
 
 export type EncodeAddressOptions = {
   ss58Prefix?: number
@@ -23,9 +18,4 @@ export const addressFromPublicKey = (
     case "base58":
       return encodeAddressBase58(publicKey)
   }
-}
-
-export const addressFromKeypair = (pair: Keypair, options?: EncodeAddressOptions): string => {
-  const encoding = addressEncodingFromCurve(pair.type)
-  return addressFromPublicKey(pair.publicKey, encoding, options)
 }

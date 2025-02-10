@@ -148,7 +148,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         { autoClose: false },
       )
       try {
-        const address = await api.accountCreateFromSuri(name, privateKey, "ethereum")
+        const address = await api.accountCreateFromPrivateKey(name, privateKey, "ethereum")
 
         onSuccess(address)
         notifyUpdate(notificationId, {

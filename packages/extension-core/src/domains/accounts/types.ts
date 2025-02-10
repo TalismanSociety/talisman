@@ -132,6 +132,12 @@ export interface RequestAccountCreateFromSuri {
   type?: AccountAddressType
 }
 
+export interface RequestAccountCreateFromPrivateKey {
+  name: string
+  privateKey: string
+  type?: AccountAddressType
+}
+
 export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
@@ -264,6 +270,7 @@ export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
+  "pri(accounts.create.privateKey)": [RequestAccountCreateFromPrivateKey, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
   "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
   "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]

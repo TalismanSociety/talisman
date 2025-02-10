@@ -2,7 +2,7 @@ import { getPublicKey, HDKD, secretFromSeed } from "micro-sr25519"
 
 import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
-import { createChainCode, parseSubstrateDerivations } from "./utils"
+import { createChainCode, parseSubstrateDerivations } from "./common"
 
 export const deriveSr25519 = (seed: Uint8Array, derivationPath: string): Keypair => {
   const derivations = parseSubstrateDerivations(derivationPath)

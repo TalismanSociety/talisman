@@ -3,8 +3,9 @@ import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import legacyKeyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import { ethereumEncode, isEthereumAddress } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
+import { parseSecretKey, parseSuri } from "@talismn/crypto"
 import { Mnemonic } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest, map } from "rxjs"
@@ -14,6 +15,7 @@ import type {
   RequestAccountCreate,
   RequestAccountCreateDcent,
   RequestAccountCreateFromJson,
+  RequestAccountCreateFromPrivateKey,
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
@@ -44,7 +46,6 @@ import { isValidDerivationPath } from "../../util/isValidDerivationPath"
 import { accountToLegacyJson, legacyKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
-import { MnemonicSource } from "../mnemonics/store"
 import {
   formatSuri,
   getNextDerivationPathForMnemonic,
@@ -115,61 +116,58 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const expectedAddress = addressFromSuri(suri, type)
+    // throws if invalid mnemonic
+    const parsedSuri = parseSuri(suri)
+    if (parsedSuri.password) {
+      // TODO: to support this properly, dont store mnemonic and just create it as a keypair that doesnt have a mnemonic
+      throw new Error("Password not supported for suri")
+    }
 
-    const notExists = !legacyKeyring
-      .getAccounts()
-      .some((acc) => acc.address.toLowerCase() === expectedAddress.toLowerCase())
-    assert(notExists, "Account already exists")
+    const curve = legacyKeypairTypeToCurve(type ?? "sr25519")
 
     //suri includes the derivation path if any
-    const splitIdx = suri.indexOf("/")
-    const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
-    const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
+    const { mnemonic, derivationPath } = parseSuri(suri)
 
-    const meta: KeyringPair$Meta = {
+    let derivedMnemonicId = await keyringStore.getExistingMnemonicId(mnemonic)
+
+    if (!derivedMnemonicId) {
+      const result = await keyringStore.addMnemonic({
+        name: `${name} Recovery Phrase`,
+        mnemonic,
+        confirmed: true,
+      })
+      derivedMnemonicId = result.id
+    }
+
+    const account = await keyringStore.addAccountDerive({
+      curve,
+      derivationPath,
+      mnemonicId: derivedMnemonicId,
       name,
-      origin: AccountType.Talisman,
-    }
+    })
 
-    // suri could be a private key instead of a mnemonic
-    if (mnemonicValidate(mnemonic)) {
-      const derivedMnemonicId = await this.stores.mnemonics.getExistingId(mnemonic)
+    this.captureAccountCreateEvent(curve, "seed")
 
-      if (derivedMnemonicId) {
-        meta.derivedMnemonicId = derivedMnemonicId
-        meta.derivationPath = derivationPath
-      } else {
-        const result = await this.stores.mnemonics.add(
-          `${name} Recovery Phrase`,
-          mnemonic,
-          password,
-          MnemonicSource.Imported,
-          true,
-        )
-        if (result.ok) {
-          meta.derivedMnemonicId = result.val
-          meta.derivationPath = derivationPath
-        } else throw new Error("Failed to store mnemonic", { cause: result.val })
-      }
-    } else {
-      meta.importSource = AccountImportSources.PK
-    }
+    return account.address
+  }
 
-    try {
-      const { pair } = legacyKeyring.addUri(
-        suri,
-        password,
-        meta,
-        type, // if undefined, defaults to keyring's default (sr25519 atm)
-      )
+  private async accountCreatePrivateKey({
+    name,
+    privateKey,
+    type,
+  }: RequestAccountCreateFromPrivateKey): Promise<string> {
+    const curve = legacyKeypairTypeToCurve(type ?? "sr25519")
+    const secretKey = parseSecretKey(privateKey, curve)
 
-      this.captureAccountCreateEvent(type, "seed")
+    const account = await keyringStore.addAccountKeypair({
+      name,
+      secretKey,
+      curve,
+    })
 
-      return pair.address
-    } catch (error) {
-      throw new Error((error as Error).message)
-    }
+    this.captureAccountCreateEvent(curve, "privateKey")
+
+    return account.address
   }
 
   private async accountCreateJson({
@@ -646,6 +644,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreate(request as RequestAccountCreate)
       case "pri(accounts.create.suri)":
         return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
+      case "pri(accounts.create.privateKey)":
+        return this.accountCreatePrivateKey(request as RequestAccountCreateFromPrivateKey)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.create.dcent)":

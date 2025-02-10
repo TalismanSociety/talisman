@@ -2,7 +2,7 @@ import { secp256k1 } from "@noble/curves/secp256k1"
 
 import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
-import { deriveSubstrateSecretKey } from "./utils"
+import { deriveSubstrateSecretKey } from "./common"
 
 export const deriveEcdsa = (seed: Uint8Array, derivationPath: string): Keypair => {
   const secretKey = deriveSubstrateSecretKey(seed, derivationPath, "Secp256k1HDKD")

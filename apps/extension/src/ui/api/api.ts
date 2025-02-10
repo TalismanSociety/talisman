@@ -96,6 +96,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create)", { name, type, ...options }),
   accountCreateFromSuri: (name, suri, type) =>
     messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
+  accountCreateFromPrivateKey: (name, privateKey, type) =>
+    messageService.sendMessage("pri(accounts.create.privateKey)", { name, privateKey, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
   accountCreateLedgerSubstrate: (account) =>

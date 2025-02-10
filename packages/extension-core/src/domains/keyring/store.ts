@@ -161,6 +161,11 @@ class KeyringStore {
     return keyring.getMnemonicText(id, hash)
   }
 
+  public async getExistingMnemonicId(mnemonic: string) {
+    const keyring = await firstValueFrom(this.#keyring$)
+    return keyring.getExistingMnemonicId(mnemonic)
+  }
+
   public updateMnemonic(id: string, options: UpdateMnemonicOptions) {
     return this.changeWithoutPassword((keyring) => keyring.updateMnemonic(id, options))
   }

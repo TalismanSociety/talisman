@@ -2,7 +2,7 @@ import { ed25519 } from "@noble/curves/ed25519"
 
 import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
-import { deriveSubstrateSecretKey } from "./utils"
+import { deriveSubstrateSecretKey } from "./common"
 
 export const deriveEd25519 = (seed: Uint8Array, derivationPath: string): Keypair => {
   const secretKey = deriveSubstrateSecretKey(seed, derivationPath, "Ed25519HDKD")
