@@ -1,3 +1,5 @@
+import { detectAddressEncoding, isEthereumAddress } from "@talismn/crypto"
+
 import type { Account, AccountType } from "./account"
 
 export type AccountOfType<Type extends AccountType> = Extract<Account, { type: Type }>
@@ -33,13 +35,21 @@ const ACCOUNT_TYPES_EXTERNAL = [
 
 export const isAccountExternal = (
   account: Account,
-): account is AccountOfType<(typeof ACCOUNT_TYPES_EXTERNAL)[number]> =>
-  isAccountInTypes(account, ACCOUNT_TYPES_EXTERNAL as unknown as AccountType[])
-
+): account is AccountOfType<(typeof ACCOUNT_TYPES_EXTERNAL)[number]> => {
+  return isAccountInTypes(account, ACCOUNT_TYPES_EXTERNAL as unknown as AccountType[])
+}
 export const isAccountOwned = (
   account: Account,
-): account is AccountOfType<(typeof ACCOUNT_TYPES_OWNED)[number]> =>
-  isAccountInTypes(account, ACCOUNT_TYPES_OWNED as unknown as AccountType[])
+): account is AccountOfType<(typeof ACCOUNT_TYPES_OWNED)[number]> => {
+  return isAccountInTypes(account, ACCOUNT_TYPES_OWNED as unknown as AccountType[])
+}
+export const isAccountPortfolio = (account: Account) => {
+  return isAccountOwned(account) || (isAccountOfType(account, "watch-only") && account.isPortfolio)
+}
+export const isAccountEthereum = (account: Account) => {
+  return isEthereumAddress(account.address)
+}
 
-export const isAccountPortfolio = (account: Account) =>
-  isAccountOwned(account) || (isAccountOfType(account, "watch-only") && account.isPortfolio)
+export const isAccountPolkadot = (account: Account) => {
+  return detectAddressEncoding(account.address) === "ss58"
+}

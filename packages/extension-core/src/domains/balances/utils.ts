@@ -1,4 +1,4 @@
-import keyring from "@polkadot/ui-keyring"
+import { isAccountEthereum } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -9,6 +9,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isAccountCompatibleWithChain } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
+import { keyringStore } from "../keyring/store"
 import { balancePool } from "./pool"
 import { balanceTotalsStore } from "./store.BalanceTotals"
 import { BalanceJson, Balances } from "./types"
@@ -24,7 +25,7 @@ export const trackBalanceTotals = async () => {
 
   combineLatest([
     settingsStore.observable,
-    keyring.accounts.subject,
+    keyringStore.accounts$,
     chaindataProvider.tokensByIdObservable,
     chaindataProvider.chainsByIdObservable,
     balancePool.observable,
@@ -33,6 +34,10 @@ export const trackBalanceTotals = async () => {
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
     .subscribe(async ([settings, accounts, tokens, chainsById, balances, allTokenRates]) => {
       try {
+        const mapAccounts = Object.fromEntries(
+          Object.values(accounts).map((account) => [account.address, account]),
+        )
+
         const tokenRates: TokenRatesList = Object.fromEntries(
           allTokenRates.map(({ tokenId, rates }) => [tokenId, rates]),
         )
@@ -40,16 +45,15 @@ export const trackBalanceTotals = async () => {
         const balancesByAddress = Object.values(balances).reduce(
           (acc, balance) => {
             const { address } = balance
-            const account = accounts[address]
+            const account = mapAccounts[address]
             if (!account) return acc
 
             if (!acc[address]) acc[address] = []
-            if (account.type === "ethereum") acc[address].push(balance)
+            if (isAccountEthereum(account)) acc[address].push(balance)
             else {
               const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
               if (!chain || !account.type) return acc
-              if (isAccountCompatibleWithChain(chain, account.type, account.json.meta.genesisHash))
-                acc[address].push(balance)
+              if (isAccountCompatibleWithChain(chain, account)) acc[address].push(balance)
             }
             return acc
           },
@@ -57,7 +61,7 @@ export const trackBalanceTotals = async () => {
         )
 
         const totals = Object.fromEntries(
-          Object.keys(accounts).flatMap((address) => {
+          accounts.flatMap(({ address }) => {
             const balances = new Balances(balancesByAddress[address] ?? [], {
               tokens,
               tokenRates,

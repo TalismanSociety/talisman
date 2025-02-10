@@ -7,7 +7,7 @@ import { useMemo } from "react"
 import {
   AddressesAndEvmNetwork,
   AddressesByChain,
-  isAccountCompatibleWithChain,
+  isAccountCompatibleWithChainOld,
 } from "@extension/core"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useChains, useEvmNetworks } from "@ui/state"
@@ -32,7 +32,9 @@ export const useAccountImportBalances = (accounts: AccountImportDef[]) => {
     const addressesByChain: AddressesByChain = chains.reduce(
       (prev, chain) => {
         const addresses = safeAccounts
-          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
+          .filter(({ type, genesisHash }) =>
+            isAccountCompatibleWithChainOld(chain, type, genesisHash),
+          )
           .map(({ address }) => address)
         if (addresses.length) prev[chain.id] = addresses
         return prev

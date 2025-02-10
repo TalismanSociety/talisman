@@ -17,7 +17,10 @@ export {
 export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"
 
 export * from "./domains/accounts/helpers.catalog"
-export { formatSuri, isAccountCompatibleWithChain } from "./domains/accounts/helpers"
+export {
+  formatSuri,
+  isAccountCompatibleWithChainOld as isAccountCompatibleWithChainOld,
+} from "./domains/accounts/helpers"
 export { runActionOnTrees } from "./domains/accounts/helpers.catalog"
 
 export { SitesAuthorizedStore } from "./domains/sitesAuthorised/store"

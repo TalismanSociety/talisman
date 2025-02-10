@@ -7,6 +7,7 @@ import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
 import { Chain } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
+import { Account, isAccountEthereum } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
@@ -180,13 +181,19 @@ export const formatSuri = (mnemonic: string, derivationPath: string) =>
     ? `${mnemonic}/${derivationPath}`
     : `${mnemonic}${derivationPath}`
 
-export const isAccountCompatibleWithChain = (
+export const isAccountCompatibleWithChainOld = (
   chain: Chain,
   type: KeypairType,
   genesisHash: `0x${string}` | null | undefined,
 ) => {
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+}
+
+export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
+  const genesisHash = "genesisHash" in account ? account.genesisHash : undefined
+  if (genesisHash && genesisHash !== chain.genesisHash) return false
+  return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
 export const isOwnedAccountOrigin = (origin: AccountType) => {

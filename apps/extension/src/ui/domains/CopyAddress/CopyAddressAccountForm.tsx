@@ -4,7 +4,7 @@ import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountJsonAny, isAccountCompatibleWithChain } from "@extension/core"
+import { AccountJsonAny, isAccountCompatibleWithChainOld } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -172,7 +172,7 @@ export const CopyAddressAccountForm = () => {
           (account) =>
             !chain ||
             (account.type &&
-              isAccountCompatibleWithChain(chain, account.type, account.genesisHash)),
+              isAccountCompatibleWithChainOld(chain, account.type, account.genesisHash)),
         )
         .filter((account) => !evmNetwork || account.type === "ethereum")
         // if a folder is selected in portfolio, filter to accounts in that folder
