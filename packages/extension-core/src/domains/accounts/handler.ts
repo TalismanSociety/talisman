@@ -5,8 +5,8 @@ import legacyKeyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
-import { parseSecretKey, parseSuri } from "@talismn/crypto"
-import { Mnemonic } from "@talismn/keyring"
+import { KeypairCurve, parseSecretKey, parseSuri } from "@talismn/crypto"
+import { AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest, map } from "rxjs"
 
@@ -41,7 +41,7 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
-import { getPrivateKey } from "../../util/getPrivateKey"
+import { getPrivateKey, getSecretKeyFromPjsJson } from "../../util/getPrivateKey"
 import { isValidDerivationPath } from "../../util/isValidDerivationPath"
 import { accountToLegacyJson, legacyKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
@@ -54,7 +54,7 @@ import {
 } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
-import { AccountImportSources, AccountType, SubstrateLedgerAppType } from "./types"
+import { AccountType, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(type: string | undefined, method: string) {
@@ -73,7 +73,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = accounts.find((account) => account.name === name)
     assert(!existing, "An account with this name already exists")
 
-    //let mnemonicId: string
+    // let mnemonicId: string
     let mnemonic: Mnemonic
     if ("mnemonicId" in options) {
       const result = await keyringStore.getMnemonic(options.mnemonicId)
@@ -176,33 +176,20 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const addresses: string[] = []
-    for (const json of unlockedPairs) {
-      const pair = legacyKeyring.createFromJson(json, {
+    const options: AddAccountKeypairOptions[] = unlockedPairs.map((json) => {
+      return {
         name: json.meta?.name || "Json Import",
-        origin: AccountType.Talisman,
-        importSource: AccountImportSources.JSON,
-      })
+        curve: json.encoding.content[1] as KeypairCurve,
+        secretKey: getSecretKeyFromPjsJson(json, ""),
+      }
+    })
 
-      const notExists = !legacyKeyring
-        .getAccounts()
-        .some((acc) => acc.address.toLowerCase() === pair.address.toLowerCase())
+    const accounts = await keyringStore.addAccountKeypairs(options)
 
-      assert(notExists, "Account already exists")
-
-      // unlocked pairs need to be decoded with blank password to be considered unlocked
-      pair.decodePkcs8("")
-
-      delete pair.meta.genesisHash
-      pair.meta.whenCreated = Date.now()
-
-      legacyKeyring.encryptAccount(pair, password)
-      addresses.push(pair.address)
-
-      this.captureAccountCreateEvent(pair.type, "json")
-    }
-
-    return addresses
+    return accounts.map((a) => {
+      if (a.type === "keypair") this.captureAccountCreateEvent(a.curve, "json")
+      return a.address
+    })
   }
 
   private accountsCreateLedgerEthereum({

@@ -3,6 +3,7 @@
 import { KeyringPair } from "@polkadot/keyring/types"
 import { u8aEq, u8aToBuffer } from "@polkadot/util"
 import { jsonDecrypt } from "@polkadot/util-crypto"
+import { EncryptedJson } from "@polkadot/util-crypto/types"
 
 // values picked from polkadot keyring
 const PKCS8_DIVIDER = new Uint8Array([161, 35, 3, 33, 0])
@@ -17,6 +18,7 @@ const getU8aPrivateKey = (pair: KeyringPair, password: string) => {
 
   const json = pair.toJson(password)
   pair.lock()
+
   const decrypted = jsonDecrypt(json, password)
 
   const header = decrypted.subarray(0, PKCS8_HEADER.length)
@@ -26,6 +28,29 @@ const getU8aPrivateKey = (pair: KeyringPair, password: string) => {
   let divOffset = SEED_OFFSET + SEC_LENGTH
   let divider = decrypted.subarray(divOffset, divOffset + PKCS8_DIVIDER.length)
 
+  if (!u8aEq(divider, PKCS8_DIVIDER)) {
+    divOffset = SEED_OFFSET + SEED_LENGTH
+    privateKey = decrypted.subarray(SEED_OFFSET, divOffset)
+    divider = decrypted.subarray(divOffset, divOffset + PKCS8_DIVIDER.length)
+
+    if (!u8aEq(divider, PKCS8_DIVIDER)) throw new Error("Invalid Pkcs8 divider found in body")
+  }
+
+  return privateKey
+}
+
+export const getSecretKeyFromPjsJson = (json: EncryptedJson, password: string) => {
+  const decrypted = jsonDecrypt(json, password)
+
+  const header = decrypted.subarray(0, PKCS8_HEADER.length)
+  if (!u8aEq(header, PKCS8_HEADER)) throw new Error("Invalid Pkcs8 header found in body")
+
+  // current format (v3)
+  let privateKey = decrypted.subarray(SEED_OFFSET, SEED_OFFSET + SEC_LENGTH)
+  let divOffset = SEED_OFFSET + SEC_LENGTH
+  let divider = decrypted.subarray(divOffset, divOffset + PKCS8_DIVIDER.length)
+
+  // legacy formats (v1, v2)
   if (!u8aEq(divider, PKCS8_DIVIDER)) {
     divOffset = SEED_OFFSET + SEED_LENGTH
     privateKey = decrypted.subarray(SEED_OFFSET, divOffset)
