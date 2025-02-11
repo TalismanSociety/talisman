@@ -156,6 +156,18 @@ export class ChainConnector {
     method: string,
     params: unknown[],
     isCacheable?: boolean | undefined,
+    extraOptions?: {
+      /**
+       * Set to `true` if this query is speculative, i.e. if on some chains it's expected that it will raise a wasm unreachable error of the form:
+       *
+       *     4003: Client error: Execution failed: Execution aborted due to trap: wasm trap: wasm `unreachable` instruction executed
+       *
+       * By setting expectErrors to true, this method won't pollute the logs with errors we intend to have happen.
+       * An example use case of this is when you plan to catch the wasm unreachable error on chains that don't support the query, and then fall back
+       * to another query or perhaps an empty result.
+       */
+      expectErrors?: boolean
+    },
   ): Promise<T> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
@@ -217,10 +229,14 @@ export class ChainConnector {
         throw new Error(badRpcError)
       }
 
-      log.error(`Failed to send ${method} on chain ${chainId}\nparams: ${JSON.stringify(params)}`, {
-        error,
-        endpoint: ws.endpoint,
-      })
+      if (!extraOptions?.expectErrors)
+        log.error(
+          `Failed to send ${method} on chain ${chainId}\nparams: ${JSON.stringify(params)}`,
+          {
+            error,
+            endpoint: ws.endpoint,
+          },
+        )
 
       await this.disconnectChainSocket(chainId, socketUserId)
       throw error

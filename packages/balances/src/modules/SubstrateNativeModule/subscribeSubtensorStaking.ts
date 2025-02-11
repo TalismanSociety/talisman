@@ -1,23 +1,22 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
-import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { isEthereumAddress } from "@talismn/util"
-import { toPairs } from "lodash"
-import { scan, share, switchMap } from "rxjs"
+import { SS58String } from "polkadot-api"
+import { exhaustMap, from, interval, map, mergeMap, toArray } from "rxjs"
 
 import type { SubNativeModule } from "./index"
 import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import { AddressesByToken, SubscriptionCallback } from "../../types"
-import {
-  buildStorageCoders,
-  findChainMeta,
-  getUniqueChainIds,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-} from "../util"
+import { findChainMeta, getUniqueChainIds } from "../util"
 import { SubNativeBalance, SubNativeToken } from "./types"
-import { asObservable } from "./util/asObservable"
+import {
+  DecodeResult_GetStakeInfoForColdkey,
+  DecodeResult_old_GetStakeInfoForColdkey,
+  EncodeParams_GetStakeInfoForColdkey,
+  EncodeParams_old_GetStakeInfoForColdkey,
+  SUBTENSOR_ROOT_NETUID,
+} from "./util/subtensor"
 
 export async function subscribeSubtensorStaking(
   chaindataProvider: ChaindataProvider,
@@ -63,18 +62,8 @@ export async function subscribeSubtensorStaking(
   const chains = Object.fromEntries(
     Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId)),
   )
-  const chainStorageCoders = buildStorageCoders({
-    chainIds: uniqueChainIds,
-    chains,
-    miniMetadatas,
-    moduleType: "substrate-native",
-    coders: {
-      stakingHotkeys: ["SubtensorModule", "StakingHotkeys"],
-      stake: ["SubtensorModule", "Stake"],
-    },
-  })
 
-  const resultUnsubscribes: Array<() => void> = []
+  const abortController = new AbortController()
   for (const [tokenId, addresses] of Object.entries(addressesBySubtensorToken)) {
     const token = tokens[tokenId]
     if (!token) {
@@ -96,142 +85,150 @@ export async function subscribeSubtensorStaking(
       continue
     }
 
-    type StakingHotkeys = {
-      address: string
-      hotkeys?: string[]
-    }
-    const subscribeStakingHotkeys = (
-      addresses: string[],
-      callback: SubscriptionCallback<StakingHotkeys[]>,
-    ) => {
-      const scaleCoder = chainStorageCoders.get(chainId)?.stakingHotkeys
-      const queries = addresses.flatMap((address): RpcStateQuery<StakingHotkeys> | [] => {
-        const stateKey = encodeStateKey(
-          scaleCoder,
-          `Invalid address in ${chainId} stakingHotkeys query ${address}`,
-          address,
+    // sets the number of addresses to query in parallel (per chain, since each chain runs in parallel to the others)
+    const concurrency = 4
+    const subtensorQueries = from(addresses).pipe(
+      // mergeMap lets us run N concurrent queries, where N is the value of `concurrency`
+      mergeMap(async (address) => {
+        // We support two staked TAO methods,
+        // the old subtensor staking, and the new dTAO subtensor staking.
+        //
+        // We first attempt to query via the old method, then using a try {} catch {} we detect
+        // if it failed, and if so we try the new method.
+        type QueryMethod = () => Promise<
+          Array<
+            | {
+                address: SS58String
+                hotkey: SS58String
+                stake: bigint
+              }
+            | {
+                address: SS58String
+                hotkey: SS58String
+                netuid: bigint
+                stake: bigint
+              }
+          >
+        >
+        const queryMethods: Array<QueryMethod> = [
+          // old method
+          async () => {
+            const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
+            const params = EncodeParams_old_GetStakeInfoForColdkey(address)
+            const response = await chainConnector.send(
+              chainId,
+              "state_call",
+              [method, params],
+              undefined,
+              { expectErrors: true }, // don't pollute the wallet logs when this request fails
+            )
+            const result = DecodeResult_old_GetStakeInfoForColdkey(response)
+            if (!Array.isArray(result)) return []
+
+            const stakes = result
+              ?.map(({ coldkey, hotkey, stake }) => ({
+                address: coldkey,
+                hotkey,
+                stake: BigInt(stake),
+              }))
+              .filter(({ stake }) => stake !== 0n)
+
+            return stakes
+          },
+
+          // new method
+          async () => {
+            const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
+            const params = EncodeParams_GetStakeInfoForColdkey(address)
+            const response = await chainConnector.send(
+              chainId,
+              "state_call",
+              [method, params],
+              undefined,
+              { expectErrors: true }, // don't pollute the wallet logs when this request fails
+            )
+            const result = DecodeResult_GetStakeInfoForColdkey(response)
+            if (!Array.isArray(result)) return []
+
+            const stakes = result
+              // Filter out subnet stakes for now
+              .filter((stake) => stake.netuid === SUBTENSOR_ROOT_NETUID)
+              ?.map(({ coldkey, hotkey, netuid, stake }) => ({
+                address: coldkey,
+                hotkey,
+                netuid: BigInt(netuid),
+                stake: BigInt(stake),
+              }))
+              .filter(({ stake }) => stake !== 0n)
+
+            return stakes
+          },
+        ]
+
+        const errors = []
+        for (const queryMethod of queryMethods) {
+          try {
+            // try each query method
+            return await queryMethod()
+          } catch (cause) {
+            // if it fails, keep track of the error and try the next one
+            errors.push(cause)
+          }
+        }
+
+        // if we get to here, that means that all query methods failed
+        // let's throw the errors back to the native balance module
+        throw new Error(
+          [
+            `Failed to fetch ${tokenId} subtensor staked balance for ${address}:`,
+            ...errors.map((error) => String(error)),
+          ].join("\n\t"),
         )
-        if (!stateKey) return []
-
-        const decodeResult = (change: string | null) => {
-          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-          type DecodedType = string[]
-
-          const decoded = decodeScale<DecodedType>(
-            scaleCoder,
-            change,
-            `Failed to decode stakingHotkeys on chain ${chainId}`,
-          )
-
-          const hotkeys: DecodedType | undefined = decoded ?? undefined
-
-          return { address, hotkeys }
-        }
-
-        return { chainId, stateKey, decodeResult }
-      })
-
-      const subscription = new RpcStateQueryHelper(chainConnector, queries).subscribe(callback)
-      return () => subscription.then((unsubscribe) => unsubscribe())
-    }
-
-    const stakingHotkeysByAddress$ = asObservable(subscribeStakingHotkeys)(addresses).pipe(
-      scan((state, next) => {
-        for (const { address, hotkeys } of next) {
-          if (hotkeys?.length) state.set(address, hotkeys)
-          else state.delete(address)
-        }
-        return state
-      }, new Map<string, string[]>()),
-      share(),
+      }, concurrency),
+      // instead of emitting each balance as it's fetched, toArray waits for them all to fetch and then it collects them into an array
+      toArray(),
+      // this mergeMap flattens our Array<Array<Stakes>> into just an Array<Stakes>
+      mergeMap((stakes) => stakes),
+      // convert our Array<Stakes> into Array<Balances>, which we can then return to the native balance module
+      map((stakes) =>
+        stakes.map(
+          ({ address, hotkey, stake }): SubNativeBalance => ({
+            source: "substrate-native",
+            status: "live",
+            address,
+            multiChainId: { subChainId: chainId },
+            chainId,
+            tokenId,
+            values: [
+              {
+                source: "subtensor-staking",
+                type: "subtensor",
+                label: "subtensor-staking",
+                amount: stake.toString(),
+                meta: {
+                  type: "subtensor-staking",
+                  hotkey,
+                },
+              },
+            ],
+          }),
+        ),
+      ),
     )
 
-    type HotkeyStakeDef = { address: string; hotkey: string }
-    type HotkeyStake = { address: string; hotkey: string; stake?: bigint }
+    // This observable will run the subtensorQueries on a 30s (30_000ms) interval.
+    // However, if the last run has not yet completed (e.g. its been 30s but we're still fetching some balances),
+    // then exhaustMap will wait until the next interval (so T: 60s, T: 90s, T: 120s, etc) before re-executing the subtensorQueries.
+    const subtensorQueriesInterval = interval(30_000).pipe(exhaustMap(() => subtensorQueries))
 
-    const subscribeStakes = (
-      defs: HotkeyStakeDef[],
-      callback: SubscriptionCallback<HotkeyStake[]>,
-    ) => {
-      const scaleCoder = chainStorageCoders.get(chainId)?.stake
-      const queries = defs.flatMap(({ address, hotkey }): RpcStateQuery<HotkeyStake> | [] => {
-        const stateKey = encodeStateKey(
-          scaleCoder,
-          `Invalid input in ${chainId} stake query ${address}/${hotkey}`,
-          hotkey,
-          address,
-        )
-        if (!stateKey) return []
+    // subscribe to the balances
+    const subscription = subtensorQueriesInterval.subscribe({
+      next: (balances) => callback(null, balances),
+      error: (error) => callback(error),
+    })
 
-        const decodeResult = (change: string | null) => {
-          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-          type DecodedType = bigint
-
-          const decoded = decodeScale<DecodedType>(
-            scaleCoder,
-            change,
-            `Failed to decode stake on chain ${chainId}`,
-          )
-
-          const stake: DecodedType | undefined = decoded ?? undefined
-
-          return { address, hotkey, stake }
-        }
-
-        return { chainId, stateKey, decodeResult }
-      })
-
-      const subscription = new RpcStateQueryHelper(chainConnector, queries).subscribe(callback)
-      return () => subscription.then((unsubscribe) => unsubscribe())
-    }
-
-    // subscribe to hotkeys for each address
-    // then for each address/hotkey pair, subscribe to the staked amount
-    const subscription = stakingHotkeysByAddress$
-      .pipe(
-        switchMap((hotkeysByAddress) => {
-          const stakeDefs: HotkeyStakeDef[] = toPairs(hotkeysByAddress).flatMap(
-            ([address, hotkeys]) =>
-              hotkeys.map((hotkey: string): HotkeyStakeDef => ({ address, hotkey })),
-          )
-
-          return asObservable(subscribeStakes)(stakeDefs)
-        }),
-      )
-      .subscribe({
-        next: (stakes) => {
-          const balances = stakes
-            .filter(({ stake }) => typeof stake === "bigint")
-            .map(({ address, hotkey, stake }) => {
-              return {
-                source: "substrate-native",
-                status: "live",
-                address,
-                multiChainId: { subChainId: chainId },
-                chainId,
-                tokenId,
-                values: [
-                  {
-                    source: "subtensor-staking",
-                    type: "subtensor",
-                    label: "subtensor-staking",
-                    amount: stake!.toString(),
-                    meta: {
-                      type: "subtensor-staking",
-                      hotkey,
-                    },
-                  },
-                ],
-              } as SubNativeBalance
-            })
-            .filter(Boolean) as SubNativeBalance[]
-
-          if (balances.length > 0) callback(null, balances)
-        },
-        error: (error) => callback(error),
-      })
-
-    resultUnsubscribes.push(() => subscription.unsubscribe())
+    // use the abortController to tear the subscription down when we don't need it anymore
+    abortController.signal.onabort = () => subscription.unsubscribe()
   }
-  return () => resultUnsubscribes.forEach((unsub) => unsub())
+  return () => abortController.abort()
 }

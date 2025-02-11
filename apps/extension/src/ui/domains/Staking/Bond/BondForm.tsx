@@ -329,6 +329,11 @@ const StakeApr = () => {
       ;({ data, isLoading, isError, error } = hookMap["bittensor"](poolId))
       apr = Number(data?.data?.[0].apr)
       break
+    case "analog-timechain":
+      ;(isLoading = false), (isError = false), (error = null)
+      // always show 55% for Analog, as we have a link to their docs explaining the APR for their chain
+      apr = 0.55
+      break
     default:
       ;({ data, isLoading, isError, error } = hookMap["nominationPool"](token?.chain?.id))
       apr = Number(data)
@@ -341,19 +346,8 @@ const StakeApr = () => {
     return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
 
   if (isError) {
-    if (error?.message === STAKING_APR_UNAVAILABLE) {
-      // fallback to 55% when the yield is unavailable for Analog,
-      // as we have a link to their docs explaining the APR for their chain
-      if (token?.chain?.id === "analog-timechain") {
-        return (
-          <WithAprDocsLink>
-            <div>55%</div>
-          </WithAprDocsLink>
-        )
-      }
+    if (error?.message === STAKING_APR_UNAVAILABLE) return t("APR Unavailable")
 
-      return t("APR Unavailable")
-    }
     return <div className="text-alert-warn">{t("Unable to fetch APR data")}</div>
   }
 
