@@ -60,6 +60,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   port: chrome.runtime.Port,
   extensionPortName = PORT_EXTENSION,
 ): void => {
+  const start = performance.now()
   const { id, message, request } = data
   const isExtension = port.name === extensionPortName
   const sender = port.sender as chrome.runtime.MessageSender
@@ -96,12 +97,14 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // resolve the promise and send back the response
   promise
     .then((response): void => {
-      if (!IGNORED_LOG_MESSAGES.includes(message))
+      if (!IGNORED_LOG_MESSAGES.includes(message)) {
+        const duration = `${(performance.now() - start).toFixed(2)}ms`
         log.debug(`[${port.name} RES] ${source}`, {
           request: shouldLog ? request : OBFUSCATED_PAYLOAD,
           response: shouldLog ? response : OBFUSCATED_PAYLOAD,
+          duration,
         })
-
+      }
       // between the start and the end of the promise, the user may have closed
       // the tab, in which case port will be undefined
       assert(port, "Port has been disconnected")
@@ -112,7 +115,8 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       response = null
     })
     .catch((error) => {
-      log.error(`[${port.name} ERR] ${source}:: ${error.message}`, { error })
+      const duration = `${(performance.now() - start).toFixed(2)}ms`
+      log.error(`[${port.name} ERR] ${source}:: ${error.message}`, { error, duration })
 
       if (error instanceof Error && PORT_DISCONNECTED_MESSAGES.includes(error.message)) {
         // this means that the user has done something like close the tab
