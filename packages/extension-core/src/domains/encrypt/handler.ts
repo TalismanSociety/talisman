@@ -4,7 +4,6 @@ import { log } from "extension-shared"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
-import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -12,6 +11,7 @@ import { Port } from "../../types/base"
 import { getPrivateKey } from "../../util/getPrivateKey"
 import { sr25519Decrypt } from "../../util/sr25519decrypt"
 import { sr25519Encrypt } from "../../util/sr25519encrypt"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
 
 export default class EncryptHandler extends ExtensionHandler {
@@ -21,7 +21,7 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const { request, resolve } = queued
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const result = await withPjsKeyringPair(queued.account.address, async (pair) => {
       const { payload } = request
 
       const pw = await this.stores.password.getPassword()
@@ -60,7 +60,7 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const { request, resolve } = queued
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const result = await withPjsKeyringPair(queued.account.address, async (pair) => {
       const { payload } = request
 
       const pw = await this.stores.password.getPassword()

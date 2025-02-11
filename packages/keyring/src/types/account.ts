@@ -43,7 +43,7 @@ export type AccountLedgerEthereum = AccountBase & {
 
 export type AccountPolkadotVault = AccountBase & {
   type: "polkadot-vault"
-  genesisHash?: `0x${string}`
+  genesisHash: `0x${string}` | null
 }
 
 export type AccountSignet = AccountBase & {

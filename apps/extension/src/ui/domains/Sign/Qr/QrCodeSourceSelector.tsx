@@ -16,7 +16,8 @@ export type QrCodeSource = "talisman" | "parity" | "novasama" | "other"
 const lastSelected = new (class {
   #key = "TalismanQrCodeSourceLastSelected"
   #map = () => new Map<string, QrCodeSource>(JSON.parse(localStorage.getItem(this.#key) ?? "[]"))
-  get = (genesisHash?: string) => (genesisHash ? this.#map().get(genesisHash) : undefined)
+  get = (genesisHash: string | null | undefined) =>
+    genesisHash ? this.#map().get(genesisHash) : undefined
   set = (genesisHash: string, lastSelected: QrCodeSource) =>
     localStorage.setItem(
       this.#key,
@@ -33,7 +34,7 @@ export const qrCodeLogoForSource = (source: QrCodeSource) =>
         ? novaLogoSvg
         : undefined
 
-export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
+export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | undefined) => {
   // calculate the list of available sources
   const chain = useChainByGenesisHash(genesisHash)
   const verifierCertificateMnemonic = useHasVerifierCertificateMnemonic()

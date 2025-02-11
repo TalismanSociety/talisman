@@ -14,7 +14,6 @@ import type {
   SignerPayloadJSON,
 } from "./types"
 import { sentry } from "../../config/sentry"
-import { getPairForAddressSafely } from "../../handlers/helpers"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -26,6 +25,7 @@ import { isJsonPayload } from "../../util/isJsonPayload"
 import { validateHexString } from "../../util/validateHexString"
 import { LegacyAccountOrigin } from "../accounts/types"
 import { getHostName } from "../app/helpers"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { watchSubstrateTransaction } from "../transactions"
 
 export default class SigningHandler extends ExtensionHandler {
@@ -41,7 +41,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const address = encodeAnyAddress(queued.account.address)
 
-    const result = await getPairForAddressSafely(address, async (pair) => {
+    const result = await withPjsKeyringPair(address, async (pair) => {
       const { payload: originalPayload } = request
       const payload = modifiedPayload || originalPayload
       const { ok, val: hostName } = getHostName(url)

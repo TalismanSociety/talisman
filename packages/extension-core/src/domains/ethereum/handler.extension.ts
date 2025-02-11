@@ -16,7 +16,6 @@ import { isEqual } from "lodash"
 import { distinctUntilChanged, map } from "rxjs"
 import { privateKeyToAccount } from "viem/accounts"
 
-import { getPairForAddressSafely } from "../../handlers/helpers"
 import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -28,6 +27,7 @@ import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../
 import { Port } from "../../types/base"
 import { getPrivateKey } from "../../util/getPrivateKey"
 import { getHostName } from "../app/helpers"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { activeTokensStore } from "../tokens/store.activeTokens"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
@@ -99,7 +99,7 @@ export class EthHandler extends ExtensionHandler {
     const tx = parseTransactionRequest(transaction)
     if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await getPairForAddressSafely(account.address, async (pair) => {
+    const result = await withPjsKeyringPair(account.address, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
       assert(client, "Missing client for chain " + ethChainId)
 
@@ -185,7 +185,7 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
 
-    const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
+    const result = await withPjsKeyringPair(unsigned.from, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
@@ -264,7 +264,7 @@ export class EthHandler extends ExtensionHandler {
 
     const { method, request, reject, resolve, url } = queued
 
-    const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const { val, ok } = await withPjsKeyringPair(queued.account.address, async (pair) => {
       const pw = await this.stores.password.getPassword()
       assert(pw, "Unauthorised")
       const privateKey = getPrivateKey(pair, pw, "buffer")

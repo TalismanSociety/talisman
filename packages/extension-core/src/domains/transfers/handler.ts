@@ -5,7 +5,6 @@ import { privateKeyToAccount } from "viem/accounts"
 
 import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
-import { getPairForAddressSafely, getPairFromAddress } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -19,6 +18,8 @@ import {
   serializeTransactionRequest,
 } from "../ethereum/helpers"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
+import { getPjsKeyringPairFake } from "../keyring/getPjsKeyringPairFake"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { watchEthereumTransaction } from "../transactions"
 import { transferAnalytics } from "./helpers"
 import AssetTransfersRpc from "./rpc/AssetTransfers"
@@ -40,7 +41,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip = "0",
     method = "transfer_keep_alive",
   }: RequestAssetTransfer) {
-    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+    const result = await withPjsKeyringPair(fromAddress, async (pair) => {
       const token = await chaindataProvider.tokenById(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -121,7 +122,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       tokenType === "substrate-psp22" ||
       tokenType === "substrate-tokens"
     ) {
-      const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
+      const pair = getPjsKeyringPairFake(fromAddress) // no need for an unlocked pair for fee estimation
       try {
         return await AssetTransfersRpc.checkFee(
           chainId,
@@ -224,7 +225,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const transaction = prepareTransaction(transfer, parsedGasSettings, nonce)
     const unsigned = serializeTransactionRequest(transaction)
 
-    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+    const result = await withPjsKeyringPair(fromAddress, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 

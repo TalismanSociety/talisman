@@ -27,7 +27,7 @@ const registry = new TypeRegistry()
 
 type Props = {
   account: AccountPolkadotVault
-  genesisHash?: string
+  genesisHash: string | null | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
 }
 

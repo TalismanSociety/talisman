@@ -50,7 +50,7 @@ type ScanState =
 interface Props {
   account: AccountPolkadotVault
   className?: string
-  genesisHash?: HexString
+  genesisHash?: HexString | null
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
   payload: SignerPayloadJSON | SignerPayloadRaw
@@ -259,7 +259,7 @@ const SendPage = ({
   containerId,
 }: {
   account: AccountPolkadotVault
-  genesisHash: HexString | undefined
+  genesisHash: HexString | null | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
   reject?: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>

@@ -232,13 +232,12 @@ export class Keyring {
     return accountFromStorage(account)
   }
 
-  public async getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
+  public getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
     const account = this.#storage.accounts.find((a) => a.address === normalizeAddress(address))
     if (!account) throw new Error("Account not found")
-    if (account.type !== "keypair") throw new Error("Account is not a keypair")
+    if (account.type !== "keypair") throw new Error("Secret key unavailable")
 
-    const secretKey = await decryptData(account.secretKey, password)
-    return secretKey
+    return decryptData(account.secretKey, password)
   }
 
   public async getDerivedAddress(

@@ -3,17 +3,22 @@ import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import legacyKeyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { ethereumEncode, isEthereumAddress } from "@polkadot/util-crypto"
-import { HexString } from "@polkadot/util/types"
-import { KeypairCurve, parseSecretKey, parseSuri } from "@talismn/crypto"
+import { isEthereumAddress } from "@polkadot/util-crypto"
+import {
+  bytesToString,
+  detectAddressEncoding,
+  KeypairCurve,
+  parseSecretKey,
+  parseSuri,
+} from "@talismn/crypto"
 import { AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
-import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
+import { decodeAnyAddress, sleep } from "@talismn/util"
+import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
   RequestAccountCreate,
-  RequestAccountCreateDcent,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromPrivateKey,
   RequestAccountCreateFromSuri,
@@ -34,30 +39,33 @@ import type {
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "./types"
-import { getPairForAddressSafely } from "../../handlers/helpers"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
-import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
-import { getPrivateKey, getSecretKeyFromPjsJson } from "../../util/getPrivateKey"
+import { getSecretKeyFromPjsJson } from "../../util/getPrivateKey"
 import { isValidDerivationPath } from "../../util/isValidDerivationPath"
-import { legacyKeypairTypeToCurve } from "../keyring/migration-utils"
+import { pjsKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
-import {
-  formatSuri,
-  getNextDerivationPathForMnemonic,
-  isValidAnyAddress,
-  sortAccounts,
-} from "./helpers"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withPrivateKey } from "../keyring/withPrivateKey"
+import { formatSuri, getNextDerivationPathForMnemonic, sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import { LegacyAccountOrigin, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
-  private async captureAccountCreateEvent(type: string | undefined, method: string) {
+  private async captureAccountCreateEvent(address: string, method: string) {
+    let type = "unknown"
+    try {
+      const encoding = detectAddressEncoding(address)
+      type = encoding === "ss58" ? "substrate" : (encoding as string)
+    } catch (e) {
+      log.warn("Unknown encoding for address", address)
+    }
+
     talismanAnalytics.capture("account create", {
       type,
       method,
@@ -97,13 +105,13 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     const account = await keyringStore.addAccountDerive({
-      curve: legacyKeypairTypeToCurve(type),
+      curve: pjsKeypairTypeToCurve(type),
       derivationPath,
       mnemonicId: mnemonic.id,
       name,
     })
 
-    this.captureAccountCreateEvent(type, "derived")
+    this.captureAccountCreateEvent(account.address, "derived")
 
     return account.address
   }
@@ -123,7 +131,7 @@ export default class AccountsHandler extends ExtensionHandler {
       throw new Error("Password not supported for suri")
     }
 
-    const curve = legacyKeypairTypeToCurve(type ?? "sr25519")
+    const curve = pjsKeypairTypeToCurve(type ?? "sr25519")
 
     //suri includes the derivation path if any
     const { mnemonic, derivationPath } = parseSuri(suri)
@@ -146,7 +154,7 @@ export default class AccountsHandler extends ExtensionHandler {
       name,
     })
 
-    this.captureAccountCreateEvent(curve, "seed")
+    this.captureAccountCreateEvent(account.address, "seed")
 
     return account.address
   }
@@ -156,7 +164,7 @@ export default class AccountsHandler extends ExtensionHandler {
     privateKey,
     type,
   }: RequestAccountCreateFromPrivateKey): Promise<string> {
-    const curve = legacyKeypairTypeToCurve(type ?? "sr25519")
+    const curve = pjsKeypairTypeToCurve(type ?? "sr25519")
     const secretKey = parseSecretKey(privateKey, curve)
 
     const account = await keyringStore.addAccountKeypair({
@@ -165,7 +173,7 @@ export default class AccountsHandler extends ExtensionHandler {
       curve,
     })
 
-    this.captureAccountCreateEvent(curve, "privateKey")
+    this.captureAccountCreateEvent(account.address, "privateKey")
 
     return account.address
   }
@@ -187,97 +195,32 @@ export default class AccountsHandler extends ExtensionHandler {
     const accounts = await keyringStore.addAccountKeypairs(options)
 
     return accounts.map((a) => {
-      if (a.type === "keypair") this.captureAccountCreateEvent(a.curve, "json")
+      if (a.type === "keypair") this.captureAccountCreateEvent(a.address, "json")
       return a.address
     })
   }
 
-  private accountsCreateLedgerEthereum({
+  private async accountsCreateLedgerEthereum({
     name,
     address,
-    path,
+    path: derivationPath,
   }: RequestAccountCreateLedgerEthereum) {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
-    // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
-    // => create the pair without helper
-    const pair = createPair(
-      {
-        type: "ethereum",
-        toSS58: ethereumEncode,
-      },
-      {
-        publicKey: decodeAnyAddress(address),
-        secretKey: new Uint8Array(),
-      },
-      {
-        name,
-        hardwareType: "ledger",
-        isHardware: true,
-        origin: LegacyAccountOrigin.Ledger,
-        path,
-      },
-      null,
-    )
+    const account = await keyringStore.addAccountExternal({
+      type: "ledger-ethereum",
+      name,
+      address,
+      derivationPath,
+    })
 
-    // add to the underlying keyring, allowing not to specify a password
-    legacyKeyring.keyring.addPair(pair)
-    legacyKeyring.saveAccount(pair)
+    this.captureAccountCreateEvent(account.address, "hardware")
 
-    this.captureAccountCreateEvent("ethereum", "hardware")
-
-    return pair.address
+    return account.address
   }
 
-  private async accountCreateDcent({
-    name,
-    address,
-    type,
-    path,
-    tokenIds,
-  }: RequestAccountCreateDcent) {
-    if (type === "ethereum") assert(isEthereumAddress(address), "Not an Ethereum address")
-    else assert(isValidAnyAddress(address), "Not a Substrate address")
-
-    const meta: KeyringPair$Meta = {
-      name,
-      isHardware: true,
-      origin: LegacyAccountOrigin.Dcent,
-      path,
-      tokenIds,
-    }
-
-    // hopefully in the future D'CENT will be able to sign on any chain, and code below can be simply removed.
-    // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
-    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native") {
-      const chain = await chaindataProvider.chainById("polkadot")
-      meta.genesisHash = chain?.genesisHash?.startsWith?.("0x")
-        ? (chain.genesisHash as HexString)
-        : null
-    }
-
-    // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
-    // => create the pair without helper
-    const pair = createPair(
-      {
-        type,
-        toSS58: type === "ethereum" ? ethereumEncode : encodeAddress,
-      },
-      {
-        publicKey: decodeAnyAddress(address),
-        secretKey: new Uint8Array(),
-      },
-      meta,
-      null,
-    )
-
-    // add to the underlying keyring, allowing not to specify a password
-    legacyKeyring.keyring.addPair(pair)
-    legacyKeyring.saveAccount(pair)
-
-    this.captureAccountCreateEvent(type, "dcent")
-
-    return pair.address
+  private async accountCreateDcent() {
+    throw new Error("Dcent accounts are not supported anymore")
   }
 
   private accountsCreateLedgerSubstrate(account: RequestAccountCreateLedgerSubstrate): string {
@@ -298,7 +241,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const { pair } = legacyKeyring.addHardware(address, "ledger", meta)
 
-    this.captureAccountCreateEvent("substrate", "hardware")
+    this.captureAccountCreateEvent(pair.address, "hardware")
 
     return pair.address
   }
@@ -310,11 +253,6 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountCreateQr): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
-
-    const exists = legacyKeyring
-      .getAccounts()
-      .some((account) => encodeAnyAddress(account.address) === address)
-    assert(!exists, "Account already exists")
 
     // TODO: Hit up PVault devs with the following test case:
     //
@@ -331,34 +269,16 @@ export default class AccountsHandler extends ExtensionHandler {
       "Ethereum-style accounts are not yet able to sign transactions in Polkadot Vault",
     )
 
-    // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
-    // => create the pair without helper
-    const pair = createPair(
-      isEthereumAddress(address)
-        ? { type: "ethereum", toSS58: ethereumEncode }
-        : { type: "sr25519", toSS58: legacyKeyring.encodeAddress },
-      {
-        publicKey: decodeAnyAddress(address),
-        secretKey: new Uint8Array(),
-      },
-      {
-        name,
-        genesisHash,
-        isQr: true,
-        isExternal: true,
-        isPortfolio: true,
-        origin: LegacyAccountOrigin.Qr,
-      },
-      null,
-    )
+    const account = await keyringStore.addAccountExternal({
+      type: "polkadot-vault",
+      name,
+      address,
+      genesisHash,
+    })
 
-    // add to the underlying keyring, allowing not to specify a password
-    legacyKeyring.keyring.addPair(pair)
-    legacyKeyring.saveAccount(pair)
+    this.captureAccountCreateEvent(address, "qr")
 
-    this.captureAccountCreateEvent(isEthereumAddress(address) ? "ethereum" : "substrate", "qr")
-
-    return pair.address
+    return account.address
   }
 
   private async accountCreateWatched({
@@ -369,42 +289,16 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const safeAddress = encodeAnyAddress(address)
+    const account = await keyringStore.addAccountExternal({
+      type: "watch-only",
+      name,
+      address,
+      isPortfolio,
+    })
 
-    const exists = legacyKeyring
-      .getAccounts()
-      .some((account) => encodeAnyAddress(account.address) === safeAddress)
-    assert(!exists, "Account already exists")
+    this.captureAccountCreateEvent(address, "watched")
 
-    // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
-    // => create the pair without helper
-    const pair = createPair(
-      isEthereumAddress(safeAddress)
-        ? { type: "ethereum", toSS58: ethereumEncode }
-        : { type: "sr25519", toSS58: legacyKeyring.encodeAddress },
-      {
-        publicKey: decodeAnyAddress(address),
-        secretKey: new Uint8Array(),
-      },
-      {
-        name,
-        isExternal: true,
-        isPortfolio: !!isPortfolio,
-        origin: LegacyAccountOrigin.Watched,
-      },
-      null,
-    )
-
-    // add to the underlying keyring, allowing not to specify a password
-    legacyKeyring.keyring.addPair(pair)
-    legacyKeyring.saveAccount(pair)
-
-    this.captureAccountCreateEvent(
-      isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
-      "watched",
-    )
-
-    return pair.address
+    return account.address
   }
 
   private accountsCreateSignet({
@@ -435,20 +329,21 @@ export default class AccountsHandler extends ExtensionHandler {
     legacyKeyring.keyring.addPair(pair)
     legacyKeyring.saveAccount(pair)
 
-    this.captureAccountCreateEvent("substrate", "signet")
+    this.captureAccountCreateEvent(pair.address, "signet")
 
     return pair.address
   }
 
-  private accountForget({ address }: RequestAccountForget): boolean {
-    const encodedAddress = encodeAnyAddress(address)
-    const account = legacyKeyring.getAccount(encodedAddress)
+  private async accountForget({ address }: RequestAccountForget): Promise<boolean> {
+    const account = await keyringStore.getAccount(address)
     assert(account, "Unable to find account")
 
-    const { type } = legacyKeyring.getPair(account?.address)
-    talismanAnalytics.capture("account forget", { type })
+    talismanAnalytics.capture("account forget", {
+      type: account.type,
+      curve: account.type === "keypair" ? account.curve : undefined,
+    })
 
-    legacyKeyring.forgetAccount(address)
+    await keyringStore.removeAccount(address)
 
     // remove associated authorizations
     this.stores.sites.forgetAccount(address)
@@ -466,16 +361,11 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExport): Promise<ResponseAccountExport> {
     await this.stores.password.checkPassword(password)
 
-    const { err, val } = await getPairForAddressSafely(address, async (pair) => {
+    const { err, val } = await withPjsKeyringPair(address, async (pair) => {
       talismanAnalytics.capture("account export", { type: pair.type, mode: "json" })
 
-      const exportedJson = pair.toJson(exportPw)
-
-      // exporting the json causes the keypair to be re-encoded with the export password, which we do not want, so we re-re-encode it with the proper one
-      pair.toJson(await this.stores.password.transformPassword(password))
-
       return {
-        exportedJson,
+        exportedJson: pair.toJson(exportPw),
       }
     })
     if (err) throw new Error(val as string)
@@ -501,16 +391,17 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExportPrivateKey): Promise<string> {
     await this.stores.password.checkPassword(password)
 
-    const pw = await this.stores.password.getPassword()
+    const { err, val } = await withPrivateKey(address, async (secretKey, curve) => {
+      talismanAnalytics.capture("account export", { type: val, mode: "pk" })
 
-    const { err, val } = await getPairForAddressSafely(address, async (pair) => {
-      assert(pair.type === "ethereum", "Private key cannot be exported for this account type")
-
-      const pk = getPrivateKey(pair, pw as string, "hex")
-
-      talismanAnalytics.capture("account export", { type: pair.type, mode: "pk" })
-
-      return pk
+      switch (curve) {
+        case "ethereum":
+          return bytesToString("hex", secretKey)
+        case "solana":
+          return bytesToString("base58", secretKey)
+        default:
+          throw new Error("Unsupported curve")
+      }
     })
 
     if (err) throw new Error(val as string)
@@ -532,18 +423,7 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
-    await sleep(1000)
-
-    const pair = legacyKeyring.getPair(address)
-    assert(pair, "Unable to find pair")
-
-    const allAccounts = legacyKeyring.getAccounts()
-    const existing = allAccounts.find(
-      (account) => account.address !== address && account.meta?.name === name,
-    )
-    assert(!existing, "An account with this name already exists")
-
-    legacyKeyring.saveAccountMeta(pair, { ...pair.meta, name })
+    await keyringStore.updateAccount(address, name)
 
     return true
   }
@@ -630,8 +510,6 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreatePrivateKey(request as RequestAccountCreateFromPrivateKey)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
-      case "pri(accounts.create.dcent)":
-        return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.ledger.substrate)":
         return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
       case "pri(accounts.create.ledger.ethereum)":
