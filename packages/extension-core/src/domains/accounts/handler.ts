@@ -44,13 +44,13 @@ import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
-import { getSecretKeyFromPjsJson } from "../../util/getPrivateKey"
 import { isValidDerivationPath } from "../../util/isValidDerivationPath"
+import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
 import { pjsKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
-import { withPrivateKey } from "../keyring/withPrivateKey"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { formatSuri, getNextDerivationPathForMnemonic, sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
@@ -391,7 +391,7 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExportPrivateKey): Promise<string> {
     await this.stores.password.checkPassword(password)
 
-    const { err, val } = await withPrivateKey(address, async (secretKey, curve) => {
+    const { err, val } = await withSecretKey(address, async (secretKey, curve) => {
       talismanAnalytics.capture("account export", { type: val, mode: "pk" })
 
       switch (curve) {

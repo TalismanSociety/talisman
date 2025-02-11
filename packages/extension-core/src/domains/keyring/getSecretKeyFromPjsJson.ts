@@ -1,7 +1,7 @@
 // Copyright 2017-2022 @polkadot/keyring authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 import { KeyringPair } from "@polkadot/keyring/types"
-import { u8aEq, u8aToBuffer } from "@polkadot/util"
+import { u8aEq } from "@polkadot/util"
 import { jsonDecrypt } from "@polkadot/util-crypto"
 import { EncryptedJson } from "@polkadot/util-crypto/types"
 
@@ -13,7 +13,8 @@ const SEED_LENGTH = 32
 const SEED_OFFSET = PKCS8_HEADER.length
 
 // built from reverse engineering polkadot keyring
-const getU8aPrivateKey = (pair: KeyringPair, password: string) => {
+// TODO: remove this function after migration
+const _getU8aPrivateKey = (pair: KeyringPair, password: string) => {
   if (pair.isLocked) pair.unlock(password)
 
   const json = pair.toJson(password)
@@ -60,29 +61,4 @@ export const getSecretKeyFromPjsJson = (json: EncryptedJson, password: string) =
   }
 
   return privateKey
-}
-
-type PrivateKeyFormat = "u8a" | "hex" | "buffer"
-type PrivateKeyOutput<T = PrivateKeyFormat> = T extends "u8a"
-  ? Uint8Array
-  : T extends "hex"
-    ? `0x${string}`
-    : Buffer
-
-export const getPrivateKey = <F extends PrivateKeyFormat>(
-  pair: KeyringPair,
-  password: string,
-  format: F,
-): PrivateKeyOutput<F> => {
-  const privateKey = getU8aPrivateKey(pair, password)
-
-  switch (format) {
-    case "hex":
-      return `0x${Buffer.from(privateKey).toString("hex")}` as PrivateKeyOutput<F>
-    case "u8a":
-      return u8aToBuffer(privateKey) as PrivateKeyOutput<F>
-    case "buffer":
-    default:
-      return privateKey as PrivateKeyOutput<F>
-  }
 }

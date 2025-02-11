@@ -1,6 +1,7 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
+import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
 import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
@@ -9,7 +10,6 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
-import { getPrivateKey } from "../../util/getPrivateKey"
 import { validateHexString } from "../../util/validateHexString"
 import {
   getEthTransferTransactionBase,
@@ -20,6 +20,7 @@ import {
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 import { getPjsKeyringPairFake } from "../keyring/getPjsKeyringPairFake"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
 import { transferAnalytics } from "./helpers"
 import AssetTransfersRpc from "./rpc/AssetTransfers"
@@ -225,14 +226,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const transaction = prepareTransaction(transfer, parsedGasSettings, nonce)
     const unsigned = serializeTransactionRequest(transaction)
 
-    const result = await withPjsKeyringPair(fromAddress, async (pair) => {
+    const result = await withSecretKey(fromAddress, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Unauthorised")
-
-      const privateKey = getPrivateKey(pair, password, "hex")
+      const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
 
       const hash = await client.sendTransaction({

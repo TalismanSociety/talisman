@@ -1,5 +1,6 @@
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
+import { getPublicKeyFromSecret } from "@talismn/crypto"
 import { log } from "extension-shared"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
@@ -8,10 +9,9 @@ import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { Port } from "../../types/base"
-import { getPrivateKey } from "../../util/getPrivateKey"
 import { sr25519Decrypt } from "../../util/sr25519decrypt"
 import { sr25519Encrypt } from "../../util/sr25519encrypt"
-import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
 
 export default class EncryptHandler extends ExtensionHandler {
@@ -21,14 +21,10 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const { request, resolve } = queued
 
-    const result = await withPjsKeyringPair(queued.account.address, async (pair) => {
+    const result = await withSecretKey(queued.account.address, async (secretKey, curve) => {
       const { payload } = request
 
-      const pw = await this.stores.password.getPassword()
-      assert(pw, "Unable to retreive password from store.")
-
-      const pk = getPrivateKey(pair, pw, "u8a")
-      const kp = { publicKey: pair.publicKey, secretKey: u8aToU8a(pk) } as Keypair
+      const kp = { publicKey: getPublicKeyFromSecret(secretKey, curve), secretKey } as Keypair
 
       assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
 
@@ -60,18 +56,14 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const { request, resolve } = queued
 
-    const result = await withPjsKeyringPair(queued.account.address, async (pair) => {
+    const result = await withSecretKey(queued.account.address, async (secretKey, curve) => {
       const { payload } = request
 
-      const pw = await this.stores.password.getPassword()
-      assert(pw, "Unable to retreive password from store.")
-
-      const pk = getPrivateKey(pair, pw, "u8a")
-
-      assert(pk.length === 64, "Talisman secretKey is incorrect length")
+      assert(curve === "sr25519", "Unsupported curve")
+      assert(secretKey.length === 64, "Talisman secretKey is incorrect length")
 
       // get decrypted response as integer array
-      const decryptResult = sr25519Decrypt(u8aToU8a(payload.message), { secretKey: u8aToU8a(pk) })
+      const decryptResult = sr25519Decrypt(u8aToU8a(payload.message), { secretKey })
 
       talismanAnalytics.capture("decrypt message approve")
 

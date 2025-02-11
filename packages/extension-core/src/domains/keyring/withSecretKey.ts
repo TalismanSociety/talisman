@@ -5,7 +5,7 @@ import { Address } from "../../types/base"
 import { passwordStore } from "../app/store.password"
 import { keyringStore } from "./store"
 
-export const withPrivateKey = async <T>(
+export const withSecretKey = async <T>(
   address: Address,
   cb: (secretKey: Uint8Array, curve: KeypairCurve) => T | Promise<T>,
 ): Promise<Result<T, "Unauthorised" | "Account not found" | "Private key unavailable" | Error>> => {

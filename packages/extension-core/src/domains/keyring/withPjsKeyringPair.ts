@@ -28,10 +28,9 @@ export const withPjsKeyringPair = async <T>(
 
       const secretKey = await keyringStore.getAccountSecretKey(address, password)
       const publicKey = getPublicKeyFromSecret(secretKey, account.curve)
-      const meta = { name: account.name }
       const type = curveToPjsKeypairType(account.curve)
 
-      pair = keyring.addFromPair({ secretKey, publicKey }, meta, type)
+      pair = keyring.addFromPair({ secretKey, publicKey }, { name: account.name }, type)
     } catch (error) {
       passwordStore.clearPassword()
       throw error

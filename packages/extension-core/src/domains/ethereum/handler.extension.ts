@@ -14,6 +14,7 @@ import Dexie from "dexie"
 import { DEBUG, log } from "extension-shared"
 import { isEqual } from "lodash"
 import { distinctUntilChanged, map } from "rxjs"
+import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { genericSubscription } from "../../handlers/subscriptions"
@@ -25,9 +26,8 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { getPrivateKey } from "../../util/getPrivateKey"
 import { getHostName } from "../app/helpers"
-import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { activeTokensStore } from "../tokens/store.activeTokens"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
@@ -99,14 +99,11 @@ export class EthHandler extends ExtensionHandler {
     const tx = parseTransactionRequest(transaction)
     if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await withPjsKeyringPair(account.address, async (pair) => {
+    const result = await withSecretKey(account.address, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
       assert(client, "Missing client for chain " + ethChainId)
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Unauthorised")
-
-      const privateKey = getPrivateKey(pair, password, "hex")
+      const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
 
       return await client.sendTransaction({
@@ -185,13 +182,11 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
 
-    const result = await withPjsKeyringPair(unsigned.from, async (pair) => {
+    const result = await withSecretKey(unsigned.from, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Unauthorised")
-      const privateKey = getPrivateKey(pair, password, "hex")
+      const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
 
       const tx = parseTransactionRequest(unsigned)
@@ -264,10 +259,11 @@ export class EthHandler extends ExtensionHandler {
 
     const { method, request, reject, resolve, url } = queued
 
-    const { val, ok } = await withPjsKeyringPair(queued.account.address, async (pair) => {
+    const { val, ok } = await withSecretKey(queued.account.address, async (secretKey) => {
       const pw = await this.stores.password.getPassword()
       assert(pw, "Unauthorised")
-      const privateKey = getPrivateKey(pair, pw, "buffer")
+
+      const privateKey = Buffer.from(secretKey)
       let signature: string
 
       if (method === "personal_sign") {
