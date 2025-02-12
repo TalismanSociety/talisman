@@ -1,8 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { mnemonicValidate } from "@polkadot/util-crypto"
-import { classNames, encodeAnyAddress } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
+import { isAddressEqual } from "@talismn/crypto"
+import { classNames } from "@talismn/util"
+import { DEBUG } from "extension-shared"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useForm, UseFormSetValue } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -104,11 +106,12 @@ export const AccountAddMnemonicForm = () => {
             })
           }
 
-          if (accountAddresses.some((a) => encodeAnyAddress(a) === address))
+          if (accountAddresses.some((a) => isAddressEqual(a, address))) {
             return ctx.createError({
               path: mode === "custom" ? "derivationPath" : "mnemonic",
               message: t("Account already exists"),
             })
+          }
 
           return true
         }),
@@ -237,8 +240,10 @@ export const AccountAddMnemonicForm = () => {
               after={
                 targetAddress ? (
                   <Tooltip>
-                    <TooltipTrigger>
-                      <AccountIcon address={targetAddress} className="text-xl" />
+                    <TooltipTrigger asChild>
+                      <div className="size-16">
+                        <AccountIcon address={targetAddress} className="text-xl" />
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent>{targetAddress}</TooltipContent>
                   </Tooltip>
@@ -255,6 +260,7 @@ export const AccountAddMnemonicForm = () => {
           />
           <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
             <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
+            <DevMnemonicButton setValue={setValue} />
             <div className="text-alert-warn grow truncate text-right">
               {errors.mnemonic?.message}
             </div>
@@ -290,5 +296,22 @@ export const AccountAddMnemonicForm = () => {
         </div>
       </form>
     </div>
+  )
+}
+
+const DevMnemonicButton: FC<{ setValue: UseFormSetValue<FormData> }> = ({ setValue }) => {
+  if (!DEBUG) return null
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setValue("mnemonic", "test test test test test test test test test test test junk", {
+          shouldValidate: true,
+        })
+      }}
+    >
+      Set dev mnemonic
+    </button>
   )
 }

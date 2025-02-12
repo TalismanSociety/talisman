@@ -135,21 +135,21 @@ export default class AccountsHandler extends ExtensionHandler {
     //suri includes the derivation path if any
     const { mnemonic, derivationPath } = parseSuri(suri)
 
-    let derivedMnemonicId = await keyringStore.getExistingMnemonicId(mnemonic)
+    let mnemonicId = await keyringStore.getExistingMnemonicId(mnemonic)
 
-    if (!derivedMnemonicId) {
+    if (!mnemonicId) {
       const result = await keyringStore.addMnemonic({
         name: `${name} Recovery Phrase`,
         mnemonic,
         confirmed: true,
       })
-      derivedMnemonicId = result.id
+      mnemonicId = result.id
     }
 
     const account = await keyringStore.addAccountDerive({
       curve,
       derivationPath,
-      mnemonicId: derivedMnemonicId,
+      mnemonicId,
       name,
     })
 

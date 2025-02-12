@@ -11,7 +11,7 @@ export const mnemonics$ = new Observable<Mnemonic[]>((subscriber) => {
     subscriber.next(mnemonics)
   })
   return () => unsubscribe()
-}).pipe(debugObservable("mnemonics$"), shareReplay(1))
+}).pipe(debugObservable("mnemonics$", true), shareReplay(1))
 
 export const [useMnemonics] = bind(mnemonics$)
 

@@ -49,7 +49,7 @@ export default class MnemonicHandler extends ExtensionHandler {
   }
 
   private mnemonicsSubscribe(id: string, port: Port) {
-    return genericAsyncSubscription<"pri(mnemonic.subscribe)">(id, port, keyringStore.accounts$)
+    return genericAsyncSubscription<"pri(mnemonic.subscribe)">(id, port, keyringStore.mnemonics$)
   }
 
   public async handle<TMessageType extends MessageTypes>(

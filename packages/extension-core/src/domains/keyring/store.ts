@@ -110,7 +110,7 @@ class KeyringStore {
    * @param change
    * @returns
    */
-  private async changeWithPassword<T>(
+  private async updateWithPassword<T>(
     change: (keyring: Keyring, password: string) => T | Promise<T>,
   ) {
     return this.withLock(async () => {
@@ -131,7 +131,7 @@ class KeyringStore {
    * @param change
    * @returns
    */
-  private async changeWithoutPassword<T>(change: (keyring: Keyring) => T | Promise<T>) {
+  private async updateWithoutPassword<T>(change: (keyring: Keyring) => T | Promise<T>) {
     return this.withLock(async () => {
       const keyring = await this.loadNew()
       const returnValue = await change(keyring)
@@ -143,7 +143,7 @@ class KeyringStore {
   }
 
   public addMnemonic(options: AddMnemonicOptions) {
-    return this.changeWithPassword((keyring, password) => keyring.addMnemonic(options, password))
+    return this.updateWithPassword((keyring, password) => keyring.addMnemonic(options, password))
   }
 
   public async getMnemonics() {
@@ -157,9 +157,8 @@ class KeyringStore {
   }
 
   public async getMnemonicText(id: string, password: string) {
-    const hash = await passwordStore.getHashedPassword(password)
     const keyring = await firstValueFrom(this.#keyring$)
-    return keyring.getMnemonicText(id, hash)
+    return keyring.getMnemonicText(id, password)
   }
 
   public async getExistingMnemonicId(mnemonic: string) {
@@ -168,11 +167,11 @@ class KeyringStore {
   }
 
   public updateMnemonic(id: string, options: UpdateMnemonicOptions) {
-    return this.changeWithoutPassword((keyring) => keyring.updateMnemonic(id, options))
+    return this.updateWithoutPassword((keyring) => keyring.updateMnemonic(id, options))
   }
 
   public removeMnemonic(id: string) {
-    return this.changeWithoutPassword((keyring) => keyring.removeMnemonic(id))
+    return this.updateWithoutPassword((keyring) => keyring.removeMnemonic(id))
   }
 
   public async getAccounts() {
@@ -186,31 +185,31 @@ class KeyringStore {
   }
 
   public updateAccount(id: string, options: UpdateAccountOptions) {
-    return this.changeWithoutPassword((keyring) => keyring.updateAccount(id, options))
+    return this.updateWithoutPassword((keyring) => keyring.updateAccount(id, options))
   }
 
   public removeAccount(address: string) {
-    return this.changeWithoutPassword((keyring) => keyring.removeAccount(address))
+    return this.updateWithoutPassword((keyring) => keyring.removeAccount(address))
   }
 
   public addAccountExternal(options: AddAccountExternalOptions) {
-    return this.changeWithoutPassword((keyring) => keyring.addAccountExternal(options))
+    return this.updateWithoutPassword((keyring) => keyring.addAccountExternal(options))
   }
 
   public addAccountDerive(options: AddAccountDeriveOptions) {
-    return this.changeWithPassword((keyring, password) =>
+    return this.updateWithPassword((keyring, password) =>
       keyring.addAccountDerive(options, password),
     )
   }
 
   public addAccountKeypair(options: AddAccountKeypairOptions) {
-    return this.changeWithPassword((keyring, password) =>
+    return this.updateWithPassword((keyring, password) =>
       keyring.addAccountKeypair(options, password),
     )
   }
 
   public addAccountKeypairs(options: AddAccountKeypairOptions[]) {
-    return this.changeWithPassword((keyring, password) =>
+    return this.updateWithPassword((keyring, password) =>
       Promise.all(options.map((options) => keyring.addAccountKeypair(options, password))),
     )
   }

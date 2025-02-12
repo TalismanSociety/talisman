@@ -213,7 +213,7 @@ export const AddLedgerSelectNetwork = () => {
 
                   {chain.supportedLedgerApps.length > 1 && (
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <div className="text-body-secondary flex items-center gap-2 align-middle text-xs">
                           <InfoIcon />
                           <span className="overflow-hidden text-ellipsis whitespace-nowrap">

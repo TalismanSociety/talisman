@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames, sleep } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -192,9 +192,6 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       )
 
       try {
-        // pause to prevent double notification
-        await sleep(1000)
-
         const address = await api.accountCreate(name, type, options)
 
         onSuccess(address)
@@ -277,8 +274,10 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
               after={
                 address ? (
                   <Tooltip>
-                    <TooltipTrigger>
-                      <AccountIcon address={address} className="text-xl" />
+                    <TooltipTrigger asChild>
+                      <div className="size-16">
+                        <AccountIcon address={address} className="text-xl" />
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent>{address}</TooltipContent>
                   </Tooltip>

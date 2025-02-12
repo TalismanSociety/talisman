@@ -192,8 +192,10 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
             after={
               targetAddress ? (
                 <Tooltip>
-                  <TooltipTrigger>
-                    <AccountIcon address={targetAddress} className="text-xl" />
+                  <TooltipTrigger asChild>
+                    <div className="size-16">
+                      <AccountIcon address={targetAddress} className="text-xl" />
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>{targetAddress}</TooltipContent>
                 </Tooltip>

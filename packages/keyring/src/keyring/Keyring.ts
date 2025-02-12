@@ -204,6 +204,7 @@ export class Keyring {
       name,
       address: normalizeAddress(pair.address),
       secretKey: await encryptData(pair.secretKey, password),
+      mnemonicId,
       createdAt: Date.now(),
     }
 

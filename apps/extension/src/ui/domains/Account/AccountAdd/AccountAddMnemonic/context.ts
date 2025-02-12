@@ -1,3 +1,4 @@
+import { DEBUG } from "extension-shared"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
@@ -20,12 +21,15 @@ type AccountAddSecretInputs = {
   accounts: RequestAccountCreateFromSuri[]
 }
 
+const DEBUG_MNEMONIC = "test test test test test test test test test test test junk"
+
 const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
 
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
     type: params.get("type") as UiAccountAddressType,
     mode: "first",
+    mnemonic: DEBUG ? DEBUG_MNEMONIC : undefined,
     derivationPath: params.get("type") === "ethereum" ? getEthDerivationPath() : "",
   }))
 
