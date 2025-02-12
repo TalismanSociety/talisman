@@ -1,6 +1,5 @@
 import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
 import { createPair, encodeAddress } from "@polkadot/keyring"
-import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import legacyKeyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
@@ -12,7 +11,7 @@ import {
   parseSuri,
 } from "@talismn/crypto"
 import { AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
-import { decodeAnyAddress, sleep } from "@talismn/util"
+import { decodeAnyAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
 
@@ -51,7 +50,7 @@ import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { formatSuri, getNextDerivationPathForMnemonic, sortAccounts } from "./helpers"
+import { formatSuri, sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import { LegacyAccountOrigin, SubstrateLedgerAppType } from "./types"
@@ -219,31 +218,27 @@ export default class AccountsHandler extends ExtensionHandler {
     return account.address
   }
 
-  private async accountCreateDcent() {
-    throw new Error("Dcent accounts are not supported anymore")
-  }
+  private async accountsCreateLedgerSubstrate(
+    request: RequestAccountCreateLedgerSubstrate,
+  ): Promise<string> {
+    const { address, accountIndex, addressOffset, ledgerApp, name } = request
 
-  private accountsCreateLedgerSubstrate(account: RequestAccountCreateLedgerSubstrate): string {
-    const { address, accountIndex, addressOffset, ledgerApp, name } = account
+    const genesisHash =
+      request.ledgerApp === SubstrateLedgerAppType.Legacy ? request.genesisHash : undefined
 
-    const meta: KeyringPair$Meta = {
+    const account = await keyringStore.addAccountExternal({
+      type: "ledger-polkadot",
+      name,
+      address,
       accountIndex,
       addressOffset,
-      name,
-      origin: LegacyAccountOrigin.Ledger,
-      ledgerApp,
-      type: "ed25519",
-    }
+      app: ledgerApp,
+      genesisHash,
+    })
 
-    if (account.ledgerApp === SubstrateLedgerAppType.Legacy) meta.genesisHash = account.genesisHash
-    if (account.ledgerApp === SubstrateLedgerAppType.Generic && account.migrationAppName)
-      meta.migrationAppName = account.migrationAppName
+    this.captureAccountCreateEvent(account.address, "hardware")
 
-    const { pair } = legacyKeyring.addHardware(address, "ledger", meta)
-
-    this.captureAccountCreateEvent(pair.address, "hardware")
-
-    return pair.address
+    return account.address
   }
 
   private async accountsCreateQr({
@@ -412,19 +407,12 @@ export default class AccountsHandler extends ExtensionHandler {
     address,
     isPortfolio,
   }: RequestAccountExternalSetIsPortfolio): Promise<boolean> {
-    await sleep(1000)
-
-    const pair = legacyKeyring.getPair(address)
-    assert(pair, "Unable to find pair")
-
-    legacyKeyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
-
+    await keyringStore.updateAccount(address, { isPortfolio })
     return true
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
-    await keyringStore.updateAccount(address, name)
-
+    await keyringStore.updateAccount(address, { name })
     return true
   }
 
@@ -464,10 +452,10 @@ export default class AccountsHandler extends ExtensionHandler {
 
       const password = await this.stores.password.getPassword()
       assert(password, "Not logged in")
-      const mnemonicResult = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
-      assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
 
-      const suri = formatSuri(mnemonicResult.val, derivationPath)
+      const mnemonic = await keyringStore.getMnemonicText(mnemonicId, password)
+
+      const suri = formatSuri(mnemonic, derivationPath)
       return addressFromSuri(suri, type)
     } else {
       const { suri, type } = lookup
@@ -476,20 +464,19 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private validateDerivationPath({ derivationPath, type }: RequestValidateDerivationPath): boolean {
+    // TODO
     return isValidDerivationPath(derivationPath, type)
   }
 
+  // TODO do we really need this ? feels like a frontend thing
   private async getNextDerivationPath({
     mnemonicId,
-    type,
+    type, // TODO type => curve
   }: RequestNextDerivationPath): Promise<string> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "Not logged in")
-
-    const { val: mnemonic, ok } = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
-    assert(ok && mnemonic, "Mnemonic not stored locally")
-
-    const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)
+    const { val: derivationPath, ok: ok2 } = await getNextDerivationPathForMnemonicId(
+      mnemonicId,
+      type,
+    )
     assert(ok2, "Failed to lookup next available derivation path")
 
     return derivationPath

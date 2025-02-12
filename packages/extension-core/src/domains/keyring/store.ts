@@ -8,6 +8,7 @@ import {
   AddMnemonicOptions,
   Keyring,
   Mnemonic,
+  UpdateAccountOptions,
   UpdateMnemonicOptions,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
@@ -184,8 +185,8 @@ class KeyringStore {
     return keyring.getAccount(address)
   }
 
-  public updateAccount(id: string, name: string) {
-    return this.changeWithoutPassword((keyring) => keyring.updateAccount(id, name))
+  public updateAccount(id: string, options: UpdateAccountOptions) {
+    return this.changeWithoutPassword((keyring) => keyring.updateAccount(id, options))
   }
 
   public removeAccount(address: string) {

@@ -20,6 +20,7 @@ import type {
   AddAccountExternalOptions,
   AddAccountKeypairOptions,
   AddMnemonicOptions,
+  UpdateAccountOptions,
   UpdateMnemonicOptions,
 } from "../types/keyring"
 import type { AccountStorage, MnemonicStorage } from "./types"
@@ -149,11 +150,14 @@ export class Keyring {
     return account ? accountFromStorage(account) : null
   }
 
-  public updateAccount(address: string, name: string) {
+  public updateAccount(address: string, { name, isPortfolio }: UpdateAccountOptions) {
     const account = this.#storage.accounts.find((s) => s.address === address)
     if (!account) throw new Error("Account not found")
-    if (!name) throw new Error("Name is required")
-    account.name = name
+
+    if (name) account.name = name
+    if (account.type === "watch-only" && isPortfolio !== undefined)
+      account.isPortfolio = isPortfolio
+
     return accountFromStorage(account)
   }
 

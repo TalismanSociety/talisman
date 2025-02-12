@@ -9,6 +9,17 @@ import type {
   AccountWatchOnly,
 } from "./account"
 
+export type AddMnemonicOptions = {
+  mnemonic: string
+  name: string
+  confirmed: boolean
+}
+
+export type UpdateMnemonicOptions = {
+  name?: string
+  confirmed?: boolean
+}
+
 export type AddAccountExternalOptions =
   | Omit<AccountContact, "createdAt">
   | Omit<AccountWatchOnly, "createdAt">
@@ -27,13 +38,7 @@ export type AddAccountKeypairOptions = Omit<AccountBase, "createdAt" | "address"
   secretKey: Uint8Array
 }
 
-export type AddMnemonicOptions = {
-  mnemonic: string
-  name: string
-  confirmed: boolean
-}
-
-export type UpdateMnemonicOptions = {
+export type UpdateAccountOptions = {
   name?: string
-  confirmed?: boolean
+  isPortfolio?: boolean
 }
