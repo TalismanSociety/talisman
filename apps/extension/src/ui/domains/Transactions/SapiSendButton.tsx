@@ -163,7 +163,7 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
       case AccountType.Talisman:
         return "local"
       default:
-        throw new Error("Unsupported account type")
+        throw new Error(`Unsupported account type '${account?.origin}'`)
     }
   }, [account])
 
