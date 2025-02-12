@@ -149,7 +149,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
               <AccountTypeIcon
                 className="text-primary"
                 type={account?.type}
-                signetUrl={isAccountOfType(account, "signet") ? account.signetUrl : undefined}
+                signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
               />
             </div>
             <div className={classNames("truncate", account ? "text-body-secondary" : "")}>

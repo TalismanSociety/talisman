@@ -1,4 +1,3 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { FC, ReactNode, useCallback, useMemo } from "react"
@@ -115,10 +114,11 @@ const AccountButton: FC<AccountButtonProps> = ({
   )
 }
 
-export type DerivedAccountBase = AccountJson & {
+export type DerivedAccountBase = {
   name: string
   accountIndex: number
   address: string
+  genesisHash?: `0x${string}`
   balances: Balances
   connected?: boolean
   selected?: boolean

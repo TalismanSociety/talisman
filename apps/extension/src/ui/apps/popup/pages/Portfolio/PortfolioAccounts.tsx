@@ -394,7 +394,7 @@ export const PortfolioAccounts = () => {
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
               isPortfolio: isAccountPolkadot(account),
-              signetUrl: isAccountOfType(account, "signet") ? account.signetUrl : undefined,
+              signetUrl: isAccountOfType(account, "signet") ? account.url : undefined,
               searchContent: getSearchContent(account),
             }
           : {

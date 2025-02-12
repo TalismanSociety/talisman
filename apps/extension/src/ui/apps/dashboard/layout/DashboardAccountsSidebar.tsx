@@ -68,7 +68,7 @@ const Accounts = () => {
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
               isPortfolio: isAccountPortfolio(account),
-              signetUrl: isAccountOfType(account, "signet") ? account.signetUrl : undefined,
+              signetUrl: isAccountOfType(account, "signet") ? account.url : undefined,
             }
           : {
               type: "folder",

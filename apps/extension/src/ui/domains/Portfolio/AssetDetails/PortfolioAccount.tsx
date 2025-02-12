@@ -29,7 +29,7 @@ export const PortfolioAccount = ({
       <AccountTypeIcon
         className="text-primary"
         type={account?.type}
-        signetUrl={isAccountOfType(account, "signet") ? account.signetUrl : undefined}
+        signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
       />
     </div>
   )

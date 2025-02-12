@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames, sleep } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { getAddressType } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
@@ -105,11 +105,17 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         { autoClose: false },
       )
 
-      // pause to prevent double notification
-      await sleep(1000)
-
       try {
-        onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
+        const [addr] = await api.accountAddExternal([
+          {
+            type: "watch-only",
+            name,
+            address,
+            isPortfolio,
+          },
+        ])
+
+        onSuccess(addr)
 
         notifyUpdate(notificationId, {
           type: "success",

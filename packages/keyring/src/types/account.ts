@@ -30,7 +30,7 @@ export type AccountWatchOnly = AccountBase & {
 
 export type AccountLedgerPolkadot = AccountBase & {
   type: "ledger-polkadot"
-  app: string // polkadot for generic, other value for legacy or migration app
+  app: string // polkadot for generic, other value for legacy or migration app. used to determine derivation path.
   accountIndex: number
   addressOffset: number
   genesisHash?: `0x${string}` // if defined, it's a legacy app
@@ -49,7 +49,7 @@ export type AccountPolkadotVault = AccountBase & {
 export type AccountSignet = AccountBase & {
   type: "signet"
   genesisHash: `0x${string}` // TODO check if this field is required
-  signetUrl: string
+  url: string // usually https://signet.talisman.xyz or https://polkadotmultisig.com/
 }
 
 // export type AccountHdSingle = AccountBase & {

@@ -6,6 +6,7 @@ import type {
   AccountLedgerEthereum,
   AccountLedgerPolkadot,
   AccountPolkadotVault,
+  AccountSignet,
   AccountWatchOnly,
 } from "./account"
 
@@ -26,6 +27,7 @@ export type AddAccountExternalOptions =
   | Omit<AccountLedgerEthereum, "createdAt">
   | Omit<AccountLedgerPolkadot, "createdAt">
   | Omit<AccountPolkadotVault, "createdAt">
+  | Omit<AccountSignet, "createdAt">
 
 export type AddAccountDeriveOptions = Omit<AccountBase, "createdAt" | "address"> & {
   curve: KeypairCurve

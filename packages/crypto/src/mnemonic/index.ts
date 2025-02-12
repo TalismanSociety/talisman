@@ -2,6 +2,7 @@ import { pbkdf2 } from "@noble/hashes/pbkdf2"
 import { sha512 } from "@noble/hashes/sha512"
 import {
   entropyToMnemonic as entropyToMnemonicBip39,
+  generateMnemonic as generateMnemonicBip39,
   mnemonicToEntropy as mnemonicToEntropyBip39,
   validateMnemonic,
 } from "@scure/bip39"
@@ -65,4 +66,13 @@ export const entropyToSeed = (entropy: Uint8Array, curve: KeypairCurve, password
 
 export const isValidMnemonic = (mnemonic: string) => {
   return validateMnemonic(mnemonic, wordlist)
+}
+
+export const generateMnemonic = (words: 12 | 24) => {
+  switch (words) {
+    case 12:
+      return generateMnemonicBip39(wordlist, 128)
+    case 24:
+      return generateMnemonicBip39(wordlist, 256)
+  }
 }

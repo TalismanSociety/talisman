@@ -1,6 +1,5 @@
 import type {
   AccountJson,
-  RequestAccountCreateHardware,
   RequestAccountSubscribe,
   ResponseAccountExport,
   ResponseAccountsExport,
@@ -8,7 +7,12 @@ import type {
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { TokenId } from "@talismn/chaindata-provider"
-import { Account } from "@talismn/keyring"
+import {
+  Account,
+  AddAccountDeriveOptions,
+  AddAccountExternalOptions,
+  AddAccountKeypairOptions,
+} from "@talismn/keyring"
 import { NsLookupType } from "@talismn/on-chain-id"
 
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
@@ -127,6 +131,7 @@ export type UiAccountAddressType = "sr25519" | "ethereum" // TODO someday: chang
 
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
+// TODO migrate
 export enum SubstrateLedgerAppType {
   Legacy = "substrate-legacy",
   Generic = "substrate-generic",
@@ -148,56 +153,12 @@ export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
 
-export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
-  RequestAccountCreateHardware,
-  "hardwareType"
-> & {
-  ledgerApp: SubstrateLedgerAppType.Legacy
-}
-
-export type RequestAccountCreateLedgerSubstrateGeneric = Omit<
-  RequestAccountCreateHardware,
-  "hardwareType" | "genesisHash"
-> & {
-  ledgerApp: SubstrateLedgerAppType.Generic
-  migrationAppName?: string
-}
-
-export type RequestAccountCreateLedgerSubstrate =
-  | RequestAccountCreateLedgerSubstrateLegacy
-  | RequestAccountCreateLedgerSubstrateGeneric
-
-export interface RequestAccountCreateLedgerEthereum {
-  name: string
-  address: string
-  path: string
-}
-
 export interface RequestAccountCreateDcent {
   name: string
   address: string
   type: KeypairType
   path: string
   tokenIds: TokenId[]
-}
-
-export interface RequestAccountCreateQr {
-  address: string
-  genesisHash: `0x${string}` | null
-  name: string
-}
-
-export interface RequestAccountCreateWatched {
-  name: string
-  address: string
-  isPortfolio: boolean
-}
-
-export type RequestAccountCreateSignet = {
-  address: string
-  name: string
-  genesisHash: `0x${string}`
-  signetUrl: string
 }
 
 export interface RequestAccountExternalSetIsPortfolio {
@@ -272,18 +233,20 @@ export type RequestNextDerivationPath = {
   type: AccountAddressType
 }
 
+export type RequestAddAccountExternal = AddAccountExternalOptions[]
+export type RequestAddAccountDerive = AddAccountDeriveOptions[]
+export type RequestAddAccountKeypair = AddAccountKeypairOptions[]
+
 export interface AccountsMessages {
   // account message signatures
+  "pri(accounts.add.external)": [RequestAddAccountExternal, string[]]
+  "pri(accounts.add.derive)": [RequestAddAccountDerive, string[]]
+  "pri(accounts.add.keypair)": [RequestAddAccountKeypair, string[]]
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.privateKey)": [RequestAccountCreateFromPrivateKey, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
-  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
-  "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
-  "pri(accounts.create.qr)": [RequestAccountCreateQr, string]
-  "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
-  "pri(accounts.create.signet)": [RequestAccountCreateSignet, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.all)": [RequestAccountExportAll, ResponseAccountsExport]

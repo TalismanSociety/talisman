@@ -196,9 +196,21 @@ class KeyringStore {
     return this.updateWithoutPassword((keyring) => keyring.addAccountExternal(options))
   }
 
+  public addAccountExternalMulti(options: AddAccountExternalOptions[]) {
+    return this.updateWithoutPassword((keyring) =>
+      Promise.all(options.map((acc) => keyring.addAccountExternal(acc))),
+    )
+  }
+
   public addAccountDerive(options: AddAccountDeriveOptions) {
     return this.updateWithPassword((keyring, password) =>
       keyring.addAccountDerive(options, password),
+    )
+  }
+
+  public addAccountDeriveMulti(options: AddAccountDeriveOptions[]) {
+    return this.updateWithPassword((keyring, password) =>
+      Promise.all(options.map((acc) => keyring.addAccountDerive(acc, password))),
     )
   }
 
@@ -208,9 +220,9 @@ class KeyringStore {
     )
   }
 
-  public addAccountKeypairs(options: AddAccountKeypairOptions[]) {
+  public addAccountKeypairMulti(options: AddAccountKeypairOptions[]) {
     return this.updateWithPassword((keyring, password) =>
-      Promise.all(options.map((options) => keyring.addAccountKeypair(options, password))),
+      Promise.all(options.map((acc) => keyring.addAccountKeypair(acc, password))),
     )
   }
 

@@ -58,14 +58,15 @@ export const ConnectSignetSelectAccounts = () => {
       { autoClose: false },
     )
     try {
-      for (const vault of selectedVaults) {
-        await api.accountCreateSignet(
-          vault.name,
-          vault.address,
-          vault.chain.genesisHash,
-          signetUrlOrigin,
-        )
-      }
+      const [address] = await api.accountAddExternal(
+        selectedVaults.map((vault) => ({
+          type: "signet",
+          name: vault.name,
+          address: vault.address,
+          genesisHash: vault.chain.genesisHash,
+          url: signetUrlOrigin,
+        })),
+      )
 
       notifyUpdate(notificationId, {
         type: "success",
@@ -73,7 +74,7 @@ export const ConnectSignetSelectAccounts = () => {
         subtitle: null,
       })
 
-      onSuccess(selectedVaults[0].address)
+      onSuccess(address)
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e)

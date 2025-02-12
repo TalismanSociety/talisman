@@ -45,7 +45,7 @@ export const TreeItemAccount: FC<{
             <AccountTypeIcon
               className="text-primary"
               type={account.type}
-              signetUrl={account.type === "signet" ? account.signetUrl : undefined}
+              signetUrl={account.type === "signet" ? account.url : undefined}
             />
           </div>
           <div className="text-body-secondary @2xl:text-sm text-xs">

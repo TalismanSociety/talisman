@@ -1,12 +1,7 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { GenericeResponseAddress, SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import {
-  Account,
-  ChainId,
-  isAccountLedgerPolkadotGeneric,
-  SubstrateLedgerAppType,
-} from "extension-core"
+import { Account, ChainId, isAccountLedgerPolkadotGeneric } from "extension-core"
 import { log } from "extension-shared"
 import {
   ChangeEventHandler,
@@ -22,7 +17,6 @@ import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "talisman-ui"
 
 import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
@@ -30,6 +24,7 @@ import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccount
 import { useAccounts, useChain, useChains } from "@ui/state"
 
 import { Fiat } from "../Asset/Fiat"
+import { LedgerAccountDefSubstrate } from "./AccountAdd/AccountAddLedger/context"
 import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
 import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
@@ -37,7 +32,7 @@ import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPi
 import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
 const useLedgerSubstrateGenericAccounts = (
-  selectedAccounts: LedgerAccountDefSubstrateGeneric[],
+  selectedAccounts: LedgerAccountDefSubstrate[],
   pageIndex: number,
   itemsPerPage: number,
   legacyApp?: SubstrateAppParams | null,
@@ -109,6 +104,7 @@ const useLedgerSubstrateGenericAccounts = (
           refAddressCache.current[path] = genericAddress
 
           newAccounts[i] = {
+            app: legacyApp?.name,
             accountIndex,
             addressOffset,
             address: genericAddress.address,
@@ -116,7 +112,6 @@ const useLedgerSubstrateGenericAccounts = (
               appName: legacyApp?.name ?? "Polkadot",
               accountIndex: accountIndex + 1,
             }),
-            migrationAppName: legacyApp?.name,
           } as LedgerSubstrateGenericAccount
 
           setLedgerAccounts([...newAccounts])
@@ -193,12 +188,12 @@ const useLedgerSubstrateGenericAccounts = (
 }
 
 type LedgerSubstrateGenericAccountPickerProps = {
-  onChange?: (accounts: LedgerAccountDefSubstrateGeneric[]) => void
+  onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
   app?: SubstrateAppParams | null
   chainId?: ChainId
 }
 
-type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstrateGeneric
+type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstrate
 
 const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
@@ -207,7 +202,7 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
 }) => {
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateGeneric[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
   const { accounts, connectionStatus, withBalances } = useLedgerSubstrateGenericAccounts(
     selectedAccounts,
     pageIndex,
@@ -216,24 +211,21 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
   )
   const chain = useChain(chainId)
 
-  const handleToggleAccount = useCallback(
-    (acc: DerivedAccountBase) => {
-      const { address, name, accountIndex, addressOffset } = acc as LedgerSubstrateGenericAccount
-      setSelectedAccounts((prev) =>
-        prev.some((pa) => pa.address === address)
-          ? prev.filter((pa) => pa.address !== address)
-          : prev.concat({
-              ledgerApp: SubstrateLedgerAppType.Generic,
-              address,
-              name,
-              accountIndex,
-              addressOffset,
-              migrationAppName: app?.name,
-            }),
-      )
-    },
-    [app?.name],
-  )
+  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
+    const { address, name, accountIndex, addressOffset, app } = acc as LedgerSubstrateGenericAccount
+    setSelectedAccounts((prev) =>
+      prev.some((pa) => pa.address === address)
+        ? prev.filter((pa) => pa.address !== address)
+        : prev.concat({
+            type: "ledger-polkadot",
+            address,
+            name,
+            app,
+            accountIndex,
+            addressOffset,
+          }),
+    )
+  }, [])
 
   useEffect(() => {
     if (onChange) onChange(selectedAccounts)
@@ -413,13 +405,13 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
     if (!address) return null
 
     return {
-      ledgerApp: SubstrateLedgerAppType.Generic,
+      type: "ledger-polkadot",
+      app: app?.name ?? "Polkadot",
       ...accountDetails,
       address,
       balances: balances.balances.find((b) => convertAddress(b.address, null) === address),
       isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
       connected: !!walletAccounts.find((wa) => convertAddress(wa.address, null) === address),
-      migrationAppName: app?.name,
     }
   }, [accountDetails, address, app?.name, balances.balances, balances.status, walletAccounts])
 

@@ -40,7 +40,7 @@ export const useSendFundsPopup = (
     if (account?.type === "signet")
       return {
         canSendFunds: false,
-        cannotSendFundsReason: t(`Please send funds on Signet: ${account.signetUrl}`),
+        cannotSendFundsReason: t(`Please send funds on Signet: ${account.url}`),
       }
     if (tokenId && transferableBalance === 0n)
       return {

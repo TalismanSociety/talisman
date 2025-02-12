@@ -97,7 +97,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
         <AccountTypeIcon
           type={account?.type}
           className="text-primary"
-          signetUrl={isAccountOfType(account, "signet") ? account.signetUrl : undefined}
+          signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
         />
       </TooltipTrigger>
     </Tooltip>

@@ -45,8 +45,10 @@ import {
   Mnemonic,
   NftData,
   ProviderType,
-  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateOptions,
+  RequestAddAccountDerive,
+  RequestAddAccountExternal,
+  RequestAddAccountKeypair,
   RequestAddressLookup,
   RequestBalance,
   RequestMetadataId,
@@ -135,6 +137,9 @@ export default interface MessageTypes {
   setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
 
   // account message types ---------------------------------------------------
+  accountAddExternal: (options: RequestAddAccountExternal) => Promise<string[]>
+  accountAddDerive: (options: RequestAddAccountDerive) => Promise<string[]>
+  accountAddKeypair: (options: RequestAddAccountKeypair) => Promise<string[]>
   accountCreate: (
     name: string,
     type: AccountAddressType,
@@ -147,22 +152,12 @@ export default interface MessageTypes {
     type?: AccountAddressType,
   ) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateLedgerSubstrate: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
-  accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (
     name: string,
     address: string,
     type: KeypairType,
     path: string,
     tokenIds: TokenId[],
-  ) => Promise<string>
-  accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
-  accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
-  accountCreateSignet: (
-    name: string,
-    address: string,
-    genesisHash: `0x${string}`,
-    signetUrl: string,
   ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn

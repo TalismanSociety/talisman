@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { decodeAnyAddress, sleep } from "@talismn/util"
+import { decodeAnyAddress } from "@talismn/util"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -167,9 +167,6 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         { autoClose: false },
       )
 
-      // pause to prevent double notification
-      await sleep(1000)
-
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
       if (state.type === "CONFIGURE_VERIFIER_CERT" && state.verifierCertificateConfig) {
         const {
@@ -198,11 +195,14 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       }
 
       try {
-        const createdAddress = await api.accountCreateQr(
-          name || t("My Polkadot Vault Account"),
-          address,
-          lockToNetwork ? genesisHash : null,
-        )
+        const [createdAddress] = await api.accountAddExternal([
+          {
+            type: "polkadot-vault",
+            name: name || t("My Polkadot Vault Account"),
+            address,
+            genesisHash: lockToNetwork ? genesisHash : null,
+          },
+        ])
 
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {

@@ -258,7 +258,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
     assert(queued.account.type === "signet", "Invalid Signet account")
-    assert(typeof queued.account.signetUrl === "string", "Invalid Signet account")
+    assert(typeof queued.account.url === "string", "Invalid Signet account")
 
     const { request, url } = queued
 
@@ -275,7 +275,7 @@ export default class SigningHandler extends ExtensionHandler {
     // so the popup is not needed here and can be closed
     windowManager.popupClose()
     await chrome.tabs.create({
-      url: `${addTrailingSlash(queued.account.signetUrl)}sign?${params.toString()}`,
+      url: `${addTrailingSlash(queued.account.url)}sign?${params.toString()}`,
       active: true,
     })
 

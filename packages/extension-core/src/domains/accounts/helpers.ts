@@ -4,7 +4,7 @@ import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
 import { Chain } from "@talismn/chaindata-provider"
-import { KeypairCurve } from "@talismn/crypto"
+import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import { Account, isAccountEthereum } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import { log } from "extension-shared"
@@ -13,6 +13,7 @@ import { Err, Ok, Result } from "ts-results"
 import type { Address } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getEthDerivationPath } from "../ethereum/helpers"
+import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
 import { AccountsCatalogStore } from "./store.catalog"
 import { LegacyAccount, LegacyAccountOrigin } from "./types"
 
@@ -53,9 +54,9 @@ export const getPjsInjectedAccount = (
   options = { includePortalOnlyInfo: false },
 ): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address: account.address,
-  genesisHash: "genesisHash" in account ? account.genesisHash : undefined,
   name: account.name,
-  type: "curve" in account ? (account.curve as KeypairType) : undefined,
+  type: getAccountKeypairType(account),
+  ...("genesisHash" in account && account.genesisHash ? { genesisHash: account.genesisHash } : {}),
   ...(options.includePortalOnlyInfo
     ? {
         readonly: account.type === "watch-only",
@@ -68,7 +69,7 @@ export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
   (accounts: Account[]) =>
     accounts
-      .filter(({ address }) => !!addresses.includes(address))
+      .filter(({ address }) => addresses.some((a) => isAddressEqual(a, address)))
       .filter((acc) =>
         anyType
           ? true

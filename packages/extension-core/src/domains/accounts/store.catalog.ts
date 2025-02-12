@@ -1,4 +1,4 @@
-import { Account } from "@talismn/keyring"
+import { Account, isAccountPortfolio } from "@talismn/keyring"
 
 import { StorageProvider } from "../../libs/Store"
 import {
@@ -68,15 +68,16 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    *
    * If all of the given accounts are already in the catalog, this method will noop.
    */
-  addAccounts = async (accounts: Array<{ address: string; isPortfolio?: boolean }>) =>
+  addAccounts = async (accounts: Account[]) =>
     await this.withTrees((trees) =>
       accounts
-        .map(({ address, isPortfolio }) => {
-          const addTree = isPortfolio !== false ? trees.portfolio : trees.watched
-          const rmTree = isPortfolio !== false ? trees.watched : trees.portfolio
+        .map((account) => {
+          const [addTree, rmTree] = isAccountPortfolio(account)
+            ? [trees.portfolio, trees.watched]
+            : [trees.watched, trees.portfolio]
 
-          const added = addAccount(addTree, address)
-          const removed = removeAccount(rmTree, address)
+          const added = addAccount(addTree, account.address)
+          const removed = removeAccount(rmTree, account.address)
 
           return added || removed
         })

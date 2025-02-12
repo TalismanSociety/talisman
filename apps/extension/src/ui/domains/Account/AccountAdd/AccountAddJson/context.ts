@@ -269,7 +269,7 @@ const useJsonAccountImportProvider = () => {
     return true
   }, [pairs, selectedAccounts])
 
-  const importAccounts = useCallback(async () => {
+  const importAccounts = useCallback(() => {
     assert(selectedAccounts.length, "No accounts selected")
     assert(pairs, "Pairs unavailable")
 
@@ -284,9 +284,7 @@ const useJsonAccountImportProvider = () => {
 
     const unlockedPairs = pairsToImport.map((p) => p.toJson())
 
-    const addresses = await api.accountCreateFromJson(unlockedPairs)
-
-    return addresses
+    return api.accountCreateFromJson(unlockedPairs)
   }, [pairs, selectedAccounts])
 
   return {

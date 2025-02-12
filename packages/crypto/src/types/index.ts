@@ -37,3 +37,5 @@ export type Keypair = {
   publicKey: Uint8Array
   address: string
 }
+
+export type Platform = "ethereum" | "polkadot" | "solana"

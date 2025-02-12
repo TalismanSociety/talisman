@@ -1,17 +1,14 @@
 import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
-import { createPair, encodeAddress } from "@polkadot/keyring"
 import legacyKeyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   bytesToString,
-  detectAddressEncoding,
   KeypairCurve,
   parseSecretKey,
   parseSuri,
+  platformFromAddress,
 } from "@talismn/crypto"
-import { AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
-import { decodeAnyAddress } from "@talismn/util"
+import { AccountType, AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
 
@@ -21,11 +18,6 @@ import type {
   RequestAccountCreateFromJson,
   RequestAccountCreateFromPrivateKey,
   RequestAccountCreateFromSuri,
-  RequestAccountCreateLedgerEthereum,
-  RequestAccountCreateLedgerSubstrate,
-  RequestAccountCreateQr,
-  RequestAccountCreateSignet,
-  RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportAll,
   RequestAccountExportPrivateKey,
@@ -33,6 +25,9 @@ import type {
   RequestAccountForget,
   RequestAccountRename,
   RequestAccountsCatalogAction,
+  RequestAddAccountDerive,
+  RequestAddAccountExternal,
+  RequestAddAccountKeypair,
   RequestAddressLookup,
   RequestNextDerivationPath,
   RequestValidateDerivationPath,
@@ -53,17 +48,37 @@ import { withSecretKey } from "../keyring/withSecretKey"
 import { formatSuri, sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
-import { LegacyAccountOrigin, SubstrateLedgerAppType } from "./types"
+
+// existing values for the method field, prior to keyring migration
+type AnalyticsAccountMethod =
+  | "derived"
+  | "seed"
+  | "privateKey"
+  | "json"
+  | "qr"
+  | "hardware"
+  | "watched"
 
 export default class AccountsHandler extends ExtensionHandler {
-  private async captureAccountCreateEvent(address: string, method: string) {
+  private async captureAccountCreateEvent(
+    address: string,
+    method: AccountType | AnalyticsAccountMethod,
+  ) {
     let type = "unknown"
     try {
-      const encoding = detectAddressEncoding(address)
-      type = encoding === "ss58" ? "substrate" : (encoding as string)
+      type = platformFromAddress(address)
+
+      // match with legacy naming
+      if (type === "polkadot") type = "substrate"
     } catch (e) {
       log.warn("Unknown encoding for address", address)
     }
+
+    // match with legacy naming
+    if (method === "ledger-polkadot") method = "hardware"
+    if (method === "ledger-ethereum") method = "hardware"
+    if (method === "polkadot-vault") method = "qr"
+    if (method === "watch-only") method = "watched"
 
     talismanAnalytics.capture("account create", {
       type,
@@ -191,142 +206,12 @@ export default class AccountsHandler extends ExtensionHandler {
       }
     })
 
-    const accounts = await keyringStore.addAccountKeypairs(options)
+    const accounts = await keyringStore.addAccountKeypairMulti(options)
 
     return accounts.map((a) => {
       if (a.type === "keypair") this.captureAccountCreateEvent(a.address, "json")
       return a.address
     })
-  }
-
-  private async accountsCreateLedgerEthereum({
-    name,
-    address,
-    path: derivationPath,
-  }: RequestAccountCreateLedgerEthereum) {
-    assert(isEthereumAddress(address), "Not an Ethereum address")
-
-    const account = await keyringStore.addAccountExternal({
-      type: "ledger-ethereum",
-      name,
-      address,
-      derivationPath,
-    })
-
-    this.captureAccountCreateEvent(account.address, "hardware")
-
-    return account.address
-  }
-
-  private async accountsCreateLedgerSubstrate(
-    request: RequestAccountCreateLedgerSubstrate,
-  ): Promise<string> {
-    const { address, accountIndex, addressOffset, ledgerApp, name } = request
-
-    const genesisHash =
-      request.ledgerApp === SubstrateLedgerAppType.Legacy ? request.genesisHash : undefined
-
-    const account = await keyringStore.addAccountExternal({
-      type: "ledger-polkadot",
-      name,
-      address,
-      accountIndex,
-      addressOffset,
-      app: ledgerApp,
-      genesisHash,
-    })
-
-    this.captureAccountCreateEvent(account.address, "hardware")
-
-    return account.address
-  }
-
-  private async accountsCreateQr({
-    name,
-    address,
-    genesisHash,
-  }: RequestAccountCreateQr): Promise<string> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "Not logged in")
-
-    // TODO: Hit up PVault devs with the following test case:
-    //
-    // 1. Add Moonbeam chainspec & metadata via https://metadata.novasama.io
-    // 2. Create Moonbeam account in the vault
-    // 3. Connect Moonbeam account to https://polkadot.js.org/apps/
-    // 4. Prepare a transfer TX to be signed by the vault
-    // 5. Scan the QR code with the vault, and note the `Please Add The Network You Want To Transact in` error
-    //
-    // When step (5) no longer shows this error, try the above steps but using Talisman instead of Novasama's metadata portal & pjs apps.
-    // Fix any issues in the Talisman implementation, then remove the following `assert()`
-    assert(
-      !isEthereumAddress(address),
-      "Ethereum-style accounts are not yet able to sign transactions in Polkadot Vault",
-    )
-
-    const account = await keyringStore.addAccountExternal({
-      type: "polkadot-vault",
-      name,
-      address,
-      genesisHash,
-    })
-
-    this.captureAccountCreateEvent(address, "qr")
-
-    return account.address
-  }
-
-  private async accountCreateWatched({
-    name,
-    address,
-    isPortfolio,
-  }: RequestAccountCreateWatched): Promise<string> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "Not logged in")
-
-    const account = await keyringStore.addAccountExternal({
-      type: "watch-only",
-      name,
-      address,
-      isPortfolio,
-    })
-
-    this.captureAccountCreateEvent(address, "watched")
-
-    return account.address
-  }
-
-  private accountsCreateSignet({
-    address,
-    genesisHash,
-    name,
-    signetUrl,
-  }: RequestAccountCreateSignet) {
-    const pair = createPair(
-      {
-        type: "sr25519",
-        toSS58: encodeAddress,
-      },
-      {
-        publicKey: decodeAnyAddress(address),
-        secretKey: new Uint8Array(),
-      },
-      {
-        name,
-        genesisHash,
-        signetUrl,
-        origin: LegacyAccountOrigin.Signet,
-        isPortfolio: false,
-      },
-      null,
-    )
-
-    legacyKeyring.keyring.addPair(pair)
-    legacyKeyring.saveAccount(pair)
-
-    this.captureAccountCreateEvent(pair.address, "signet")
-
-    return pair.address
   }
 
   private async accountForget({ address }: RequestAccountForget): Promise<boolean> {
@@ -421,7 +306,6 @@ export default class AccountsHandler extends ExtensionHandler {
       id,
       port,
       // make sure the sort order is updated when the catalog changes
-      //combineLatest([legacyKeyring.accounts.subject, this.stores.accountsCatalog.observable]),
       combineLatest([keyringStore.accounts$, this.stores.accountsCatalog.observable]),
       ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts),
     )
@@ -432,7 +316,7 @@ export default class AccountsHandler extends ExtensionHandler {
       id,
       port,
       // make sure the list of accounts in the catalog is updated when the keyring changes
-      combineLatest([legacyKeyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      combineLatest([keyringStore.accounts$, this.stores.accountsCatalog.observable]),
       async ([, catalog]): Promise<AccountsCatalogData> =>
         // on first start-up, the store (loaded from localstorage) will be empty
         //
@@ -482,6 +366,39 @@ export default class AccountsHandler extends ExtensionHandler {
     return derivationPath
   }
 
+  private async accountsAddExternal(options: RequestAddAccountExternal): Promise<string[]> {
+    const password = await this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const accounts = await keyringStore.addAccountExternalMulti(options)
+
+    for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
+
+    return accounts.map((a) => a.address)
+  }
+
+  private async accountsAddDerive(options: RequestAddAccountDerive): Promise<string[]> {
+    const password = await this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const accounts = await keyringStore.addAccountDeriveMulti(options)
+
+    for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
+
+    return accounts.map((a) => a.address)
+  }
+
+  private async accountsAddKeypair(options: RequestAddAccountKeypair): Promise<string[]> {
+    const password = await this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const accounts = await keyringStore.addAccountKeypairMulti(options)
+
+    for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
+
+    return accounts.map((a) => a.address)
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -489,6 +406,12 @@ export default class AccountsHandler extends ExtensionHandler {
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
+      case "pri(accounts.add.external)":
+        return this.accountsAddExternal(request as RequestAddAccountExternal)
+      case "pri(accounts.add.derive)":
+        return this.accountsAddDerive(request as RequestAddAccountDerive)
+      case "pri(accounts.add.keypair)":
+        return this.accountsAddKeypair(request as RequestAddAccountKeypair)
       case "pri(accounts.create)":
         return this.accountCreate(request as RequestAccountCreate)
       case "pri(accounts.create.suri)":
@@ -497,16 +420,6 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreatePrivateKey(request as RequestAccountCreateFromPrivateKey)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
-      case "pri(accounts.create.ledger.substrate)":
-        return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
-      case "pri(accounts.create.ledger.ethereum)":
-        return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
-      case "pri(accounts.create.qr)":
-        return this.accountsCreateQr(request as RequestAccountCreateQr)
-      case "pri(accounts.create.watched)":
-        return this.accountCreateWatched(request as RequestAccountCreateWatched)
-      case "pri(accounts.create.signet)":
-        return this.accountsCreateSignet(request as RequestAccountCreateSignet)
       case "pri(accounts.external.setIsPortfolio)":
         return this.accountExternalSetIsPortfolio(request as RequestAccountExternalSetIsPortfolio)
       case "pri(accounts.forget)":

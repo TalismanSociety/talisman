@@ -1,4 +1,9 @@
-import { detectAddressEncoding, isEthereumAddress } from "@talismn/crypto"
+import {
+  detectAddressEncoding,
+  isEthereumAddress,
+  platformFromAddress,
+  platformFromCurve,
+} from "@talismn/crypto"
 
 import type { Account, AccountLedgerPolkadot, AccountType } from "./account"
 
@@ -31,6 +36,7 @@ const ACCOUNT_TYPES_EXTERNAL = [
   "ledger-ethereum",
   "ledger-polkadot",
   "polkadot-vault",
+  "signet",
 ] as const
 
 export const isAccountExternal = (
@@ -69,4 +75,11 @@ export const isAccountLedgerPolkadotLegacy = (
 export const getAccountGenesisHash = (account: Account | null | undefined) => {
   if (!account) return undefined
   return "genesisHash" in account ? account.genesisHash : undefined
+}
+
+export const getAccountPlatform = (account: Account | null | undefined) => {
+  if (!account) return undefined
+  return "curve" in account
+    ? platformFromCurve(account.curve)
+    : platformFromAddress(account.address)
 }

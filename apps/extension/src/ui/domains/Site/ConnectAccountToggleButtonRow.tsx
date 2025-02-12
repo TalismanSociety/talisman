@@ -50,7 +50,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     <AccountTypeIcon
       type={account.type}
       className="text-primary"
-      signetUrl={isAccountOfType(account, "signet") ? account.signetUrl : undefined}
+      signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
     />
     <div className="grow"></div>
     <div

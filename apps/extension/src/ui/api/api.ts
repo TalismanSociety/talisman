@@ -92,6 +92,10 @@ export const api: MessageTypes = {
     }),
 
   // account messages ---------------------------------------------------
+  accountAddExternal: (options) =>
+    messageService.sendMessage("pri(accounts.add.external)", options),
+  accountAddDerive: (options) => messageService.sendMessage("pri(accounts.add.derive)", options),
+  accountAddKeypair: (options) => messageService.sendMessage("pri(accounts.add.keypair)", options),
   accountCreate: (name, type, options) =>
     messageService.sendMessage("pri(accounts.create)", { name, type, ...options }),
   accountCreateFromSuri: (name, suri, type) =>
@@ -100,15 +104,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create.privateKey)", { name, privateKey, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateLedgerSubstrate: (account) =>
-    messageService.sendMessage("pri(accounts.create.ledger.substrate)", account),
-
-  accountCreateLedgerEthereum: (name, address, path) =>
-    messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
-      name,
-      address,
-      path,
-    }),
   accountCreateDcent: (name, address, type, path, tokenIds) =>
     messageService.sendMessage("pri(accounts.create.dcent)", {
       name,
@@ -116,25 +111,6 @@ export const api: MessageTypes = {
       type,
       path,
       tokenIds,
-    }),
-  accountCreateQr: (name, address, genesisHash) =>
-    messageService.sendMessage("pri(accounts.create.qr)", {
-      name,
-      address,
-      genesisHash,
-    }),
-  accountCreateWatched: (name, address, isPortfolio) =>
-    messageService.sendMessage("pri(accounts.create.watched)", {
-      name,
-      address,
-      isPortfolio,
-    }),
-  accountCreateSignet: (name, address, genesisHash, signetUrl) =>
-    messageService.sendMessage("pri(accounts.create.signet)", {
-      name,
-      address,
-      genesisHash,
-      signetUrl,
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountsCatalogSubscribe: (cb) =>

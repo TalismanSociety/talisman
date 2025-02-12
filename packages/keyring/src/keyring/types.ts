@@ -6,6 +6,7 @@ import type {
   AccountLedgerEthereum,
   AccountLedgerPolkadot,
   AccountPolkadotVault,
+  AccountSignet,
   AccountWatchOnly,
 } from "../types/account"
 import type { Mnemonic } from "../types/mnemonic"
@@ -25,3 +26,4 @@ export type AccountStorage =
   | AccountLedgerEthereum
   | AccountLedgerPolkadot
   | AccountPolkadotVault
+  | AccountSignet
