@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
+import { bytesToString, parseSecretKey } from "@talismn/crypto"
 import { encodeAnyAddress } from "@talismn/util"
 import { isAccountEthereum } from "extension-core"
 import i18next from "i18next"
@@ -149,7 +150,15 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         { autoClose: false },
       )
       try {
-        const address = await api.accountCreateFromPrivateKey(name, privateKey, "ethereum")
+        const secretKey = parseSecretKey(privateKey, "ethereum")
+
+        const [address] = await api.accountAddKeypair([
+          {
+            name,
+            curve: "ethereum",
+            secretKey: bytesToString("base64", secretKey),
+          },
+        ])
 
         onSuccess(address)
         notifyUpdate(notificationId, {

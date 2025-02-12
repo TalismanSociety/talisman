@@ -85,11 +85,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(mnemonic.delete)", { mnemonicId }),
   validateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(mnemonic.validateMnemonic)", mnemonic),
-  setVerifierCertMnemonic: (certType, options) =>
-    messageService.sendMessage("pri(mnemonic.setVerifierCertMnemonic)", {
-      type: certType,
-      options,
-    }),
+  setVerifierCertMnemonic: (options) =>
+    messageService.sendMessage("pri(mnemonic.setVerifierCertMnemonic)", options),
 
   // account messages ---------------------------------------------------
   accountAddExternal: (options) =>

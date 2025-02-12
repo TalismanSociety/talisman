@@ -7,6 +7,7 @@ import {
   parseSecretKey,
   parseSuri,
   platformFromAddress,
+  stringToBytes,
 } from "@talismn/crypto"
 import { AccountType, AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
 import { log } from "extension-shared"
@@ -119,6 +120,7 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     const account = await keyringStore.addAccountDerive({
+      type: "existing-mnemonic",
       curve: pjsKeypairTypeToCurve(type),
       derivationPath,
       mnemonicId: mnemonic.id,
@@ -162,6 +164,7 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     const account = await keyringStore.addAccountDerive({
+      type: "existing-mnemonic",
       curve,
       derivationPath,
       mnemonicId,
@@ -272,7 +275,7 @@ export default class AccountsHandler extends ExtensionHandler {
     await this.stores.password.checkPassword(password)
 
     const { err, val } = await withSecretKey(address, async (secretKey, curve) => {
-      talismanAnalytics.capture("account export", { type: val, mode: "pk" })
+      talismanAnalytics.capture("account export", { type: curve, mode: "pk" })
 
       switch (curve) {
         case "ethereum":
@@ -392,7 +395,12 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const accounts = await keyringStore.addAccountKeypairMulti(options)
+    const deserializedOptions = options.map((o) => ({
+      ...o,
+      secretKey: stringToBytes("base64", o.secretKey),
+    }))
+
+    const accounts = await keyringStore.addAccountKeypairMulti(deserializedOptions)
 
     for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
 

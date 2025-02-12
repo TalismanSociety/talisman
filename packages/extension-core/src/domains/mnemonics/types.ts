@@ -1,11 +1,5 @@
 import { Mnemonic } from "@talismn/keyring"
 
-import {
-  RequestAccountCreateOptions,
-  RequestAccountCreateOptionsExistingMnemonic,
-  RequestAccountCreateOptionsNewMnemonic,
-} from "../accounts/types"
-
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
 }
@@ -31,17 +25,19 @@ export declare type MnemonicDeleteRequest = {
   mnemonicId: MnemonicId
 }
 
-export type VerifierCertificateType = "existing" | "import" | "new" | null
-
-export type RequestSetVerifierCertParams =
-  | [type: "import", options: RequestAccountCreateOptionsNewMnemonic]
-  | [type: "new", options: RequestAccountCreateOptionsNewMnemonic]
-  | [type: "existing", options: RequestAccountCreateOptionsExistingMnemonic]
-
-export type RequestSetVerifierCertificateMnemonic = {
-  type: "new" | "import" | "existing"
-  options: RequestAccountCreateOptions
+type SetVerifierCertificateNewOptions = {
+  type: "new"
+  mnemonic: string
+  confirmed: boolean
 }
+type SetVerifierCertificateExistingOptions = {
+  type: "existing"
+  mnemonicId: string
+}
+
+export type RequestSetVerifierCertificateMnemonic =
+  | SetVerifierCertificateNewOptions
+  | SetVerifierCertificateExistingOptions
 
 export interface MnemonicMessages {
   // mnemonic message signatures

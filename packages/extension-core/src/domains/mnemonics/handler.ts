@@ -5,47 +5,43 @@ import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import {
-  RequestAccountCreateOptionsExistingMnemonic,
-  RequestAccountCreateOptionsNewMnemonic,
-} from "../accounts/types"
 import { keyringStore } from "../keyring/store"
 import { RequestSetVerifierCertificateMnemonic } from "./types"
 
 export default class MnemonicHandler extends ExtensionHandler {
-  private async setVerifierCertMnemonic({ type, options }: RequestSetVerifierCertificateMnemonic) {
-    switch (type) {
-      case "new":
-      case "import": {
-        const { mnemonic, confirmed } = options as RequestAccountCreateOptionsNewMnemonic
+  private async setVerifierCertMnemonic(options: RequestSetVerifierCertificateMnemonic) {
+    switch (options.type) {
+      case "new": {
+        const { mnemonic, confirmed } = options
         assert(mnemonic, "Mnemonic should be provided")
+
         const isValid = isValidMnemonic(mnemonic)
         assert(isValid, "Invalid mnemonic")
+
         const password = await this.stores.password.getPassword()
         if (!password) throw new Error("Unauthorised")
-        try {
-          const { id } = await keyringStore.addMnemonic({
-            name: "Vault Verifier Certificate Mnemonic",
-            mnemonic,
-            confirmed,
-          })
-          await this.stores.app.set({ vaultVerifierCertificateMnemonicId: id })
-        } catch (cause) {
-          throw new Error("Unable to set Verifier Certificate Mnemonic", { cause })
-        }
 
-        break
+        const { id } = await keyringStore.addMnemonic({
+          name: "Vault Verifier Certificate Mnemonic",
+          mnemonic,
+          confirmed,
+        })
+        await this.stores.app.set({ vaultVerifierCertificateMnemonicId: id })
+        return true
       }
       case "existing": {
-        const { mnemonicId } = options as RequestAccountCreateOptionsExistingMnemonic
+        const { mnemonicId } = options
         assert(mnemonicId, "MnemonicId should be provided")
+
+        const mnemonic = await keyringStore.getMnemonic(mnemonicId)
+        assert(mnemonic, "Unable to find mnemonic")
+
         await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
-        break
+        return true
       }
       default:
-        throw new Error(`Unable to handle setVerifierCertMnemonic message with type ${type}`)
+        throw new Error("Invalid request")
     }
-    return true
   }
 
   private mnemonicsSubscribe(id: string, port: Port) {

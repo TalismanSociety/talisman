@@ -185,10 +185,38 @@ export class Keyring {
     return accountFromStorage(account)
   }
 
+  private async ensureMnemonic(options: AddAccountDeriveOptions, password: string) {
+    switch (options.type) {
+      case "new-mnemonic": {
+        const { mnemonic, mnemonicName: name, confirmed } = options
+        const mnemonicId = this.getExistingMnemonicId(mnemonic)
+        if (mnemonicId) return mnemonicId
+
+        const { id } = await this.addMnemonic(
+          {
+            name,
+            mnemonic,
+            confirmed,
+          },
+          password,
+        )
+
+        return id
+      }
+      case "existing-mnemonic": {
+        return options.mnemonicId
+      }
+    }
+  }
+
   public async addAccountDerive(
-    { curve, mnemonicId, derivationPath, name }: AddAccountDeriveOptions,
+    options: AddAccountDeriveOptions,
     password: string,
   ): Promise<Account> {
+    const { curve, derivationPath, name } = options
+
+    const mnemonicId = await this.ensureMnemonic(options, password)
+
     const mnemonic = this.#storage.mnemonics.find((s) => s.id === mnemonicId)
     if (!mnemonic) throw new Error("Mnemonic not found")
 

@@ -21,6 +21,32 @@ export type UpdateMnemonicOptions = {
   confirmed?: boolean
 }
 
+type DeriveFromNewMnemonic = {
+  type: "new-mnemonic"
+  mnemonic: string
+  mnemonicName: string
+  confirmed: boolean
+  curve: KeypairCurve
+  derivationPath: string
+}
+
+type DeriveFromExistingMnemonic = {
+  type: "existing-mnemonic"
+  mnemonicId: string
+  curve: KeypairCurve
+  derivationPath: string
+}
+
+type DeriveFromMnemonicOptions = DeriveFromNewMnemonic | DeriveFromExistingMnemonic
+
+export type AddAccountDeriveOptions = Omit<AccountBase, "createdAt" | "address"> &
+  DeriveFromMnemonicOptions
+
+export type AddAccountKeypairOptions = Omit<AccountBase, "createdAt" | "address"> & {
+  curve: KeypairCurve
+  secretKey: Uint8Array
+}
+
 export type AddAccountExternalOptions =
   | Omit<AccountContact, "createdAt">
   | Omit<AccountWatchOnly, "createdAt">
@@ -28,17 +54,6 @@ export type AddAccountExternalOptions =
   | Omit<AccountLedgerPolkadot, "createdAt">
   | Omit<AccountPolkadotVault, "createdAt">
   | Omit<AccountSignet, "createdAt">
-
-export type AddAccountDeriveOptions = Omit<AccountBase, "createdAt" | "address"> & {
-  curve: KeypairCurve
-  mnemonicId: string
-  derivationPath: string
-}
-
-export type AddAccountKeypairOptions = Omit<AccountBase, "createdAt" | "address"> & {
-  curve: KeypairCurve
-  secretKey: Uint8Array
-}
 
 export type UpdateAccountOptions = {
   name?: string

@@ -39,9 +39,9 @@ const SetVerifierCertificateContentInner = () => {
         const newMnemonic = await generateMnemonic()
         if (!newMnemonic) return
         const { mnemonic, confirmed } = newMnemonic
-        await api.setVerifierCertMnemonic("new", { mnemonic, confirmed })
+        await api.setVerifierCertMnemonic({ type: "new", mnemonic, confirmed })
       } else {
-        await api.setVerifierCertMnemonic("existing", { mnemonicId })
+        await api.setVerifierCertMnemonic({ type: "existing", mnemonicId })
       }
     } catch (err) {
       log.error("Failed to set verifier certificate", { err })

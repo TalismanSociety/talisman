@@ -52,7 +52,7 @@ import {
   RequestAddressLookup,
   RequestBalance,
   RequestMetadataId,
-  RequestSetVerifierCertParams,
+  RequestSetVerifierCertificateMnemonic,
   RequestUpsertCustomChain,
   RequestUpsertCustomEvmNetwork,
   ResponseAssetTransfer,
@@ -134,7 +134,7 @@ export default interface MessageTypes {
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
   mnemonicDelete: (mnemonicId: string) => Promise<boolean>
   validateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
+  setVerifierCertMnemonic: (options: RequestSetVerifierCertificateMnemonic) => Promise<boolean>
 
   // account message types ---------------------------------------------------
   accountAddExternal: (options: RequestAddAccountExternal) => Promise<string[]>

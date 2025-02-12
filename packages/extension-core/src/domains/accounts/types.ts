@@ -235,7 +235,11 @@ export type RequestNextDerivationPath = {
 
 export type RequestAddAccountExternal = AddAccountExternalOptions[]
 export type RequestAddAccountDerive = AddAccountDeriveOptions[]
-export type RequestAddAccountKeypair = AddAccountKeypairOptions[]
+
+type AddAccountKeypairOptionsSerialized = Omit<AddAccountKeypairOptions, "secretKey"> & {
+  secretKey: string // serialize as base64 for message passing
+}
+export type RequestAddAccountKeypair = AddAccountKeypairOptionsSerialized[]
 
 export interface AccountsMessages {
   // account message signatures

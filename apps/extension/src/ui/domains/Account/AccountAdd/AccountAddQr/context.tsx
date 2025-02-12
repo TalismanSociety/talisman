@@ -3,7 +3,6 @@ import { decodeAnyAddress } from "@talismn/util"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
-import { VerifierCertificateType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -25,7 +24,7 @@ export type CONFIGURE_STATE = {
   submitting?: true
 }
 
-type VerifierCertificateTypeState = VerifierCertificateType | undefined
+type VerifierCertificateTypeState = "import" | "new" | "existing" | null
 
 export type CONFIGURE_VERIFIER_CERT_STATE = {
   type: "CONFIGURE_VERIFIER_CERT"
@@ -59,7 +58,7 @@ type Action =
   | { method: "setConfigureVerifierCert" }
   | {
       method: "setVerifierCertType"
-      verifierCertificateType: VerifierCertificateTypeState
+      verifierCertificateType?: VerifierCertificateTypeState
       verifierCertificateMnemonicId?: string | undefined
       verifierCertificateMnemonic?: string | undefined
       mnemonicConfirmed?: boolean
@@ -177,17 +176,20 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         } = state.verifierCertificateConfig
         if (verifierCertificateType) {
           if (verifierCertificateType === "import" && mnemonic) {
-            await api.setVerifierCertMnemonic(verifierCertificateType, {
+            await api.setVerifierCertMnemonic({
+              type: "new",
               mnemonic,
               confirmed: true,
             })
           } else if (verifierCertificateType === "new" && verifierCertificateMnemonic) {
-            await api.setVerifierCertMnemonic(verifierCertificateType, {
+            await api.setVerifierCertMnemonic({
+              type: "new",
               mnemonic: verifierCertificateMnemonic,
               confirmed: mnemonicConfirmed ?? false,
             })
           } else if (verifierCertificateType === "existing" && verifierCertificateMnemonicId) {
-            await api.setVerifierCertMnemonic(verifierCertificateType, {
+            await api.setVerifierCertMnemonic({
+              type: "existing",
               mnemonicId: verifierCertificateMnemonicId,
             })
           }
