@@ -1,17 +1,11 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import keyring from "@polkadot/ui-keyring"
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
-import { captureException } from "@sentry/browser"
 import { Chain } from "@talismn/chaindata-provider"
 import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import { Account, isAccountEthereum } from "@talismn/keyring"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
-import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
 
-import type { Address } from "../../types/base"
-import { addressFromSuri } from "../../util/addressFromSuri"
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
 import { AccountsCatalogStore } from "./store.catalog"
@@ -108,40 +102,40 @@ export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: num
 /**
  * @deprecated
  */
-export const getNextDerivationPathForMnemonic = (
-  mnemonic: string,
-  type: KeypairType = "sr25519",
-): Result<
-  string,
-  "Unable to get next derivation path" | "Reached maximum number of derived accounts"
-> => {
-  const allAccounts = keyring.getAccounts()
-  try {
-    // for substrate check empty derivation path first
-    if (type !== "ethereum") {
-      const derivedAddress = encodeAnyAddress(addressFromSuri(mnemonic, type))
-      if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
-        return Ok("")
-    }
+// export const getNextDerivationPathForMnemonic = (
+//   mnemonic: string,
+//   type: KeypairType = "sr25519",
+// ): Result<
+//   string,
+//   "Unable to get next derivation path" | "Reached maximum number of derived accounts"
+// > => {
+//   const allAccounts = keyring.getAccounts()
+//   try {
+//     // for substrate check empty derivation path first
+//     if (type !== "ethereum") {
+//       const derivedAddress = encodeAnyAddress(addressFromSuri(mnemonic, type))
+//       if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
+//         return Ok("")
+//     }
 
-    const getDerivationPath = (accountIndex: number) =>
-      type === "ethereum" ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
+//     const getDerivationPath = (accountIndex: number) =>
+//       type === "ethereum" ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
-    for (let accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
-      const derivationPath = getDerivationPath(accountIndex)
-      const derivedAddress = encodeAnyAddress(addressFromSuri(`${mnemonic}${derivationPath}`, type))
+//     for (let accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
+//       const derivationPath = getDerivationPath(accountIndex)
+//       const derivedAddress = encodeAnyAddress(addressFromSuri(`${mnemonic}${derivationPath}`, type))
 
-      if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
-        return Ok(derivationPath)
-    }
+//       if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
+//         return Ok(derivationPath)
+//     }
 
-    return Err("Reached maximum number of derived accounts")
-  } catch (error) {
-    log.error("Unable to get next derivation path", error)
-    captureException(error)
-    return Err("Unable to get next derivation path")
-  }
-}
+//     return Err("Reached maximum number of derived accounts")
+//   } catch (error) {
+//     log.error("Unable to get next derivation path", error)
+//     captureException(error)
+//     return Err("Unable to get next derivation path")
+//   }
+// }
 
 export const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
@@ -151,20 +145,20 @@ export const hasQrCodeAccounts = async () => {
   )
 }
 
-export const hasPrivateKey = (address: Address) => {
-  const acc = keyring.getAccount(address)
+// export const hasPrivateKey = (address: Address) => {
+//   const acc = keyring.getAccount(address)
 
-  if (!acc) return false
-  if (acc.meta?.isExternal) return false
-  if (acc.meta?.isHardware) return false
-  if (
-    [LegacyAccountOrigin.Qr, LegacyAccountOrigin.Watched].includes(
-      acc.meta?.origin as LegacyAccountOrigin,
-    )
-  )
-    return false
-  return true
-}
+//   if (!acc) return false
+//   if (acc.meta?.isExternal) return false
+//   if (acc.meta?.isHardware) return false
+//   if (
+//     [LegacyAccountOrigin.Qr, LegacyAccountOrigin.Watched].includes(
+//       acc.meta?.origin as LegacyAccountOrigin,
+//     )
+//   )
+//     return false
+//   return true
+// }
 
 export const isValidAnyAddress = (address: string) => {
   try {

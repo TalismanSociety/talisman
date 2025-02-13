@@ -1,9 +1,11 @@
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 
+import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
+
 const LEGACY_ROOT = "ROOT"
 
-export const getLegacyAuthenticationAccount = () => {
+const getLegacyAuthenticationAccount = () => {
   const allAccounts = keyring.getAccounts()
 
   if (allAccounts.length === 0) return
@@ -13,7 +15,9 @@ export const getLegacyAuthenticationAccount = () => {
   return
 }
 
-export const authenticateLegacyMethod = (password: string) => {
+// Deprecated login method since v1.19
+export const authenticateLegacyMethod = async (password: string) => {
+  await awaitKeyringLoaded()
   // attempt to log in via the legacy method
   const primaryAccount = getLegacyAuthenticationAccount()
   assert(primaryAccount, "No primary account, unable to authorise")

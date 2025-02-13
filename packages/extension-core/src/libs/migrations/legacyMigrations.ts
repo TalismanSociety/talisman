@@ -2,11 +2,11 @@ import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { lt } from "semver"
 
 import { hasQrCodeAccounts } from "../../domains/accounts/helpers"
-import { changePassword } from "../../domains/app/helpers"
 import { passwordStore } from "../../domains/app/store.password"
 import { createLegacyVerifierCertificateMnemonicStore } from "../../domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "../../domains/mnemonics/store"
 import sitesAuthorisedStore from "../../domains/sitesAuthorised/store"
+import { changePassword } from "./legacyHelpers"
 
 export const migrateConnectAllSubstrate = async (previousVersion: string) => {
   if (!lt(previousVersion, "1.14.0")) return
