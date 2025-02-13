@@ -39,24 +39,50 @@ const ACCOUNT_TYPES_EXTERNAL = [
   "signet",
 ] as const
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_ETHEREUM = ["contact", "watch-only", "keypair", "ledger-ethereum"] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_POLKADOT = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-polkadot",
+  "polkadot-vault",
+  "signet",
+] as const
+
 export const isAccountExternal = (
   account: Account | null | undefined,
 ): account is AccountOfType<(typeof ACCOUNT_TYPES_EXTERNAL)[number]> => {
   return isAccountInTypes(account, ACCOUNT_TYPES_EXTERNAL as unknown as AccountType[])
 }
+
 export const isAccountOwned = (
   account: Account | null | undefined,
 ): account is AccountOfType<(typeof ACCOUNT_TYPES_OWNED)[number]> => {
   return isAccountInTypes(account, ACCOUNT_TYPES_OWNED as unknown as AccountType[])
 }
+
 export const isAccountPortfolio = (account: Account | null | undefined): account is Account => {
   return isAccountOwned(account) || (isAccountOfType(account, "watch-only") && account.isPortfolio)
 }
-export const isAccountEthereum = (account: Account | null | undefined): account is Account => {
+
+type AccountEthereum = Extract<Account, { type: (typeof ACCOUNT_TYPES_ETHEREUM)[number] }> & {
+  address: `0x${string}`
+}
+export const isAccountEthereum = (
+  account: Account | null | undefined,
+): account is AccountEthereum => {
   return !!account && isEthereumAddress(account.address)
 }
 
-export const isAccountPolkadot = (account: Account | null | undefined): account is Account => {
+type AccountPolkadot = Extract<Account, { type: (typeof ACCOUNT_TYPES_POLKADOT)[number] }> & {
+  genesisHash?: `0x${string}`
+}
+export const isAccountPolkadot = (
+  account: Account | null | undefined,
+): account is AccountPolkadot => {
   return !!account && detectAddressEncoding(account.address) === "ss58"
 }
 
