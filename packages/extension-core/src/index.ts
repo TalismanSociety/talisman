@@ -37,8 +37,6 @@ export { getCoingeckoTokensList } from "./util/coingecko/getCoinGeckoTokensList"
 
 export * from "./domains/ethereum/helpers"
 
-export { MnemonicSource, mnemonicsStore } from "./domains/mnemonics/store"
-
 export { assetDiscoveryStore } from "./domains/assetDiscovery/store"
 
 export {

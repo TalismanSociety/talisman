@@ -133,4 +133,7 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   }
 }
 
+/**
+ * @deprecated to be used only by migrations
+ */
 export const mnemonicsStore = new MnemonicsStore(storageKey)

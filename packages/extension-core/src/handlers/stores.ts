@@ -6,7 +6,6 @@ import { passwordStore, PasswordStoreData } from "../domains/app/store.password"
 import { remoteConfigStore } from "../domains/app/store.remoteConfig"
 import { settingsStore, SettingsStoreData } from "../domains/app/store.settings"
 import { RemoteConfigStoreData } from "../domains/app/types"
-import { MnemonicData, mnemonicsStore } from "../domains/mnemonics/store"
 import { sitesAuthorisationStore } from "../domains/sitesAuthorised"
 import sitesAuthorisedStore from "../domains/sitesAuthorised/store"
 import { AuthorizedSites } from "../domains/sitesAuthorised/types"
@@ -23,7 +22,6 @@ export type TabStore = {
 
 export type ExtensionStore = TabStore & {
   accountsCatalog: typeof accountsCatalogStore
-  mnemonics: typeof mnemonicsStore
   password: typeof passwordStore
 }
 
@@ -32,7 +30,6 @@ type GettableStores = {
   app: [typeof appStore, AppStoreData]
   errors: [typeof errorsStore, ErrorsStoreData]
   password: [typeof passwordStore, PasswordStoreData]
-  seedPhrase: [typeof mnemonicsStore, MnemonicData]
   settings: [typeof settingsStore, SettingsStoreData]
   sites: [typeof sitesAuthorisedStore, AuthorizedSites]
   remoteConfig: [typeof remoteConfigStore, RemoteConfigStoreData]
@@ -54,7 +51,6 @@ export const tabStores = {
 export const extensionStores = {
   ...tabStores,
   accountsCatalog: accountsCatalogStore,
-  mnemonics: mnemonicsStore,
   password: passwordStore,
 }
 
@@ -63,7 +59,6 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   app: appStore,
   errors: errorsStore,
   password: passwordStore,
-  seedPhrase: mnemonicsStore,
   settings: settingsStore,
   sites: sitesAuthorisedStore,
   remoteConfig: remoteConfigStore,

@@ -120,7 +120,8 @@ export default class AppHandler extends ExtensionHandler {
     genericSubscription<"pri(app.changePassword.subscribe)">(id, port, progressObservable)
     try {
       // only allow users who have confirmed backing up their recovery phrase to change PW
-      const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
+      const mnemonics = await keyringStore.getMnemonics()
+      const mnemonicsUnconfirmed = mnemonics.some((m) => !m.confirmed)
       assert(
         !mnemonicsUnconfirmed,
         "Please backup all recovery phrases before attempting to change your password.",

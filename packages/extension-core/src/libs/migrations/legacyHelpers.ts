@@ -90,7 +90,7 @@ const migrateMnemonic = async (
   }
 }
 /**
- * @deprecated keeping this because it is used by a migration
+ * @deprecated to be used only by migrations
  * @param param0
  * @param progressCb
  * @returns
@@ -144,14 +144,4 @@ export const changePassword = async (
   await chrome.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
   // success
   return Ok(true)
-}
-
-export const getHostName = (url: string): Result<string, "Unable to get host from url"> => {
-  try {
-    const host = new URL(url).hostname
-    return Ok(host)
-  } catch (error) {
-    log.error(url, error)
-    return Err("Unable to get host from url")
-  }
 }
