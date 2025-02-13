@@ -1,4 +1,4 @@
-import keyring from "@polkadot/ui-keyring"
+import { Account, isAccountOwned } from "@talismn/keyring"
 import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
@@ -10,6 +10,7 @@ import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
 import { Balances } from "../domains/balances/types"
+import { keyringStore } from "../domains/keyring/store"
 import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
@@ -90,14 +91,14 @@ async function getGeneralReport() {
   // accounts
   //
 
-  const accounts = keyring.getAccounts()
+  const accounts = await keyringStore.getAccounts()
 
-  const ownedAccounts = accounts.filter(({ meta }) => meta.origin !== LegacyAccountOrigin.Watched)
+  const ownedAccounts = accounts.filter(isAccountOwned)
   const ownedAccountsCount = ownedAccounts.length
   const ownedAddresses = ownedAccounts.map((account) => account.address)
   const ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
-  const watchedAccounts = accounts.filter(({ meta }) => meta.origin === LegacyAccountOrigin.Watched)
+  const watchedAccounts = accounts.filter((acc) => !isAccountOwned(acc))
   const watchedAccountsCount = watchedAccounts.length
 
   let disconnect!: () => void
@@ -152,7 +153,7 @@ async function getGeneralReport() {
     signet: 0,
   }
   for (const account of accounts) {
-    const origin = account.meta.origin as LegacyAccountOrigin | undefined
+    const origin = getLegacyAccountOrigin(account)
     const type = origin?.toLowerCase?.() as Lowercase<LegacyAccountOrigin> | undefined
     if (type) accountBreakdown[type] = (accountBreakdown[type] ?? 0) + 1
   }
@@ -278,5 +279,23 @@ async function getGeneralReport() {
 
     // util
     lastGeneralReport: Math.trunc(Date.now() / 1000),
+  }
+}
+
+const getLegacyAccountOrigin = (account: Account): LegacyAccountOrigin => {
+  switch (account.type) {
+    case "keypair":
+      return LegacyAccountOrigin.Talisman
+    case "ledger-ethereum":
+    case "ledger-polkadot":
+      return LegacyAccountOrigin.Ledger
+    case "polkadot-vault":
+      return LegacyAccountOrigin.Qr
+    case "watch-only":
+      return LegacyAccountOrigin.Watched
+    case "signet":
+      return LegacyAccountOrigin.Signet
+    default:
+      return account.type as LegacyAccountOrigin
   }
 }
