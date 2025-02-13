@@ -70,6 +70,18 @@ describe("address encoding", () => {
 
     expect(address).toEqual(ADDRESS)
   })
+
+  it("encode ss58 address from address", () => {
+    const GENERIC = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
+    const POLKADOT = "1YmEYgtfPbwx5Jos1PjKDWRpuJWSpTzytwZgYan6kgiquNS"
+    const KUSAMA = "D85kXmhRyMQGC7jg59n523H7sb6ZBj3Mn3puusP2TshQLGx"
+
+    expect(encodeAddressSs58(GENERIC)).toEqual(GENERIC)
+    expect(encodeAddressSs58(GENERIC, 42)).toEqual(GENERIC)
+    expect(encodeAddressSs58(GENERIC, 0)).toEqual(POLKADOT)
+    expect(encodeAddressSs58(GENERIC, 1)).toEqual(KUSAMA)
+    expect(encodeAddressSs58(POLKADOT, 1)).toEqual(KUSAMA)
+  })
 })
 
 describe("detect address encoding", () => {

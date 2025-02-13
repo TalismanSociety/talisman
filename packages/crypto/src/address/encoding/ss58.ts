@@ -53,8 +53,10 @@ export const decodeSs58Address = (addressStr: string): [publicKey: Uint8Array, p
   return [publicKey, prefix]
 }
 
-export const encodeAddressSs58 = (publicKey: Uint8Array, prefix = 42) =>
-  ss58Encode(accountId(publicKey), prefix)
+export const encodeAddressSs58 = (publicKey: Uint8Array | string, prefix = 42) => {
+  if (typeof publicKey === "string") [publicKey] = decodeSs58Address(publicKey)
+  return ss58Encode(accountId(publicKey), prefix)
+}
 
 export function isSs58Address(address: string): boolean {
   try {
