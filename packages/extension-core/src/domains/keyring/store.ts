@@ -25,7 +25,7 @@ import {
 import { isBackgroundPage } from "../../util/isBackgroundPage"
 import { passwordStore } from "../app/store.password"
 
-const LOCAL_STORAGE_KEY = "keyring"
+const TALISMAN_KEYRING_LOCAL_STORAGE_KEY = "keyring"
 
 /**
  * In charge of loading and saving keyring to extension's local storage where save operation has to be called explicitely, allowing to revert batches of changes if anything goes wrong.
@@ -73,8 +73,8 @@ class KeyringStore {
 
   private async init() {
     try {
-      const data = await chrome.storage.local.get(LOCAL_STORAGE_KEY)
-      this.#serialized$.next(data[LOCAL_STORAGE_KEY])
+      const data = await chrome.storage.local.get(TALISMAN_KEYRING_LOCAL_STORAGE_KEY)
+      this.#serialized$.next(data[TALISMAN_KEYRING_LOCAL_STORAGE_KEY])
     } catch (cause) {
       throw new Error("Failed to load keyring", { cause })
     }
@@ -83,14 +83,14 @@ class KeyringStore {
   private async save(keyring: Keyring) {
     try {
       const serialized = keyring.toString()
-      await chrome.storage.local.set({ [LOCAL_STORAGE_KEY]: serialized })
+      await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
       this.#serialized$.next(serialized)
     } catch (err) {
       throw new Error("Failed to save keyring", { cause: err })
     }
   }
 
-  private async loadNew() {
+  private async load() {
     const serialized = await firstValueFrom(this.#serialized$)
     return serialized ? Keyring.load(serialized) : Keyring.create()
   }
@@ -117,7 +117,7 @@ class KeyringStore {
       const password = await passwordStore.getPassword()
       assert(password, "Not logged in")
 
-      const keyring = await this.loadNew()
+      const keyring = await this.load()
       const returnValue = await change(keyring, password)
 
       await this.save(keyring)
@@ -133,7 +133,7 @@ class KeyringStore {
    */
   private async updateWithoutPassword<T>(change: (keyring: Keyring) => T | Promise<T>) {
     return this.withLock(async () => {
-      const keyring = await this.loadNew()
+      const keyring = await this.load()
       const returnValue = await change(keyring)
 
       await this.save(keyring)
@@ -239,6 +239,28 @@ class KeyringStore {
   ): Promise<string> {
     const keyring = await firstValueFrom(this.#keyring$)
     return keyring.getDerivedAddress(mnemonicId, derivationPath, curve, password)
+  }
+
+  public reset(): Promise<void> {
+    return this.withLock(() => {
+      const emptyKeyring = Keyring.create()
+      this.#serialized$.next(emptyKeyring.toString())
+    })
+  }
+
+  public async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    return this.withLock(async () => {
+      try {
+        const keyring = await this.load()
+        const serialized = await keyring.export(oldPassword, newPassword)
+
+        await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
+
+        this.#serialized$.next(serialized)
+      } catch (cause) {
+        throw new Error("Failed to change password", { cause })
+      }
+    })
   }
 }
 

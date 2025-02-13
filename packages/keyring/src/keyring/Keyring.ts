@@ -55,8 +55,8 @@ export class Keyring {
     return new Keyring(JSON.parse(json))
   }
 
-  public toString(): string {
-    return JSON.stringify(this.#storage)
+  public toString(format?: boolean): string {
+    return JSON.stringify(this.#storage, undefined, format ? 2 : undefined)
   }
 
   public async export(password: string, newPassword: string): Promise<string> {
