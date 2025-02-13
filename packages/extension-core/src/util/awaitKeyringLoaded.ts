@@ -2,6 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 
 /**
+ * @deprecated
  * @function awaitKeyringLoaded
  * @description
  * This function is used to wait for the keyring to be loaded. It returns a promise which resolves to true once all accounts have been loaded into the keyring.
