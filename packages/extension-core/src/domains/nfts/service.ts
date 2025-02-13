@@ -3,7 +3,6 @@ import { log } from "extension-shared"
 import { isEqual } from "lodash"
 import { BehaviorSubject, combineLatest, distinctUntilChanged, map } from "rxjs"
 
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { fetchNfts } from "./fetchNfts"
 import { fetchRefreshNftMetadata } from "./fetchRefreshNftMetadata"
 import { getNftsAccountsList, getNftsNetworkIdsList } from "./helpers"
@@ -28,16 +27,16 @@ const removeSubscription = (subId: string) => {
 }
 
 const updateData = async () => {
-  await awaitKeyringLoaded()
-
-  const addresses = getNftsAccountsList()
-  const evnNetworkIds = await getNftsNetworkIdsList()
-  const { collections, nfts } = await fetchNfts(addresses, evnNetworkIds)
+  const [addresses, evmNetworkIds] = await Promise.all([
+    getNftsAccountsList(),
+    getNftsNetworkIdsList(),
+  ])
+  const { collections, nfts } = await fetchNfts(addresses, evmNetworkIds)
 
   nftsStore$.next({
     ...nftsStore$.value,
     accountsKey: addresses.join(","),
-    networksKey: evnNetworkIds.join(","),
+    networksKey: evmNetworkIds.join(","),
     nfts,
     collections,
     timestamp: Date.now(),
@@ -51,20 +50,21 @@ const watchData = async () => {
   // update every 1 hour
   let promise: Promise<void> | null = null
 
-  await awaitKeyringLoaded()
-
   const checkOrUpdate = async () => {
     if (stop) return
     if (promise) return
 
+    const [accounts, networkIds] = await Promise.all([
+      getNftsAccountsList(),
+      getNftsNetworkIdsList(),
+    ])
+
     // ignore if a network has been removed, but refresh if one has been added
     const prevNetworkIds = nftsStore$.value.networksKey.split(",")
-    const networkIds = await getNftsNetworkIdsList()
     const requiresUpdateNetwork = networkIds.some((id) => !prevNetworkIds.includes(id))
 
     // ignore if an account has been removed, but refresh if one has been added
     const prevAccounts = nftsStore$.value.accountsKey.split(",")
-    const accounts = getNftsAccountsList()
     const requiresUpdateAccount = accounts.some((account) => !prevAccounts.includes(account))
 
     const requiresUpdateTimestamp =

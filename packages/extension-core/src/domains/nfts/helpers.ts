@@ -1,8 +1,8 @@
-import keyring from "@polkadot/ui-keyring"
-import { isEthereumAddress } from "@talismn/util"
+import { isAccountEthereum } from "@talismn/keyring"
 import { firstValueFrom } from "rxjs"
 
 import { activeEvmNetworksObservable } from "../balances/pool"
+import { keyringStore } from "../keyring/store"
 import { NftCollection } from "./types"
 
 /**
@@ -10,11 +10,11 @@ import { NftCollection } from "./types"
  *
  * @returns list of evm addresses from keyring
  */
-export const getNftsAccountsList = () => {
-  return keyring
-    .getAccounts()
+export const getNftsAccountsList = async () => {
+  const accounts = await keyringStore.getAccounts()
+  return accounts
+    .filter(isAccountEthereum)
     .map(({ address }) => address)
-    .filter(isEthereumAddress)
     .sort()
 }
 
