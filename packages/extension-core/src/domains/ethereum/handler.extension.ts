@@ -1,5 +1,4 @@
 import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { CustomEvmNativeToken, evmNativeTokenId } from "@talismn/balances"
@@ -44,12 +43,7 @@ export class EthHandler extends ExtensionHandler {
         const queued = requestStore.getRequest(id)
         assert(queued, "Unable to find request")
 
-        const {
-          method,
-          resolve,
-          ethChainId,
-          account: { address: accountAddress },
-        } = queued
+        const { method, resolve, ethChainId } = queued
 
         const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
         assert(client, "Unable to find client for chain " + ethChainId)
@@ -67,7 +61,6 @@ export class EthHandler extends ExtensionHandler {
 
         resolve(hash)
 
-        const account = keyring.getAccount(accountAddress)
         const { val: host, ok } = getHostName(queued.url)
 
         talismanAnalytics.captureDelayed("sign transaction approve", {
@@ -76,7 +69,7 @@ export class EthHandler extends ExtensionHandler {
           dapp: queued.url,
           chain: Number(ethChainId),
           networkType: "ethereum",
-          hardwareType: account?.meta.hardwareType,
+          hardwareType: "ledger", // atm ledger is the only type of hardware account that we support for evm
         })
         return true
       } catch (err) {
@@ -228,16 +221,10 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const {
-      method,
-      resolve,
-      account: { address: accountAddress },
-      url,
-    } = queued
+    const { method, resolve, url } = queued
 
     resolve(signedPayload)
 
-    const account = keyring.getAccount(accountAddress)
     const { ok, val: host } = getHostName(url)
     talismanAnalytics.captureDelayed("sign approve", {
       method,
@@ -246,7 +233,7 @@ export class EthHandler extends ExtensionHandler {
       dapp: url,
       chain: Number(queued.ethChainId),
       networkType: "ethereum",
-      hardwareType: account?.meta.hardwareType,
+      hardwareType: "ledger",
     })
 
     return true
