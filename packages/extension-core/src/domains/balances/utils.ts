@@ -6,7 +6,6 @@ import { combineLatest, throttleTime } from "rxjs"
 
 import { db as extensionDb } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isAccountCompatibleWithChain } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
 import { keyringStore } from "../keyring/store"
@@ -21,8 +20,6 @@ const MAX_UPDATE_INTERVAL = 1_000 // update every 1 second maximum
  * Should not be used in frontend, since it uses the balance pool.
  */
 export const trackBalanceTotals = async () => {
-  await awaitKeyringLoaded()
-
   combineLatest([
     settingsStore.observable,
     keyringStore.accounts$,

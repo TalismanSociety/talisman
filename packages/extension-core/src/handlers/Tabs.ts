@@ -4,7 +4,6 @@ import type {
   MetadataDef,
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
-import type { KeyringPair } from "@polkadot/keyring/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
@@ -15,7 +14,6 @@ import {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-import keyring from "@polkadot/ui-keyring"
 import { assert, isNumber } from "@polkadot/util"
 import { isTalismanUrl, log } from "extension-shared"
 import { combineLatest } from "rxjs"
@@ -142,14 +140,6 @@ export default class Tabs extends TabsHandler {
         return this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
       },
     )
-  }
-
-  private getSigningPair(address: string): KeyringPair {
-    const pair = keyring.getPair(address)
-
-    assert(pair, "Unable to find keypair")
-
-    return pair
   }
 
   private async bytesSign(

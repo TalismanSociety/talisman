@@ -15,7 +15,6 @@ import { PublicClient } from "viem"
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isEvmToken } from "../../util/isEvmToken"
 import { appStore } from "../app/store.app"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
@@ -62,8 +61,6 @@ class AssetDiscoveryScanner {
   }
 
   private watchNewAccounts = async () => {
-    await awaitKeyringLoaded()
-
     let prevAllAddresses: string[] | null = null
 
     // identify newly added accounts and scan those

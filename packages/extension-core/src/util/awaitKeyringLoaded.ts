@@ -1,5 +1,6 @@
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { log } from "extension-shared"
 
 /**
  * @deprecated
@@ -8,6 +9,8 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
  * This function is used to wait for the keyring to be loaded. It returns a promise which resolves to true once all accounts have been loaded into the keyring.
  */
 export const awaitKeyringLoaded = async () => {
+  log.warn("[deprecated] awaitKeyringLoaded", new Error().stack)
+
   // the keyring does funky stuff when we try and access it before this is ready
   // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
   await cryptoWaitReady()
