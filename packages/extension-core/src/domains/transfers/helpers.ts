@@ -1,9 +1,10 @@
-import keyring from "@polkadot/ui-keyring"
+import { isAccountOwned } from "@talismn/keyring"
 import BigNumber from "bignumber.js"
 
 import { talismanAnalytics } from "../../libs/Analytics"
 import { privacyRoundCurrency } from "../../util/privacyRoundCurrency"
 import { addressBookStore } from "../app/store.addressBook"
+import { keyringStore } from "../keyring/store"
 
 type TransferAnalyticsBaseArgs = {
   toAddress: string
@@ -29,7 +30,8 @@ export const transferAnalytics = async ({
 }: TransferAnalyticsEvmArgs | TransferAnalyticsSubstrateArgs) => {
   // NOTE: This does not care if an account or contact is locked to one chain/network, while this transfer is on a different chain/network.
   // It will still consider isOwnAccount / isContact to be true.
-  const isOwnAccount = keyring.getAccount(toAddress) !== undefined
+  const account = await keyringStore.getAccount(toAddress)
+  const isOwnAccount = isAccountOwned(account)
   const isContact = isOwnAccount ? false : (await addressBookStore.get(toAddress)) !== undefined
 
   talismanAnalytics.capture("asset transfer", {
