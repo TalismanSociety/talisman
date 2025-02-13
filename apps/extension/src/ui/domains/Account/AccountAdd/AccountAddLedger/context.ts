@@ -1,8 +1,9 @@
 import { assert } from "@polkadot/util"
+import { Platform } from "@talismn/crypto"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import { AccountAddressType, AddAccountExternalOptions } from "@extension/core"
+import { AddAccountExternalOptions } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useChain } from "@ui/state"
@@ -24,7 +25,7 @@ export enum AddSubstrateLedgerAppType {
 }
 
 type LedgerCreationInputs = {
-  type: AccountAddressType
+  platform: Platform
   substrateAppType: AddSubstrateLedgerAppType
   accounts: LedgerAccountDef[]
   chainId?: string
@@ -33,7 +34,7 @@ type LedgerCreationInputs = {
 const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
-    type: params.get("type") as AccountAddressType,
+    platform: params.get("platform") as Platform | undefined,
   }))
   const chain = useChain(data.chainId as string)
 
@@ -46,7 +47,8 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
   const connectAccounts = useCallback(
     (accounts: LedgerAccountDef[]) => {
-      if (data.type !== "ethereum") assert(data.substrateAppType, "Substrate app type is required")
+      if (data.platform !== "ethereum")
+        assert(data.substrateAppType, "Substrate app type is required")
 
       if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
         assert(
@@ -58,7 +60,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       return api.accountAddExternal(accounts)
     },
-    [chain?.genesisHash, data.substrateAppType, data.type],
+    [chain?.genesisHash, data.substrateAppType, data.platform],
   )
 
   return { data, updateData, connectAccounts, onSuccess }

@@ -59,9 +59,7 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const accounts = useMemo<AccountImportDef[]>(
     () =>
-      pairs
-        .filter((p): p is KeyringPair & { type: string } => !!p.type)
-        .map((p) => ({ address: p.address, type: p.type, genesisHash: p.meta?.genesisHash })),
+      pairs.map((p) => ({ address: p.address, curve: p.type, genesisHash: p.meta?.genesisHash })),
     [pairs],
   )
   const allBalances = useAccountImportBalances(accounts)

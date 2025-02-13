@@ -93,22 +93,14 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.add.external)", options),
   accountAddDerive: (options) => messageService.sendMessage("pri(accounts.add.derive)", options),
   accountAddKeypair: (options) => messageService.sendMessage("pri(accounts.add.keypair)", options),
-  accountCreate: (name, type, options) =>
-    messageService.sendMessage("pri(accounts.create)", { name, type, ...options }),
-  accountCreateFromSuri: (name, suri, type) =>
-    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
-  accountCreateFromPrivateKey: (name, privateKey, type) =>
-    messageService.sendMessage("pri(accounts.create.privateKey)", { name, privateKey, type }),
+  accountCreate: (name, curve, options) =>
+    messageService.sendMessage("pri(accounts.create)", { name, curve, ...options }),
+  accountCreateFromSuri: (name, suri, curve) =>
+    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, curve }),
+  accountCreateFromPrivateKey: (name, privateKey, curve) =>
+    messageService.sendMessage("pri(accounts.create.privateKey)", { name, privateKey, curve }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateDcent: (name, address, type, path, tokenIds) =>
-    messageService.sendMessage("pri(accounts.create.dcent)", {
-      name,
-      address,
-      type,
-      path,
-      tokenIds,
-    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountsCatalogSubscribe: (cb) =>
     messageService.subscribe("pri(accounts.catalog.subscribe)", null, cb),
@@ -129,11 +121,9 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
-  validateDerivationPath: (derivationPath, type) =>
-    messageService.sendMessage("pri(accounts.validateDerivationPath)", { derivationPath, type }),
   addressLookup: (lookup) => messageService.sendMessage("pri(accounts.address.lookup)", lookup),
-  getNextDerivationPath: (mnemonicId, type) =>
-    messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, type }),
+  getNextDerivationPath: (mnemonicId, curve) =>
+    messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, curve }),
 
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>

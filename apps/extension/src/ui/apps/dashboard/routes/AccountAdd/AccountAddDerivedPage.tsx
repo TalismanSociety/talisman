@@ -1,7 +1,9 @@
+import { KeypairCurve } from "@talismn/crypto"
+import { capitalize } from "lodash"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 
-import { AccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -12,25 +14,18 @@ const Content = () => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
-  const urlParamType = (params.get("type") ?? undefined) as AccountAddressType | undefined
+  const urlParamPlatform = (params.get("platform") ?? undefined) as KeypairCurve | undefined
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
-  const accountTypeString = () => {
-    switch (urlParamType) {
-      case "ethereum":
-        return " Ethereum"
-      case "sr25519":
-        return " Polkadot"
-      default:
-        return ""
-    }
-  }
+  const accountTypeString = useCallback(() => {
+    return urlParamPlatform ? ` ${capitalize(urlParamPlatform)}` : ""
+  }, [urlParamPlatform])
 
   return (
     <>
       <HeaderBlock
         title={t(`Create a new${accountTypeString()} account`)}
-        text={!urlParamType && t("What type of account would you like to create?")}
+        text={!urlParamPlatform && t("What type of account would you like to create?")}
       />
       <Spacer small />
       <AccountAddDerivedForm onSuccess={setAddress} />

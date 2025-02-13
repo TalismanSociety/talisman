@@ -1,5 +1,5 @@
+import { Platform } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
-import { UiAccountAddressType } from "extension-core"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -32,33 +32,33 @@ const AccountTypeButton: FC<{
   </button>
 )
 
-type AccountTypeSelectorProps = {
-  defaultType?: UiAccountAddressType
-  onChange: (type: UiAccountAddressType) => void
+type AccountPlatformSelectorProps = {
+  defaultValue?: Platform
+  onChange: (value: Platform) => void
   className?: string
 }
 
-export const AccountTypeSelector = ({
-  defaultType,
+export const AccountPlatformSelector = ({
+  defaultValue: defaultType,
   onChange,
   className,
-}: AccountTypeSelectorProps) => {
+}: AccountPlatformSelectorProps) => {
   const { t } = useTranslation()
-  const [type, setType] = useState<UiAccountAddressType | undefined>(defaultType)
+  const [platform, setPlatform] = useState<Platform | undefined>(defaultType)
 
-  const handleClick = (type: UiAccountAddressType) => () => {
-    setType(type)
+  const handleClick = (value: Platform) => () => {
+    setPlatform(value)
   }
 
   useEffect(() => {
-    if (onChange && type) onChange(type)
-  }, [onChange, type])
+    if (onChange && platform) onChange(platform)
+  }, [onChange, platform])
 
   return (
     <div className={classNames("grid w-full grid-cols-2 gap-10", className)}>
       <AccountTypeButton
         className={classNames(
-          type === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
+          platform === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
           "border",
         )}
         icon={<EthereumCircleLogo />}
@@ -72,7 +72,7 @@ export const AccountTypeSelector = ({
       />
       <AccountTypeButton
         className={classNames(
-          type === "sr25519" ? "border-body" : "border-body-secondary border-opacity-20",
+          platform === "polkadot" ? "border-body" : "border-body-secondary border-opacity-20",
           "border",
         )}
         icon={<PolkadotCircleLogo />}
@@ -82,7 +82,7 @@ export const AccountTypeSelector = ({
             {t("Relay Chain, Asset Hub, Bittensor, and most Polkadot chains")}
           </div>
         }
-        onClick={handleClick("sr25519")}
+        onClick={handleClick("polkadot")}
       />
     </div>
   )

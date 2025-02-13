@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Platform } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { getAddressType } from "extension-shared"
@@ -9,11 +10,10 @@ import { useSearchParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
-import { UiAccountAddressType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state"
@@ -24,7 +24,11 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
-  const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
+  const defaultPlatform = useMemo(() => {
+    // type is for legacy compatibility
+    return (params.get("platform") ?? params.get("type") ?? undefined) as Platform | undefined
+  }, [params])
+
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
 
@@ -34,20 +38,20 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         .object({
           name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
           searchAddress: yup.string().trim().required(" "),
-          type: yup.mixed<UiAccountAddressType>().oneOf(["ethereum", "sr25519"]).defined(),
+          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
           address: yup.string().trim().required(" "),
           isPortfolio: yup.boolean().defined(),
         })
         .test("is-valid-address", t("Invalid address"), (val, ctx) => {
-          const { type, address } = val
+          const { platform, address } = val
 
-          if (type === "sr25519" && getAddressType(address) !== "ss58")
+          if (platform === "polkadot" && getAddressType(address) !== "ss58")
             return ctx.createError({
               path: "address",
               message: t("Invalid address"),
             })
 
-          if (type === "ethereum" && getAddressType(address) !== "ethereum")
+          if (platform === "ethereum" && getAddressType(address) !== "ethereum")
             return ctx.createError({
               path: "address",
               message: t("Invalid address"),
@@ -73,10 +77,10 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
-    defaultValues: { type: urlParamType },
+    defaultValues: { platform: defaultPlatform },
   })
 
-  const { type, searchAddress } = watch()
+  const { platform, searchAddress } = watch()
   const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
 
   useEffect(() => {
@@ -133,9 +137,9 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     [onSuccess, t],
   )
 
-  const handleTypeChange = useCallback(
-    (type: UiAccountAddressType) => {
-      setValue("type", type, { shouldValidate: true })
+  const handlePlatformChange = useCallback(
+    (platform: Platform) => {
+      setValue("platform", platform, { shouldValidate: true })
       trigger()
     },
     [setValue, trigger],
@@ -143,25 +147,25 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
   const hasSetFocus = useRef(false)
   useEffect(() => {
-    if (type && !hasSetFocus.current) {
+    if (platform && !hasSetFocus.current) {
       setFocus("name")
       hasSetFocus.current = true
     }
-  }, [setFocus, type])
+  }, [setFocus, platform])
 
   useEffect(() => {
     // if we have a type in the url, set it
-    if (urlParamType) handleTypeChange(urlParamType)
-  }, [urlParamType, handleTypeChange])
+    if (defaultPlatform) handlePlatformChange(defaultPlatform)
+  }, [defaultPlatform, handlePlatformChange])
 
   return (
     <form onSubmit={handleSubmit(submit)}>
       <div className="flex flex-col gap-16">
-        {!urlParamType && (
-          <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
+        {!defaultPlatform && (
+          <AccountPlatformSelector defaultValue={platform} onChange={handlePlatformChange} />
         )}
 
-        <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
+        <div className={classNames("transition-opacity", platform ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">
               {t("Please enter the name and the wallet address you'll be watching.")}

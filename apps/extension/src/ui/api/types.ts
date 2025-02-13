@@ -1,6 +1,5 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
-import type { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
 import { BalanceJson } from "@talismn/balances"
 import {
@@ -11,6 +10,7 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
+import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
 import { MetadataDef } from "inject/substrate/types"
@@ -18,7 +18,6 @@ import { TransactionRequest } from "viem"
 
 import {
   Account,
-  AccountAddressType,
   AddEthereumChainRequest,
   AddEthereumChainRequestId,
   AddressesAndEvmNetwork,
@@ -142,23 +141,16 @@ export default interface MessageTypes {
   accountAddKeypair: (options: RequestAddAccountKeypair) => Promise<string[]>
   accountCreate: (
     name: string,
-    type: AccountAddressType,
+    curve: KeypairCurve,
     options: RequestAccountCreateOptions,
   ) => Promise<string>
-  accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromSuri: (name: string, suri: string, curve?: KeypairCurve) => Promise<string>
   accountCreateFromPrivateKey: (
     name: string,
     privateKey: string,
-    type?: AccountAddressType,
+    curve?: KeypairCurve,
   ) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateDcent: (
-    name: string,
-    address: string,
-    type: KeypairType,
-    path: string,
-    tokenIds: TokenId[],
-  ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
@@ -179,9 +171,8 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPairs$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
-  validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>
   addressLookup: (lookup: RequestAddressLookup) => Promise<string>
-  getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
+  getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 
   // balance message types ---------------------------------------------------
   getBalance: ({

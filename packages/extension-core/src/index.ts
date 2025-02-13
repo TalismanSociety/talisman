@@ -19,7 +19,8 @@ export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"
 export * from "./domains/accounts/helpers.catalog"
 export {
   formatSuri,
-  isAccountCompatibleWithChainOld as isAccountCompatibleWithChainOld,
+  isCurveCompatibleWithChain,
+  isAccountCompatibleWithChain,
 } from "./domains/accounts/helpers"
 export { runActionOnTrees } from "./domains/accounts/helpers.catalog"
 

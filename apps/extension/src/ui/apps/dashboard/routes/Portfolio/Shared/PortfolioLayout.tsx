@@ -32,15 +32,15 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 }
 
 const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
-  const { evmNetworks, chains, accountType } = usePortfolio()
+  const { evmNetworks, chains, addressEncoding } = usePortfolio()
   const { selectedAccounts } = usePortfolioNavigation()
 
   if (!selectedAccounts.length) return <GetStarted />
 
-  if (!accountType && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
-  if (accountType === "sr25519" && !chains.length) return <EnableNetworkMessage type="substrate" />
+  if (!addressEncoding && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
+  if (addressEncoding === "ss58" && !chains.length) return <EnableNetworkMessage type="substrate" />
   if (
-    accountType === "ethereum" &&
+    addressEncoding === "ethereum" &&
     !evmNetworks.length &&
     !chains.filter((c) => c.account === "secp256k1").length
   )

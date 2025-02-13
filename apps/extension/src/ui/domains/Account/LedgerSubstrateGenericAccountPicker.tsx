@@ -142,7 +142,7 @@ const useLedgerSubstrateGenericAccounts = (
       withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ed25519" }))
+            .map((acc) => ({ address: acc.address, curve: "ed25519" }))
         : [],
     [itemsPerPage, ledgerAccounts, withBalances],
   )
@@ -391,7 +391,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
         ? [
             {
               address,
-              type: "ed25519",
+              curve: "ed25519",
               genesisHash: null,
             },
           ]

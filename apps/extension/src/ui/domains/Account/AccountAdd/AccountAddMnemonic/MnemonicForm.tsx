@@ -1,6 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { mnemonicValidate } from "@polkadot/util-crypto"
-import { isAddressEqual } from "@talismn/crypto"
+import { isAddressEqual, isValidMnemonic, KeypairCurve, Platform } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { DEBUG } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -18,19 +17,29 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountAddressType, getEthDerivationPath, UiAccountAddressType } from "@extension/core"
+import { getEthDerivationPath } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts } from "@ui/state"
-import { isUiAccountAddressType } from "@ui/util/typeCheckers"
 
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
+
+const platformToCurve = (platform: Platform) => {
+  switch (platform) {
+    case "ethereum":
+      return "ethereum"
+    case "polkadot":
+      return "sr25519"
+    default:
+      return undefined
+  }
+}
 
 const cleanupMnemonic = (input = "") =>
   input
@@ -40,10 +49,10 @@ const cleanupMnemonic = (input = "") =>
     .filter(Boolean) //remove empty strings
     .join(" ")
 
-const getSuri = (secret: string, type: AccountAddressType, derivationPath?: string) => {
-  if (!secret || !type) return null
+const getSuri = (secret: string, curve: KeypairCurve, derivationPath?: string) => {
+  if (!secret || !curve) return null
 
-  if (!mnemonicValidate(secret)) return null
+  if (!isValidMnemonic(secret)) return null
 
   return derivationPath && !derivationPath.startsWith("/")
     ? `${secret}/${derivationPath}`
@@ -52,7 +61,7 @@ const getSuri = (secret: string, type: AccountAddressType, derivationPath?: stri
 
 type FormData = {
   name: string
-  type: UiAccountAddressType
+  platform: Platform
   mnemonic: string
   mode: AccountAddDerivationMode
   derivationPath: string
@@ -72,7 +81,7 @@ export const AccountAddMnemonicForm = () => {
       yup
         .object({
           name: yup.string().trim().required(" "),
-          type: yup.mixed(isUiAccountAddressType).defined(),
+          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
           mode: yup
             .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
               ["first", "custom", "multi"].includes(v),
@@ -90,15 +99,18 @@ export const AccountAddMnemonicForm = () => {
         })
         .required()
         .test("account-exists", t("Account exists"), async (val, ctx) => {
-          const { mnemonic, type, derivationPath, mode } = val as FormData
-          if (!val || mode === "multi") return true
+          const { mnemonic, platform, derivationPath, mode } = val as FormData
+          if (mode === "multi") return true
 
-          const suri = getSuri(mnemonic, type, derivationPath)
+          const curve = platformToCurve(platform)
+          if (!curve) return false
+
+          const suri = getSuri(mnemonic, curve, derivationPath)
           if (!suri) return true
 
           let address: string
           try {
-            address = await api.addressLookup({ suri, type })
+            address = await api.addressLookup({ suri, curve })
           } catch (err) {
             return ctx.createError({
               path: "derivationPath",
@@ -130,7 +142,8 @@ export const AccountAddMnemonicForm = () => {
     resolver: yupResolver(schema),
   })
 
-  const { type, mnemonic, mode, derivationPath } = watch()
+  const { platform, mnemonic, mode, derivationPath } = watch()
+  const curve = useMemo(() => platformToCurve(platform), [platform])
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
@@ -142,23 +155,27 @@ export const AccountAddMnemonicForm = () => {
   useEffect(() => {
     const refreshTargetAddress = async () => {
       try {
-        const suri = getSuri(cleanupMnemonic(mnemonic), type, derivationPath)
+        if (!curve) return setTargetAddress(undefined)
+        const suri = getSuri(cleanupMnemonic(mnemonic), curve, derivationPath)
         if (!suri) return setTargetAddress(undefined)
-        setTargetAddress(await api.addressLookup({ suri, type }))
+        setTargetAddress(await api.addressLookup({ suri, curve }))
       } catch (err) {
         setTargetAddress(undefined)
       }
     }
 
     refreshTargetAddress()
-  }, [derivationPath, isValid, mnemonic, type])
+  }, [derivationPath, isValid, mnemonic, curve])
 
   const submit = useCallback(
-    async ({ type, name, mnemonic, mode, derivationPath }: FormData) => {
-      updateData({ type, name, mnemonic, mode, derivationPath })
+    async ({ platform, name, mnemonic, mode, derivationPath }: FormData) => {
+      const curve = platformToCurve(platform)
+      if (!curve) return
+
+      updateData({ name, mnemonic, mode, derivationPath, curve })
       if (mode === "multi") navigate("multiple")
       else {
-        const suri = getSuri(mnemonic, type, derivationPath)
+        const suri = getSuri(mnemonic, curve, derivationPath)
         if (!suri) return
 
         const notificationId = notify(
@@ -170,7 +187,7 @@ export const AccountAddMnemonicForm = () => {
           { autoClose: false },
         )
         try {
-          const address = await api.accountCreateFromSuri(name, suri, type)
+          const address = await api.accountCreateFromSuri(name, suri, curve)
 
           onSuccess(address)
           notifyUpdate(notificationId, {
@@ -191,9 +208,9 @@ export const AccountAddMnemonicForm = () => {
   )
 
   const handleTypeChange = useCallback(
-    (type: UiAccountAddressType) => {
-      setValue("type", type, { shouldValidate: true })
-      setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
+    (platform: Platform) => {
+      setValue("platform", platform, { shouldValidate: true })
+      setValue("derivationPath", platform === "ethereum" ? getEthDerivationPath() : "", {
         shouldValidate: true,
       })
     },
@@ -204,11 +221,11 @@ export const AccountAddMnemonicForm = () => {
     (mode: AccountAddDerivationMode) => {
       setValue("mode", mode, { shouldValidate: true })
       if (mode === "first")
-        setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
+        setValue("derivationPath", platform === "ethereum" ? getEthDerivationPath() : "", {
           shouldValidate: true,
         })
     },
-    [setValue, type],
+    [setValue, platform],
   )
 
   useEffect(() => {
@@ -224,10 +241,10 @@ export const AccountAddMnemonicForm = () => {
         text={t("What type of account would you like to import?")}
       />
 
-      <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
+      <AccountPlatformSelector defaultValue={platform} onChange={handleTypeChange} />
 
       <form onSubmit={handleSubmit(submit)}>
-        <div className={classNames(!type && "hidden")}>
+        <div className={classNames(!platform && "invisible")}>
           <FormFieldContainer error={errors.name?.message}>
             <FormFieldInputText
               {...register("name")}
@@ -273,7 +290,7 @@ export const AccountAddMnemonicForm = () => {
           >
             <FormFieldInputText
               {...register("derivationPath")}
-              placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+              placeholder={platform === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
               spellCheck={false}
               autoComplete="off"
               className="font-mono"

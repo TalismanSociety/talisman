@@ -76,3 +76,39 @@ export const generateMnemonic = (words: 12 | 24) => {
       return generateMnemonicBip39(wordlist, 256)
   }
 }
+
+// well-known mnemonic used by polkadot.js, can be checked on polkadot wiki
+export const DEV_MNEMONIC_POLKADOT =
+  "bottom drive obey lake curtain smoke basket hold race lonely fit walk"
+
+// well-known phrase used by hardhat and anvil
+export const DEV_MNEMONIC_ETHEREUM = "test test test test test test test test test test test junk"
+
+// keep dev seeds in cache as we will reuse them to validate multiple derivation paths
+const DEV_SEED_CACHE = new Map<SeedDerivationType, Uint8Array>()
+
+// TODO: use this in tests
+export const getDevSeed = (curve: KeypairCurve) => {
+  const type = getSeedDerivationType(curve)
+
+  if (!DEV_SEED_CACHE.has(type)) {
+    switch (type) {
+      case "classic": {
+        const entropy = mnemonicToEntropy(DEV_MNEMONIC_ETHEREUM)
+        const seed = entropyToSeedClassic(entropy) // 80ms
+        DEV_SEED_CACHE.set(type, seed)
+        break
+      }
+      case "substrate": {
+        const entropy = mnemonicToEntropy(DEV_MNEMONIC_POLKADOT)
+        const seed = entropyToSeedSubstrate(entropy) // 80ms
+        DEV_SEED_CACHE.set(type, seed)
+        break
+      }
+      default:
+        throw new Error("Unsupported derivation type")
+    }
+  }
+
+  return DEV_SEED_CACHE.get(type)!
+}

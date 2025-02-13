@@ -97,13 +97,12 @@ export const WelcomeNetworkStack = ({ className, ids }: NetworkStackProps) => {
 export const WelcomePage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const { reset, updateData, setStage } = useOnboard()
+  const { reset, setStage } = useOnboard()
   const navigate = useNavigate()
 
   const handleNextClick = useCallback(
     () => async () => {
       reset()
-      updateData({ mnemonic: undefined }) // always clear this one, even in dev mode
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Goto",
@@ -111,7 +110,7 @@ export const WelcomePage = () => {
       })
       navigate("/password")
     },
-    [navigate, reset, updateData],
+    [navigate, reset],
   )
 
   useEffect(() => {

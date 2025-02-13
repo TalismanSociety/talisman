@@ -1,12 +1,9 @@
+import { KeypairCurve } from "@talismn/crypto"
 import { DEBUG } from "extension-shared"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import {
-  getEthDerivationPath,
-  RequestAccountCreateFromSuri,
-  UiAccountAddressType,
-} from "@extension/core"
+import { getEthDerivationPath, RequestAccountCreateFromSuri } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 
@@ -14,7 +11,7 @@ export type AccountAddDerivationMode = "first" | "custom" | "multi"
 
 type AccountAddSecretInputs = {
   name: string
-  type: UiAccountAddressType
+  curve: KeypairCurve
   mode: AccountAddDerivationMode
   mnemonic: string
   derivationPath: string
@@ -27,10 +24,10 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
   const [params] = useSearchParams()
 
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
-    type: params.get("type") as UiAccountAddressType,
+    curve: params.get("curve") as KeypairCurve,
     mode: "first",
     mnemonic: DEBUG ? DEBUG_MNEMONIC : undefined,
-    derivationPath: params.get("type") === "ethereum" ? getEthDerivationPath() : "",
+    derivationPath: params.get("platform") === "ethereum" ? getEthDerivationPath() : "",
   }))
 
   const updateData = useCallback((newData: Partial<AccountAddSecretInputs>) => {
@@ -45,8 +42,8 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
 
     const addresses: string[] = []
     // proceed sequencially in case mnemonic must be added to the store on first call
-    for (const { name, suri, type } of accounts)
-      addresses.push(await api.accountCreateFromSuri(name, suri, type))
+    for (const { name, suri, curve } of accounts)
+      addresses.push(await api.accountCreateFromSuri(name, suri, curve))
 
     return addresses
   }, [])

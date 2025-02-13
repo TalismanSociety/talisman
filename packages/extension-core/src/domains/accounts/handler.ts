@@ -31,7 +31,6 @@ import type {
   RequestAddAccountKeypair,
   RequestAddressLookup,
   RequestNextDerivationPath,
-  RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "./types"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
@@ -39,9 +38,7 @@ import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
-import { isValidDerivationPath } from "../../util/isValidDerivationPath"
 import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
-import { pjsKeypairTypeToCurve } from "../keyring/migration-utils"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
@@ -88,7 +85,7 @@ export default class AccountsHandler extends ExtensionHandler {
     })
   }
 
-  private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
+  private async accountCreate({ name, curve, ...options }: RequestAccountCreate): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -114,14 +111,14 @@ export default class AccountsHandler extends ExtensionHandler {
     if (typeof options.derivationPath === "string") {
       derivationPath = options.derivationPath
     } else {
-      const { val, err } = await getNextDerivationPathForMnemonicId(mnemonic.id, type)
+      const { val, err } = await getNextDerivationPathForMnemonicId(mnemonic.id, curve)
       if (err) throw new Error(val)
       else derivationPath = val
     }
 
     const account = await keyringStore.addAccountDerive({
       type: "existing-mnemonic",
-      curve: pjsKeypairTypeToCurve(type),
+      curve,
       derivationPath,
       mnemonicId: mnemonic.id,
       name,
@@ -135,7 +132,7 @@ export default class AccountsHandler extends ExtensionHandler {
   private async accountCreateSuri({
     name,
     suri,
-    type,
+    curve = "sr25519",
   }: RequestAccountCreateFromSuri): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
@@ -146,8 +143,6 @@ export default class AccountsHandler extends ExtensionHandler {
       // TODO: to support this properly, dont store mnemonic and just create it as a keypair that doesnt have a mnemonic
       throw new Error("Password not supported for suri")
     }
-
-    const curve = pjsKeypairTypeToCurve(type ?? "sr25519")
 
     //suri includes the derivation path if any
     const { mnemonic, derivationPath } = parseSuri(suri)
@@ -179,9 +174,8 @@ export default class AccountsHandler extends ExtensionHandler {
   private async accountCreatePrivateKey({
     name,
     privateKey,
-    type,
+    curve = "sr25519",
   }: RequestAccountCreateFromPrivateKey): Promise<string> {
-    const curve = pjsKeypairTypeToCurve(type ?? "sr25519")
     const secretKey = parseSecretKey(privateKey, curve)
 
     const account = await keyringStore.addAccountKeypair({
@@ -335,7 +329,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async addressLookup(lookup: RequestAddressLookup): Promise<string> {
     if ("mnemonicId" in lookup) {
-      const { mnemonicId, derivationPath, type } = lookup
+      const { mnemonicId, derivationPath, curve } = lookup
 
       const password = await this.stores.password.getPassword()
       assert(password, "Not logged in")
@@ -343,28 +337,19 @@ export default class AccountsHandler extends ExtensionHandler {
       const mnemonic = await keyringStore.getMnemonicText(mnemonicId, password)
 
       const suri = formatSuri(mnemonic, derivationPath)
-      return addressFromSuri(suri, type)
+      return addressFromSuri(suri, curve)
     } else {
-      const { suri, type } = lookup
-      return addressFromSuri(suri, type)
+      const { suri, curve } = lookup
+      return addressFromSuri(suri, curve)
     }
   }
 
-  private validateDerivationPath({ derivationPath, type }: RequestValidateDerivationPath): boolean {
-    // TODO
-    return isValidDerivationPath(derivationPath, type)
-  }
-
-  // TODO do we really need this ? feels like a frontend thing
   private async getNextDerivationPath({
     mnemonicId,
-    type, // TODO type => curve
+    curve,
   }: RequestNextDerivationPath): Promise<string> {
-    const { val: derivationPath, ok: ok2 } = await getNextDerivationPathForMnemonicId(
-      mnemonicId,
-      type,
-    )
-    assert(ok2, "Failed to lookup next available derivation path")
+    const { val: derivationPath, ok } = await getNextDerivationPathForMnemonicId(mnemonicId, curve)
+    assert(ok, "Failed to lookup next available derivation path")
 
     return derivationPath
   }
@@ -446,8 +431,6 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogSubscribe(id, port)
       case "pri(accounts.catalog.runActions)":
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
-      case "pri(accounts.validateDerivationPath)":
-        return this.validateDerivationPath(request as RequestValidateDerivationPath)
       case "pri(accounts.address.lookup)":
         return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.derivationPath.next)":

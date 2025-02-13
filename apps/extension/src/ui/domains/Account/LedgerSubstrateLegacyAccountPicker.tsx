@@ -124,7 +124,11 @@ const useLedgerChainAccounts = (
       withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ed25519", genesisHash: acc.genesisHash }))
+            .map((acc) => ({
+              address: acc.address,
+              curve: "ed25519",
+              genesisHash: acc.genesisHash,
+            }))
         : [],
     [withBalances, itemsPerPage, ledgerAccounts],
   )

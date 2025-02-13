@@ -23,8 +23,8 @@ export const AccountAddMnemonicAccountsForm = () => {
   const navigate = useNavigate()
 
   const name = useMemo(
-    () => data.name ?? (data.type === "ethereum" ? t("Ethereum Account") : t("Polkadot Account")),
-    [data.name, data.type, t],
+    () => data.name ?? (data.curve === "ethereum" ? t("Ethereum Account") : t("Polkadot Account")),
+    [data.name, data.curve, t],
   )
 
   const schema = useMemo(
@@ -91,12 +91,12 @@ export const AccountAddMnemonicAccountsForm = () => {
   )
 
   useEffect(() => {
-    if (!data.mnemonic || !data.type) return navigate("/accounts/add/mnemonic")
-  }, [data.mnemonic, data.type, navigate])
+    if (!data.mnemonic || !data.curve) return navigate("/accounts/add/mnemonic")
+  }, [data.mnemonic, data.curve, navigate])
 
   const accounts = watch("accounts")
   // invalid state, useEffect above will redirect to previous form
-  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/mnemonic" replace />
+  if (!data.mnemonic || !data.curve) return <Navigate to="/accounts/add/mnemonic" replace />
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -109,7 +109,7 @@ export const AccountAddMnemonicAccountsForm = () => {
           <DerivedFromMnemonicAccountPicker
             name={name}
             mnemonic={data.mnemonic}
-            type={data.type}
+            curve={data.curve}
             onChange={handleAccountsChange}
           />
         </div>

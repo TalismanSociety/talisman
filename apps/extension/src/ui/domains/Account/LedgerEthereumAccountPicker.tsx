@@ -114,7 +114,7 @@ const useLedgerEthereumAccounts = (
       withBalances && derivedAccounts.filter(Boolean).length === itemsPerPage
         ? derivedAccounts
             .filter((acc): acc is LedgerEthereumAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ethereum" }))
+            .map((acc) => ({ address: acc.address, curve: "ethereum" }))
         : [],
     [derivedAccounts, itemsPerPage, withBalances],
   )

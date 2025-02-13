@@ -5,8 +5,8 @@ import type {
   ResponseAccountsExport,
 } from "@polkadot/extension-base/background/types"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
-import { KeypairType } from "@polkadot/util-crypto/types"
 import { TokenId } from "@talismn/chaindata-provider"
+import { KeypairCurve } from "@talismn/crypto"
 import {
   Account,
   AddAccountDeriveOptions,
@@ -73,25 +73,6 @@ type AccountJsonSignetOwnProperties = {
 
 export type AccountJsonSignet = AccountJson & AccountJsonSignetOwnProperties
 
-// CYA FREAK!
-// export type AccountJsonAny = (
-//   | AccountJsonHardwareEthereum
-//   | AccountJsonHardwareSubstrate
-//   | AccountJsonQr
-//   | AccountJsonWatched
-//   | AccountJsonDcent
-//   | AccountJson
-//   | AccountJsonSignet
-// ) & {
-//   origin?: LegacyAccountOrigin | undefined
-//   derivedMnemonicId?: string
-//   derivationPath?: string
-// } & {
-//   folderId?: string
-//   folderName?: string
-//   sortOrder?: number
-// }
-
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
 export const AccountImportSources = {
@@ -127,10 +108,6 @@ export interface LegacyAccount {
 
 export type AccountsList = LegacyAccount[]
 
-export type UiAccountAddressType = "sr25519" | "ethereum" // TODO someday: change this to ethereum/substrate, because this is what it means for the UI
-
-export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
-
 // TODO migrate
 export enum SubstrateLedgerAppType {
   Legacy = "substrate-legacy",
@@ -140,25 +117,17 @@ export enum SubstrateLedgerAppType {
 export interface RequestAccountCreateFromSuri {
   name: string
   suri: string
-  type?: AccountAddressType
+  curve?: KeypairCurve
 }
 
 export interface RequestAccountCreateFromPrivateKey {
   name: string
   privateKey: string
-  type?: AccountAddressType
+  curve?: KeypairCurve
 }
 
 export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
-}
-
-export interface RequestAccountCreateDcent {
-  name: string
-  address: string
-  type: KeypairType
-  path: string
-  tokenIds: TokenId[]
 }
 
 export interface RequestAccountExternalSetIsPortfolio {
@@ -208,29 +177,23 @@ export type RequestAccountCreateOptions =
 
 export type RequestAccountCreate = {
   name: string
-  type: AccountAddressType
+  curve: KeypairCurve
 } & RequestAccountCreateOptions
-
-// wrap in a dedicated type because empty strings are changed to null by the message service
-export type RequestValidateDerivationPath = {
-  derivationPath: string
-  type: AccountAddressType
-}
 
 export type RequestAddressLookupBySuri = {
   suri: string
-  type: AccountAddressType
+  curve: KeypairCurve
 }
 export type RequestAddressLookupByMnemonic = {
   mnemonicId: string
   derivationPath: string
-  type: AccountAddressType
+  curve: KeypairCurve
 }
 export type RequestAddressLookup = RequestAddressLookupBySuri | RequestAddressLookupByMnemonic
 
 export type RequestNextDerivationPath = {
   mnemonicId: string
-  type: AccountAddressType
+  curve: KeypairCurve
 }
 
 export type RequestAddAccountExternal = AddAccountExternalOptions[]
@@ -250,7 +213,6 @@ export interface AccountsMessages {
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.privateKey)": [RequestAccountCreateFromPrivateKey, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
-  "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.all)": [RequestAccountExportAll, ResponseAccountsExport]
@@ -260,7 +222,6 @@ export interface AccountsMessages {
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, Account[]]
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
-  "pri(accounts.validateDerivationPath)": [RequestValidateDerivationPath, boolean]
   "pri(accounts.address.lookup)": [RequestAddressLookup, string]
   "pri(accounts.derivationPath.next)": [RequestNextDerivationPath, string]
   "pri(accounts.onChainIds.resolveNames)": [string[], Record<string, [string, NsLookupType] | null>]

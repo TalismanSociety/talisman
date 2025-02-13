@@ -1,7 +1,7 @@
 import { stringToBytes } from "@scure/base"
 
 import { addressEncodingFromCurve, addressFromPublicKey } from "../address"
-import { entropyToSeed, isValidMnemonic, mnemonicToEntropy } from "../mnemonic"
+import { entropyToSeed, getDevSeed, isValidMnemonic, mnemonicToEntropy } from "../mnemonic"
 import { KeypairCurve } from "../types"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
 import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
@@ -86,5 +86,15 @@ export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
     case "ecdsa":
     case "solana":
       throw new Error("Not implemented")
+  }
+}
+
+// @dev: cant find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
+export const isValidDerivationPath = (derivationPath: string, curve: KeypairCurve) => {
+  try {
+    deriveKeypair(getDevSeed(curve), derivationPath, curve)
+    return true
+  } catch (err) {
+    return false
   }
 }

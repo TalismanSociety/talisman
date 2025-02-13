@@ -121,7 +121,7 @@ function NewAccountMethodButtons() {
           />
         }
         type="ethereum"
-        to={`/accounts/add/derived?type=ethereum`}
+        to={`/accounts/add/derived?platform=ethereum`}
       />
       <AccountTypeMethodButton
         disabled={accountType === "ethereum"}
@@ -134,7 +134,7 @@ function NewAccountMethodButtons() {
           />
         }
         type="polkadot"
-        to={`/accounts/add/derived?type=sr25519`}
+        to={`/accounts/add/derived?platform=polkadot`}
       />
     </>
   )
@@ -218,7 +218,7 @@ function WatchedAccountMethodButtons() {
           />
         }
         type="ethereum"
-        to={`/accounts/add/watched?type=ethereum`}
+        to={`/accounts/add/watched?platform=ethereum`}
       />
       <AccountTypeMethodButton
         disabled={accountType === "ethereum"}
@@ -231,7 +231,7 @@ function WatchedAccountMethodButtons() {
           />
         }
         type="polkadot"
-        to={`/accounts/add/watched?type=sr25519`}
+        to={`/accounts/add/watched?platform=polkadot`}
       />
     </>
   )

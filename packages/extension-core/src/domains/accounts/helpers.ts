@@ -1,10 +1,7 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import { hexToU8a, isHex } from "@polkadot/util"
-import { KeypairType } from "@polkadot/util-crypto/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import { Account, isAccountEthereum } from "@talismn/keyring"
-import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
@@ -99,44 +96,6 @@ export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: num
   }
 }
 
-/**
- * @deprecated
- */
-// export const getNextDerivationPathForMnemonic = (
-//   mnemonic: string,
-//   type: KeypairType = "sr25519",
-// ): Result<
-//   string,
-//   "Unable to get next derivation path" | "Reached maximum number of derived accounts"
-// > => {
-//   const allAccounts = keyring.getAccounts()
-//   try {
-//     // for substrate check empty derivation path first
-//     if (type !== "ethereum") {
-//       const derivedAddress = encodeAnyAddress(addressFromSuri(mnemonic, type))
-//       if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
-//         return Ok("")
-//     }
-
-//     const getDerivationPath = (accountIndex: number) =>
-//       type === "ethereum" ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
-
-//     for (let accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
-//       const derivationPath = getDerivationPath(accountIndex)
-//       const derivedAddress = encodeAnyAddress(addressFromSuri(`${mnemonic}${derivationPath}`, type))
-
-//       if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
-//         return Ok(derivationPath)
-//     }
-
-//     return Err("Reached maximum number of derived accounts")
-//   } catch (error) {
-//     log.error("Unable to get next derivation path", error)
-//     captureException(error)
-//     return Err("Unable to get next derivation path")
-//   }
-// }
-
 export const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
@@ -145,44 +104,18 @@ export const hasQrCodeAccounts = async () => {
   )
 }
 
-// export const hasPrivateKey = (address: Address) => {
-//   const acc = keyring.getAccount(address)
-
-//   if (!acc) return false
-//   if (acc.meta?.isExternal) return false
-//   if (acc.meta?.isHardware) return false
-//   if (
-//     [LegacyAccountOrigin.Qr, LegacyAccountOrigin.Watched].includes(
-//       acc.meta?.origin as LegacyAccountOrigin,
-//     )
-//   )
-//     return false
-//   return true
-// }
-
-export const isValidAnyAddress = (address: string) => {
-  try {
-    // validates both SS58 and ethereum addresses
-    encodeAnyAddress(isHex(address) ? hexToU8a(address) : decodeAnyAddress(address))
-
-    return true
-  } catch (error) {
-    return false
-  }
-}
-
 export const formatSuri = (mnemonic: string, derivationPath: string) =>
   derivationPath && !derivationPath.startsWith("/")
     ? `${mnemonic}/${derivationPath}`
     : `${mnemonic}${derivationPath}`
 
-export const isAccountCompatibleWithChainOld = (
+export const isCurveCompatibleWithChain = (
   chain: Chain,
-  type: KeypairType,
+  curve: KeypairCurve,
   genesisHash: `0x${string}` | null | undefined,
 ) => {
   if (genesisHash && genesisHash !== chain.genesisHash) return false
-  return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+  return curve === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
 export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
