@@ -1,6 +1,5 @@
 import { TypeRegistry } from "@polkadot/types"
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
-import keyring from "@polkadot/ui-keyring"
 import { assert, u8aToHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { addTrailingSlash, encodeAnyAddress } from "@talismn/util"
@@ -23,7 +22,6 @@ import { Port } from "../../types/base"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { validateHexString } from "../../util/validateHexString"
-import { LegacyAccountOrigin } from "../accounts/types"
 import { getHostName } from "../app/helpers"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { watchSubstrateTransaction } from "../transactions"
@@ -161,11 +159,7 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
-    const {
-      request,
-      url,
-      account: { address: accountAddress },
-    } = queued
+    const { request, url, account } = queued
     const { payload: originalPayload } = request
     const payload = modifiedPayload || originalPayload
 
@@ -174,7 +168,7 @@ export default class SigningHandler extends ExtensionHandler {
       dapp: url,
       hostName: ok ? hostName : undefined,
     }
-    const account = keyring.getAccount(accountAddress)
+
     let signedTransaction: HexString | Uint8Array | undefined = undefined
 
     if (isJsonPayload(payload)) {
@@ -220,11 +214,12 @@ export default class SigningHandler extends ExtensionHandler {
 
     queued.resolve({ id, signature, signedTransaction })
 
-    const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
-      ? account.meta.hardwareType
-      : account?.meta.origin === LegacyAccountOrigin.Qr
-        ? "qr"
-        : undefined
+    const hardwareType: "ledger" | "qr" | undefined =
+      account.type === "ledger-polkadot"
+        ? "ledger"
+        : account.type === "polkadot-vault"
+          ? "qr"
+          : undefined
 
     talismanAnalytics.captureDelayed(
       isJsonPayload(payload) ? "sign transaction approve" : "sign approve",
