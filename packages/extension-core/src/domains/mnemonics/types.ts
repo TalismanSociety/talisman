@@ -41,11 +41,11 @@ export type RequestSetVerifierCertificateMnemonic =
 
 export interface MnemonicMessages {
   // mnemonic message signatures
-  "pri(mnemonic.subscribe)": [null, boolean, Mnemonic[]]
-  "pri(mnemonic.unlock)": [MnemonicUnlockRequest, string]
-  "pri(mnemonic.confirm)": [MnemonicConfirmRequest, boolean]
-  "pri(mnemonic.rename)": [MnemonicRenameRequest, boolean]
-  "pri(mnemonic.delete)": [MnemonicDeleteRequest, boolean]
-  "pri(mnemonic.validateMnemonic)": [string, boolean]
-  "pri(mnemonic.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
+  "pri(mnemonics.subscribe)": [null, boolean, Mnemonic[]]
+  "pri(mnemonics.unlock)": [MnemonicUnlockRequest, string]
+  "pri(mnemonics.confirm)": [MnemonicConfirmRequest, boolean]
+  "pri(mnemonics.rename)": [MnemonicRenameRequest, boolean]
+  "pri(mnemonics.delete)": [MnemonicDeleteRequest, boolean]
+  "pri(mnemonics.validateMnemonic)": [string, boolean]
+  "pri(mnemonics.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
 }

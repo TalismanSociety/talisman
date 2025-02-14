@@ -28,9 +28,9 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(accounts.create.json)",
   "pri(accounts.address.lookup)",
   "pri(app.onboardCreatePassword)",
-  "pri(mnemonic.setVerifierCertMnemonic)",
-  "pri(mnemonic.unlock)",
-  "pri(mnemonic.validateMnemonic)",
+  "pri(mnemonics.setVerifierCertMnemonic)",
+  "pri(mnemonics.unlock)",
+  "pri(mnemonics.validateMnemonic)",
 ]
 const OBFUSCATED_PAYLOAD = "#OBFUSCATED#"
 

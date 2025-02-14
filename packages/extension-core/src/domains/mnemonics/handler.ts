@@ -45,7 +45,7 @@ export default class MnemonicHandler extends ExtensionHandler {
   }
 
   private mnemonicsSubscribe(id: string, port: Port) {
-    return genericAsyncSubscription<"pri(mnemonic.subscribe)">(id, port, keyringStore.mnemonics$)
+    return genericAsyncSubscription<"pri(mnemonics.subscribe)">(id, port, keyringStore.mnemonics$)
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -55,39 +55,39 @@ export default class MnemonicHandler extends ExtensionHandler {
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(mnemonic.subscribe)":
+      case "pri(mnemonics.subscribe)":
         return this.mnemonicsSubscribe(id, port)
 
-      case "pri(mnemonic.unlock)": {
-        const { password, mnemonicId } = request as RequestType<"pri(mnemonic.unlock)">
+      case "pri(mnemonics.unlock)": {
+        const { password, mnemonicId } = request as RequestType<"pri(mnemonics.unlock)">
         const transformedPw = await this.stores.password.transformPassword(password)
         assert(transformedPw, "Password error")
 
         return keyringStore.getMnemonicText(mnemonicId, transformedPw)
       }
 
-      case "pri(mnemonic.confirm)": {
-        const { confirmed, mnemonicId } = request as RequestType<"pri(mnemonic.confirm)">
+      case "pri(mnemonics.confirm)": {
+        const { confirmed, mnemonicId } = request as RequestType<"pri(mnemonics.confirm)">
         await keyringStore.updateMnemonic(mnemonicId, { confirmed })
         return true
       }
 
-      case "pri(mnemonic.rename)": {
-        const { mnemonicId, name } = request as RequestType<"pri(mnemonic.rename)">
+      case "pri(mnemonics.rename)": {
+        const { mnemonicId, name } = request as RequestType<"pri(mnemonics.rename)">
         await keyringStore.updateMnemonic(mnemonicId, { name })
         return true
       }
 
-      case "pri(mnemonic.delete)": {
-        const { mnemonicId } = request as RequestType<"pri(mnemonic.delete)">
+      case "pri(mnemonics.delete)": {
+        const { mnemonicId } = request as RequestType<"pri(mnemonics.delete)">
         await keyringStore.removeMnemonic(mnemonicId)
         return true
       }
 
-      case "pri(mnemonic.validateMnemonic)":
+      case "pri(mnemonics.validateMnemonic)":
         return isValidMnemonic(request as string)
 
-      case "pri(mnemonic.setVerifierCertMnemonic)":
+      case "pri(mnemonics.setVerifierCertMnemonic)":
         return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
 
       default:

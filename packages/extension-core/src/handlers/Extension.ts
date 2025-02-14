@@ -46,7 +46,7 @@ export default class Extension extends ExtensionHandler {
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),
-      mnemonic: new MnemonicHandler(stores),
+      mnemonics: new MnemonicHandler(stores),
       signing: new SigningHandler(stores),
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
