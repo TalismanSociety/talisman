@@ -6,7 +6,6 @@ import { Account, isAccountEthereum } from "@talismn/keyring"
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
 import { AccountsCatalogStore } from "./store.catalog"
-import { LegacyAccount, LegacyAccountOrigin } from "./types"
 
 const sortAccountsByCreationDate = (acc1: Account, acc2: Account) => {
   const acc1Created = acc1.createdAt
@@ -96,14 +95,6 @@ export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: num
   }
 }
 
-export const hasQrCodeAccounts = async () => {
-  const localData = await chrome.storage.local.get(null)
-  return Object.entries(localData).some(
-    ([key, account]: [string, LegacyAccount]) =>
-      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr,
-  )
-}
-
 export const formatSuri = (mnemonic: string, derivationPath: string) =>
   derivationPath && !derivationPath.startsWith("/")
     ? `${mnemonic}/${derivationPath}`
@@ -122,14 +113,4 @@ export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => 
   const genesisHash = "genesisHash" in account ? account.genesisHash : undefined
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
-}
-
-export const isOwnedAccountOrigin = (origin: LegacyAccountOrigin) => {
-  switch (origin) {
-    case LegacyAccountOrigin.Watched:
-    case LegacyAccountOrigin.Signet:
-      return false
-    default:
-      return true
-  }
 }

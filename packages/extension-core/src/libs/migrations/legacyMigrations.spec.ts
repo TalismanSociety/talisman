@@ -1,12 +1,13 @@
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { KeypairType } from "@polkadot/util-crypto/types"
 
+import { formatSuri } from "../../domains/accounts/helpers"
 import {
   LegacyAccountType as AccountType,
   LegacyAccountTypes as AccountTypes,
 } from "../../domains/accounts/migrations"
-import { AccountAddressType } from "../../domains/accounts/types"
 import { passwordStore } from "../../domains/app/store.password"
 import { getEthDerivationPath } from "../../domains/ethereum/helpers"
 import { createLegacySeedPhraseStore } from "../../domains/mnemonics/legacy/store"
@@ -19,7 +20,7 @@ const createPair = (
   origin: AccountType = AccountTypes.TALISMAN,
   derivationPath = "",
   parent?: string,
-  type: AccountAddressType = "sr25519",
+  type: KeypairType = "sr25519",
 ) => {
   const slashDerivationPath = `${type === "sr25519" ? "//" : ""}${derivationPath}`
   const options = {
@@ -28,7 +29,7 @@ const createPair = (
   }
 
   const { pair } = keyring.addUri(
-    `${mnemonic}${origin === AccountTypes.DERIVED ? slashDerivationPath : ""}`,
+    formatSuri(mnemonic, origin === AccountTypes.DERIVED ? slashDerivationPath : ""),
     password,
     {
       name: `Test Account: ${derivationPath}`,
@@ -55,7 +56,7 @@ describe("App migrations", () => {
     const rootAccount = createPair()
     const indices = [1, 2]
     indices.forEach((index) => {
-      createPair(AccountTypes.DERIVED, `${index}`, rootAccount.address)
+      createPair(AccountTypes.DERIVED, `//${index}`, rootAccount.address)
     })
     // create an ethereum account
     createPair(AccountTypes.DERIVED, getEthDerivationPath(), rootAccount.address, "ethereum")

@@ -28,7 +28,7 @@ import { passwordStore } from "../app/store.password"
 const TALISMAN_KEYRING_LOCAL_STORAGE_KEY = "keyring"
 
 /**
- * In charge of loading and saving keyring to extension's local storage where save operation has to be called explicitely, allowing to revert batches of changes if anything goes wrong.
+ * Keyring with data stored in extension's local storage.
  * Also provides observables for accounts and mnemonics.
  */
 class KeyringStore {
@@ -250,16 +250,30 @@ class KeyringStore {
 
   public async changePassword(oldPassword: string, newPassword: string): Promise<void> {
     return this.withLock(async () => {
-      try {
-        const keyring = await this.load()
-        const serialized = await keyring.export(oldPassword, newPassword)
+      const keyring = await this.load()
+      const serialized = await keyring.export(oldPassword, newPassword)
 
-        await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
+      await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
+      this.#serialized$.next(serialized)
+    })
+  }
 
-        this.#serialized$.next(serialized)
-      } catch (cause) {
-        throw new Error("Failed to change password", { cause })
-      }
+  public async backup(password: string, jsonPassword: string) {
+    return this.withLock(async () => {
+      const keyring = await this.load()
+      return keyring.export(password, jsonPassword)
+    })
+  }
+
+  public async restore(json: string, jsonPassword: string, password: string) {
+    return this.withLock(async () => {
+      const keyring = Keyring.load(json)
+
+      // changes all passwords to the local one
+      const serialized = await keyring.export(jsonPassword, password)
+
+      await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
+      this.#serialized$.next(serialized)
     })
   }
 }
@@ -267,8 +281,8 @@ class KeyringStore {
 export const keyringStore = new KeyringStore()
 
 keyringStore.accounts$.subscribe((accounts) => {
-  log.log("[KeyringStore] accounts$", accounts)
+  log.debug("[KeyringStore] accounts$", accounts)
 })
 keyringStore.mnemonics$.subscribe((mnemonics) => {
-  log.log("[KeyringStore] mnemonics$", mnemonics)
+  log.debug("[KeyringStore] mnemonics$", mnemonics)
 })

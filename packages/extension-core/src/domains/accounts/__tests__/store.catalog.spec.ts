@@ -1,3 +1,5 @@
+import { Account } from "@talismn/keyring"
+
 import {
   addAccount,
   folderFilter,
@@ -8,21 +10,19 @@ import {
   TreeFolder,
 } from "../helpers.catalog"
 import { accountsCatalogStore } from "../store.catalog"
-import { AccountJsonAny } from "../types"
 
-const getTestAccounts = (): AccountJsonAny[] => [
-  { address: "account-1", name: "Account 1" },
-  { address: "account-2", name: "Account 2" },
-  { address: "account-3", name: "Account 3" },
-  { address: "account-4", name: "Account 4" },
-  { address: "account-5", name: "Account 5" },
-  { address: "account-6", name: "Account 6" },
-  { address: "account-7", name: "Account 7" },
-  { address: "account-8", name: "Account 8" },
-  { address: "account-9", name: "Account 9" },
-]
-const toAddresses = (accounts: AccountJsonAny[]): string[] =>
-  accounts.map((account) => account.address)
+const timestamp = 1739493973173
+
+const getTestAccounts = (): Account[] =>
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => ({
+    type: "keypair",
+    curve: "sr25519",
+    name: `Account ${i}`,
+    address: `account-${i}`,
+    createdAt: timestamp + i,
+  }))
+
+const toAddresses = (accounts: Account[]): string[] => accounts.map((account) => account.address)
 
 const getTestStartTree = (): Tree => [
   { type: "account", address: "account-1" },

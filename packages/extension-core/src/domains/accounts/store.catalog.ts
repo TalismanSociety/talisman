@@ -22,43 +22,26 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
 
   /**
    * This method will sort a given array of accounts into the order that they have in the store.
-   *
-   * It will also set the `sortOrder` field on each account.
-   *
-   * It will also set the `folderId` and `folderName` fields on each account which is in a folder.
    */
   sortAccountsByCatalogOrder = async (accounts: Account[]) => {
-    // TODO rewrite so we dont bloat account objects with utility properties
+    let orderedAddresses: string[] = []
 
-    return accounts
+    await this.withTrees((trees) => {
+      orderedAddresses = [...trees.portfolio, ...trees.watched].reduce<string[]>((prev, curr) => {
+        if (curr.type === "account") prev.push(curr.address)
+        if (curr.type === "folder") curr.tree.forEach((item) => prev.push(item.address))
+        return prev
+      }, [])
+    })
 
-    // const accountsByAddress = new Map(accounts.map((account) => [account.address, account]))
-
-    // let nextSortIndex = 0
-    // await this.withTrees((trees) => {
-    //   ;[...trees.portfolio, ...trees.watched].forEach((item) => {
-    //     if (item.type === "account") {
-    //       const account = accountsByAddress.get(item.address)
-    //       if (!account) return
-
-    //       account.folderId = undefined
-    //       account.folderName = undefined
-    //       account.sortOrder = nextSortIndex++
-    //     }
-
-    //     if (item.type === "folder")
-    //       item.tree.forEach((folderItem) => {
-    //         const account = accountsByAddress.get(folderItem.address)
-    //         if (!account) return
-
-    //         account.folderId = item.id
-    //         account.folderName = item.name
-    //         account.sortOrder = nextSortIndex++
-    //       })
-    //   })
-    // })
-
-    // return accounts.sort(bySortOrder)
+    return accounts.sort((a, b) => {
+      const aIndex = orderedAddresses.indexOf(a.address)
+      const bIndex = orderedAddresses.indexOf(b.address)
+      if (aIndex === -1 && bIndex === -1) return (a.createdAt ?? 0) - (b.createdAt ?? 0)
+      if (aIndex === -1) return 1
+      if (bIndex === -1) return -1
+      return aIndex - bIndex
+    })
   }
 
   /**

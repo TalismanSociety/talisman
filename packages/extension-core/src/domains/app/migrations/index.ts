@@ -1,13 +1,11 @@
-import keyring from "@polkadot/ui-keyring"
+import { isAccountOwned } from "@talismn/keyring"
 import { convertAddress, normalizeAddress } from "@talismn/util"
 import { log } from "extension-shared"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"
-import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
-import { isOwnedAccountOrigin } from "../../accounts/helpers"
-import { LegacyAccountOrigin } from "../../accounts/types"
 import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
+import { keyringStore } from "../../keyring/store"
 import { addressBookStore } from "../store.addressBook"
 import { appStore } from "../store.app"
 import { settingsStore } from "../store.settings"
@@ -45,14 +43,8 @@ export const hideGetStartedIfFunded: Migration = {
     const currentValue = await appStore.get("hideGetStarted")
     if (currentValue) return
 
-    await awaitKeyringLoaded()
-    const ownedAddresses = keyring
-      .getAccounts()
-      .filter((account) => {
-        const origin = account.meta.origin as LegacyAccountOrigin
-        return isOwnedAccountOrigin(origin)
-      })
-      .map((account) => normalizeAddress(account.address))
+    const addresses = await keyringStore.getAccounts()
+    const ownedAddresses = addresses.filter(isAccountOwned).map((account) => account.address)
 
     const balanceTotals = await balanceTotalsStore.get()
     const fundedAddresses = [

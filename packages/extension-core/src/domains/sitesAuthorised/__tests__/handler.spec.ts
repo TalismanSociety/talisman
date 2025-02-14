@@ -9,6 +9,7 @@ import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
+import { keyringStore } from "../../keyring/store"
 import { AuthorizedSites } from "../types"
 
 keyring.loadAll({ store: new AccountsStore() })
@@ -48,12 +49,12 @@ describe("Sites Authorised Handler", () => {
     })
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
-      type: "sr25519",
+      curve: "sr25519",
       mnemonic: suri,
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
+    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 
     sitesStore = await extensionStores.sites.get()
   })
@@ -70,7 +71,7 @@ describe("Sites Authorised Handler", () => {
     // create another address
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "TestAdd",
-      type: "sr25519",
+      curve: "sr25519",
       mnemonicId,
     })
 
@@ -107,7 +108,7 @@ describe("Sites Authorised Handler", () => {
 
     const ethAddress = await messageSender("pri(accounts.create)", {
       name: "TestAddAEth",
-      type: "ethereum",
+      curve: "ethereum",
       mnemonicId,
     })
 

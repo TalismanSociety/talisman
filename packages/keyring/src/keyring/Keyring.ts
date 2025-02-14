@@ -52,28 +52,31 @@ export class Keyring {
   }
 
   public static load(json: string): Keyring {
-    return new Keyring(JSON.parse(json))
+    const data = JSON.parse(json)
+    // TODO: schema check ?
+    if (!data.accounts || !data.mnemonics) throw new Error("Invalid data")
+    return new Keyring(data)
   }
 
-  public toString(format?: boolean): string {
-    return JSON.stringify(this.#storage, undefined, format ? 2 : undefined)
+  public toString(pretty?: boolean): string {
+    return JSON.stringify(this.#storage, undefined, pretty ? 2 : undefined)
   }
 
-  public async export(password: string, newPassword: string): Promise<string> {
+  public async export(password: string, jsonPassword: string, pretty?: boolean): Promise<string> {
     const keyring = new Keyring(structuredClone(this.#storage))
 
     for (const mnemonic of keyring.#storage.mnemonics)
-      mnemonic.entropy = await changeEncryptedDataPassword(mnemonic.entropy, password, newPassword)
+      mnemonic.entropy = await changeEncryptedDataPassword(mnemonic.entropy, password, jsonPassword)
 
     for (const account of keyring.#storage.accounts)
       if (account.type === "keypair")
         account.secretKey = await changeEncryptedDataPassword(
           account.secretKey,
           password,
-          newPassword,
+          jsonPassword,
         )
 
-    return keyring.toString()
+    return keyring.toString(pretty)
   }
 
   public getMnemonics(): Mnemonic[] {
