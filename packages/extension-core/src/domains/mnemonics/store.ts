@@ -19,6 +19,9 @@ export enum MnemonicSource {
   Legacy = "legacy",
 }
 
+/**
+ * @deprecated
+ */
 export type MnemonicData = {
   id: string
   name: string
@@ -27,8 +30,14 @@ export type MnemonicData = {
   confirmed: boolean
 }
 
+/**
+ * @deprecated
+ */
 export type MnemonicsStoreData = Record<string, MnemonicData>
 
+/**
+ * @deprecated
+ */
 export enum MnemonicErrors {
   IncorrectPassword = "Incorrect password",
   InvalidMnemonic = "Invalid mnemonic",
@@ -39,6 +48,9 @@ export enum MnemonicErrors {
   AlreadyExists = "Mnemonic already exists in MnemonicsStore",
 }
 
+/**
+ * @deprecated
+ */
 export const encryptMnemonic = async (mnemonic: string, password: string) => {
   const cipher = await encrypt(password, mnemonic)
 
@@ -48,6 +60,9 @@ export const encryptMnemonic = async (mnemonic: string, password: string) => {
   return cipher
 }
 
+/**
+ * @deprecated
+ */
 export const decryptMnemonic = async (
   cipher: string,
   password: string,
@@ -66,6 +81,10 @@ const cleanupMnemonic = (mnemonic: string) => {
 }
 
 type MnemonicId = string
+
+/**
+ * @deprecated
+ */
 export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   public async add(
     name: string,

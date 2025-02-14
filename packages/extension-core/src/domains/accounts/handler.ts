@@ -1,6 +1,8 @@
 import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
-import legacyKeyring from "@polkadot/ui-keyring"
-import { assert } from "@polkadot/util"
+import { KeyringPair$Json } from "@polkadot/keyring/types"
+import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import { assert, objectSpread, stringToU8a } from "@polkadot/util"
+import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
   bytesToString,
   KeypairCurve,
@@ -249,15 +251,45 @@ export default class AccountsHandler extends ExtensionHandler {
     return val
   }
 
+  /**
+   * Exports all hot accounts to a json file using p.js compatible json format.
+   */
   private async accountExportAll({
     password,
     exportPw,
   }: RequestAccountExportAll): Promise<ResponseAccountsExport> {
     await this.stores.password.checkPassword(password)
 
-    const addresses = legacyKeyring.getPairs().map(({ address }) => address)
+    const accounts = await keyringStore.getAccounts()
 
-    const exportedJson = await legacyKeyring.backupAccounts(addresses, exportPw)
+    const accountsToExport = accounts.filter(
+      (account) =>
+        // export only keypair accounts, others have metadata that are specific to each wallet
+        account.type === "keypair" &&
+        // only export pjs compatible accounts to be compatible with pjs json format
+        ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve),
+    )
+
+    const jsonAccounts: KeyringPair$Json[] = []
+
+    // fetch secretKeys sequentially to avoid lock issues
+    for (const { address } of accountsToExport) {
+      const { err, val } = await withPjsKeyringPair(address, (pair) => pair.toJson(exportPw))
+      if (err) throw new Error(val as string)
+      jsonAccounts.push(val)
+    }
+
+    // // export accounts the same way as keyring.backupAccounts() from @polkadot/ui-keyring
+    const exportedJson = objectSpread(
+      {},
+      jsonEncrypt(stringToU8a(JSON.stringify(jsonAccounts)), ["batch-pkcs8"], exportPw),
+      {
+        accounts: jsonAccounts.map((account) => ({
+          address: account.address,
+          meta: account.meta,
+        })),
+      },
+    ) as KeyringPairs$Json
 
     return { exportedJson }
   }

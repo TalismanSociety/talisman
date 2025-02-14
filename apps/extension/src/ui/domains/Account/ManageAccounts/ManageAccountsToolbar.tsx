@@ -1,6 +1,5 @@
 import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { DEBUG } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -12,7 +11,6 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useOpenClose,
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -20,10 +18,9 @@ import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
-import { useAccounts } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ExportAllAccountsModal } from "../ExportAllAccountsModal"
+import { ExportAllAccountsModal, useExportAllAccountsModal } from "../ExportAllAccountsModal"
 import { useManageAccounts } from "./ManageAccountsProvider"
 
 export const ManageAccountsToolbar: FC<{
@@ -66,8 +63,7 @@ export const ManageAccountsToolbar: FC<{
       </div>
       <ToolbarButton icon={FolderPlusIcon} onClick={openNewFolderModal} label={t("Add Folder")} />
       <ToolbarButton icon={PlusIcon} onClick={addNewAccountClick} label={t("Add Account")} />
-      {/* Still work in progress, hide until finished */}
-      {DEBUG && <AccountsContextMenu />}
+      <AccountsContextMenu />
     </div>
   )
 }
@@ -96,10 +92,11 @@ const ToolbarButton: FC<{
 
 const AccountsContextMenu = () => {
   const { t } = useTranslation()
-  const accounts = useAccounts()
-  const { isOpen: isOpenExportAll, open: openExportAll, close: closeExportAll } = useOpenClose()
 
-  if (!accounts.length) return null
+  const { isOpenExportAll, canExportAll, openExportAll, closeExportAll } =
+    useExportAllAccountsModal()
+
+  if (!canExportAll) return null
 
   return (
     <>
@@ -114,7 +111,7 @@ const AccountsContextMenu = () => {
           <MoreHorizontalIcon />
         </ContextMenuTrigger>
         <ContextMenuContent>
-          <ContextMenuItem onClick={openExportAll}>{t("Export all")}</ContextMenuItem>
+          <ContextMenuItem onClick={openExportAll}>{t("Export all as JSON")}</ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
       <ExportAllAccountsModal isOpen={isOpenExportAll} onClose={closeExportAll} />
