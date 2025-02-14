@@ -5,11 +5,6 @@ import { activeEvmNetworksObservable } from "../balances/pool"
 import { keyringStore } from "../keyring/store"
 import { NftCollection } from "./types"
 
-/**
- * IMPORTANT : make sure keyring is loaded before calling this
- *
- * @returns list of evm addresses from keyring
- */
 export const getNftsAccountsList = async () => {
   const accounts = await keyringStore.getAccounts()
   return accounts

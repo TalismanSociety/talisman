@@ -11,7 +11,7 @@ import {
   UpdateAccountOptions,
   UpdateMnemonicOptions,
 } from "@talismn/keyring"
-import { log } from "extension-shared"
+import { log, TEST } from "extension-shared"
 import { isEqual } from "lodash"
 import {
   distinctUntilChanged,
@@ -22,7 +22,6 @@ import {
   shareReplay,
 } from "rxjs"
 
-import { isBackgroundPage } from "../../util/isBackgroundPage"
 import { passwordStore } from "../app/store.password"
 
 const TALISMAN_KEYRING_LOCAL_STORAGE_KEY = "keyring"
@@ -39,8 +38,8 @@ class KeyringStore {
   #mnemonics$: Observable<Mnemonic[]>
 
   constructor() {
-    if (!isBackgroundPage())
-      throw new Error("Keyring store can only be accessed from the background process")
+    if (!TEST && typeof window !== "undefined")
+      throw new Error("Keyring store cannot be accessed from a web page")
 
     this.#keyring$ = this.#serialized$.pipe(
       map((s) => (s ? Keyring.load(s) : Keyring.create())),
