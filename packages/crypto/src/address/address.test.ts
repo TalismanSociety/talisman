@@ -79,8 +79,8 @@ describe("address encoding", () => {
     expect(encodeAddressSs58(GENERIC)).toEqual(GENERIC)
     expect(encodeAddressSs58(GENERIC, 42)).toEqual(GENERIC)
     expect(encodeAddressSs58(GENERIC, 0)).toEqual(POLKADOT)
-    expect(encodeAddressSs58(GENERIC, 1)).toEqual(KUSAMA)
-    expect(encodeAddressSs58(POLKADOT, 1)).toEqual(KUSAMA)
+    expect(encodeAddressSs58(GENERIC, 2)).toEqual(KUSAMA)
+    expect(encodeAddressSs58(POLKADOT, 2)).toEqual(KUSAMA)
   })
 })
 

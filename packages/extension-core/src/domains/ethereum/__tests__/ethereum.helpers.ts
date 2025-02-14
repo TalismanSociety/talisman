@@ -76,8 +76,8 @@ describe("Test ethereum helpers", () => {
   })
 
   test("getEthDerivationPath", () => {
-    expect(getEthDerivationPath()).toEqual("/m/44'/60'/0'/0/0")
-    expect(getEthDerivationPath(3)).toEqual("/m/44'/60'/0'/0/3")
+    expect(getEthDerivationPath()).toEqual("m/44'/60'/0'/0/0")
+    expect(getEthDerivationPath(3)).toEqual("m/44'/60'/0'/0/3")
   })
 
   test("getEthLedgerDerivationPath", () => {

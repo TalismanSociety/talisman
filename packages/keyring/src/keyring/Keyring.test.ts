@@ -1,17 +1,11 @@
-import {
-  addressFromKeypair,
-  deriveKeypair,
-  entropyToSeed,
-  KeypairCurve,
-  mnemonicToEntropy,
-} from "@talismn/crypto"
+import { deriveKeypair, entropyToSeed, KeypairCurve, mnemonicToEntropy } from "@talismn/crypto"
 
 import { Keyring } from "./Keyring"
 
 const MNEMONIC = {
   name: "test",
-  description: "test",
   mnemonic: "test test test test test test test test test test test junk",
+  confirmed: true,
 }
 const DERIVATION_PATH_SUBSTRATE = "//Alice"
 const DERIVATION_PATH_ETHEREUM = "m/44'/60'/0'/0/0"
@@ -54,6 +48,7 @@ describe("keyring", () => {
         {
           ...MNEMONIC,
           name: "duplicate",
+          confirmed: false,
         },
         VALID_PASSWORD,
       ),
@@ -67,6 +62,7 @@ describe("keyring", () => {
           ...MNEMONIC,
           name: "duplicate",
           mnemonic: MNEMONIC.mnemonic.replace("junk", "test"),
+          confirmed: false,
         },
         VALID_PASSWORD,
       ),
@@ -123,7 +119,6 @@ const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) =>
   const entropy = mnemonicToEntropy(MNEMONIC.mnemonic)
   const seed = entropyToSeed(entropy, curve)
   const pair = deriveKeypair(seed, derivationPath, curve)
-  const address = addressFromKeypair(pair)
 
   await keyring.addAccountKeypair(
     {
@@ -134,14 +129,15 @@ const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) =>
     VALID_PASSWORD,
   )
 
-  expect(keyring.getAccount(address)).toBeTruthy()
-  expect(() => keyring.removeAccount(address)).not.toThrow()
-  expect(keyring.getAccount(address)).toBeNull()
+  expect(keyring.getAccount(pair.address)).toBeTruthy()
+  expect(() => keyring.removeAccount(pair.address)).not.toThrow()
+  expect(keyring.getAccount(pair.address)).toBeNull()
 }
 
 const testAddFromMnemonic = async (curve: KeypairCurve, derivationPath: string) => {
   const { address } = await keyring.addAccountDerive(
     {
+      type: "existing-mnemonic",
       mnemonicId,
       curve,
       derivationPath,
