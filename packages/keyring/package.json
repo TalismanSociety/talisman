@@ -26,6 +26,9 @@
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist plugins/dist .turbo node_modules"
   },
+  "dependencies":{
+    "@talismn/crypto": "workspace:*"
+  },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",

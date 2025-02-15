@@ -1,6 +1,6 @@
 import { Bytes, str, Tuple, u32 } from "scale-ts"
 
-import { blake2b256 } from "../common"
+import { blake2b256 } from "../hashing"
 
 // Inspired from MIT licensed @polkadot-labs/hdkd helpers
 // https://github.com/polkadot-labs/hdkd/blob/3ef6e02827212d934b59a4e566d8aa61d3ba7b27/packages/hdkd-helpers/src/parseDerivations.ts#L1

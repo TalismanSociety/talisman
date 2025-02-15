@@ -1,6 +1,6 @@
 import { base58 } from "@scure/base"
 
-import { blake2b256, blake2b512 } from "../../common"
+import { blake2b256, blake2b512 } from "../../hashing"
 
 // Inspired from MIT licensed @polkadot-labs/hdkd-helpers
 // https://github.com/polkadot-labs/hdkd/blob/3ef6e02827212d934b59a4e566d8aa61d3ba7b27/packages/hdkd-helpers/src/accountId.ts#L3

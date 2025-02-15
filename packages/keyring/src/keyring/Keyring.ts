@@ -1,7 +1,7 @@
-import { blake3 } from "@noble/hashes/blake3"
 import {
   addressEncodingFromCurve,
   addressFromPublicKey,
+  blake3,
   bytesToString,
   deriveKeypair,
   entropyToMnemonic,
