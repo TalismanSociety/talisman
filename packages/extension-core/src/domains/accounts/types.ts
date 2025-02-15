@@ -14,6 +14,7 @@ import {
   AddAccountKeypairOptions,
 } from "@talismn/keyring"
 import { NsLookupType } from "@talismn/on-chain-id"
+import { HexString } from "extension-shared"
 
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 import { Address } from "../../types/base"
@@ -160,6 +161,12 @@ export interface RequestAccountRename {
   name: string
 }
 
+export interface RequestAccountContactUpdate {
+  address: string
+  name: string
+  genesisHash?: HexString
+}
+
 export type RequestAccountCreateOptionsNewMnemonic = {
   mnemonic: string
   confirmed: boolean
@@ -218,6 +225,7 @@ export interface AccountsMessages {
   "pri(accounts.export.all)": [RequestAccountExportAll, ResponseAccountsExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]
   "pri(accounts.rename)": [RequestAccountRename, boolean]
+  "pri(accounts.update.contact)": [RequestAccountContactUpdate, boolean]
   "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, Account[]]
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]

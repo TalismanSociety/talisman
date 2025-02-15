@@ -1,6 +1,6 @@
+import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountAddressType } from "extension-shared"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
@@ -175,7 +175,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   )
 }
 
-const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
+const contactTypeAddressTypeMap: Record<ProviderType, AddressEncoding> = {
   polkadot: "ss58",
   ethereum: "ethereum",
 }
@@ -198,7 +198,8 @@ const Content = () => {
     () =>
       contacts.filter(
         (contact) =>
-          addressType === "all" || contact.addressType === contactTypeAddressTypeMap[addressType],
+          addressType === "all" ||
+          detectAddressEncoding(contact.address) === contactTypeAddressTypeMap[addressType],
       ),
     [contacts, addressType],
   )

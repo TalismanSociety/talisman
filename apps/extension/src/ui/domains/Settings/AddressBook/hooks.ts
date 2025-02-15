@@ -1,6 +1,8 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, CustomChain } from "@talismn/chaindata-provider"
-import { convertAddress, decodeSs58Format } from "@talismn/util"
+import { detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
+import { decodeSs58Format } from "@talismn/util"
+import { HexString } from "extension-shared"
 import { useEffect, useMemo } from "react"
 
 import { useChains } from "@ui/state"
@@ -22,8 +24,8 @@ export const useChainsFilteredByAddressPrefix = (address?: string) => {
 
 export const useGenesisHashEffects = (
   chains: (Chain | CustomChain)[],
-  genesisHash: string | undefined,
-  setGenesisHash: (genesisHash?: string) => void,
+  genesisHash: HexString | undefined,
+  setGenesisHash: (genesisHash?: HexString) => void,
 ) => {
   useEffect(() => {
     // If there's only 1 chain to pick from, immediately pick it
@@ -42,8 +44,8 @@ export const useAddressEffects = (
 ) => {
   useEffect(() => {
     try {
-      const addressType = address ? (isEthereumAddress(address) ? "ethereum" : "ss58") : "UNKNOWN"
-      const isGeneric = addressType === "ss58" && address === convertAddress(address, null)
+      const addressType = detectAddressEncoding(address)
+      const isGeneric = addressType === "ss58" && address === normalizeAddress(address)
 
       // If address is a generic address, disable limitToNetwork by default
       if (isGeneric) setLimitToNetwork(false)

@@ -7,7 +7,7 @@ import {
   StoredBalanceJson,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
-import { Account, isAccountOfType } from "@talismn/keyring"
+import { Account, isAccountNotContact } from "@talismn/keyring"
 import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
 import { Dexie, liveQuery } from "dexie"
@@ -726,7 +726,7 @@ class KeyringBalancePool extends BalancePool {
     // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
     return keyringStore.accounts$
       .pipe(
-        map((accounts) => accounts.filter((acc) => !isAccountOfType(acc, "contact"))),
+        map((accounts) => accounts.filter(isAccountNotContact)),
         distinctUntilChanged<Account[]>(isEqual),
         tap(() => {
           this.setIsRestartPending()

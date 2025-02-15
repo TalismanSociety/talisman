@@ -58,4 +58,5 @@ export type AddAccountExternalOptions =
 export type UpdateAccountOptions = {
   name?: string
   isPortfolio?: boolean
+  genesisHash?: `0x${string}`
 }

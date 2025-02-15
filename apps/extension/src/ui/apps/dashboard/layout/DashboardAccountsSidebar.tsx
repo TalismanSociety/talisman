@@ -53,11 +53,13 @@ const Accounts = () => {
 
     const treeItemToOption =
       (treeName: AccountsCatalogTree) =>
-      (item: TreeItem): AccountOption => {
+      (item: TreeItem): AccountOption | null => {
         const account =
           item.type === "account"
             ? accounts.find((account) => account.address === item.address)
             : undefined
+
+        if (item.type === "account" && !account) return null
 
         return item.type === "account"
           ? {
@@ -83,8 +85,8 @@ const Accounts = () => {
             }
       }
 
-    const filterEmptyFolders = (option: AccountOption) =>
-      option.type !== "folder" || !!option.addresses.length
+    const filterEmptyFolders = (option: AccountOption | null): option is AccountOption =>
+      !!option && (option.type !== "folder" || !!option.addresses.length)
 
     return [
       portfolioTree.map(treeItemToOption("portfolio")).filter(filterEmptyFolders),

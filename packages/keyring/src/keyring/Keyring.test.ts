@@ -85,7 +85,7 @@ describe("keyring", () => {
       type: "contact",
       address: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
       name: "My contact",
-      networkId: "1",
+      genesisHash: "0xdeadbeef",
     })
 
     expect(keyring.getAccount("0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a")).toBeTruthy()

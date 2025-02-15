@@ -3,7 +3,6 @@ import BigNumber from "bignumber.js"
 
 import { talismanAnalytics } from "../../libs/Analytics"
 import { privacyRoundCurrency } from "../../util/privacyRoundCurrency"
-import { addressBookStore } from "../app/store.addressBook"
 import { keyringStore } from "../keyring/store"
 
 type TransferAnalyticsBaseArgs = {
@@ -32,7 +31,7 @@ export const transferAnalytics = async ({
   // It will still consider isOwnAccount / isContact to be true.
   const account = await keyringStore.getAccount(toAddress)
   const isOwnAccount = isAccountOwned(account)
-  const isContact = isOwnAccount ? false : (await addressBookStore.get(toAddress)) !== undefined
+  const isContact = account?.type === "contact"
 
   talismanAnalytics.capture("asset transfer", {
     ...network,

@@ -1,7 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AddressBookContact, isAccountEthereum } from "extension-core"
+import { AccountContact } from "extension-core"
+import { HexString } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -33,13 +34,13 @@ type FormValues = {
   name: string
   searchAddress: string
   address: string
-  genesisHash?: string
+  genesisHash?: HexString
   limitToNetwork?: boolean
 }
 
 interface ValidationContext {
   accounts: string[]
-  contacts: AddressBookContact[]
+  contacts: AccountContact[]
 }
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -97,7 +98,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             }
             return true
           }),
-        genesisHash: yup.string(),
+        genesisHash: yup.mixed<HexString>(),
         limitToNetwork: yup.bool(),
       }),
     [t],
@@ -105,13 +106,8 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
     () => ({
-      existingNormalisedContacts: contacts.map((c) => ({
-        ...c,
-        address: normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType),
-      })),
-      existingAccountAddresses: accounts.map((acc) =>
-        normalise(acc.address, isAccountEthereum(acc) ? "ethereum" : "ss58"),
-      ),
+      existingNormalisedContacts: contacts,
+      existingAccountAddresses: accounts.map((acc) => acc.address),
     }),
     [contacts, accounts],
   )
@@ -166,7 +162,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const chains = useChainsFilteredByAddressPrefix(address)
   const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
-    (genesisHash?: string) =>
+    (genesisHash?: HexString) =>
       setValue("genesisHash", genesisHash, {
         shouldDirty: true,
         shouldTouch: true,
@@ -194,7 +190,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         await add({
           name,
           address,
-          addressType: isEthereumAddress(address) ? "ethereum" : "ss58",
           genesisHash: limitToNetwork ? genesisHash : undefined,
         })
         sendAnalyticsEvent({

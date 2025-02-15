@@ -1,4 +1,4 @@
-import { isAccountEthereum, isAccountOfType } from "@talismn/keyring"
+import { isAccountEthereum, isAccountNotContact, isAccountOfType } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -32,7 +32,7 @@ export const trackBalanceTotals = async () => {
     .subscribe(async ([settings, accounts, tokens, chainsById, balances, allTokenRates]) => {
       try {
         const mapAccounts = Object.fromEntries(
-          Object.values(accounts).map((account) => [account.address, account]),
+          accounts.filter(isAccountNotContact).map((account) => [account.address, account]),
         )
 
         const tokenRates: TokenRatesList = Object.fromEntries(

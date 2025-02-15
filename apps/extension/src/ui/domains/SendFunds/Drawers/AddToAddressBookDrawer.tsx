@@ -1,12 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { convertAddress } from "@talismn/util"
+import { HexString } from "extension-shared"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { AddressBookContact } from "@extension/core"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -36,12 +37,12 @@ const schema = yup.object({
 
 const AddToAddressBookDrawerForm: FC<{
   address: string
-  addressType: AddressBookContact["addressType"]
-  tokenGenesisHash?: string
+  tokenGenesisHash?: HexString
   onClose?: () => void
-}> = ({ address, addressType, tokenGenesisHash, onClose }) => {
+}> = ({ address, tokenGenesisHash, onClose }) => {
   const { t } = useTranslation("send-funds")
   const { add } = useAddressBook()
+  const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === convertAddress(address, null),
     [address, addressType],
@@ -70,7 +71,6 @@ const AddToAddressBookDrawerForm: FC<{
         await add({
           name,
           address,
-          addressType,
           genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
         })
         sendAnalyticsEvent({
@@ -171,16 +171,14 @@ export const AddToAddressBookDrawer: FC<{
   isOpen: boolean
   close: () => void
   address: string
-  addressType: AddressBookContact["addressType"]
-  tokenGenesisHash?: string
+  tokenGenesisHash?: HexString
   containerId?: string
   asChild?: boolean
-}> = ({ address, addressType, tokenGenesisHash, containerId, isOpen, close }) => {
+}> = ({ address, tokenGenesisHash, containerId, isOpen, close }) => {
   return (
     <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
       <AddToAddressBookDrawerForm
         address={address}
-        addressType={addressType}
         tokenGenesisHash={tokenGenesisHash}
         onClose={close}
       />

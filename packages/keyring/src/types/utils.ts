@@ -68,6 +68,8 @@ export const isAccountPortfolio = (account: Account | null | undefined): account
   return isAccountOwned(account) || (isAccountOfType(account, "watch-only") && account.isPortfolio)
 }
 
+export const isAccountNotContact = (acc: Account) => acc.type !== "contact"
+
 type AccountEthereum = Extract<Account, { type: (typeof ACCOUNT_TYPES_ETHEREUM)[number] }> & {
   address: `0x${string}`
 }

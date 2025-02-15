@@ -119,6 +119,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.export.all)", { password, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
+  accountUpdateContact: (options) =>
+    messageService.sendMessage("pri(accounts.update.contact)", options),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
   addressLookup: (lookup) => messageService.sendMessage("pri(accounts.address.lookup)", lookup),

@@ -153,13 +153,16 @@ export class Keyring {
     return account ? accountFromStorage(account) : null
   }
 
-  public updateAccount(address: string, { name, isPortfolio }: UpdateAccountOptions) {
+  public updateAccount(address: string, { name, isPortfolio, genesisHash }: UpdateAccountOptions) {
     const account = this.#storage.accounts.find((s) => s.address === address)
     if (!account) throw new Error("Account not found")
 
     if (name) account.name = name
     if (account.type === "watch-only" && isPortfolio !== undefined)
       account.isPortfolio = isPortfolio
+
+    // allow updating genesisHash only for contacts
+    if (account.type === "contact") account.genesisHash = genesisHash
 
     return accountFromStorage(account)
   }

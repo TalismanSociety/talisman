@@ -17,6 +17,7 @@ import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
+  RequestAccountContactUpdate,
   RequestAccountCreate,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromPrivateKey,
@@ -424,6 +425,15 @@ export default class AccountsHandler extends ExtensionHandler {
     return accounts.map((a) => a.address)
   }
 
+  private async updateContact({ address, name, genesisHash }: RequestAccountContactUpdate) {
+    const account = await keyringStore.getAccount(address)
+    if (account?.type !== "contact") throw new Error("Contact not found")
+
+    await keyringStore.updateAccount(address, { name, genesisHash })
+
+    return true
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -457,6 +467,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountExportPrivateKey(request as RequestAccountExportPrivateKey)
       case "pri(accounts.rename)":
         return this.accountRename(request as RequestAccountRename)
+      case "pri(accounts.update.contact)":
+        return this.updateContact(request as RequestAccountContactUpdate)
       case "pri(accounts.subscribe)":
         return this.accountsSubscribe(id, port)
       case "pri(accounts.catalog.subscribe)":

@@ -44,6 +44,7 @@ import {
   Mnemonic,
   NftData,
   ProviderType,
+  RequestAccountContactUpdate,
   RequestAccountCreateOptions,
   RequestAddAccountDerive,
   RequestAddAccountExternal,
@@ -171,6 +172,7 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPairs$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
+  accountUpdateContact: (options: RequestAccountContactUpdate) => Promise<boolean>
   addressLookup: (lookup: RequestAddressLookup) => Promise<string>
   getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 

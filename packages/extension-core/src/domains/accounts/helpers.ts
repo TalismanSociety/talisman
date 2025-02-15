@@ -1,7 +1,7 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
-import { Account, isAccountEthereum } from "@talismn/keyring"
+import { Account, isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
@@ -33,7 +33,7 @@ export const sortAccounts =
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
-    await accountsCatalogStore.addAccounts(sorted)
+    await accountsCatalogStore.addAccounts(sorted.filter(isAccountNotContact))
     await accountsCatalogStore.sortAccountsByCatalogOrder(sorted)
 
     return sorted

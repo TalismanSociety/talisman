@@ -1,4 +1,4 @@
-import { Account, isAccountPortfolio } from "@talismn/keyring"
+import { Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
 
 import { StorageProvider } from "../../libs/Store"
 import {
@@ -54,6 +54,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
   addAccounts = async (accounts: Account[]) =>
     await this.withTrees((trees) =>
       accounts
+        .filter(isAccountNotContact)
         .map((account) => {
           const [addTree, rmTree] = isAccountPortfolio(account)
             ? [trees.portfolio, trees.watched]
@@ -109,7 +110,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
     const ensureArray = <T>(item: T) => (Array.isArray(item) ? item : [])
     const trees: Trees = {
       portfolio: ensureArray(store.portfolio),
-      watched: ensureArray(store.watched),
+      watched: ensureArray(store.watched).filter(isAccountNotContact),
     }
 
     // run the callback against the data

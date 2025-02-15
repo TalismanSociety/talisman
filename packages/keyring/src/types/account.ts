@@ -20,7 +20,7 @@ export type AccountKeypair = AccountBase & {
 
 export type AccountContact = AccountBase & {
   type: "contact"
-  networkId?: string // indicates if network restricted
+  genesisHash?: `0x${string}`
 }
 
 export type AccountWatchOnly = AccountBase & {
