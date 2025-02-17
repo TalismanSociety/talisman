@@ -334,6 +334,9 @@ importers:
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../../packages/chaindata-provider
+      '@talismn/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@talismn/icons':
         specifier: workspace:*
         version: link:../../packages/icons

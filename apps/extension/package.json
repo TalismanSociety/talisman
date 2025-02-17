@@ -46,6 +46,7 @@
     "@talismn/scale": "workspace:*",
     "@talismn/siws": "^0.0.19",
     "@talismn/token-rates": "workspace:*",
+    "@talismn/crypto": "workspace:*",
     "@talismn/util": "workspace:*",
     "@tanstack/react-query": "5.59.16",
     "@tanstack/react-virtual": "^3.11.1",
