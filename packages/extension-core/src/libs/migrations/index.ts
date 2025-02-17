@@ -1,3 +1,5 @@
+import { DEBUG } from "extension-shared"
+
 import {
   migratePolkadotLedgerAccounts,
   migrateToNewAccountTypes,
@@ -16,6 +18,7 @@ import {
   migrateAssetDiscoveryV2,
 } from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
+import { executeMigrationFromPjsKeyring } from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
 import { Migrations } from "./types"
 
@@ -42,3 +45,10 @@ export const migrations: Migrations = [
 // await chrome.storage.local.set(state)
 // warning: this will remove the record of the migration's application, but will not revert changes made by the migration
 // it should only be used for idempotent or non-reversible migrations
+
+if (DEBUG) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hostObj = globalThis as any
+
+  hostObj.executeMigrationFromPjsKeyring = executeMigrationFromPjsKeyring
+}
