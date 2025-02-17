@@ -163,7 +163,7 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
       case "keypair":
         return "local"
       default:
-        throw new Error(`Unsupported account type '${account?.origin}'`)
+        throw new Error(`Unsupported account type '${account?.type}'`)
     }
   }, [account])
 

@@ -1,4 +1,5 @@
 export * from "../domains/accounts/types"
+export * from "../domains/analytics/types"
 export * from "../domains/app/types"
 export * from "../domains/assetDiscovery/types"
 export * from "../domains/balances/types"

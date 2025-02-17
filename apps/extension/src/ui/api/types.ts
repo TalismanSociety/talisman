@@ -46,6 +46,7 @@ import {
   ProviderType,
   RequestAccountContactUpdate,
   RequestAccountCreateOptions,
+  RequestAccountsCatalogAction,
   RequestAddAccountDerive,
   RequestAddAccountExternal,
   RequestAddAccountKeypair,
@@ -62,15 +63,12 @@ import {
   SignerPayloadJSON,
   SigningRequestID,
   SimpleEvmNetwork,
+  Trees,
   UnsubscribeFn,
   ValidRequests,
   WalletTransactionTransferInfo,
   WatchAssetRequestId,
 } from "@extension/core"
-import {
-  RequestAccountsCatalogAction,
-  Trees,
-} from "@extension/core/domains/accounts/helpers.catalog"
 
 export default interface MessageTypes {
   keepalive: () => Promise<boolean>

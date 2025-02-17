@@ -35,6 +35,8 @@ export { fetchFromCoingecko } from "./util/coingecko/fetchFromCoingecko"
 export { getCoinGeckoErc20Coin } from "./util/coingecko/getCoinGeckoErc20Coin"
 export { getCoingeckoToken } from "./util/coingecko/getCoinGeckoToken"
 export { getCoingeckoTokensList } from "./util/coingecko/getCoinGeckoTokensList"
+export { getErc20TokenInfo } from "./util/getErc20TokenInfo"
+export { getUniswapV2TokenInfo } from "./util/getUniswapV2TokenInfo"
 
 export * from "./domains/ethereum/helpers"
 
@@ -68,5 +70,5 @@ export { isJsonPayload, isRawPayload } from "./util/isJsonPayload"
 export { privacyRoundCurrency } from "./util/privacyRoundCurrency"
 
 export * from "./domains/nfts/exports"
-
 export * from "./domains/keyring/exports"
+export * from "./domains/transactions/exports"

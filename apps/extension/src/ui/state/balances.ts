@@ -2,6 +2,11 @@ import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import {
+  BalanceSubscriptionResponse,
+  isAccountCompatibleWithChain,
+  isAccountEthereum,
+} from "extension-core"
+import {
   combineLatest,
   distinctUntilChanged,
   map,
@@ -10,8 +15,6 @@ import {
   throttleTime,
 } from "rxjs"
 
-import { BalanceSubscriptionResponse, isAccountEthereum } from "@extension/core"
-import { isAccountCompatibleWithChain } from "@extension/core/domains/accounts/helpers"
 import { api } from "@ui/api"
 
 import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"

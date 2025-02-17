@@ -1,7 +1,5 @@
-import { WalletTransaction } from "extension-core"
+import { filterIsSameNetworkAndAddressTx, WalletTransaction } from "extension-core"
 import { useMemo } from "react"
-
-import { filterIsSameNetworkAndAddressTx } from "@extension/core/domains/transactions"
 
 import { useTxHistory } from "./TxHistoryContext"
 

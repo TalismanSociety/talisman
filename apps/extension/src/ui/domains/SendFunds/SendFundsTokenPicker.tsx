@@ -2,8 +2,8 @@ import { Token, TokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
 import { useCallback, useMemo } from "react"
 
-import { isEvmToken } from "@extension/core/util/isEvmToken"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
 import { TokenPicker } from "../Asset/TokenPicker"

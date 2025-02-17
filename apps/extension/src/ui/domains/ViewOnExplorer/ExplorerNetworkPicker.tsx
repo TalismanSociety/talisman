@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { isAccountCompatibleWithChain } from "@extension/core/domains/accounts/helpers"
+import { isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"

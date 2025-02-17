@@ -1,11 +1,15 @@
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames, isEthereumAddress, normalizeAddress } from "@talismn/util"
+import {
+  Account,
+  getAccountGenesisHash,
+  isAccountCompatibleWithChain,
+  isAccountEthereum,
+} from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Account, getAccountGenesisHash, isAccountEthereum } from "@extension/core"
-import { isAccountCompatibleWithChain } from "@extension/core/domains/accounts/helpers"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
