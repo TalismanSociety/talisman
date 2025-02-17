@@ -1,8 +1,8 @@
+import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "@extension/core"
-import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"

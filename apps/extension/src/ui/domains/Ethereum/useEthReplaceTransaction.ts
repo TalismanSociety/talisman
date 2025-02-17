@@ -1,8 +1,7 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { parseTransactionRequest } from "extension-core"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
-
-import { parseTransactionRequest } from "@extension/core"
 
 import { TxReplaceType } from "../Transactions"
 import { useEthTransaction } from "./useEthTransaction"

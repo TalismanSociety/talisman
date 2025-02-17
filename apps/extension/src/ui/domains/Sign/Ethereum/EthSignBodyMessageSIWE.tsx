@@ -1,12 +1,12 @@
 import { hexToString } from "@polkadot/util"
 import { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
+import { Account, EthSignRequest } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { Account, EthSignRequest } from "@extension/core"
-import { log } from "@extension/shared"
 import { useEvmNetwork } from "@ui/state"
 
 import { SignAlertMessage } from "../SignAlertMessage"

@@ -1,6 +1,7 @@
 import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { ProviderType } from "extension-core"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
@@ -24,7 +25,6 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { ProviderType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"

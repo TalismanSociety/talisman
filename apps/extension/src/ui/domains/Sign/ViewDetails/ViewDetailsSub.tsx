@@ -1,17 +1,17 @@
 import { TypeRegistry } from "@polkadot/types"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { FC, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
-
 import {
   BalanceFormatter,
   isJsonPayload,
   SignerPayloadJSON,
   SignerPayloadRaw,
   TransactionMethod,
-} from "@extension/core"
+} from "extension-core"
+import { FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
+
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken, useTokenRates } from "@ui/state"

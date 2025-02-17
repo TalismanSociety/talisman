@@ -1,11 +1,11 @@
 import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IS_FIREFOX } from "extension-shared"
 import { cloneElement, ReactElement, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { IS_FIREFOX } from "@extension/shared"
 import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"

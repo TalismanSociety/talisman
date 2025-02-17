@@ -1,8 +1,8 @@
 import { HexString } from "@polkadot/util/types"
+import { KnownSigningRequestIdOnly } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useMemo, useRef } from "react"
 
-import { KnownSigningRequestIdOnly } from "@extension/core"
-import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"

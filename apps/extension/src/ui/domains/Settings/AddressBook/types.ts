@@ -1,4 +1,4 @@
-import { AccountContact } from "@extension/core"
+import { AccountContact } from "extension-core"
 
 type ModalProps = { isOpen: boolean; close: () => void }
 export type ExistingContactComponentProps = { contact: AccountContact }

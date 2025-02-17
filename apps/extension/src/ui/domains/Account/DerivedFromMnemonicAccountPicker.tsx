@@ -1,12 +1,12 @@
 import { KeypairCurve } from "@talismn/crypto"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-
 import {
   formatSuri,
   getAccountGenesisHash,
   getEthDerivationPath,
   RequestAccountCreateFromSuri,
-} from "@extension/core"
+} from "extension-core"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"

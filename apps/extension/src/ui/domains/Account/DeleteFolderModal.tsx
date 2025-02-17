@@ -1,10 +1,10 @@
 import { bind } from "@react-rxjs/core"
+import { AccountsCatalogTree } from "extension-core"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { AccountsCatalogTree } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 

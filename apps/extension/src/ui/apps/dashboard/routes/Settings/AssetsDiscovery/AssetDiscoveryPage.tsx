@@ -11,6 +11,15 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import {
+  Account,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  DiscoveredBalance,
+  getAccountGenesisHash,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "extension-core"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -29,15 +38,6 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import {
-  Account,
-  activeEvmNetworksStore,
-  activeTokensStore,
-  DiscoveredBalance,
-  getAccountGenesisHash,
-  isEvmNetworkActive,
-  isTokenActive,
-} from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"

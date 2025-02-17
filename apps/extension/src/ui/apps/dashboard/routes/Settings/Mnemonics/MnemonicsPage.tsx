@@ -7,12 +7,12 @@ import {
   SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountOfType, getAccountGenesisHash, isAccountOfType, Mnemonic } from "extension-core"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { AccountOfType, getAccountGenesisHash, isAccountOfType, Mnemonic } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"

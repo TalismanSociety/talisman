@@ -2,6 +2,13 @@ import { HexString } from "@polkadot/util/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import {
+  EthTransactionDetails,
+  EvmWalletTransaction,
+  isAccountOfType,
+  serializeTransactionRequest,
+  WalletTransaction,
+} from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -14,13 +21,6 @@ import {
   useOpenCloseWithData,
 } from "talisman-ui"
 
-import {
-  EthTransactionDetails,
-  EvmWalletTransaction,
-  isAccountOfType,
-  serializeTransactionRequest,
-  WalletTransaction,
-} from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"

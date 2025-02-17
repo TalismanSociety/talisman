@@ -1,10 +1,10 @@
 import { UserRightIcon } from "@talismn/icons"
 import { SiwsMessage } from "@talismn/siws"
+import { Account, Chain } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { Account, Chain } from "@extension/core"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { ViewDetailsAddress } from "@ui/domains/Sign/ViewDetails/ViewDetailsAddress"

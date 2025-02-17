@@ -1,9 +1,9 @@
 import { assert } from "@polkadot/util"
 import { Platform } from "@talismn/crypto"
+import { AddAccountExternalOptions } from "extension-core"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import { AddAccountExternalOptions } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useChain } from "@ui/state"

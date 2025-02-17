@@ -1,8 +1,7 @@
 import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
+import { getCoingeckoTokensList } from "extension-core"
 import { useMemo } from "react"
-
-import { getCoingeckoTokensList } from "@extension/core"
 
 export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null | undefined) => {
   const { data: tokens } = useQuery({

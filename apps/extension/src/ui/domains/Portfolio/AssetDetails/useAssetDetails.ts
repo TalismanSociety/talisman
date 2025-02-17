@@ -1,8 +1,8 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { Balances } from "extension-core"
 import { uniq } from "lodash"
 import { useMemo } from "react"
 
-import { Balances } from "@extension/core"
 import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 export const useAssetDetails = (balances: Balances) => {

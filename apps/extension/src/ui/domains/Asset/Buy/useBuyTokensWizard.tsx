@@ -1,10 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { activeChainsStore, activeEvmNetworksStore, activeTokensStore } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { activeChainsStore, activeEvmNetworksStore, activeTokensStore } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { useGetRampOfframpAssetsByCurrency } from "@ui/domains/Asset/Buy/hooks/useGetRampOfframpAssetsByCurrency"
 import { useGetRampOnrampAssetsByCurrency } from "@ui/domains/Asset/Buy/hooks/useGetRampOnrampAssetsByCurrency"

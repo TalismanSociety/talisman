@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/react"
+import { passwordStore } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { passwordStore } from "@extension/core"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"

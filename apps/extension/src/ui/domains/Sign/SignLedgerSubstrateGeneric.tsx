@@ -1,7 +1,7 @@
+import { AccountLedgerPolkadot, isAccountOfType } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 
-import { AccountLedgerPolkadot, isAccountOfType } from "@extension/core"
-import { log } from "@extension/shared"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"

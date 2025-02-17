@@ -1,9 +1,9 @@
 import { AlertTriangleIcon } from "@talismn/icons"
+import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { TALISMAN_WEB_APP_URL } from "@extension/shared"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 

@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { Account } from "extension-core"
 import { isEqual } from "lodash"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -6,7 +7,6 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { Account } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 

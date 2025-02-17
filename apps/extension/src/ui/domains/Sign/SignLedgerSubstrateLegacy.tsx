@@ -1,8 +1,8 @@
+import { AccountLedgerPolkadot } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountLedgerPolkadot } from "@extension/core"
-import { log } from "@extension/shared"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/state"

@@ -1,8 +1,8 @@
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
+import { SignerPayloadGenesisHash } from "extension-core"
+import { IS_FIREFOX } from "extension-shared"
 
-import { SignerPayloadGenesisHash } from "@extension/core"
-import { IS_FIREFOX } from "@extension/shared"
 import { api } from "@ui/api"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 import { useChainByGenesisHash } from "@ui/state"

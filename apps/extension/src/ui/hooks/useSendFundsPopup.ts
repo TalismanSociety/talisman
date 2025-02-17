@@ -1,10 +1,10 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { Account } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Account } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccounts, useBalances } from "@ui/state"
 

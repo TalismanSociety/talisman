@@ -1,6 +1,6 @@
 import { Token } from "@talismn/chaindata-provider"
+import { Account, EvmNetwork } from "extension-core"
 
-import { Account, EvmNetwork } from "@extension/core"
 import { AnyChain } from "@ui/state"
 
 export type RampCurrency = {

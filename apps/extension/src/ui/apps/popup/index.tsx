@@ -1,6 +1,3 @@
-import { Suspense, useEffect } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
-
 import {
   AUTH_PREFIX,
   ENCRYPT_DECRYPT_PREFIX,
@@ -9,7 +6,10 @@ import {
   METADATA_PREFIX,
   SIGNING_TYPES,
   WATCH_ASSET_PREFIX,
-} from "@extension/core"
+} from "extension-core"
+import { Suspense, useEffect } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
+
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"

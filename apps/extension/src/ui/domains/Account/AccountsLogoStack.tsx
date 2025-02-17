@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Account } from "extension-core"
 import { useMemo } from "react"
 
-import { Account } from "@extension/core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"

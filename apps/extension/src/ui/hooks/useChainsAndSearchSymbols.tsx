@@ -1,6 +1,6 @@
+import { Chain } from "extension-core"
 import { useMemo } from "react"
 
-import { Chain } from "@extension/core"
 import { useTokensMap } from "@ui/state"
 
 const useChainsAndSearchSymbols = <T extends Chain>(

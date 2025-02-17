@@ -1,6 +1,7 @@
 import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
+import { EthSignMessageMethod, getTransactionSerializable } from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,8 +13,6 @@ import {
   signatureToHex,
   TransactionRequest,
 } from "viem"
-
-import { EthSignMessageMethod, getTransactionSerializable } from "@extension/core"
 
 import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
 import { useLedgerTransport } from "./useLedgerTransport"

@@ -3,10 +3,10 @@ import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { isAddressEqual } from "@talismn/util"
+import { Account, Balances } from "extension-core"
 import { t } from "i18next"
 import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
 
-import { Account, Balances } from "@extension/core"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 

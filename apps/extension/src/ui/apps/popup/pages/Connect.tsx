@@ -1,11 +1,11 @@
 import { InfoIcon } from "@talismn/icons"
+import { Account, isAccountEthereum, KnownRequestIdOnly, ProviderType } from "extension-core"
 import capitalize from "lodash/capitalize"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Button, Drawer } from "talisman-ui"
 
-import { Account, isAccountEthereum, KnownRequestIdOnly, ProviderType } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"

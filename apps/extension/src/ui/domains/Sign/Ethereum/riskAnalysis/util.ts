@@ -17,8 +17,7 @@ import {
   EvmStateChangeNativeAssetTransfer,
 } from "@blowfishxyz/api-client"
 import Decimal from "decimal.js"
-
-import { log } from "@extension/shared"
+import { log } from "extension-shared"
 
 // Note: most of this file has been copied from blowfish integration sample project
 

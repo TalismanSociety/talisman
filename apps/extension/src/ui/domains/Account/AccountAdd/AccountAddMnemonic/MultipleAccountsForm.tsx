@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { RequestAccountCreateFromSuri } from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -6,7 +7,6 @@ import { Navigate, useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
 
-import { RequestAccountCreateFromSuri } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"

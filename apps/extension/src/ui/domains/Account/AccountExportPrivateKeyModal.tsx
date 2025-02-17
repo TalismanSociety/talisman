@@ -1,11 +1,11 @@
 import { bind } from "@react-rxjs/core"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
+import { Account, isAccountEthereum } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { Account, isAccountEthereum } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"

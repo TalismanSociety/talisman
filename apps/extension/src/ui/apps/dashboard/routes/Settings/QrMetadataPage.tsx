@@ -1,11 +1,11 @@
 import { Chain } from "@talismn/chaindata-provider"
 import { LoaderIcon, SecretIcon } from "@talismn/icons"
+import { log, POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 
-import { log, POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"

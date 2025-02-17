@@ -1,9 +1,9 @@
 import { EvmSignTypedDataData, ScanMessageEvm200Response } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthSignMessageMethod } from "extension-core"
 import { BLOWFISH_API_KEY, log } from "extension-shared"
 import urlJoin from "url-join"
 
-import { EthSignMessageMethod } from "@extension/core"
 import { useFeatureFlag } from "@ui/state"
 
 import { getBlowfishApiUrl, getBlowfishClient, getBlowfishLanguage } from "./blowfish"

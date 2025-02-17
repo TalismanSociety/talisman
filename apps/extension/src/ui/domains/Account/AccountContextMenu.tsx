@@ -1,5 +1,6 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
+import { Account, getAccountGenesisHash } from "extension-core"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -11,7 +12,6 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 
-import { Account, getAccountGenesisHash } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"

@@ -1,8 +1,8 @@
 import { hexToNumber } from "@polkadot/util"
 import { validateHexString } from "@talismn/util"
+import { isJsonPayload } from "extension-core"
 import { FC, useEffect, useMemo } from "react"
 
-import { isJsonPayload } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,

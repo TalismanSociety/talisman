@@ -2,9 +2,9 @@ import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountType } from "extension-core"
 import { useMemo } from "react"
 
-import { AccountType } from "@extension/core"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
 

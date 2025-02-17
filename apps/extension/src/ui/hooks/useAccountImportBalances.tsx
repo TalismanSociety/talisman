@@ -2,13 +2,13 @@ import { Address } from "@talismn/balances"
 import { ChainId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { encodeAnyAddress, validateHexString } from "@talismn/util"
-import { useMemo } from "react"
-
 import {
   AddressesAndEvmNetwork,
   AddressesByChain,
   isCurveCompatibleWithChain,
-} from "@extension/core"
+} from "extension-core"
+import { useMemo } from "react"
+
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useChains, useEvmNetworks } from "@ui/state"
 

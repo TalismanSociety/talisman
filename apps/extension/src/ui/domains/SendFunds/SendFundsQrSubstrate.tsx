@@ -1,10 +1,10 @@
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
+import { AccountPolkadotVault, getAccountGenesisHash, privacyRoundCurrency } from "extension-core"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { AccountPolkadotVault, getAccountGenesisHash, privacyRoundCurrency } from "@extension/core"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"

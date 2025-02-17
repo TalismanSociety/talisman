@@ -7,11 +7,11 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useMatch, useNavigate } from "react-router-dom"
 
-import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"

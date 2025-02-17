@@ -1,17 +1,17 @@
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
-import urlJoin from "url-join"
-
 import {
   EvmWalletTransaction,
   isAcalaEvmPlus,
   SubWalletTransaction,
   WalletTransaction,
-} from "@extension/core"
+} from "extension-core"
+import { FC, useCallback, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import urlJoin from "url-join"
+
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useChainByGenesisHash, useEvmNetwork, useTransaction } from "@ui/state"
 

@@ -1,8 +1,8 @@
 import { isAddressEqual } from "@talismn/util"
+import { Account, AuthorizedSite, isAccountEthereum } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Account, AuthorizedSite, isAccountEthereum } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"

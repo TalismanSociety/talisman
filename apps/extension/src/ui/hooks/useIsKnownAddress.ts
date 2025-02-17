@@ -1,4 +1,5 @@
-import { Account } from "@extension/core"
+import { Account } from "extension-core"
+
 import { useAccountByAddress } from "@ui/state"
 
 type KnownAddress = {

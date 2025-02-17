@@ -1,12 +1,12 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ChainId, EvmNetworkId } from "extension-core"
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { TalismanColouredHandWhiteTextLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

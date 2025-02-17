@@ -1,8 +1,8 @@
 import { HexString } from "@polkadot/util/types"
 import { useLiveQuery } from "dexie-react-hooks"
+import { db } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 
-import { db } from "@extension/core"
 import { api } from "@ui/api"
 import { useChainByGenesisHash } from "@ui/state"
 

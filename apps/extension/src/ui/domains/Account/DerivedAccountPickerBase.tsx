@@ -1,9 +1,9 @@
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { Balances } from "extension-core"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 
-import { Balances } from "@extension/core"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 
 import { Fiat } from "../Asset/Fiat"

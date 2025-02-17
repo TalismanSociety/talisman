@@ -1,8 +1,8 @@
+import { EvmAddress } from "extension-core"
+import { log, TOKEN_APPROVALS_URL } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { EvmAddress } from "@extension/core"
-import { log, TOKEN_APPROVALS_URL } from "@extension/shared"
 import { notify } from "@talisman/components/Notifications"
 
 import { SignAlertMessage } from "../SignAlertMessage"

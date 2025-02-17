@@ -1,9 +1,8 @@
 import { InfoIcon } from "@talismn/icons"
+import { Account, isAccountEthereum } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { Account, isAccountEthereum } from "@extension/core"
 
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 

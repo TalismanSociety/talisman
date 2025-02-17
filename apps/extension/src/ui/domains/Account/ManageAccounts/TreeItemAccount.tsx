@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Account, getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
 
-import { Account, getAccountGenesisHash } from "@extension/core"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"

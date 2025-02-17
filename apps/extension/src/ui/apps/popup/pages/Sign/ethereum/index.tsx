@@ -1,7 +1,7 @@
+import { SigningRequestID } from "extension-core"
 import { Suspense, useEffect } from "react"
 import { useParams } from "react-router-dom"
 
-import { SigningRequestID } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   EthSignMessageRequestProvider,

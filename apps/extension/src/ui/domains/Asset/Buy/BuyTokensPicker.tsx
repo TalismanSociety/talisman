@@ -2,11 +2,11 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Address, getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
 
-import { Address, getAccountGenesisHash } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import {

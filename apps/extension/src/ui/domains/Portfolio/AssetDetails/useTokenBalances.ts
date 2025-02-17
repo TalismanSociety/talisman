@@ -1,10 +1,10 @@
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
+import { Address, Balances } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useGetBittensorValidators } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorValidator"

@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { KeyIcon } from "@talismn/icons"
+import { log } from "extension-shared"
 import { CSSProperties, FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -13,7 +14,6 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { log } from "@extension/shared"
 import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 
 import { useJsonAccountImport } from "./context"

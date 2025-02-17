@@ -1,8 +1,8 @@
+import { isAccountOfType } from "extension-core"
 import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { isAccountOfType } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,

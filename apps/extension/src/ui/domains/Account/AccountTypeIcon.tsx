@@ -1,10 +1,9 @@
 import { EyeIcon, LinkIcon, PolkadotVaultIcon, SignetIcon, UsbIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountType } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { AccountType } from "@extension/core"
 
 type AccountTypeIconProps = {
   type?: AccountType | null

@@ -1,8 +1,8 @@
 import { encodeAnyAddress } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Account } from "@extension/core"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 
 export const SignAccountAvatar: FC<{ account?: Account; ss58Format?: number | null }> = ({

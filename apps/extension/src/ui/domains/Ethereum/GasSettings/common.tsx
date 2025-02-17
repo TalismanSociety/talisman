@@ -1,9 +1,9 @@
 import { AlertTriangleIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { EthPriorityOptionName } from "extension-core"
 import { FC, PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EthPriorityOptionName } from "@extension/core"
 import imgFeePriorityCustom from "@talisman/theme/images/fee-priority-custom.png"
 import imgFeePriorityHigh from "@talisman/theme/images/fee-priority-high.png"
 import imgFeePriorityLow from "@talisman/theme/images/fee-priority-low.png"

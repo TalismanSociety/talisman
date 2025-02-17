@@ -3,11 +3,6 @@ import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation } from "react-router-dom"
-import { TransactionRequest } from "viem"
-
 import {
   AssetTransferMethod,
   getEthTransferTransactionBase,
@@ -17,8 +12,13 @@ import {
   serializeGasSettings,
   serializeTransactionRequest,
   SignerPayloadJSON,
-} from "@extension/core"
-import { log } from "@extension/shared"
+} from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
+import { TransactionRequest } from "viem"
+
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"

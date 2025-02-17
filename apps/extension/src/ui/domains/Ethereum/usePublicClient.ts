@@ -1,9 +1,9 @@
 import { EvmNativeToken } from "@talismn/balances"
 import { EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { log } from "extension-shared"
 import { useMemo } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
-import { log } from "@extension/shared"
 import { api } from "@ui/api"
 import { useEvmNetwork, useToken } from "@ui/state"
 

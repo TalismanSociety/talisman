@@ -1,9 +1,9 @@
 import { HexString } from "@polkadot/util/types"
 import { TokenId } from "@talismn/chaindata-provider"
+import { Address } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
-import { Address } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { useTokensMap } from "@ui/state"
 

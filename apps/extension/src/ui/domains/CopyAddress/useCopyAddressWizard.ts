@@ -1,10 +1,10 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, ChainId, ChainList, Token } from "@talismn/chaindata-provider"
+import { Account, Address, getAccountGenesisHash, isAccountEthereum } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { getAddress } from "viem"
 
-import { Account, Address, getAccountGenesisHash, isAccountEthereum } from "@extension/core"
-import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
 import {

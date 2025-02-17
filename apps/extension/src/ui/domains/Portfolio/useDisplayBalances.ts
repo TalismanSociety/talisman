@@ -1,8 +1,5 @@
 import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/util"
-import { useMemo } from "react"
-import { combineLatest, map } from "rxjs"
-
 import {
   Account,
   Balance,
@@ -10,11 +7,14 @@ import {
   getAccountGenesisHash,
   isAccountEthereum,
   isAccountPolkadot,
-} from "@extension/core"
+} from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
-} from "@extension/shared"
+} from "extension-shared"
+import { useMemo } from "react"
+import { combineLatest, map } from "rxjs"
+
 import { portfolio$, portfolioSelectedAccounts$, usePortfolioSelectedAccounts } from "@ui/state"
 
 // TODO: default tokens should be controlled from chaindata

@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC } from "react"
 
-import { Account } from "@extension/core"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 
 export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({

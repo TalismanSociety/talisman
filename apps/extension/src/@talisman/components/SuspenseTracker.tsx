@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
+import { DEBUG } from "extension-shared"
 import { FC, useEffect } from "react"
-
-import { DEBUG } from "@extension/shared"
 
 const SuspenseTrackerInner: FC<{ name: string }> = ({ name }) => {
   useEffect(() => {

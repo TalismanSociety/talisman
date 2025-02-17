@@ -1,7 +1,7 @@
 import { ExternalLinkIcon } from "@talismn/icons"
+import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { useTranslation } from "react-i18next"
 
-import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 

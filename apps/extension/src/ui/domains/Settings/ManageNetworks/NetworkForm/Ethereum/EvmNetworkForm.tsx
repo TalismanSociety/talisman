@@ -9,6 +9,7 @@ import {
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { RequestUpsertCustomEvmNetwork } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -28,7 +29,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 
-import { RequestUpsertCustomEvmNetwork } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"

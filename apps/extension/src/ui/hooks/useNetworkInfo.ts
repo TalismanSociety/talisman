@@ -1,8 +1,7 @@
+import { Chain, SimpleEvmNetwork } from "extension-core"
 import { TFunction } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { Chain, SimpleEvmNetwork } from "@extension/core"
 
 export type NetworkInfoProps = {
   chain?: Chain | null

@@ -1,10 +1,10 @@
+import { WatchAssetRequestIdOnly } from "extension-core"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
 import { FC, PropsWithChildren, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Button } from "talisman-ui"
 
-import { WatchAssetRequestIdOnly } from "@extension/core"
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"

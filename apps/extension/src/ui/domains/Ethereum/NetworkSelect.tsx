@@ -1,7 +1,7 @@
+import { EvmNetworkId, SimpleEvmNetwork } from "extension-core"
 import { useCallback, useEffect, useState } from "react"
 import { Dropdown } from "talisman-ui"
 
-import { EvmNetworkId, SimpleEvmNetwork } from "@extension/core"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 
 import { NetworkLogo } from "./NetworkLogo"

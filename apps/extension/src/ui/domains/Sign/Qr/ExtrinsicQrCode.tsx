@@ -2,13 +2,13 @@ import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
-
 import {
   AccountPolkadotVault,
   isRawPayload,
   SignerPayloadJSON,
   SignerPayloadRaw,
-} from "@extension/core"
+} from "extension-core"
+
 import { useChain } from "@ui/state"
 
 import { QrCode, QrCodeError } from "./QrCode"

@@ -1,8 +1,8 @@
+import { AccountLedgerEthereum } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountLedgerEthereum } from "@extension/core"
-import { log } from "@extension/shared"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 

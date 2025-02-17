@@ -1,8 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Account, getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { Account, getAccountGenesisHash, isAccountOfType } from "@extension/core"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"

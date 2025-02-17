@@ -4,9 +4,9 @@ import {
   KnownRespondableRequest,
   SigningRequests,
 } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback } from "react"
 
-import { log } from "@extension/shared"
 import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {

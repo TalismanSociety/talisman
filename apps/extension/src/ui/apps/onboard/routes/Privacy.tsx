@@ -1,8 +1,8 @@
+import { PRIVACY_POLICY_URL } from "extension-shared"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { PRIVACY_POLICY_URL } from "@extension/shared"
 import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

@@ -9,12 +9,6 @@ import {
   UserIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { BehaviorSubject } from "rxjs"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import {
   Account,
   AccountsCatalogTree,
@@ -24,7 +18,13 @@ import {
   isAccountPolkadot,
   TreeFolder,
   TreeItem,
-} from "@extension/core"
+} from "extension-core"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { BehaviorSubject } from "rxjs"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
 import { SearchInput } from "@talisman/components/SearchInput"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"

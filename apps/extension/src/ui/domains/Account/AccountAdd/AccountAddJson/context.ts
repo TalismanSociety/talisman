@@ -6,10 +6,10 @@ import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkad
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
+import { LegacyAccountOrigin } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { LegacyAccountOrigin } from "@extension/core"
-import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"

@@ -3,8 +3,7 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
-
-import { DEBUG, isTalismanHostname } from "@extension/shared"
+import { DEBUG, isTalismanHostname } from "extension-shared"
 
 import type { Injected } from "./inject/substrate/types"
 import WindowMessageService from "./common/WindowMessageService"

@@ -1,12 +1,12 @@
 import { HexString } from "@polkadot/util/types"
-import { useCallback, useMemo, useRef, useState } from "react"
-
 import {
   KnownSigningRequestIdOnly,
   parseRpcTransactionRequestBase,
   serializeTransactionRequest,
-} from "@extension/core"
-import { log } from "@extension/shared"
+} from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo, useRef, useState } from "react"
+
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"

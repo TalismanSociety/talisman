@@ -13,9 +13,6 @@ import {
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
-import { MetadataDef } from "inject/substrate/types"
-import { TransactionRequest } from "viem"
-
 import {
   Account,
   AddEthereumChainRequest,
@@ -68,7 +65,9 @@ import {
   ValidRequests,
   WalletTransactionTransferInfo,
   WatchAssetRequestId,
-} from "@extension/core"
+} from "extension-core"
+import { MetadataDef } from "inject/substrate/types"
+import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
   keepalive: () => Promise<boolean>

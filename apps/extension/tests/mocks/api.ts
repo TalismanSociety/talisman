@@ -1,6 +1,3 @@
-import { Token } from "@talismn/chaindata-provider"
-import { DbTokenRates } from "@talismn/token-rates"
-
 import type {
   Account,
   AuthorizedSite,
@@ -9,10 +6,12 @@ import type {
   Chain,
   ProviderType,
   SimpleEvmNetwork,
-} from "@extension/core"
-import { AnalyticsCaptureRequest, SitesAuthorizedStore, Trees } from "@extension/core"
+} from "extension-core"
+import { Token } from "@talismn/chaindata-provider"
+import { DbTokenRates } from "@talismn/token-rates"
+import { AnalyticsCaptureRequest, SitesAuthorizedStore, Trees } from "extension-core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TALISMAN_WEB_APP_DOMAIN } from "@extension/shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { ADDRESSES } from "../constants"
 

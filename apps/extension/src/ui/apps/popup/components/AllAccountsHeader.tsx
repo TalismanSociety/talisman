@@ -1,12 +1,12 @@
 import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
 import { IconButton } from "talisman-ui"
 
-import { Account } from "@extension/core"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"

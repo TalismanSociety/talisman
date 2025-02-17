@@ -1,9 +1,9 @@
 import { validateHexString } from "@talismn/util"
+import { getAccountGenesisHash, isChainActive } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { getAccountGenesisHash, isChainActive } from "@extension/core"
-import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"

@@ -10,10 +10,10 @@ import {
   ToolIcon,
   UserIcon,
 } from "@talismn/icons"
+import { SPIRIT_KEYS_DOCS_URL } from "extension-shared"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { SPIRIT_KEYS_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { AnalyticsPage } from "@ui/api/analytics"

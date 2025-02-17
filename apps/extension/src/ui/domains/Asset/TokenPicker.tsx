@@ -4,11 +4,11 @@ import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { Address, getAccountGenesisHash } from "extension-core"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Address, getAccountGenesisHash } from "@extension/core"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import {

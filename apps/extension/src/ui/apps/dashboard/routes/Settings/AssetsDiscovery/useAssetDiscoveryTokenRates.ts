@@ -1,11 +1,11 @@
 import { bind } from "@react-rxjs/core"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, TokenRatesError, TokenRatesList } from "@talismn/token-rates"
+import { remoteConfigStore } from "extension-core"
+import { log } from "extension-shared"
 import { SetStateAction, useEffect, useState } from "react"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
 
-import { remoteConfigStore } from "@extension/core"
-import { log } from "@extension/shared"
 import { assetDiscoveryScanProgress$, getTokens$ } from "@ui/state"
 
 const assetDiscoveryAllTokenRates$ = new BehaviorSubject<TokenRatesList>({})

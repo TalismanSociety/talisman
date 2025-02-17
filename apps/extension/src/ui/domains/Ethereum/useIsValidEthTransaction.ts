@@ -1,13 +1,13 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { PublicClient, TransactionRequest } from "viem"
-
 import {
   EthPriorityOptionName,
   getMaxTransactionCost,
   serializeTransactionRequest,
-} from "@extension/core"
+} from "extension-core"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { PublicClient, TransactionRequest } from "viem"
+
 import { useAccountByAddress } from "@ui/state"
 
 import { useEthBalance } from "./useEthBalance"

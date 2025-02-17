@@ -1,8 +1,8 @@
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { Account, EthSignMessageMethod } from "extension-core"
 import { FC, Suspense } from "react"
 
-import { Account, EthSignMessageMethod } from "@extension/core"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import { SignLedgerEthereum } from "./SignLedgerEthereum"

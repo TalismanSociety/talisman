@@ -4,8 +4,7 @@
 // Adapted from https://github.com/polkadot-js/extension/packages/extension/src/content.ts
 
 import type { Message } from "@polkadot/extension-base/types"
-
-import { PORT_CONTENT } from "@extension/shared"
+import { PORT_CONTENT } from "extension-shared"
 
 class PortManager {
   port: chrome.runtime.Port | undefined = undefined

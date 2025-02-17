@@ -1,7 +1,7 @@
+import { AnyEncryptRequest, isDecryptRequest } from "extension-core"
+import { DEBUG } from "extension-shared"
 import { useCallback } from "react"
 
-import { AnyEncryptRequest, isDecryptRequest } from "@extension/core"
-import { DEBUG } from "@extension/shared"
 import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
 

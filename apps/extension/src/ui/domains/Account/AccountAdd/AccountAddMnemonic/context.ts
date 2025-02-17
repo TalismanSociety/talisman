@@ -1,9 +1,9 @@
 import { KeypairCurve } from "@talismn/crypto"
+import { getEthDerivationPath, RequestAccountCreateFromSuri } from "extension-core"
 import { DEBUG } from "extension-shared"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import { getEthDerivationPath, RequestAccountCreateFromSuri } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 

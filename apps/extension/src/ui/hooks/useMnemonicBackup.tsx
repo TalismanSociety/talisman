@@ -1,7 +1,7 @@
+import { appStore, isAccountOfType } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
-import { appStore, isAccountOfType } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccounts, useAppState, useBalanceTotals, useMnemonics } from "@ui/state"
 

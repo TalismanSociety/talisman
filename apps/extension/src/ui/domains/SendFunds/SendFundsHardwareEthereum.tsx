@@ -1,7 +1,7 @@
 import { HexString } from "@polkadot/util/types"
+import { log } from "extension-shared"
 import { useCallback, useState } from "react"
 
-import { log } from "@extension/shared"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"

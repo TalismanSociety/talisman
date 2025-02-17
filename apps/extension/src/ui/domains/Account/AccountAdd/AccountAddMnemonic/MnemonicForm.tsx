@@ -1,6 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isAddressEqual, isValidMnemonic, KeypairCurve, Platform } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
+import { getEthDerivationPath } from "extension-core"
 import { DEBUG } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm, UseFormSetValue } from "react-hook-form"
@@ -17,7 +18,6 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { getEthDerivationPath } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
