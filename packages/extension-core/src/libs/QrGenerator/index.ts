@@ -42,7 +42,6 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
   try {
     const mnemonic = await getVerifierMnemonic()
 
-    // TODO check if we need to call cryptoWaitReady() before creating the keyring
     const keyring = new Keyring()
     const signingPair = keyring.createFromUri(mnemonic, {}, "sr25519")
 

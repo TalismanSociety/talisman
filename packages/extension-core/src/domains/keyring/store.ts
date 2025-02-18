@@ -32,7 +32,6 @@ const TALISMAN_KEYRING_LOCAL_STORAGE_KEY = "keyring"
  * Also provides observables for accounts and mnemonics.
  */
 class KeyringStore {
-  // store data in storage as object to ensure serialization is consistent, also makes it easily inspectable in dev tools
   #json$ = new ReplaySubject<KeyringStorage>(1)
   #lock = false
   #keyring$: Observable<Readonly<Keyring>>

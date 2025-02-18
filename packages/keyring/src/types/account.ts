@@ -52,6 +52,7 @@ export type AccountSignet = AccountBase & {
   url: string // usually https://signet.talisman.xyz or https://polkadotmultisig.com/
 }
 
+// Idea: dynamically derived account
 // export type AccountHdSingle = AccountBase & {
 //   type: "hd-single";
 //   curve: KeypairCurve;
@@ -60,6 +61,7 @@ export type AccountSignet = AccountBase & {
 //   address: string;
 // };
 
+// Idea: bitcoin account with UTXOs support
 // export type AccountHdBitcoin = AccountBase & {
 //   type: "hd-bitcoin";
 //   curve: KeypairCurve;

@@ -43,8 +43,6 @@ describe("Extension", () => {
     // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
     await cryptoWaitReady()
 
-    // keyring.loadAll({ store: new AccountsStore() })
-
     extensionStores.sites.set({
       "localhost:3000": {
         addresses: [],
@@ -82,7 +80,6 @@ describe("Extension", () => {
       confirmed: false,
     })
 
-    // Object.keys(await extensionStores.mnemonics.get())[0]
     mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -132,9 +129,7 @@ describe("Extension", () => {
       requestStore.clearRequests()
       // need to use the pw from the store, because it may need to be trimmed
       account = await getAccount()
-      // pair = keyring.getPair(address)
-      // const pw = await passwordStore.getPassword()
-      // pair.decodePkcs8(pw)
+
       payload = {
         address: account.address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
