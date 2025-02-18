@@ -4,7 +4,7 @@ import { bytesToHex } from "@noble/hashes/utils"
 /**
  * Encodes a public key using H160 encoding with Ethereum checksum.
  */
-export const encodeAddressEthereum = (publicKey: Uint8Array): string => {
+export const encodeAddressEthereum = (publicKey: Uint8Array): `0x${string}` => {
   // Ensure the public key is in uncompressed format (starts with 0x04)
   if (publicKey[0] !== 0x04) throw new Error("Invalid public key format")
 
@@ -21,7 +21,7 @@ export const encodeAddressEthereum = (publicKey: Uint8Array): string => {
   return checksumEthereumAddress(`0x${bytesToHex(address)}`)
 }
 
-export const checksumEthereumAddress = (address: string): string => {
+export const checksumEthereumAddress = (address: string): `0x${string}` => {
   const addr = address.toLowerCase().replace(/^0x/, "")
   const hash = keccak_256(new TextEncoder().encode(addr))
   const hashHex = bytesToHex(hash)

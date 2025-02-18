@@ -87,7 +87,6 @@ export const DEV_MNEMONIC_ETHEREUM = "test test test test test test test test te
 // keep dev seeds in cache as we will reuse them to validate multiple derivation paths
 const DEV_SEED_CACHE = new Map<SeedDerivationType, Uint8Array>()
 
-// TODO: use this in tests
 export const getDevSeed = (curve: KeypairCurve) => {
   const type = getSeedDerivationType(curve)
 

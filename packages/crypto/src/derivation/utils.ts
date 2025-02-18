@@ -89,7 +89,7 @@ export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
   }
 }
 
-// @dev: cant find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
+// @dev: didn't find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
 export const isValidDerivationPath = (derivationPath: string, curve: KeypairCurve) => {
   try {
     deriveKeypair(getDevSeed(curve), derivationPath, curve)
