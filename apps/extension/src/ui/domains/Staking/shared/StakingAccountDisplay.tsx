@@ -1,7 +1,7 @@
 import { Address as TAddress } from "@talismn/balances"
 import { ChainId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash, isAccountOfType } from "extension-core"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -97,7 +97,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
         <AccountTypeIcon
           type={account?.type}
           className="text-primary"
-          signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
+          signetUrl={getAccountSignetUrl(account)}
         />
       </TooltipTrigger>
     </Tooltip>

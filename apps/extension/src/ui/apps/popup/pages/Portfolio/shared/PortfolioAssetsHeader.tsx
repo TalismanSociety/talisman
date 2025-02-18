@@ -1,6 +1,12 @@
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Account, Balance, Balances, getAccountGenesisHash, isAccountOfType } from "extension-core"
+import {
+  Account,
+  Balance,
+  Balances,
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+} from "extension-core"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -149,7 +155,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
               <AccountTypeIcon
                 className="text-primary"
                 type={account?.type}
-                signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
+                signetUrl={getAccountSignetUrl(account)}
               />
             </div>
             <div className={classNames("truncate", account ? "text-body-secondary" : "")}>

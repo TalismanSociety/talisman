@@ -14,7 +14,7 @@ import {
   AccountsCatalogTree,
   AccountType,
   getAccountGenesisHash,
-  isAccountOfType,
+  getAccountSignetUrl,
   isAccountPortfolio,
   TreeFolder,
   TreeItem,
@@ -394,7 +394,7 @@ export const PortfolioAccounts = () => {
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
               isPortfolio: isAccountPortfolio(account),
-              signetUrl: isAccountOfType(account, "signet") ? account.url : undefined,
+              signetUrl: getAccountSignetUrl(account),
               searchContent: getSearchContent(account),
             }
           : {

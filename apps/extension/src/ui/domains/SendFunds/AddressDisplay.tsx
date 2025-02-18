@@ -2,7 +2,7 @@ import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash, isAccountOfType } from "extension-core"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -133,7 +133,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         <AccountTypeIcon
           type={account?.type}
           className="text-primary"
-          signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
+          signetUrl={getAccountSignetUrl(account)}
         />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">

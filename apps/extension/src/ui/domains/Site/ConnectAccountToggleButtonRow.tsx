@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { Account, getAccountGenesisHash, isAccountOfType } from "extension-core"
+import { Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -49,7 +49,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     <AccountTypeIcon
       type={account.type}
       className="text-primary"
-      signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
+      signetUrl={getAccountSignetUrl(account)}
     />
     <div className="grow"></div>
     <div

@@ -12,14 +12,14 @@ export const accounts$ = new Observable<Account[]>((subscriber) => {
     subscriber.next(accounts)
   })
   return () => unsubscribe()
-}).pipe(debugObservable("accounts$", true), shareReplay(1))
+}).pipe(debugObservable("accounts$"), shareReplay(1))
 
 export const accountsCatalog$ = new Observable<Trees>((subscriber) => {
   const unsubscribe = api.accountsCatalogSubscribe((trees) => {
     subscriber.next(trees)
   })
   return () => unsubscribe()
-}).pipe(debugObservable("accountsCatalog$", true), shareReplay(1))
+}).pipe(debugObservable("accountsCatalog$"), shareReplay(1))
 
 export const [useAccountsCatalog] = bind(accountsCatalog$)
 

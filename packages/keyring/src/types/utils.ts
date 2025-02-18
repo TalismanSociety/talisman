@@ -105,6 +105,10 @@ export const getAccountGenesisHash = (account: Account | null | undefined) => {
   return "genesisHash" in account ? account.genesisHash : undefined
 }
 
+export const getAccountSignetUrl = (account: Account | null | undefined) => {
+  return isAccountOfType(account, "signet") ? account.url : undefined
+}
+
 export const getAccountPlatform = (account: Account | null | undefined) => {
   if (!account) return undefined
   return "curve" in account

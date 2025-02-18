@@ -10,7 +10,6 @@ export const useAccountToggleIsPortfolio = (account?: Account) => {
 
   const { canToggleIsPortfolio, toggleLabel } = useMemo(
     () => ({
-      // TODO signet ?
       canToggleIsPortfolio: account?.type === "watch-only",
       toggleLabel: isAccountPortfolio(account)
         ? t("Make followed-only account")

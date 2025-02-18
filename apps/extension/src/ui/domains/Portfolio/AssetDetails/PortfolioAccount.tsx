@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash, isAccountOfType } from "extension-core"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -29,7 +29,7 @@ export const PortfolioAccount = ({
       <AccountTypeIcon
         className="text-primary"
         type={account?.type}
-        signetUrl={isAccountOfType(account, "signet") ? account.url : undefined}
+        signetUrl={getAccountSignetUrl(account)}
       />
     </div>
   )

@@ -4,7 +4,7 @@ import {
   AccountsCatalogTree,
   AccountType,
   getAccountGenesisHash,
-  isAccountOfType,
+  getAccountSignetUrl,
   isAccountPortfolio,
   TreeItem,
 } from "extension-core"
@@ -70,7 +70,7 @@ const Accounts = () => {
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
               isPortfolio: isAccountPortfolio(account),
-              signetUrl: isAccountOfType(account, "signet") ? account.url : undefined,
+              signetUrl: getAccountSignetUrl(account),
             }
           : {
               type: "folder",

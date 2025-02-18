@@ -11,5 +11,6 @@ export {
   isAccountPortfolio,
   isAccountLedgerPolkadotGeneric,
   isAccountLedgerPolkadotLegacy,
+  getAccountSignetUrl,
   getAccountGenesisHash,
 } from "@talismn/keyring"
