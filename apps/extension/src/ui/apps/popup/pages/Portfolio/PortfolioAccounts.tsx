@@ -15,7 +15,7 @@ import {
   AccountType,
   getAccountGenesisHash,
   isAccountOfType,
-  isAccountPolkadot,
+  isAccountPortfolio,
   TreeFolder,
   TreeItem,
 } from "extension-core"
@@ -393,7 +393,7 @@ export const PortfolioAccounts = () => {
               total: balanceTotalPerAccount?.[item.address] ?? 0,
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
-              isPortfolio: isAccountPolkadot(account),
+              isPortfolio: isAccountPortfolio(account),
               signetUrl: isAccountOfType(account, "signet") ? account.url : undefined,
               searchContent: getSearchContent(account),
             }

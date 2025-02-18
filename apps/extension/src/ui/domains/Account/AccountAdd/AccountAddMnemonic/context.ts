@@ -1,8 +1,6 @@
 import { KeypairCurve } from "@talismn/crypto"
-import { getEthDerivationPath, RequestAccountCreateFromSuri } from "extension-core"
-import { DEBUG } from "extension-shared"
+import { RequestAccountCreateFromSuri } from "extension-core"
 import { useCallback, useState } from "react"
-import { useSearchParams } from "react-router-dom"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -18,16 +16,9 @@ type AccountAddSecretInputs = {
   accounts: RequestAccountCreateFromSuri[]
 }
 
-const DEBUG_MNEMONIC = "test test test test test test test test test test test junk"
-
 const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
-  const [params] = useSearchParams()
-
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
-    curve: params.get("curve") as KeypairCurve,
     mode: "first",
-    mnemonic: DEBUG ? DEBUG_MNEMONIC : undefined,
-    derivationPath: params.get("platform") === "ethereum" ? getEthDerivationPath() : "",
   }))
 
   const updateData = useCallback((newData: Partial<AccountAddSecretInputs>) => {

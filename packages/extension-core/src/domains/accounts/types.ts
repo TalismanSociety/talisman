@@ -141,12 +141,6 @@ export interface RequestAccountCreateFromSuri {
   curve?: KeypairCurve
 }
 
-export interface RequestAccountCreateFromPrivateKey {
-  name: string
-  privateKey: string
-  curve?: KeypairCurve
-}
-
 export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
@@ -236,10 +230,9 @@ export interface AccountsMessages {
   "pri(accounts.add.external)": [RequestAddAccountExternal, string[]]
   "pri(accounts.add.derive)": [RequestAddAccountDerive, string[]]
   "pri(accounts.add.keypair)": [RequestAddAccountKeypair, string[]]
-  "pri(accounts.create)": [RequestAccountCreate, string]
-  "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
-  "pri(accounts.create.privateKey)": [RequestAccountCreateFromPrivateKey, string]
-  "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
+  "pri(accounts.create)": [RequestAccountCreate, string] // TODO use add.derive instead
+  "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string] // TODO use add.derive instead
+  "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]] // TODO use add.keypair instead
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.all)": [RequestAccountExportAll, ResponseAccountsExport]

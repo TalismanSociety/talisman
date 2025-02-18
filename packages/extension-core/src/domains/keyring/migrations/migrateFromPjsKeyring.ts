@@ -185,18 +185,18 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
               type: "watch-only",
               address: oldPair.address,
               name: oldPair.meta.name ?? `${capitalize(origin)} ${oldPair.address}`,
-              isPortfolio: !!oldPair.meta.isPortfolio,
+              isPortfolio: !!oldPair.meta.isPortfolio || origin === LegacyAccountOrigin.Dcent,
             })
             break
           }
 
           default: {
-            log.error("Unknown account origin", { origin: oldPair.meta.origin, pair: oldPair })
-            throw new Error("Unknown origin " + oldPair.meta.origin)
+            log.error("Unknown account origin", { origin, pair: oldPair })
+            throw new Error("Unknown origin " + origin)
           }
         }
       } catch (err) {
-        log.error("Failed to migrate account", { err, oldPair })
+        log.error("Failed to migrate account", { err, pair: oldPair })
       } finally {
         await updateMigrationProgress()
       }

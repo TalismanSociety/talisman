@@ -143,11 +143,6 @@ export default interface MessageTypes {
     options: RequestAccountCreateOptions,
   ) => Promise<string>
   accountCreateFromSuri: (name: string, suri: string, curve?: KeypairCurve) => Promise<string>
-  accountCreateFromPrivateKey: (
-    name: string,
-    privateKey: string,
-    curve?: KeypairCurve,
-  ) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn

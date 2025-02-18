@@ -6,7 +6,6 @@ import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
   bytesToString,
   KeypairCurve,
-  parseSecretKey,
   parseSuri,
   platformFromAddress,
   stringToBytes,
@@ -20,7 +19,6 @@ import type {
   RequestAccountContactUpdate,
   RequestAccountCreate,
   RequestAccountCreateFromJson,
-  RequestAccountCreateFromPrivateKey,
   RequestAccountCreateFromSuri,
   RequestAccountExport,
   RequestAccountExportAll,
@@ -170,24 +168,6 @@ export default class AccountsHandler extends ExtensionHandler {
     })
 
     this.captureAccountCreateEvent(account.address, "seed")
-
-    return account.address
-  }
-
-  private async accountCreatePrivateKey({
-    name,
-    privateKey,
-    curve = "sr25519",
-  }: RequestAccountCreateFromPrivateKey): Promise<string> {
-    const secretKey = parseSecretKey(privateKey, curve)
-
-    const account = await keyringStore.addAccountKeypair({
-      name,
-      secretKey,
-      curve,
-    })
-
-    this.captureAccountCreateEvent(account.address, "privateKey")
 
     return account.address
   }
@@ -451,8 +431,7 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreate(request as RequestAccountCreate)
       case "pri(accounts.create.suri)":
         return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
-      case "pri(accounts.create.privateKey)":
-        return this.accountCreatePrivateKey(request as RequestAccountCreateFromPrivateKey)
+
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.external.setIsPortfolio)":
