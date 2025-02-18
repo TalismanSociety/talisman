@@ -25,8 +25,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   // get type paramter from url
   const [params] = useSearchParams()
   const defaultPlatform = useMemo(() => {
-    // type is for legacy compatibility
-    return (params.get("platform") ?? params.get("type") ?? undefined) as Platform | undefined
+    return (params.get("platform") ?? undefined) as Platform | undefined
   }, [params])
 
   const allAccounts = useAccounts()

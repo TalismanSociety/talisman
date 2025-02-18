@@ -4,7 +4,6 @@ import { FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
 
@@ -26,13 +25,11 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
   onClick,
 }) => {
   const account = useAccountByAddress(address as string)
-  const contact = useContact(address, tokenGenesisHash)
 
   const { name, genesisHash: accountGenesisHash } = useMemo(() => {
     if (account) return { name: account.name, genesisHash: getAccountGenesisHash(account) }
-    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
     return { name: undefined, genesisHash: undefined }
-  }, [account, contact])
+  }, [account])
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,

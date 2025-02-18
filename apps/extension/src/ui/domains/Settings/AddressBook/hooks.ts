@@ -1,7 +1,5 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, CustomChain } from "@talismn/chaindata-provider"
-import { detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
-import { decodeSs58Format } from "@talismn/util"
+import { decodeSs58Address, detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
 import { HexString } from "extension-shared"
 import { useEffect, useMemo } from "react"
 
@@ -12,11 +10,14 @@ export const useChainsFilteredByAddressPrefix = (address?: string) => {
 
   return useMemo(() => {
     if (!address) return []
-    if (isEthereumAddress(address)) return []
 
-    const ss58Format = decodeSs58Format(address)
+    const encoding = detectAddressEncoding(address)
+    if (encoding !== "ss58") return []
+
+    const [, ss58Format] = decodeSs58Address(address)
     if (typeof ss58Format !== "number") return []
 
+    // 42 is generic format
     if (ss58Format === 42) return chains
     return chains.filter((c) => c.prefix === ss58Format)
   }, [address, chains])

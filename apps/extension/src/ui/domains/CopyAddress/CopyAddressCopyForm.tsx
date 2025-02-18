@@ -10,7 +10,6 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress, useAccounts, useChain } from "@ui/state"
 
@@ -37,20 +36,21 @@ type AddressPillButtonProps = {
 
 const AddressPillButton: FC<AddressPillButtonProps> = ({
   address,
-  genesisHash: chainGenesisHash,
+  genesisHash,
   className,
   onClick,
 }) => {
   const account = useAccountByAddress(address as string)
-  const contact = useContact(address, chainGenesisHash)
 
   const [name, accountGenesisHash] = useMemo(() => {
     if (account) return [account.name, getAccountGenesisHash(account)]
-    if (contact) return [contact.name, contact.genesisHash]
     return [undefined, undefined]
-  }, [account, contact])
+  }, [account])
 
-  const formattedAddress = useFormattedAddress(address ?? undefined, accountGenesisHash)
+  const formattedAddress = useFormattedAddress(
+    address ?? undefined,
+    accountGenesisHash ?? genesisHash,
+  )
 
   if (!address) return null
 
@@ -187,8 +187,6 @@ export const CopyAddressCopyForm = () => {
     return typeof oldPrefix === "number" && typeof prefix === "number" && oldPrefix !== prefix
   }, [chain])
 
-  const genesisHash = chain?.genesisHash
-
   const { t } = useTranslation()
 
   if (!formattedAddress) return null
@@ -202,7 +200,7 @@ export const CopyAddressCopyForm = () => {
             <div>
               <AddressPillButton
                 address={formattedAddress}
-                genesisHash={genesisHash}
+                genesisHash={chain?.genesisHash}
                 onClick={goToAddressPage}
               />
             </div>

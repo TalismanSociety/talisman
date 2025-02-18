@@ -156,11 +156,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
     setSelectedAccounts((prev) =>
       prev.some((pa) => pa.suri === suri)
         ? prev.filter((pa) => pa.suri !== suri)
-        : prev.concat({
-            name,
-            suri,
-            curve,
-          }),
+        : prev.concat({ name, suri, curve }),
     )
   }, [])
 
