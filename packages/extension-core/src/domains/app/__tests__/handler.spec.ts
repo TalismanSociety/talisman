@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { assert } from "@polkadot/util"
+import { KeyringStorage } from "@talismn/keyring"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
@@ -22,7 +23,7 @@ describe("App handler when password is not trimmed", () => {
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
-  let keyringBackupJson: string
+  let keyringBackupJson: KeyringStorage
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
@@ -179,7 +180,7 @@ describe("App handler when password is trimmed", () => {
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
-  let keyringBackupJson: string
+  let keyringBackupJson: KeyringStorage
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {

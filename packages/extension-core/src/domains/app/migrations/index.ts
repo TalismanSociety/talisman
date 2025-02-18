@@ -1,11 +1,12 @@
-import { isAccountOwned } from "@talismn/keyring"
+import legacyKeyring from "@polkadot/ui-keyring"
 import { convertAddress, normalizeAddress } from "@talismn/util"
 import { log } from "extension-shared"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"
+import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
+import { LegacyAccountOrigin } from "../../accounts/types"
 import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
-import { keyringStore } from "../../keyring/store"
 import { addressBookStore } from "../store.addressBook"
 import { appStore } from "../store.app"
 import { settingsStore } from "../store.settings"
@@ -43,8 +44,14 @@ export const hideGetStartedIfFunded: Migration = {
     const currentValue = await appStore.get("hideGetStarted")
     if (currentValue) return
 
-    const addresses = await keyringStore.getAccounts()
-    const ownedAddresses = addresses.filter(isAccountOwned).map((account) => account.address)
+    await awaitKeyringLoaded()
+    const ownedAddresses = legacyKeyring
+      .getAccounts()
+      .filter((account) => {
+        const origin = account.meta.origin as LegacyAccountOrigin
+        return isOwnedAccountOrigin(origin)
+      })
+      .map((account) => normalizeAddress(account.address))
 
     const balanceTotals = await balanceTotalsStore.get()
     const fundedAddresses = [
@@ -76,4 +83,14 @@ export const migrateAutoLockTimeoutToMinutes: Migration = {
     const legacySettingsStore = new StorageProvider<{ autoLockTimeout: number }>("settings")
     await legacySettingsStore.set({ autoLockTimeout: currentValue * 60 })
   }),
+}
+
+const isOwnedAccountOrigin = (origin: LegacyAccountOrigin) => {
+  switch (origin) {
+    case LegacyAccountOrigin.Watched:
+    case LegacyAccountOrigin.Signet:
+      return false
+    default:
+      return true
+  }
 }

@@ -15,10 +15,7 @@ export const signSecp256k1 = (
   sk: Uint8Array,
   // hasher: "blake2" | "keccak"
 ) => {
-  // console.log("signSecp256k1 sk length", sk.length);
-  // we might want to sign a hash, not the payload itself
-  //const hash = getSecp256k1Hash(payload, hasher);
-
+  // TODO determine if we need to hash payloads before ecdsa signing
   return secp256k1
     .sign(payload, sk, {
       lowS: true,
@@ -49,9 +46,3 @@ export const verifySignatureSecp256k1 = (
 ) => {
   return secp256k1.verify(signature, data, publicKey, { lowS: true })
 }
-
-// const getSecp256k1Hash = (data: Uint8Array, hasher: "blake2" | "keccak") => {
-//   // TODO: for now let s consider the actual signer (consummer) will hash the payload if needed
-//   // remove this method once confirmed.
-//   return data;
-// };

@@ -94,7 +94,6 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = accounts.find((account) => account.name === name)
     assert(!existing, "An account with this name already exists")
 
-    // let mnemonicId: string
     let mnemonic: Mnemonic
     if ("mnemonicId" in options) {
       const result = await keyringStore.getMnemonic(options.mnemonicId)

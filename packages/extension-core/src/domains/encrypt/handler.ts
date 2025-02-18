@@ -24,7 +24,7 @@ export default class EncryptHandler extends ExtensionHandler {
     const result = await withSecretKey(queued.account.address, async (secretKey, curve) => {
       const { payload } = request
 
-      const kp = { publicKey: getPublicKeyFromSecret(secretKey, curve), secretKey } as Keypair
+      const kp: Keypair = { publicKey: getPublicKeyFromSecret(secretKey, curve), secretKey }
 
       assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
 

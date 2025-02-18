@@ -29,7 +29,7 @@ export class BalancesHandler extends ExtensionHandler {
 
         const accounts = await keyringStore.getAccounts()
 
-        // TODO incorrect logic: some chains with evm type accounts should still be updated (ex: Mythos, Moonbeam, LAOS)
+        // TODO fix this logic: some chains with evm type accounts should still be updated (ex: Mythos, Moonbeam, LAOS)
         const updateSubstrateChains = accounts.some(isAccountPolkadot)
 
         // TODO: Run this on a timer or something instead of when subscribing to balances

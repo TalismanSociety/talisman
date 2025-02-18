@@ -10,6 +10,7 @@ import {
 
 export * from "./wrapBytes"
 
+// Unused for now
 export const sign = (
   payload: Uint8Array,
   secretKey: Uint8Array,
@@ -33,6 +34,7 @@ export const sign = (
   }
 }
 
+// Unused for now
 export const verifySignature = (
   payload: Uint8Array,
   signature: Uint8Array,

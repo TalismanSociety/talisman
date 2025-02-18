@@ -81,7 +81,6 @@ export const getPublicAccounts = (
 
 export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: number) => {
   switch (curve) {
-    // substrate
     case "ecdsa":
     case "ed25519":
     case "sr25519":
@@ -90,7 +89,7 @@ export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: num
     case "ethereum":
       return getEthDerivationPath(accountIndex)
 
-    case "solana":
+    default:
       throw Error("Not implemented")
   }
 }
