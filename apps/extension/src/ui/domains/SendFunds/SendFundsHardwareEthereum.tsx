@@ -26,7 +26,7 @@ export const SendFundsHardwareEthereum = () => {
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>
-  if (!account) return null
+  if (!account || account.type !== "ledger-ethereum") return null
 
   return (
     <SignHardwareEthereum

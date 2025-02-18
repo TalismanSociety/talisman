@@ -1,4 +1,3 @@
-import { AccountLedgerEthereum } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,12 +33,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     setIsSigning(true)
 
     try {
-      const signature = await sign(
-        Number(evmNetworkId),
-        method,
-        payload,
-        (account as AccountLedgerEthereum).derivationPath,
-      )
+      const signature = await sign(Number(evmNetworkId), method, payload, account.derivationPath)
 
       // await so we can keep the spinning loader until popup closes
       await onSigned({ signature })
