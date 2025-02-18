@@ -21,17 +21,21 @@ export const migrateFromPjsKeyring: Migration = {
   // no way back
 }
 
-export const executeMigrationFromPjsKeyring = async (password: string) => {
+/**
+ * @param password
+ * @param replay use only for debugging, it will clear the keyring before running the migration
+ */
+const executeMigrationFromPjsKeyring = async (password: string, reset = false) => {
+  const errors = [] as string[]
   const stopMainTimer = log.timer("executeMigrationFromPjsKeyring")
   try {
     await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0 } })
 
     await awaitKeyringLoaded()
 
-    // ensure any left over from a previous migration attempt is removed
-    await keyringStore.reset()
+    if (reset) await keyringStore.reset()
 
-    // fetch old data to migrate
+    // fetch legacy data to migrate
     const oldMnemonics = Object.values(await mnemonicsStore.get())
     const oldPairs = legacyKeyring.getPairs()
     const oldContacts = Object.values(await addressBookStore.get())
@@ -55,14 +59,19 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
     /**
      * Migrate Mnemonics
      */
-
     for (const oldMnemonic of oldMnemonics) {
       try {
         const { id: oldMnemonicId, name, confirmed } = oldMnemonic
         const resMnemonicText = await mnemonicsStore.getMnemonic(oldMnemonicId, password)
 
-        // TODO: decide wether to throw or skip ?
         if (resMnemonicText.ok && resMnemonicText.val) {
+          const existing = await keyringStore.getExistingMnemonicId(resMnemonicText.val)
+          if (existing) {
+            // skip if already migrated in a previous attempt
+            oldToNewMnemonicId.set(oldMnemonicId, existing)
+            continue
+          }
+
           const newMnemonic = await keyringStore.addMnemonic({
             mnemonic: resMnemonicText.val,
             name,
@@ -71,12 +80,12 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
           oldToNewMnemonicId.set(oldMnemonicId, newMnemonic.id)
         }
       } catch (err) {
-        log.error("ERROR Migrate Mnemonics", { err, oldMnemonic })
+        errors.push(`Failed to migrate mnemonic ${oldMnemonic.name}`)
+        log.error("Failed to migrate mnemonic", { err, mnemonicId: oldMnemonic.id })
       } finally {
         await updateMigrationProgress()
       }
     }
-    log.log("Migrated %d mnemonics", Object.keys(oldMnemonics).length)
 
     /**
      * Migrate Accounts
@@ -86,6 +95,9 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
       const origin = oldPair.meta.origin as LegacyAccountOrigin
 
       try {
+        // skip if already migrated in a previous attempt
+        if (await keyringStore.getAccount(oldPair.address)) continue
+
         switch (origin) {
           case LegacyAccountOrigin.Talisman: {
             const curve = pjsKeypairTypeToCurve(oldPair.type)
@@ -176,6 +188,7 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
               url: oldPair.meta.signetUrl as string,
               genesisHash: oldPair.meta.genesisHash as HexString,
             })
+
             break
           }
 
@@ -196,7 +209,8 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
           }
         }
       } catch (err) {
-        log.error("Failed to migrate account", { err, pair: oldPair })
+        errors.push(`Failed to migrate account ${oldPair.meta.name ?? oldPair.address}`)
+        log.error("Failed to migrate account", { err, address: oldPair.address })
       } finally {
         await updateMigrationProgress()
       }
@@ -207,6 +221,9 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
      */
     for (const oldContact of oldContacts) {
       try {
+        // skip if already migrated in a previous attempt
+        if (await keyringStore.getAccount(oldContact.address)) continue
+
         const options: AddAccountExternalOptions = {
           type: "contact",
           name: oldContact.name,
@@ -216,7 +233,7 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
 
         await keyringStore.addAccountExternal(options)
       } catch (err) {
-        log.warn("Failed to migrate contact", { err, oldContact })
+        // ignore
       } finally {
         await updateMigrationProgress()
       }
@@ -229,9 +246,17 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
       const newCertMnemonicId = oldToNewMnemonicId.get(oldCertMnemonicId)
       if (newCertMnemonicId)
         await appStore.set({ vaultVerifierCertificateMnemonicId: newCertMnemonicId })
-      else await appStore.delete("vaultVerifierCertificateMnemonicId") // sorry!
     }
     await updateMigrationProgress() // 100%
+
+    if (errors.length) {
+      appStore.set({
+        currentMigration: { name: MIGRATION_LABEL, errors },
+      })
+      // throw to prevent cleanup to occur, and inform the runner that it failed.
+      // it will be retried on next startup
+      throw new Error("Migration failed")
+    }
 
     /**
      * Delete old data
@@ -242,13 +267,28 @@ export const executeMigrationFromPjsKeyring = async (password: string) => {
         key.startsWith("account:0x"),
       )
       await Promise.all(keys.map(async (key) => await chrome.storage.local.remove(key)))
-      await chrome.storage.local.remove("mnemonics")
+
+      await mnemonicsStore.clear()
       await addressBookStore.clear()
     } catch (err) {
       log.error("Migration cleanup failed", { err })
+      // ignore
     }
+
+    await appStore.delete("currentMigration")
   } finally {
     stopMainTimer()
-    await appStore.delete("currentMigration")
   }
 }
+
+// if (DEBUG) {
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   const hostObj = globalThis as any
+
+//   // utility to run the migration manually fron dev console
+//   hostObj.executeMigrationFromPjsKeyring = async () => {
+//     const password = await passwordStore.getPassword()
+//     if (!password) throw new Error("Password not found")
+//     await executeMigrationFromPjsKeyring(password, true)
+//   }
+// }

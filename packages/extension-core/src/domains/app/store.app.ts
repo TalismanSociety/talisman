@@ -15,7 +15,8 @@ const UNKNOWN: ONBOARDED_UNKNOWN = "UNKNOWN"
 
 type CurrentMigration = {
   name: string
-  progress: number // ratio between 0 and 1
+  progress?: number // ratio between 0 and 1
+  errors?: string[]
 }
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
@@ -86,9 +87,6 @@ export class AppStore extends StorageProvider<AppStoreData> {
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
     if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
-
-    // ensure currentMigration is not set, which could supposedly happen if process was killed during a migration
-    if (await this.get("currentMigration")) await this.delete("currentMigration")
   }
 
   async getIsOnboarded() {

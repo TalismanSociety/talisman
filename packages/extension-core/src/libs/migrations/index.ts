@@ -1,5 +1,3 @@
-import { DEBUG } from "extension-shared"
-
 import {
   migratePolkadotLedgerAccounts,
   migrateToNewAccountTypes,
@@ -13,16 +11,12 @@ import {
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
 } from "../../domains/app/migrations"
-import { passwordStore } from "../../domains/app/store.password"
 import {
   migrateAssetDiscoveryRollout,
   migrateAssetDiscoveryV2,
 } from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
-import {
-  executeMigrationFromPjsKeyring,
-  migrateFromPjsKeyring,
-} from "../../domains/keyring/migrations"
+import { migrateFromPjsKeyring } from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
 import { Migrations } from "./types"
 
@@ -50,14 +44,3 @@ export const migrations: Migrations = [
 // await chrome.storage.local.set(state)
 // warning: this will remove the record of the migration's application, but will not revert changes made by the migration
 // it should only be used for idempotent or non-reversible migrations
-
-if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hostObj = globalThis as any
-
-  hostObj.executeMigrationFromPjsKeyring = async () => {
-    const password = await passwordStore.getPassword()
-    if (!password) throw new Error("Password not found")
-    await executeMigrationFromPjsKeyring(password)
-  }
-}
