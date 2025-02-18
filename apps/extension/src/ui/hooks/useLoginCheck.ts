@@ -1,10 +1,14 @@
 import { bind } from "@react-rxjs/core"
 import { combineLatest, map } from "rxjs"
 
-import { isLoggedIn$, isOnboarded$ } from "@ui/state"
+import { currentMigration$, isLoggedIn$, isOnboarded$ } from "@ui/state"
 
 export const [useLoginCheck] = bind(
-  combineLatest([isLoggedIn$, isOnboarded$]).pipe(
-    map(([isLoggedIn, isOnboarded]) => ({ isLoggedIn, isOnboarded })),
+  combineLatest([isLoggedIn$, isOnboarded$, currentMigration$]).pipe(
+    map(([isLoggedIn, isOnboarded, currentMigration]) => ({
+      isLoggedIn,
+      isOnboarded,
+      isMigrating: !!currentMigration,
+    })),
   ),
 )

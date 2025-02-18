@@ -13,12 +13,16 @@ import {
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
 } from "../../domains/app/migrations"
+import { passwordStore } from "../../domains/app/store.password"
 import {
   migrateAssetDiscoveryRollout,
   migrateAssetDiscoveryV2,
 } from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
-import { executeMigrationFromPjsKeyring } from "../../domains/keyring/migrations"
+import {
+  executeMigrationFromPjsKeyring,
+  migrateFromPjsKeyring,
+} from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
 import { Migrations } from "./types"
 
@@ -37,6 +41,7 @@ export const migrations: Migrations = [
   migrateAutoLockTimeoutToMinutes,
   migrateAnaliticsPurgePendingCaptures,
   migrateAssetDiscoveryV2,
+  migrateFromPjsKeyring,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
@@ -50,5 +55,9 @@ if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hostObj = globalThis as any
 
-  hostObj.executeMigrationFromPjsKeyring = executeMigrationFromPjsKeyring
+  hostObj.executeMigrationFromPjsKeyring = async () => {
+    const password = await passwordStore.getPassword()
+    if (!password) throw new Error("Password not found")
+    await executeMigrationFromPjsKeyring(password)
+  }
 }

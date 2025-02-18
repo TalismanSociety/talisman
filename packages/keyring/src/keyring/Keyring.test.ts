@@ -1,4 +1,10 @@
-import { deriveKeypair, entropyToSeed, KeypairCurve, mnemonicToEntropy } from "@talismn/crypto"
+import {
+  bytesToString,
+  deriveKeypair,
+  entropyToSeed,
+  KeypairCurve,
+  mnemonicToEntropy,
+} from "@talismn/crypto"
 
 import { Keyring } from "./Keyring"
 
@@ -42,8 +48,23 @@ describe("keyring", () => {
     )
   })
 
-  it("rejects duplicate mnemonic", async () => {
+  it("cannot add an account with a wrong password", () => {
     expect(() =>
+      keyring.addAccountDerive(
+        {
+          type: "existing-mnemonic",
+          mnemonicId,
+          curve: "ed25519",
+          derivationPath: DERIVATION_PATH_SUBSTRATE,
+          name: "My account",
+        },
+        WRONG_PASSWORD,
+      ),
+    ).rejects.toThrow("Invalid password")
+  })
+
+  it("rejects duplicate mnemonic", () => {
+    return expect(() =>
       keyring.addMnemonic(
         {
           ...MNEMONIC,
@@ -55,7 +76,7 @@ describe("keyring", () => {
     ).rejects.toThrow("Mnemonic already exists")
   })
 
-  it("rejects invalid mnemonic", async () => {
+  it("rejects invalid mnemonic", () => {
     expect(() =>
       keyring.addMnemonic(
         {
@@ -69,7 +90,7 @@ describe("keyring", () => {
     ).rejects.toThrow("Invalid mnemonic")
   })
 
-  it("add account watch-only", async () => {
+  it("add account watch-only", () => {
     keyring.addAccountExternal({
       type: "watch-only",
       address: "D85kXmhRyMQGC7jg59n523H7sb6ZBj3Mn3puusP2TshQLGx",
@@ -80,7 +101,7 @@ describe("keyring", () => {
     expect(keyring.getAccount("D85kXmhRyMQGC7jg59n523H7sb6ZBj3Mn3puusP2TshQLGx")).toBeTruthy()
   })
 
-  it("add account contact", async () => {
+  it("add account contact", () => {
     keyring.addAccountExternal({
       type: "contact",
       address: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
@@ -113,6 +134,31 @@ describe("keyring", () => {
   it("add account solana from secret", () => testAddFromSecret("solana", DERIVATION_PATH_SOLANA))
   it("add account solana from mnemonic", () =>
     testAddFromMnemonic("solana", DERIVATION_PATH_SOLANA))
+
+  it("can export", async () => {
+    const derived = await keyring.addAccountDerive(
+      {
+        type: "existing-mnemonic",
+        mnemonicId,
+        curve: "ed25519",
+        derivationPath: DERIVATION_PATH_SUBSTRATE,
+        name: "My account",
+      },
+      VALID_PASSWORD,
+    )
+
+    const restored = Keyring.load(keyring.toJson())
+
+    expect(JSON.stringify(restored.getAccounts())).toEqual(JSON.stringify(keyring.getAccounts()))
+
+    const restoredMnemonic = await restored.getMnemonicText(mnemonicId, VALID_PASSWORD)
+    expect(restoredMnemonic).toEqual(MNEMONIC.mnemonic)
+
+    const originalSecret = await keyring.getAccountSecretKey(derived.address, VALID_PASSWORD)
+    const restoredSecret = await restored.getAccountSecretKey(derived.address, VALID_PASSWORD)
+
+    expect(bytesToString("base58", originalSecret)).toEqual(bytesToString("base58", restoredSecret))
+  })
 })
 
 const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) => {

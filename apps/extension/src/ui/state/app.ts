@@ -34,3 +34,7 @@ export const useAppState = <K extends keyof AppStoreData, V = AppStoreData[K]>(k
 export const [useIsOnboarded, isOnboarded$] = bind(
   getAppStateValue$("onboarded").pipe(map((onboarded) => onboarded === "TRUE")),
 )
+
+export const [useCurrentMigration, currentMigration$] = bind(
+  getAppStateValue$("currentMigration").pipe(map((migration) => migration ?? null)),
+)

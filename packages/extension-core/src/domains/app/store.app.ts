@@ -13,6 +13,11 @@ const TRUE: ONBOARDED_TRUE = "TRUE"
 const FALSE: ONBOARDED_FALSE = "FALSE"
 const UNKNOWN: ONBOARDED_UNKNOWN = "UNKNOWN"
 
+type CurrentMigration = {
+  name: string
+  progress: number // ratio between 0 and 1
+}
+
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
 export type BlockNumberByDelegator = {
   [delegator: string | number]: number
@@ -38,6 +43,9 @@ export type AppStoreData = {
   hideGetStarted?: boolean
   bittensorUnbondBlockNumber: DelegatorsBlockNumberByAccount
   hideUnifiedAddressBanner?: boolean
+
+  // represents a migration that is currently running
+  currentMigration?: CurrentMigration
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -78,6 +86,9 @@ export class AppStore extends StorageProvider<AppStoreData> {
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
     if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
+
+    // ensure currentMigration is not set, which could supposedly happen if process was killed during a migration
+    if (await this.get("currentMigration")) await this.delete("currentMigration")
   }
 
   async getIsOnboarded() {

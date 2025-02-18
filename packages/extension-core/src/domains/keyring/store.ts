@@ -7,6 +7,7 @@ import {
   AddAccountKeypairOptions,
   AddMnemonicOptions,
   Keyring,
+  KeyringStorage,
   Mnemonic,
   UpdateAccountOptions,
   UpdateMnemonicOptions,
@@ -31,8 +32,9 @@ const TALISMAN_KEYRING_LOCAL_STORAGE_KEY = "keyring"
  * Also provides observables for accounts and mnemonics.
  */
 class KeyringStore {
+  // store data in storage as object to ensure serialization is consistent, also makes it easily inspectable in dev tools
+  #json$ = new ReplaySubject<KeyringStorage>(1)
   #lock = false
-  #serialized$ = new ReplaySubject<string>(1)
   #keyring$: Observable<Readonly<Keyring>>
   #accounts$: Observable<Account[]>
   #mnemonics$: Observable<Mnemonic[]>
@@ -41,8 +43,8 @@ class KeyringStore {
     if (!TEST && typeof window !== "undefined")
       throw new Error("Keyring store cannot be accessed from a web page")
 
-    this.#keyring$ = this.#serialized$.pipe(
-      map((s) => (s ? Keyring.load(s) : Keyring.create())),
+    this.#keyring$ = this.#json$.pipe(
+      map((json) => (json ? Keyring.load(json) : Keyring.create())),
       map((keyring) => Object.freeze(keyring)),
       shareReplay(1),
     )
@@ -72,8 +74,8 @@ class KeyringStore {
 
   private async init() {
     try {
-      const data = await chrome.storage.local.get(TALISMAN_KEYRING_LOCAL_STORAGE_KEY)
-      this.#serialized$.next(data[TALISMAN_KEYRING_LOCAL_STORAGE_KEY])
+      const storage = await chrome.storage.local.get(TALISMAN_KEYRING_LOCAL_STORAGE_KEY)
+      this.#json$.next(storage[TALISMAN_KEYRING_LOCAL_STORAGE_KEY])
     } catch (cause) {
       throw new Error("Failed to load keyring", { cause })
     }
@@ -81,17 +83,19 @@ class KeyringStore {
 
   private async save(keyring: Keyring) {
     try {
-      const serialized = keyring.toString()
-      await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
-      this.#serialized$.next(serialized)
+      const json = keyring.toJson()
+      await chrome.storage.local.set({
+        [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: json,
+      })
+      this.#json$.next(json)
     } catch (err) {
       throw new Error("Failed to save keyring", { cause: err })
     }
   }
 
   private async load() {
-    const serialized = await firstValueFrom(this.#serialized$)
-    return serialized ? Keyring.load(serialized) : Keyring.create()
+    const json = await firstValueFrom(this.#json$)
+    return json ? Keyring.load(json) : Keyring.create()
   }
 
   private async withLock<T>(fn: () => T): Promise<T> {
@@ -243,7 +247,7 @@ class KeyringStore {
   public reset(): Promise<void> {
     return this.withLock(() => {
       const emptyKeyring = Keyring.create()
-      this.#serialized$.next(emptyKeyring.toString())
+      this.#json$.next(emptyKeyring.toJson())
     })
   }
 
@@ -253,7 +257,7 @@ class KeyringStore {
       const serialized = await keyring.export(oldPassword, newPassword)
 
       await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
-      this.#serialized$.next(serialized)
+      this.#json$.next(serialized)
     })
   }
 
@@ -264,15 +268,17 @@ class KeyringStore {
     })
   }
 
-  public async restore(json: string, jsonPassword: string, password: string) {
+  public async restore(json: KeyringStorage, jsonPassword: string, password: string) {
     return this.withLock(async () => {
       const keyring = Keyring.load(json)
 
       // changes all passwords to the local one
-      const serialized = await keyring.export(jsonPassword, password)
+      const newJson = await keyring.export(jsonPassword, password)
 
-      await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: serialized })
-      this.#serialized$.next(serialized)
+      // persist new data
+      await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: newJson })
+
+      this.#json$.next(newJson)
     })
   }
 }

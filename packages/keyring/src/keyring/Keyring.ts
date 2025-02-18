@@ -12,6 +12,7 @@ import {
   KeypairCurve,
   mnemonicToEntropy,
   normalizeAddress,
+  stringToBytes,
 } from "@talismn/crypto"
 
 import type { Account, Mnemonic } from "../types"
@@ -26,49 +27,67 @@ import type {
 import type { AccountStorage, MnemonicStorage } from "./types"
 import { isAccountExternal } from "../types"
 import { changeEncryptedDataPassword, decryptData, encryptData } from "./encryption"
+import { isHexString } from "./utils"
 
-// Never change this or it would break existing passwords
-// const PASSWORD_CHECK_PHRASE =
-//   "This is the phrase to encrypt with the password used to verify that the password is the expected one";
-
-type KeyringStorage = {
-  // passwordCheck: string // PASSWORD_CHECK_PHRASE encrypted with user password
+export type KeyringStorage = {
+  passwordCheck: string | null // well-known data encrypted using the password, used to ensure all secrets of the keyring are encrypted with the same password
   mnemonics: MnemonicStorage[]
   accounts: AccountStorage[]
 }
 
 export class Keyring {
-  #storage: KeyringStorage
+  #data: KeyringStorage
 
   protected constructor(data: KeyringStorage) {
-    this.#storage = data
+    this.#data = structuredClone(data)
   }
 
   public static create(): Keyring {
     return new Keyring({
+      passwordCheck: null, // well-known data encrypted using the password, used to ensure all secrets of the keyring are encrypted with the same password
       mnemonics: [],
       accounts: [],
     })
   }
 
-  public static load(json: string): Keyring {
-    const data = JSON.parse(json)
+  public static load(data: KeyringStorage): Keyring {
     // TODO: schema check ?
     if (!data.accounts || !data.mnemonics) throw new Error("Invalid data")
     return new Keyring(data)
   }
 
-  public toString(pretty?: boolean): string {
-    return JSON.stringify(this.#storage, undefined, pretty ? 2 : undefined)
+  private async checkPassword(password: string, reset = false) {
+    if (typeof password !== "string" || !password) throw new Error("password is required")
+
+    const passwordHash = oneWayHash(password)
+    const PASSWORD_CHECK_PHRASE = "PASSWORD_CHECK_PHRASE"
+
+    // run through same complexity as for other secrets, to make it so it s not easier to brute force passwordCheck than other secrets
+    if (!this.#data.passwordCheck || reset) {
+      const bytes = stringToBytes("utf8", PASSWORD_CHECK_PHRASE)
+      this.#data.passwordCheck = await encryptData(bytes, passwordHash)
+    } else {
+      try {
+        const bytes = await decryptData(this.#data.passwordCheck, passwordHash)
+        const text = bytesToString("utf8", bytes)
+        if (text !== PASSWORD_CHECK_PHRASE) throw new Error("Invalid password")
+      } catch {
+        throw new Error("Invalid password")
+      }
+    }
   }
 
-  public async export(password: string, jsonPassword: string, pretty?: boolean): Promise<string> {
-    const keyring = new Keyring(structuredClone(this.#storage))
+  public toJson() {
+    return structuredClone(this.#data)
+  }
 
-    for (const mnemonic of keyring.#storage.mnemonics)
+  public async export(password: string, jsonPassword: string): Promise<KeyringStorage> {
+    const keyring = new Keyring(structuredClone(this.#data))
+
+    for (const mnemonic of keyring.#data.mnemonics)
       mnemonic.entropy = await changeEncryptedDataPassword(mnemonic.entropy, password, jsonPassword)
 
-    for (const account of keyring.#storage.accounts)
+    for (const account of keyring.#data.accounts)
       if (account.type === "keypair")
         account.secretKey = await changeEncryptedDataPassword(
           account.secretKey,
@@ -76,26 +95,33 @@ export class Keyring {
           jsonPassword,
         )
 
-    return keyring.toString(pretty)
+    // reset password check
+    await keyring.checkPassword(jsonPassword, true)
+
+    return keyring.toJson()
   }
 
   public getMnemonics(): Mnemonic[] {
-    return this.#storage.mnemonics.map(mnemonicFromStorage)
+    return this.#data.mnemonics.map(mnemonicFromStorage)
   }
 
   public async addMnemonic(
     { name, mnemonic, confirmed }: AddMnemonicOptions,
     password: string,
   ): Promise<Mnemonic> {
-    if (!name) throw new Error("Name is required")
+    if (typeof name !== "string" || !name) throw new Error("name is required")
+    if (typeof mnemonic !== "string") throw new Error("mnemonic is required")
+    if (typeof confirmed !== "boolean") throw new Error("confirmed is required")
     if (!isValidMnemonic(mnemonic)) throw new Error("Invalid mnemonic")
+
+    await this.checkPassword(password)
 
     const entropy = mnemonicToEntropy(mnemonic)
 
-    // id is a hash of the seed, helps us prevent having duplicates and allows automatic remapping of accounts/seeds if seeds are deleted then re-added
-    const id = getMnemonicId(entropy)
+    // id is a hash of the entropy, helps us prevent having duplicates and allows automatic remapping of accounts/mnemonics if mnemonics are deleted then re-added
+    const id = oneWayHash(entropy)
 
-    if (this.#storage.mnemonics.find((s) => s.id === id)) throw new Error("Mnemonic already exists")
+    if (this.#data.mnemonics.find((s) => s.id === id)) throw new Error("Mnemonic already exists")
 
     const storage: MnemonicStorage = {
       id,
@@ -105,32 +131,38 @@ export class Keyring {
       createdAt: Date.now(),
     }
 
-    this.#storage.mnemonics.push(storage)
+    this.#data.mnemonics.push(storage)
 
     return mnemonicFromStorage(storage)
   }
 
   public getMnemonic(id: string): Mnemonic | null {
-    const mnemonic = this.#storage.mnemonics.find((s) => s.id === id)
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === id)
     return mnemonic ? mnemonicFromStorage(mnemonic) : null
   }
 
   public updateMnemonic(id: string, { name, confirmed }: UpdateMnemonicOptions) {
-    const mnemonic = this.#storage.mnemonics.find((s) => s.id === id)
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === id)
     if (!mnemonic) throw new Error("Mnemonic not found")
-    if (name !== undefined) mnemonic.name = name
-    if (confirmed !== undefined) mnemonic.confirmed = confirmed
+    if (name !== undefined) {
+      if (typeof name !== "string" || !name) throw new Error("name must be a string")
+      mnemonic.name = name
+    }
+    if (confirmed !== undefined) {
+      if (typeof confirmed !== "boolean") throw new Error("confirmed must be a boolean")
+      mnemonic.confirmed = confirmed
+    }
     return mnemonicFromStorage(mnemonic)
   }
 
   public removeMnemonic(id: string) {
-    const index = this.#storage.mnemonics.findIndex((mnemonic) => mnemonic.id == id)
+    const index = this.#data.mnemonics.findIndex((mnemonic) => mnemonic.id == id)
     if (index === -1) throw new Error("Mnemonic not found")
-    this.#storage.mnemonics.splice(index, 1)
+    this.#data.mnemonics.splice(index, 1)
   }
 
   async getMnemonicText(id: string, password: string): Promise<string> {
-    const mnemonic = this.#storage.mnemonics.find((s) => s.id === id)
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === id)
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
@@ -140,41 +172,48 @@ export class Keyring {
 
   public getExistingMnemonicId(mnemonic: string): string | null {
     const entropy = mnemonicToEntropy(mnemonic)
-    const mnemonicId = getMnemonicId(entropy)
-    return this.#storage.mnemonics.some((s) => s.id === mnemonicId) ? mnemonicId : null
+    const mnemonicId = oneWayHash(entropy)
+    return this.#data.mnemonics.some((s) => s.id === mnemonicId) ? mnemonicId : null
   }
 
   public getAccounts(): Account[] {
-    return this.#storage.accounts.map(accountFromStorage)
+    return this.#data.accounts.map(accountFromStorage)
   }
 
   public getAccount(address: string): Account | null {
-    const account = this.#storage.accounts.find((s) => isAddressEqual(s.address, address))
+    const account = this.#data.accounts.find((s) => isAddressEqual(s.address, address))
     return account ? accountFromStorage(account) : null
   }
 
   public updateAccount(address: string, { name, isPortfolio, genesisHash }: UpdateAccountOptions) {
-    const account = this.#storage.accounts.find((s) => s.address === address)
+    const account = this.#data.accounts.find((s) => s.address === address)
     if (!account) throw new Error("Account not found")
 
-    if (name) account.name = name
-    if (account.type === "watch-only" && isPortfolio !== undefined)
+    if (name) {
+      if (typeof name !== "string" || !name) throw new Error("name is required")
+      account.name = name
+    }
+    if (account.type === "watch-only" && isPortfolio !== undefined) {
+      if (typeof isPortfolio !== "boolean") throw new Error("confirmed is required")
       account.isPortfolio = isPortfolio
-
+    }
     // allow updating genesisHash only for contacts
-    if (account.type === "contact") account.genesisHash = genesisHash
+    if (account.type === "contact" && genesisHash) {
+      if (!isHexString(genesisHash)) throw new Error("genesisHash must be a hex string")
+      account.genesisHash = genesisHash
+    }
 
     return accountFromStorage(account)
   }
 
   public removeAccount(address: string) {
-    const index = this.#storage.accounts.findIndex((s) => isAddressEqual(s.address, address))
+    const index = this.#data.accounts.findIndex((s) => isAddressEqual(s.address, address))
     if (index === -1) throw new Error("Account not found")
-    this.#storage.accounts.splice(index, 1)
+    this.#data.accounts.splice(index, 1)
   }
 
   public addAccountExternal(options: AddAccountExternalOptions): Account {
-    const address = normalizeAddress(options.address)
+    const address = normalizeAddress(options.address) // breaks if invalid address
 
     if (this.getAccount(address)) throw new Error("Account already exists")
 
@@ -186,15 +225,21 @@ export class Keyring {
 
     if (!isAccountExternal(account)) throw new Error("Invalid account type")
 
-    this.#storage.accounts.push(account)
+    this.#data.accounts.push(account)
 
     return accountFromStorage(account)
   }
 
   private async ensureMnemonic(options: AddAccountDeriveOptions, password: string) {
+    await this.checkPassword(password)
+
     switch (options.type) {
       case "new-mnemonic": {
         const { mnemonic, mnemonicName: name, confirmed } = options
+
+        if (typeof name !== "string" || !name) throw new Error("mnemonicName is required")
+        if (typeof confirmed !== "boolean") throw new Error("confirmed is required")
+
         const mnemonicId = this.getExistingMnemonicId(mnemonic)
         if (mnemonicId) return mnemonicId
 
@@ -210,6 +255,9 @@ export class Keyring {
         return id
       }
       case "existing-mnemonic": {
+        if (typeof options.mnemonicId !== "string" || !options.mnemonicId)
+          throw new Error("mnemonicId must be a string")
+
         return options.mnemonicId
       }
     }
@@ -219,11 +267,13 @@ export class Keyring {
     options: AddAccountDeriveOptions,
     password: string,
   ): Promise<Account> {
+    await this.checkPassword(password)
+
     const { curve, derivationPath, name } = options
 
     const mnemonicId = await this.ensureMnemonic(options, password)
 
-    const mnemonic = this.#storage.mnemonics.find((s) => s.id === mnemonicId)
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === mnemonicId)
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
@@ -239,10 +289,11 @@ export class Keyring {
       address: normalizeAddress(pair.address),
       secretKey: await encryptData(pair.secretKey, password),
       mnemonicId,
+      derivationPath,
       createdAt: Date.now(),
     }
 
-    this.#storage.accounts.push(account)
+    this.#data.accounts.push(account)
 
     return accountFromStorage(account)
   }
@@ -251,6 +302,8 @@ export class Keyring {
     { curve, name, secretKey }: AddAccountKeypairOptions,
     password: string,
   ): Promise<Account> {
+    await this.checkPassword(password)
+
     const publicKey = getPublicKeyFromSecret(secretKey, curve)
     const encoding = addressEncodingFromCurve(curve)
     const address = addressFromPublicKey(publicKey, encoding)
@@ -266,13 +319,16 @@ export class Keyring {
       createdAt: Date.now(),
     }
 
-    this.#storage.accounts.push(account)
+    this.#data.accounts.push(account)
 
     return accountFromStorage(account)
   }
 
   public getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
-    const account = this.#storage.accounts.find((a) => a.address === normalizeAddress(address))
+    if (typeof address !== "string" || !address) throw new Error("address is required")
+    if (typeof password !== "string" || !password) throw new Error("password is required")
+
+    const account = this.#data.accounts.find((a) => a.address === normalizeAddress(address))
     if (!account) throw new Error("Account not found")
     if (account.type !== "keypair") throw new Error("Secret key unavailable")
 
@@ -285,7 +341,10 @@ export class Keyring {
     curve: KeypairCurve,
     password: string,
   ): Promise<string> {
-    const mnemonic = this.#storage.mnemonics.find((s) => s.id === mnemonicId)
+    if (typeof mnemonicId !== "string" || !mnemonicId) throw new Error("mnemonicId is required")
+    if (typeof password !== "string" || !password) throw new Error("password is required")
+
+    const mnemonic = this.#data.mnemonics.find((s) => s.id === mnemonicId)
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
@@ -296,10 +355,12 @@ export class Keyring {
   }
 }
 
-const getMnemonicId = (entropy: Uint8Array) => {
-  // one way hash to help identify duplicates
+const oneWayHash = (bytes: Uint8Array | string) => {
+  if (typeof bytes === "string") bytes = stringToBytes("utf8", bytes)
+
+  // cryptographically secure one way hash
   // outputs 44 characters without special characters
-  return bytesToString("base58", blake3(entropy))
+  return bytesToString("base58", blake3(bytes))
 }
 
 const mnemonicFromStorage = (data: MnemonicStorage): Mnemonic => {

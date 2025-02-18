@@ -23,6 +23,7 @@ import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
+import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 
@@ -45,7 +46,7 @@ import { TxHistoryPage } from "./pages/TxHistory"
 import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
 
 const Popup = () => {
-  const { isLoggedIn, isOnboarded } = useLoginCheck()
+  const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
 
   // force onboarding if not onboarded
   useEffect(() => {
@@ -59,6 +60,8 @@ const Popup = () => {
   }, [isOnboarded])
 
   if (!isLoggedIn) return <LoginViewManager />
+
+  if (isMigrating) return <MigrationProgress />
 
   return (
     <FadeIn className="h-full w-full">
