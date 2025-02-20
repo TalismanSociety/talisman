@@ -1,8 +1,9 @@
-import { notify } from "@talisman/components/Notifications"
 import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { notify } from "@talisman/components/Notifications"
 
 /**
  * Props for the Mnemonic component
@@ -84,7 +85,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
             className={classNames(
               "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm transition",
               !isRevealed && "backdrop-blur-md",
-              blurOnHover && isRevealed && "hover:backdrop-blur-md"
+              blurOnHover && isRevealed && "hover:backdrop-blur-md",
             )}
             onMouseLeave={() => {
               if (isRevealed) {

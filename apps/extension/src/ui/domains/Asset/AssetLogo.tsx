@@ -1,9 +1,10 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
 import { evmErc20TokenId } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import useToken from "@ui/hooks/useToken"
 import { CSSProperties, FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
+import { useToken } from "@ui/state"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -36,9 +37,9 @@ export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoB
       classNames(
         "relative block aspect-square w-[1em] shrink-0",
         rounded && "rounded-full",
-        className
+        className,
       ),
-    [className, rounded]
+    [className, rounded],
   )
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
@@ -110,7 +111,7 @@ const AssetLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className
+      className,
     )}
   ></div>
 )

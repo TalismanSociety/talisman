@@ -1,7 +1,7 @@
 import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { AccountJsonAny, SubstrateLedgerAppType } from "extension-core"
+import { classNames, encodeAnyAddress } from "@talismn/util"
+import { GenericeResponseAddress, SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import { AccountJsonAny, ChainId, SubstrateLedgerAppType } from "extension-core"
 import { log } from "extension-shared"
 import {
   ChangeEventHandler,
@@ -19,22 +19,23 @@ import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from 
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
+import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
+import { useAccounts, useChain, useChains } from "@ui/state"
 
 import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
 import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
+import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
 const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
   pageIndex: number,
   itemsPerPage: number,
-  app?: SubstrateAppParams | null
+  legacyApp?: SubstrateAppParams | null,
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -42,63 +43,110 @@ const useLedgerSubstrateGenericAccounts = (
   const [ledgerAccounts, setLedgerAccounts] = useState<
     (LedgerSubstrateGenericAccount | undefined)[]
   >([...Array(itemsPerPage)])
-  const [isBusy, setIsBusy] = useState(false)
-  const [error, setError] = useState<string>()
+  const refIsBusy = useRef(false)
 
-  const { isReady, ledger, getAddress, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
+  // derivation path => address cache, used when going back to previous page
+  const refAddressCache = useRef<Record<string, GenericeResponseAddress>>({})
+  useEffect(() => {
+    refAddressCache.current = {} // reset if app changes
+  }, [legacyApp])
 
-  const loadPage = useCallback(async () => {
-    if (!ledger || !isReady) return
+  const chains = useChains({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => chains.some((chain) => chain.hasCheckMetadataHash), [chains])
 
-    setIsBusy(true)
-    setError(undefined)
+  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
 
-    const skip = pageIndex * itemsPerPage
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Fetching account addresses..."),
+  })
 
-    try {
-      const newAccounts: (LedgerSubstrateGenericAccount | undefined)[] = [...Array(itemsPerPage)]
+  // keep page index as ref to allow for cancelling current page load when changing page
+  const refPageIndex = useRef(pageIndex)
+  useEffect(() => {
+    refPageIndex.current = pageIndex
+  }, [pageIndex])
 
-      for (let i = 0; i < itemsPerPage; i++) {
-        const accountIndex = skip + i
-        const addressOffset = 0
+  const loadPage = useCallback(
+    async (pageIndex: number, force = false) => {
+      if (!force && refIsBusy.current) return
+      refIsBusy.current = true
 
-        const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset, app })
+      //  setError(undefined)
+      setConnectionStatus({
+        status: "connecting",
+        message: t("Fetching account addresses..."),
+      })
 
-        const genericAddress = await getAddress(path, app?.ss58_addr_type ?? 42)
-        if (!genericAddress) throw new Error("Unable to get address")
+      const skip = pageIndex * itemsPerPage
 
-        newAccounts[i] = {
-          accountIndex,
-          addressOffset,
-          address: genericAddress.address,
-          name: t("Ledger {{appName}} {{accountIndex}}", {
-            appName: app?.name ?? "Polkadot",
-            accountIndex: accountIndex + 1,
-          }),
-          migrationAppName: app?.name,
-        } as LedgerSubstrateGenericAccount
-
+      try {
+        const newAccounts: (LedgerSubstrateGenericAccount | undefined)[] = [...Array(itemsPerPage)]
         setLedgerAccounts([...newAccounts])
-      }
-    } catch (err) {
-      log.error("Failed to load page", { err })
-      setError((err as Error).message)
-    }
 
-    setIsBusy(false)
-  }, [app, isReady, itemsPerPage, ledger, getAddress, pageIndex, t])
+        for (let i = 0; i < itemsPerPage; i++) {
+          if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
+
+          const accountIndex = skip + i
+          const addressOffset = 0
+
+          const path = getPolkadotLedgerDerivationPath({
+            accountIndex,
+            addressOffset,
+            legacyApp: legacyApp,
+          })
+
+          const genericAddress =
+            refAddressCache.current[path] ??
+            (await getAddress(path, legacyApp?.ss58_addr_type ?? 42))
+          if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
+          if (!genericAddress) throw new Error("Unable to get address")
+          refAddressCache.current[path] = genericAddress
+
+          newAccounts[i] = {
+            accountIndex,
+            addressOffset,
+            address: genericAddress.address,
+            name: t("Ledger {{appName}} {{accountIndex}}", {
+              appName: legacyApp?.name ?? "Polkadot",
+              accountIndex: accountIndex + 1,
+            }),
+            migrationAppName: legacyApp?.name,
+          } as LedgerSubstrateGenericAccount
+
+          setLedgerAccounts([...newAccounts])
+        }
+
+        setConnectionStatus({
+          status: "ready",
+          message: t("Ledger is ready."),
+        })
+      } catch (err) {
+        const error = getTalismanLedgerError(err)
+        log.error("Failed to load page", { err })
+        setConnectionStatus({
+          status: "error",
+          message: error.message,
+          onRetryClick: () => loadPage(pageIndex),
+        })
+      } finally {
+        refIsBusy.current = false
+      }
+    },
+    [t, itemsPerPage, legacyApp, getAddress],
+  )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      ledgerAccounts.filter(Boolean).length === itemsPerPage
+      withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ed25519" }))
         : [],
-    [itemsPerPage, ledgerAccounts]
+    [itemsPerPage, ledgerAccounts, withBalances],
   )
-  const balances = useAccountImportBalances(accountImportDefs)
+  const balances = useAccountImportBalances(balanceDefs)
 
   const accounts: (LedgerSubstrateGenericAccount | null)[] = useMemo(
     () =>
@@ -107,11 +155,11 @@ const useLedgerSubstrateGenericAccounts = (
 
         const address = convertAddress(acc.address, null)
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === address
+          (wa) => convertAddress(wa.address, null) === address,
         )
 
         const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === address
+          (b) => convertAddress(b.address, null) === address,
         )
 
         return {
@@ -120,29 +168,29 @@ const useLedgerSubstrateGenericAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
+          isBalanceLoading:
+            withBalances && (balances.status === "initialising" || balances.status === "cached"),
         }
       }),
-    [ledgerAccounts, walletAccounts, balances, selectedAccounts]
+    [ledgerAccounts, walletAccounts, balances, selectedAccounts, withBalances],
   )
 
   useEffect(() => {
     // refresh on every page change
-    loadPage()
-  }, [loadPage])
+    loadPage(pageIndex)
+  }, [loadPage, pageIndex])
 
   return {
-    ledger,
     accounts,
-    isBusy,
-    error,
     connectionStatus,
+    withBalances,
   }
 }
 
 type LedgerSubstrateGenericAccountPickerProps = {
   onChange?: (accounts: LedgerAccountDefSubstrateGeneric[]) => void
   app?: SubstrateAppParams | null
+  chainId?: ChainId
 }
 
 type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstrateGeneric
@@ -150,27 +198,18 @@ type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstr
 const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
   app,
+  chainId,
 }) => {
-  const { t } = useTranslation()
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateGeneric[]>([])
-  const { accounts, error, isBusy, connectionStatus } = useLedgerSubstrateGenericAccounts(
+  const { accounts, connectionStatus, withBalances } = useLedgerSubstrateGenericAccounts(
     selectedAccounts,
     pageIndex,
     itemsPerPage,
-    app
+    app,
   )
-
-  // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
-  const refInitialized = useRef(false)
-  useEffect(() => {
-    if (!refInitialized.current && connectionStatus.status === "error") {
-      refInitialized.current = true
-      connectionStatus.refresh()
-      return
-    }
-  }, [connectionStatus])
+  const chain = useChain(chainId)
 
   const handleToggleAccount = useCallback(
     (acc: DerivedAccountBase) => {
@@ -185,10 +224,10 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
               accountIndex,
               addressOffset,
               migrationAppName: app?.name,
-            })
+            }),
       )
     },
-    [app?.name]
+    [app?.name],
   )
 
   useEffect(() => {
@@ -206,17 +245,14 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
       </div>
       <DerivedAccountPickerBase
         accounts={accounts}
-        withBalances
-        disablePaging={isBusy}
+        withBalances={withBalances}
+        addressPrefix={chain?.prefix}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
         onPagerPrevClick={handlePagePrev}
         onPagerNextClick={handlePageNext}
       />
-      <p className="text-alert-error">
-        {error ? t("An error occured, Ledger might be locked.") : null}
-      </p>
     </>
   )
 }
@@ -225,7 +261,7 @@ type CustomAccountDetails = { accountIndex: number; addressOffset: number; name:
 
 const getNextAccountDetails = (
   accounts: AccountJsonAny[],
-  app: SubstrateAppParams | null | undefined
+  app: SubstrateAppParams | null | undefined,
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
@@ -233,7 +269,7 @@ const getNextAccountDetails = (
       (a) =>
         a.ledgerApp === SubstrateLedgerAppType.Generic &&
         a.migrationAppName === app?.name &&
-        a.addressOffset === 0
+        a.addressOffset === 0,
     )
     .filter((a) => typeof a.accountIndex === "number")
     .map((a) => a.accountIndex as number)
@@ -254,51 +290,68 @@ const getNextAccountDetails = (
 
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
-  app: SubstrateAppParams | null | undefined
+  legacyApp: SubstrateAppParams | null | undefined,
 ) => {
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
+  const { t } = useTranslation()
+  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
 
-  // if ledger was busy when changing tabs, connection needs to be refreshed once on mount
-  const refInitialized = useRef(false)
-  useEffect(() => {
-    if (!refInitialized.current && connectionStatus.status === "error") {
-      refInitialized.current = true
-      connectionStatus.refresh()
-      return
-    }
-  }, [connectionStatus])
+  const refIsBusy = useRef(false)
+
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Fetching account address..."),
+  })
 
   const [state, setState] = useState<{
-    isBusy: boolean
-    error: string | undefined
     account: CustomAccountDetails | undefined
     address: string | undefined
   }>({
-    isBusy: false,
-    error: undefined,
     account: account,
     address: undefined,
   })
 
   // this system makes sure that if input changes, we don't fetch the address until ledger has returned previous result
   const loadAccountInfo = useCallback(async () => {
-    if (!ledger || !isReady || !account || state.isBusy) return
+    if (!account) return
     if (state.account === account && state.address) return // result is up to date
+    if (refIsBusy.current) throw new TalismanLedgerError("Busy", t("Ledger is busy"))
+    refIsBusy.current = true
 
-    setState({ account, isBusy: true, error: undefined, address: undefined })
+    setState({ account, address: undefined })
+    setConnectionStatus({
+      status: "connecting",
+      message: t("Fetching account address..."),
+    })
 
     try {
       const { accountIndex, addressOffset } = account
-      const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset, app })
+      const path = getPolkadotLedgerDerivationPath({
+        accountIndex,
+        addressOffset,
+        legacyApp: legacyApp,
+      })
 
-      const res = await ledger.getAddress(path, app?.ss58_addr_type ?? 42, false)
+      const res = await getAddress(path, legacyApp?.ss58_addr_type ?? 42)
 
-      setState((prev) => ({ ...prev, address: res.address, isBusy: false }))
+      setState((prev) => ({ ...prev, address: res.address }))
+      setConnectionStatus({
+        status: "ready",
+        message: t("Ledger is ready."),
+      })
     } catch (err) {
+      const error = getTalismanLedgerError(err)
+      log.error("Failed to load page", { err })
+      setConnectionStatus({
+        status: "error",
+        message: error.message,
+        onRetryClick: loadAccountInfo,
+      })
       log.error("Failed to load account info", { err })
-      setState((prev) => ({ ...prev, error: (err as Error).message, isBusy: false }))
+      setState((prev) => ({ ...prev, error: error.message }))
+    } finally {
+      refIsBusy.current = false
     }
-  }, [ledger, isReady, account, state.isBusy, state.account, state.address, app])
+  }, [account, state.account, state.address, t, legacyApp, getAddress])
 
   useEffect(() => {
     loadAccountInfo()
@@ -306,9 +359,7 @@ const useLedgerAccountAddress = (
 
   return useMemo(() => {
     return {
-      isBusy: state.isBusy,
       address: state.account === account ? state.address : undefined,
-      error: state.account === account ? state.error : undefined,
       connectionStatus,
     }
   }, [state, account, connectionStatus])
@@ -317,12 +368,13 @@ const useLedgerAccountAddress = (
 const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
   app,
+  chainId,
 }) => {
   const { t } = useTranslation()
-
+  const chain = useChain(chainId)
   const walletAccounts = useAccounts()
   const [accountDetails, setAccountDetails] = useState<CustomAccountDetails>(() =>
-    getNextAccountDetails(walletAccounts, app)
+    getNextAccountDetails(walletAccounts, app),
   )
 
   const handleAccountIndexChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -337,7 +389,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
     setAccountDetails((prev) => ({ ...prev, name: e.target.value }))
   }, [])
 
-  const { address, error, connectionStatus } = useLedgerAccountAddress(accountDetails, app)
+  const { address, connectionStatus } = useLedgerAccountAddress(accountDetails, app)
 
   const accountImportDefs = useMemo<AccountImportDef[]>(
     () =>
@@ -350,7 +402,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
             },
           ]
         : [],
-    [address]
+    [address],
   )
 
   const balances = useAccountImportBalances(accountImportDefs)
@@ -376,13 +428,13 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
   return (
     <div className="mt-8">
       <div className="mb-8 flex flex-col gap-4">
-        <div className="text-alert-warn bg-alert-warn/5  flex items-center gap-6 rounded-sm p-8 text-sm">
+        <div className="text-alert-warn bg-alert-warn/5 flex items-center gap-6 rounded-sm p-8 text-sm">
           <div className="bg-alert-warn/10 rounded-full p-4">
             <InfoIcon className="shrink-0 text-lg" />
           </div>
           <div className="leading-paragraph">
             {t(
-              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live."
+              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live.",
             )}
           </div>
         </div>
@@ -421,7 +473,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
 
         <div className="col-span-2">
           <FormFieldContainer label={t("Preview")}>
-            <div className="bg-black-tertiary flex h-32 w-full items-center gap-8 rounded-sm px-8  py-4">
+            <div className="bg-black-tertiary flex h-32 w-full items-center gap-8 rounded-sm px-8 py-4">
               {accountDef ? (
                 <>
                   <AccountIcon address={accountDef.address} className="text-xl" />
@@ -430,7 +482,11 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
                       {accountDef.name}
                     </div>
                     <div className="text-body-secondary text-sm">
-                      <Address address={accountDef.address} startCharCount={6} endCharCount={6} />
+                      <Address
+                        address={encodeAnyAddress(accountDef.address, chain?.prefix ?? undefined)}
+                        startCharCount={6}
+                        endCharCount={6}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2">
@@ -454,7 +510,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
                     )}
                   </div>
                 </>
-              ) : !error ? (
+              ) : connectionStatus.status === "connecting" ? (
                 <>
                   <div className="bg-grey-750 size-[3.2rem] animate-pulse rounded-full" />
                   <div className="flex flex-grow flex-col gap-2 overflow-hidden">
@@ -475,9 +531,7 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
                     </div>
                   </div>
                 </>
-              ) : (
-                <div className="text-alert-warn">{error}</div>
-              )}
+              ) : null}
             </div>
           </FormFieldContainer>
         </div>
@@ -505,6 +559,7 @@ const ModeButton: FC<{ selected: boolean; onClick: () => void; children: ReactNo
 export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
   app,
+  chainId,
 }) => {
   const { t } = useTranslation()
   const [mode, setMode] = useState<DerivationMode>("default")
@@ -515,7 +570,7 @@ export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccou
       onChange?.([])
       setMode(newMode)
     },
-    [mode, onChange]
+    [mode, onChange],
   )
 
   return (
@@ -535,9 +590,17 @@ export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccou
         </div>
       </div>
       {mode === "default" ? (
-        <LedgerSubstrateGenericAccountPickerDefault onChange={onChange} app={app} />
+        <LedgerSubstrateGenericAccountPickerDefault
+          onChange={onChange}
+          app={app}
+          chainId={chainId}
+        />
       ) : (
-        <LedgerSubstrateGenericAccountPickerCustom onChange={onChange} app={app} />
+        <LedgerSubstrateGenericAccountPickerCustom
+          onChange={onChange}
+          app={app}
+          chainId={chainId}
+        />
       )}
     </div>
   )

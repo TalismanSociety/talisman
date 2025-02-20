@@ -1,17 +1,6 @@
-import {
-  AccountJsonAny,
-  AssetDiscoveryMode,
-  DiscoveredBalance,
-  activeEvmNetworksStore,
-  activeTokensStore,
-  isEvmNetworkActive,
-  isTokenActive,
-} from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import { Chain, EvmNetwork, EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -22,38 +11,11 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import {
-  assetDiscoveryScanAtom,
-  assetDiscoveryScanProgressAtom,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import Tokens from "@ui/domains/Asset/Tokens"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
-import useTokens from "@ui/hooks/useTokens"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { atom, useAtomValue } from "jotai"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
+import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
+import { BehaviorSubject } from "rxjs"
 import {
   Button,
   ContextMenu,
@@ -67,11 +29,51 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { DashboardLayout } from "../../../layout/DashboardLayout"
-import { AccountsStack } from "../Accounts/AccountIconsStack"
+import {
+  AccountJsonAny,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  DiscoveredBalance,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import Tokens from "@ui/domains/Asset/Tokens"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import {
+  useAccounts,
+  useActiveEvmNetworksState,
+  useActiveTokensState,
+  useAssetDiscoveryScan,
+  useAssetDiscoveryScanProgress,
+  useBalancesHydrate,
+  useChainsMap,
+  useEvmNetwork,
+  useEvmNetworks,
+  useEvmNetworksMap,
+  useSetting,
+  useToken,
+  useTokens,
+  useTokensMap,
+} from "@ui/state"
+import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
+
 import {
   useAssetDiscoveryFetchTokenRates,
-  useAssetDiscoveryTokenRate,
+  useAssetDiscoveryTokenRates,
 } from "./useAssetDiscoveryTokenRates"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -81,6 +83,10 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Asset Discovery",
 }
 
+const isInitializingScan$ = new BehaviorSubject(false)
+
+const [useIsInitializingScan] = bind(isInitializingScan$)
+
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
   const accounts = useMemo(
@@ -88,7 +94,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
       [...new Set(addresses)]
         .map((add) => allAccounts.find((acc) => acc.address === add))
         .filter(Boolean) as AccountJsonAny[],
-    [allAccounts, addresses]
+    [allAccounts, addresses],
   )
   const { t } = useTranslation("admin")
   return (
@@ -100,11 +106,56 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
           key={account.address}
           className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
         >
-          <AccountIcon address={account.address} genesisHash={account.genesisHash} />
+          <AccountIcon
+            className="shrink-0"
+            address={account.address}
+            genesisHash={account.genesisHash}
+          />
           <div className="text-body grow truncate">{account.name}</div>
           <div>{shortenAddress(account.address)}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+const NetworksTooltip: FC<{ networks: (EvmNetwork | Chain)[] }> = ({ networks }) => {
+  const { t } = useTranslation()
+
+  const tokens = useTokens()
+  const networksWIthTokens = useMemo(
+    () =>
+      networks
+        .map(
+          (n) =>
+            [
+              n,
+              tokens.filter((t) => t.evmNetwork?.id === n.id || t.chain?.id === n.id).length,
+            ] as const,
+        )
+        .sort((a, b) => b[1] - a[1]),
+    [networks, tokens],
+  )
+
+  return (
+    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
+      <div>{t("Networks")}</div>
+      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
+      {networksWIthTokens.slice(0, 5).map(([network, tokens]) => (
+        <div
+          key={network.id}
+          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
+        >
+          <ChainLogo id={network.id} />
+          <div className="text-body grow truncate">{network.name}</div>
+          <div>{t("{{count}} tokens", { count: tokens })}</div>
+        </div>
+      ))}
+      {networksWIthTokens.length > 5 && (
+        <div className="text-body-secondary text-sm">
+          {t("and {{count}} more", { count: networksWIthTokens.length - 5 })}
+        </div>
+      )}
     </div>
   )
 }
@@ -124,7 +175,7 @@ const useCoingeckoUrl = (token: Token | null) => {
   return useMemo(
     () =>
       token?.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
-    [token]
+    [token],
   )
 }
 
@@ -136,7 +187,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const tokenRates = useAssetDiscoveryTokenRate(token?.id)
+  const tokenRates = useAssetDiscoveryTokenRates(token?.id)
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
 
@@ -152,7 +203,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       [...new Set(assets.map((a) => a.address))]
         .map((add) => allAccounts.find((acc) => acc.address === add))
         .filter(Boolean) as AccountJsonAny[],
-    [allAccounts, assets]
+    [allAccounts, assets],
   )
 
   const isActive = useMemo(
@@ -161,7 +212,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       !!token &&
       isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
       isTokenActive(token, activeTokens),
-    [activeEvmNetworks, activeTokens, evmNetwork, token]
+    [activeEvmNetworks, activeTokens, evmNetwork, token],
   )
 
   const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -175,12 +226,12 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       // if token is not native, allow it to be toggled. Native tokens are taken care of by the network toggle
       if (token.type !== "evm-native") activeTokensStore.setActive(token.id, checked)
     },
-    [evmNetwork, token]
+    [evmNetwork, token],
   )
 
   const isInactiveNetwork = useMemo(
     () => evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks),
-    [activeEvmNetworks, evmNetwork]
+    [activeEvmNetworks, evmNetwork],
   )
 
   const navigate = useNavigate()
@@ -301,11 +352,12 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, balancesByTokenId, tokenIds } = useAtomValue(assetDiscoveryScanProgressAtom)
+  const isInitializing = useIsInitializingScan()
+  const { balances, balancesByTokenId, tokenIds } = useAssetDiscoveryScanProgress()
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
-  if (!balances.length) return null
+  if (!balances.length || isInitializing) return null
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
@@ -325,19 +377,31 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, accountsCount, tokensCount, percent, isInProgress } = useAtomValue(
-    assetDiscoveryScanProgressAtom
-  )
+  const isInitializing = useIsInitializingScan()
+  const { balances, accountsCount, networksCount, tokensCount, percent, isInProgress } =
+    useAssetDiscoveryScanProgress()
+
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
+  const activeNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
+
+  const allAccounts = useAccounts("all")
+  const addresses = allAccounts.map((a) => a.address)
+
+  const effectivePercent = isInitializing ? 0 : percent
 
   const handleScanClick = useCallback(
-    (mode: AssetDiscoveryMode) => () => {
-      api.assetDiscoveryStartScan(mode)
+    (all: boolean) => async () => {
+      isInitializingScan$.next(true)
+      await api.assetDiscoveryStartScan({
+        networkIds: (all ? allNetworks : activeNetworks).map((n) => n.id),
+        addresses,
+      })
+      isInitializingScan$.next(false)
     },
-    []
+    [activeNetworks, addresses, allNetworks],
   )
+
   const handleCancelScanClick = useCallback(() => {
     api.assetDiscoveryStopScan()
   }, [])
@@ -345,33 +409,46 @@ const Header: FC = () => {
   return (
     <div className="bg-grey-850 flex h-[8.6rem] items-center gap-8 rounded-sm px-8">
       <DiamondIcon
-        className={classNames("text-lg", isInProgress ? "text-primary" : "text-body-secondary")}
+        className={classNames(
+          "text-lg",
+          isInProgress || isInitializing ? "text-primary" : "text-body-secondary",
+        )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {isInProgress || balances.length ? (
+        {isInitializing || isInProgress || balances.length || !!percent ? (
           <>
             <div className="flex text-base">
               <div className="grow">
-                {isInProgress
-                  ? t("Scanning {{tokensCount}} tokens for {{count}} account(s)", {
-                      tokensCount,
-                      count: accountsCount,
-                    })
-                  : t("Scanned {{tokensCount}} tokens for {{count}} account(s)", {
-                      tokensCount,
-                      count: accountsCount,
-                    })}
+                {isInitializing
+                  ? t("Initialising...")
+                  : isInProgress
+                    ? t(
+                        "Scanning {{tokensCount}} tokens for {{accountsCount}} account(s) on {{networksCount}} network(s)",
+                        {
+                          tokensCount,
+                          accountsCount,
+                          networksCount,
+                        },
+                      )
+                    : t(
+                        "Scanned {{tokensCount}} tokens for {{accountsCount}} account(s) on {{networksCount}} network(s)",
+                        {
+                          tokensCount,
+                          accountsCount,
+                          networksCount,
+                        },
+                      )}
               </div>
-              <div className="text-primary">{percent}%</div>
+              <div className="text-primary">{effectivePercent}%</div>
             </div>
             <div className="bg-grey-800 relative flex h-4 overflow-hidden rounded-lg">
               <div
                 className={classNames(
                   "bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg",
-                  percent && "transition-transform duration-300 ease-out" // no animation on restart
+                  effectivePercent && "transition-transform duration-300 ease-out", // no animation on restart
                 )}
                 style={{
-                  transform: `translateX(-${100 - percent}%)`,
+                  transform: `translateX(-${100 - effectivePercent}%)`,
                 }}
               ></div>
             </div>
@@ -399,7 +476,7 @@ const Header: FC = () => {
           <ContextMenuTrigger
             className={classNames(
               "bg-primary flex h-16 items-center gap-2 rounded-full border border-transparent px-4 text-xs text-black",
-              "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent"
+              "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent",
             )}
           >
             <SearchIcon className="text-base" />
@@ -408,10 +485,10 @@ const Header: FC = () => {
             <ChevronDownIcon className="text-base" />
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuItem onClick={handleScanClick(AssetDiscoveryMode.ACTIVE_NETWORKS)}>
+            <ContextMenuItem onClick={handleScanClick(false)}>
               {t("Scan active networks")} ({activeNetworks.length})
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleScanClick(AssetDiscoveryMode.ALL_NETWORKS)}>
+            <ContextMenuItem onClick={handleScanClick(true)}>
               {t("Scan all networks")} ({allNetworks.length})
             </ContextMenuItem>
           </ContextMenuContent>
@@ -436,16 +513,33 @@ const AccountsWrapper: FC<{
   )
 }
 
+const NetworksWrapper: FC<{
+  children?: ReactNode
+  networks: (EvmNetwork | Chain)[]
+  className?: string
+}> = ({ children, networks, className }) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger className={className}>{children}</TooltipTrigger>
+      <TooltipContent>
+        <NetworksTooltip networks={networks} />
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
+  const isInitializing = useIsInitializingScan()
 
-  const { balancesByTokenId, balances, isInProgress } = useAtomValue(assetDiscoveryScanProgressAtom)
-  const { lastScanAccounts, lastScanTimestamp } = useAtomValue(assetDiscoveryScanAtom)
+  const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
+  const { lastScanAccounts, lastScanNetworks, lastScanTimestamp } = useAssetDiscoveryScan()
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
-  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
-  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
+  const tokensMap = useTokensMap()
+  const evmNetworksMap = useEvmNetworksMap()
+  const chainsMap = useChainsMap()
 
   const canEnable = useMemo(() => {
     const tokenIds = Object.keys(balancesByTokenId)
@@ -468,8 +562,8 @@ const ScanInfo: FC = () => {
     await activeEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await activeTokensStore.set(
       Object.fromEntries(
-        tokenIds.filter((id) => !id.includes("evm-native")).map((id) => [id, true])
-      )
+        tokenIds.filter((id) => !id.includes("evm-native")).map((id) => [id, true]),
+      ),
     )
   }, [balancesByTokenId, tokensMap])
 
@@ -481,8 +575,18 @@ const ScanInfo: FC = () => {
   const accounts = useAccounts()
   const lastAccounts = useMemo(
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
-    [accounts, lastScanAccounts]
+    [accounts, lastScanAccounts],
   )
+  const lastNetworks = useMemo(
+    () =>
+      lastScanNetworks.map((id) => evmNetworksMap[id] ?? chainsMap[id]).filter(Boolean) as (
+        | EvmNetwork
+        | Chain
+      )[],
+    [chainsMap, evmNetworksMap, lastScanNetworks],
+  )
+
+  if (isInitializing) return null
 
   return (
     <div className="flex h-16 w-full items-center px-8">
@@ -490,7 +594,7 @@ const ScanInfo: FC = () => {
         {!isInProgress && !!lastScanTimestamp && !!lastScanAccounts.length && (
           <Trans
             t={t}
-            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> at <DateWrapper>{{timestamp}}</DateWrapper>"
+            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> on <NetworksWrapper>{{networksCount}} network(s)</NetworksWrapper> at <DateWrapper>{{timestamp}}</DateWrapper>"
             components={{
               AccountsWrapper: (
                 <AccountsWrapper
@@ -498,9 +602,19 @@ const ScanInfo: FC = () => {
                   accounts={lastAccounts}
                 />
               ),
+              NetworksWrapper: (
+                <NetworksWrapper
+                  className="text-body-secondary underline"
+                  networks={lastNetworks}
+                />
+              ),
               DateWrapper: <span className="text-body-secondary"></span>,
             }}
-            values={{ count: lastScanAccounts.length, timestamp: formatedTimestamp }}
+            values={{
+              count: lastScanAccounts.length,
+              timestamp: formatedTimestamp,
+              networksCount: lastScanNetworks.length,
+            }}
           ></Trans>
         )}
       </div>
@@ -555,36 +669,14 @@ const Notice: FC = () => {
   )
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-)
-
-export const AssetDiscoveryPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
-    useAppState("showAssetDiscoveryAlert")
-
-  // hide alert when user browses this page
-  useEffect(() => {
-    if (showAssetDiscoveryAlert) setShowAssetDiscoveryAlert(false)
-  }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
-    <DashboardLayout
-      analytics={ANALYTICS_PAGE}
-      withBack
-      centered
-      backTo="/settings/networks-tokens"
-      large
-      className="max-w-[81rem]"
-    >
+    <>
       <HeaderBlock
         title={t("Asset Discovery")}
         text={t("Scan for well-known tokens in your accounts and add them to your portfolio.")}
@@ -597,6 +689,12 @@ export const AssetDiscoveryPage = () => {
       <ScanInfo />
       <Spacer large />
       <AssetTable />
-    </DashboardLayout>
+    </>
   )
 }
+
+export const AssetDiscoveryPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

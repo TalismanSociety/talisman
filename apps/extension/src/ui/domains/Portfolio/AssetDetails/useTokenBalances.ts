@@ -1,0 +1,196 @@
+import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
+import { TokenId } from "@talismn/chaindata-provider"
+import BigNumber from "bignumber.js"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Address, Balances } from "@extension/core"
+import { sortBigBy } from "@talisman/util/bigHelper"
+import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
+import { useGetBittensorValidators } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorValidator"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
+import { useChain, useSelectedCurrency, useToken } from "@ui/state"
+
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
+import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
+
+export type BalanceDetailRow = {
+  key: string | BalanceLockType
+  title: string
+  description?: string
+  tokens: BigNumber
+  fiat: number | null
+  locked: boolean
+  address?: Address
+  meta?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  isLoading?: boolean
+}
+
+type TokenBalancesParams = {
+  tokenId: TokenId
+  balances: Balances
+}
+
+export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
+  const token = useToken(tokenId)
+  const chain = useChain(token?.chain?.id)
+
+  const { selectedAccount: account } = usePortfolioNavigation()
+  const { summary, tokenBalances } = useTokenBalancesSummary(balances)
+  const { t } = useTranslation()
+
+  const currency = useSelectedCurrency()
+
+  const rawDetailRows = useMemo((): BalanceDetailRow[] => {
+    if (!summary) return []
+
+    // AVAILABLE
+    const available = account
+      ? [
+          {
+            key: "available",
+            title: t("Available"),
+            tokens: summary.availableTokens,
+            fiat: summary.availableFiat,
+            locked: false,
+          },
+        ]
+      : tokenBalances.each.map((b) => ({
+          key: `${b.id}-available`,
+          title: t("Available"),
+          tokens: BigNumber(b.transferable.tokens),
+          fiat: b.transferable.fiat(currency),
+          locked: false,
+          address: b.address,
+        }))
+
+    // LOCKED
+    const locked = tokenBalances.each.flatMap((b) =>
+      filterBaseLocks(b.locks).map((lock, index) => ({
+        key: `${b.id}-locked-${index}`,
+        title: getLockTitle(lock, { balance: b }),
+        tokens: BigNumber(lock.amount.tokens),
+        fiat: lock.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+      })),
+    )
+
+    // RESERVED
+    const reserved = tokenBalances.each.flatMap((b) =>
+      b.reserves.map((reserve, index) => ({
+        key: `${b.id}-reserved-${index}`,
+        title: getLockTitle(reserve, { balance: b }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (reserve.meta as any)?.description ?? undefined,
+        tokens: BigNumber(reserve.amount.tokens),
+        fiat: reserve.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: reserve.meta,
+      })),
+    )
+
+    // STAKED (NOM POOLS)
+    const staked = tokenBalances.each.flatMap((b) =>
+      b.nompools.map((nomPool, index) => ({
+        key: `${b.id}-nomPool-${index}`,
+        title: getLockTitle(nomPool, { balance: b }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: cleanupNomPoolName((nomPool.meta as any).description) ?? undefined,
+        tokens: BigNumber(nomPool.amount.tokens),
+        fiat: nomPool.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: nomPool.meta,
+      })),
+    )
+
+    // CROWDLOANS
+    const crowdloans = tokenBalances.each.flatMap((b) =>
+      b.crowdloans.map((crowdloan, index) => ({
+        key: `${b.id}-crowdloan-${index}`,
+        title: getLockTitle(crowdloan, { balance: b }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (crowdloan.meta as any)?.description ?? undefined,
+        tokens: BigNumber(crowdloan.amount.tokens),
+        fiat: crowdloan.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: crowdloan.meta,
+      })),
+    )
+
+    // BITTENSOR
+    const subtensor = tokenBalances.each.flatMap((b) =>
+      b.subtensor.map((subtensor, index) => ({
+        key: `${b.id}-subtensor-${index}`,
+        title: getLockTitle({ label: "subtensor-staking" }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (subtensor.meta as any)?.description ?? undefined,
+        tokens: BigNumber(subtensor.amount.tokens),
+        fiat: subtensor.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: subtensor.meta,
+      })),
+    )
+
+    return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
+      .filter((row) => row && row.tokens.gt(0))
+      .sort(sortBigBy("tokens", true))
+  }, [summary, account, t, tokenBalances, currency])
+
+  const detailRows = useEnhanceDetailRows(rawDetailRows)
+
+  const { evmNetwork } = useMemo(() => balances.sorted[0], [balances])
+
+  const relay = useChain(chain?.relay?.id)
+  const networkType = useNetworkCategory({ chain, evmNetwork, relay })
+
+  const status = useBalancesStatus(balances)
+
+  return {
+    summary,
+    token,
+    detailRows,
+    evmNetwork,
+    chain,
+    status,
+    networkType,
+    chainOrNetwork: chain || evmNetwork,
+  }
+}
+
+const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
+  // fetch the validator name for each subtensor staking lock, so we can display it in the description
+  const hotkeys = useMemo(() => {
+    return detailRows
+      .filter((row) => row.meta?.type === "subtensor-staking" && !!row.meta?.hotkey)
+      .map((row) => row.meta?.hotkey as string)
+  }, [detailRows])
+
+  const { data: validators, isLoading: isLoadingValidators } = useGetBittensorValidators({
+    hotkeys,
+    isEnabled: !!hotkeys.length,
+  })
+
+  return useMemo(() => {
+    return detailRows.map((row) => {
+      if (row.meta?.type === "subtensor-staking")
+        return {
+          ...row,
+          description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkey)?.name,
+          isLoading: isLoadingValidators,
+        } as BalanceDetailRow
+
+      return row
+    })
+  }, [detailRows, isLoadingValidators, validators])
+}

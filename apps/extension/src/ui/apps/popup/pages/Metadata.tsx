@@ -7,7 +7,7 @@ import { KnownRequestIdOnly } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useRequest } from "@ui/hooks/useRequest"
+import { useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -44,8 +44,8 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
     () =>
       metadataRequest?.url
         ? new URL(metadataRequest?.url || "").origin // use origin to keep the prefixed protocol
-        : metadataRequest?.url ?? "",
-    [metadataRequest?.url]
+        : (metadataRequest?.url ?? ""),
+    [metadataRequest?.url],
   )
 
   if (!metadataRequest) return null

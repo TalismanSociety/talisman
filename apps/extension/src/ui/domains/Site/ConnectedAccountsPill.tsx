@@ -1,11 +1,12 @@
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import { classNames, isAddressEqual, normalizeAddress } from "@talismn/util"
+import { AccountJsonAny } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import { useAccounts, useAuthorisedSites } from "@ui/state"
 
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
 
@@ -16,23 +17,25 @@ export const ConnectedAccountsPill: FC = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
 
   const [showConnectedAccounts, setShowConnectedAccounts] = useState(false)
 
   const { count, label } = useMemo(() => {
     const { addresses = [], ethAddresses = [] } = site || {}
-    const connected = [...new Set([...addresses, ...ethAddresses])].map((a) =>
-      accounts.find(({ address }) => address === a)
-    )
+    const connected = [
+      ...new Set([...addresses.map(normalizeAddress), ...ethAddresses.map(normalizeAddress)]),
+    ]
+      .map((a) => accounts.find(({ address }) => isAddressEqual(address, a)))
+      .filter(Boolean) as AccountJsonAny[]
 
     if (connected.length === 0) return { count: 0, label: t("Not connected") }
 
     const count = connected.length
     const label =
       connected.length === 1
-        ? connected[0]?.name ?? t("Connected")
+        ? (connected[0]?.name ?? t("Connected"))
         : t(`{{length}} connected`, { length: count })
 
     return { count, label }
@@ -43,7 +46,7 @@ export const ConnectedAccountsPill: FC = () => {
       count
         ? "bg-gradient-to-r from-green-500/50 to-grey-800"
         : "bg-gradient-to-r from-brand-orange/50 to-grey-800",
-    [count]
+    [count],
   )
 
   const host = useMemo(() => {
@@ -65,7 +68,7 @@ export const ConnectedAccountsPill: FC = () => {
         className={classNames(
           "group h-[3.6rem] w-full overflow-hidden rounded-full p-0.5",
           containerColors,
-          "text-body-secondary hover:text-grey-300"
+          "text-body-secondary hover:text-grey-300",
         )}
         onClick={() => setShowConnectedAccounts(true)}
       >

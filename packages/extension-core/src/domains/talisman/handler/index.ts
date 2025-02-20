@@ -1,9 +1,9 @@
+import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
+import type { Port } from "../../../types/base"
 import { TabStore } from "../../../handlers/stores"
 import { ObservableSubscriptions } from "../../../handlers/subscriptions"
 import { TabsHandler } from "../../../libs/Handler"
 import { chaindataProvider } from "../../../rpcs/chaindata"
-import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
-import type { Port } from "../../../types/base"
 import TalismanRpcHandler from "./rpc"
 
 export default class TalismanHandler extends TabsHandler {
@@ -21,7 +21,7 @@ export default class TalismanHandler extends TabsHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     port: Port,
-    url: string
+    url: string,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.customSubstrateChains.subscribe)":
@@ -29,12 +29,12 @@ export default class TalismanHandler extends TabsHandler {
           "pub(talisman.customSubstrateChains.subscribe)",
           id,
           port,
-          chaindataProvider.customChainsObservable
+          chaindataProvider.customChainsObservable,
         )
 
       case "pub(talisman.customSubstrateChains.unsubscribe)":
         return this.#customSubstrateChainsSubscriptions.unsubscribe(
-          request as RequestTypes["pub(talisman.customSubstrateChains.unsubscribe)"]
+          request as RequestTypes["pub(talisman.customSubstrateChains.unsubscribe)"],
         )
 
       case "pub(talisman.customEvmNetworks.subscribe)":
@@ -42,12 +42,12 @@ export default class TalismanHandler extends TabsHandler {
           "pub(talisman.customEvmNetworks.subscribe)",
           id,
           port,
-          chaindataProvider.customEvmNetworksObservable
+          chaindataProvider.customEvmNetworksObservable,
         )
 
       case "pub(talisman.customEvmNetworks.unsubscribe)":
         return this.#customSubstrateChainsSubscriptions.unsubscribe(
-          request as RequestTypes["pub(talisman.customEvmNetworks.unsubscribe)"]
+          request as RequestTypes["pub(talisman.customEvmNetworks.unsubscribe)"],
         )
 
       case "pub(talisman.customTokens.subscribe)":
@@ -55,12 +55,12 @@ export default class TalismanHandler extends TabsHandler {
           "pub(talisman.customTokens.subscribe)",
           id,
           port,
-          chaindataProvider.customTokensObservable
+          chaindataProvider.customTokensObservable,
         )
 
       case "pub(talisman.customTokens.unsubscribe)":
         return this.#customTokensSubscriptions.unsubscribe(
-          request as RequestTypes["pub(talisman.customTokens.unsubscribe)"]
+          request as RequestTypes["pub(talisman.customTokens.unsubscribe)"],
         )
 
       default:

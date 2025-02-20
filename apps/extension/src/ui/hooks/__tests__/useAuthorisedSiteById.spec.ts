@@ -1,6 +1,7 @@
+import { act, renderHook, waitFor } from "@testing-library/react"
+
 import { AuthorizedSiteId, ProviderType } from "@extension/core"
 import { TALISMAN_WEB_APP_DOMAIN } from "@extension/shared"
-import { act, renderHook, waitFor } from "@testing-library/react"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
@@ -14,7 +15,7 @@ test("Can get Authorised Site by id", async () => {
     {
       initialProps: { siteId: TALISMAN_WEB_APP_DOMAIN, providerType: "polkadot" },
       wrapper: TestWrapper,
-    }
+    },
   )
 
   await waitFor(() => expect(result.current.addresses?.length).toBe(2))

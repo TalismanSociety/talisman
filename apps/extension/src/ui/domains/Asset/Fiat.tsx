@@ -5,14 +5,14 @@ import React, { useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { useSelectedCurrency } from "@ui/state"
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null
   className?: string
   as?: "span" | "div"
-  currencyDisplay?: string
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   isBalance?: boolean
   noCountUp?: boolean
   forceCurrency?: TokenRateCurrency
@@ -21,7 +21,7 @@ type FiatProps = {
 type DisplayValueProps = {
   amount: number
   currency?: Intl.NumberFormatOptions["currency"]
-  currencyDisplay?: string
+  currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   isBalance?: boolean
   noCountUp?: boolean
 }
@@ -49,12 +49,12 @@ export const Fiat = ({
         "fiat whitespace-nowrap",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
-        className
+        className,
       )}
     >
       {render && (
         <DisplayValue
-          amount={isHidden ? 0 : typeof amount === "number" ? amount : amount.fiat(currency) ?? 0}
+          amount={isHidden ? 0 : typeof amount === "number" ? amount : (amount.fiat(currency) ?? 0)}
           currency={currency}
           currencyDisplay={currencyDisplay}
           isBalance={isBalance}
@@ -69,8 +69,9 @@ export const Fiat = ({
 const DisplayValue = React.memo(
   ({ amount, currency, currencyDisplay, isBalance, noCountUp }: DisplayValueProps) => {
     const decimalPlacesCount = getDecimalPlacesCount(amount)
+    // for non balances (ie: prices), display 3 meaningful digits starting from the first non-zero digit => decimalPlacesCount + 2
     const decimalPlaces =
-      amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 1 : 2
+      amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 2 : 2
 
     const format = useCallback(
       (amount = 0) => {
@@ -79,7 +80,7 @@ const DisplayValue = React.memo(
 
         return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
       },
-      [currency, currencyDisplay, decimalPlaces, isBalance]
+      [currency, currencyDisplay, decimalPlaces, isBalance],
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 
@@ -96,7 +97,7 @@ const DisplayValue = React.memo(
         preserveValue
       />
     )
-  }
+  },
 )
 DisplayValue.displayName = "DisplayValue"
 

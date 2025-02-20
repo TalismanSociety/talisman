@@ -1,19 +1,19 @@
-import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
 import { TypeRegistry } from "@polkadot/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { FC, Suspense, lazy } from "react"
+import { FC } from "react"
 
-import { SignDcentSubstrate } from "./SignDcentSubstrate"
+import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
+import { useAccountByAddress } from "@ui/state"
 
-const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
-const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
+import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
+import { SignLedgerSubstrateGeneric } from "./SignLedgerSubstrateGeneric"
+import { SignLedgerSubstrateLegacy } from "./SignLedgerSubstrateLegacy"
 
 export type SignHardwareSubstrateProps = {
   payload: SignerPayloadRaw | SignerPayloadJSON | undefined
   fee?: string
-  containerId: string | undefined
+  containerId?: string | undefined
   className?: string
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
@@ -27,7 +27,7 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
 
   switch (account?.origin) {
     case AccountType.Dcent:
-      return SignDcentSubstrate
+      return SignDcentUnsupportedMessage
     case AccountType.Ledger: {
       switch (account?.ledgerApp) {
         case SubstrateLedgerAppType.Generic:
@@ -49,9 +49,5 @@ export const SignHardwareSubstrate: FC<SignHardwareSubstrateProps> = (props) => 
 
   if (!SignHardwareComponent) return null
 
-  return (
-    <Suspense fallback={null}>
-      <SignHardwareComponent {...props} />
-    </Suspense>
-  )
+  return <SignHardwareComponent {...props} />
 }

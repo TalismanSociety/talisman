@@ -76,7 +76,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async evmNetworks() {
     return await util.wrapObservableWithGetter(
       "Failed to get evmNetworks",
-      this.evmNetworksObservable
+      this.evmNetworksObservable,
     )
   }
 
@@ -95,7 +95,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async customChains() {
     return await util.wrapObservableWithGetter(
       "Failed to get custom chains",
-      this.customChainsObservable
+      this.customChainsObservable,
     )
   }
 
@@ -105,7 +105,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async customEvmNetworks() {
     return await util.wrapObservableWithGetter(
       "Failed to get custom evmNetworks",
-      this.customEvmNetworksObservable
+      this.customEvmNetworksObservable,
     )
   }
 
@@ -115,7 +115,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async customTokens() {
     return await util.wrapObservableWithGetter(
       "Failed to get custom tokens",
-      this.customTokensObservable
+      this.customTokensObservable,
     )
   }
 
@@ -136,7 +136,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async evmNetworkIds() {
     return await util.wrapObservableWithGetter(
       "Failed to get evmNetworkIds",
-      this.evmNetworkIdsObservable
+      this.evmNetworkIdsObservable,
     )
   }
 
@@ -157,7 +157,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async chainsById() {
     return await util.wrapObservableWithGetter(
       "Failed to get chains by id",
-      this.chainsByIdObservable
+      this.chainsByIdObservable,
     )
   }
 
@@ -167,7 +167,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async evmNetworksById() {
     return await util.wrapObservableWithGetter(
       "Failed to get evmNetworks by id",
-      this.evmNetworksByIdObservable
+      this.evmNetworksByIdObservable,
     )
   }
 
@@ -177,7 +177,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async tokensById() {
     return await util.wrapObservableWithGetter(
       "Failed to get tokens by id",
-      this.tokensByIdObservable
+      this.tokensByIdObservable,
     )
   }
 
@@ -187,7 +187,7 @@ export class ChaindataProvider implements IChaindataProvider {
       .pipe(map(util.itemsToMapById))
     return await util.wrapObservableWithGetter(
       "Failed to get tokenIds",
-      tokensByIdForTypeObservable
+      tokensByIdForTypeObservable,
     )
   }
 
@@ -201,7 +201,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async chainsByGenesisHash() {
     return await util.wrapObservableWithGetter(
       "Failed to get chains by genesisHash",
-      this.chainsByGenesisHashObservable
+      this.chainsByGenesisHashObservable,
     )
   }
 
@@ -212,28 +212,28 @@ export class ChaindataProvider implements IChaindataProvider {
   async chainById(chainId: ChainId) {
     return await util.withErrorReason(
       "Failed to get chain by id",
-      async () => (await this.chainsById())[chainId] ?? null
+      async (): Promise<Chain | null> => (await this.chainsById())[chainId] ?? null,
     )
   }
 
   async chainByGenesisHash(genesisHash: `0x${string}`) {
     return await util.withErrorReason(
       "Failed to get chain by genesisHash",
-      async () => (await this.chainsByGenesisHash())[genesisHash] ?? null
+      async (): Promise<Chain | null> => (await this.chainsByGenesisHash())[genesisHash] ?? null,
     )
   }
 
   async evmNetworkById(evmNetworkId: EvmNetworkId) {
     return await util.withErrorReason(
       "Failed to get evmNetwork by id",
-      async () => (await this.evmNetworksById())[evmNetworkId] ?? null
+      async (): Promise<EvmNetwork | null> => (await this.evmNetworksById())[evmNetworkId] ?? null,
     )
   }
 
   async tokenById(tokenId: TokenId) {
     return await util.withErrorReason(
       "Failed to get token by id",
-      async () => (await this.tokensById())[tokenId] ?? null
+      async (): Promise<Token | null> => (await this.tokensById())[tokenId] ?? null,
     )
   }
 
@@ -341,12 +341,12 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
 
     const nativeModule = builtInEvmNetwork.balancesConfig.find(
-      (c: { moduleType: string }) => c.moduleType === "evm-native"
+      (c: { moduleType: string }) => c.moduleType === "evm-native",
     )
     if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
 
-    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName } =
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName, noDiscovery } =
       nativeModule.moduleConfig as Token
     if (!symbol) throw new Error("Missing native token symbol")
     if (!decimals) throw new Error("Missing native token decimals")
@@ -361,9 +361,11 @@ export class ChaindataProvider implements IChaindataProvider {
       decimals,
       coingeckoId,
       logo,
-      mirrorOf,
-      dcentName,
     }
+
+    if (mirrorOf) builtInNativeToken.mirrorOf = mirrorOf
+    if (dcentName) builtInNativeToken.dcentName = dcentName
+    if (noDiscovery) builtInNativeToken.noDiscovery = noDiscovery
 
     builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
 
@@ -378,7 +380,7 @@ export class ChaindataProvider implements IChaindataProvider {
           await this.#db.tokens.delete(networkToDelete.nativeToken.id)
         await this.#db.evmNetworks.delete(evmNetworkId)
 
-        // reprovision them from subsquid data
+        // reprovision them from chaindata
         await this.#db.evmNetworks.put(builtInEvmNetwork)
         await this.#db.tokens.put(builtInNativeToken as never)
       })
@@ -488,7 +490,7 @@ export class ChaindataProvider implements IChaindataProvider {
       // note : many chains don't have a native module provisionned from chaindata => breaks edit network screen and probably send funds and tx screens
       for (const chain of chains) {
         const nativeTokenModule = chain.balancesConfig.find(
-          (c) => c.moduleType === "substrate-native"
+          (c) => c.moduleType === "substrate-native",
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
@@ -552,9 +554,20 @@ export class ChaindataProvider implements IChaindataProvider {
           .filter((network) => !("isCustom" in network && network.isCustom))
           .delete()
 
-        // add all except ones matching custom existing ones (user may customize built-in networks)
-        const customNetworkIds = (await this.#db.evmNetworks.toArray()).map((network) => network.id)
-        const newNetworks = evmNetworks.filter((network) => !customNetworkIds.includes(network.id))
+        // remaining entries are custom networks
+        const existingCustomNetworks = await this.#db.evmNetworks.toArray()
+        const existingCustomNetworksById = Object.fromEntries(
+          existingCustomNetworks.map((network) => [network.id, network]),
+        )
+
+        // dont override custom networks, except for the balancesConfig property
+        const newNetworks = evmNetworks.map((network) => {
+          const existing = existingCustomNetworksById[network.id]
+          return existing
+            ? Object.assign({}, existing, { balancesConfig: network.balancesConfig })
+            : network
+        })
+
         await this.#db.evmNetworks.bulkPut(newNetworks)
       })
       this.#lastHydratedEvmNetworksAt = now
@@ -571,7 +584,7 @@ export class ChaindataProvider implements IChaindataProvider {
     chainId: ChainId,
     source: string,
     newTokens: Token[],
-    availableTokenLogoFilenames: string[]
+    availableTokenLogoFilenames: string[],
   ) {
     // TODO: Test logos and fall back to unknown token logo url
     // (Maybe put the test into each balance module itself)
@@ -725,7 +738,7 @@ export class ChaindataProvider implements IChaindataProvider {
   async transaction<U>(
     mode: TransactionMode,
     tables: string[],
-    scope: (trans: Transaction) => PromiseLike<U> | U
+    scope: (trans: Transaction) => PromiseLike<U> | U,
   ): Promise<U> {
     return await this.#db.transaction(mode, tables, scope)
   }

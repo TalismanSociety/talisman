@@ -1,113 +1,64 @@
-import { Suspense, useMemo } from "react"
+import { classNames } from "@talismn/util"
+import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
-import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
-import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
+import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
-import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 
-import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
-import { NoAccounts } from "../NoAccounts"
+import { BottomNav } from "../../components/Navigation/BottomNav"
+import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
-import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
-import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
-import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
-const AccountAvatar = () => {
-  const location = useLocation()
-
-  // do now show it on portfolio's home
-  if (location.pathname === "/portfolio") return null
-
-  return (
-    <div className="text-xl">
-      <CurrentAccountAvatar withTooltip />
-    </div>
-  )
-}
-
-export const PortfolioHeader = () => {
-  const currentSite = useCurrentSite()
-  const authorisedSites = useAuthorisedSites()
-  const isAuthorised = useMemo(
-    () => Boolean(currentSite?.id && authorisedSites[currentSite?.id]),
-    [authorisedSites, currentSite?.id]
-  )
-
-  return (
-    <Routes>
-      <Route path="whats-new" element={<PortfolioWhatsNewHeader />} />
-      <Route path="learn-more" element={<PortfolioLearnMoreHeader />} />
-      <Route path="try-talisman" element={<PortfolioTryTalismanHeader />} />
-      <Route
-        path="*"
-        element={
-          isAuthorised ? (
-            <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-              <ConnectedAccountsPill />
-              <EvmNetworkSelectPill />
-            </header>
-          ) : (
-            <PopupHeader right={<AccountAvatar />} />
-          )
-        }
-      />
-    </Routes>
-  )
-}
-
-const HasAccountsPortfolioContent = () => (
+const PortfolioRoutes = () => (
   <>
     <Routes>
-      <Route path="whats-new" element={<PortfolioWhatsNew />} />
-      <Route path="learn-more" element={<PortfolioLearnMore />} />
-      <Route path="try-talisman" element={<PortfolioTryTalisman />} />
       <Route path="tokens" element={<PortfolioAssets />} />
       <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
       <Route path="nfts" element={<PortfolioAssets />} />
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+      <Route path="ramp/*" element={<BuyTokensModal />} />
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>
       <BraveWarningPopupBanner />
       <MigratePasswordAlert />
     </Suspense>
   </>
 )
 
-const NoAccountsPortfolioContent = () => (
-  <Routes>
-    <Route path="learn-more" element={<PortfolioLearnMore />} />
-    <Route path="try-talisman" element={<PortfolioTryTalisman />} />
-    <Route path="" element={<NoAccounts />} />
-  </Routes>
-)
+const Content: FC<PropsWithChildren> = ({ children }) => {
+  //scrollToTop on location change
+  const scrollableRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
 
-const PortfolioContent = () => {
-  const hasAccounts = useHasAccounts()
-  return hasAccounts ? <HasAccountsPortfolioContent /> : <NoAccountsPortfolioContent />
+  useEffect(() => {
+    scrollableRef.current?.scrollTo(0, 0)
+  }, [location.pathname])
+
+  return (
+    <ScrollContainer ref={scrollableRef} className={classNames("size-full overflow-hidden px-8")}>
+      {children}
+    </ScrollContainer>
+  )
 }
 
 export const Portfolio = () => (
   <PortfolioContainer renderWhileLoading>
-    <PopupLayout withBottomNav>
-      <PortfolioHeader />
-      <PopupContent>
-        <PortfolioContent />
-      </PopupContent>
-      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
-        <AssetDiscoveryPopupAlert />
-      </Suspense>
-    </PopupLayout>
+    <div id="main" className="relative size-full overflow-hidden">
+      <Content>
+        <div className="flex size-full flex-col gap-4 py-8">
+          <PortfolioRoutes />
+          <BottomNav />
+        </div>
+      </Content>
+      <NavigationDrawer />
+    </div>
   </PortfolioContainer>
 )

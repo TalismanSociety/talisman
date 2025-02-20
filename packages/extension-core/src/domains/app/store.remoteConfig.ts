@@ -1,5 +1,4 @@
-import { DEBUG, TEST } from "extension-shared"
-import { log } from "extension-shared"
+import { DEBUG, log, TEST } from "extension-shared"
 import merge from "lodash/merge"
 
 import { StorageProvider } from "../../libs/Store"
@@ -8,11 +7,34 @@ import { RemoteConfigStoreData } from "./types"
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
+  rampConfig: {
+    rampBasePath: "",
+    rampApiBasePath: "",
+    rampApiKey: "",
+  },
+  rampSupportedTokenIds: {},
   buyTokens: {
     tokenIds: [],
   },
   coingecko: {
     apiUrl: "https://api.coingecko.com",
+  },
+  postHogUrl: "https://us.i.posthog.com/batch/",
+  nominationPools: {
+    // uncomment for testing on testnets
+    // "avail-turing-testnet": [1],
+    // "vara-testnet": [1],
+    // "aleph-zero-testnet": [1],
+  },
+  stakingPools: {
+    // uncomment for testing on testnets
+    // "avail-turing-testnet": [1],
+    // "vara-testnet": [1],
+    // "aleph-zero-testnet": [1],
+  },
+  documentation: {
+    unifiedAddressDocsUrl:
+      "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
   },
 }
 

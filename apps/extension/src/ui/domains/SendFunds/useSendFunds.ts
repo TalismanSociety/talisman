@@ -3,7 +3,7 @@ import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { TransactionRequest } from "viem"
@@ -21,18 +21,19 @@ import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useBalance } from "@ui/hooks/useBalance"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
-import useChain from "@ui/hooks/useChain"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
-import useTokens from "@ui/hooks/useTokens"
+import {
+  useAccountByAddress,
+  useBalance,
+  useBalancesByAddress,
+  useBalancesHydrate,
+  useChain,
+  useEvmNetwork,
+  useToken,
+  useTokenRates,
+  useTokenRatesMap,
+  useTokensMap,
+} from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
@@ -41,8 +42,6 @@ import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMeta
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
 import { useFeeToken } from "./useFeeToken"
-import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
-import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
@@ -66,7 +65,7 @@ const useRecipientBalance = (token?: Token | null, address?: Address | null) => 
 const useIsSendingEnough = (
   recipientBalance?: Balance | null,
   token?: Token | null,
-  transfer?: BalanceFormatter | null
+  transfer?: BalanceFormatter | null,
 ) => {
   return useMemo(() => {
     try {
@@ -84,7 +83,7 @@ const useIsSendingEnough = (
         case "substrate-tokens": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
-            token.decimals
+            token.decimals,
           )
 
           return (
@@ -106,7 +105,7 @@ const useEvmTransaction = (
   from?: string,
   to?: string,
   planck?: string,
-  isLocked?: boolean
+  isLocked?: boolean,
 ) => {
   const token = useToken(tokenId)
 
@@ -154,7 +153,7 @@ const useSubTransaction = (
   amount?: string,
   tip?: string,
   method?: AssetTransferMethod,
-  isLocked?: boolean
+  isLocked?: boolean,
 ) => {
   const token = useToken(tokenId)
 
@@ -169,7 +168,7 @@ const useSubTransaction = (
         to,
         amount,
         tip ?? "0",
-        method
+        method,
       )
       return { partialFee, unsigned }
     },
@@ -178,7 +177,7 @@ const useSubTransaction = (
   })
 
   const qPayloadMetadata = useSubstratePayloadMetadata(
-    qSubstrateEstimateFee?.data?.unsigned ?? null
+    qSubstrateEstimateFee?.data?.unsigned ?? null,
   )
 
   return useMemo(() => {
@@ -220,10 +219,9 @@ const useSendFundsProvider = () => {
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
   const fromAccount = useAccountByAddress(from)
-  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
+  const tokensMap = useTokensMap()
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
-  const currency = useSelectedCurrency()
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
@@ -236,37 +234,29 @@ const useSendFundsProvider = () => {
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
   const feeTokenRates = useTokenRates(feeToken?.id)
 
-  const refTokensInput = useRef<HTMLInputElement>(null)
-  useSendFundsInputNumber(refTokensInput, token?.decimals)
-  const resizeTokensInput = useSendFundsInputSize(refTokensInput)
-
-  const refFiatInput = useRef<HTMLInputElement>(null)
-  useSendFundsInputNumber(refFiatInput, 2)
-  const resizeFiatInput = useSendFundsInputSize(refFiatInput)
-
   const transfer = useMemo(
     () => (token && amount ? new BalanceFormatter(amount, token.decimals, tokenRates) : null),
-    [amount, token, tokenRates]
+    [amount, token, tokenRates],
   )
 
   const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id, !isLocked)
   const tip = useMemo(
     () => (tipPlanck ? new BalanceFormatter(tipPlanck, tipToken?.decimals, tipTokenRates) : null),
-    [tipPlanck, tipToken?.decimals, tipTokenRates]
+    [tipPlanck, tipToken?.decimals, tipTokenRates],
   )
 
   const method: AssetTransferMethod = sendMax
     ? "transfer_all"
     : allowReap
-    ? "transfer_allow_death"
-    : "transfer_keep_alive"
+      ? "transfer_allow_death"
+      : "transfer_keep_alive"
 
   const { evmTransaction, evmInvalidTxError } = useEvmTransaction(
     tokenId,
     from,
     to,
     amount ?? "0",
-    isLocked
+    isLocked,
   )
   const subTransaction = useSubTransaction(
     tokenId,
@@ -275,14 +265,14 @@ const useSendFundsProvider = () => {
     amount ?? "0",
     tip?.planck.toString(),
     method,
-    isLocked
+    isLocked,
   )
 
   const maxAmount = useMemo(() => {
     if (!balance || !token) return null
 
     try {
-      const tipPlanck = tipToken?.id === token.id ? tip?.planck ?? 0n : 0n
+      const tipPlanck = tipToken?.id === token.id ? (tip?.planck ?? 0n) : 0n
 
       switch (token.type) {
         case "substrate-native": {
@@ -301,7 +291,7 @@ const useSendFundsProvider = () => {
           return new BalanceFormatter(
             balance.transferable.planck ?? "0",
             token.decimals,
-            tokenRates
+            tokenRates,
           )
       }
     } catch (err) {
@@ -324,7 +314,7 @@ const useSendFundsProvider = () => {
         new BalanceFormatter(
           evmTransaction.txDetails.estimatedFee,
           feeToken?.decimals,
-          feeTokenRates
+          feeTokenRates,
         ),
         new BalanceFormatter(evmTransaction.txDetails.maxFee, feeToken?.decimals, feeTokenRates),
       ]
@@ -333,7 +323,7 @@ const useSendFundsProvider = () => {
       const fee = new BalanceFormatter(
         BigInt(subTransaction.partialFee),
         feeToken?.decimals,
-        feeTokenRates
+        feeTokenRates,
       )
       return [fee, fee]
     }
@@ -364,7 +354,7 @@ const useSendFundsProvider = () => {
         balance: new BalanceFormatter(
           balances.find({ tokenId }).sorted[0]?.transferable.planck,
           tokensMap[tokenId].decimals,
-          tokenRatesMap[tokenId]
+          tokenRatesMap[tokenId],
         ),
       }))
 
@@ -399,7 +389,7 @@ const useSendFundsProvider = () => {
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
           token.decimals,
-          tokenRatesMap[token.id]
+          tokenRatesMap[token.id],
         )
 
         return remaining < existentialDeposit.planck
@@ -552,16 +542,7 @@ const useSendFundsProvider = () => {
 
     if (isSubToken(token)) set("sendMax", true)
     else set("amount", maxAmount.planck.toString())
-
-    if (refTokensInput.current) {
-      refTokensInput.current.value = maxAmount.tokens
-      resizeTokensInput()
-    }
-    if (refFiatInput.current) {
-      refFiatInput.current.value = maxAmount.fiat(currency)?.toString() ?? ""
-      resizeFiatInput()
-    }
-  }, [currency, maxAmount, resizeFiatInput, resizeTokensInput, set, token])
+  }, [maxAmount, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
@@ -604,7 +585,7 @@ const useSendFundsProvider = () => {
           to,
           value.planck.toString(),
           tip?.planck.toString(),
-          method
+          method,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
@@ -620,7 +601,7 @@ const useSendFundsProvider = () => {
           from,
           to,
           value.planck.toString(),
-          gasSettings
+          gasSettings,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
@@ -658,7 +639,7 @@ const useSendFundsProvider = () => {
               tokenId: token.id,
               value: amount,
               to,
-            }
+            },
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
@@ -677,7 +658,7 @@ const useSendFundsProvider = () => {
             amount,
             to,
             serialized,
-            signature
+            signature,
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
           gotoProgress({ hash, networkIdOrHash: token.evmNetwork.id })
@@ -689,7 +670,7 @@ const useSendFundsProvider = () => {
         setIsProcessing(false)
       }
     },
-    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain]
+    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain],
   )
 
   // reset send error if route or params changes
@@ -739,10 +720,6 @@ const useSendFundsProvider = () => {
     isProcessing,
     sendErrorMessage,
     isEstimatingMaxAmount,
-    refTokensInput,
-    resizeTokensInput,
-    refFiatInput,
-    resizeFiatInput,
   }
 }
 

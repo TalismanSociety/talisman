@@ -6,11 +6,10 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { NetworkOption } from "@ui/atoms"
+import { NetworkOption, usePortfolio } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import { usePortfolio } from "./usePortfolio"
 
 const NetworkRow: FC<{ id: string; name: string; isSelected?: boolean; onClick: () => void }> = ({
   id,
@@ -25,7 +24,7 @@ const NetworkRow: FC<{ id: string; name: string; isSelected?: boolean; onClick: 
       className={classNames(
         "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
         "focus-visible:bg-grey-800",
-        isSelected && "!bg-grey-700"
+        isSelected && "!bg-grey-700",
       )}
     >
       <ChainLogo id={id} className="shrink-0 text-xl" />
@@ -44,7 +43,7 @@ const NetworksList: FC<{
     (id: string) => () => {
       onChange(id === "ALL_NETWORKS" ? null : id)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
@@ -135,7 +134,7 @@ export const NetworkFilterModal: FC<{
       onDismiss={onClose}
       className={classNames(
         "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow",
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >

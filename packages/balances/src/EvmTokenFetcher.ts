@@ -1,6 +1,5 @@
 import { PromisePool } from "@supercharge/promise-pool"
-import { EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
-import { ChaindataProvider } from "@talismn/chaindata-provider"
+import { ChaindataProvider, EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
 
 import { AnyBalanceModule } from "./modules/util"
 
@@ -22,7 +21,10 @@ export class EvmTokenFetcher {
 
   private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
     const evmNetworks = new Map(
-      (await this.#chaindataProvider.evmNetworks()).map((evmNetwork) => [evmNetwork.id, evmNetwork])
+      (await this.#chaindataProvider.evmNetworks()).map((evmNetwork) => [
+        evmNetwork.id,
+        evmNetwork,
+      ]),
     )
 
     const allEvmTokens: TokenList = {}
@@ -36,7 +38,7 @@ export class EvmTokenFetcher {
 
         for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("evm-"))) {
           const balancesConfig = (evmNetwork.balancesConfig ?? []).find(
-            ({ moduleType }) => moduleType === mod.type
+            ({ moduleType }) => moduleType === mod.type,
           )
           const moduleConfig = balancesConfig?.moduleConfig ?? {}
 

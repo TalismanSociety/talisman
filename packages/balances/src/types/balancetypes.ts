@@ -100,7 +100,14 @@ export type SubstrateBalance = IBalanceBase &
 /** An unlabelled amount of a balance */
 export type Amount = string
 
-export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "crowdloan" | "nompool"
+export type BalanceStatusTypes =
+  | "free"
+  | "reserved"
+  | "locked"
+  | "extra"
+  | "crowdloan"
+  | "nompool"
+  | "subtensor"
 
 /** A labelled amount of a balance */
 type BaseAmountWithLabel<TLabel extends string> = {
@@ -118,10 +125,11 @@ type BaseAmountWithLabel<TLabel extends string> = {
 
 export const getValueId = (amount: AmountWithLabel<string>) => {
   const getMetaId = () => {
-    const meta = amount.meta as { poolId?: number; paraId?: number } | undefined
+    const meta = amount.meta as { poolId?: number; paraId?: number; hotkey?: string } | undefined
     if (!meta) return ""
     if (amount.type === "crowdloan") return meta.paraId?.toString() ?? ""
     if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
+    if (amount.type === "subtensor") return meta.hotkey?.toString() ?? ""
     return ""
   }
 
@@ -162,7 +170,7 @@ export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
 export type NewBalanceType<
   TModuleType extends string,
   TBalanceValueType extends "simple" | "complex",
-  TNetworkType extends "ethereum" | "substrate"
+  TNetworkType extends "ethereum" | "substrate",
 > = IBalanceBase &
   (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) &
   (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate) & {

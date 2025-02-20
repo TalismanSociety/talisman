@@ -1,6 +1,8 @@
 // Code in this file is heavily derived from the approach outlined in this PR:
 // https://github.com/polkadot-js/common/pull/1331
 
+import type { Keypair } from "@polkadot/util-crypto/types"
+import type { HexString } from "@polkadot/util/types"
 import { assert, u8aConcat, u8aToU8a } from "@polkadot/util"
 import {
   hmacSha256AsU8a,
@@ -12,8 +14,6 @@ import {
   sr25519Agreement,
   sr25519PairFromSeed,
 } from "@polkadot/util-crypto"
-import type { Keypair } from "@polkadot/util-crypto/types"
-import type { HexString } from "@polkadot/util/types"
 
 const encryptionKeySize = 32
 const macKeySize = 32
@@ -29,12 +29,12 @@ export const nonceSize = 24
 export function sr25519Encrypt(
   message: HexString | Uint8Array | string,
   receiverPublicKey: Uint8Array,
-  senderKeyPair?: Keypair
+  senderKeyPair?: Keypair,
 ): Uint8Array {
   const messageKeyPair = senderKeyPair || generateEphemeralKeypair()
   const { encryptionKey, keyDerivationSalt, macKey } = generateEncryptionKey(
     messageKeyPair,
-    receiverPublicKey
+    receiverPublicKey,
   )
   const { encrypted, nonce } = naclEncrypt(u8aToU8a(message), encryptionKey, randomAsU8a(nonceSize))
   const macValue = macData(nonce, encrypted, messageKeyPair.publicKey, macKey)
@@ -50,7 +50,7 @@ function generateEncryptionKey(senderKeyPair: Keypair, receiverPublicKey: Uint8A
   const { encryptionKey, keyDerivationSalt, macKey } = buildSR25519EncryptionKey(
     receiverPublicKey,
     senderKeyPair.secretKey,
-    senderKeyPair.publicKey
+    senderKeyPair.publicKey,
   )
 
   return {
@@ -64,7 +64,7 @@ export function buildSR25519EncryptionKey(
   publicKey: Uint8Array,
   secretKey: Uint8Array,
   encryptedMessagePairPublicKey: Uint8Array,
-  salt: Uint8Array = randomAsU8a(keyDerivationSaltSize)
+  salt: Uint8Array = randomAsU8a(keyDerivationSaltSize),
 ) {
   const agreementKey = sr25519Agreement(secretKey, publicKey)
   const masterSecret = u8aConcat(encryptedMessagePairPublicKey, agreementKey)
@@ -88,7 +88,7 @@ export function macData(
   nonce: Uint8Array,
   encryptedMessage: Uint8Array,
   encryptedMessagePairPublicKey: Uint8Array,
-  macKey: Uint8Array
+  macKey: Uint8Array,
 ): Uint8Array {
   return hmacSha256AsU8a(macKey, u8aConcat(nonce, encryptedMessagePairPublicKey, encryptedMessage))
 }

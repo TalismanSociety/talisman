@@ -42,14 +42,14 @@ const PersonalSignBigInner = () => {
             Signature : <span className="font-mono">{signature}</span>
           </div>
         )}
-        {isError && <div className="text-alert-error my-8 ">Error : {error?.message}</div>}
+        {isError && <div className="text-alert-error my-8">Error : {error?.message}</div>}
         {signature && (
           <div>
             Signed by :{" "}
             <span
               className={classNames(
                 "font-mono",
-                signedBy === address ? "text-alert-success" : "text-alert-error"
+                signedBy === address ? "text-alert-success" : "text-alert-error",
               )}
             >
               {signedBy}

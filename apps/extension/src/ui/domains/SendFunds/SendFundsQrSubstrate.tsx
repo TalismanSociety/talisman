@@ -8,10 +8,8 @@ import { AccountJsonQr, privacyRoundCurrency } from "@extension/core"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import useToken from "@ui/hooks/useToken"
+import { useAccountByAddress, useChain, useToken } from "@ui/state"
 
 import { useSendFunds } from "./useSendFunds"
 
@@ -58,14 +56,14 @@ const SendFundsQrSubstrate = () => {
         setError(err as Error)
       }
     },
-    [sendWithSignature, to, token, amount, tokenId, knownAddress]
+    [sendWithSignature, to, token, amount, tokenId, knownAddress],
   )
 
   const showQrApproval = useCallback(
     (send: boolean) => () => {
       setIsLocked(send)
     },
-    [setIsLocked]
+    [setIsLocked],
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

@@ -1,26 +1,40 @@
-import { isJsonPayload } from "@extension/core"
+import { TypeRegistry } from "@polkadot/types"
+import { classNames } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
+import { FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
+
 import {
   BalanceFormatter,
+  isJsonPayload,
   SignerPayloadJSON,
   SignerPayloadRaw,
   TransactionMethod,
 } from "@extension/core"
-import { TypeRegistry } from "@polkadot/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { FC, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
+import { useToken, useTokenRates } from "@ui/state"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAddress } from "./ViewDetailsAddress"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
 import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
-import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
 import { ViewDetailsTxObject } from "./ViewDetailsTxObject"
+
+export const ViewDetailsSub: FC = () => {
+  const { isOpen, open, close } = useOpenClose()
+
+  return (
+    <>
+      <ViewDetailsButton onClick={open} hide={isOpen} />
+      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+        <ViewDetailsContent onClose={close} />
+      </Drawer>
+    </>
+  )
+}
 
 const ViewDetailsContent: FC<{
   onClose: () => void
@@ -42,7 +56,7 @@ const ViewDetailsContent: FC<{
       nativeToken && tipRaw
         ? new BalanceFormatter(tipRaw, nativeToken?.decimals, nativeTokenRates)
         : undefined,
-    [nativeToken, nativeTokenRates, tipRaw]
+    [nativeToken, nativeTokenRates, tipRaw],
   )
 
   const { estimatedFee, estimatedFeeError } = useMemo(
@@ -53,7 +67,7 @@ const ViewDetailsContent: FC<{
           : undefined,
       estimatedFeeError: errorFee ? t("Failed to calculate fee.") : "",
     }),
-    [fee, errorFee, nativeToken?.decimals, nativeTokenRates, t]
+    [fee, errorFee, nativeToken?.decimals, nativeTokenRates, t],
   )
 
   const decodedPayload = useMemo(() => {
@@ -65,17 +79,18 @@ const ViewDetailsContent: FC<{
     }
   }, [payload])
 
-  const { methodName, args, decodedMethod } = useMemo(() => {
+  const { methodName, args } = useMemo(() => {
     if (!extrinsic) return { methodName: t("Unknown") }
 
     const methodName = `${extrinsic.method.section} : ${extrinsic.method.method}`
 
-    const decodedMethod = extrinsic.method.toHuman(true) as TransactionMethod
     const decoded = extrinsic.method.toHuman() as TransactionMethod
     const args = decoded?.args
 
-    return { methodName, args, decodedMethod }
+    return { methodName, args }
   }, [extrinsic, t])
+
+  const { data: lifetimeRows } = useLifetimeRows()
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })
@@ -102,12 +117,21 @@ const ViewDetailsContent: FC<{
               token={nativeToken}
             />
             <ViewDetailsAmount label={t("Tip")} amount={tip} token={nativeToken} />
+            <ViewDetailsField label={t("Nonce")}>
+              {decodedPayload?.nonce.toNumber()}
+            </ViewDetailsField>
+            <ViewDetailsField label={t("Lifetime")}>
+              {lifetimeRows?.map((str, i) => (
+                <div key={str + i} className={classNames(str === "LOADING" && "invisible")}>
+                  {str}
+                </div>
+              ))}
+            </ViewDetailsField>
             <ViewDetailsField
               label={t("Decoding error")}
               error={errorDecodingExtrinsic ? t("Failed to decode method.") : ""}
             />
             <ViewDetailsField label={t("Method")}>{methodName}</ViewDetailsField>
-            <ViewDetailsTxDesc label={t("Description")} method={decodedMethod} />
             <ViewDetailsTxObject label={t("Arguments")} obj={args} />
             <ViewDetailsTxObject label={t("Payload")} obj={decodedPayload?.toHuman()} />
           </>
@@ -133,15 +157,48 @@ const ViewDetailsContent: FC<{
   )
 }
 
-export const ViewDetailsSub: FC = () => {
-  const { isOpen, open, close } = useOpenClose()
+const useLifetimeRows = () => {
+  const { t } = useTranslation("request")
+  const { sapi, payload } = usePolkadotSigningRequest()
 
-  return (
-    <>
-      <ViewDetailsButton onClick={open} hide={isOpen} />
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
-        <ViewDetailsContent onClose={close} />
-      </Drawer>
-    </>
-  )
+  const period = useMemo(() => {
+    try {
+      if (!isJsonPayload(payload)) return null
+
+      // if blockhash is equal to genesis hash then transaction is immortal
+      if (payload.genesisHash === payload.blockHash) return null
+
+      const registry = new TypeRegistry()
+      const ep = registry.createType("ExtrinsicPayload", payload)
+
+      return ep.era.isMortalEra ? ep.era.asMortalEra.period.toNumber() : null
+    } catch (err) {
+      return null
+    }
+  }, [payload])
+
+  const mortality = useMemo(() => {
+    if (!isJsonPayload(payload)) return ""
+
+    // note: for mortal transaction the period is never 0
+    if (!period) return t("Immortal")
+
+    const startBlock = parseInt(payload.blockNumber, 16)
+    return t("From block {{startBlock}} to block {{endBlock}}", {
+      startBlock,
+      endBlock: startBlock + period - 1,
+    })
+  }, [payload, period, t])
+
+  return useQuery({
+    queryKey: ["System.Number", sapi?.id],
+    queryFn: () => {
+      if (!sapi) return null
+      return sapi.getStorage<number>("System", "Number", [])
+    },
+    initialData: null,
+    refetchInterval: 2_000,
+    select: (blockNumber) =>
+      period ? [mortality, t("Current block: {{blockNumber}}", { blockNumber })] : [mortality],
+  })
 }

@@ -14,7 +14,7 @@ import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountTo
 import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useRequest } from "@ui/hooks/useRequest"
+import { useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -29,7 +29,7 @@ const NoAccountWarning = ({
 }) => {
   const { t } = useTranslation("request")
   return (
-    <Drawer isOpen anchor="bottom">
+    <Drawer isOpen anchor="bottom" containerId="main">
       <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
         <div className="w-full text-center">
           <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
@@ -108,7 +108,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       } else reject()
       window.close()
     },
-    [ignore, reject]
+    [ignore, reject],
   )
 
   if (!authRequest) return null
@@ -150,7 +150,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   const activeAccounts = useMemo(
     () =>
       accounts.map((acc) => [acc, connected.includes(acc.address)] as [AccountJsonAny, boolean]),
-    [accounts, connected]
+    [accounts, connected],
   )
 
   return (

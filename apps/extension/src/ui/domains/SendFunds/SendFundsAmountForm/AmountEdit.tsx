@@ -1,9 +1,5 @@
-import { log } from "@extension/shared"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import debounce from "lodash/debounce"
 import {
@@ -19,10 +15,17 @@ import {
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
+import { log } from "@extension/shared"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useSelectedCurrency } from "@ui/state"
+
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import Tokens from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
+import { useSendFundsInputNumber } from "../useSendFundsInputNumber"
 import { TokenPillButton } from "./TokenPillButton"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
@@ -40,24 +43,28 @@ const normalizeStringNumber = (value?: string | number | null, decimals = 18) =>
 
 const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   const { set, remove } = useSendFundsWizard()
-  const {
-    tokenId,
-    token,
-    transfer,
-    maxAmount,
-    isEstimatingMaxAmount,
-    sendMax,
-    refTokensInput,
-    resizeTokensInput,
-  } = useSendFunds()
+  const { tokenId, token, transfer, maxAmount, isEstimatingMaxAmount, sendMax, amount } =
+    useSendFunds()
+
+  const refTokensInput = useRef<HTMLInputElement>(null)
+  useSendFundsInputNumber(refTokensInput, token?.decimals)
+  useInputAutoWidth(refTokensInput)
+
+  useEffect(() => {
+    if (sendMax && refTokensInput.current && maxAmount?.tokens) {
+      const expectedInputValue = normalizeStringNumber(maxAmount.tokens, token?.decimals)
+      if (refTokensInput.current.value !== expectedInputValue)
+        refTokensInput.current.value = expectedInputValue
+    }
+  }, [amount, sendMax, token, maxAmount])
 
   const defaultValue = useMemo(
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens,
-        token?.decimals
+        token?.decimals,
       ),
-    [maxAmount, sendMax, token?.decimals, transfer?.tokens]
+    [maxAmount, sendMax, token?.decimals, transfer?.tokens],
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +78,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
       if (token && text.length && !isNaN(num)) set("amount", tokensToPlanck(text, token.decimals))
       else remove("amount")
     }, 250),
-    [remove, sendMax, set, token]
+    [remove, sendMax, set, token],
   )
 
   const refInitialized = useRef(false)
@@ -81,15 +88,11 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     if (!sendMax && !transfer) refTokensInput.current?.focus()
   }, [refTokensInput, sendMax, transfer])
 
-  useEffect(() => {
-    resizeTokensInput()
-  }, [resizeTokensInput, token?.symbol])
-
   return (
     <div
       className={classNames(
         "flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4",
-        isEstimatingMaxAmount && "animate-pulse"
+        isEstimatingMaxAmount && "animate-pulse",
       )}
     >
       {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
@@ -103,7 +106,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         className={classNames(
           "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
           sendMax && "placeholder:text-white",
-          isEstimatingMaxAmount && "hidden" // hide until value is known
+          isEstimatingMaxAmount && "hidden", // hide until value is known
         )}
         onChange={handleChange}
       />
@@ -114,25 +117,28 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
 
 const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
-  const {
-    token,
-    transfer,
-    maxAmount,
-    tokenRates,
-    isEstimatingMaxAmount,
-    refFiatInput,
-    resizeFiatInput,
-  } = useSendFunds()
+  const { token, transfer, maxAmount, tokenRates, isEstimatingMaxAmount } = useSendFunds()
 
+  const refFiatInput = useRef<HTMLInputElement>(null)
+  useSendFundsInputNumber(refFiatInput, 2)
+  useInputAutoWidth(refFiatInput)
   const currency = useSelectedCurrency()
+
+  useEffect(() => {
+    if (sendMax && refFiatInput.current && typeof maxAmount?.fiat(currency) === "number") {
+      const expectedInputValue = maxAmount?.fiat(currency)?.toString() ?? ""
+      if (refFiatInput.current.value !== expectedInputValue)
+        refFiatInput.current.value = expectedInputValue
+    }
+  }, [sendMax, currency, maxAmount])
 
   const defaultValue = useMemo(
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
-        2
+        2,
       ),
-    [currency, maxAmount, sendMax, transfer]
+    [currency, maxAmount, sendMax, transfer],
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,16 +152,12 @@ const FiatInput = () => {
 
       if (token && tokenRate && text.length && !isNaN(num)) {
         const fiat = parseFloat(text)
-        const tokens = (fiat / tokenRate).toFixed(Math.ceil(token.decimals / 3))
+        const tokens = (fiat / tokenRate.price).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
     }, 250),
-    [remove, sendMax, set, token, tokenRates]
+    [remove, sendMax, set, token, tokenRates],
   )
-
-  useEffect(() => {
-    resizeFiatInput()
-  }, [resizeFiatInput])
 
   if (!tokenRates) return null
 
@@ -164,7 +166,7 @@ const FiatInput = () => {
       className={classNames(
         // display flex in reverse order to leverage peer css
         "end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center",
-        isEstimatingMaxAmount && "animate-pulse"
+        isEstimatingMaxAmount && "animate-pulse",
       )}
     >
       <input
@@ -177,7 +179,7 @@ const FiatInput = () => {
         placeholder={"0.00"}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",
-          isEstimatingMaxAmount && "hidden" // hide until value is known
+          isEstimatingMaxAmount && "hidden", // hide until value is known
         )}
         onChange={handleChange}
       />
@@ -185,7 +187,7 @@ const FiatInput = () => {
       <div
         className={classNames(
           "block shrink-0",
-          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
+          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled",
         )}
       >
         {currencyConfig[currency]?.symbol}
@@ -260,7 +262,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
           <div
             className={classNames(
               "mt-4 flex max-w-full items-center justify-center gap-4",
-              isEstimatingMaxAmount && "invisible"
+              isEstimatingMaxAmount && "invisible",
             )}
           >
             {tokenRates && (

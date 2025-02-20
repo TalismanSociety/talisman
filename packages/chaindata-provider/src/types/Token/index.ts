@@ -43,5 +43,5 @@ export type Token = TokenBase &
  */
 export type BalancesConfigTokenParams = Pick<
   Partial<Token>,
-  "symbol" | "coingeckoId" | "dcentName" | "mirrorOf" | "logo" | "isDefault"
+  "symbol" | "coingeckoId" | "dcentName" | "mirrorOf" | "logo" | "isDefault" | "noDiscovery"
 >

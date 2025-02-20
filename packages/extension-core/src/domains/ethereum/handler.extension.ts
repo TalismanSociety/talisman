@@ -1,15 +1,23 @@
-import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
+import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { CustomEvmNativeToken, evmNativeTokenId } from "@talismn/balances"
-import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  CustomEvmNetwork,
+  EvmNetwork,
+  githubUnknownTokenLogoUrl,
+  SimpleEvmNetwork,
+} from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import Dexie from "dexie"
 import { DEBUG, log } from "extension-shared"
+import { isEqual } from "lodash"
+import { distinctUntilChanged, map } from "rxjs"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
+import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -364,8 +372,8 @@ export class EthHandler extends ExtensionHandler {
         isCustom: false,
       })
     } else {
-      const knownNativeTokenConfig = known?.balancesConfig.find(
-        (mod) => mod.moduleType === "evm-native"
+      const knownNativeTokenConfig = known?.balancesConfig?.find(
+        (mod) => mod.moduleType === "evm-native",
       )?.moduleConfig as { coingeckoId?: string; logo?: string }
 
       const isTestnet =
@@ -391,6 +399,7 @@ export class EthHandler extends ExtensionHandler {
       const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
 
       const newNetwork: CustomEvmNetwork = {
+        ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
         id: networkId,
         isTestnet: isTestnet,
         isDefault: existingNetwork?.isDefault ?? false,
@@ -406,7 +415,7 @@ export class EthHandler extends ExtensionHandler {
         isCustom: true,
         explorerUrls: network.blockExplorerUrls || (known?.explorerUrl ? [known.explorerUrl] : []),
         iconUrls: network.iconUrls || [],
-        balancesConfig: [],
+        balancesConfig: existingNetwork?.balancesConfig ?? [],
         balancesMetadata: [],
       }
 
@@ -427,7 +436,9 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
-    const existingNetwork = await chaindataProvider.evmNetworkById(network.id)
+    const existingNetwork = (await chaindataProvider.evmNetworkById(network.id)) as
+      | EvmNetwork
+      | undefined
 
     try {
       await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
@@ -449,6 +460,7 @@ export class EthHandler extends ExtensionHandler {
         }
 
         const newNetwork: CustomEvmNetwork = {
+          ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
           // EvmNetwork
           id: network.id,
           isTestnet: network.isTestnet,
@@ -456,13 +468,13 @@ export class EthHandler extends ExtensionHandler {
           sortIndex: existingNetwork?.sortIndex ?? null,
           name: network.name,
           themeColor: "#505050",
-          logo: network.chainLogoUrl ?? null,
+          logo: existingNetwork?.logo ?? null,
           nativeToken: { id: newToken.id },
           tokens: existingNetwork?.tokens ?? [],
           explorerUrl: network.blockExplorerUrl ?? null,
           rpcs: network.rpcs.map(({ url }) => ({ url })),
           substrateChain: existingNetwork?.substrateChain ?? null,
-          balancesConfig: [],
+          balancesConfig: existingNetwork?.balancesConfig ?? [],
           balancesMetadata: [],
           // CustomEvmNetwork
           isCustom: true,
@@ -591,7 +603,7 @@ export class EthHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -605,7 +617,7 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(
-          request as RequestTypes["pri(eth.signing.approveSignAndSend)"]
+          request as RequestTypes["pri(eth.signing.approveSignAndSend)"],
         )
 
       case "pri(eth.signing.approveSign)":
@@ -613,12 +625,12 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignHardware)"]
+          request as RequestTypes["pri(eth.signing.approveSignHardware)"],
         )
 
       case "pri(eth.signing.approveSignAndSendHardware)":
         return this.signAndSendApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"],
         )
 
       case "pri(eth.signing.cancel)":
@@ -629,12 +641,12 @@ export class EthHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(eth.watchasset.requests.cancel)":
         return this.ethWatchAssetRequestCancel(
-          request as RequestTypes["pri(eth.watchasset.requests.cancel)"]
+          request as RequestTypes["pri(eth.watchasset.requests.cancel)"],
         )
 
       case "pri(eth.watchasset.requests.approve)":
         return this.ethWatchAssetRequestApprove(
-          request as RequestTypes["pri(eth.watchasset.requests.approve)"]
+          request as RequestTypes["pri(eth.watchasset.requests.approve)"],
         )
 
       // --------------------------------------------------------------------
@@ -651,8 +663,20 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
-        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
-        return true
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
+
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.evmNetworksObservable.pipe(
+            // the balancesConfig is not needed for the UI and can be HUGE
+            map((evmNetworks) =>
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              evmNetworks.map(({ balancesConfig, balancesMetadata, ...network }) => network),
+            ),
+            distinctUntilChanged<Array<SimpleEvmNetwork>>(isEqual),
+          ),
+        )
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])

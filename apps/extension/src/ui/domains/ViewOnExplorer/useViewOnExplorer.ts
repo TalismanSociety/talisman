@@ -1,8 +1,7 @@
-import useChain from "@ui/hooks/useChain"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useCallback, useMemo } from "react"
 import urlJoin from "url-join"
+
+import { useChain, useChainByGenesisHash, useEvmNetwork } from "@ui/state"
 
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"
 
@@ -20,12 +19,12 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string) => 
 
   const blockExplorerUrl = useMemo(
     () => chain?.subscanUrl || evmNetwork?.explorerUrl || null,
-    [chain, evmNetwork]
+    [chain, evmNetwork],
   )
 
   const canOpen = useMemo(
     () => !networkIdOrHash || blockExplorerUrl,
-    [blockExplorerUrl, networkIdOrHash]
+    [blockExplorerUrl, networkIdOrHash],
   )
 
   const open = useCallback(() => {

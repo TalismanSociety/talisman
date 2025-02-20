@@ -24,7 +24,7 @@ export type PayloadType = "message" | "transaction"
 export type ResponseType<Type extends PayloadType> = Type extends "message"
   ? ScanMessageEvm200Response | null
   : Type extends "transaction"
-  ? ScanTransactionsEvm200Response | null
-  : never
+    ? ScanTransactionsEvm200Response | null
+    : never
 
 export type RiskAnalysisScanError = { title: string; description: string }

@@ -13,6 +13,8 @@ import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { useFeatureFlag } from "@ui/state"
+
 import { useRiskAnalysis } from "./context"
 
 const getErrorTooltip = (t: TFunction, error: Error) => {
@@ -30,6 +32,7 @@ const getErrorTooltip = (t: TFunction, error: Error) => {
 }
 
 export const RiskAnalysisPillButton: FC = () => {
+  const isEnabled = useFeatureFlag("RISK_ANALYSIS")
   const riskAnalysis = useRiskAnalysis()
   const { t } = useTranslation()
 
@@ -111,6 +114,8 @@ export const RiskAnalysisPillButton: FC = () => {
     if (riskAnalysis.result) riskAnalysis.review.drawer.open()
     else riskAnalysis.launchScan()
   }, [riskAnalysis])
+
+  if (!isEnabled) return null
 
   return (
     <Tooltip>

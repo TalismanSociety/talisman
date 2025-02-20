@@ -5,9 +5,8 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
-import { NetworkOption } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
+import { NetworkOption, usePortfolio } from "@ui/state"
 
 type NullableKeys<T> = {
   [P in keyof T]: T[P] | null
@@ -55,7 +54,7 @@ export const NetworkPicker: FC<{ className?: string }> = ({ className }) => {
 }
 
 export const NetworkDropdown = <
-  T extends Pick<NetworkOption, "id"> & NullableKeys<Pick<NetworkOption, "name" | "symbols">>
+  T extends Pick<NetworkOption, "id"> & NullableKeys<Pick<NetworkOption, "name" | "symbols">>,
 >({
   placeholder,
   networks,
@@ -74,7 +73,7 @@ export const NetworkDropdown = <
   // workaround nullable prop
   const handleOnChange = useCallback(
     (value: T | undefined | null) => onChange(value ?? undefined),
-    [onChange]
+    [onChange],
   )
 
   const ref = useRef<HTMLInputElement>(null)
@@ -98,8 +97,8 @@ export const NetworkDropdown = <
               <ClearSearch open={open} setSearch={setSearch} />
               <div
                 className={classNames(
-                  "bg-field  focus-within:border-grey-700 relative flex h-24 w-full items-center gap-4 border  border-transparent px-6 text-base",
-                  open ? "rounded-t-sm !border-b-transparent" : "rounded-sm"
+                  "bg-field focus-within:border-grey-700 relative flex h-24 w-full items-center gap-4 border border-transparent px-6 text-base",
+                  open ? "rounded-t-sm !border-b-transparent" : "rounded-sm",
                 )}
               >
                 <div className="flex w-12 justify-center">
@@ -113,9 +112,9 @@ export const NetworkDropdown = <
                   ref={ref}
                   className={classNames(
                     "h-full flex-grow bg-transparent",
-                    value && "placeholder-body-secondary focus:placeholder-body-disabled"
+                    value && "placeholder-body-secondary focus:placeholder-body-disabled",
                   )}
-                  placeholder={value ? value.name ?? t("Unknown chain") : placeholder}
+                  placeholder={value ? (value.name ?? t("Unknown chain")) : placeholder}
                   onChange={(event) => setSearch(event.target.value)}
                 />
                 <div className="flex h-full w-12 flex-col justify-center">

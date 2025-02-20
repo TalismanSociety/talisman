@@ -9,7 +9,7 @@ import { getUniswapV2ContractData } from "./getUniswapV2ContractData"
 export const getUniswapV2TokenInfo = async (
   client: Client,
   evmNetworkId: EvmNetworkId,
-  contractAddress: EvmAddress
+  contractAddress: EvmAddress,
 ): Promise<CustomEvmUniswapV2TokenCreate> => {
   const { symbol, decimals, tokenAddress0, tokenAddress1, token0, token1 } =
     await getUniswapV2ContractData(client, contractAddress)

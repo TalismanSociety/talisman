@@ -45,7 +45,7 @@ export default class RpcState {
         acc[key] = this.#providers[key].meta
 
         return acc
-      }, {} as ResponseRpcListProviders)
+      }, {} as ResponseRpcListProviders),
     )
   }
 
@@ -61,7 +61,7 @@ export default class RpcState {
   public rpcStartProvider(key: string, port: Port): Promise<ProviderMeta> {
     assert(
       Object.keys(this.#providers).includes(key),
-      `Provider ${key} is not exposed by extension`
+      `Provider ${key} is not exposed by extension`,
     )
 
     if (this.#injectedProviders.get(port)) {
@@ -88,7 +88,7 @@ export default class RpcState {
   public rpcSubscribe(
     { method, params, type }: RequestRpcSubscribe,
     cb: ProviderInterfaceCallback,
-    port: Port
+    port: Port,
   ): Promise<number | string> {
     const provider = this.#injectedProviders.get(port)
 

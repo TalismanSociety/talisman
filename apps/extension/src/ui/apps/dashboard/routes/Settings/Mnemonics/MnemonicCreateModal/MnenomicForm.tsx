@@ -35,7 +35,7 @@ const MnemonicFormInner = () => {
             </TooltipTrigger>
             <TooltipContent>
               {t(
-                "The 12-word phrase is easier to remember, while the 24-word phrase offers higher entropy and is more resistant to brute force attacks."
+                "The 12-word phrase is easier to remember, while the 24-word phrase offers higher entropy and is more resistant to brute force attacks.",
               )}
             </TooltipContent>
           </Tooltip>
@@ -76,7 +76,7 @@ export const MnemonicCreateForm = () => {
       <div className={"flex w-full min-w-[58rem] flex-col"}>
         <div className="text-body-secondary text-sm">
           {t(
-            "Your recovery phrase gives you access to your wallet and funds. Write it down and store it in a secure location."
+            "Your recovery phrase gives you access to your wallet and funds. Write it down and store it in a secure location.",
           )}
         </div>
         <MnemonicFormInner />

@@ -7,7 +7,7 @@ import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updat
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
-import { ExternalBalancePool, balancePool } from "./pool"
+import { balancePool, ExternalBalancePool } from "./pool"
 import { RequestBalance, RequestBalancesByParamsSubscribe } from "./types"
 
 export class BalancesHandler extends ExtensionHandler {
@@ -15,7 +15,7 @@ export class BalancesHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -61,7 +61,7 @@ const subscribeBalancesByParams = async (
     addressesByChain,
     addressesAndEvmNetworks,
     addressesAndTokens,
-  }: RequestBalancesByParamsSubscribe
+  }: RequestBalancesByParamsSubscribe,
 ): Promise<boolean> => {
   // if no addresses, return early
   if (

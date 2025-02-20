@@ -1,25 +1,33 @@
-import { Address, Balance, Balances } from "@extension/core"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
+import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
+import { formatDuration, intervalToDuration } from "date-fns"
+import { FC, Suspense, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Address, Balance, Balances } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
+import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
+import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { Suspense } from "react"
-import { useTranslation } from "react-i18next"
+import { useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
-import { SendFundsButton } from "./SendFundsIconButton"
+import { SendFundsTokenButton } from "./SendFundsTokenIconButton"
+import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
-import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
+import { BalanceDetailRow, useTokenBalances } from "./useTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 
 const AssetState = ({
@@ -27,22 +35,25 @@ const AssetState = ({
   description,
   render,
   address,
+  isLoading,
+  locked,
 }: {
   title: string
   description?: string
   render: boolean
   address?: Address
+  isLoading?: boolean
+  locked?: boolean
 }) => {
   if (!render) return null
   return (
-    <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
-      <div className="flex items-baseline gap-4">
-        <div className="whitespace-nowrap font-bold text-white">{title}</div>
+    <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
+      <div className="flex w-full items-baseline gap-4 overflow-hidden">
+        <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
         {/* show description next to title when address is set */}
-        {description && address && (
-          <div className="max-w-sm flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-            {description}
-          </div>
+        {description && address && <div className="grow truncate text-sm">{description}</div>}
+        {!description && address && isLoading && (
+          <div className="bg-grey-800 rounded-xs h-[1.4rem] w-60 animate-pulse" />
         )}
       </div>
       {address && (
@@ -51,27 +62,25 @@ const AssetState = ({
         </div>
       )}
       {/* show description below title when address is not set */}
+      {isLoading && !description && !address && locked && (
+        <div className="bg-grey-800 rounded-xs h-[1.6rem] w-60 animate-pulse" />
+      )}
       {description && !address && (
-        <div className="flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-          {description}
-        </div>
+        <div className="flex-shrink-0 truncate text-sm">{description}</div>
       )}
     </div>
   )
 }
 
-type AssetRowProps = {
-  chainId: ChainId | EvmNetworkId
-  balances: Balances
-}
-
-const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
+const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, balances }) => {
   const { t } = useTranslation()
-  const { chainOrNetwork, summary, symbol, tokenId, detailRows, status, networkType } =
-    useChainTokenBalances({ chainId, balances })
+  const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
+    tokenId,
+    balances,
+  })
 
   // wait for data to load
-  if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
+  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
   const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
 
@@ -80,7 +89,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
       <div
         className={classNames(
           "bg-grey-800 grid grid-cols-[40%_30%_30%]",
-          detailRows.length ? "rounded-t" : "rounded"
+          detailRows.length ? "rounded-t" : "rounded",
         )}
       >
         <div className="flex">
@@ -92,8 +101,8 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
-              <Suspense>
-                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
+                <SendFundsTokenButton tokenId={token.id} />
                 {tokenId && (
                   <TokenContextMenu
                     tokenId={tokenId}
@@ -112,24 +121,25 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             render={summary.lockedTokens.gt(0)}
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
-            symbol={symbol}
+            symbol={token.symbol}
             tooltip={t("Total Locked Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           />
         </div>
-        <div>
+        <div className="flex items-center justify-end gap-2">
+          {tokenId && <BondButton tokenId={tokenId} balances={balances} />}
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
-            symbol={symbol}
+            symbol={token.symbol}
             tooltip={t("Total Available Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           />
         </div>
@@ -153,8 +163,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               key={row.key}
               row={row}
               isLastRow={rows.length === i + 1}
-              symbol={symbol}
+              symbol={token.symbol}
               status={status}
+              tokenId={tokenId}
             />
           ))}
     </div>
@@ -170,7 +181,7 @@ const ChainTokenBalancesUniswapV2Row = ({
   isLastBalance?: boolean
   status: BalancesStatus
 }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const selectedCurrency = useSelectedCurrency()
   const balancePair = useUniswapV2BalancePair(balance)
 
@@ -183,11 +194,11 @@ const ChainTokenBalancesUniswapV2Row = ({
     <div
       className={classNames(
         "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
-        isLastBalance && "rounded-b-sm"
+        isLastBalance && "rounded-b-sm",
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
-      {!account && (
+      {!selectedAccount && (
         <div className="flex items-end justify-between gap-4 text-xs">
           <PortfolioAccount address={balance.address} />
         </div>
@@ -201,7 +212,7 @@ const ChainTokenBalancesUniswapV2Row = ({
           <div
             className={classNames(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
             <div className={"font-bold text-white"}>
@@ -235,74 +246,132 @@ const ChainTokenBalancesDetailRow = ({
   isLastRow,
   status,
   symbol,
+  tokenId,
 }: {
-  row: DetailRow
+  row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-}) => {
+  tokenId?: TokenId // unsafe, there could be multiple aggregated here
+}) => (
+  <div
+    key={row.key}
+    className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+  >
+    <div>
+      <AssetState
+        title={row.title}
+        description={row.description}
+        render
+        address={row.address}
+        isLoading={row.isLoading}
+        locked={row.locked}
+      />
+    </div>
+    {!row.locked && <div></div>}
+    <div>
+      <AssetBalanceCellValue
+        render={row.tokens.gt(0)}
+        tokens={row.tokens}
+        fiat={row.fiat}
+        symbol={symbol}
+        locked={row.locked}
+        balancesStatus={status}
+        className={classNames(
+          (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+        )}
+      />
+    </div>
+    {!!row.locked && row.meta && tokenId && (
+      <LockedExtra
+        tokenId={tokenId}
+        address={row.address}
+        isLoading={status.status === "fetching"}
+        rowMeta={row.meta}
+      />
+    )}
+  </div>
+)
+
+const LockedExtra: FC<{
+  tokenId: TokenId
+  address?: string // this is only set when browsing all accounts
+  isLoading: boolean
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
+  const { data } = useNomPoolStakingStatus(tokenId)
+  const { selectedAccount } = usePortfolioNavigation()
+
+  const rowAddress = useMemo(
+    () => address ?? selectedAccount?.address ?? null,
+    [selectedAccount?.address, address],
+  )
+
+  const accountStatus = useMemo(
+    () => data?.accounts?.find((s) => s.address === rowAddress),
+    [data?.accounts, rowAddress],
+  )
+
+  const withdrawIn = useMemo(
+    () =>
+      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
+        : null,
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
+  )
+
+  const canUnbond = useMemo(
+    () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === "bittensor-substrate-native",
+    [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+  )
+
+  if (!rowAddress) return null
 
   return (
-    <div
-      key={row.key}
-      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
-    >
-      <div>
-        <AssetState title={row.title} description={row.description} render address={row.address} />
-      </div>
-      {!row.locked && <div></div>}
-      <div>
-        <AssetBalanceCellValue
-          render={row.tokens.gt(0)}
-          tokens={row.tokens}
-          fiat={row.fiat}
-          symbol={symbol}
-          locked={row.locked}
-          balancesStatus={status}
-          className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
-        />
-      </div>
-      {!!row.locked && (
-        <div>
-          {
-            // Show `Unbonding` next to nompool staked balances which are unbonding
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !!(row.meta as any)?.unbonding && (
-              <div
-                className={classNames(
-                  "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
-                  status.status === "fetching" && "animate-pulse transition-opacity"
-                )}
-              >
-                <div className="text-body flex items-center justify-end gap-2">
-                  <div>{t("Unbonding")}</div>
-                </div>
-                {/* TODO: Show time until funds are unbonded */}
-                {/* <div>4d 14hr 11min</div> */}
+    <div className="flex h-[6.6rem] flex-col items-end justify-center gap-2 whitespace-nowrap p-8 text-right">
+      {rowMeta.unbonding ? (
+        accountStatus?.canWithdraw ? (
+          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="large" />
+        ) : (
+          <>
+            <div className={classNames(isLoading && "animate-pulse transition-opacity")}>
+              <div className="flex items-center gap-2">
+                <ZapOffIcon className="shrink-0 text-sm" />
+                <div>{t("Unbonding")}</div>
               </div>
-            )
-          }
-        </div>
-      )}
+            </div>
+            {!!withdrawIn && (
+              <div className="text-body-500 text-sm">
+                {t("{{duration}} left", { duration: withdrawIn })}
+              </div>
+            )}
+          </>
+        )
+      ) : canUnbond ? (
+        <UnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          variant="large"
+          poolId={rowMeta.poolId ?? rowMeta.hotkey}
+        />
+      ) : null}
     </div>
   )
 }
 
-type AssetsTableProps = {
-  balances: Balances
-  symbol: string
-}
+export const DashboardAssetDetails: FC<{ balances: Balances; symbol: string }> = ({
+  balances,
+  symbol,
+}) => {
+  const { balancesByToken } = useAssetDetails(balances)
 
-export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain: rows } = useAssetDetails(balances)
-
-  if (rows.length === 0) return <NoTokensMessage symbol={symbol} />
+  if (balancesByToken.length === 0) return <NoTokensMessage symbol={symbol} />
 
   return (
     <div className="text-body-secondary">
-      {rows.map(([chainId, bal]) => (
-        <ChainTokenBalances key={chainId} chainId={chainId} balances={bal} />
+      {balancesByToken.map(([tokenId, bal]) => (
+        <TokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
       ))}
     </div>
   )

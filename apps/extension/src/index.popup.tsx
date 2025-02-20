@@ -2,8 +2,7 @@ import "@common/enableAnyloggerLogsInDevelopment"
 import "@common/i18nConfig"
 
 import { appStore } from "@extension/core"
-import { log } from "@extension/shared"
-import { IS_FIREFOX } from "@extension/shared"
+import { IS_FIREFOX, log } from "@extension/shared"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
 
@@ -60,5 +59,10 @@ const adjustPopupSize = async () => {
   }
 }
 
-renderTalisman(<Popup />)
+// Always keep wallet unlocked when embedded popup is open,
+// listen for user interaction when standalone popup window is open.
+const keepWalletUnlockedMode =
+  window.location.search === "?embedded" ? "always" : "user-interaction"
+
+renderTalisman(<Popup />, { keepWalletUnlockedMode })
 adjustPopupSize()

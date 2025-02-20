@@ -1,9 +1,8 @@
-import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
-import { useActiveEvmNetworksState } from "./useActiveEvmNetworksState"
-import { useEvmNetwork } from "./useEvmNetwork"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
+import { useActiveEvmNetworksState, useEvmNetwork } from "@ui/state"
 
 export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   const evmNetwork = useEvmNetwork(evmNetworkId ?? undefined)
@@ -11,7 +10,7 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
 
   const isActive = useMemo(
     () => !!evmNetwork && isEvmNetworkActive(evmNetwork, activeEvmNetworks),
-    [activeEvmNetworks, evmNetwork]
+    [activeEvmNetworks, evmNetwork],
   )
   const isKnown = useMemo(() => !!evmNetwork && !isCustomEvmNetwork(evmNetwork), [evmNetwork])
 
@@ -20,12 +19,12 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
       if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
       activeEvmNetworksStore.setActive(evmNetworkId, enable)
     },
-    [evmNetwork, evmNetworkId]
+    [evmNetwork, evmNetworkId],
   )
 
   const isActiveSetByUser = useMemo(
     () => evmNetworkId !== null && evmNetworkId !== undefined && evmNetworkId in activeEvmNetworks,
-    [evmNetworkId, activeEvmNetworks]
+    [evmNetworkId, activeEvmNetworks],
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)

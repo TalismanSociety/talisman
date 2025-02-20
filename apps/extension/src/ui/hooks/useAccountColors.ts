@@ -8,6 +8,6 @@ export const useAccountColors = (address?: string) => {
 
   return useMemo(
     () => (address ? [bgColor1, bgColor2] : TALISMAN_COLORS) as [string, string],
-    [address, bgColor1, bgColor2]
+    [address, bgColor1, bgColor2],
   )
 }

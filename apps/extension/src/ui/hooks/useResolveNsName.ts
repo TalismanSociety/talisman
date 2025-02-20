@@ -1,9 +1,10 @@
-import { NsLookupType, isPotentialAzns, isPotentialEns } from "@talismn/on-chain-id"
+import { isPotentialAzns, isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
 import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDebounce } from "react-use"
+
+import { api } from "@ui/api"
 
 export type Options = {
   /** Enabled by default, set to false to disable */
@@ -50,30 +51,31 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
       return (await api.accountsOnChainIdsResolveNames([name]))[name] ?? null
     },
     enabled: isNsLookup,
-    cacheTime: Infinity,
+    gcTime: Infinity,
     initialData: (): [string, NsLookupType] | null => {
       if (!name) return null
 
       const item = nsNamesCache.get(name)
       if (!item?.result) return null
 
-      const address = Array.isArray(item.result) ? item.result[0] : null ?? null
-      const nsLookupType = Array.isArray(item.result) ? item.result[1] : null ?? null
+      const address = Array.isArray(item.result) ? (item.result[0] ?? null) : null
+      const nsLookupType = Array.isArray(item.result) ? (item.result[1] ?? null) : null
       if (!address || !nsLookupType) return null
 
       return [address, nsLookupType]
     },
-    onSuccess: (result) => {
-      if (!name) return
-
-      // update cache
-      if (result === undefined) nsNamesCache.delete(name)
-      else nsNamesCache.set(name, { result, updated: Date.now() })
-
-      // persist cache to local storage
-      persistNsNamesCache()
-    },
   })
+
+  useEffect(() => {
+    if (!name || !result) return
+
+    // update cache
+    if (result === undefined) nsNamesCache.delete(name)
+    else nsNamesCache.set(name, { result, updated: Date.now() })
+
+    // persist cache to local storage
+    persistNsNamesCache()
+  }, [name, result])
 
   const [address, nsLookupType] = result ?? [null, null]
 
@@ -83,7 +85,7 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
 const cacheKey = "TalismanNsNamesCache"
 const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
 const nsNamesCache = new Map<string, { result?: [string, NsLookupType] | null; updated?: number }>(
-  JSON.parse(localStorage.getItem(cacheKey) ?? "[]")
+  JSON.parse(localStorage.getItem(cacheKey) ?? "[]"),
 )
 const persistNsNamesCache = () =>
   localStorage.setItem(
@@ -96,9 +98,9 @@ const persistNsNamesCache = () =>
             // check that the updated field exists
             item?.updated &&
             // check that the item has been updated within the persistItemDuration
-            Date.now() - item.updated <= persistItemDuration
-        )
-    )
+            Date.now() - item.updated <= persistItemDuration,
+        ),
+    ),
   )
 
 /** Removes any data left over in the @deprecated cache */

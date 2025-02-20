@@ -1,27 +1,35 @@
+import { bind } from "@react-rxjs/core"
+import { isEqual } from "lodash"
+import { useCallback, useEffect, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
+import { BehaviorSubject, distinctUntilChanged } from "rxjs"
+import { Button, Modal, ModalDialog } from "talisman-ui"
+
 import { AccountJsonAny, AccountType } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { atom, useAtom } from "jotai"
-import { useCallback, useEffect, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button, Modal, ModalDialog } from "talisman-ui"
 
-const accountRemoveAccountState = atom<AccountJsonAny | null>(null)
+import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
+
+const accountToRemove$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const [useAccount] = bind(
+  accountToRemove$.pipe(distinctUntilChanged<AccountJsonAny | null>(isEqual)),
+  null,
+)
 
 export const useAccountRemoveModal = () => {
-  const [_account, setAccount] = useAtom(accountRemoveAccountState)
+  const _account = useAccount()
 
-  const { account: selectedAccount } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRemoveModal")
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account ?? null)
+      accountToRemove$.next(account ?? null)
       innerOpen()
     },
-    [innerOpen, setAccount]
+    [innerOpen],
   )
 
   useEffect(() => {
@@ -42,6 +50,7 @@ export const AccountRemoveModal = () => {
   const { t } = useTranslation()
   const { account, close, isOpen } = useAccountRemoveModal()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // persist in state so text doesn't disappear upon deletion
   const [accountName, setAccountName] = useState<string>("")
@@ -53,8 +62,9 @@ export const AccountRemoveModal = () => {
     if (!account) return
     await api.accountForget(account?.address)
     if (window.location.pathname === "/popup.html") navigate("/")
+    else navigate(location.pathname) // removes all query params
     close()
-  }, [account, close, navigate])
+  }, [account, close, location.pathname, navigate])
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>

@@ -28,7 +28,7 @@ export default class BlocksRpc {
     // decode block
     const blockDecoded = (await getTypeRegistry(chainId)).registry.createType<Block>(
       "Block",
-      blockFrame
+      blockFrame,
     )
 
     return blockDecoded
@@ -45,11 +45,11 @@ export default class BlocksRpc {
   static async blockHash(chainId: ChainId, block: string | number): Promise<string>
   static async blockHash(
     chainId: ChainId,
-    block: string | number | undefined
+    block: string | number | undefined,
   ): Promise<string | undefined>
   static async blockHash(
     chainId: ChainId,
-    block: string | number | undefined
+    block: string | number | undefined,
   ): Promise<string | undefined> {
     if (typeof block === "undefined") return
     if (typeof block === "string") return block

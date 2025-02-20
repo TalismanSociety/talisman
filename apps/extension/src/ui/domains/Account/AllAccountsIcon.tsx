@@ -18,7 +18,7 @@ export const AccountsIconContainer = ({
   <div
     className={classNames(
       "bg-grey-750 flex h-[1em] w-[1em] items-center justify-center rounded-full p-[0.25em]",
-      className
+      className,
     )}
   >
     {children}

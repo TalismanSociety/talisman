@@ -20,11 +20,10 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts, useChainsMapByGenesisHash } from "@ui/state"
 
 import { useAddressEffects, useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
@@ -66,11 +65,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const schema = useMemo(
     () =>
       yup.object({
-        name: yup.string().required(""),
-        searchAddress: yup.string().required(""),
+        name: yup.string().required(" "),
+        searchAddress: yup.string().required(" "),
         address: yup
           .string()
-          .required("")
+          .required(" ")
           .transform((value) => value.trim())
           .test("is-valid", t("Address is not valid"), (value, ctx) => {
             const context = ctx.options.context as ValidationContext
@@ -101,7 +100,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         genesisHash: yup.string(),
         limitToNetwork: yup.bool(),
       }),
-    [t]
+    [t],
   )
 
   const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
@@ -111,10 +110,10 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         address: normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType),
       })),
       existingAccountAddresses: accounts.map((acc) =>
-        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58")
+        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58"),
       ),
     }),
-    [contacts, accounts]
+    [contacts, accounts],
   )
 
   const {
@@ -165,7 +164,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   const { address } = watch()
   const chains = useChainsFilteredByAddressPrefix(address)
-  const chainsByGenesisHash = useAllChainsMapByGenesisHash()
+  const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
     (genesisHash?: string) =>
       setValue("genesisHash", genesisHash, {
@@ -173,7 +172,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         shouldTouch: true,
         shouldValidate: true,
       }),
-    [setValue]
+    [setValue],
   )
   useGenesisHashEffects(chains, genesisHash, setGenesisHash)
   const setLimitToNetwork = useCallback(
@@ -183,7 +182,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         shouldTouch: true,
         shouldValidate: true,
       }),
-    [setValue]
+    [setValue],
   )
   useAddressEffects(address, setLimitToNetwork)
   const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
@@ -213,7 +212,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         setError("name", error as Error)
       }
     },
-    [close, add, setError, t]
+    [close, add, setError, t],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

@@ -7,6 +7,6 @@ export const chaindataProvider = new ChaindataProvider()
 
 remoteConfigStore.observable.subscribe((config) => {
   chaindataProvider.setOnfinalityApiKey(
-    config.featureFlags.USE_ONFINALITY_API_KEY ? API_KEY_ONFINALITY : undefined
+    config.featureFlags.USE_ONFINALITY_API_KEY ? API_KEY_ONFINALITY : undefined,
   )
 })

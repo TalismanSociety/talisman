@@ -30,8 +30,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
@@ -41,6 +41,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Build papi descriptors
+        run: pnpm papi:generate
       - name: Test
         run: pnpm preconstruct:dev && pnpm test
       - name: Extract short SHA + package version
@@ -70,7 +72,7 @@ jobs:
           # SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           # SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: ./apps/extension/dist/chrome/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}_chrome.zip
@@ -88,8 +90,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
@@ -124,8 +126,8 @@ jobs:
           # fetch all branches on the repo
           # (we need this in order to compare the changes between this PR and the default branch)
           fetch-depth: 0
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
@@ -213,7 +215,7 @@ jobs:
             ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
             ```
 
-            Please add a changeset for these packages.  
+            Please add a changeset for these packages.
             You can do so by running `pnpm changeset` in your local development environment.
 
             Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
@@ -262,8 +264,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Enable corepack
-        run: corepack enable
+      - name: Update & Enable corepack
+        run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Setup Node.js environment

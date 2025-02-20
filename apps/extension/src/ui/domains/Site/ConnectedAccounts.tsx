@@ -1,34 +1,37 @@
+import { isAddressEqual } from "@talismn/util"
+import { FC, Fragment, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+
 import { AccountJsonAny, AuthorizedSite } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { FC, Fragment, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { useAuthorisedSites } from "@ui/state"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 
-const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
+const isMatch = (acc: AccountJsonAny) => (address: string) => isAddressEqual(acc.address, address)
+
+const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
   const accounts = useAccountsForSite(site)
 
-  const activeAccounts = useMemo(
-    () =>
-      accounts.map(
-        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]
-      ),
-    [accounts, site?.addresses]
+  // using a local state allows for optimistic updates
+  const [activeAccounts, setActiveAccounts] = useState(() =>
+    accounts.map((acc) => [acc, site.addresses?.some(isMatch(acc))] as [AccountJsonAny, boolean]),
   )
 
   const handleUpdateAccounts = useCallback(
     (addresses: string[]) => {
-      if (!site?.id) return
-      api.authorizedSiteUpdate(site?.id, {
+      setActiveAccounts(
+        accounts.map((acc) => [acc, addresses.some(isMatch(acc))] as [AccountJsonAny, boolean]),
+      )
+      api.authorizedSiteUpdate(site.id, {
         addresses,
       })
     },
-    [site?.id]
+    [accounts, site.id],
   )
 
   return (
@@ -48,9 +51,9 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       accounts
         .filter((acc) => acc.type === "ethereum")
         .map(
-          (acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [AccountJsonAny, boolean]
+          (acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [AccountJsonAny, boolean],
         ),
-    [accounts, site?.ethAddresses]
+    [accounts, site?.ethAddresses],
   )
 
   const handleAccountClick = useCallback(
@@ -60,7 +63,7 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       const ethAddresses = isConnected ? [] : [address]
       await api.authorizedSiteUpdate(site?.id, { ethAddresses })
     },
-    [site?.ethAddresses, site?.id]
+    [site?.ethAddresses, site?.id],
   )
 
   return (
@@ -87,7 +90,7 @@ export const ConnectedAccounts: FC = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
 
   return (

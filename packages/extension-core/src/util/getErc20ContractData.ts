@@ -35,7 +35,7 @@ const getErc20Contract =
 
 export const getErc20ContractData = async (
   client: Client,
-  contractAddress: `0x${string}`
+  contractAddress: `0x${string}`,
 ): Promise<Erc20ContractData> => {
   const getEr20ContractFn = getErc20Contract(client, contractAddress)
 

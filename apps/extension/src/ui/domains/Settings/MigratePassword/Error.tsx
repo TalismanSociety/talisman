@@ -1,7 +1,8 @@
-import { useSetting } from "@ui/hooks/useSettings"
+import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Button, Checkbox } from "talisman-ui"
+import { Button, Checkbox, ModalDialog } from "talisman-ui"
+
+import { useSetting } from "@ui/state"
 
 import { useMigratePassword } from "./context"
 
@@ -25,7 +26,7 @@ export const MigratePasswordError = () => {
                 team on{" "}
                 <a
                   className="text-white opacity-100"
-                  href="https://discord.gg/talisman"
+                  href={DISCORD_TALISMAN_URL}
                   target="_blank"
                   rel="noreferrer noopener"
                 >
@@ -51,14 +52,14 @@ export const MigratePasswordError = () => {
       </p>
       <p className="text-body-secondary text-sm">
         {t(
-          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted."
+          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted.",
         )}
         {useErrorTracking && (
           <Trans t={t}>
             If this problem continues, please contact our support team on{" "}
             <a
               className="text-white opacity-100"
-              href="https://discord.gg/talisman"
+              href={DISCORD_TALISMAN_URL}
               target="_blank"
               rel="noreferrer noopener"
             >

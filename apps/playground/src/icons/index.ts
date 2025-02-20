@@ -1,4 +1,4 @@
-export { ReactComponent as IconArrowRight } from "./arrow-right.svg"
-export { ReactComponent as IconLoader } from "./loader.svg"
-export { ReactComponent as IconXCircle } from "./x-circle.svg"
-export { ReactComponent as IconX } from "./x.svg"
+export { default as IconArrowRight } from "./arrow-right.svg?react"
+export { default as IconLoader } from "./loader.svg?react"
+export { default as IconXCircle } from "./x-circle.svg?react"
+export { default as IconX } from "./x.svg?react"

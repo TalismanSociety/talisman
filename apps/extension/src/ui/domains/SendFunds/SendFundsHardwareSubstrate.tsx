@@ -7,7 +7,7 @@ import { log } from "@extension/shared"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/state"
 
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 import { useSendFunds } from "./useSendFunds"
@@ -51,7 +51,7 @@ export const SendFundsHardwareSubstrate = () => {
         log.error("handleSigned", { err })
       }
     },
-    [sendWithSignature, to, token, amount, tokenId, knownAddress]
+    [sendWithSignature, to, token, amount, tokenId, knownAddress],
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

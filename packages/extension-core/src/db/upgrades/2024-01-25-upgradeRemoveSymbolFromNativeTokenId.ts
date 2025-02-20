@@ -25,7 +25,7 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: DbTransaction) =>
         tokenRate.tokenId = tokenRate.tokenId.replace(/-evm-native-.+$/, "-evm-native")
 
       return [tokenRate.tokenId, tokenRate]
-    })
+    }),
   )
 
   await tx.table<DbTokenRates, string>("tokenRates").clear()

@@ -1,4 +1,4 @@
-import { Properties } from "posthog-js"
+import { PostHogCaptureProperties } from "@extension/core/domains/analytics/types"
 
 import { api } from "./api"
 
@@ -13,6 +13,7 @@ export type AnalyticsFeature =
   | "Settings"
   | "Transactions"
   | "Asset Discovery"
+  | "Quick Settings"
 
 export type AnalyticsPage = {
   container: AnalyticsContainer
@@ -26,7 +27,7 @@ export type AnalyticsEvent = AnalyticsPage & {
   name: AnalyticsEventName
   action?: string
   site?: string
-  properties?: Properties
+  properties?: PostHogCaptureProperties
 }
 
 export const sendAnalyticsEvent = (event: AnalyticsEvent) => {

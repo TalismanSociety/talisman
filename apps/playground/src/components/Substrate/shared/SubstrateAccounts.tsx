@@ -19,7 +19,7 @@ const AccountInner = () => {
     (acc: InjectedAccountWithMeta) => () => {
       select(acc)
     },
-    [select]
+    [select],
   )
 
   return isConnected ? (

@@ -1,7 +1,8 @@
-import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
+
+import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 
 import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"

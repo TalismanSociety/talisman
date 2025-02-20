@@ -3,9 +3,9 @@ import {
   Balance,
   BalanceJson,
   Balances,
-  HydrateDb,
   balances as balancesFn,
   getBalanceId,
+  HydrateDb,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
@@ -46,17 +46,17 @@ export const allBalancesAtom = atom(async (get) => {
   return new Balances(
     Object.values(balances).filter((balance) => !!hydrateData?.tokens?.[balance.tokenId]),
     // hydrate balance chains, evmNetworks, tokens and tokenRates
-    hydrateData
+    hydrateData,
   )
 })
 
 const balancesObservable = new BehaviorSubject<Record<string, BalanceJson>>({})
 const balancesObservableAtom = atomWithObservable<Record<string, BalanceJson>>(
-  () => balancesObservable
+  () => balancesObservable,
 )
 
 export const balancesPersistBackendAtom = atom<BalancesPersistBackend>(
-  localStorageBalancesPersistBackend
+  localStorageBalancesPersistBackend,
 )
 
 const hydrateBalancesObservableAtom = atom(async (get) => {
@@ -65,8 +65,8 @@ const hydrateBalancesObservableAtom = atom(async (get) => {
 
   balancesObservable.next(
     Object.fromEntries(
-      balances.map((b) => [getBalanceId(b), { ...b, status: "cache" } as BalanceJson])
-    )
+      balances.map((b) => [getBalanceId(b), { ...b, status: "cache" } as BalanceJson]),
+    ),
   )
 })
 
@@ -160,7 +160,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
             // Keep changed balances, which are not known zeros
             return hasChanged && !isZero
           })
-          .map((b) => [b.id, b.toJSON()])
+          .map((b) => [b.id, b.toJSON()]),
       )
 
       if (Object.keys(changedBalances).length === 0 && newlyZeroBalances.length === 0) return
@@ -168,7 +168,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       const nonZeroBalances =
         newlyZeroBalances.length > 0
           ? Object.fromEntries(
-              Object.entries(existing).filter(([id]) => !newlyZeroBalances.includes(id))
+              Object.entries(existing).filter(([id]) => !newlyZeroBalances.includes(id)),
             )
           : existing
       const newBalancesState = { ...nonZeroBalances, ...changedBalances }
@@ -183,14 +183,14 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       const balancesToKeep = Object.fromEntries(
         new Balances(Object.values(await get(balancesObservableAtom))).each
           .filter((b) => !balancesFilter(b))
-          .map((b) => [b.id, b.toJSON()])
+          .map((b) => [b.id, b.toJSON()]),
       )
 
       balancesObservable.next(balancesToKeep)
     }
 
     const enabledChainIds = enabledChainsConfig?.map(
-      (genesisHash) => chains.find((chain) => chain.genesisHash === genesisHash)?.id
+      (genesisHash) => chains.find((chain) => chain.genesisHash === genesisHash)?.id,
     )
     const enabledChainsFilter = enabledChainIds
       ? (token: Token) => token.chain && enabledChainIds?.includes(token.chain.id)
@@ -272,8 +272,8 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
         map((val) =>
           Object.values(val)
             .filter(({ status }) => status === "cache")
-            .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
-        )
+            .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson),
+        ),
       )
 
       firstValueFrom(staleObservable).then((v) => {
@@ -302,16 +302,16 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
                       const chainComparison = error.chainId
                         ? "chainId" in balance && error.chainId === balance.chainId
                         : error.evmNetworkId
-                        ? "evmNetworkId" in balance && error.evmNetworkId === balance.evmNetworkId
-                        : true
+                          ? "evmNetworkId" in balance && error.evmNetworkId === balance.evmNetworkId
+                          : true
                       return (
                         chainComparison &&
                         addressesByModuleToken[tokenId]?.includes(address) &&
                         source === balanceModule.type
                       )
                     })
-                    .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
-                )
+                    .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson),
+                ),
               )
 
               firstValueFrom(staleObservable).then((v) => {
@@ -340,7 +340,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
               updateBalances(Object.values(balances.toJSON()))
             }
           }
-        }
+        },
       )
 
       return () => unsub.then((unsubscribe) => unsubscribe())

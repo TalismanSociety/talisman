@@ -54,7 +54,7 @@ export const currencyOrder = Object.keys(SUPPORTED_CURRENCIES) as Array<
 >
 export const sortCurrencies = (
   a: keyof typeof SUPPORTED_CURRENCIES,
-  b: keyof typeof SUPPORTED_CURRENCIES
+  b: keyof typeof SUPPORTED_CURRENCIES,
 ) => currencyOrder.indexOf(a) - currencyOrder.indexOf(b)
 export const currencyConfig = Object.fromEntries(
   currencyOrder.map((id) => [
@@ -64,5 +64,5 @@ export const currencyConfig = Object.fromEntries(
       name: SUPPORTED_CURRENCIES[id as TokenRateCurrency].name,
       icon: currencyIcons[id as TokenRateCurrency],
     },
-  ])
+  ]),
 )

@@ -1,8 +1,9 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import useToken from "@ui/hooks/useToken"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { useToken } from "@ui/state"
 
 export const SignViewStakingUnstake: FC<{
   tokenId: TokenId

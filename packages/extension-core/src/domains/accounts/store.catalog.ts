@@ -1,11 +1,11 @@
 import { StorageProvider } from "../../libs/Store"
 import {
-  RequestAccountsCatalogAction,
-  Trees,
   addAccount,
   bySortOrder,
   removeAccount,
+  RequestAccountsCatalogAction,
   runActionsOnTrees,
+  Trees,
 } from "./helpers.catalog"
 import { AccountJsonAny } from "./types"
 
@@ -79,7 +79,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         .some((status) => {
           // if any accounts were added or removed, inform the store that a change was made
           return status === true
-        })
+        }),
     )
 
   /**
@@ -99,7 +99,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         .some((status) => {
           // if any accounts were removed, inform the store that a change was made
           return status === true
-        })
+        }),
     )
 
   /**

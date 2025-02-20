@@ -2,8 +2,8 @@ import { Chain } from "extension-core"
 import { useMemo } from "react"
 
 import { AddSubstrateLedgerAppType } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import { useChains } from "@ui/state"
 
-import useChains from "../useChains"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"
 
 export type ChainWithLedgerApp = Chain & {
@@ -12,7 +12,7 @@ export type ChainWithLedgerApp = Chain & {
 }
 
 export const useLedgerSubstrateChains = () => {
-  const { chains } = useChains({ includeTestnets: false, activeOnly: false })
+  const chains = useChains({ includeTestnets: false, activeOnly: false })
 
   // to be used with a ledger, a chain must either have CheckMetadataHash or a ledgerApp
   return useMemo<ChainWithLedgerApp[]>(() => {
@@ -45,6 +45,6 @@ export const useLedgerSubstrateChain = (chainId: string | null | undefined) => {
 
   return useMemo(
     () => (chainId && chains.find((chain) => chain.id === chainId)) || null,
-    [chains, chainId]
+    [chains, chainId],
   )
 }

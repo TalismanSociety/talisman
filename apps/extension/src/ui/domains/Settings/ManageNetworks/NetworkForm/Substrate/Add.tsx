@@ -1,15 +1,16 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useQuery } from "@tanstack/react-query"
-import useChains from "@ui/hooks/useChains"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 
+import { useChains } from "@ui/state"
+
 import { SubNetworkForm } from "./Form"
 import { getSubstrateRpcInfo } from "./helpers"
-import { subNetworkFormSchema } from "./schema"
-import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
+import { SubNetworkFormData, subNetworkFormSchema } from "./schema"
+import { SubNetworkFormBaseProps } from "./types"
 
 const DEFAULT_VALUES: Partial<SubNetworkFormData> = {
   accountFormat: "*25519",
@@ -19,7 +20,7 @@ const DEFAULT_VALUES: Partial<SubNetworkFormData> = {
 export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
   const { t } = useTranslation("admin")
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains()
 
   const formProps = useForm<SubNetworkFormData>({
     mode: "all",
@@ -89,14 +90,14 @@ export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
   )
 }
 
-const useRpcInfo = (rpcUrl: string) => {
+const useRpcInfo = (rpcUrl: string | null | undefined) => {
   const [debouncedRpcUrl, setDebouncedRpcUrl] = useState(rpcUrl)
   useDebounce(
     () => {
       setDebouncedRpcUrl(rpcUrl)
     },
     250,
-    [rpcUrl]
+    [rpcUrl],
   )
 
   return useQuery({

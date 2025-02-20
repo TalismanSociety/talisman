@@ -5,8 +5,8 @@ import {
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
 } from "extension-core"
-import { DEBUG } from "extension-shared"
-import { ReplaySubject, firstValueFrom } from "rxjs"
+import { DEBUG, IS_FIREFOX } from "extension-shared"
+import { firstValueFrom, ReplaySubject } from "rxjs"
 
 const normalizeUrl = (url: string) => {
   return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")
@@ -18,7 +18,7 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 
 export const initSentryFrontend = () => {
   SentryReact.init({
-    enabled: true,
+    enabled: !IS_FIREFOX,
     environment: process.env.BUILD,
     dsn: process.env.SENTRY_DSN,
     integrations: [SentryReact.browserTracingIntegration()],

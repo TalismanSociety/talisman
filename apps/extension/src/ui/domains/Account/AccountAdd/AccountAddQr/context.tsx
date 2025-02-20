@@ -3,7 +3,7 @@ import { decodeAnyAddress, sleep } from "@talismn/util"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetDiscoveryMode, VerifierCertificateType } from "@extension/core"
+import { VerifierCertificateType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -164,7 +164,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           title: t("Importing account"),
           subtitle: "Please wait",
         },
-        { autoClose: false }
+        { autoClose: false },
       )
 
       // pause to prevent double notification
@@ -201,10 +201,8 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         const createdAddress = await api.accountCreateQr(
           name || t("My Polkadot Vault Account"),
           address,
-          lockToNetwork ? genesisHash : null
+          lockToNetwork ? genesisHash : null,
         )
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [createdAddress])
 
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {
@@ -221,7 +219,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, state, t]
+    [onSuccess, state, t],
   )
 
   const submitConfigure = useCallback(
@@ -235,7 +233,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       // otherwise, dispatch to setConfigureVerifierCert
       dispatch({ method: "setConfigureVerifierCert" })
     },
-    [submit, state, hasVerifierCertMnemonic, vaultAccounts]
+    [submit, state, hasVerifierCertMnemonic, vaultAccounts],
   )
 
   return { state, dispatch, submitConfigure, submit }

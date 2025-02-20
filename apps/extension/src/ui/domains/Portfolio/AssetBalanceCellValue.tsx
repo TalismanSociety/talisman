@@ -1,9 +1,10 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
+
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
 import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
@@ -18,6 +19,7 @@ type Props = {
   className?: string
   tooltip?: ReactNode
   balancesStatus?: BalancesStatus
+  noCountUp?: boolean
 }
 
 export const AssetBalanceCellValue = ({
@@ -29,6 +31,7 @@ export const AssetBalanceCellValue = ({
   className,
   tooltip,
   balancesStatus,
+  noCountUp,
 }: Props) => {
   if (!render) return null
   return (
@@ -36,17 +39,17 @@ export const AssetBalanceCellValue = ({
       <div
         className={classNames(
           "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
-          className
+          className,
         )}
       >
         <div
           className={classNames(
             "flex items-center justify-end gap-2",
-            locked ? "text-body-secondary" : "text-body"
+            locked ? "text-body-secondary" : "text-body",
           )}
         >
           <div>
-            <Tokens amount={tokens} symbol={symbol} isBalance />
+            <Tokens amount={tokens} symbol={symbol} isBalance noCountUp={noCountUp} />
           </div>
           {locked ? (
             <div className="pb-1">
@@ -59,7 +62,7 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance />}</div>
+        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}</div>
       </div>
     </WithTooltip>
   )

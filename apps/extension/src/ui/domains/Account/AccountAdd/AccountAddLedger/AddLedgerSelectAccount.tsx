@@ -10,7 +10,7 @@ import * as yup from "yup"
 import { LedgerEthDerivationPathType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
+import { LedgerSubstrateLegacyAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 
@@ -31,34 +31,30 @@ const items = Object.entries(options).map<Option>(([key, value]) => ({
 }))
 
 type LedgerDerivationPathSelectorProps = {
-  defaultValue: LedgerEthDerivationPathType
+  derivationPathType: LedgerEthDerivationPathType
   onChange: (value: LedgerEthDerivationPathType) => void
 }
 
 const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
-  defaultValue = "LedgerLive",
+  derivationPathType = "LedgerLive",
   onChange,
 }) => {
-  const defaultSelectedItem = useMemo(
-    () => items.find((i) => i.key === defaultValue),
-    [defaultValue]
-  )
+  const value = useMemo(() => items.find((i) => i.key === derivationPathType), [derivationPathType])
 
   const handleChange = useCallback(
     (item: Option | null) => {
       if (item) onChange(item.key)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
     <Dropdown
       items={items}
-      value={defaultSelectedItem}
+      value={value}
       propertyKey="key"
       propertyLabel="label"
       onChange={handleChange}
-      className="w-[32rem]"
     />
   )
 }
@@ -77,10 +73,10 @@ export const AddLedgerSelectAccount = () => {
     () =>
       yup
         .object({
-          accounts: yup.array().min(1),
+          accounts: yup.array().of(yup.mixed<LedgerAccountDef>().defined()).min(1).defined(),
         })
         .required(),
-    []
+    [],
   )
 
   const {
@@ -101,7 +97,7 @@ export const AddLedgerSelectAccount = () => {
           title: t("Connecting account", { count: accounts.length }),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
 
       // pause to prevent double notification
@@ -123,17 +119,18 @@ export const AddLedgerSelectAccount = () => {
         })
       }
     },
-    [importAccounts, onSuccess, t]
+    [importAccounts, onSuccess, t],
   )
 
   const handleAccountsChange = useCallback(
     (accounts: LedgerAccountDef[]) => {
       setValue("accounts", accounts, { shouldValidate: true })
     },
-    [setValue]
+    [setValue],
   )
 
-  const [derivationPath, setDerivationPath] = useState<LedgerEthDerivationPathType>("LedgerLive")
+  const [derivationPathType, setDerivationPathType] =
+    useState<LedgerEthDerivationPathType>("LedgerLive")
 
   const isInvalidInputs = useMemo(() => {
     if (!data.type) return true
@@ -157,13 +154,13 @@ export const AddLedgerSelectAccount = () => {
           <>
             <p className="text-body-secondary mb-12 mt-[1em]">
               {t(
-                "The derivation path will be different based on which application you used to initialise your Ledger account."
+                "The derivation path will be different based on which application you used to initialise your Ledger account.",
               )}
             </p>
             <div>
               <LedgerDerivationPathSelector
-                defaultValue="LedgerLive"
-                onChange={setDerivationPath}
+                derivationPathType={derivationPathType}
+                onChange={setDerivationPathType}
               />
             </div>
             <div className="h-4" />
@@ -175,7 +172,7 @@ export const AddLedgerSelectAccount = () => {
             <>
               <br />
               {t(
-                "Amounts displayed for each account only include the most popular tokens on major networks."
+                "Amounts displayed for each account only include the most popular tokens on major networks.",
               )}
             </>
           )}
@@ -183,23 +180,30 @@ export const AddLedgerSelectAccount = () => {
         {data.type === "sr25519" && (
           <>
             {data.substrateAppType === AddSubstrateLedgerAppType.Legacy && (
-              <LedgerSubstrateAccountPicker
+              <LedgerSubstrateLegacyAccountPicker
                 chainId={data.chainId as string}
                 onChange={handleAccountsChange}
               />
             )}
             {data.substrateAppType === AddSubstrateLedgerAppType.Generic && (
-              <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} />
+              <LedgerSubstrateGenericAccountPicker
+                onChange={handleAccountsChange}
+                chainId={data.chainId}
+              />
             )}
             {data.substrateAppType === AddSubstrateLedgerAppType.Migration && !!app && (
-              <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} app={app} />
+              <LedgerSubstrateGenericAccountPicker
+                onChange={handleAccountsChange}
+                app={app}
+                chainId={data.chainId}
+              />
             )}
           </>
         )}
         {data.type === "ethereum" && (
           <LedgerEthereumAccountPicker
             name={t("Ledger Ethereum")}
-            derivationPathType={derivationPath}
+            derivationPathType={derivationPathType}
             onChange={handleAccountsChange}
           />
         )}

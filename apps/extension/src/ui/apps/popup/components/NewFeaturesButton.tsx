@@ -1,11 +1,12 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { getWhatsNewVersions } from "@ui/apps/popup/pages/Portfolio/PortfolioWhatsNew"
-import { useSetting } from "@ui/hooks/useSettings"
 import { MouseEventHandler, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { getWhatsNewVersions } from "@ui/apps/popup/pages/WhatsNew/WhatsNew"
+import { useFeatureFlag, useSetting } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -21,12 +22,13 @@ type Props = {
 export const NewFeaturesButton = ({ className }: Props) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const isEnabled = useFeatureFlag("NEW_FEATURES_HOME_BANNER")
   const [dismissedVersion, setDismissedVersion] = useSetting("newFeaturesDismissed")
   const versions = getWhatsNewVersions()
 
   const handleClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "What's New" })
-    return navigate("/portfolio/whats-new")
+    return navigate("/whats-new")
   }, [navigate])
 
   const handleDismissClick: MouseEventHandler<HTMLButtonElement> = useCallback(
@@ -37,10 +39,10 @@ export const NewFeaturesButton = ({ className }: Props) => {
       sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Interact", action: "Dismiss What's New" })
       setDismissedVersion(versions[0])
     },
-    [setDismissedVersion, versions]
+    [setDismissedVersion, versions],
   )
 
-  if (dismissedVersion === versions[0]) return null
+  if (!isEnabled || dismissedVersion === versions[0]) return null
 
   return (
     <div
@@ -48,7 +50,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
       role="button"
       className={classNames(
         "text-body-secondary bg-grey-500 relative flex w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 py-8 hover:bg-[rgb(120,120,120)] hover:text-white",
-        className
+        className,
       )}
       onClick={handleClick}
       onKeyDown={(e) => ["Enter", " "].includes(e.key) && handleClick?.()}

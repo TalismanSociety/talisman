@@ -1,12 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { api } from "@ui/api"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { FC, RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { api } from "@ui/api"
+import { useAccountByAddress, useAccounts } from "@ui/state"
 
 type FormData = {
   name: string
@@ -23,24 +23,24 @@ export const AccountRename: FC<{
   const allAccounts = useAccounts()
   const otherAccountNames = useMemo(
     () => allAccounts.filter((a) => a.address !== address).map((a) => a.name),
-    [address, allAccounts]
+    [address, allAccounts],
   )
 
   const schema = useMemo(
     () =>
       yup
         .object({
-          name: yup.string().required("").notOneOf(otherAccountNames, t("Name already in use")),
+          name: yup.string().required(" ").notOneOf(otherAccountNames, t("Name already in use")),
         })
         .required(),
-    [otherAccountNames, t]
+    [otherAccountNames, t],
   )
 
   const defaultValues = useMemo(
     () => ({
       name: account?.name,
     }),
-    [account]
+    [account],
   )
 
   const {
@@ -66,7 +66,7 @@ export const AccountRename: FC<{
         })
       }
     },
-    [address, onConfirm, setError]
+    [address, onConfirm, setError],
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -88,7 +88,7 @@ export const AccountRename: FC<{
       refName(e)
       refNameRef.current = e
     },
-    [refName]
+    [refName],
   )
 
   return (

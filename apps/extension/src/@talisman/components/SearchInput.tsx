@@ -27,6 +27,7 @@ type SearchInputProps = {
   placeholder?: string
   initialValue?: string
   after?: ReactNode
+  disabled?: boolean
   onChange?: (search: string) => void
   onSubmit?: () => void
 }
@@ -39,6 +40,7 @@ export const SearchInput: FC<SearchInputProps> = ({
   placeholder,
   initialValue,
   after,
+  disabled,
   onChange,
   onSubmit,
 }) => {
@@ -50,7 +52,7 @@ export const SearchInput: FC<SearchInputProps> = ({
     (e) => {
       setSearch(e.target.value)
     },
-    [setSearch]
+    [setSearch],
   )
 
   const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = useCallback(
@@ -59,7 +61,7 @@ export const SearchInput: FC<SearchInputProps> = ({
         onSubmit?.()
       }
     },
-    [onSubmit]
+    [onSubmit],
   )
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export const SearchInput: FC<SearchInputProps> = ({
       small: small === undefined ? INPUT_CONTAINER_PROPS.small : small,
       className: classNames(INPUT_CONTAINER_PROPS.className, containerClassName),
     }),
-    [containerClassName, small]
+    [containerClassName, small],
   )
 
   const handleClear = useCallback(() => {
@@ -104,6 +106,7 @@ export const SearchInput: FC<SearchInputProps> = ({
       }
       defaultValue={initialValue}
       placeholder={placeholder}
+      disabled={disabled}
       onChange={handleSearchChange}
       onKeyUp={handleKeyUp}
     />

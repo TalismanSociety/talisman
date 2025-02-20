@@ -4,8 +4,7 @@ import { ChainId, EvmNetworkId } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import useChain from "@ui/hooks/useChain"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useChain, useEvmNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { Address } from "./Address"
@@ -68,7 +67,7 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
         <button
           type="button"
           onClick={handleClick}
-          className="shrink-0 opacity-80 hover:opacity-100 "
+          className="shrink-0 opacity-80 hover:opacity-100"
         >
           <CopyIcon />
         </button>

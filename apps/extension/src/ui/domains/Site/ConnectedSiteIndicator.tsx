@@ -14,7 +14,7 @@ export const ConnectedSiteIndicator: FC<{
         status === "connected" && "border-green-500/20",
         status === "disconnected" && "border-brand-orange/20",
         status === "disabled" && "border-grey-500/20",
-        className
+        className,
       )}
     >
       <div
@@ -22,7 +22,7 @@ export const ConnectedSiteIndicator: FC<{
           "h-4 w-4 rounded-full",
           status === "connected" && "bg-green-500",
           status === "disconnected" && "bg-brand-orange",
-          status === "disabled" && "bg-grey-500"
+          status === "disabled" && "bg-grey-500",
         )}
       ></div>
     </div>

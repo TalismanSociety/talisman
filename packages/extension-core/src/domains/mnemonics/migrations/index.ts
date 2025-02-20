@@ -9,7 +9,7 @@ import {
   createLegacySeedPhraseStore,
   createLegacyVerifierCertificateMnemonicStore,
 } from "../legacy/store"
-import { MnemonicSource, encryptMnemonic, mnemonicsStore } from "../store"
+import { encryptMnemonic, MnemonicSource, mnemonicsStore } from "../store"
 
 type AccountType = {
   [K in keyof typeof AccountTypes]: (typeof AccountTypes)[K]
@@ -63,11 +63,11 @@ export const migrateSeedStoreToMultiple: Migration = {
 
     const allAccounts = keyring.getAccounts()
     const parentAccount = allAccounts.find(
-      ({ meta: { origin } }) => origin && mnemonicAccountTypes.includes(origin as AccountType)
+      ({ meta: { origin } }) => origin && mnemonicAccountTypes.includes(origin as AccountType),
     )
     const derivedAccounts = allAccounts.filter(
       ({ meta: { parent, origin } }) =>
-        parent === parentAccount?.address && origin === AccountTypes.DERIVED
+        parent === parentAccount?.address && origin === AccountTypes.DERIVED,
     )
     const migrationAccounts = [...derivedAccounts, parentAccount]
 
@@ -88,7 +88,7 @@ export const migrateSeedStoreToMultiple: Migration = {
       if (legacyVCData.cipher !== legacyData.cipher) {
         const { encrypted: vcCipher, hash: vcId } = await getMnemonicHash(
           legacyVCData.cipher,
-          password
+          password,
         )
 
         appStoreVCId = vcId

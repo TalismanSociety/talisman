@@ -1,84 +1,123 @@
-import { getEthLedgerDerivationPath } from "@extension/core"
-import { LedgerEthDerivationPathType } from "@extension/core"
-import { DEBUG } from "@extension/shared"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
-import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "@extension/core"
+import { log } from "@extension/shared"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useAccounts, useEvmNetworks } from "@ui/state"
+
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
 const useLedgerEthereumAccounts = (
   name: string,
   derivationPathType: LedgerEthDerivationPathType,
   selectedAccounts: LedgerAccountDefEthereum[],
   pageIndex: number,
-  itemsPerPage: number
+  itemsPerPage: number,
 ) => {
   const { t } = useTranslation()
   const walletAccounts = useAccounts()
   const [derivedAccounts, setDerivedAccounts] = useState<(LedgerEthereumAccount | undefined)[]>([
     ...Array(itemsPerPage),
   ])
-  const [isBusy, setIsBusy] = useState<boolean>()
-  const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedgerEthereum()
+  const refIsBusy = useRef(false)
 
-  const loadPage = useCallback(async () => {
-    if (!ledger || !isReady) return
+  const { getAddress } = useLedgerEthereum()
 
-    setError(undefined)
-    setIsBusy(true)
-    const skip = pageIndex * itemsPerPage
+  const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
+    status: "connecting",
+    message: t("Fetching account addresses..."),
+  })
 
-    try {
-      const newAccounts: (LedgerEthereumAccount | undefined)[] = [...Array(itemsPerPage)]
+  // derivation path => address cache, used when going back to previous page
+  const refAddressCache = useRef<Record<string, { address: string }>>({})
+  useEffect(() => {
+    refAddressCache.current = {} // reset if app changes
+  }, [])
 
-      for (let i = 0; i < itemsPerPage; i++) {
-        const accountIndex = skip + i
-        const path = getEthLedgerDerivationPath(derivationPathType, accountIndex)
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => !!evmNetworks.length, [evmNetworks])
 
-        const { address } = await ledger.getAddress(path)
+  // keep page index as ref to allow for cancelling current page load when changing page
+  const refPageIndex = useRef(pageIndex)
+  useEffect(() => {
+    refPageIndex.current = pageIndex
+  }, [pageIndex])
 
-        newAccounts[i] = {
-          accountIndex,
-          name: `${name.trim()} ${accountIndex + 1}`,
-          path,
-          address,
-        } as LedgerEthereumAccount
+  const loadPage = useCallback(
+    async (pageIndex: number, force = false) => {
+      if (!force && refIsBusy.current) return
+      refIsBusy.current = true
 
+      //  setError(undefined)
+      setConnectionStatus({
+        status: "connecting",
+        message: t("Fetching account addresses..."),
+      })
+
+      const skip = pageIndex * itemsPerPage
+
+      try {
+        const newAccounts: (LedgerEthereumAccount | undefined)[] = [...Array(itemsPerPage)]
         setDerivedAccounts([...newAccounts])
-      }
-    } catch (err) {
-      const error = err as Error & { statusCode?: number }
-      // eslint-disable-next-line no-console
-      DEBUG && console.error(error.message, err)
-      if (error.message?.toLowerCase().includes("busy")) setError(t("Ledger is busy"))
-      else if (error.message?.toLowerCase().includes("disconnected"))
-        setError(t("Ledger is disconnected"))
-      else if (error.statusCode === 27404) setError(t("Ledger is locked"))
-      else setError(t("Failed to connect to Ledger"))
-    }
-    setIsBusy(false)
-  }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
-  const withBalances = useMemo(() => !!derivedAccounts?.length, [derivedAccounts?.length])
+        for (let i = 0; i < itemsPerPage; i++) {
+          if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
+
+          const accountIndex = skip + i
+          const path = getEthLedgerDerivationPath(derivationPathType, accountIndex)
+
+          const { address } = refAddressCache.current[path] ?? (await getAddress(path))
+          if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
+          if (!address) throw new Error("Unable to get address")
+          refAddressCache.current[path] = { address }
+
+          newAccounts[i] = {
+            accountIndex,
+            name: `${name.trim()} ${accountIndex + 1}`,
+            path,
+            address,
+          } as LedgerEthereumAccount
+
+          setDerivedAccounts([...newAccounts])
+        }
+
+        setConnectionStatus({
+          status: "ready",
+          message: t("Ledger is ready."),
+        })
+      } catch (err) {
+        const error = getTalismanLedgerError(err)
+        log.error("Failed to load page", { err })
+        setConnectionStatus({
+          status: "error",
+          message: error.message,
+          onRetryClick: () => loadPage(pageIndex),
+        })
+      } finally {
+        refIsBusy.current = false
+      }
+    },
+    [derivationPathType, getAddress, itemsPerPage, name, t],
+  )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      derivedAccounts.filter(Boolean).length
+      withBalances && derivedAccounts.filter(Boolean).length === itemsPerPage
         ? derivedAccounts
             .filter((acc): acc is LedgerEthereumAccount => !!acc)
             .map((acc) => ({ address: acc.address, type: "ethereum" }))
         : [],
-    [derivedAccounts]
+    [derivedAccounts, itemsPerPage, withBalances],
   )
-  const balances = useAccountImportBalances(accountImportDefs)
+  const balances = useAccountImportBalances(balanceDefs)
 
   const accounts = useMemo(
     () =>
@@ -86,15 +125,16 @@ const useLedgerEthereumAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
+          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null),
         )
 
         const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
+          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
         )
         const isBalanceLoading =
-          accountBalances.each.some((b) => b.status === "cache") ||
-          balances.status === "initialising"
+          withBalances &&
+          (accountBalances.each.some((b) => b.status === "cache") ||
+            balances.status === "initialising")
 
         return {
           ...acc,
@@ -105,19 +145,17 @@ const useLedgerEthereumAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts]
+    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances],
   )
 
   useEffect(() => {
     // refresh on every page change
-    loadPage()
-  }, [loadPage])
+    loadPage(pageIndex)
+  }, [loadPage, pageIndex])
 
   return {
     accounts,
     withBalances,
-    isBusy,
-    error,
     connectionStatus,
   }
 }
@@ -138,12 +176,12 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefEthereum[]>([])
-  const { accounts, error, isBusy, withBalances } = useLedgerEthereumAccounts(
+  const { accounts, withBalances, connectionStatus } = useLedgerEthereumAccounts(
     name,
     derivationPathType,
     selectedAccounts,
     pageIndex,
-    itemsPerPage
+    itemsPerPage,
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -151,7 +189,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     setSelectedAccounts((prev) =>
       prev.some((pa) => pa.path === path)
         ? prev.filter((pa) => pa.path !== path)
-        : prev.concat({ name, address, path })
+        : prev.concat({ name, address, path }),
     )
   }, [])
 
@@ -165,17 +203,18 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
 
   return (
     <>
+      <div className="mb-8">
+        <LedgerConnectionStatus {...connectionStatus} />
+      </div>
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances={withBalances}
         canPageBack={pageIndex > 0}
-        disablePaging={isBusy}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
         onPagerPrevClick={handlePagePrev}
         onPagerNextClick={handlePageNext}
       />
-      <p className="text-alert-error">{error}</p>
     </>
   )
 }

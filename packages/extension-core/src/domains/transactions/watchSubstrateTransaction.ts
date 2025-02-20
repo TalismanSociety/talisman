@@ -6,6 +6,7 @@ import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
+import urlJoin from "url-join"
 
 import { sentry } from "../../config/sentry"
 import { createNotification, NotificationType } from "../../notifications"
@@ -31,7 +32,8 @@ type ExtrinsicResult = {
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
   blockNumber: number,
-  extIndex: number
+  extIndex: number,
+  finalized: boolean,
 ) => void
 
 const getStorageKeyHash = (...names: string[]) => {
@@ -42,7 +44,7 @@ const getExtrinsincResult = async (
   registry: TypeRegistry,
   blockHash: Hash,
   chainId: ChainId,
-  extrinsicHash: string
+  extrinsicHash: string,
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
     const blockData = await chainConnector.send(chainId, "chain_getBlock", [blockHash])
@@ -61,7 +63,7 @@ const getExtrinsincResult = async (
         return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
       } catch (error) {
         log.warn(
-          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
+          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains",
         )
         return registry.createType("Vec<EventRecord>", eventsFrame)
       }
@@ -73,7 +75,7 @@ const getExtrinsincResult = async (
           ({ phase, event }) =>
             phase.isApplyExtrinsic &&
             phase.asApplyExtrinsic.eqn(txIndex) &&
-            ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method)
+            ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method),
         )
         if (relevantEvent)
           if (relevantEvent?.event.method === "ExtrinsicSuccess") {
@@ -110,7 +112,7 @@ const watchExtrinsicStatus = async (
   chainId: ChainId,
   registry: TypeRegistry,
   extrinsicHash: string,
-  cb: ExtrinsicStatusChangeHandler
+  cb: ExtrinsicStatusChangeHandler,
 ) => {
   let foundInBlockHash: Hash
   let timeout: NodeJS.Timeout | null = null
@@ -123,7 +125,7 @@ const watchExtrinsicStatus = async (
 
   const unsubscribe = async (
     key: "finalizedHeads" | "allHeads",
-    unsubscribeHandler: () => void
+    unsubscribeHandler: () => void,
   ) => {
     if (!subscriptions[key]) return
     subscriptions[key] = false
@@ -131,7 +133,7 @@ const watchExtrinsicStatus = async (
   }
 
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizeHeads = await chainConnector.subscribe(
+  const unsubscribeFinalizedHeads = await chainConnector.subscribe(
     chainId,
     "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
@@ -152,22 +154,22 @@ const watchExtrinsicStatus = async (
           registry,
           blockHash,
           chainId,
-          extrinsicHash
+          extrinsicHash,
         )
 
         if (err) return // err is true if extrinsic is not found in this block
 
         const { result, blockNumber, extIndex } = extResult
-        cb(result, blockNumber, extIndex)
+        cb(result, blockNumber, extIndex, true)
 
         await unsubscribe("finalizedHeads", () =>
-          unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+          unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads"),
         )
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
         sentry.captureException(error, { extra: { chainId } })
       }
-    }
+    },
   )
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
@@ -193,30 +195,29 @@ const watchExtrinsicStatus = async (
           registry,
           blockHash,
           chainId,
-          extrinsicHash
+          extrinsicHash,
         )
 
         if (err) return // err is true if extrinsic is not found in this block
 
         const { result, blockNumber, extIndex } = extResult
-        if (result === "success") {
-          foundInBlockHash = blockHash
-          cb("included", blockNumber, extIndex)
-        } else cb(result, blockNumber, extIndex)
+
+        if (result === "success") foundInBlockHash = blockHash
+        cb(result, blockNumber, extIndex, false)
 
         await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
 
         // if error, no need to wait for a confirmation
         if (result === "error") {
           await unsubscribe("finalizedHeads", () =>
-            unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+            unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads"),
           )
           if (timeout !== null) clearTimeout(timeout)
         }
       } catch (error) {
         sentry.captureException(error, { extra: { chainId } })
       }
-    }
+    },
   )
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
@@ -224,7 +225,7 @@ const watchExtrinsicStatus = async (
     await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
     if (subscriptions.finalizedHeads) {
       await unsubscribe("finalizedHeads", () =>
-        unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+        unsubscribeFinalizedHeads("chain_subscribeFinalizedHeads"),
       )
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
@@ -232,11 +233,11 @@ const watchExtrinsicStatus = async (
           registry,
           foundInBlockHash,
           chainId,
-          extrinsicHash
+          extrinsicHash,
         )
         if (!err) {
           const { result, blockNumber, extIndex } = extResult
-          cb(result, blockNumber, extIndex)
+          cb(result, blockNumber, extIndex, true)
         }
       }
     }
@@ -252,7 +253,7 @@ export const watchSubstrateTransaction = async (
   registry: TypeRegistry,
   payload: SignerPayloadJSON,
   signature: HexString,
-  options: WatchTransactionOptions = {}
+  options: WatchTransactionOptions = {},
 ) => {
   const { siteUrl, notifications, transferInfo = {} } = options
   const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
@@ -264,14 +265,22 @@ export const watchSubstrateTransaction = async (
 
     await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
 
-    await watchExtrinsicStatus(chain.id, registry, hash, async (result, blockNumber, extIndex) => {
-      const type: NotificationType = result === "included" ? "submitted" : result
-      const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
+    await watchExtrinsicStatus(
+      chain.id,
+      registry,
+      hash,
+      async (result, blockNumber, extIndex, finalized) => {
+        const type: NotificationType = result === "included" ? "submitted" : result
 
-      if (withNotifications) createNotification(type, chain.name ?? "chain", url)
+        // if subscanUrl doesnt exist, the link will not work, but we still need an url for the notification
+        const url = urlJoin(chain.subscanUrl ?? "", "extrinsic", `${blockNumber}-${extIndex}`)
 
-      if (result !== "included") await updateTransactionStatus(hash, result, blockNumber)
-    })
+        if (withNotifications) createNotification(type, chain.name ?? "chain", url)
+
+        if (result !== "included")
+          await updateTransactionStatus(hash, result, blockNumber, finalized)
+      },
+    )
 
     return hash
   } catch (cause) {

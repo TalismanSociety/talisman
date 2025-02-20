@@ -1,18 +1,17 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address as TAddress } from "@talismn/balances"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useAccounts from "@ui/hooks/useAccounts"
-import useChain from "@ui/hooks/useChain"
-import { useContact } from "@ui/hooks/useContact"
-import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { FadeIn } from "@talisman/components/FadeIn"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { useContact } from "@ui/hooks/useContact"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { useAccountByAddress, useAccounts, useChain } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -87,7 +86,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   if (chainId === null)
     return (
       <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-        <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
+        <div className="text-body flex flex-nowrap items-center gap-4 text-base">
           <div className="flex shrink-0 flex-col justify-center">
             <AccountIcon type="polkadot-identicon" className="!text-lg" address={address} />
           </div>
@@ -100,7 +99,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
 
   return (
     <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-      <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
+      <div className="text-body flex flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
           <ChainLogo className="!text-lg" id={chain.id} />
         </div>
@@ -171,14 +170,22 @@ export const CopyAddressCopyForm = () => {
     logo,
     chain,
     isLogoLoaded,
+    legacyFormat,
     goToAddressPage,
-    goToNetworkOrTokenPage,
+    goToNetworkPage,
   } = useCopyAddressWizard()
 
   const isEthereum = useMemo(
     () => !chain && formattedAddress && isEthereumAddress(formattedAddress),
-    [chain, formattedAddress]
+    [chain, formattedAddress],
   )
+
+  const isMigratedChain = useMemo(() => {
+    if (!chain) return false
+    const { oldPrefix, prefix } = chain
+    return typeof oldPrefix === "number" && typeof prefix === "number" && oldPrefix !== prefix
+  }, [chain])
+
   const genesisHash = chain?.genesisHash
 
   const { t } = useTranslation()
@@ -205,15 +212,23 @@ export const CopyAddressCopyForm = () => {
               <div>
                 <NetworkPillButton
                   chainId={networkId}
-                  onClick={goToNetworkOrTokenPage}
+                  onClick={goToNetworkPage}
                   address={formattedAddress}
                 />
               </div>
             </div>
           )}
+          {isMigratedChain && (
+            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+              <div>{t("Format")}</div>
+              <div>
+                <FormatIndicator legacyFormat={legacyFormat} />
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
-          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8 ">
+          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8">
             {isLogoLoaded && (
               <FadeIn>
                 <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
@@ -239,7 +254,7 @@ export const CopyAddressCopyForm = () => {
                             "Only use this address for receiving assets on the {{name}} network.",
                             {
                               name: chain.name,
-                            }
+                            },
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -309,7 +324,7 @@ export const CopyAddressCopyForm = () => {
                         </TooltipTrigger>
                         <TooltipContent>
                           {t(
-                            "Use this address for receiving assets on Ethereum and EVM compatible networks"
+                            "Use this address for receiving assets on Ethereum and EVM compatible networks",
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -333,5 +348,23 @@ export const CopyAddressCopyForm = () => {
         <CopyButton />
       </div>
     </CopyAddressLayout>
+  )
+}
+
+const FormatIndicator: FC<{ legacyFormat?: boolean }> = ({ legacyFormat }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="text-body flex items-center gap-2">
+          <span>{legacyFormat ? t("Legacy format") : t("New format")}</span>
+          <InfoIcon />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {t("You may need to use legacy format when sending from some exchanges.")}
+      </TooltipContent>
+    </Tooltip>
   )
 }

@@ -1,11 +1,9 @@
 import { EvmNetwork } from "@talismn/chaindata-provider"
 import { GlobeIcon, InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { atom, useAtomValue } from "jotai"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, Radio, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AddEthereumChainParameter, isHex, toHex } from "viem"
 
 import { KnownRequestIdOnly } from "@extension/core"
@@ -13,50 +11,11 @@ import { log } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { balancesHydrateAtom } from "@ui/atoms"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkDetailsButton, NetworkDetailsLink } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useRequest } from "@ui/hooks/useRequest"
-import { requestsAtom } from "@ui/hooks/useRequests"
-import useToken from "@ui/hooks/useToken"
+import { useBalancesHydrate, useEvmNetwork, useRequest, useToken } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
-
-// TODO once finalized with Diogo, convert as style.css classes, then move to talisman-ui along with a test page in playground
-const Radio: FC<{
-  name: string
-  value: string
-  label?: ReactNode
-  checked?: boolean
-  onChange?: ChangeEventHandler<HTMLInputElement>
-  className?: string
-}> = ({ name, value, label, checked, className, onChange }) => {
-  return (
-    <label
-      className={classNames(
-        "cursor-pointer p-0.5",
-        "hover:text-grey-300",
-        "has-[:checked]:text-body has-[:checked]:cursor-default",
-        className
-      )}
-    >
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        checked={checked}
-        onChange={onChange}
-        className={classNames(
-          "bg-body-disabled h-[0.8em] w-[0.8em] appearance-none rounded-full",
-          "checked:bg-primary checked:border-body-disabled checked:border-[0.15em]",
-          "ring-body focus-visible:ring-1"
-        )}
-      />
-      {!!label && <span className="ml-3">{label}</span>}
-    </label>
-  )
-}
 
 type SettingsSource = "talisman" | "dapp"
 
@@ -73,7 +32,7 @@ const SettingsSourceSelector: FC<{
     (e) => {
       onChange(e.target.value as SettingsSource)
     },
-    [onChange]
+    [onChange],
   )
 
   const knownNetworkDetails = useMemo<AddEthereumChainParameter | null>(() => {
@@ -142,11 +101,9 @@ const SettingsSourceSelector: FC<{
   )
 }
 
-const preloadAtom = atom((get) => Promise.all([get(balancesHydrateAtom), get(requestsAtom)]))
-
 export const AddEthereumNetwork = () => {
   const { t } = useTranslation("request")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
   const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
   const request = useRequest(id)
 

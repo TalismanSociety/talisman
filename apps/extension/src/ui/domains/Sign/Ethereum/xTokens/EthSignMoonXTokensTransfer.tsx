@@ -1,15 +1,13 @@
-import { EvmAddress } from "@extension/core"
 import { hexToU8a } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
-import useChain from "@ui/hooks/useChain"
-import useChains from "@ui/hooks/useChains"
-import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
-import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
-import useToken from "@ui/hooks/useToken"
-import useTokens from "@ui/hooks/useTokens"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { EvmAddress } from "@extension/core"
+import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
+import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
+import { useChain, useChains, useToken, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -70,7 +68,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation("request")
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
+  const tokens = useTokens()
 
   const [destination, amount, currencyAddress] = useMemo(
     () => [
@@ -78,7 +76,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       getContractCallArg<bigint>(decodedTx, "amount"),
       getContractCallArg<EvmAddress>(decodedTx, "currency_address"),
     ],
-    [decodedTx]
+    [decodedTx],
   )
 
   const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
@@ -96,7 +94,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       (t) =>
         t.type === "evm-erc20" &&
         t.evmNetwork?.id === network?.id &&
-        t.contractAddress === currencyAddress
+        t.contractAddress === currencyAddress,
     )
 
     if (token) {
@@ -115,17 +113,17 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains()
   const targetChain = useMemo(
     () =>
       target
         ? target.paraId !== undefined // if no paraId, target is the relay chain
           ? chains.find(
-              (c) => c.relay?.id === substrateChain?.relay?.id && c.paraId === target.paraId
+              (c) => c.relay?.id === substrateChain?.relay?.id && c.paraId === target.paraId,
             )
           : chains.find((c) => c.id === substrateChain?.relay?.id)
         : undefined,
-    [chains, substrateChain?.relay?.id, target]
+    [chains, substrateChain?.relay?.id, target],
   )
 
   const targetAddress = useMemo(
@@ -133,7 +131,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       targetChain && target?.address
         ? encodeAnyAddress(target.address, targetChain?.prefix ?? undefined)
         : undefined,
-    [target, targetChain]
+    [target, targetChain],
   )
 
   const { data: tokenRates } = useCoinGeckoTokenRates(coingeckoId)

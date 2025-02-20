@@ -1,21 +1,31 @@
-import { EvmWalletTransaction, WalletTransaction } from "@extension/core"
-import { serializeTransactionRequest } from "@extension/core"
-import { EthTransactionDetails } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
-import { notify } from "@talisman/components/Notifications"
 import { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useBalance } from "@ui/hooks/useBalance"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenCloseWithData } from "talisman-ui"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import {
+  Button,
+  Drawer,
+  Modal,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenCloseWithData,
+} from "talisman-ui"
+
+import {
+  EthTransactionDetails,
+  EvmWalletTransaction,
+  serializeTransactionRequest,
+  WalletTransaction,
+} from "@extension/core"
+import { notify } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAccountByAddress, useBalance, useEvmNetwork } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
@@ -92,15 +102,17 @@ const getTransferInfo = (tx: EvmWalletTransaction) => {
 const EvmDrawerContent: FC<{
   tx: EvmWalletTransaction
   type: TxReplaceType
+  fullHeight?: boolean
+  containerId?: string
   onClose?: (newTxHash?: HexString) => void
-}> = ({ tx, type, onClose }) => {
+}> = ({ tx, type, fullHeight, containerId, onClose }) => {
   const { t } = useTranslation("request")
   const analyticsProps = useMemo(
     () => ({
       evmNetworkId: tx.evmNetworkId,
       networkType: "ethereum",
     }),
-    [tx.evmNetworkId]
+    [tx.evmNetworkId],
   )
   useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
 
@@ -143,10 +155,9 @@ const EvmDrawerContent: FC<{
       notify({
         title: `Failed to ${type}`,
         type: "error",
-        subtitle:
-          (err as Error)?.message === "nonce too low"
-            ? t("Transaction already confirmed")
-            : t(`Failed to {{type}}`, { type }),
+        subtitle: (err as Error)?.message.includes("nonce too low")
+          ? t("Transaction already confirmed")
+          : t(`Failed to {{type}}`, { type }),
       })
     }
     setIsProcessing(false)
@@ -163,7 +174,7 @@ const EvmDrawerContent: FC<{
           tx.evmNetworkId,
           serialized,
           signature,
-          transferInfo
+          transferInfo,
         )
         api.analyticsCapture({
           eventName: `transaction ${type}`,
@@ -187,7 +198,7 @@ const EvmDrawerContent: FC<{
       }
       setIsProcessing(false)
     },
-    [onClose, t, transaction, tx, type]
+    [onClose, t, transaction, tx, type],
   )
 
   const handleSentToDevice = useCallback(() => {
@@ -204,7 +215,7 @@ const EvmDrawerContent: FC<{
         iconClassName: "text-primary",
         title: t("Speed Up Transaction"),
         description: t(
-          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority."
+          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority.",
         ),
         approveText: t("Speed Up"),
       }
@@ -216,7 +227,7 @@ const EvmDrawerContent: FC<{
         iconClassName: "text-brand-orange",
         title: t("Cancel Transaction"),
         description: t(
-          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority."
+          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority.",
         ),
         approveText: t("Try to Cancel"),
       }
@@ -236,10 +247,11 @@ const EvmDrawerContent: FC<{
       <Icon className={classNames("text-[40px]", iconClassName)} />
       <div className="mt-12 text-base font-bold">{title}</div>
       <p className="text-body-secondary mt-10 text-center text-sm">{description}</p>
+      {!!fullHeight && <div className="grow"></div>}
       <div
         className={classNames(
           "text-body-secondary mt-16 w-full space-y-2 text-xs",
-          !canReplace && "pointer-events-none opacity-50"
+          !canReplace && "pointer-events-none opacity-50",
         )}
       >
         <div className="flex w-full items-center justify-between">
@@ -266,7 +278,7 @@ const EvmDrawerContent: FC<{
             {evmNetwork?.nativeToken && txDetails && transaction && (
               <EthFeeSelect
                 tokenId={evmNetwork.nativeToken.id}
-                drawerContainerId={"main"}
+                drawerContainerId={containerId ?? "main"}
                 gasSettingsByPriority={gasSettingsByPriority}
                 setCustomSettings={setCustomSettings}
                 onChange={setPriority}
@@ -297,8 +309,8 @@ const EvmDrawerContent: FC<{
         ) : (
           <div
             className={classNames(
-              "mt-8 grid w-full  gap-4",
-              canReplace ? "grid-cols-2" : "grid-cols-1"
+              "mt-8 grid w-full gap-4",
+              canReplace ? "grid-cols-2" : "grid-cols-1",
             )}
           >
             <Button className="h-24" onClick={() => onClose?.()}>
@@ -325,6 +337,28 @@ const EvmDrawerContent: FC<{
 export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose }) => {
   const inputs = useMemo(() => (tx && type ? { tx, type } : undefined), [tx, type])
   const { isOpenReady, data } = useOpenCloseWithData(!!inputs, inputs)
+
+  // can't use a drawer in dashbaord, render a modal instead
+  if (!IS_POPUP) {
+    return (
+      <Modal isOpen={isOpenReady} anchor="center" onDismiss={onClose}>
+        <div
+          id="tx-main"
+          className="border-grey-850 flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border bg-black p-12"
+        >
+          {data?.type && data?.tx?.networkType === "evm" ? (
+            <EvmDrawerContent
+              fullHeight
+              containerId="tx-main"
+              tx={data.tx}
+              type={data.type}
+              onClose={onClose}
+            />
+          ) : null}
+        </div>
+      </Modal>
+    )
+  }
 
   return (
     <Drawer

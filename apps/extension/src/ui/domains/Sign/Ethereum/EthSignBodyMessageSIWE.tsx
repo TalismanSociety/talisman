@@ -1,13 +1,13 @@
-import { EthSignRequest } from "@extension/core"
-import { AccountJsonAny } from "@extension/core"
-import { log } from "@extension/shared"
 import { hexToString } from "@polkadot/util"
 import { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
+
+import { AccountJsonAny, EthSignRequest } from "@extension/core"
+import { log } from "@extension/shared"
+import { useEvmNetwork } from "@ui/state"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
@@ -33,7 +33,7 @@ const ViewDetailsContent: FC<{
         <div className="text-body-secondary">{t("Details")}</div>
         <p>
           {t(
-            "You are about to sign in via Ethereum. Please ensure you trust the application before continuing."
+            "You are about to sign in via Ethereum. Please ensure you trust the application before continuing.",
           )}
         </p>
         <ViewDetailsAddress

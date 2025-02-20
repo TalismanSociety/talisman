@@ -1,9 +1,9 @@
-import { tabAtom } from "@ui/atoms"
-import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 
+import { useCurrentTab } from "@ui/state"
+
 export const useCurrentSite = () => {
-  const tab = useAtomValue(tabAtom)
+  const tab = useCurrentTab()
 
   const { favIconUrl, title, id, isLoading, url } = useMemo(() => {
     const { favIconUrl, title, url } = tab || {}

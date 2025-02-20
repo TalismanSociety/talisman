@@ -5,11 +5,14 @@ import * as chains from "viem/chains"
 import { addOnfinalityApiKey } from "./util"
 
 // viem chains benefit from multicall config & other viem goodies
-const VIEM_CHAINS = Object.keys(chains).reduce((acc, curr) => {
-  const chain = chains[curr as keyof typeof chains]
-  acc[chain.id] = chain
-  return acc
-}, {} as Record<number, Chain>)
+const VIEM_CHAINS = Object.keys(chains).reduce(
+  (acc, curr) => {
+    const chain = chains[curr as keyof typeof chains]
+    acc[chain.id] = chain
+    return acc
+  },
+  {} as Record<number, Chain>,
+)
 
 const chainsCache = new Map<string, Chain>()
 
@@ -25,7 +28,7 @@ export type ChainOptions = {
 export const getChainFromEvmNetwork = (
   evmNetwork: EvmNetwork,
   nativeToken: { symbol: string; decimals: number } | null,
-  options: ChainOptions = {}
+  options: ChainOptions = {},
 ): Chain => {
   const { symbol, decimals } = nativeToken ?? { symbol: "ETH", decimals: 18 }
 

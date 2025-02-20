@@ -26,7 +26,7 @@ export const Balances = () => {
               "h-20 w-20 max-w-none justify-self-center bg-contain",
               !(
                 /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(
-                  balance.token?.logo ?? ""
+                  balance.token?.logo ?? "",
                 ) && !/assets\/tokens\/coingecko/i.test(balance.token?.logo ?? "")
               ) && "rounded-full",
             ])}
@@ -61,7 +61,7 @@ export const Balances = () => {
           <span className="flex items-center justify-start gap-2">
             <span
               className={classNames(
-                "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm bg-[#1a1a1a] px-4 py-2 text-center font-bold"
+                "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm bg-[#1a1a1a] px-4 py-2 text-center font-bold",
               )}
               style={{
                 color: balance.chain?.themeColor ?? balance.evmNetwork?.themeColor ?? undefined,

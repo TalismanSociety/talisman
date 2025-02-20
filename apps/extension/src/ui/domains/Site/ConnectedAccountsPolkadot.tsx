@@ -1,8 +1,9 @@
-import { AccountJsonAny } from "@extension/core"
 import { InfoIcon } from "@talismn/icons"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
 
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
@@ -16,13 +17,13 @@ export const ConnectedAccountsPolkadot: FC<{
 
   const hasEthereumActiveAccounts = useMemo(
     () => activeAccounts.some((acc) => acc[0].type === "ethereum" && acc[1]),
-    [activeAccounts]
+    [activeAccounts],
   )
   const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
 
   const displayedAccounts = useMemo(
     () => activeAccounts.filter(([acc]) => enableEvmAccounts || acc.type !== "ethereum"),
-    [activeAccounts, enableEvmAccounts]
+    [activeAccounts, enableEvmAccounts],
   )
 
   const handleAccountToggle = useCallback(
@@ -34,7 +35,7 @@ export const ConnectedAccountsPolkadot: FC<{
         : [...otherActive, address]
       onUpdateAccounts(newActive)
     },
-    [activeAccounts, onUpdateAccounts]
+    [activeAccounts, onUpdateAccounts],
   )
 
   const handleDisconnectAllClick = useCallback(() => {
@@ -51,7 +52,7 @@ export const ConnectedAccountsPolkadot: FC<{
         onUpdateAccounts(
           activeAccounts
             .filter(([acc, isConnected]) => acc.type !== "ethereum" && isConnected)
-            .map(([a]) => a.address)
+            .map(([a]) => a.address),
         )
       }
       return !enabled
@@ -73,7 +74,7 @@ export const ConnectedAccountsPolkadot: FC<{
             </TooltipTrigger>
             <TooltipContent>
               {t(
-                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps."
+                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps.",
               )}
             </TooltipContent>
           </Tooltip>
@@ -86,7 +87,7 @@ export const ConnectedAccountsPolkadot: FC<{
           >
             {t("Disconnect All")}
           </button>
-          <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
+          <div className="bg-body-disabled h-[1rem] w-0.5"></div>
           <button
             type="button"
             className="text-body-secondary hover:text-grey-300"

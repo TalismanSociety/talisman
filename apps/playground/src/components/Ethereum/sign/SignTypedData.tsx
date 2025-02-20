@@ -1,14 +1,14 @@
 import {
   MessageTypes,
+  recoverTypedSignature,
   SignTypedDataVersion,
   TypedDataV1,
   TypedMessage,
-  recoverTypedSignature,
 } from "@metamask/eth-sig-util"
 import { classNames } from "@talismn/util"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
-import { Hex, getAddress } from "viem"
+import { getAddress, Hex } from "viem"
 import { useAccount, useWalletClient } from "wagmi"
 
 import { Section } from "../../shared/Section"
@@ -28,7 +28,7 @@ const getTestDataV1 = (): TypedDataV1 => [
 
 const getTestDataV3 = (
   chainId: number,
-  validContractAddress: boolean
+  validContractAddress: boolean,
 ): TypedMessage<MessageTypes> => ({
   types: {
     EIP712Domain: [
@@ -71,7 +71,7 @@ const getTestDataV3 = (
 
 const getTestDataV4 = (
   chainId: number,
-  validContractAddress: boolean
+  validContractAddress: boolean,
 ): TypedMessage<MessageTypes> => ({
   domain: {
     chainId: chainId,
@@ -220,7 +220,7 @@ const SignTypedDataInner = () => {
       }
       setProcessing(undefined)
     },
-    [address, chain, connector, walletClient]
+    [address, chain, connector, walletClient],
   )
 
   if (!isConnected) return null
@@ -276,7 +276,7 @@ const SignTypedDataInner = () => {
             Signature : <span className="font-mono">{signature}</span>
           </div>
         )}
-        {error && <div className="text-alert-error my-8 ">Error : {error.message}</div>}
+        {error && <div className="text-alert-error my-8">Error : {error.message}</div>}
         {signature && (
           <div>
             Signed by :{" "}
@@ -285,7 +285,7 @@ const SignTypedDataInner = () => {
                 "font-mono",
                 signedBy && getAddress(signedBy ?? "SIGNED_BY") === getAddress(address ?? "ADDRESS")
                   ? "text-alert-success"
-                  : "text-alert-error"
+                  : "text-alert-error",
               )}
             >
               {signedBy}

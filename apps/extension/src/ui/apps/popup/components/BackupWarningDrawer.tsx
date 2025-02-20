@@ -1,9 +1,10 @@
 import { AlertCircleIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
+
+import { api } from "@ui/api"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 
 export const BackupWarningDrawer = () => {
   const { t } = useTranslation()
@@ -21,7 +22,7 @@ export const BackupWarningDrawer = () => {
           <span className="font-bold text-white">{t("Backup Wallet")}</span>
           <span className="text-body-secondary">
             {t(
-              "You have funds! Now is a great time to back up your wallet. If you don’t back up your recovery phrase you may lose access to your funds."
+              "You have funds! Now is a great time to back up your wallet. If you don’t back up your recovery phrase you may lose access to your funds.",
             )}
           </span>
         </div>

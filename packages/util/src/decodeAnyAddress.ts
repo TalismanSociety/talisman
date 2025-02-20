@@ -5,7 +5,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 export function decodeAnyAddress(
   encoded?: string | Uint8Array | null | undefined,
   ignoreChecksum?: boolean | undefined,
-  ss58Format?: number | undefined
+  ss58Format?: number | undefined,
 ): Uint8Array {
   try {
     return decodeAddress(encoded, ignoreChecksum, ss58Format)

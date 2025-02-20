@@ -5,6 +5,7 @@ const { TextEncoder } = require("@polkadot/x-textencoder")
 const { WebSocket } = require("mock-socket")
 
 const { webcrypto } = require("crypto")
+const cloneDeep = require("lodash/cloneDeep")
 
 global.WebSocket = WebSocket
 Object.defineProperty(globalThis, "crypto", {
@@ -24,6 +25,7 @@ global.chrome.windows = {
   create: (...args) => new Promise((resolve) => resolve(chrome.windows.create(...args))),
 }
 global.browser.windows = global.chrome.windows
+global.chrome.alarms = chrome.alarms
 
 process.env.VERSION = process.env.npm_package_version
 
@@ -34,3 +36,6 @@ process.env.VERSION = process.env.npm_package_version
 //
 // we can remove this when we completely switch away from the @polkadot/api family of packages
 process.env.POLKADOTJS_DISABLE_ESM_CJS_WARNING = "1"
+
+// somehow not available in jest's jsdom
+global.structuredClone = cloneDeep

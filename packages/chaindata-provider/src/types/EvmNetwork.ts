@@ -34,12 +34,18 @@ export type EvmNetwork = {
   // TODO: Delete (has its own store now)
   /** @deprecated has its own store now */
   balancesMetadata: Array<BalancesMetadata>
+  erc20aggregator?: `0x${string}`
 }
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true
   explorerUrls: string[]
   iconUrls: string[]
 }
+
+export type SimpleEvmNetwork = Omit<
+  EvmNetwork | CustomEvmNetwork,
+  "balancesConfig" | "balancesMetadata"
+>
 
 export type EthereumRpc = {
   url: string // The url of this ethereum RPC

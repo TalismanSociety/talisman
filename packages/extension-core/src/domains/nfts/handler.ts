@@ -29,7 +29,7 @@ const handleSubscribeNfts: SubscriptionHandler<"pri(nfts.subscribe)"> = (id, por
 }
 
 const handleSetHiddenNftCollection: MessageHandler<"pri(nfts.collection.setHidden)"> = (
-  request
+  request,
 ) => {
   const { id, isHidden } = request
   setHiddenNftCollection(id, isHidden)
@@ -53,19 +53,19 @@ export class NftsHandler extends ExtensionHandler {
   public async handle<
     Type extends MessageTypes,
     Request = RequestTypes[Type],
-    Response = ResponseType<Type>
+    Response = ResponseType<Type>,
   >(id: string, type: Type, request: Request, port: chrome.runtime.Port): Promise<Response> {
     switch (type) {
       case "pri(nfts.subscribe)":
         return handleSubscribeNfts(
           id,
           port,
-          request as RequestTypes["pri(nfts.subscribe)"]
+          request as RequestTypes["pri(nfts.subscribe)"],
         ) as Response
 
       case "pri(nfts.collection.setHidden)":
         return handleSetHiddenNftCollection(
-          request as RequestTypes["pri(nfts.collection.setHidden)"]
+          request as RequestTypes["pri(nfts.collection.setHidden)"],
         ) as Response
 
       case "pri(nfts.setFavorite)":
@@ -73,7 +73,7 @@ export class NftsHandler extends ExtensionHandler {
 
       case "pri(nfts.refreshMetadata)":
         return handleRefreshNftMetadata(
-          request as RequestTypes["pri(nfts.refreshMetadata)"]
+          request as RequestTypes["pri(nfts.refreshMetadata)"],
         ) as Response
 
       default:

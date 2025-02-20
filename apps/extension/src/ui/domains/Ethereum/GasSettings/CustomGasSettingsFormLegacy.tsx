@@ -1,22 +1,34 @@
-import { getHumanReadableErrorMessage } from "@extension/core"
-import { EthGasSettingsLegacy, EvmNetworkId } from "@extension/core"
-import { EthTransactionDetails, GasSettingsByPriorityLegacy } from "@extension/core"
-import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify } from "@talisman/components/Notifications"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { TransactionRequest, formatGwei, parseGwei } from "viem"
+import {
+  Button,
+  FormFieldContainer,
+  FormFieldInputText,
+  IconButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
+import { formatGwei, parseGwei, TransactionRequest } from "viem"
 import * as yup from "yup"
+
+import {
+  EthGasSettingsLegacy,
+  EthTransactionDetails,
+  EvmNetworkId,
+  GasSettingsByPriorityLegacy,
+  getHumanReadableErrorMessage,
+} from "@extension/core"
+import { log } from "@extension/shared"
+import { notify } from "@talisman/components/Notifications"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
 import { usePublicClient } from "../usePublicClient"
@@ -61,7 +73,7 @@ const useIsValidGasSettings = (
   evmNetworkId: EvmNetworkId,
   tx: TransactionRequest,
   gasPriceGwei: string,
-  gasLimit: number
+  gasLimit: number,
 ) => {
   const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
     gasPriceGwei,
@@ -82,7 +94,7 @@ const useIsValidGasSettings = (
       setIsLoading(false)
     },
     250,
-    [gasPriceGwei, gasLimit]
+    [gasPriceGwei, gasLimit],
   )
 
   const provider = usePublicClient(evmNetworkId)
@@ -103,7 +115,7 @@ const useIsValidGasSettings = (
   const { isLoading: isValidationLoading, ...rest } = useIsValidEthTransaction(
     provider,
     txPrepared,
-    "custom"
+    "custom",
   )
 
   return {
@@ -148,7 +160,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       formatDecimals(formatGwei(txDetails.gasPrice), undefined, {
         notation: "standard",
       }),
-    [txDetails.gasPrice]
+    [txDetails.gasPrice],
   )
 
   const defaultValues: FormData = useMemo(
@@ -156,7 +168,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       gasPriceGwei: formatGwei(customSettings.gasPrice),
       gasLimit: Number(customSettings.gas),
     }),
-    [customSettings.gas, customSettings.gasPrice]
+    [customSettings.gas, customSettings.gasPrice],
   )
 
   const {
@@ -244,7 +256,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onConfirm, txDetails.evmNetworkId]
+    [genericEvent, onConfirm, txDetails.evmNetworkId],
   )
 
   const {
@@ -262,7 +274,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit]
+    [handleSubmit, submit],
   )
 
   return (
@@ -287,7 +299,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           <WithTooltip
             className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
             tooltip={t(
-              "The Gas Price is set by the network and changes depending on network usage"
+              "The Gas Price is set by the network and changes depending on network usage",
             )}
           >
             <InfoIcon />
@@ -345,7 +357,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           {t("Total Max Fee")}{" "}
           <WithTooltip
             tooltip={t(
-              "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit"
+              "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit",
             )}
           >
             <InfoIcon className="inline-block align-text-top" />

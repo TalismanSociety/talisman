@@ -36,7 +36,7 @@ export enum MnemonicErrors {
 
 export const decryptMnemonic = async (
   cipher: string,
-  password: string
+  password: string,
 ): Promise<Result<string, MnemonicErrors.IncorrectPassword | MnemonicErrors.UnableToDecrypt>> => {
   let mnemonic: DecryptedMnemonic
   try {

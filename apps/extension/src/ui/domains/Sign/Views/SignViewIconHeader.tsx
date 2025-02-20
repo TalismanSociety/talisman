@@ -43,7 +43,7 @@ export const SignViewIconHeader: FC<{ icon: SignIconType }> = ({ icon }) => {
       Icon: getIcon(icon),
       className: getClassName(icon),
     }),
-    [icon]
+    [icon],
   )
 
   return (

@@ -7,15 +7,13 @@ import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useSetting } from "@ui/hooks/useSettings"
+import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
-import { useIsFavoriteNft } from "./useIsFavoriteNft"
-import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
 export const PopupNftCollection: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
@@ -42,11 +40,16 @@ export const PopupNftCollection: FC<{ className?: string }> = () => {
 
 const NoNftFound = () => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
   const msg = useMemo(
-    () => (account ? t("No NFTs found for this account") : t("No NFTs found")),
-    [account, t]
+    () =>
+      selectedAccount
+        ? t("No NFTs found for this account")
+        : selectedFolder
+          ? t("No NFTs found for this folder")
+          : t("No NFTs found"),
+    [selectedAccount, selectedFolder, t],
   )
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
@@ -67,9 +70,9 @@ const NftRowInner: FC<{
     <button
       type="button"
       onClick={onClick}
-      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full  items-center gap-8 rounded-sm px-8 text-left"
+      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left"
     >
-      <div className="flex grow items-center gap-6 overflow-hidden ">
+      <div className="flex grow items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
@@ -101,12 +104,12 @@ const NftRow: FC<{
 
 const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
-  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+  const { collection, nfts } = useNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-col gap-5 text-sm">
+    <div className="flex flex-col gap-4 text-sm">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftRow
@@ -164,7 +167,7 @@ const NftTileItem: FC<{
 
 const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
-  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+  const { collection, nfts } = useNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 

@@ -1,19 +1,16 @@
+import { XIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Drawer, IconButton } from "talisman-ui"
+
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { IconButton } from "talisman-ui"
+import { useAuthorisedSites, useEvmNetwork, useEvmNetworks, useSetting } from "@ui/state"
 
 import { NetworkLogo } from "./NetworkLogo"
 
@@ -23,7 +20,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id]
+    [authorisedSites, currentSite?.id],
   )
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
@@ -34,10 +31,10 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   // show testnets only if initial network was a testnet when opening the drawer, or if testnets are enabled in settings
   const showTestnets = useMemo(
     () => isTestnet || settingUseTestnets,
-    [isTestnet, settingUseTestnets]
+    [isTestnet, settingUseTestnets],
   )
 
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
 
   const [search, setSearch] = useDebouncedState("", 150)
 
@@ -59,7 +56,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()
     },
-    [currentSite.id, onClose]
+    [currentSite.id, onClose],
   )
 
   return (
@@ -96,7 +93,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             <div
               className={classNames(
                 "mx-4 h-4 w-4 shrink-0 rounded-full",
-                network.id === currentNetwork?.id ? "bg-primary" : "bg-grey-700"
+                network.id === currentNetwork?.id ? "bg-primary" : "bg-grey-700",
               )}
             ></div>
           </button>

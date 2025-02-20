@@ -10,9 +10,11 @@ type ModalDialogProps = {
   centerTitle?: boolean
   onClose?: () => void
   children?: ReactNode
+  id?: string
 }
 
 export const ModalDialog: FC<ModalDialogProps> = ({
+  id,
   className,
   title,
   centerTitle,
@@ -21,22 +23,29 @@ export const ModalDialog: FC<ModalDialogProps> = ({
 }) => {
   return (
     <div
+      id={id}
       className={classNames(
         "border-grey-850 flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border bg-black",
-        className
+        className,
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
       <header className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
+        {!!centerTitle && !!onClose && (
+          // placeholder to keep the title centered
+          <IconButton className="invisible">
+            <XIcon />
+          </IconButton>
+        )}
         <h1
           className={classNames(
-            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base",
-            centerTitle && "text-center"
+            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base font-bold",
+            centerTitle && "text-center",
           )}
         >
           {title}
         </h1>
-        {onClose && (
+        {!!onClose && (
           <IconButton onClick={onClose}>
             <XIcon />
           </IconButton>

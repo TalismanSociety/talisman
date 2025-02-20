@@ -1,42 +1,46 @@
-import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
+import { TokenId } from "@talismn/chaindata-provider"
+import { ArrowDownIcon, CreditCardIcon, LockIcon, ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
+import { formatDuration, intervalToDuration } from "date-fns"
+import { FC, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { Balance, Balances } from "@extension/core"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
+import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
+import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
-import { Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
+import { useFeatureFlag, useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
-import { useSelectedAccount } from "../useSelectedAccount"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
-import { SendFundsButton } from "./SendFundsIconButton"
+import { SendFundsTokenButton } from "./SendFundsTokenIconButton"
+import { TokenContextMenu } from "./TokenContextMenu"
 import { useAssetDetails } from "./useAssetDetails"
-import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
+import { BalanceDetailRow, useTokenBalances } from "./useTokenBalances"
 import { useUniswapV2BalancePair } from "./useUniswapV2BalancePair"
 
-type AssetRowProps = {
-  chainId: ChainId | EvmNetworkId
-  balances: Balances
-}
-
-const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, tokenId, detailRows, status, networkType } =
-    useChainTokenBalances({ chainId, balances })
+const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, balances }) => {
+  const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
+    tokenId,
+    balances,
+  })
 
   // wait for data to load
-  if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
+  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
   const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
 
@@ -45,20 +49,20 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
       <div
         className={classNames(
           "bg-grey-800 flex w-full items-center gap-6 border-transparent px-7 py-6",
-          detailRows.length ? "rounded-t-sm" : "rounded"
+          detailRows.length ? "rounded-t-sm" : "rounded",
         )}
       >
         <div className="text-xl">
           <TokenLogo tokenId={tokenId} />
         </div>
         <div className="flex grow flex-col justify-center gap-2 pr-8">
-          <div className="flex justify-between font-bold text-white">
+          <div className="flex grow justify-between font-bold text-white">
             <div className="flex items-center">
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
-              <span className="mr-2">{chainOrNetwork.name}</span>
+              <span className="mr-2 truncate">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
-              <Suspense>
-                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
+              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
+                <SendFundsTokenButton tokenId={token.id} shouldClose />
               </Suspense>
             </div>
           </div>
@@ -66,6 +70,13 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div>{networkType}</div>
           </div>
         </div>
+        {tokenId && (
+          <div className="size-[3.8rem] shrink-0 empty:hidden">
+            <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
+              <BondButton tokenId={tokenId} balances={balances} />
+            </Suspense>
+          </div>
+        )}
         {tokenId && (
           <TokenContextMenu
             tokenId={tokenId}
@@ -77,7 +88,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         balances.sorted
           .filter((balance) => balance.total.planck > 0n)
           .map((balance, i, balances) => (
-            <ChainTokenBalancesUniswapV2Row
+            <TokenBalancesUniswapV2Row
               key={balance.id}
               balance={balance}
               isLastBalance={balances.length === i + 1}
@@ -88,19 +99,20 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         detailRows
           .filter((row) => row.tokens.gt(0))
           .map((row, i, rows) => (
-            <ChainTokenBalancesDetailRow
+            <TokenBalancesDetailRow
               key={row.key}
               row={row}
               isLastRow={rows.length === i + 1}
-              symbol={symbol}
+              symbol={token.symbol}
               status={status}
+              tokenId={tokenId}
             />
           ))}
     </div>
   )
 }
 
-const ChainTokenBalancesUniswapV2Row = ({
+const TokenBalancesUniswapV2Row = ({
   balance,
   isLastBalance,
   status,
@@ -109,7 +121,7 @@ const ChainTokenBalancesUniswapV2Row = ({
   isLastBalance?: boolean
   status: BalancesStatus
 }) => {
-  const { account } = useSelectedAccount()
+  const { selectedAccount } = usePortfolioNavigation()
   const selectedCurrency = useSelectedCurrency()
   const balancePair = useUniswapV2BalancePair(balance)
   if (!balancePair) return null
@@ -122,11 +134,11 @@ const ChainTokenBalancesUniswapV2Row = ({
     <div
       className={classNames(
         "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
-        isLastBalance && "rounded-b-sm"
+        isLastBalance && "rounded-b-sm",
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
-      {!account && (
+      {!selectedAccount && (
         <div className="flex items-end justify-between gap-4 text-xs">
           <PortfolioAccount address={balance.address} />
         </div>
@@ -140,7 +152,7 @@ const ChainTokenBalancesUniswapV2Row = ({
           <div
             className={classNames(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
             <div className={"font-bold text-white"}>
@@ -169,29 +181,44 @@ const ChainTokenBalancesUniswapV2Row = ({
   )
 }
 
-const ChainTokenBalancesDetailRow = ({
+const TokenBalancesDetailRow = ({
   row,
   isLastRow,
   status,
   symbol,
+  tokenId,
 }: {
-  row: DetailRow
+  row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
+  tokenId?: TokenId
 }) => (
   <div
     className={classNames(
       "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-      isLastRow && "rounded-b-sm"
+      isLastRow && "rounded-b-sm",
     )}
   >
     <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-      <div className="font-bold text-white">{row.title}</div>
+      <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
+        <div className="truncate">{row.title}</div>
+        {!!row.locked && tokenId && row.meta && (
+          <LockedExtra
+            tokenId={tokenId}
+            address={row.address}
+            rowMeta={row.meta}
+            isLoading={status.status === "fetching" || !!row.isLoading}
+          />
+        )}
+      </div>
       {!!row.address && (
         <div className="text-xs">
           <PortfolioAccount address={row.address} />
         </div>
+      )}
+      {!row.address && row.isLoading && !row.description && row.locked && (
+        <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
       )}
       {!row.address && row.description && (
         <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
@@ -201,23 +228,20 @@ const ChainTokenBalancesDetailRow = ({
     </div>
     <div
       className={classNames(
-        "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-        status.status === "fetching" && "animate-pulse transition-opacity"
+        "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
+        status.status === "fetching" && "animate-pulse transition-opacity",
       )}
     >
-      <div className={classNames("font-bold", row.locked ? "text-body-secondary" : "text-white")}>
+      <div
+        className={classNames(
+          "flex h-10 items-center gap-2 font-bold",
+          row.locked ? "text-body-secondary" : "text-white",
+        )}
+      >
         <Tokens amount={row.tokens} symbol={symbol} isBalance />
-        {row.locked ? (
-          <>
-            {" "}
-            <LockIcon className="lock inline align-baseline" />
-          </>
-        ) : null}
+        {row.locked ? <LockIcon className="lock shrink-0" /> : null}
         {status.status === "stale" ? (
-          <>
-            {" "}
-            <StaleBalancesIcon className="inline align-baseline" staleChains={status.staleChains} />
-          </>
+          <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />
         ) : null}
       </div>
       <div className="text-xs">
@@ -227,38 +251,105 @@ const ChainTokenBalancesDetailRow = ({
   </div>
 )
 
-type AssetsTableProps = {
-  balances: Balances
-  symbol: string
+const LockedExtra: FC<{
+  tokenId: TokenId
+  address?: string // this is only set when browsing all accounts
+  isLoading: boolean
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
+}> = ({ tokenId, address, rowMeta, isLoading }) => {
+  const { t } = useTranslation()
+  const { data } = useNomPoolStakingStatus(tokenId)
+  const { selectedAccount } = usePortfolioNavigation()
+
+  const rowAddress = useMemo(
+    () => address ?? selectedAccount?.address ?? null,
+    [selectedAccount?.address, address],
+  )
+
+  const accountStatus = useMemo(
+    () => data?.accounts?.find((s) => s.address === rowAddress),
+    [rowAddress, data?.accounts],
+  )
+
+  const withdrawIn = useMemo(
+    () =>
+      !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
+        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
+        : null,
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
+  )
+
+  const canUnbond = useMemo(
+    () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === "bittensor-substrate-native",
+    [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+  )
+
+  if (!rowAddress) return null
+
+  return (
+    <>
+      {rowMeta.unbonding ? (
+        accountStatus?.canWithdraw ? (
+          <NomPoolWithdrawButton tokenId={tokenId} address={rowAddress} variant="small" />
+        ) : (
+          <Tooltip>
+            <TooltipTrigger
+              className={classNames(
+                "text-body-secondary bg-body/10 h-10 rounded-sm px-3 text-xs opacity-60",
+                isLoading && "animate-pulse",
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <ZapOffIcon className="shrink-0 text-xs" />
+                <div>{t("Unbonding")}</div>
+              </div>
+            </TooltipTrigger>
+            {!!withdrawIn && (
+              <TooltipContent>{t("{{duration}} left", { duration: withdrawIn })}</TooltipContent>
+            )}
+          </Tooltip>
+        )
+      ) : canUnbond ? (
+        <UnbondButton
+          tokenId={tokenId}
+          address={rowAddress}
+          variant="small"
+          poolId={rowMeta.poolId ?? rowMeta.hotkey}
+        />
+      ) : null}
+    </>
+  )
 }
 
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { open } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
+  const { open: openBuyTokensModal } = useBuyTokensModal()
 
   const handleCopy = useCallback(() => {
     open({
-      address: account?.address,
+      address: selectedAccount?.address,
       qr: true,
     })
     genericEvent("open receive", { from: "asset details" })
-  }, [account?.address, genericEvent, open])
+  }, [selectedAccount?.address, genericEvent, open])
 
-  const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
+  const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
-    await api.modalOpen({ modalType: "buy" })
-    window.close()
-  }, [])
+    openBuyTokensModal()
+  }, [openBuyTokensModal])
 
   return (
     <FadeIn>
       <div className="bg-field text-body-secondary leading-base rounded-sm p-10 text-center text-sm">
         <div>
-          {account
+          {selectedAccount
             ? t("You don't have any {{symbol}} in this account", { symbol })
-            : t("You don't have any {{symbol}}", { symbol })}
+            : selectedFolder
+              ? t("You don't have any {{symbol}} in this folder", { symbol })
+              : t("You don't have any {{symbol}}", { symbol })}
         </div>
         <div className="mt-6 flex justify-center gap-4">
           <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
@@ -275,11 +366,14 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   )
 }
 
-export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain: rows } = useAssetDetails(balances)
+export const PopupAssetDetails: FC<{
+  balances: Balances
+  symbol: string
+}> = ({ balances, symbol }) => {
+  const { balancesByToken: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
-    [rows]
+    [rows],
   )
 
   if (!hasBalance) return <NoTokens symbol={symbol} />
@@ -287,8 +381,8 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   return (
     <FadeIn>
       <div className="flex flex-col gap-8">
-        {rows.map(([chainId, bal]) => (
-          <ChainTokenBalances key={chainId} chainId={chainId} balances={bal} />
+        {rows.map(([tokenId, bal]) => (
+          <TokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
         ))}
       </div>
     </FadeIn>

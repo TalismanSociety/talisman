@@ -1,9 +1,9 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { gt } from "semver"
 
+import { GeneralReport } from "../../libs/GeneralReport"
 import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
-import { StakingSupportedChain } from "../staking/types"
 import { TalismanNotOnboardedError } from "./utils"
 
 type ONBOARDED_TRUE = "TRUE"
@@ -14,24 +14,30 @@ const FALSE: ONBOARDED_FALSE = "FALSE"
 const UNKNOWN: ONBOARDED_UNKNOWN = "UNKNOWN"
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
+export type BlockNumberByDelegator = {
+  [delegator: string | number]: number
+}
+
+export type DelegatorsBlockNumberByAccount = Record<string, BlockNumberByDelegator>
 
 export type AppStoreData = {
   onboarded: OnboardedType
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  analyticsReportSent?: number
+  analyticsReportCreatedAt?: number
+  analyticsReport?: GeneralReport
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
-  hideStakingBanner: StakingSupportedChain[]
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
-  showAssetDiscoveryAlert?: boolean
-  dismissedAssetDiscoveryAlertScanId?: string
   isAssetDiscoveryScanPending?: boolean
   showLedgerPolkadotGenericMigrationAlert?: boolean
-  posthogDistinctId?: string
+  hideManageAccountsWelcome?: boolean
+  hideGetStarted?: boolean
+  bittensorUnbondBlockNumber: DelegatorsBlockNumberByAccount
+  hideUnifiedAddressBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -45,10 +51,9 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
-  hideStakingBanner: [],
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
-  showAssetDiscoveryAlert: false,
   showLedgerPolkadotGenericMigrationAlert: false,
+  bittensorUnbondBlockNumber: {},
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {
@@ -107,8 +112,10 @@ if (DEBUG) {
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
       analyticsRequestShown: false,
-      hideStakingBanner: [],
       hideBackupWarningUntil: undefined,
+      hideManageAccountsWelcome: false,
+      hideGetStarted: false,
+      hideUnifiedAddressBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

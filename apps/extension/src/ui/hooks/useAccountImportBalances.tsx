@@ -1,13 +1,16 @@
-import { AddressesByChain, isAccountCompatibleWithChain } from "@extension/core"
-import { AddressesAndEvmNetwork } from "@extension/core"
 import type { KeypairType } from "@polkadot/util-crypto/types"
 import { Address } from "@talismn/balances"
 import { ChainId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, validateHexString } from "@talismn/util"
-import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMemo } from "react"
+
+import {
+  AddressesAndEvmNetwork,
+  AddressesByChain,
+  isAccountCompatibleWithChain,
+} from "@extension/core"
+import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useChains, useEvmNetworks } from "@ui/state"
 
 export type AccountImportDef = { address: string; type: KeypairType; genesisHash?: string | null }
 
@@ -19,20 +22,23 @@ export const useAccountImportBalances = (accounts: AccountImportDef[]) => {
         type,
         genesisHash: genesisHash ? validateHexString(genesisHash) : null,
       })),
-    [accounts]
+    [accounts],
   )
 
-  const { chains } = useChains({ includeTestnets: false, activeOnly: true })
-  const { evmNetworks } = useEvmNetworks({ includeTestnets: false, activeOnly: true })
+  const chains = useChains({ includeTestnets: false, activeOnly: true })
+  const evmNetworks = useEvmNetworks({ includeTestnets: false, activeOnly: true })
 
   const balanceParams = useMemo(() => {
-    const addressesByChain: AddressesByChain = chains.reduce((prev, chain) => {
-      const addresses = safeAccounts
-        .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
-        .map(({ address }) => address)
-      if (addresses.length) prev[chain.id] = addresses
-      return prev
-    }, {} as Record<ChainId, Address[]>)
+    const addressesByChain: AddressesByChain = chains.reduce(
+      (prev, chain) => {
+        const addresses = safeAccounts
+          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
+          .map(({ address }) => address)
+        if (addresses.length) prev[chain.id] = addresses
+        return prev
+      },
+      {} as Record<ChainId, Address[]>,
+    )
 
     const addressesAndEvmNetworks: AddressesAndEvmNetwork = {
       addresses: safeAccounts.filter(({ type }) => type === "ethereum").map((acc) => acc.address),

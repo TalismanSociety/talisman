@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
@@ -9,7 +9,7 @@ import {
   getMaxTransactionCost,
   serializeTransactionRequest,
 } from "@extension/core"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import { useEthBalance } from "./useEthBalance"
 
@@ -17,7 +17,7 @@ export const useIsValidEthTransaction = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
   priority: EthPriorityOptionName | undefined,
-  isReplacement = false
+  isReplacement = false,
 ) => {
   const { t } = useTranslation("request")
   const account = useAccountByAddress(tx?.from)
@@ -65,7 +65,7 @@ export const useIsValidEthTransaction = (
     refetchInterval: false,
     refetchOnWindowFocus: false,
     retry: 0,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     enabled: !!publicClient && !!tx && !!account && balance !== undefined,
   })
 

@@ -4,7 +4,7 @@ import { metadata as scaleMetadata } from "../papito"
 import { getMetadataVersion } from "./getMetadataVersion"
 
 export const decodeMetadata = (
-  metadataRpc: string
+  metadataRpc: string,
 ): { metadataVersion: number } & (
   | { metadata: V15; tag: "v15" }
   | { metadata: V14; tag: "v14" }

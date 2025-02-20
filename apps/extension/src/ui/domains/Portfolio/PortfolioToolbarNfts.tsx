@@ -7,7 +7,6 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
-import { useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -22,13 +21,21 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { nftsVisibilityFilterAtom, NftVisibilityFilter } from "@ui/atoms"
-import { useSetting } from "@ui/hooks/useSettings"
+import {
+  NftVisibilityFilter,
+  setNftNetworkFilter,
+  setNftSearch,
+  setNftsVisibilityFilter,
+  useNftNetworkFilter,
+  useNftNetworkOptions,
+  useNftSearch,
+  useNftsVisibilityFilter,
+  useSetting,
+} from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkFilterModal"
-import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./Nfts/usePortfolioNfts"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 export const NftViewModeToggleButton = () => {
@@ -36,7 +43,7 @@ export const NftViewModeToggleButton = () => {
 
   const handleViewModeClick = useCallback(
     () => setViewMode((prev) => (prev === "list" ? "tiles" : "list")),
-    [setViewMode]
+    [setViewMode],
   )
 
   return (
@@ -54,17 +61,19 @@ export const NftViewModeToggleButton = () => {
 }
 
 const NetworkFilterButton = () => {
-  const { networks, networkFilter, setNetworkFilter } = usePortfolioNftsNetwork()
+  const networks = useNftNetworkOptions()
+  const networkFilter = useNftNetworkFilter()
+  //const { networks, networkFilter } = usePortfolioNftsNetwork()
   const { isOpen, open, close } = useOpenClose()
 
   const networkIds = useMemo(() => networks.map((network) => network.id), [networks])
 
   const handleChange = useCallback(
     (networkId: string | null) => {
-      setNetworkFilter(networks.find((n) => n.id === networkId))
+      setNftNetworkFilter(networks.find((n) => n.id === networkId))
       close()
     },
-    [close, networks, setNetworkFilter]
+    [close, networks],
   )
 
   return (
@@ -99,16 +108,18 @@ const NetworkFilterButton = () => {
 
 const PortfolioSearch = () => {
   const { t } = useTranslation()
-  const { search, setSearch } = usePortfolioNftsSearch()
+  const search = useNftSearch()
 
   return (
     <SearchInput
       containerClassName={classNames(
-        "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
-        IS_POPUP ? "max-w-[17rem]" : "max-w-[37.4rem]"
+        "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4",
+        "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+        "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+        IS_POPUP ? "w-full" : "max-w-[37.4rem]",
       )}
       placeholder={t("Search")}
-      onChange={setSearch}
+      onChange={setNftSearch}
       initialValue={search}
     />
   )
@@ -116,7 +127,7 @@ const PortfolioSearch = () => {
 
 const VisibilityFilterButton = () => {
   const { t } = useTranslation()
-  const [visibilityFilter, setVisibilityFilter] = useAtom(nftsVisibilityFilterAtom)
+  const nftsVisibilityFilter = useNftsVisibilityFilter()
 
   return (
     <Tooltip>
@@ -126,7 +137,7 @@ const VisibilityFilterButton = () => {
             <ContextMenuTrigger asChild>
               <PortfolioToolbarButton
                 className={classNames(
-                  visibilityFilter !== NftVisibilityFilter.Default && "text-primary"
+                  nftsVisibilityFilter !== NftVisibilityFilter.Default && "text-primary",
                 )}
               >
                 <ToolbarFilterIcon />
@@ -135,18 +146,18 @@ const VisibilityFilterButton = () => {
             <ContextMenuContent>
               <ContextMenuOptionItem
                 label={t("Default")}
-                selected={visibilityFilter === NftVisibilityFilter.Default}
-                onClick={() => setVisibilityFilter(NftVisibilityFilter.Default)}
+                selected={nftsVisibilityFilter === NftVisibilityFilter.Default}
+                onClick={() => setNftsVisibilityFilter(NftVisibilityFilter.Default)}
               />
               <ContextMenuOptionItem
                 label={t("Favorites")}
-                selected={visibilityFilter === NftVisibilityFilter.Favorites}
-                onClick={() => setVisibilityFilter(NftVisibilityFilter.Favorites)}
+                selected={nftsVisibilityFilter === NftVisibilityFilter.Favorites}
+                onClick={() => setNftsVisibilityFilter(NftVisibilityFilter.Favorites)}
               />
               <ContextMenuOptionItem
                 label={t("Hidden")}
-                selected={visibilityFilter === NftVisibilityFilter.Hidden}
-                onClick={() => setVisibilityFilter(NftVisibilityFilter.Hidden)}
+                selected={nftsVisibilityFilter === NftVisibilityFilter.Hidden}
+                onClick={() => setNftsVisibilityFilter(NftVisibilityFilter.Hidden)}
               />
             </ContextMenuContent>
           </ContextMenu>
@@ -198,8 +209,8 @@ export const SortByButton = () => {
 
 export const PortfolioToolbarNfts = () => {
   return (
-    <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
-      <div className="flex grow items-center overflow-hidden px-1">
+    <div className="@container flex h-16 w-full min-w-[40rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
+      <div className="flex grow items-center overflow-hidden">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">

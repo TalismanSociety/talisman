@@ -1,10 +1,10 @@
 // Code in this file is heavily derived from the approach outlined in this PR:
 // https://github.com/polkadot-js/common/pull/1331
 
-import { assert, u8aCmp, u8aToU8a } from "@polkadot/util"
-import { naclDecrypt } from "@polkadot/util-crypto"
 import type { Keypair } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
+import { assert, u8aCmp, u8aToU8a } from "@polkadot/util"
+import { naclDecrypt } from "@polkadot/util-crypto"
 
 import {
   buildSR25519EncryptionKey,
@@ -30,7 +30,7 @@ interface sr25519EncryptedMessage {
  */
 export function sr25519Decrypt(
   encryptedMessage: HexString | Uint8Array | string,
-  { secretKey }: Partial<Keypair>
+  { secretKey }: Partial<Keypair>,
 ): Uint8Array | null {
   const { ephemeralPublicKey, keyDerivationSalt, macValue, nonce, sealed } =
     sr25519DecapsulateEncryptedMessage(u8aToU8a(encryptedMessage))
@@ -38,7 +38,7 @@ export function sr25519Decrypt(
     ephemeralPublicKey,
     u8aToU8a(secretKey),
     ephemeralPublicKey,
-    keyDerivationSalt
+    keyDerivationSalt,
   )
   const decryptedMacValue = macData(nonce, sealed, ephemeralPublicKey, macKey)
 
@@ -54,22 +54,22 @@ export function sr25519Decrypt(
 function sr25519DecapsulateEncryptedMessage(encryptedMessage: Uint8Array): sr25519EncryptedMessage {
   assert(
     encryptedMessage.byteLength > nonceSize + keyDerivationSaltSize + publicKeySize + macValueSize,
-    "Wrong encrypted message length"
+    "Wrong encrypted message length",
   )
 
   return {
     ephemeralPublicKey: encryptedMessage.slice(
       nonceSize + keyDerivationSaltSize,
-      nonceSize + keyDerivationSaltSize + publicKeySize
+      nonceSize + keyDerivationSaltSize + publicKeySize,
     ),
     keyDerivationSalt: encryptedMessage.slice(nonceSize, nonceSize + keyDerivationSaltSize),
     macValue: encryptedMessage.slice(
       nonceSize + keyDerivationSaltSize + publicKeySize,
-      nonceSize + keyDerivationSaltSize + publicKeySize + macValueSize
+      nonceSize + keyDerivationSaltSize + publicKeySize + macValueSize,
     ),
     nonce: encryptedMessage.slice(0, nonceSize),
     sealed: encryptedMessage.slice(
-      nonceSize + keyDerivationSaltSize + publicKeySize + macValueSize
+      nonceSize + keyDerivationSaltSize + publicKeySize + macValueSize,
     ),
   }
 }

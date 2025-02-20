@@ -1,21 +1,20 @@
-import { isRawPayload } from "@extension/core"
-import { AccountJsonQr } from "@extension/core"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
-import useChain from "@ui/hooks/useChain"
+
+import { AccountJsonQr, isRawPayload, SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import { useChain } from "@ui/state"
 
 import { QrCode, QrCodeError } from "./QrCode"
 
 const CMD_SIGN_TX = 0
-const CMD_SIGN_TX_HASH = 1
+const _CMD_SIGN_TX_HASH = 1
 const CMD_IMMORTAL = 2
 const CMD_SIGN_MESSAGE = 3
 type Command =
   | typeof CMD_SIGN_TX
-  | typeof CMD_SIGN_TX_HASH
+  | typeof _CMD_SIGN_TX_HASH
   | typeof CMD_IMMORTAL
   | typeof CMD_SIGN_MESSAGE
 

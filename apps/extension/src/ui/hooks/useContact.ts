@@ -1,5 +1,6 @@
-import { convertAddress } from "@talisman/util/convertAddress"
 import { useMemo } from "react"
+
+import { convertAddress } from "@talisman/util/convertAddress"
 
 import { useAddressBook } from "./useAddressBook"
 

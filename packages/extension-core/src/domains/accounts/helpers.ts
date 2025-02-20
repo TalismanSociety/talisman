@@ -1,7 +1,7 @@
-import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import { canDerive } from "@polkadot/extension-base/utils"
+import keyring from "@polkadot/ui-keyring"
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
@@ -44,7 +44,7 @@ export const sortAccounts =
           address,
           ...meta,
           type,
-        })
+        }),
       )
       .sort(sortAccountsByWhenCreated)
 
@@ -64,7 +64,7 @@ export const getInjectedAccount = (
     },
     type,
   }: SingleAddress,
-  options = { includePortalOnlyInfo: false }
+  options = { includePortalOnlyInfo: false },
 ): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address,
   genesisHash,
@@ -88,20 +88,20 @@ export const filterAccountsByAddresses =
 export const getPublicAccounts = (
   accounts: SingleAddress[],
   filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts,
-  options = { includeWatchedAccounts: false }
+  options = { includeWatchedAccounts: false },
 ) =>
   filterFn(accounts)
     .filter(
       (a) =>
         options.includeWatchedAccounts ||
-        ![AccountType.Watched, AccountType.Dcent].includes(a.json.meta.origin as AccountType)
+        ![AccountType.Watched, AccountType.Dcent].includes(a.json.meta.origin as AccountType),
     )
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
 export const getNextDerivationPathForMnemonic = (
   mnemonic: string,
-  type: KeypairType = "sr25519"
+  type: KeypairType = "sr25519",
 ): Result<
   string,
   "Unable to get next derivation path" | "Reached maximum number of derived accounts"
@@ -138,7 +138,7 @@ export const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, Account]) =>
-      key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr
+      key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr,
   )
 }
 
@@ -171,8 +171,18 @@ export const formatSuri = (mnemonic: string, derivationPath: string) =>
 export const isAccountCompatibleWithChain = (
   chain: Chain,
   type: KeypairType,
-  genesisHash: `0x${string}` | null | undefined
+  genesisHash: `0x${string}` | null | undefined,
 ) => {
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+}
+
+export const isOwnedAccountOrigin = (origin: AccountType) => {
+  switch (origin) {
+    case AccountType.Watched:
+    case AccountType.Signet:
+      return false
+    default:
+      return true
+  }
 }

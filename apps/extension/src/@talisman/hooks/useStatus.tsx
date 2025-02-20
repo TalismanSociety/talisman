@@ -31,7 +31,7 @@ const useStatus = (props?: UseStatusProps) => {
       setStatus(status)
       setMessage(msg)
     },
-    [setStatus, setMessage]
+    [setStatus, setMessage],
   )
 
   return {
@@ -45,7 +45,7 @@ const useStatus = (props?: UseStatusProps) => {
         success: setStatusAndMessage("SUCCESS"),
         error: setStatusAndMessage("ERROR"),
       }),
-      [setStatusAndMessage]
+      [setStatusAndMessage],
     ) as SetStatusFn,
     statusOptions,
   }

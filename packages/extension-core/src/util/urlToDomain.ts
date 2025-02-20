@@ -6,7 +6,7 @@ export enum Errors {
 }
 
 export const urlToDomain = (
-  urlStr: string
+  urlStr: string,
 ): Result<string, Errors.UnsupportedProtocol | Errors.InvalidURL> => {
   let url: URL
   try {

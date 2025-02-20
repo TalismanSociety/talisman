@@ -189,7 +189,7 @@ export const SubAssetsModule: NewBalanceModule<
         } catch (error) {
           log.error(
             `Failed to build substrate-assets token ${tokenConfig.assetId} (${tokenConfig.symbol}) on ${chainId}`,
-            error
+            error,
           )
           continue
         }
@@ -206,7 +206,7 @@ export const SubAssetsModule: NewBalanceModule<
           if (error) return callback(error)
           const balances = result?.filter((b): b is SubAssetsBalance => b !== null) ?? []
           if (balances.length > 0) callback(null, new Balances(balances))
-        }
+        },
       )
 
       return unsubscribe
@@ -276,7 +276,7 @@ export const SubAssetsModule: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry, userExtensions }
+        { metadataRpc, registry, userExtensions },
       )
 
       return { type: "substrate", callData: unsigned.method }
@@ -286,7 +286,7 @@ export const SubAssetsModule: NewBalanceModule<
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  addressesByToken: AddressesByToken<SubAssetsToken>
+  addressesByToken: AddressesByToken<SubAssetsToken>,
 ): Promise<Array<RpcStateQuery<SubAssetsBalance | null>>> {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -294,7 +294,7 @@ async function buildQueries(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
       miniMetadata,
-    ])
+    ]),
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
@@ -335,7 +335,7 @@ async function buildQueries(
         tryEncode(scaleCoder, token.assetId, address)
       if (!stateKey) {
         log.warn(
-          `Invalid assetId / address in ${chainId} storage query ${token.assetId} / ${address}`
+          `Invalid assetId / address in ${chainId} storage query ${token.assetId} / ${address}`,
         )
         return []
       }
@@ -353,7 +353,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-assets balance on chain ${chainId}`
+          `Failed to decode substrate-assets balance on chain ${chainId}`,
         ) ?? {
           balance: 0n,
           is_frozen: false,

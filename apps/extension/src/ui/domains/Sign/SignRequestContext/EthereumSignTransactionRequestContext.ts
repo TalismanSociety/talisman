@@ -1,30 +1,31 @@
-import { parseRpcTransactionRequestBase, serializeTransactionRequest } from "@extension/core"
-import { KnownSigningRequestIdOnly } from "@extension/core"
-import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
+import { useCallback, useMemo, useRef, useState } from "react"
+
+import {
+  KnownSigningRequestIdOnly,
+  parseRpcTransactionRequestBase,
+  serializeTransactionRequest,
+} from "@extension/core"
+import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { balancesHydrateAtom } from "@ui/atoms"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
-import { useRequest } from "@ui/hooks/useRequest"
-import { useAtomValue } from "jotai"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useBalancesHydrate, useEvmNetwork, useRequest } from "@ui/state"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
-  useAtomValue(balancesHydrateAtom)
+  useBalancesHydrate() // preload
   const { genericEvent } = useAnalytics()
   const signingRequest = useRequest(id)
   const network = useEvmNetwork(signingRequest?.ethChainId)
 
   const txBase = useMemo(
     () => (signingRequest ? parseRpcTransactionRequestBase(signingRequest.request) : undefined),
-    [signingRequest]
+    [signingRequest],
   )
 
   // once the payload is sent to ledger, we must freeze it
@@ -73,14 +74,17 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result]
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result],
   )
 
   // flag to prevent capturing multiple submit attempts
   const refIsApproveCaptured = useRef(false)
 
   const approve = useCallback(() => {
-    if (riskAnalysis.review.isRiskAknowledgementRequired && !riskAnalysis.review.isRiskAknowledged)
+    if (
+      riskAnalysis.review.isRiskAcknowledgementRequired &&
+      !riskAnalysis.review.isRiskAcknowledged
+    )
       return riskAnalysis.review.drawer.open()
 
     if (!refIsApproveCaptured.current) {
@@ -111,8 +115,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
       if (
-        riskAnalysis.review.isRiskAknowledgementRequired &&
-        !riskAnalysis.review.isRiskAknowledged
+        riskAnalysis.review.isRiskAcknowledgementRequired &&
+        !riskAnalysis.review.isRiskAcknowledged
       )
         return riskAnalysis.review.drawer.open()
 
@@ -148,7 +152,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       origin,
       network?.id,
       genericEvent,
-    ]
+    ],
   )
 
   return {
@@ -177,5 +181,5 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 }
 
 export const [EthSignTransactionRequestProvider, useEthSignTransactionRequest] = provideContext(
-  useEthSignTransactionRequestProvider
+  useEthSignTransactionRequestProvider,
 )

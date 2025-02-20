@@ -8,7 +8,7 @@ import { PayloadType, ResponseType, RiskAnalysisScanError } from "./types"
 
 const getMessageErrorTitle = (
   kind: ScanMessageEvm200ResponseSimulationResultsError["kind"],
-  t: TFunction
+  t: TFunction,
 ) => {
   switch (kind) {
     case "UNSUPPORTED_MESSAGE":
@@ -33,7 +33,7 @@ const getTransactionErrorTitle = (error: EvmAggregatedSimulationResults["error"]
 export const getRiskAnalysisScanError = <T extends PayloadType>(
   type: T,
   response: ResponseType<T>,
-  t: TFunction
+  t: TFunction,
 ): RiskAnalysisScanError | null => {
   switch (type) {
     case "message": {

@@ -1,8 +1,9 @@
 import { AlertTriangleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useIsCapsLockOn } from "@ui/hooks/useIsCapsLockOn"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+
+import { useIsCapsLockOn } from "@ui/hooks/useIsCapsLockOn"
 
 export const CapsLockWarningMessage: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()

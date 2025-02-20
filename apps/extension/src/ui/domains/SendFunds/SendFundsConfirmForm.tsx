@@ -1,13 +1,14 @@
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { Suspense, lazy, useEffect, useMemo, useState } from "react"
+import { lazy, Suspense, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { useAccounts, useSelectedCurrency } from "@ui/state"
+import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
@@ -119,7 +120,7 @@ export const ExternalRecipientWarning = () => {
       <AlertCircleIcon className="shrink-0 text-[1.4rem]" />
       <div>
         {t(
-          "You are sending to an external account. To prevent loss of funds, make sure you are sending on the right network."
+          "You are sending to an external account. To prevent loss of funds, make sure you are sending on the right network.",
         )}
       </div>
     </div>
@@ -143,11 +144,11 @@ const SendButton = () => {
   }, [])
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="SendButton" />}>
       <div className="flex w-full flex-col gap-6">
         {sendErrorMessage ? (
           <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-            <AlertCircleIcon className="text-lg" />
+            <AlertCircleIcon className="shrink-0 text-lg" />
             <div>{sendErrorMessage}</div>
           </div>
         ) : (
@@ -259,7 +260,7 @@ const SubFeeSummary = () => {
           <div
             className={classNames(
               "inline-flex h-[1.7rem] items-center",
-              isRefetching && "animate-pulse"
+              isRefetching && "animate-pulse",
             )}
           >
             <>

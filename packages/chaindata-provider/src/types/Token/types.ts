@@ -14,6 +14,8 @@ export type TokenBase = {
   logo: string
   coingeckoId?: string
   dcentName?: string
+  noDiscovery?: boolean
+
   // Example use-case:
   // An account on moonbeam has tokens via both the substrate and evm APIs
   // We want to show both (i.e. GLMR on Moonbeam Parachain & GLMR on Moonbeam EVM Blockchain) but
@@ -30,5 +32,5 @@ export type TokenBase = {
 /** Used by plugins to help define their custom `TokenType` */
 export type NewTokenType<
   ModuleType extends string,
-  TokenParams extends Record<string, unknown>
+  TokenParams extends Record<string, unknown>,
 > = TokenBase & { type: ModuleType } & TokenParams

@@ -1,23 +1,22 @@
-import { activeTokensStore, isTokenActive } from "@extension/core"
 import { Token } from "@talismn/chaindata-provider"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { useCallback, useMemo } from "react"
 
-import { useActiveTokensState } from "./useActiveTokensState"
-import useTokens from "./useTokens"
+import { activeTokensStore, isTokenActive } from "@extension/core"
+import { useActiveTokensState, useTokens } from "@ui/state"
+import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 /**
  * NOTE: Works for both `evm-erc20` as well as `evm-uniswapv2` tokens.
  */
 export const useKnownEvmToken = (
   evmNetworkId: string | undefined | null,
-  contractAddress: string | undefined | null
+  contractAddress: string | undefined | null,
 ) => {
-  const { tokens: allTokens } = useTokens({ activeOnly: false, includeTestnets: true })
+  const allTokens = useTokens()
   const allErc20Tokens = useMemo(
     () => allTokens.filter((t) => isErc20Token(t) || isUniswapV2Token(t)),
-    [allTokens]
+    [allTokens],
   )
 
   const activeTokens = useActiveTokensState()
@@ -42,7 +41,7 @@ export const useKnownEvmToken = (
       if (!token) throw new Error("Token not found")
       await activeTokensStore.setActive(token.id, active)
     },
-    [token]
+    [token],
   )
 
   const toggleActive = useCallback(async () => {

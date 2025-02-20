@@ -1,8 +1,9 @@
-import { EvmAddress } from "@extension/core"
-import { TOKEN_APPROVALS_URL, log } from "@extension/shared"
-import { notify } from "@talisman/components/Notifications"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+
+import { EvmAddress } from "@extension/core"
+import { log, TOKEN_APPROVALS_URL } from "@extension/shared"
+import { notify } from "@talisman/components/Notifications"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
@@ -30,7 +31,7 @@ export const EthSignBodyErc20Approve: FC = () => {
             symbol: decodedTx.asset.symbol,
           }
         : null,
-    [decodedTx, network]
+    [decodedTx, network],
   )
 
   const [spender, allowance] = useMemo(
@@ -38,7 +39,7 @@ export const EthSignBodyErc20Approve: FC = () => {
       getContractCallArg<EvmAddress>(decodedTx, "spender"),
       getContractCallArg<bigint>(decodedTx, "amount"),
     ],
-    [decodedTx]
+    [decodedTx],
   )
 
   const isRevoke = useMemo(() => allowance === 0n, [allowance])
@@ -52,7 +53,7 @@ export const EthSignBodyErc20Approve: FC = () => {
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [updateCallArg]
+    [updateCallArg],
   )
 
   if (!spender || !account || !network || !erc20Token) return <SignViewBodyShimmer />
@@ -77,10 +78,10 @@ export const EthSignBodyErc20Approve: FC = () => {
             <span className="text-body-secondary">
               {allowance === ERC20_UNLIMITED_ALLOWANCE
                 ? t(
-                    `This contract will have permission to spend all tokens on your behalf until manually revoked. We recommend you set a limit by clicking the amount button above.`
+                    `This contract will have permission to spend all tokens on your behalf until manually revoked. We recommend you set a limit by clicking the amount button above.`,
                   )
                 : t(
-                    "This contract will have permission to spend tokens on your behalf until manually revoked."
+                    "This contract will have permission to spend tokens on your behalf until manually revoked.",
                   )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
@@ -98,6 +99,7 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>{isRevoke ? t("from spending") : t("to spend")}</div>
         {!isRevoke && (
           <SignParamAllowanceButton
+            account={account.address as EvmAddress}
             allowance={allowance}
             token={erc20Token}
             spender={spender}

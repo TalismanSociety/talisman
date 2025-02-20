@@ -1,10 +1,10 @@
-import { AccountJsonAny } from "@extension/core"
 import { PlusIcon, SecretIcon } from "@talismn/icons"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
+
+import { AccountJsonAny } from "@extension/core"
+import { useAccounts, useMnemonics } from "@ui/state"
 
 export type MnemonicOption = {
   value: string
@@ -15,7 +15,7 @@ export type MnemonicOption = {
 const GENERATE_MNEMONIC_OPTION = {
   value: "new",
   label: "Generate new recovery phrase",
-  accountsCount: undefined,
+  accounts: [],
 }
 
 export const AccountAddMnemonicDropdown: FC<{
@@ -29,12 +29,15 @@ export const AccountAddMnemonicDropdown: FC<{
 
   const mnemonics = useMnemonics()
   const mnemonicOptions: MnemonicOption[] = useMemo(() => {
-    const accountsByMnemonic = allAccounts.reduce((result, acc) => {
-      if (!acc.derivedMnemonicId) return result
-      if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
-      result[acc.derivedMnemonicId].push(acc)
-      return result
-    }, {} as Record<string, AccountJsonAny[]>)
+    const accountsByMnemonic = allAccounts.reduce(
+      (result, acc) => {
+        if (!acc.derivedMnemonicId) return result
+        if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
+        result[acc.derivedMnemonicId].push(acc)
+        return result
+      },
+      {} as Record<string, AccountJsonAny[]>,
+    )
     return [
       ...mnemonics
         .map((m) => ({
@@ -49,7 +52,7 @@ export const AccountAddMnemonicDropdown: FC<{
 
   const selected = useMemo(
     () => mnemonicOptions.find((o) => o.value === value) ?? GENERATE_MNEMONIC_OPTION,
-    [mnemonicOptions, value]
+    [mnemonicOptions, value],
   )
 
   const handleChange = useCallback(
@@ -57,12 +60,12 @@ export const AccountAddMnemonicDropdown: FC<{
       if (!o) return // shouldn't happen
       onChange(o.value === "new" ? null : o.value)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
     <Dropdown
-      className="mt-8 [&>label]:mb-4"
+      className="[&>label]:mb-4"
       items={mnemonicOptions}
       label={label ?? t("Recovery phrase")}
       propertyKey="value"

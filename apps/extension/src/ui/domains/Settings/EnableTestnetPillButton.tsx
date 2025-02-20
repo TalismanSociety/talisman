@@ -1,7 +1,8 @@
-import { TogglePill } from "@talisman/components/TogglePill"
-import { useSetting } from "@ui/hooks/useSettings"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+
+import { TogglePill } from "@talisman/components/TogglePill"
+import { useSetting } from "@ui/state"
 
 type EnableTestnetPillButtonProps = {
   className?: string

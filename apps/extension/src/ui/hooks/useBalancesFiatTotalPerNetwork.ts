@@ -1,7 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { useMemo } from "react"
 
-import { useSelectedCurrency } from "./useCurrency"
+import { useSelectedCurrency } from "@ui/state"
 
 export const useBalancesFiatTotalPerNetwork = (balances: Balances) => {
   const currency = useSelectedCurrency()
@@ -22,8 +22,8 @@ export const useBalancesFiatTotalPerNetwork = (balances: Balances) => {
           [...evmNetworkIds].map((id) => [
             id,
             balances.find({ evmNetworkId: id }).sum.fiat(currency).total,
-          ])
-        )
+          ]),
+        ),
     )
   }, [balances, currency])
 }

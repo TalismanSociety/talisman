@@ -1,43 +1,30 @@
-import { FC, useEffect } from "react"
-import { useTranslation } from "react-i18next"
+import { FC, useCallback } from "react"
 
-import { Spacer } from "@talisman/components/Spacer"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
+import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 
-type ConnectLedgerSubstrateGenericProps = {
-  onReadyChanged?: (ready: boolean) => void
+import { ConnectLedgerBase } from "./ConnectLedgerBase"
+
+export const ConnectLedgerSubstrateGeneric: FC<{
+  onReadyChanged: (ready: boolean) => void
   className?: string
-  appName?: string | null
-}
+  legacyAppName?: string | null
+}> = ({ onReadyChanged, className, legacyAppName }) => {
+  const legacyApp = useLedgerSubstrateAppByName(legacyAppName)
+  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
 
-export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProps> = ({
-  onReadyChanged,
-  className,
-  appName,
-}) => {
-  const app = useLedgerSubstrateAppByName(appName)
-  const ledger = useLedgerSubstrateGeneric({ persist: true, app })
-  const { t } = useTranslation("admin")
-
-  useEffect(() => {
-    onReadyChanged?.(ledger.isReady)
-
-    return () => {
-      onReadyChanged?.(false)
-    }
-  }, [ledger.isReady, onReadyChanged])
+  const isReadyCheck = useCallback(() => {
+    const derivationPath = getPolkadotLedgerDerivationPath({ legacyApp })
+    return getAddress(derivationPath)
+  }, [getAddress, legacyApp])
 
   return (
-    <div className={className}>
-      <div className="text-body-secondary m-0">
-        {t("Connect and unlock your Ledger, then open the {{appName}} app on your Ledger.", {
-          appName: app ? "Polkadot Migration" : "Polkadot",
-        })}
-      </div>
-      <Spacer small />
-      <LedgerConnectionStatus {...ledger} />
-    </div>
+    <ConnectLedgerBase
+      appName={legacyAppName ? "Polkadot Migration" : "Polkadot"}
+      className={className}
+      isReadyCheck={isReadyCheck}
+      onReadyChanged={onReadyChanged}
+    />
   )
 }

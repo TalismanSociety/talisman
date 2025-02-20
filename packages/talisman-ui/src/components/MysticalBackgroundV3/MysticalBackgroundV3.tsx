@@ -20,7 +20,7 @@ export const MysticalBackgroundV3 = ({
       filter: mergedConfig.blur > 0 ? `blur(${mergedConfig.blur}px)` : undefined,
       userSelect: "none",
     }),
-    [mergedConfig.blur]
+    [mergedConfig.blur],
   )
 
   return (

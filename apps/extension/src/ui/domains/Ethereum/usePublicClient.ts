@@ -1,11 +1,11 @@
-import { log } from "@extension/shared"
 import { EvmNativeToken } from "@talismn/balances"
 import { EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useToken from "@ui/hooks/useToken"
 import { useMemo } from "react"
-import { PublicClient, createPublicClient, custom } from "viem"
+import { createPublicClient, custom, PublicClient } from "viem"
+
+import { log } from "@extension/shared"
+import { api } from "@ui/api"
+import { useEvmNetwork, useToken } from "@ui/state"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 
@@ -22,7 +22,7 @@ const viemRequest =
 
 export const getExtensionPublicClient = (
   evmNetwork: EvmNetwork,
-  nativeToken: EvmNativeToken
+  nativeToken: EvmNativeToken,
 ): PublicClient => {
   const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`
 
@@ -49,7 +49,7 @@ export const getExtensionPublicClient = (
       {
         // backend will retry, at it's own transport level
         retryCount: 0,
-      }
+      },
     ),
   })
 }

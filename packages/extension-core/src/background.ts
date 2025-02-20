@@ -75,7 +75,7 @@ chrome.runtime.onConnect.addListener((_port): void => {
   // only listen to what we know about
   assert(
     [PORT_CONTENT, PORT_EXTENSION].includes(_port.name),
-    `Unknown connection from ${_port.name}`
+    `Unknown connection from ${_port.name}`,
   )
   let port: chrome.runtime.Port | undefined = _port
 
@@ -93,7 +93,7 @@ chrome.runtime.onConnect.addListener((_port): void => {
   port.onDisconnect.addListener(disconnectHandler)
 })
 
-!DEBUG && chrome.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
+!DEBUG && chrome.runtime.setUninstallURL("https://thxbye.talisman.xyz/")
 
 // initial setup
 //

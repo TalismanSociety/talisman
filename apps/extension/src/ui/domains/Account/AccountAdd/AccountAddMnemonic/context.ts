@@ -1,16 +1,19 @@
-import { AccountAddressType, RequestAccountCreateFromSuri } from "@extension/core"
-import { AssetDiscoveryMode } from "@extension/core"
-import { getEthDerivationPath } from "@extension/core"
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
+
+import {
+  getEthDerivationPath,
+  RequestAccountCreateFromSuri,
+  UiAccountAddressType,
+} from "@extension/core"
+import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
 
 export type AccountAddDerivationMode = "first" | "custom" | "multi"
 
 type AccountAddSecretInputs = {
   name: string
-  type: AccountAddressType
+  type: UiAccountAddressType
   mode: AccountAddDerivationMode
   mnemonic: string
   derivationPath: string
@@ -19,8 +22,9 @@ type AccountAddSecretInputs = {
 
 const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
+
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
-    type: params.get("type") as AccountAddressType,
+    type: params.get("type") as UiAccountAddressType,
     mode: "first",
     derivationPath: params.get("type") === "ethereum" ? getEthDerivationPath() : "",
   }))
@@ -40,8 +44,6 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
     for (const { name, suri, type } of accounts)
       addresses.push(await api.accountCreateFromSuri(name, suri, type))
 
-    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
-
     return addresses
   }, [])
 
@@ -49,5 +51,5 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
 }
 
 export const [AccountAddMnemonicProvider, useAccountAddSecret] = provideContext(
-  useAccountAddMnemonicProvider
+  useAccountAddMnemonicProvider,
 )

@@ -7,7 +7,7 @@ export const useDebouncedState = <S>(initialValue: S | (() => S), delay = 200) =
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setDebouncedValue: React.Dispatch<React.SetStateAction<S>> = useCallback(
     debounce(setValue, delay),
-    [delay]
+    [delay],
   )
 
   return [value, setDebouncedValue] as const

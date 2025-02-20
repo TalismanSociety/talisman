@@ -1,9 +1,10 @@
 import { classNames } from "@talismn/util"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
+import { useAccountByAddress } from "@ui/state"
 
 import { AccountIcon } from "./AccountIcon"
 import { AccountTypeIcon } from "./AccountTypeIcon"
@@ -35,15 +36,17 @@ export const FormattedAddress: FC<{
       <TooltipTrigger asChild>
         <span
           className={classNames(
-            "flex max-w-full items-center gap-[0.5em] overflow-hidden",
-            className
+            "inline-flex max-w-full items-baseline gap-[0.3em] overflow-hidden",
+            className,
           )}
         >
-          <AccountIcon
-            address={address}
-            genesisHash={account?.genesisHash}
-            className="text-[1.4em]"
-          />
+          <div>
+            <AccountIcon
+              address={address}
+              genesisHash={account?.genesisHash}
+              className="inline-block align-middle text-[1.4em]"
+            />
+          </div>
           <span className="max-w-full truncate">
             {isKnown && isKnown.type === "account" ? (
               <>{isKnown.value.name}</>

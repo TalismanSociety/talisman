@@ -1,4 +1,5 @@
 import { TokenRateCurrency } from "@talismn/token-rates"
+import { IS_FIREFOX } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
 import { IdenticonType } from "../accounts/types"
@@ -13,7 +14,7 @@ export interface SettingsStoreData {
   allowNotifications: boolean
   selectedAccount?: string // undefined = show all accounts
   collapsedFolders?: string[] // persists the collapsed folders in the dashboard account picker
-  autoLockTimeout: 0 | 300 | 900 | 1800 | 3600
+  autoLockMinutes: number
   spiritClanFeatures: boolean
   selectableCurrencies: TokenRateCurrency[]
   selectedCurrency: TokenRateCurrency
@@ -28,14 +29,14 @@ export interface SettingsStoreData {
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
 export const DEFAULT_SETTINGS: SettingsStoreData = {
-  useErrorTracking: true,
+  useErrorTracking: !IS_FIREFOX,
   useTestnets: false,
   identiconType: "talisman-orb",
   useAnalyticsTracking: undefined, // undefined for onboarding
   hideBalances: false,
   hideDust: false,
   allowNotifications: true,
-  autoLockTimeout: 0,
+  autoLockMinutes: 0,
   spiritClanFeatures: true,
   selectableCurrencies: ["usd", "dot", "eth"],
   selectedCurrency: "usd",

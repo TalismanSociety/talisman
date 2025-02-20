@@ -35,7 +35,7 @@ const ConnectInner = () => {
         console.error("failed to switch network", err)
       }
     },
-    [switchChain]
+    [switchChain],
   )
 
   return isConnected ? (
@@ -65,7 +65,7 @@ const ConnectInner = () => {
         <select
           value={"DEFAULT"}
           onChange={handleSwitchNetwork}
-          className="bg-grey-700 text-body rounded-xs h-12  disabled:opacity-50"
+          className="bg-grey-700 text-body rounded-xs h-12 disabled:opacity-50"
           disabled={!connector}
         >
           <option value="DEFAULT">Select</option>

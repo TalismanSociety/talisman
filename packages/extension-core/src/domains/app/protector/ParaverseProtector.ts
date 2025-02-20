@@ -2,7 +2,7 @@ import { checkHost } from "@polkadot/phishing"
 import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
-import { log } from "extension-shared"
+import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { decompressFromUTF16 } from "lz-string"
 
 import { sentry } from "../../../config/sentry"
@@ -20,7 +20,10 @@ const COMMIT_PATH = "/commits/master"
 
 const REFRESH_INTERVAL_MIN = 20
 
-const DEFAULT_ALLOW = ["talisman.xyz", "app.talisman.xyz"]
+const DEFAULT_ALLOW = [
+  TALISMAN_WEB_APP_DOMAIN, // app.talisman.xyz
+  TALISMAN_WEB_APP_DOMAIN.split(".").slice(1).join("."), // talisman.xyz
+]
 
 type HostList = { allow: string[]; deny: string[] }
 
@@ -80,7 +83,7 @@ export default class ParaverseProtector {
                   ? hostList
                   : JSON.parse(
                       // todo remove decompressFromUTF16 in next release
-                      (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}"
+                      (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}",
                     )
 
                 if (!fullData) return
@@ -90,12 +93,12 @@ export default class ParaverseProtector {
                 if (source === "metamask") {
                   this.#metamaskDetector = new MetamaskDetector(fullData as MetaMaskDetectorConfig)
                 } else this.lists[source] = fullData
-              }
+              },
             )
             resolve(true)
           })
         },
-        false
+        false,
       )
     }).catch((err) => {
       // in the case of any error, the user should only be unprotected until the first update runs (30 seconds)
@@ -140,7 +143,7 @@ export default class ParaverseProtector {
   private persistData(
     source: "polkadot" | "phishfort" | "metamask",
     commitSha: string,
-    data: HostList | MetaMaskDetectorConfig
+    data: HostList | MetaMaskDetectorConfig,
   ): void {
     if (!this.#persistQueue) this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
     this.#persistQueue[source] = { source, commitSha, hostList: data }

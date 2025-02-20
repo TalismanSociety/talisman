@@ -1,25 +1,26 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { useSetting } from "@ui/hooks/useSettings"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   SubmitHandler,
+  useForm,
   UseFormHandleSubmit,
   UseFormSetValue,
   UseFormWatch,
-  useForm,
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
+
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { HandMonoLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
+import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useSetting } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 import { ResetWallet } from "./ResetWallet"
@@ -35,7 +36,7 @@ const HideBalancesToggle = () => {
           htmlFor="showBalances"
           className={classNames(
             "absolute right-10 top-10 z-20",
-            "inline-flex cursor-pointer items-center"
+            "inline-flex cursor-pointer items-center",
           )}
         >
           <input
@@ -48,28 +49,28 @@ const HideBalancesToggle = () => {
           <div
             className={classNames(
               "bg-grey-600 peer h-14 w-28 shrink-0 rounded-full",
-              "peer-focus-visible:ring-body peer-focus:outline-none peer-focus-visible:ring-2"
+              "peer-focus-visible:ring-body peer-focus:outline-none peer-focus-visible:ring-2",
             )}
           ></div>
           <div
             className={classNames(
-              "absolute left-1 top-1 flex h-12 w-12 ",
+              "absolute left-1 top-1 flex h-12 w-12",
               "bg-grey-800 rounded-full",
-              "peer-checked:bg-primary transition peer-checked:translate-x-14"
+              "peer-checked:bg-primary transition peer-checked:translate-x-14",
             )}
           >
             <EyeIcon
               className={classNames(
                 "absolute left-2 top-2 h-8 w-8",
                 "text-body-black transition-opacity",
-                hideBalances ? "opacity-0" : "opacity-100"
+                hideBalances ? "opacity-0" : "opacity-100",
               )}
             />
             <EyeOffIcon
               className={classNames(
                 "absolute left-2 top-2 h-8 w-8",
                 "text-body transition-opacity",
-                !hideBalances ? "opacity-0" : "opacity-100"
+                !hideBalances ? "opacity-0" : "opacity-100",
               )}
             />
           </div>
@@ -88,7 +89,7 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().required(""),
+    password: yup.string().required(" "),
   })
   .required()
 
@@ -134,7 +135,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         setFocus("password", { shouldSelect: true })
       }
     },
-    [setError, setFocus, t]
+    [setError, setFocus, t],
   )
 
   useEffect(() => {
@@ -159,7 +160,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         className={classNames("z-10 pt-32 text-center", isSubmitting && "animate-pulse")}
       >
         <div className="mt-[60px]">
-          <HandMonoTransparentLogo className="inline-block text-[64px]" />
+          <HandMonoLogo className="inline-block text-[64px]" />
         </div>
         <h1 className="font-surtExpanded mt-[34px] text-lg">{t("Unlock the Talisman")}</h1>
         {errors.password?.message && (

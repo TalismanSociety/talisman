@@ -1,13 +1,13 @@
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Chain, CustomChain } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
-import { api } from "@ui/api"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ModalDialog } from "talisman-ui"
-import { Button, Modal } from "talisman-ui"
+import { Button, Modal, ModalDialog } from "talisman-ui"
+
+import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { api } from "@ui/api"
 
 export const ResetSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chain }) => {
   const { t } = useTranslation("admin")

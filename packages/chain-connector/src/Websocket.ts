@@ -1,4 +1,3 @@
-import { RpcCoder } from "@polkadot/rpc-provider/coder"
 import type {
   JsonRpcResponse,
   ProviderInterfaceEmitted as PjsProviderInterfaceEmitted,
@@ -6,6 +5,7 @@ import type {
   ProviderInterfaceCallback,
   ProviderInterfaceEmitCb,
 } from "@polkadot/rpc-provider/types"
+import { RpcCoder } from "@polkadot/rpc-provider/coder"
 import { getWSErrorString } from "@polkadot/rpc-provider/ws/errors"
 import { isChildClass, isNull, isUndefined, objectSpread } from "@polkadot/util"
 import { xglobal } from "@polkadot/x-global"
@@ -103,7 +103,7 @@ export class Websocket implements ProviderInterface {
     endpoint: string | string[],
     headers: Record<string, string> = {},
     timeout?: number,
-    nextBackoffInterval?: number
+    nextBackoffInterval?: number,
   ) {
     const endpoints = Array.isArray(endpoint) ? endpoint : [endpoint]
 
@@ -254,7 +254,7 @@ export class Websocket implements ProviderInterface {
           // does not throw
         })
       },
-      haveTriedAllEndpoints ? this.#autoConnectBackoff.next : 0
+      haveTriedAllEndpoints ? this.#autoConnectBackoff.next : 0,
     )
 
     // Increase backoff when we've tried all endpoints
@@ -314,7 +314,7 @@ export class Websocket implements ProviderInterface {
     params: unknown[],
     /** @deprecated \@talismn/chain-connector doesn't implement a cache */
     isCacheable?: boolean,
-    subscription?: SubscriptionHandler
+    subscription?: SubscriptionHandler,
   ): Promise<T> {
     const [id, body] = this.#coder.encodeJson(method, params)
     const resultPromise: Promise<T> = this.#send(id, body, method, params, subscription)
@@ -327,7 +327,7 @@ export class Websocket implements ProviderInterface {
     body: string,
     method: string,
     params: unknown[],
-    subscription?: SubscriptionHandler
+    subscription?: SubscriptionHandler,
   ): Promise<T> {
     return new Promise<T>((resolve, reject): void => {
       try {
@@ -377,7 +377,7 @@ export class Websocket implements ProviderInterface {
     type: string,
     method: string,
     params: unknown[],
-    callback: ProviderInterfaceCallback
+    callback: ProviderInterfaceCallback,
   ): Promise<number | string> {
     return this.send<number | string>(method, params, false, { callback, type })
   }
@@ -415,7 +415,7 @@ export class Websocket implements ProviderInterface {
     const error = new Error(
       `disconnected from ${this.endpoint}: ${event.code}:: ${
         event.reason || getWSErrorString(event.code)
-      }`
+      }`,
     )
 
     if (this.#autoConnectBackoff.isActive) {
@@ -573,7 +573,7 @@ export class Websocket implements ProviderInterface {
         } catch (error) {
           log.error(error)
         }
-      })
+      }),
     ).catch(log.error)
   }
 
@@ -588,7 +588,7 @@ export class Websocket implements ProviderInterface {
         try {
           handler.callback(
             new Error(`No response received from RPC endpoint in ${this.#timeout / 1000}s`),
-            undefined
+            undefined,
           )
         } catch {
           // ignore

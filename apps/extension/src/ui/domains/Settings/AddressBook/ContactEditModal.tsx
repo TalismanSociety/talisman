@@ -1,10 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { Address } from "@ui/domains/Account/Address"
-import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -18,6 +12,13 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Address } from "@ui/domains/Account/Address"
+import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useChainsMapByGenesisHash } from "@ui/state"
+
 import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
 import { ContactModalProps } from "./types"
@@ -29,7 +30,7 @@ type FormValues = {
 }
 
 const schema = yup.object({
-  name: yup.string().required(""),
+  name: yup.string().required(" "),
   genesisHash: yup.string(),
   limitToNetwork: yup.bool(),
 })
@@ -65,7 +66,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
 
   const { genesisHash, limitToNetwork } = watch()
   const chains = useChainsFilteredByAddressPrefix(contact?.address)
-  const chainsByGenesisHash = useAllChainsMapByGenesisHash()
+  const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
     (genesisHash?: string) =>
       setValue("genesisHash", genesisHash, {
@@ -73,7 +74,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
         shouldTouch: true,
         shouldValidate: true,
       }),
-    [setValue]
+    [setValue],
   )
   useGenesisHashEffects(chains, genesisHash, setGenesisHash)
   const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
@@ -98,7 +99,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
         setError("name", error as Error)
       }
     },
-    [close, contact, edit, setError]
+    [close, contact, edit, setError],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

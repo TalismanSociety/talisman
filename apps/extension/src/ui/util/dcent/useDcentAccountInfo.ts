@@ -1,12 +1,11 @@
-import { UseQueryOptions, UseQueryResult, useQuery } from "@tanstack/react-query"
+import { useQuery, UseQueryResult } from "@tanstack/react-query"
 
 import { dcent } from "./dcent"
 import { DcentAccountInfo, DcentError } from "./types"
 
-export const useDcentAccountInfo = (options: UseQueryOptions = {}) => {
+export const useDcentAccountInfo = () => {
   return useQuery({
     queryKey: ["useDcentAccounts"],
     queryFn: dcent.getAccountInfo,
-    ...options,
   }) as UseQueryResult<DcentAccountInfo, DcentError>
 }

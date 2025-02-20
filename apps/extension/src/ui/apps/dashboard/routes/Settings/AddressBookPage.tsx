@@ -1,34 +1,12 @@
-import { ProviderType } from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { OptionSwitch } from "@talisman/components/OptionSwitch"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
-import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
-import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
-import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
-import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { AccountAddressType } from "extension-shared"
-import { useAtomValue } from "jotai"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
   DetailedHTMLProps,
-  Suspense,
   forwardRef,
+  Suspense,
   useCallback,
   useMemo,
   useState,
@@ -46,7 +24,27 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { ProviderType } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
+import { Spacer } from "@talisman/components/Spacer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
+import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
+import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
+import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useBalances, useChainByGenesisHash } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -65,7 +63,7 @@ const SquareButton = forwardRef<
     ref={ref}
     className={classNames(
       "enabled:hover:bg-grey-700 enabled:hover:text-body-secondary flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-sm enabled:cursor-pointer disabled:cursor-not-allowed",
-      props.className
+      props.className,
     )}
   ></button>
 ))
@@ -80,17 +78,16 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const { t } = useTranslation("admin")
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { account } = useSelectedAccount()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
-    account,
     undefined,
     undefined,
-    contact.address
+    undefined,
+    contact.address,
   )
   const contactChain = useChainByGenesisHash(contact.genesisHash)
   const { open: viewOnExplorer, canOpen: canViewOnExplorer } = useViewOnExplorer(
     contact.address,
-    contact.genesisHash
+    contact.genesisHash,
   )
 
   const handleViewOnExplorer = useCallback(() => {
@@ -141,7 +138,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
             </SquareButton>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <Suspense>
+            <Suspense fallback={<SuspenseTracker name="AddressBookContactItem.ContextMenu" />}>
               <ContextMenuItem onClick={() => handleEdit(contact.address)}>
                 {t("Edit contact")}
               </ContextMenuItem>
@@ -183,14 +180,15 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
   ethereum: "ethereum",
 }
 
-export const AddressBookPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   // preload balances because of the send button
-  useAtomValue(balancesByAccountCategoryAtomFamily("owned"))
+  useBalances("owned")
+
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),
-    [contacts]
+    [contacts],
   )
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
@@ -200,59 +198,57 @@ export const AddressBookPage = () => {
     () =>
       contacts.filter(
         (contact) =>
-          addressType === "all" || contact.addressType === contactTypeAddressTypeMap[addressType]
+          addressType === "all" || contact.addressType === contactTypeAddressTypeMap[addressType],
       ),
-    [contacts, addressType]
+    [contacts, addressType],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <>
-      <DashboardLayout centered analytics={ANALYTICS_PAGE}>
-        <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
-        <Spacer large />
-        <div className="flex justify-between align-middle">
-          <OptionSwitch
-            options={[
-              ["all", t("All")],
-              ["ethereum", t("Ethereum")],
-              ["polkadot", t("Polkadot")],
-            ]}
-            className="text-xs [&>div]:h-full"
-            defaultOption="all"
-            onChange={setAddressType}
+      <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
+      <Spacer large />
+      <div className="flex justify-between align-middle">
+        <OptionSwitch
+          options={[
+            ["all", t("All")],
+            ["ethereum", t("Ethereum")],
+            ["polkadot", t("Polkadot")],
+          ]}
+          className="text-xs [&>div]:h-full"
+          defaultOption="all"
+          onChange={setAddressType}
+        />
+        {contactsToDisplay.length > 0 && (
+          <PillButton onClick={open} icon={UserPlusIcon}>
+            {t("Add new contact")}
+          </PillButton>
+        )}
+      </div>
+      <Spacer small />
+      <div className="flex flex-col gap-3">
+        {contactsToDisplay.map((contact) => (
+          <AddressBookContactItem
+            contact={contact}
+            key={contact.address}
+            handleDelete={setToDelete}
+            handleEdit={setToEdit}
           />
-          {contactsToDisplay.length > 0 && (
-            <PillButton onClick={open} icon={UserPlusIcon}>
-              {t("Add new contact")}
-            </PillButton>
-          )}
-        </div>
-        <Spacer small />
-        <div className="flex flex-col gap-3">
-          {contactsToDisplay.map((contact) => (
-            <AddressBookContactItem
-              contact={contact}
-              key={contact.address}
-              handleDelete={setToDelete}
-              handleEdit={setToEdit}
-            />
-          ))}
-          {contactsToDisplay.length === 0 && (
-            <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
-              <span>
-                {t("You have no saved {{addressType}} contacts yet.", {
-                  addressType: startCase(addressType),
-                })}
-              </span>
-              <Button primary onClick={open} iconLeft={PlusIcon}>
-                {t("Add a contact")}
-              </Button>
-            </div>
-          )}
-        </div>
-      </DashboardLayout>
+        ))}
+        {contactsToDisplay.length === 0 && (
+          <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
+            <span>
+              {t("You have no saved {{addressType}} contacts yet.", {
+                addressType: startCase(addressType),
+              })}
+            </span>
+            <Button primary onClick={open} iconLeft={PlusIcon}>
+              {t("Add a contact")}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {toDelete && (
         <ContactDeleteModal
@@ -272,3 +268,9 @@ export const AddressBookPage = () => {
     </>
   )
 }
+
+export const AddressBookPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

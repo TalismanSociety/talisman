@@ -17,7 +17,7 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
             </span>
             <span>
               {t(
-                "Protect your recovery phrase. Anyone who has it can access your wallet and funds."
+                "Protect your recovery phrase. Anyone who has it can access your wallet and funds.",
               )}
             </span>
           </div>

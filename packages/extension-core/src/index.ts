@@ -1,5 +1,3 @@
-export { initPosthog } from "./config/posthog"
-
 export { db, MIGRATION_ERROR_MSG } from "./db"
 
 export { settingsStore, type SettingsStoreData } from "./domains/app/store.settings"
@@ -34,13 +32,7 @@ export { getCoinGeckoErc20Coin } from "./util/coingecko/getCoinGeckoErc20Coin"
 export { getCoingeckoToken } from "./util/coingecko/getCoinGeckoToken"
 export { getCoingeckoTokensList } from "./util/coingecko/getCoinGeckoTokensList"
 
-export * from "./domains/staking/constants"
 export * from "./domains/ethereum/helpers"
-
-export {
-  stakingBannerStore,
-  type StakingBannerStatus,
-} from "./domains/staking/store.StakingBanners"
 
 export { MnemonicSource, mnemonicsStore } from "./domains/mnemonics/store"
 

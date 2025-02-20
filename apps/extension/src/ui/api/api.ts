@@ -1,3 +1,6 @@
+import { HexString } from "@polkadot/util/types"
+import { SignerPayloadJSON } from "extension-core"
+
 import PortMessageService from "@common/PortMessageService"
 
 import MessageTypes from "./types"
@@ -5,7 +8,8 @@ import MessageTypes from "./types"
 const messageService = new PortMessageService()
 
 export const api: MessageTypes = {
-  ping: () => messageService.sendMessage("pri(ping)"),
+  keepalive: () => messageService.sendMessage("pri(keepalive)"),
+  keepunlocked: () => messageService.sendMessage("pri(keepunlocked)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>
@@ -15,10 +19,10 @@ export const api: MessageTypes = {
   changePassword: (currentPw, newPw, newPwConfirm) =>
     messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
   changePasswordSubscribe: (currentPw, newPw, newPwConfirm, cb) =>
-    messageService.sendMessage(
+    messageService.subscribe(
       "pri(app.changePassword.subscribe)",
       { currentPw, newPw, newPwConfirm },
-      cb
+      cb,
     ),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
@@ -32,8 +36,6 @@ export const api: MessageTypes = {
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------
-  modalOpen: (request) => messageService.sendMessage("pri(app.modalOpen.request)", request),
-  modalOpenSubscribe: (cb) => messageService.subscribe("pri(app.modalOpen.subscribe)", null, cb),
   analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
   sendFundsOpen: (request = {}) => messageService.sendMessage("pri(app.sendFunds.open)", request),
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
@@ -145,6 +147,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.export)", { address, password, exportPw }),
   accountExportPrivateKey: (address, password) =>
     messageService.sendMessage("pri(accounts.export.pk)", { address, password }),
+  accountExportAll: (password, exportPw) =>
+    messageService.sendMessage("pri(accounts.export.all)", { password, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>
@@ -167,7 +171,7 @@ export const api: MessageTypes = {
         addressesAndEvmNetworks,
         addressesAndTokens,
       },
-      cb
+      cb,
     ),
 
   // authorized sites messages ------------------------------------------
@@ -329,6 +333,11 @@ export const api: MessageTypes = {
       params,
       isCacheable,
     }) as Promise<T>,
+  subSubmit: (payload: SignerPayloadJSON, signature?: HexString) =>
+    messageService.sendMessage("pri(substrate.rpc.submit)", {
+      payload,
+      signature,
+    }),
   subChainMetadata: (genesisHash, specVersion, blockHash) =>
     messageService.sendMessage("pri(substrate.metadata.get)", {
       genesisHash,
@@ -337,8 +346,8 @@ export const api: MessageTypes = {
     }),
 
   // asset discovery
-  assetDiscoveryStartScan: (mode, addresses) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", { mode, addresses }),
+  assetDiscoveryStartScan: (scope) =>
+    messageService.sendMessage("pri(assetDiscovery.scan.start)", scope),
   assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
 
   // nfts

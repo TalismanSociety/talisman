@@ -1,14 +1,14 @@
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { BrowserQRCodeReader } from "@zxing/browser"
 import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
-import { useAtom, useAtomValue } from "jotai"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { Toggle } from "talisman-ui"
 
-import { codeReaderAtom, selectedVideoInputAtom, videoInputDevicesAtom } from "@ui/atoms"
+import { setSelectedVideoInput, useSelectedVideoInput, useVideoInputDevices } from "@ui/state"
 
 type Types = "address" | "signature"
 type CommonProps<T extends Types> = {
@@ -36,8 +36,8 @@ type SignatureProps = {
 type Props<T> = T extends "address"
   ? CommonProps<T> & AddressProps
   : T extends "signature"
-  ? CommonProps<T> & SignatureProps
-  : never
+    ? CommonProps<T> & SignatureProps
+    : never
 
 export const ScanQr = <T extends Types>({
   type,
@@ -62,7 +62,7 @@ export const ScanQr = <T extends Types>({
         onError?.(error)
       }
     },
-    [onError, onScan, type]
+    [onError, onScan, type],
   )
 
   return (
@@ -104,18 +104,19 @@ const Scanner = ({
 }) => {
   const preview = useRef<HTMLVideoElement>(null)
 
-  const [selectedVideoInput, selectVideoInput] = useAtom(selectedVideoInputAtom)
-  const inputDevices = useAtomValue(videoInputDevicesAtom)
+  const selectedVideoInput = useSelectedVideoInput()
+  const inputDevices = useVideoInputDevices()
   const [showInputMenu, setShowInputMenu] = useState(false)
   const inputMenu = useRef(null)
   useClickAway(inputMenu, () => setShowInputMenu(false))
 
-  const codeReader = useAtomValue(codeReaderAtom)
+  const codeReader = useMemo(() => new BrowserQRCodeReader(), [])
 
   useEffect(() => {
     if (!codeReader) return
     if (!preview.current) return
 
+    // @dev: in dev mode, because of React.StrictMode, the stream wont be closed properly on unmount
     const aborted = new AbortController()
     let abortedSignalSet = false
     codeReader
@@ -147,7 +148,10 @@ const Scanner = ({
     <div className="absolute h-full w-full">
       <video
         ref={preview}
-        className={`absolute h-full w-full -scale-x-100 object-cover${blur ? " blur-sm" : ""}`}
+        className={classNames(
+          "absolute h-full w-full -scale-x-100 object-cover",
+          blur && "blur-sm",
+        )}
       />
       {inputDevices.length > 1 ? (
         <div className="absolute left-1/2 top-10 -translate-x-1/2">
@@ -167,12 +171,12 @@ const Scanner = ({
               key={device.deviceId}
               type="button"
               className="flex w-full items-center gap-3 text-sm"
-              onClick={() => selectVideoInput(device.deviceId)}
+              onClick={() => setSelectedVideoInput(device.deviceId)}
             >
               <div
                 className={classNames(
                   "h-4 w-4 shrink-0 rounded-full",
-                  device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700"
+                  device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700",
                 )}
               />
               <span className="truncate">{device.label}</span>
@@ -197,7 +201,7 @@ const parseAddress = (data: string) => {
   const isValidPrefix = validPrefixes.includes(prefix)
   if (!isValidPrefix)
     throw new Error(
-      `Invalid prefix received, expected '${validPrefixes.join("' or '")}', found '${prefix}'`
+      `Invalid prefix received, expected '${validPrefixes.join("' or '")}', found '${prefix}'`,
     )
 
   const isSubstrateAddress = prefix === "substrate"

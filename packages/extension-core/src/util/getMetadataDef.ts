@@ -32,7 +32,7 @@ const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number, blockHa
 export const getMetadataDef = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
   const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion, blockHash)
 
@@ -42,7 +42,7 @@ export const getMetadataDef = async (
       cacheKey,
       getMetadataDefInner(chainIdOrHash, specVersion, blockHash).finally(() => {
         CACHE_PROMISES.delete(cacheKey)
-      })
+      }),
     )
 
   return CACHE_PROMISES.get(cacheKey)
@@ -51,9 +51,13 @@ export const getMetadataDef = async (
 const getMetadataDefInner = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
+
+  // blockHash being equal to genesisHash happens when trying to decode payload of immortal transactions
+  // in that case, blockHash must not be used as block reference when fetching data
+  if (blockHash && blockHash === genesisHash) blockHash = undefined
 
   const cacheKey = getResultCacheKey(genesisHash, specVersion)
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
@@ -102,7 +106,7 @@ const getMetadataDefInner = async (
       chain,
       genesisHash,
       runtimeSpecVersion,
-      blockHash
+      blockHash,
     )
     if (!newData) return // unable to get data from rpc, return nothing
 
@@ -115,7 +119,7 @@ const getMetadataDefInner = async (
     if (storeMetadata && runtimeSpecVersion < storeMetadata.specVersion) return newData
 
     // persist in store
-    if (storeMetadata) await db.metadata.update(genesisHash, newData)
+    if (storeMetadata) await db.metadata.put(newData)
     else {
       // could be a race condition caused by multiple calls to this function, in the meantime storeMetadata could be out of date
       const latestStoreMetadata = await db.metadata.get(genesisHash)
@@ -128,11 +132,9 @@ const getMetadataDefInner = async (
     return CACHE_RESULTS.get(cacheKey)
   } catch (cause) {
     if ((cause as Error).message !== "RPC connect timeout reached") {
-      // not a useful error, do not log to sentry
-      const message = `Failed to update metadata for chain ${genesisHash}`
-      const error = new Error(message, { cause })
+      const error = new Error("Failed to update metadata", { cause })
       log.error(error)
-      sentry.captureException(error, { extra: { genesisHash } })
+      sentry.captureException(error, { extra: { genesisHash, chainId: chain?.id ?? "UNKNOWN" } })
     }
     metadataUpdatesStore.set(genesisHash, false)
   }
@@ -147,8 +149,8 @@ export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: s
   const chain = chainId
     ? await chaindataProvider.chainById(chainId)
     : hash
-    ? await chaindataProvider.chainByGenesisHash(hash)
-    : null
+      ? await chaindataProvider.chainByGenesisHash(hash)
+      : null
 
   const genesisHash = hash ?? chain?.genesisHash
   // throw if neither a known chainId or genesisHash
@@ -166,8 +168,8 @@ export const fetchMetadataDefFromChain = async (
   /** defaults to `getLatestMetadataRpc`, but can be overridden */
   fetchMethod: (
     chainId: ChainId,
-    blockHash?: string
-  ) => Promise<`0x${string}`> = getLatestMetadataRpc
+    blockHash?: string,
+  ) => Promise<`0x${string}`> = getLatestMetadataRpc,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [metadataRpc, chainProperties] = await Promise.all([
     fetchMethod(chain.id, blockHash),
@@ -221,7 +223,7 @@ if (DEBUG) {
 
 export const getLatestMetadataRpc = async (
   chainId: ChainId,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<`0x${string}`> => {
   const stop = log.timer(`getLatestMetadataRpc(${chainId})`)
   try {
@@ -231,7 +233,7 @@ export const getLatestMetadataRpc = async (
       "Vec<u32>",
       [],
       blockHash as HexString,
-      true
+      true,
     )
     if (versions.err) versions.unwrap()
 
@@ -245,7 +247,7 @@ export const getLatestMetadataRpc = async (
       "OpaqueMetadata",
       [version],
       blockHash as HexString,
-      true
+      true,
     )
 
     if (maybeOpaqueMetadata.err) maybeOpaqueMetadata.unwrap()
@@ -254,10 +256,12 @@ export const getLatestMetadataRpc = async (
 
     return metadataFromOpaque(opaqueMetadata)
   } catch (err) {
-    // maybe the chain doesn't have metadata_versions or metadata_at_version runtime calls - ex: crust standalone
-    // fetch metadata the old way
-    if ((err as { message?: string })?.message?.includes("is not found"))
-      return await getLegacyMetadataRpc(chainId, blockHash)
+    const message = (err as { message?: string })?.message
+    if (
+      message?.includes("is not found") || // crust standalone
+      message?.includes("Module doesn't have export Metadata_metadata_versions") // 3DPass
+    )
+      return await getLegacyMetadataRpc(chainId, blockHash) // fetch metadata the old way
 
     // eslint-disable-next-line no-console
     console.error("getLatestMetadataRpc", { err })
@@ -270,13 +274,13 @@ export const getLatestMetadataRpc = async (
 
 export const getLegacyMetadataRpc = async (
   chainId: ChainId,
-  blockHash?: string
+  blockHash?: string,
 ): Promise<`0x${string}`> => {
   return await chainConnector.send<HexString>(
     chainId,
     "state_getMetadata",
     [blockHash],
-    !!blockHash
+    !!blockHash,
   )
 }
 

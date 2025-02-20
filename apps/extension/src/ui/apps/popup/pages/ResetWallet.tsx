@@ -1,11 +1,11 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button, FormFieldInputText } from "talisman-ui"
+import { Button, Drawer, FormFieldInputText } from "talisman-ui"
+
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { api } from "@ui/api"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 
@@ -53,7 +53,7 @@ const ConfirmDrawer = ({
         <div className="text-body-secondary my-8 text-sm">
           <p className="px-4 text-center">
             {t(
-              "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key."
+              "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key.",
             )}
           </p>
           <p className="mt-12 text-center">{t("Type 'Reset wallet' below to continue")}</p>
@@ -105,12 +105,12 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
           <div className="text-body-secondary space-y-12">
             <p className="text-center">
               {t(
-                "This action will reset your current wallet, accounts and assets. There is no way for us to recover your password as it is only stored on your device. You can also try other passwords."
+                "This action will reset your current wallet, accounts and assets. There is no way for us to recover your password as it is only stored on your device. You can also try other passwords.",
               )}
             </p>
             <p className="text-center">
               {t(
-                "If you still want to reset your wallet, you will need to import your original recovery phrase. Proceed only if you have your recovery phrase."
+                "If you still want to reset your wallet, you will need to import your original recovery phrase. Proceed only if you have your recovery phrase.",
               )}
             </p>
           </div>

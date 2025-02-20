@@ -1,3 +1,4 @@
+import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
 import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
@@ -7,12 +8,34 @@ import { HexString } from "@polkadot/util/types"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type {
+  RequestAccountCreate,
+  RequestAccountCreateDcent,
+  RequestAccountCreateFromJson,
+  RequestAccountCreateFromSuri,
+  RequestAccountCreateLedgerEthereum,
+  RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateQr,
+  RequestAccountCreateSignet,
+  RequestAccountCreateWatched,
+  RequestAccountExport,
+  RequestAccountExportAll,
+  RequestAccountExportPrivateKey,
+  RequestAccountExternalSetIsPortfolio,
+  RequestAccountForget,
+  RequestAccountRename,
+  RequestAccountsCatalogAction,
+  RequestAddressLookup,
+  RequestNextDerivationPath,
+  RequestValidateDerivationPath,
+  ResponseAccountExport,
+} from "./types"
 import { getPairForAddressSafely } from "../../handlers/helpers"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { addressFromSuri } from "../../util/addressFromSuri"
 import { getPrivateKey } from "../../util/getPrivateKey"
@@ -26,27 +49,6 @@ import {
 } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
-import type {
-  RequestAccountCreate,
-  RequestAccountCreateDcent,
-  RequestAccountCreateFromJson,
-  RequestAccountCreateFromSuri,
-  RequestAccountCreateLedgerEthereum,
-  RequestAccountCreateLedgerSubstrate,
-  RequestAccountCreateQr,
-  RequestAccountCreateSignet,
-  RequestAccountCreateWatched,
-  RequestAccountExport,
-  RequestAccountExportPrivateKey,
-  RequestAccountExternalSetIsPortfolio,
-  RequestAccountForget,
-  RequestAccountRename,
-  RequestAccountsCatalogAction,
-  RequestAddressLookup,
-  RequestNextDerivationPath,
-  RequestValidateDerivationPath,
-  ResponseAccountExport,
-} from "./types"
 import { AccountImportSources, AccountType, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
@@ -79,7 +81,7 @@ export default class AccountsHandler extends ExtensionHandler {
         options.mnemonic,
         password,
         MnemonicSource.Generated,
-        options.confirmed
+        options.confirmed,
       )
       if (newMnemonicId.err) throw new Error("Failed to store new mnemonic")
       derivedMnemonicId = newMnemonicId.val
@@ -99,7 +101,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const resultingAddress = encodeAnyAddress(addressFromSuri(suri, type))
     assert(
       allAccounts.every((acc) => encodeAnyAddress(acc.address) !== resultingAddress),
-      "Account already exists"
+      "Account already exists",
     )
 
     const { pair } = keyring.addUri(
@@ -111,7 +113,7 @@ export default class AccountsHandler extends ExtensionHandler {
         derivedMnemonicId,
         derivationPath,
       },
-      type
+      type,
     )
 
     this.captureAccountCreateEvent(type, "derived")
@@ -156,7 +158,7 @@ export default class AccountsHandler extends ExtensionHandler {
           mnemonic,
           password,
           MnemonicSource.Imported,
-          true
+          true,
         )
         if (result.ok) {
           meta.derivedMnemonicId = result.val
@@ -172,7 +174,7 @@ export default class AccountsHandler extends ExtensionHandler {
         suri,
         password,
         meta,
-        type // if undefined, defaults to keyring's default (sr25519 atm)
+        type, // if undefined, defaults to keyring's default (sr25519 atm)
       )
 
       this.captureAccountCreateEvent(type, "seed")
@@ -243,7 +245,7 @@ export default class AccountsHandler extends ExtensionHandler {
         origin: AccountType.Ledger,
         path,
       },
-      null
+      null,
     )
 
     // add to the underlying keyring, allowing not to specify a password
@@ -294,7 +296,7 @@ export default class AccountsHandler extends ExtensionHandler {
         secretKey: new Uint8Array(),
       },
       meta,
-      null
+      null,
     )
 
     // add to the underlying keyring, allowing not to specify a password
@@ -354,7 +356,7 @@ export default class AccountsHandler extends ExtensionHandler {
     // Fix any issues in the Talisman implementation, then remove the following `assert()`
     assert(
       !isEthereumAddress(address),
-      "Ethereum-style accounts are not yet able to sign transactions in Polkadot Vault"
+      "Ethereum-style accounts are not yet able to sign transactions in Polkadot Vault",
     )
 
     // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
@@ -375,7 +377,7 @@ export default class AccountsHandler extends ExtensionHandler {
         isPortfolio: true,
         origin: AccountType.Qr,
       },
-      null
+      null,
     )
 
     // add to the underlying keyring, allowing not to specify a password
@@ -418,7 +420,7 @@ export default class AccountsHandler extends ExtensionHandler {
         isPortfolio: !!isPortfolio,
         origin: AccountType.Watched,
       },
-      null
+      null,
     )
 
     // add to the underlying keyring, allowing not to specify a password
@@ -427,7 +429,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     this.captureAccountCreateEvent(
       isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
-      "watched"
+      "watched",
     )
 
     return pair.address
@@ -455,7 +457,7 @@ export default class AccountsHandler extends ExtensionHandler {
         origin: AccountType.Signet,
         isPortfolio: false,
       },
-      null
+      null,
     )
 
     keyring.keyring.addPair(pair)
@@ -508,6 +510,19 @@ export default class AccountsHandler extends ExtensionHandler {
     return val
   }
 
+  private async accountExportAll({
+    password,
+    exportPw,
+  }: RequestAccountExportAll): Promise<ResponseAccountsExport> {
+    await this.stores.password.checkPassword(password)
+
+    const addresses = keyring.getPairs().map(({ address }) => address)
+
+    const exportedJson = await keyring.backupAccounts(addresses, exportPw)
+
+    return { exportedJson }
+  }
+
   private async accountExportPrivateKey({
     address,
     password,
@@ -552,7 +567,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const allAccounts = keyring.getAccounts()
     const existing = allAccounts.find(
-      (account) => account.address !== address && account.meta?.name === name
+      (account) => account.address !== address && account.meta?.name === name,
     )
     assert(!existing, "An account with this name already exists")
 
@@ -567,7 +582,7 @@ export default class AccountsHandler extends ExtensionHandler {
       port,
       // make sure the sort order is updated when the catalog changes
       combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
-      ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts)
+      ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts),
     )
   }
 
@@ -582,7 +597,7 @@ export default class AccountsHandler extends ExtensionHandler {
         //
         // when this happens, instead of sending `{}` or `undefined` to the frontend,
         // we'll send an empty catalog of the correct type `AccountsCatalogData`
-        Object.keys(catalog).length === 0 ? emptyCatalog : catalog
+        Object.keys(catalog).length === 0 ? emptyCatalog : catalog,
     )
   }
 
@@ -631,7 +646,7 @@ export default class AccountsHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(accounts.create)":
@@ -658,6 +673,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":
         return this.accountExport(request as RequestAccountExport)
+      case "pri(accounts.export.all)":
+        return this.accountExportAll(request as RequestAccountExportAll)
       case "pri(accounts.export.pk)":
         return this.accountExportPrivateKey(request as RequestAccountExportPrivateKey)
       case "pri(accounts.rename)":

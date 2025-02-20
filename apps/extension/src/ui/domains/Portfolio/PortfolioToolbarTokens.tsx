@@ -15,13 +15,12 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useSetting } from "@ui/hooks/useSettings"
+import { usePortfolio, useSetting } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkFilterModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
-import { usePortfolio, usePortfolioSearch } from "./usePortfolio"
 
 const NetworkFilterButton = () => {
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
@@ -34,7 +33,7 @@ const NetworkFilterButton = () => {
       setNetworkFilter(networks.find((network) => network.id === networkId))
       close()
     },
-    [close, networks, setNetworkFilter]
+    [close, networks, setNetworkFilter],
   )
 
   return (
@@ -69,13 +68,15 @@ const NetworkFilterButton = () => {
 
 const PortfolioSearch = () => {
   const { t } = useTranslation()
-  const { search, setSearch } = usePortfolioSearch()
+  const { search, setSearch } = usePortfolio()
 
   return (
     <SearchInput
       containerClassName={classNames(
-        "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
-        IS_POPUP ? "w-full" : "max-w-[37.4rem]"
+        "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4",
+        "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+        "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+        IS_POPUP ? "w-full" : "max-w-[37.4rem]",
       )}
       placeholder={t("Search")}
       onChange={setSearch}
@@ -130,8 +131,8 @@ const TokensSortButton = () => {
 
 export const PortfolioToolbarTokens = () => {
   return (
-    <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
-      <div className="flex grow items-center overflow-hidden px-1">
+    <div className="@container flex h-16 w-full min-w-[30rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
+      <div className="flex grow items-center overflow-hidden">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">

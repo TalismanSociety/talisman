@@ -31,7 +31,7 @@ const SignMessageInner = () => {
           address: account.address,
           data: message,
           type: "bytes",
-        })
+        }),
       )
     } catch (err) {
       setError(err as Error)
@@ -55,20 +55,20 @@ const SignMessageInner = () => {
       >
         Sign Message
       </Button>
-      {result && <pre className="my-8 ">{JSON.stringify(result, undefined, 2)}</pre>}
+      {result && <pre className="my-8">{JSON.stringify(result, undefined, 2)}</pre>}
       {verify && (
-        <pre className="my-8 ">
+        <pre className="my-8">
           {JSON.stringify({ ...verify, publicKey: "[redacted]" }, undefined, 2)}
         </pre>
       )}
       {result ? (
         verify?.isValid ? (
-          <div className="text-alert-success my-8 ">Signature is valid</div>
+          <div className="text-alert-success my-8">Signature is valid</div>
         ) : (
-          <div className="text-alert-error my-8 ">Signature is invalid</div>
+          <div className="text-alert-error my-8">Signature is invalid</div>
         )
       ) : null}
-      {error && <div className="text-alert-error my-8 ">Error : {error?.message}</div>}
+      {error && <div className="text-alert-error my-8">Error : {error?.message}</div>}
     </div>
   )
 }

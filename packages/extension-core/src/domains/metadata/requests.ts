@@ -1,5 +1,5 @@
-import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
+import { requestStore } from "../../libs/requests/store"
 import { METADATA_PREFIX, MetadataDef } from "./types"
 
 export const requestInjectMetadata = async (url: string, request: MetadataDef, port: Port) => {
@@ -9,7 +9,7 @@ export const requestInjectMetadata = async (url: string, request: MetadataDef, p
       url,
       request,
     },
-    port
+    port,
   )
   return true
 }

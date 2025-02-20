@@ -1,19 +1,19 @@
+import { CopyIcon, FileSearchIcon } from "@talismn/icons"
+import { formatDecimals } from "@talismn/util"
+import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
+import { formatEther, formatGwei } from "viem"
+
 import { BalanceFormatter } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { CopyIcon, FileSearchIcon } from "@talismn/icons"
-import { formatDecimals } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
 import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
-import { formatEther, formatGwei } from "viem"
+import { useToken, useTokenRates } from "@ui/state"
 
 import { Message } from "../Message"
 import { useEthSignTransactionRequest } from "../SignRequestContext"
@@ -67,7 +67,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     (value: bigint = 0n) => {
       return value ? `${formatEther(value)} ${nativeToken?.symbol ?? ""}` : null
     },
-    [nativeToken?.symbol]
+    [nativeToken?.symbol],
   )
 
   const nativeTokenRates = useTokenRates(nativeToken?.id)
@@ -86,19 +86,19 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
               ? new BalanceFormatter(
                   txDetails.estimatedL1DataFee,
                   nativeToken.decimals,
-                  nativeTokenRates
+                  nativeTokenRates,
                 )
               : null,
             txDetails.estimatedL1DataFee
               ? new BalanceFormatter(
                   txDetails.estimatedFee - txDetails.estimatedL1DataFee,
                   nativeToken.decimals,
-                  nativeTokenRates
+                  nativeTokenRates,
                 )
               : null,
           ]
         : [null, null, null, null],
-    [nativeToken, nativeTokenRates, txDetails]
+    [nativeToken, nativeTokenRates, txDetails],
   )
 
   const handleCopyByteCode = useCallback(async () => {
@@ -109,7 +109,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         {
           type: "success",
           title: t("Byte code copied"),
-        }
+        },
         // set an id to prevent multiple clicks to display multiple notifications
       )
     } catch (err) {

@@ -1,6 +1,7 @@
 import { Codec } from "@polkadot/types-codec/types"
 import { u8aConcatStrict } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+
 import { api } from "@ui/api"
 
 export const stateCall = async <K extends string = string>(
@@ -9,7 +10,7 @@ export const stateCall = async <K extends string = string>(
   resultType: K,
   args: Codec[],
   blockHash?: HexString,
-  isCacheable?: boolean
+  isCacheable?: boolean,
 ) => {
   // on a state call there are always arguments
   const registry = args[0].registry
@@ -20,7 +21,7 @@ export const stateCall = async <K extends string = string>(
     chainId,
     "state_call",
     [method, bytes.toHex(), blockHash],
-    isCacheable
+    isCacheable,
   )
 
   return registry.createType(resultType, result)

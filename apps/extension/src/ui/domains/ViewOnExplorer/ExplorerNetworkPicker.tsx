@@ -1,19 +1,22 @@
-import { isAccountCompatibleWithChain } from "@extension/core"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 import urlJoin from "url-join"
+
+import { isAccountCompatibleWithChain } from "@extension/core"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
+import {
+  useAccountByAddress,
+  useBalances,
+  useChains,
+  useEvmNetworks,
+  useSettingValue,
+} from "@ui/state"
+import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
@@ -26,10 +29,10 @@ type NetworkWithExplorer = {
 
 const useExplorerNetworks = (address: string, search: string): NetworkWithExplorer[] => {
   const account = useAccountByAddress(address)
-  const [includeTestnets] = useSetting("useTestnets")
-  const { chains } = useChains({ activeOnly: true, includeTestnets })
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const balances = useBalancesByAddress(address)
+  const includeTestnets = useSettingValue("useTestnets")
+  const chains = useChains({ activeOnly: true, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const balances = useBalances({ address })
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
   const compatibleChains = useMemo<NetworkWithExplorer[]>(
@@ -42,7 +45,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
             // account is undefined for contacts
             (account
               ? isAccountCompatibleWithChain(chain, account.type ?? "sr25519", account.genesisHash)
-              : isAddressCompatibleWithChain(chain, address))
+              : isAddressCompatibleWithChain(chain, address)),
         )
         .map(
           (chain): NetworkWithExplorer => ({
@@ -50,9 +53,9 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
             type: "substrate",
             name: chain.name!,
             explorerUrl: chain.subscanUrl!,
-          })
+          }),
         ),
-    [account, address, chains]
+    [account, address, chains],
   )
 
   const compatibleEvmNetworks = useMemo<NetworkWithExplorer[]>(
@@ -66,10 +69,10 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
                 type: "substrate",
                 name: chain.name!,
                 explorerUrl: chain.explorerUrl!,
-              })
+              }),
             )
         : [],
-    [address, evmNetworks]
+    [address, evmNetworks],
   )
 
   const sortedNetworks = useMemo(
@@ -79,7 +82,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
           return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
         return (a.name ?? "").localeCompare(b.name ?? "")
       }),
-    [balancesPerNetwork, compatibleChains, compatibleEvmNetworks]
+    [balancesPerNetwork, compatibleChains, compatibleEvmNetworks],
   )
 
   return useMemo(() => {
@@ -123,7 +126,7 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
       window.open(urlJoin(network.explorerUrl, "address", address), "_blank")
       onClose()
     },
-    [address, onClose]
+    [address, onClose],
   )
 
   return (

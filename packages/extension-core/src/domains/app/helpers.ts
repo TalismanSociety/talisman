@@ -6,11 +6,11 @@ import { Err, Ok, Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
 import {
-  MnemonicErrors,
-  MnemonicsStoreData,
   decryptMnemonic,
   encryptMnemonic,
+  MnemonicErrors,
   mnemonicsStore,
+  MnemonicsStoreData,
 } from "../mnemonics/store"
 import {
   ChangePasswordRequest,
@@ -24,7 +24,7 @@ const eligiblePairFilter = (pair: KeyringPair | KeyringJson) =>
   !pair.meta.isHardware && !pair.meta.isExternal
 
 export const restoreBackupKeyring = async (
-  password: string
+  password: string,
 ): Promise<Result<boolean, "No keyring backup found" | "Unable to restore backup keyring">> => {
   const backupJsonObj = await chrome.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY)
 
@@ -43,7 +43,7 @@ export const restoreBackupKeyring = async (
 
 const migratePairs = async (
   currentPw: string,
-  newPw: string
+  newPw: string,
 ): Promise<Result<KeyringPair[], "Error re-encrypting keypairs">> => {
   const pairs = keyring.getPairs().filter(eligiblePairFilter)
   // keep track of which pairs have been successfully migrated
@@ -66,7 +66,7 @@ const migratePairs = async (
 const migrateMnemonic = async (
   encryptedCipher: string,
   currentPw: string,
-  newPw: string
+  newPw: string,
 ): Promise<
   Result<
     string | undefined,
@@ -92,13 +92,13 @@ const migrateMnemonic = async (
 
 export const changePassword = async (
   { currentPw, newPw }: Pick<ChangePasswordRequest, "currentPw" | "newPw">,
-  progressCb?: (val: ChangePasswordStatusUpdateType) => void
+  progressCb?: (val: ChangePasswordStatusUpdateType) => void,
 ): Promise<Result<boolean, "Error changing password">> => {
   try {
     progressCb && progressCb(ChangePasswordStatusUpdateStatus.KEYPAIRS)
     const backupJson = await keyring.backupAccounts(
       keyring.getPairs().map(({ address }) => address),
-      currentPw
+      currentPw,
     )
     await chrome.storage.local.set({ [TALISMAN_BACKUP_KEYRING_KEY]: JSON.stringify(backupJson) })
 

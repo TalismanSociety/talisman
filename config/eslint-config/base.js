@@ -16,9 +16,10 @@ module.exports = {
       rules: {
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
         "@typescript-eslint/no-unused-vars": [
           "warn",
-          { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+          { varsIgnorePattern: "^_", argsIgnorePattern: "^_", caughtErrors: "none" },
         ],
         "@typescript-eslint/triple-slash-reference": "off",
         "no-console": "warn",

@@ -5,8 +5,11 @@ import {
   evmErc20TokenId,
   evmUniswapV2TokenId,
 } from "@talismn/balances"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { githubUnknownTokenLogoUrl, Token } from "@talismn/chaindata-provider"
+import { isEqual } from "lodash"
+import { distinctUntilChanged } from "rxjs"
 
+import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -23,7 +26,7 @@ export default class TokensHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -31,13 +34,17 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
         // TODO: Run this on a timer or something instead of when subscribing to tokens
-        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true }).then(() => {
+          // triggers a pending scan if any
+          // doing this here as this is the only place where we hydrate tokens from github
+          assetDiscoveryScanner.startPendingScan()
+        })
 
-        // triggers a pending scan if any
-        // doing this here as this is the only place where we hydrate tokens from github
-        assetDiscoveryScanner.startPendingScan()
-
-        return true
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.tokensObservable.pipe(distinctUntilChanged<Token[]>(isEqual)),
+        )
       }
 
       // --------------------------------------------------------------------
@@ -123,14 +130,14 @@ export default class TokensHandler extends ExtensionHandler {
             token.type === "evm-uniswapv2"
               ? "UNIV2"
               : token.type === "evm-erc20"
-              ? "ERC20"
-              : "unknown"
+                ? "ERC20"
+                : "unknown"
           } token`,
           {
             evmNetworkId: token.evmNetworkId,
             symbol: token.symbol,
             contractAddress: token.contractAddress,
-          }
+          },
         )
 
         const newTokenId = await chaindataProvider.addCustomToken(newToken)

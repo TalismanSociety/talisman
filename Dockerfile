@@ -1,10 +1,10 @@
-FROM node:18 AS build-stage
+FROM node:18
+RUN npm install -g corepack@latest && corepack enable
 
-WORKDIR /app
+WORKDIR /talisman
 COPY . ./
 
+RUN pnpm clean
 RUN pnpm install
-RUN pnpm build:extension:prod
-
-FROM scratch AS export-stage
-COPY --from=build-stage /app/apps/extension/dist /
+# NOTE: Only needed while we wait for https://github.com/polkadot-api/polkadot-api/pull/851 to be released
+RUN pnpm papi:dockerbuildcompat

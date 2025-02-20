@@ -1,4 +1,5 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 
 type NetworkLogoProps = {

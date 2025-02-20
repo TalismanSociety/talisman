@@ -1,20 +1,19 @@
 import { StarIcon } from "@talismn/icons"
-import format from "date-fns/format"
+import { format } from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { useSetting } from "@ui/hooks/useSettings"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
-import { useIsFavoriteNft } from "./useIsFavoriteNft"
-import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
 export const DashboardNftCollection = () => {
   const [viewMode] = useSetting("nftsViewMode")
@@ -27,7 +26,7 @@ export const DashboardNftCollection = () => {
 
   return (
     <div>
-      <Suspense>
+      <Suspense fallback={<SuspenseTracker name="DashboardNftCollection" />}>
         {viewMode === "list" ? (
           <NftsRows onNftClick={handleNftClick} />
         ) : (
@@ -41,11 +40,16 @@ export const DashboardNftCollection = () => {
 
 const NoNftFound = () => {
   const { t } = useTranslation()
-  const { account } = useSelectedAccount()
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
   const msg = useMemo(
-    () => (account ? t("No NFTs found for this account") : t("No NFTs found")),
-    [account, t]
+    () =>
+      selectedAccount
+        ? t("No NFTs found for this account")
+        : selectedFolder
+          ? t("No NFTs found for this folder")
+          : t("No NFTs found"),
+    [selectedAccount, selectedFolder, t],
   )
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
@@ -68,7 +72,7 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
       onClick={onClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
-      <div className=" flex items-center gap-6 overflow-hidden">
+      <div className="flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
@@ -98,7 +102,7 @@ const NftRow: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> =
 const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
   const { t } = useTranslation()
-  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+  const { collection, nfts } = useNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 
@@ -110,7 +114,7 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
         <div className="text-right">{t("Acquired on")}</div>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         {!!collection &&
           nfts.map((nft) => (
             <NftRow
@@ -157,7 +161,7 @@ const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   })
 
   return (
-    <div ref={refContainer} className="size-[22.2rem]">
+    <div ref={refContainer} className="size-[22rem]">
       {intersection?.isIntersecting ? <NftTileInner {...props} /> : null}
     </div>
   )
@@ -165,12 +169,12 @@ const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
 
 const NftsTiles: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   const { collectionId } = useParams()
-  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+  const { collection, nfts } = useNftCollection(collectionId)
 
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-wrap justify-stretch gap-8">
+    <div className="flex flex-wrap gap-[2.4rem]">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftTileItem

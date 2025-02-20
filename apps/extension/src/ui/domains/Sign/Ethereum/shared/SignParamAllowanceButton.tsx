@@ -1,16 +1,8 @@
-import { BalanceFormatter, EvmAddress, EvmNetworkId } from "@extension/core"
-import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { notify } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address } from "@talismn/balances"
 import { EditIcon } from "@talismn/icons"
 import { formatDecimals, tokensToPlanck } from "@talismn/util"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useQuery } from "@tanstack/react-query"
 import { FC, FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -26,11 +18,21 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
-import { formatUnits, hexToBigInt, parseUnits } from "viem"
+import { formatUnits, getContract, hexToBigInt, parseAbi, parseUnits } from "viem"
 import * as yup from "yup"
 
+import { abiErc20, BalanceFormatter, EvmAddress, EvmNetworkId } from "@extension/core"
+import { log } from "@extension/shared"
+import { notify } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useErc20Token } from "@ui/hooks/useErc20Token"
+import { useSelectedCurrency, useTokenRates } from "@ui/state"
+
 export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 )
 
 const INPUT_PROPS: FormFieldInputContainerProps = {
@@ -59,36 +61,58 @@ const isValidAmount =
     }
   }
 
+const useFetchErc20Balance = (account: EvmAddress, token: Erc20TokenInfo) => {
+  const client = usePublicClient(token.evmNetworkId)
+
+  return useQuery({
+    queryKey: ["useErc20Balance", account, token, client?.key],
+    queryFn: async () => {
+      if (!account || !token || !client) return null
+
+      const contract = getContract({
+        address: token.contractAddress,
+        abi: parseAbi(abiErc20),
+        client: { public: client },
+      })
+
+      return contract.read.balanceOf([account])
+    },
+  })
+}
+
 const EditAllowanceForm: FC<{
+  account: EvmAddress
   token: Erc20TokenInfo
   spender: Address
   allowance: bigint
   onCancel: () => void
   onSubmit: (limit: bigint) => void | Promise<void>
-}> = ({ token, spender, allowance, onSubmit, onCancel }) => {
+}> = ({ account, token, spender, allowance, onSubmit, onCancel }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
   const schema = useMemo(
     () =>
       yup.object({
-        limit: yup.string().test("limit", "Invalid amount", isValidAmount(token.decimals)),
+        limit: yup
+          .string()
+          .defined()
+          .test("limit", "Invalid amount", isValidAmount(token.decimals)),
       }),
-    [token]
+    [token],
   )
 
   const defaultValues = useMemo(
     () => ({
       limit: allowance === ERC20_UNLIMITED_ALLOWANCE ? "" : formatUnits(allowance, token.decimals),
     }),
-    [allowance, token.decimals]
+    [allowance, token.decimals],
   )
 
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isValid, isDirty, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -107,7 +131,7 @@ const EditAllowanceForm: FC<{
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onSubmit, token.decimals]
+    [genericEvent, onSubmit, token.decimals],
   )
 
   // don't bubble up submit event to the parent approval form
@@ -117,17 +141,21 @@ const EditAllowanceForm: FC<{
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit]
+    [handleSubmit, submit],
   )
 
-  const handleUnlimitedClick = useCallback(() => {
-    setValue("limit", "", { shouldValidate: true, shouldDirty: true, shouldTouch: true })
-  }, [setValue])
+  const { data: balance } = useFetchErc20Balance(account, token)
+  const max = useMemo(
+    () => (balance ? formatUnits(balance, token.decimals) : ""),
+    [balance, token.decimals],
+  )
 
-  const limit = watch("limit")
+  const handleMaxClick = useCallback(() => {
+    setValue("limit", max, { shouldValidate: true, shouldDirty: true, shouldTouch: true })
+  }, [max, setValue])
 
   return (
-    <form onSubmit={submitWithoutBubbleUp} className="bg-grey-800 rounded-t-xl p-12 ">
+    <form onSubmit={submitWithoutBubbleUp} className="bg-grey-800 rounded-t-xl p-12">
       <div className="text-center font-bold">{t("Edit spending limit")}</div>
       <p className="text-body-secondary my-12 text-sm">
         <Trans
@@ -146,12 +174,8 @@ const EditAllowanceForm: FC<{
           after={
             <div className="flex items-center gap-4">
               <span className="text-body-disabled">{token.symbol}</span>
-              <PillButton
-                disabled={limit === ""}
-                onClick={handleUnlimitedClick}
-                className="hover:bg-grey-750"
-              >
-                {t("Unlimited")}
+              <PillButton disabled={!max} onClick={handleMaxClick} className="hover:bg-grey-750">
+                {t("Max")}
               </PillButton>
             </div>
           }
@@ -177,11 +201,12 @@ const EditAllowanceForm: FC<{
 }
 
 export const SignParamAllowanceButton: FC<{
+  account: EvmAddress
   spender: EvmAddress
   allowance: bigint
   token: Erc20TokenInfo
   onChange: (limit: bigint) => void | Promise<void>
-}> = ({ spender, allowance, token, onChange }) => {
+}> = ({ account, spender, allowance, token, onChange }) => {
   const { isOpen, open, close } = useOpenClose()
 
   const erc20 = useErc20Token(token.evmNetworkId, token.contractAddress)
@@ -204,7 +229,7 @@ export const SignParamAllowanceButton: FC<{
       onChange(limit)
       close()
     },
-    [close, onChange]
+    [close, onChange],
   )
 
   return (
@@ -237,6 +262,7 @@ export const SignParamAllowanceButton: FC<{
       </Tooltip>
       <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
         <EditAllowanceForm
+          account={account}
           token={token}
           spender={spender}
           allowance={allowance}

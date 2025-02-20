@@ -1,6 +1,3 @@
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
-import { Spacer } from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,
   DiamondIcon,
@@ -9,18 +6,21 @@ import {
   PolkadotVaultIcon,
   TerminalIcon,
 } from "@talismn/icons"
-import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
 import { CtaButton, Toggle } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Setting } from "@talisman/components/Setting"
+import { Spacer } from "@talisman/components/Spacer"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { useSetting } from "@ui/state"
 
-export const NetworksTokensPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   return (
-    <DashboardLayout centered>
+    <>
       <HeaderBlock
         title={t("Networks & Tokens")}
         text={t("View, edit and add custom networks and tokens")}
@@ -77,6 +77,12 @@ export const NetworksTokensPage = () => {
           to={`/settings/networks-tokens/qr-metadata`}
         />
       </div>
-    </DashboardLayout>
+    </>
   )
 }
+
+export const NetworksTokensPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

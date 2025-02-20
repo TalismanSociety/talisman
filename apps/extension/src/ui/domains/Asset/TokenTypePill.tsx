@@ -29,7 +29,7 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
     <span
       className={classNames(
         "text-body-disabled rounded-sm border px-2 py-1 text-[1rem]",
-        className
+        className,
       )}
     >
       {label}

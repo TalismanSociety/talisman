@@ -1,14 +1,7 @@
 import {
-  QUEST_APP_URL,
-  TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_SWAP_URL,
-} from "@extension/shared"
-import { Nav, NavItem } from "@talisman/components/Nav"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { FullColorSmallLogo } from "@talisman/theme/logos"
-import {
   AlertCircleIcon,
   ExternalLinkIcon,
+  GlobeIcon,
   KeyIcon,
   LockIcon,
   PlusIcon,
@@ -16,19 +9,25 @@ import {
   RepeatIcon,
   SendIcon,
   SettingsIcon,
+  StarsIcon,
   UsersIcon,
   XIcon,
-  ZapIcon,
 } from "@talismn/icons"
+import { FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Drawer, IconButton } from "talisman-ui"
+
+import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
+import { Nav, NavItem } from "@talisman/components/Nav"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
+import { useAccounts, useFeatureFlag } from "@ui/state"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -40,7 +39,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
   const { isOpen, close } = usePopupNavOpenClose()
-  const hasAccounts = useHasAccounts()
+  const ownedAccounts = useAccounts("owned")
 
   const handleLock = useCallback(async () => {
     sendAnalyticsEvent({
@@ -92,16 +91,6 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleStakingClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Staking button",
-    })
-    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
-    window.close()
-  }, [])
-
   const { allBackedUp } = useMnemonicBackup()
   const handleBackupClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -123,70 +112,96 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
+  const handleManageNetworksClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Manage Networks button",
+    })
+    api.dashboardOpen("/settings/networks-tokens/networks/ethereum")
+    window.close()
+  }, [])
+
+  const navigate = useNavigate()
+  const handleLatestFeaturesClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Latest Features button",
+    })
+    navigate("/whats-new")
+    close()
+  }, [close, navigate])
+
+  const showQuestLink = useFeatureFlag("QUEST_LINK")
   const handleQuestsClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
-    window.open(QUEST_APP_URL, "_blank")
-    window.close()
+    window.open(TALISMAN_QUEST_APP_URL, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
   }, [])
 
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
         <header className="border-grey-800 box-border flex h-36 w-full items-center justify-between gap-6 border-b px-12">
-          <FullColorSmallLogo className="h-[2.5rem] w-auto" />
+          <TalismanWhiteLogo className="h-[2.5rem] w-auto" />
           <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
           <div className="grow"></div>
           <IconButton onClick={close} aria-label={t("Close menu")}>
             <XIcon />
           </IconButton>
         </header>
-        <ScrollContainer className="flex-grow">
-          <Nav className="p-4">
+        <div className="w-full grow overflow-hidden">
+          {/* buttons must shrink height if necessary */}
+          <Nav className="flex size-full flex-col overflow-hidden p-4">
             <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
               {t("Add Account")}
             </NavItem>
-            {hasAccounts && (
+            {!!ownedAccounts.length && (
               <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
                 {t("Send Funds")}
               </NavItem>
             )}
-            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
-              {t("Address Book")}
-            </NavItem>
-            <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
-              <span className="flex items-center gap-2">
-                {t("Staking")}
-                <ExternalLinkIcon />
-              </span>
-            </NavItem>
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
               <span className="flex items-center gap-2">
                 {t("Swap")}
                 <ExternalLinkIcon />
               </span>
             </NavItem>
+            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
+              {t("Address Book")}
+            </NavItem>
+            <NavItem icon={<GlobeIcon />} onClick={handleManageNetworksClick}>
+              {t("Manage Networks")}
+            </NavItem>
+
             <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
                 {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
               </span>
             </NavItem>
-            <NavItem
-              className="hover:bg-primary/10"
-              icon={
-                <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
-                  <QuestStarIcon className="text-xs text-black" />
-                </div>
-              }
-              onClick={handleQuestsClick}
-            >
-              <span className="text-primary font-bold">{t("Quests")}</span>
+            <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
+              {t("Latest Features")}
             </NavItem>
+            {showQuestLink && (
+              <NavItem
+                className="hover:bg-primary/10"
+                icon={
+                  <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
+                    <QuestStarIcon className="text-xs text-black" />
+                  </div>
+                }
+                onClick={handleQuestsClick}
+              >
+                <span className="text-primary font-bold">{t("Quests")}</span>
+              </NavItem>
+            )}
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
-              {t("Settings")}
+              {t("All Settings")}
             </NavItem>
           </Nav>
-        </ScrollContainer>
+        </div>
         <footer>
           <button
             type="button"

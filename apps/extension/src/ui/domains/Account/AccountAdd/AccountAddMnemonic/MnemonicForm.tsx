@@ -1,16 +1,6 @@
-import { AccountAddressType } from "@extension/core"
-import { AssetDiscoveryMode } from "@extension/core"
-import { getEthDerivationPath } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { mnemonicValidate } from "@polkadot/util-crypto"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -26,6 +16,17 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
+import { AccountAddressType, getEthDerivationPath, UiAccountAddressType } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { api } from "@ui/api"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { useAccounts } from "@ui/state"
+import { isUiAccountAddressType } from "@ui/util/typeCheckers"
+
+import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
@@ -49,7 +50,7 @@ const getSuri = (secret: string, type: AccountAddressType, derivationPath?: stri
 
 type FormData = {
   name: string
-  type: AccountAddressType
+  type: UiAccountAddressType
   mnemonic: string
   mode: AccountAddDerivationMode
   derivationPath: string
@@ -68,17 +69,21 @@ export const AccountAddMnemonicForm = () => {
     () =>
       yup
         .object({
-          name: yup.string().trim().required(""),
-          type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
-          mode: yup.string().required("").oneOf(["first", "custom", "multi"]),
-          derivationPath: yup.string().trim(),
+          name: yup.string().trim().required(" "),
+          type: yup.mixed(isUiAccountAddressType).defined(),
+          mode: yup
+            .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
+              ["first", "custom", "multi"].includes(v),
+            )
+            .defined(),
+          derivationPath: yup.string().defined().trim(),
           mnemonic: yup
             .string()
             .trim()
-            .required("")
+            .required(" ")
             .transform(cleanupMnemonic)
             .test("is-valid-mnemonic", t("Invalid recovery phrase"), async (val) =>
-              api.validateMnemonic(val as string)
+              api.validateMnemonic(val as string),
             ),
         })
         .required()
@@ -107,7 +112,7 @@ export const AccountAddMnemonicForm = () => {
 
           return true
         }),
-    [accountAddresses, t]
+    [accountAddresses, t],
   )
 
   const {
@@ -117,7 +122,7 @@ export const AccountAddMnemonicForm = () => {
     watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
-    defaultValues: data,
+    defaultValues: data as FormData,
     mode: "onChange",
     resolver: yupResolver(schema),
   })
@@ -126,7 +131,7 @@ export const AccountAddMnemonicForm = () => {
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
-    [mnemonic]
+    [mnemonic],
   )
 
   const [targetAddress, setTargetAddress] = useState<string>()
@@ -159,12 +164,10 @@ export const AccountAddMnemonicForm = () => {
             title: t("Importing account"),
             subtitle: t("Please wait"),
           },
-          { autoClose: false }
+          { autoClose: false },
         )
         try {
           const address = await api.accountCreateFromSuri(name, suri, type)
-
-          api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
           onSuccess(address)
           notifyUpdate(notificationId, {
@@ -181,17 +184,17 @@ export const AccountAddMnemonicForm = () => {
         }
       }
     },
-    [t, navigate, onSuccess, updateData]
+    [updateData, navigate, t, onSuccess],
   )
 
   const handleTypeChange = useCallback(
-    (type: AccountAddressType) => {
+    (type: UiAccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
       setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
         shouldValidate: true,
       })
     },
-    [setValue]
+    [setValue],
   )
 
   const handleModeChange = useCallback(
@@ -202,7 +205,7 @@ export const AccountAddMnemonicForm = () => {
           shouldValidate: true,
         })
     },
-    [setValue, type]
+    [setValue, type],
   )
 
   useEffect(() => {
@@ -214,62 +217,67 @@ export const AccountAddMnemonicForm = () => {
   return (
     <div className="flex w-full flex-col gap-8">
       <HeaderBlock
-        title={t("Choose account type")}
+        title={t("Import via Recovery Phrase")}
         text={t("What type of account would you like to import?")}
       />
 
       <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
 
-      <form className={classNames(type ? "visible" : "invisible")} onSubmit={handleSubmit(submit)}>
-        <FormFieldContainer error={errors.name?.message}>
-          <FormFieldInputText
-            {...register("name")}
-            placeholder={t("Choose a name")}
-            spellCheck={false}
-            autoComplete="off"
-            // eslint-disable-next-line jsx-a11y/no-autofocus
-            autoFocus
+      <form onSubmit={handleSubmit(submit)}>
+        <div className={classNames(!type && "hidden")}>
+          <FormFieldContainer error={errors.name?.message}>
+            <FormFieldInputText
+              {...register("name")}
+              placeholder={t("Choose a name")}
+              spellCheck={false}
+              autoComplete="off"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+              data-lpignore
+              after={
+                targetAddress ? (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <AccountIcon address={targetAddress} className="text-xl" />
+                    </TooltipTrigger>
+                    <TooltipContent>{targetAddress}</TooltipContent>
+                  </Tooltip>
+                ) : null
+              }
+            />
+          </FormFieldContainer>
+          <FormFieldTextarea
+            {...register("mnemonic")}
+            placeholder={t("Enter your 12 or 24 word recovery phrase")}
+            rows={5}
             data-lpignore
-            after={
-              targetAddress ? (
-                <Tooltip>
-                  <TooltipTrigger>
-                    <AccountIcon address={targetAddress} className="text-xl" />
-                  </TooltipTrigger>
-                  <TooltipContent>{targetAddress}</TooltipContent>
-                </Tooltip>
-              ) : null
-            }
+            spellCheck={false}
           />
-        </FormFieldContainer>
-        <FormFieldTextarea
-          {...register("mnemonic")}
-          placeholder={t("Enter your 12 or 24 word recovery phrase")}
-          rows={5}
-          data-lpignore
-          spellCheck={false}
-        />
-        <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
-          <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
-          <div className="text-alert-warn grow truncate text-right">{errors.mnemonic?.message}</div>
+          <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
+            <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
+            <div className="text-alert-warn grow truncate text-right">
+              {errors.mnemonic?.message}
+            </div>
+          </div>
+          <Spacer small />
+          <DerivationModeDropdown value={mode} onChange={handleModeChange} />
+          <FormFieldContainer
+            className={classNames("mt-2", mode !== "custom" && "invisible")}
+            error={errors.derivationPath?.message}
+          >
+            <FormFieldInputText
+              {...register("derivationPath")}
+              placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+              spellCheck={false}
+              autoComplete="off"
+              className="font-mono"
+              data-lpignore
+            />
+          </FormFieldContainer>
+          <Spacer small />
         </div>
-        <Spacer small />
-        <DerivationModeDropdown value={mode} onChange={handleModeChange} />
-        <FormFieldContainer
-          className={classNames("mt-2", mode !== "custom" && "invisible")}
-          error={errors.derivationPath?.message}
-        >
-          <FormFieldInputText
-            {...register("derivationPath")}
-            placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
-            spellCheck={false}
-            autoComplete="off"
-            className="font-mono"
-            data-lpignore
-          />
-        </FormFieldContainer>
-        <Spacer small />
-        <div className="mt-1 flex w-full justify-end">
+        <div className="mt-1 flex w-full justify-between">
+          <BackToAddAccountButton methodType="import" />
           <Button
             className="w-[24rem]"
             type="submit"

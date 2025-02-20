@@ -1,28 +1,27 @@
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { RequestUpsertCustomEvmNetwork } from "@extension/core"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
 import { FieldArrayWithId, useFieldArray, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { SubNetworkFormData } from "./Substrate/types"
+import { SubNetworkFormData } from "./Substrate/schema"
 import {
   ExtraValidationCb,
   useRegisterFieldWithDebouncedValidation,
 } from "./useRegisterFieldWithDebouncedValidation"
 
-type RpcFormData = SubNetworkFormData | RequestUpsertCustomEvmNetwork
+type RpcFormData = SubNetworkFormData
 
 export type SortableRpcItemProps = {
   rpc: FieldArrayWithId<RpcFormData, "rpcs", "id">
@@ -63,7 +62,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
     `rpcs.${index}.url`,
     250,
     register,
-    extraValidationCb
+    extraValidationCb,
   )
 
   return (
@@ -126,7 +125,7 @@ export const NetworkRpcsListField = ({
     (index: number) => () => {
       remove(index)
     },
-    [remove]
+    [remove],
   )
 
   const handleAddRpc = useCallback(() => {
@@ -137,14 +136,14 @@ export const NetworkRpcsListField = ({
   const formData = watch()
   const canDelete = useMemo(
     () => !!(formData?.rpcs && (formData.rpcs.length > 1 || formData.rpcs?.[0]?.url)),
-    [formData]
+    [formData],
   )
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   )
 
   // order management
@@ -155,7 +154,7 @@ export const NetworkRpcsListField = ({
       const indexOver = rpcIds.indexOf(e.over?.id as string)
       move(indexActive, indexOver)
     },
-    [move, rpcIds]
+    [move, rpcIds],
   )
 
   return (

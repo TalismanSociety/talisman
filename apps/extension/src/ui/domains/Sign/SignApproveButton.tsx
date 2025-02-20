@@ -23,7 +23,10 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
   const [disabled, tooltip] = useMemo(() => {
     if (!riskAnalysis || props.disabled) return [!!props.disabled, null]
 
-    if (riskAnalysis.review.isRiskAknowledgementRequired && !riskAnalysis.review.isRiskAknowledged)
+    if (
+      riskAnalysis.review.isRiskAcknowledgementRequired &&
+      !riskAnalysis.review.isRiskAcknowledged
+    )
       return [true, t("You must acknowledge the risks before signing")]
 
     if (riskAnalysis.isValidating) return [true, null]

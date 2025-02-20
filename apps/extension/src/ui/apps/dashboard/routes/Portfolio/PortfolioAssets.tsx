@@ -1,11 +1,13 @@
 import { useEffect } from "react"
 
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
-import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
+import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { usePortfolio } from "@ui/state"
 
 export const PortfolioAssets = () => {
   const { pageOpenEvent } = useAnalytics()
+  const { search } = usePortfolio()
 
   useEffect(() => {
     pageOpenEvent("portfolio assets")
@@ -13,8 +15,8 @@ export const PortfolioAssets = () => {
 
   return (
     <>
-      <PortfolioToolbarTokens />
       <DashboardAssetsTable />
+      {!search && <GetStarted />}
     </>
   )
 }

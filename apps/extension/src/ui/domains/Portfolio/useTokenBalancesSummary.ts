@@ -1,11 +1,9 @@
 import { Balances } from "@talismn/balances"
-import { Chain, Token } from "@talismn/chaindata-provider"
 import { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
-import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 export type BalanceSummary = {
   totalTokens: BigNumber
@@ -26,47 +24,57 @@ const DEFAULT_SUMMARY: BalanceSummary = {
 }
 
 // This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
-const getBestTokenForSymbol = (balances: Balances, tokens?: Token[], chains?: Chain[]) => {
-  const tokenIds = balances.each.map((t) => t.tokenId)
-  const matches = tokens?.filter((t) => tokenIds.includes(t.id))
+const useBestTokenForSymbol = (balances: Balances) => {
+  const { tokens, chains } = usePortfolio()
+  const currency = useSelectedCurrency()
 
-  return (
-    // priority to token from a relay chain
-    // mainnet relay native
-    matches?.find(
-      (t) =>
-        !t.isTestnet &&
-        ["substrate-native", "evm-native"].includes(t.type) &&
-        chains?.find((c) => !c.relay && c.id === t.chain?.id)
-    ) ??
-    // mainnet solo/para native
-    matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
-    // mainnet which has an image
-    matches?.find((t) => !t.isTestnet && t.logo) ??
-    // testnet relay
-    matches?.find(
-      (t) =>
-        t.isTestnet &&
-        ["substrate-native", "evm-native"].includes(t.type) &&
-        chains?.find((c) => !c.relay && c.id === t.chain?.id)
-    ) ??
-    // testnet solo/para native
-    matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
-    // testnet which has an image
-    matches?.find((t) => t.isTestnet && t.logo) ??
-    // fallback
-    matches?.[0]
-  )
+  return useMemo(() => {
+    // use best token by market cap, if any
+    const balancesByMarketCap = balances.each
+      .filter((b) => !!b.rates?.[currency]?.marketCap)
+      .sort((a, b) => (b.rates?.[currency]?.marketCap ?? 0) - (a.rates?.[currency]?.marketCap ?? 0))
+
+    if (balancesByMarketCap.length) {
+      const token = tokens?.find((t) => t.id === balancesByMarketCap[0].tokenId)
+      if (token) return token
+    }
+
+    const tokenIds = balances.each.map((t) => t.tokenId)
+    const matches = tokens?.filter((t) => tokenIds.includes(t.id))
+
+    return (
+      // priority to token from a relay chain
+      // mainnet relay native
+      matches?.find(
+        (t) =>
+          !t.isTestnet &&
+          ["substrate-native", "evm-native"].includes(t.type) &&
+          chains?.find((c) => !c.relay && c.id === t.chain?.id),
+      ) ??
+      // mainnet solo/para native
+      matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
+      // mainnet which has an image
+      matches?.find((t) => !t.isTestnet && t.logo) ??
+      // testnet relay
+      matches?.find(
+        (t) =>
+          t.isTestnet &&
+          ["substrate-native", "evm-native"].includes(t.type) &&
+          chains?.find((c) => !c.relay && c.id === t.chain?.id),
+      ) ??
+      // testnet solo/para native
+      matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
+      // testnet which has an image
+      matches?.find((t) => t.isTestnet && t.logo) ??
+      // fallback
+      matches?.[0]
+    )
+  }, [balances.each, chains, currency, tokens])
 }
 
 export const useTokenBalancesSummary = (balances: Balances) => {
   const tokenBalances = useMemo(() => balances.filterMirrorTokens(), [balances])
-  const { tokens, chains } = usePortfolio()
-  // find the most appropriate token (for the icon)
-  const token = useMemo(
-    () => getBestTokenForSymbol(tokenBalances, tokens, chains),
-    [chains, tokenBalances, tokens]
-  )
+  const token = useBestTokenForSymbol(tokenBalances)
   const currency = useSelectedCurrency()
 
   const tokenBalanceRates = useMemo(
@@ -75,14 +83,14 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         if (balance.rates) tokenBalanceRates[balance.tokenId] = balance.rates
         return tokenBalanceRates
       }, {}),
-    [tokenBalances]
+    [tokenBalances],
   )
 
   const summary = useMemo(() => {
     if (tokenBalances.count < 1) return DEFAULT_SUMMARY
 
     const fiatDefaultValue = tokenBalances.each.some(
-      (b) => b.token && tokenBalanceRates[b.token.id]
+      (b) => b.token && tokenBalanceRates[b.token.id],
     )
       ? 0
       : null
@@ -91,7 +99,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     const summary = tokenBalances.each.reduce<BalanceSummary>(
       (
         { totalTokens, totalFiat, lockedTokens, lockedFiat, availableTokens, availableFiat },
-        b
+        b,
       ) => ({
         totalTokens: totalTokens.plus(b.total.tokens),
         totalFiat:
@@ -116,11 +124,11 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         lockedFiat: fiatDefaultValue,
         availableTokens: BigNumber(0),
         availableFiat: fiatDefaultValue,
-      }
+      },
     )
 
     return summary
-  }, [currency, tokenBalanceRates, tokenBalances.count, tokenBalances.each])
+  }, [currency, tokenBalanceRates, tokenBalances])
 
   return {
     token,

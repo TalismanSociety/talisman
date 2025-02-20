@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { v4 } from "uuid"
 
 import { ExtensionHandler } from "../src/libs/Handler"
@@ -10,6 +8,6 @@ export const getMessageSenderFn =
   <M extends MessageTypes>(
     messageType: M,
     request: RequestType<M> = null,
-    id = v4()
+    id = v4(),
   ): Promise<ResponseType<M>> =>
     extension.handle(id, messageType, request, port)

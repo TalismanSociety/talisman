@@ -1,13 +1,14 @@
-import { SignerPayloadGenesisHash } from "@extension/core"
-import { IS_FIREFOX } from "@extension/shared"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
+
+import { SignerPayloadGenesisHash } from "@extension/core"
+import { IS_FIREFOX } from "@extension/shared"
 import { api } from "@ui/api"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { QrCode, QrCodeError } from "./QrCode"
-import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
+import { qrCodeLogoForSource, QrCodeSource } from "./QrCodeSourceSelector"
 
 type Props = { genesisHash: SignerPayloadGenesisHash; qrCodeSource: QrCodeSource }
 
@@ -37,6 +38,7 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
           src={chainspecQrUrl}
           ref={ref}
           onLoad={onLoad}
+          // eslint-disable-next-line react/no-unknown-property
           onLoadedData={onLoad}
           alt=""
           crossOrigin={IS_FIREFOX ? undefined : "anonymous"}

@@ -11,11 +11,9 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
-import useChain from "@ui/hooks/useChain"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import useToken from "@ui/hooks/useToken"
+import { useAccounts, useChain, useToken } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -26,13 +24,13 @@ const AddressFormatError = ({ chain }: { chain?: Chain }) => {
   return (
     <div className="h-min-h-full align-center flex w-full flex-col items-center gap-4 px-12 py-7">
       <XOctagonIcon className="text-brand-orange text-lg" />
-      <span className="text-body-secondary">{t("Address Format Mismatch")}</span>
-      <p className="text-body-disabled text-center">
+      <span className="text-body">{t("Address Format Mismatch")}</span>
+      <p className="text-body-secondary mt-4 text-center">
         <Trans
           t={t}
           defaults="The address you've entered is not compatible with the <Chain><ChainLogo />{{chainName}}</Chain> chain. Please enter a compatible address or select a different chain to send on."
           components={{
-            Chain: <div className="text-body-secondary inline-flex items-baseline gap-1" />,
+            Chain: <div className="text-body inline-flex items-baseline gap-1" />,
             ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
           }}
           values={{ chainName: chain?.name ?? t("Unknown") }}
@@ -69,7 +67,7 @@ const UnknownAddressDrawer = ({
           <p className="font-bold text-white">{t("Sending to external address")}</p>
           <p className="text-body-secondary text-sm">
             {t(
-              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network."
+              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network.",
             )}
           </p>
           <div className="flex items-center justify-between gap-8 text-xs">
@@ -118,7 +116,9 @@ export const SendFundsRecipientPicker = () => {
     if (!chain) return true
     if (!search || search.trim() === "" || !isValidAddressInput) return true
     const isGenericFormat = convertAddress(search, null) === search
-    const isChainFormat = convertAddress(search, chain.prefix) === search
+    const isChainFormat =
+      convertAddress(search, chain.prefix) === search ||
+      (typeof chain.oldPrefix === "number" && convertAddress(search, chain.oldPrefix) === search)
     if (isValidSubstrateAddress(search)) return isChainFormat || isGenericFormat
     return true
   }, [chain, search, isValidAddressInput])
@@ -137,7 +137,7 @@ export const SendFundsRecipientPicker = () => {
         return null
       }
     },
-    [isFromEthereum]
+    [isFromEthereum],
   )
   const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
   const normalizedTo = useMemo(() => normalize(to), [to, normalize])
@@ -153,7 +153,7 @@ export const SendFundsRecipientPicker = () => {
             !search ||
             contact.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address))
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address)),
         )
         .filter((contact) => !contact.genesisHash || contact.genesisHash === chain?.genesisHash),
     [
@@ -167,7 +167,7 @@ export const SendFundsRecipientPicker = () => {
       nsLookup,
       normalizedNsLookup,
       chain?.genesisHash,
-    ]
+    ],
   )
 
   const newAddresses = useMemo(() => {
@@ -224,7 +224,7 @@ export const SendFundsRecipientPicker = () => {
             !search ||
             account.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address))
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address)),
         )
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash)
         .filter(
@@ -232,7 +232,7 @@ export const SendFundsRecipientPicker = () => {
             isFromEthereum ||
             // do not send funds to ledger generic accounts on incompatible chains
             chain?.hasCheckMetadataHash ||
-            account.ledgerApp !== SubstrateLedgerAppType.Generic
+            account.ledgerApp !== SubstrateLedgerAppType.Generic,
         ),
     [
       allAccounts,
@@ -247,7 +247,7 @@ export const SendFundsRecipientPicker = () => {
       normalizedNsLookup,
       chain?.genesisHash,
       chain?.hasCheckMetadataHash,
-    ]
+    ],
   )
 
   const { myAccounts, watchedAccounts } = useMemo(
@@ -255,15 +255,15 @@ export const SendFundsRecipientPicker = () => {
       myAccounts: accounts.filter(
         (account) =>
           (account.origin !== AccountType.Watched || account.isPortfolio) &&
-          account.origin !== AccountType.Dcent
+          account.origin !== AccountType.Dcent,
       ),
       watchedAccounts: accounts.filter(
         (account) =>
           (account.origin === AccountType.Watched && !account.isPortfolio) ||
-          account.origin === AccountType.Dcent
+          account.origin === AccountType.Dcent,
       ),
     }),
-    [accounts]
+    [accounts],
   )
 
   const handleSelect = useCallback(
@@ -277,7 +277,7 @@ export const SendFundsRecipientPicker = () => {
       set("to", address, true)
       setRecipientWarning(toWarning)
     },
-    [chain?.id, nsLookup, set, setRecipientWarning]
+    [chain?.id, nsLookup, set, setRecipientWarning],
   )
 
   const [unknownAddress, setUnknownAddress] = useState<string>()
@@ -288,12 +288,12 @@ export const SendFundsRecipientPicker = () => {
       setUnknownAddress(address)
       open()
     },
-    [handleSelect, open]
+    [handleSelect, open],
   )
 
   const handleSubmitSearch = useCallback(() => {
-    if (isValidSubstrateNetworkAddressInput) set("to", search, true)
-  }, [isValidSubstrateNetworkAddressInput, search, set])
+    if (isValidAddressInput && isValidSubstrateNetworkAddressInput) set("to", search, true)
+  }, [isValidAddressInput, isValidSubstrateNetworkAddressInput, search, set])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -314,7 +314,7 @@ export const SendFundsRecipientPicker = () => {
           />
         </div>
       </div>
-      <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         {!isValidSubstrateNetworkAddressInput && <AddressFormatError chain={chain ?? undefined} />}
         {isValidSubstrateNetworkAddressInput && (
           <>

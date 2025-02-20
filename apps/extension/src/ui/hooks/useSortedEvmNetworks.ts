@@ -1,11 +1,12 @@
-import { CustomEvmNetwork, EvmNetwork } from "@talismn/chaindata-provider"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
-const sortNetworks = (a: EvmNetwork | CustomEvmNetwork, b: EvmNetwork | CustomEvmNetwork) =>
+import { useEvmNetworks } from "@ui/state"
+
+const sortNetworks = (a: SimpleEvmNetwork, b: SimpleEvmNetwork) =>
   (a.name || "").localeCompare(b.name || "")
 
 export const useSortedEvmNetworks = (includeTestnets: boolean) => {
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
   return useMemo(() => evmNetworks.concat().sort(sortNetworks), [evmNetworks])
 }

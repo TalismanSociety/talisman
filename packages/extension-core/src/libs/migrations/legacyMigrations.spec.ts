@@ -19,7 +19,7 @@ const createPair = (
   origin: AccountType = AccountTypes.TALISMAN,
   derivationPath = "",
   parent?: string,
-  type: AccountAddressType = "sr25519"
+  type: AccountAddressType = "sr25519",
 ) => {
   const slashDerivationPath = `${type === "sr25519" ? "//" : ""}${derivationPath}`
   const options = {
@@ -35,7 +35,7 @@ const createPair = (
       origin,
       ...options,
     },
-    type
+    type,
   )
   return pair
 }

@@ -1,12 +1,14 @@
-import { errorsStore } from "@extension/core"
-import { Card } from "@talisman/components/Card"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useErrorsStoreValue } from "@ui/hooks/useErrors"
-import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
+import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { errorsStore } from "@extension/core"
+import { Card } from "@talisman/components/Card"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
+import { useErrorsStoreValue } from "@ui/state"
 
 const ANALYTICS_PAGES: Record<"popup" | "fullscreen", AnalyticsPage> = {
   popup: {
@@ -30,16 +32,16 @@ export type Props = {
 export const DatabaseErrorAlert = ({ container }: Props) => {
   const { t } = useTranslation()
 
-  const [databaseUnavailable] = useErrorsStoreValue("databaseUnavailable")
-  const [databaseQuotaExceeded] = useErrorsStoreValue("databaseQuotaExceeded")
+  const databaseUnavailable = useErrorsStoreValue("databaseUnavailable")
+  const databaseQuotaExceeded = useErrorsStoreValue("databaseQuotaExceeded")
   const isOpen = databaseUnavailable || databaseQuotaExceeded
 
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(
-    useMemo(() => ANALYTICS_PAGES[container], [container])
+    useMemo(() => ANALYTICS_PAGES[container], [container]),
   )
   const dismiss = useCallback(
     () => errorsStore.set({ databaseUnavailable: false, databaseQuotaExceeded: false }),
-    []
+    [],
   )
 
   if (!isOpen) return null
@@ -61,10 +63,10 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
             <div className="mb-4 text-sm">
               {hasRuntimeReloadFn
                 ? t(
-                    "Please make sure there is free space on your disk (at least 1GB) and then reload Talisman."
+                    "Please make sure there is free space on your disk (at least 1GB) and then reload Talisman.",
                   )
                 : t(
-                    "Please make sure there is free space on your disk (at least 1GB) and then restart your browser."
+                    "Please make sure there is free space on your disk (at least 1GB) and then restart your browser.",
                   )}
             </div>
             <div className="text-sm">
@@ -72,7 +74,7 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
                 If this problem continues, please contact our support team on{" "}
                 <a
                   className="text-body underline"
-                  href="https://discord.gg/talisman"
+                  href={DISCORD_TALISMAN_URL}
                   target="_blank"
                   rel="noreferrer noopener"
                 >

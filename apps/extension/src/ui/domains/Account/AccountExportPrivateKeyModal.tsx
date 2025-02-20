@@ -1,39 +1,43 @@
+import { bind } from "@react-rxjs/core"
+import { CopyIcon, LoaderIcon } from "@talismn/icons"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
+import { Button, Modal, ModalDialog } from "talisman-ui"
+
 import { AccountJsonAny } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { CopyIcon, LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
-import { atom, useAtom } from "jotai"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
-import { Button } from "talisman-ui"
 
-import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
+import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const accountExportPkAccountState = atom<AccountJsonAny | null>(null)
+const localAccount$ = new BehaviorSubject<AccountJsonAny | null>(null)
+
+const setLocalAccount = (account: AccountJsonAny | null) => {
+  localAccount$.next(account)
+}
+
+const [useLocalAccount] = bind(localAccount$)
 
 export const useAccountExportPrivateKeyModal = () => {
-  const [_account, setAccount] = useAtom(accountExportPkAccountState)
-
-  const { account: selectedAccount } = useSelectedAccount()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
+
+  const { selectedAccount } = usePortfolioNavigation()
+  const account = useLocalAccount() ?? selectedAccount
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account ?? null)
+      setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen, setAccount]
+    [innerOpen],
   )
 
-  const account = _account ?? selectedAccount
-
-  const canExportAccountFunc = (account?: AccountJsonAny) =>
+  const canExportAccountFunc = (account?: AccountJsonAny | null) =>
     account?.type === "ethereum" && !account.isExternal && !account.isHardware
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
@@ -43,7 +47,7 @@ export const useAccountExportPrivateKeyModal = () => {
       if (!account) return
       return api.accountExportPrivateKey(account.address, password)
     },
-    [account]
+    [account],
   )
 
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
@@ -71,7 +75,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           subtitle: t("Private key copied to clipboard"),
         },
         // set an id to prevent multiple clicks to display multiple notifications
-        { toastId }
+        { toastId },
       )
       return true
     } catch (err) {
@@ -81,7 +85,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           title: t("Copy failed"),
           subtitle: (err as Error).message,
         },
-        { toastId }
+        { toastId },
       )
       return false
     }
@@ -111,10 +115,10 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
     <div className="text-body-secondary flex h-full w-full flex-col text-left">
       <div className="w-full text-left">
         {t(
-          "This private key can be used to access your account's funds. Don't share it with anyone."
+          "This private key can be used to access your account's funds. Don't share it with anyone.",
         )}
       </div>
-      <div className="flex w-full grow flex-col justify-center gap-6 ">
+      <div className="flex w-full grow flex-col justify-center gap-6">
         <div className="!text-body flex w-full items-center gap-4">
           <div>
             <AccountIcon address={account.address} className="!text-lg" />
@@ -125,8 +129,8 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           {!!error && <div className="text-alert-error">{(error as Error).message}</div>}
           {isLoading && (
             <>
-              <div className="text-lg ">
-                <LoaderIcon className="animate-spin-slow inline-block " />
+              <div className="text-lg">
+                <LoaderIcon className="animate-spin-slow inline-block" />
               </div>
               <div>{t("Loading...")}</div>
             </>
@@ -136,12 +140,12 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
               <input
                 value={privateKey}
                 readOnly
-                className="grow bg-transparent font-mono leading-none "
+                className="grow bg-transparent font-mono leading-none"
               />
               <button
                 type="button"
                 onClick={copyToClipboard}
-                className=" focus:text-grey-300 text-lg hover:text-white active:text-white"
+                className="focus:text-grey-300 text-lg hover:text-white active:text-white"
               >
                 <CopyIcon />
               </button>

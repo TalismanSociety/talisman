@@ -1,20 +1,19 @@
-import { AccountType } from "@extension/core"
-import { AssetDiscoveryMode } from "@extension/core"
-import { log } from "@extension/shared"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
 import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
-import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import { AccountType } from "@extension/core"
+import { log } from "@extension/shared"
+import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
-import useChains from "@ui/hooks/useChains"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAccounts, useChains } from "@ui/state"
 
 export type JsonImportAccount = {
   id: string
@@ -52,7 +51,7 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
     { publicKey: decodeAddress(address, true) },
     meta,
     isHex(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
-    encType
+    encType,
   )
 }
 
@@ -63,24 +62,27 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
       pairs
         .filter((p): p is KeyringPair & { type: string } => !!p.type)
         .map((p) => ({ address: p.address, type: p.type, genesisHash: p.meta?.genesisHash })),
-    [pairs]
+    [pairs],
   )
   const allBalances = useAccountImportBalances(accounts)
 
   return useMemo(() => {
-    return accounts.reduce((acc, { address }) => {
-      const individualBalances = allBalances.balances.find({ address })
-      const isLoading =
-        !individualBalances.count ||
-        individualBalances.each.some((b) => b.status === "cache") ||
-        allBalances.status === "initialising"
-      const balances = new Balances(individualBalances)
+    return accounts.reduce(
+      (acc, { address }) => {
+        const individualBalances = allBalances.balances.find({ address })
+        const isLoading =
+          !individualBalances.count ||
+          individualBalances.each.some((b) => b.status === "cache") ||
+          allBalances.status === "initialising"
+        const balances = new Balances(individualBalances)
 
-      return {
-        ...acc,
-        [address]: { balances, isLoading },
-      }
-    }, {} as Record<Address, { balances: Balances; isLoading: boolean }>)
+        return {
+          ...acc,
+          [address]: { balances, isLoading },
+        }
+      },
+      {} as Record<Address, { balances: Balances; isLoading: boolean }>,
+    )
   }, [accounts, allBalances])
 }
 
@@ -130,7 +132,7 @@ const useJsonAccountImportProvider = () => {
 
               if (
                 !existingAccounts.some(
-                  (a) => encodeAnyAddress(a.address) === encodeAnyAddress(pair.address)
+                  (a) => encodeAnyAddress(a.address) === encodeAnyAddress(pair.address),
                 ) &&
                 !pair.meta.isHardware &&
                 !pair.meta.isExternal
@@ -151,10 +153,10 @@ const useJsonAccountImportProvider = () => {
         }, 1)
       })
     },
-    [existingAccounts, file]
+    [existingAccounts, file],
   )
 
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains()
   const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {
@@ -198,7 +200,7 @@ const useJsonAccountImportProvider = () => {
   const selectAll = useCallback(() => {
     if (!accounts) return
     setSelectedAccounts(
-      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id)
+      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id),
     )
   }, [accounts])
 
@@ -210,12 +212,12 @@ const useJsonAccountImportProvider = () => {
         return prev.filter((a) => a !== id)
       })
     },
-    [accounts]
+    [accounts],
   )
 
   const requiresAccountUnlock = useMemo(
     () => !!accounts?.filter((a) => a.selected && a.isLocked).length,
-    [accounts]
+    [accounts],
   )
 
   // track progress to display a progress bar
@@ -255,7 +257,7 @@ const useJsonAccountImportProvider = () => {
 
       setUnlockAttemptProgress(0)
     },
-    [accounts, pairs]
+    [accounts, pairs],
   )
 
   const canImport = useMemo<boolean>(() => {
@@ -272,7 +274,7 @@ const useJsonAccountImportProvider = () => {
     assert(pairs, "Pairs unavailable")
 
     const pairsToImport = selectedAccounts.map(
-      (address) => pairs.find((p) => p.address === address) as KeyringPair
+      (address) => pairs.find((p) => p.address === address) as KeyringPair,
     )
     for (const pair of pairsToImport) {
       assert(pair, "Pair not found")
@@ -283,8 +285,6 @@ const useJsonAccountImportProvider = () => {
     const unlockedPairs = pairsToImport.map((p) => p.toJson())
 
     const addresses = await api.accountCreateFromJson(unlockedPairs)
-
-    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
     return addresses
   }, [pairs, selectedAccounts])
@@ -307,5 +307,5 @@ const useJsonAccountImportProvider = () => {
 }
 
 export const [JsonAccountImportProvider, useJsonAccountImport] = provideContext(
-  useJsonAccountImportProvider
+  useJsonAccountImportProvider,
 )

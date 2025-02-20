@@ -1,13 +1,6 @@
-import { AssetDiscoveryMode } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
 import { encodeAnyAddress } from "@talismn/util"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import useAccounts from "@ui/hooks/useAccounts"
 import i18next from "i18next"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -25,6 +18,14 @@ import { isHex, toHex } from "viem"
 import { publicKeyToAddress } from "viem/accounts"
 import * as yup from "yup"
 
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { api } from "@ui/api"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { useAccounts } from "@ui/state"
+
+import { BackToAddAccountButton } from "./BackToAddAccountButton"
 import { AccountAddPageProps } from "./types"
 
 /**
@@ -66,15 +67,15 @@ type ValidationContext = {
 
 const schema = yup
   .object({
-    name: yup.string().trim().required(""),
+    name: yup.string().trim().required(" "),
     privateKey: yup
       .string()
-      .required("")
+      .required(" ")
       .trim()
       .lowercase()
       .transform(transformToHex)
       .test("is-valid-mnemonic-ethereum", i18next.t("Invalid private key"), async (val) =>
-        isValidEthPrivateKey(val as `0x${string}`)
+        isValidEthPrivateKey(val as `0x${string}`),
       )
       .test("account-exists", i18next.t("Account exists"), async (privateKey, ctx) => {
         const context = ctx.options.context as ValidationContext
@@ -101,11 +102,10 @@ const schema = yup
 
 export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
-
   const allAccounts = useAccounts()
   const accountEthAddresses = useMemo(
     () => allAccounts.filter(({ type }) => type === "ethereum").map((a) => a.address),
-    [allAccounts]
+    [allAccounts],
   )
 
   const {
@@ -145,12 +145,10 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           title: t("Importing account"),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
       try {
         const address = await api.accountCreateFromSuri(name, privateKey, "ethereum")
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         onSuccess(address)
         notifyUpdate(notificationId, {
@@ -166,7 +164,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         })
       }
     },
-    [t, onSuccess]
+    [t, onSuccess],
   )
 
   useEffect(() => {
@@ -216,7 +214,8 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           </div>
         </div>
         <Spacer small />
-        <div className="mt-1 flex w-full justify-end">
+        <div className="mt-1 flex w-full justify-between">
+          <BackToAddAccountButton methodType="import" />
           <Button
             className="w-[24rem]"
             type="submit"

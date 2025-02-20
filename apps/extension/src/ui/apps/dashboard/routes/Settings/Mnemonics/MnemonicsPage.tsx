@@ -1,8 +1,3 @@
-import { AccountJsonAny } from "@extension/core"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -12,18 +7,22 @@ import {
   SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useAppState } from "@ui/hooks/useAppState"
-import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { AccountsStack } from "../Accounts/AccountIconsStack"
+import { AccountJsonAny } from "@extension/core"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { Address } from "@ui/domains/Account/Address"
+import { Mnemonic, useAccounts, useAppState, useMnemonics } from "@ui/state"
+
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {
   MnemonicDeleteModal,
@@ -79,7 +78,7 @@ const useMnemonicAccounts = (mnemonicId: string) => {
       accounts
         .filter((account) => account.derivedMnemonicId === mnemonicId)
         .sort((a1, a2) => (a1.derivationPath ?? "")?.localeCompare(a2.derivationPath ?? "")),
-    [accounts, mnemonicId]
+    [accounts, mnemonicId],
   )
 }
 
@@ -141,10 +140,10 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
         type="button"
         onClick={toggle}
         className={classNames(
-          "  hover:text-body text-body-secondary flex h-[6.5rem] w-full items-center gap-6 rounded-sm px-8 text-left",
+          "hover:text-body text-body-secondary flex h-[6.5rem] w-full items-center gap-6 rounded-sm px-8 text-left",
           mnemonic.confirmed
             ? "bg-grey-850 hover:bg-grey-800"
-            : "bg-alert-warn/5 hover:bg-alert-warn/10"
+            : "bg-alert-warn/5 hover:bg-alert-warn/10",
         )}
       >
         <div className="bg-body-secondary/10 flex h-[4rem] w-[4rem] shrink-0 items-center justify-center rounded-full">
@@ -181,7 +180,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
             </button>
           )}
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className=" hover:bg-grey-800 active:hover:bg-grey-800 hover:text-body text-body-secondary rounded p-2">
+            <ContextMenuTrigger className="hover:bg-grey-800 active:hover:bg-grey-800 hover:text-body text-body-secondary rounded p-2">
               <MoreHorizontalIcon className="text-lg" />
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -233,7 +232,7 @@ const BackupReminder: FC = () => {
 
   const count = useMemo(
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).length,
-    [mnemonics]
+    [mnemonics],
   )
 
   if (!count) return null
@@ -241,7 +240,7 @@ const BackupReminder: FC = () => {
   return (
     <div
       className={classNames(
-        "border-grey-500 mb-8 flex w-full items-center gap-4 rounded-sm border p-4"
+        "border-grey-500 mb-8 flex w-full items-center gap-4 rounded-sm border p-4",
       )}
     >
       <div className="bg-primary/10 rounded-full p-3">
@@ -259,12 +258,12 @@ const MnemonicsList = () => {
 
   const sortedMnemonics = useMemo(
     () => [...mnemonics].sort((m1, m2) => m1.name.localeCompare(m2.name)),
-    [mnemonics]
+    [mnemonics],
   )
 
   const notBackedUp = useMemo(
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed),
-    [mnemonics]
+    [mnemonics],
   )
   const { open: openBackup } = useMnemonicBackupModal()
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -292,29 +291,33 @@ const MnemonicsList = () => {
   )
 }
 
-export const MnemonicsPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <DashboardLayout centered withBack backTo="/settings">
-      <MnemonicRenameModalProvider>
-        <MnemonicDeleteModalProvider>
-          <MnemonicSetPvVerifierModalProvider>
-            <MnemonicBackupModalProvider>
-              <HeaderBlock
-                title={t("Recovery Phrases")}
-                text={t("Manage and backup your recovery phrases")}
-              />
-              <Spacer large />
-              <BackupReminder />
-              <MnemonicsList />
-              <MnemonicDeleteModal />
-              <MnemonicRenameModal />
-              <MnemonicSetPvVerifierModal />
-            </MnemonicBackupModalProvider>
-          </MnemonicSetPvVerifierModalProvider>
-        </MnemonicDeleteModalProvider>
-      </MnemonicRenameModalProvider>
-    </DashboardLayout>
+    <MnemonicRenameModalProvider>
+      <MnemonicDeleteModalProvider>
+        <MnemonicSetPvVerifierModalProvider>
+          <MnemonicBackupModalProvider>
+            <HeaderBlock
+              title={t("Recovery Phrases")}
+              text={t("Manage and backup your recovery phrases")}
+            />
+            <Spacer large />
+            <BackupReminder />
+            <MnemonicsList />
+            <MnemonicDeleteModal />
+            <MnemonicRenameModal />
+            <MnemonicSetPvVerifierModal />
+          </MnemonicBackupModalProvider>
+        </MnemonicSetPvVerifierModalProvider>
+      </MnemonicDeleteModalProvider>
+    </MnemonicRenameModalProvider>
   )
 }
+
+export const MnemonicsPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

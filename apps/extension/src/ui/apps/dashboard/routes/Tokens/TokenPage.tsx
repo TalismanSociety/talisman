@@ -1,30 +1,37 @@
 import * as Sentry from "@sentry/browser"
+import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/balances"
+import { RotateCcwIcon } from "@talismn/icons"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
+import {
+  Button,
+  FormFieldContainer,
+  FormFieldInputText,
+  Modal,
+  ModalDialog,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
+
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/balances"
-import { RotateCcwIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
-import useToken from "@ui/hooks/useToken"
+import { useEvmNetwork, useToken } from "@ui/state"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
-import { ModalDialog, Toggle } from "talisman-ui"
-import { Modal, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-
-import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const ConfirmRemove = ({
   open,
@@ -92,7 +99,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Token Details",
 }
 
-export const TokenPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
@@ -103,13 +110,13 @@ export const TokenPage = () => {
   const token = useToken(id)
   const erc20Token = useMemo(
     () => (isErc20Token(token) ? token : isUniswapV2Token(token) ? token : undefined),
-    [token]
+    [token],
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
 
   const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownEvmToken(
     erc20Token?.evmNetwork?.id,
-    erc20Token?.contractAddress
+    erc20Token?.contractAddress,
   )
 
   useEffect(() => {
@@ -121,7 +128,7 @@ export const TokenPage = () => {
   if (!erc20Token || !network) return null
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <>
       <HeaderBlock
         title={
           <div className="flex items-center justify-between gap-5">
@@ -133,7 +140,7 @@ export const TokenPage = () => {
           </div>
         }
         text={t(
-          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token.",
         )}
       />
       <form className="my-20 space-y-4">
@@ -219,6 +226,12 @@ export const TokenPage = () => {
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
-    </DashboardLayout>
+    </>
   )
 }
+
+export const TokenPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

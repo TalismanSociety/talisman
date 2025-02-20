@@ -5,28 +5,26 @@ import { getAddressType } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountAddressType, AssetDiscoveryMode } from "@extension/core"
+import { UiAccountAddressType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts } from "@ui/state"
 
-type FormData = {
-  name: string
-  searchAddress: string
-  address: string
-  type: AccountAddressType
-  isPortfolio: boolean
-}
+import { BackToAddAccountButton } from "./BackToAddAccountButton"
 
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
+  // get type paramter from url
+  const [params] = useSearchParams()
+  const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
 
@@ -34,35 +32,35 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     () =>
       yup
         .object({
-          name: yup.string().required("").notOneOf(accountNames, t("Name already in use")),
-          searchAddress: yup.string().trim().required(""),
-          address: yup
-            .string()
-            .trim()
-            .required("")
-            .when("type", {
-              is: "ethereum",
-              then: yup
-                .string()
-                .test(
-                  "is-valid-address-eth",
-                  t("Invalid address"),
-                  (val) => !!val && getAddressType(val) === "ethereum"
-                ),
-              otherwise: yup
-                .string()
-                .test(
-                  "is-valid-address-sub",
-                  t("Invalid address"),
-                  (val) => !!val && getAddressType(val) === "ss58"
-                ),
-            }),
-          type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
+          name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
+          searchAddress: yup.string().trim().required(" "),
+          type: yup.mixed<UiAccountAddressType>().oneOf(["ethereum", "sr25519"]).defined(),
+          address: yup.string().trim().required(" "),
+          isPortfolio: yup.boolean().defined(),
+        })
+        .test("is-valid-address", t("Invalid address"), (val, ctx) => {
+          const { type, address } = val
+
+          if (type === "sr25519" && getAddressType(address) !== "ss58")
+            return ctx.createError({
+              path: "address",
+              message: t("Invalid address"),
+            })
+
+          if (type === "ethereum" && getAddressType(address) !== "ethereum")
+            return ctx.createError({
+              path: "address",
+              message: t("Invalid address"),
+            })
+
+          return true
         })
         .required(),
 
-    [accountNames, t]
+    [accountNames, t],
   )
+
+  type FormData = yup.InferType<typeof schema>
 
   const {
     register,
@@ -75,6 +73,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
+    defaultValues: { type: urlParamType },
   })
 
   const { type, searchAddress } = watch()
@@ -103,7 +102,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
           title: t("Adding account"),
           subtitle: t("Please wait"),
         },
-        { autoClose: false }
+        { autoClose: false },
       )
 
       // pause to prevent double notification
@@ -111,8 +110,6 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
       try {
         onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
-
-        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",
@@ -127,15 +124,15 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, t]
+    [onSuccess, t],
   )
 
   const handleTypeChange = useCallback(
-    (type: AccountAddressType) => {
+    (type: UiAccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
       trigger()
     },
-    [setValue, trigger]
+    [setValue, trigger],
   )
 
   const hasSetFocus = useRef(false)
@@ -146,10 +143,18 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     }
   }, [setFocus, type])
 
+  useEffect(() => {
+    // if we have a type in the url, set it
+    if (urlParamType) handleTypeChange(urlParamType)
+  }, [urlParamType, handleTypeChange])
+
   return (
     <form onSubmit={handleSubmit(submit)}>
-      <div className="mb-12 flex flex-col gap-8">
-        <AccountTypeSelector onChange={handleTypeChange} />
+      <div className="flex flex-col gap-16">
+        {!urlParamType && (
+          <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
+        )}
+
         <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">
@@ -157,7 +162,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             </p>
             <p className="text-body-disabled text-xs">
               {t(
-                "Note that the address will be watch-only and will not be able to sign transactions."
+                "Note that the address will be watch-only and will not be able to sign transactions.",
               )}
             </p>
           </div>
@@ -193,7 +198,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 <div className="text-body leading-none">{t("Include in my portfolio")}</div>
                 <div className="text-body-disabled text-sm leading-none">
                   {t(
-                    "If toggled on, this account's balances will be included in your Total Portfolio"
+                    "If toggled on, this account's balances will be included in your Total Portfolio",
                   )}
                 </div>
               </div>
@@ -201,7 +206,9 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
             </div>
           </div>
         </div>
-        <div className="flex w-full justify-end">
+
+        <div className="flex w-full items-center justify-between">
+          <BackToAddAccountButton methodType="watched" />
           <Button
             icon={ArrowRightIcon}
             type="submit"

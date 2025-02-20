@@ -1,10 +1,11 @@
-import { Address } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
-import { provideContext } from "@talisman/util/provideContext"
 import { TokenId } from "@talismn/chaindata-provider"
-import { useAllTokensMap } from "@ui/hooks/useTokens"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
+
+import { Address } from "@extension/core"
+import { provideContext } from "@talisman/util/provideContext"
+import { useTokensMap } from "@ui/state"
 
 type SendFundsWizardParams = {
   from: Address
@@ -23,7 +24,7 @@ export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const allTokensMap = useAllTokensMap()
+  const allTokensMap = useTokensMap()
 
   const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
     () => ({
@@ -35,14 +36,14 @@ const useSendFundsWizardProvider = () => {
       allowReap: searchParams.get("allowReap") !== null,
       sendMax: searchParams.get("sendMax") !== null,
     }),
-    [searchParams]
+    [searchParams],
   )
 
   const set = useCallback(
     <T extends keyof SendFundsWizardParams>(
       key: T,
       value: SendFundsWizardParams[T],
-      goToNextPage = false
+      goToNextPage = false,
     ) => {
       // reset amount if token changes, as decimals may be totally different
       if (key === "tokenId" && value !== searchParams.get("tokenId")) {
@@ -85,7 +86,7 @@ const useSendFundsWizardProvider = () => {
         navigate(url)
       }
     },
-    [allTokensMap, navigate, searchParams, setSearchParams]
+    [allTokensMap, navigate, searchParams, setSearchParams],
   )
 
   const remove = useCallback(
@@ -93,7 +94,7 @@ const useSendFundsWizardProvider = () => {
       searchParams.delete(key)
       setSearchParams(searchParams, { replace: true })
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   )
 
   const goto = useCallback(
@@ -101,7 +102,7 @@ const useSendFundsWizardProvider = () => {
       const url = `/send/${page}?${searchParams.toString()}`
       navigate(url, { replace })
     },
-    [navigate, searchParams]
+    [navigate, searchParams],
   )
 
   const gotoReview = useCallback(
@@ -116,7 +117,7 @@ const useSendFundsWizardProvider = () => {
 
       navigate(`/send/confirm?${searchParams.toString()}`)
     },
-    [amount, from, navigate, searchParams, sendMax, to, tokenId]
+    [amount, from, navigate, searchParams, sendMax, to, tokenId],
   )
 
   const gotoProgress = useCallback(
@@ -126,7 +127,7 @@ const useSendFundsWizardProvider = () => {
       qs.set("networkIdOrHash", networkIdOrHash)
       navigate(`/send/submitted?${qs.toString()}`)
     },
-    [navigate]
+    [navigate],
   )
 
   return {
@@ -146,5 +147,5 @@ const useSendFundsWizardProvider = () => {
 }
 
 export const [SendFundsWizardProvider, useSendFundsWizard] = provideContext(
-  useSendFundsWizardProvider
+  useSendFundsWizardProvider,
 )

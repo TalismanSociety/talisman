@@ -47,7 +47,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    method: AssetTransferMethod
+    method: AssetTransferMethod,
   ) {
     const { chain, registry, tx, unsigned, signature } = await this.prepareTransaction(
       chainId,
@@ -57,7 +57,7 @@ export default class AssetTransfersRpc {
       to,
       tip,
       method,
-      true
+      true,
     )
 
     assert(signature, "transaction is not signed")
@@ -85,7 +85,7 @@ export default class AssetTransfersRpc {
   static async transferSigned(
     unsigned: SignerPayloadJSON,
     signature: `0x${string}`,
-    transferInfo: WalletTransactionTransferInfo
+    transferInfo: WalletTransactionTransferInfo,
   ) {
     const genesisHash = validateHexString(unsigned.genesisHash)
     const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
@@ -95,14 +95,14 @@ export default class AssetTransfersRpc {
       unsigned.genesisHash,
       unsigned.specVersion,
       unsigned.blockHash,
-      unsigned.signedExtensions
+      unsigned.signedExtensions,
     )
 
     // create the unsigned extrinsic
     const tx = registry.createType(
       "Extrinsic",
       { method: unsigned.method },
-      { version: unsigned.version }
+      { version: unsigned.version },
     )
 
     // apply signature
@@ -132,7 +132,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    method: AssetTransferMethod
+    method: AssetTransferMethod,
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, unsigned } = await this.prepareTransaction(
       chainId,
@@ -142,7 +142,7 @@ export default class AssetTransfersRpc {
       to,
       tip,
       method,
-      false
+      false,
     )
 
     const { partialFee } = await getExtrinsicDispatchInfo(chainId, tx)
@@ -171,7 +171,7 @@ export default class AssetTransfersRpc {
     to: Address,
     tip: string,
     method: AssetTransferMethod,
-    sign: boolean
+    sign: boolean,
   ): Promise<{
     tx: Extrinsic
     registry: TypeRegistry
@@ -217,7 +217,7 @@ export default class AssetTransfersRpc {
       )
     )
       throw new Error(
-        `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`
+        `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`,
       )
 
     const checkMetadataHash = getCheckMetadataHashPayloadProps(
@@ -225,7 +225,7 @@ export default class AssetTransfersRpc {
       metadataRpc,
       runtimeVersion.specName,
       runtimeVersion.specVersion,
-      nativeToken
+      nativeToken,
     )
 
     const transaction = await palletModule.transferToken({
@@ -251,7 +251,7 @@ export default class AssetTransfersRpc {
     assert(transaction, `Failed to construct tx for token '${token.id}'`)
     assert(
       transaction.type === "substrate",
-      `Failed to handle tx type ${transaction.type} for token '${token.id}'`
+      `Failed to handle tx type ${transaction.type} for token '${token.id}'`,
     )
 
     const callData = transaction.callData
@@ -285,7 +285,7 @@ export default class AssetTransfersRpc {
     const tx = registry.createType(
       "Extrinsic",
       { method: unsignedTx.method },
-      { version: unsignedTx.version }
+      { version: unsignedTx.version },
     )
 
     const unsigned: UnsignedTransaction = {

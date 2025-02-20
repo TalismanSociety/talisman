@@ -32,7 +32,7 @@ import { unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
-  #autoLockTimeout = 0
+  #autoLockMinutes = 0
 
   constructor(stores: ExtensionStore) {
     super(stores)
@@ -58,14 +58,9 @@ export default class Extension extends ExtensionHandler {
     }
 
     // connect auto lock timeout setting to the password store
-    this.stores.settings.observable.subscribe(({ autoLockTimeout }) => {
-      this.#autoLockTimeout = autoLockTimeout
-      stores.password.resetAutoLockTimer(autoLockTimeout)
-    })
-
-    // update the autolock timer whenever a setting is changed
-    chrome.storage.onChanged.addListener(() => {
-      stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+    this.stores.settings.observable.subscribe(({ autoLockMinutes }) => {
+      this.#autoLockMinutes = autoLockMinutes
+      stores.password.resetAutolockTimer(autoLockMinutes)
     })
 
     // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
@@ -95,7 +90,7 @@ export default class Extension extends ExtensionHandler {
               .filter(
                 ({ json: { meta } }) =>
                   isTalismanHostname(autoAddSite.url) ||
-                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType)
+                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType),
               )
               .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)
@@ -199,11 +194,8 @@ export default class Extension extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
-    // Reset the auto lock timer on any message, the user is still actively using the extension
-    this.stores.password.resetAutoLockTimer(this.#autoLockTimeout)
-
     // --------------------------------------------------------------------
     // First try to unsubscribe                          ------------------
     // --------------------------------------------------------------------
@@ -227,7 +219,14 @@ export default class Extension extends ExtensionHandler {
     // Then try remaining which are present in this class
     // --------------------------------------------------------------------
     switch (type) {
-      case "pri(ping)":
+      // Ensures that the background script remains open when the UI is also open (especially on firefox)
+      case "pri(keepalive)":
+        return true
+
+      // Keeps the wallet unlocked for N (user-definable) minutes after the last user interaction
+      case "pri(keepunlocked)":
+        // Restart the autolock timer when the user interacts with the wallet UI
+        this.stores.password.resetAutolockTimer(this.#autoLockMinutes)
         return true
 
       default:

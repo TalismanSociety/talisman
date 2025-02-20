@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
+import { useEffect } from "react"
+
 import { api } from "@ui/api"
 
 export const useOnChainId = (address?: string) => {
@@ -11,23 +13,24 @@ export const useOnChainId = (address?: string) => {
       return (await api.accountsOnChainIdsLookupAddresses([address]))[address] ?? null
     },
     enabled: !!address,
-    cacheTime: Infinity,
+    gcTime: Infinity,
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     initialData: () => address && onChainIdsCache.get(address)?.onChainId,
-    onSuccess: (onChainId) => {
-      if (!address) return
-
-      // update cache
-      if (onChainId === undefined) onChainIdsCache.delete(address)
-      else onChainIdsCache.set(address, { onChainId, updated: Date.now() })
-
-      // persist cache to local storage
-      persistOnChainIdsCache()
-    },
   })
+
+  useEffect(() => {
+    if (!address || !onChainId) return
+
+    // update cache
+    if (onChainId === undefined) onChainIdsCache.delete(address)
+    else onChainIdsCache.set(address, { onChainId, updated: Date.now() })
+
+    // persist cache to local storage
+    persistOnChainIdsCache()
+  }, [address, onChainId])
 
   return [onChainId, rest] as const
 }
@@ -35,7 +38,7 @@ export const useOnChainId = (address?: string) => {
 const cacheKey = "TalismanOnChainIdsCache"
 const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
 const onChainIdsCache = new Map<string, { onChainId?: string | null; updated?: number }>(
-  JSON.parse(localStorage.getItem(cacheKey) ?? "[]")
+  JSON.parse(localStorage.getItem(cacheKey) ?? "[]"),
 )
 const persistOnChainIdsCache = () =>
   localStorage.setItem(
@@ -48,7 +51,7 @@ const persistOnChainIdsCache = () =>
             // check that the updated field exists
             item?.updated &&
             // check that the item has been updated within the persistItemDuration
-            Date.now() - item.updated <= persistItemDuration
-        )
-    )
+            Date.now() - item.updated <= persistItemDuration,
+        ),
+    ),
   )

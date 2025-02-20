@@ -85,7 +85,7 @@ export default class Tabs extends TabsHandler {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,
-        `No Talisman wallet accounts are authorised to connect to ${url}`
+        `No Talisman wallet accounts are authorised to connect to ${url}`,
       )
 
       return false
@@ -102,12 +102,12 @@ export default class Tabs extends TabsHandler {
   #getFilteredAccounts(
     site: AuthorizedSite,
     { anyType }: RequestAccountList,
-    developerMode: boolean
+    developerMode: boolean,
   ) {
     return getPublicAccounts(
       Object.values(accountsObservable.subject.getValue()),
       filterAccountsByAddresses(site.addresses, anyType),
-      { includeWatchedAccounts: developerMode || isTalismanUrl(site.url) }
+      { includeWatchedAccounts: developerMode || isTalismanUrl(site.url) },
     )
   }
 
@@ -140,7 +140,7 @@ export default class Tabs extends TabsHandler {
         if (!site || !site.addresses) return []
 
         return this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
-      }
+      },
     )
   }
 
@@ -155,7 +155,7 @@ export default class Tabs extends TabsHandler {
   private bytesSign(
     url: string,
     request: SignerPayloadRaw,
-    port: Port
+    port: Port,
   ): Promise<SubstrateSignResponse> {
     const address = request.address
     const pair = this.getSigningPair(address)
@@ -167,14 +167,14 @@ export default class Tabs extends TabsHandler {
         address,
         ...pair.meta,
       },
-      port
+      port,
     )
   }
 
   private extrinsicSign(
     url: string,
     request: SignerPayloadJSON,
-    port: Port
+    port: Port,
   ): Promise<SubstrateSignResponse> {
     const address = request.address
     const pair = this.getSigningPair(address)
@@ -186,14 +186,14 @@ export default class Tabs extends TabsHandler {
         address,
         ...pair.meta,
       },
-      port
+      port,
     )
   }
 
   private messageEncrypt(
     url: string,
     request: EncryptPayload,
-    port: Port
+    port: Port,
   ): Promise<ResponseEncryptEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
@@ -204,14 +204,14 @@ export default class Tabs extends TabsHandler {
         address,
         ...pair.meta,
       },
-      port
+      port,
     )
   }
 
   private messageDecrypt(
     url: string,
     request: DecryptPayload,
-    port: Port
+    port: Port,
   ): Promise<ResponseEncryptDecrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
@@ -223,7 +223,7 @@ export default class Tabs extends TabsHandler {
         address,
         ...pair.meta,
       },
-      port
+      port,
     )
   }
 
@@ -253,7 +253,7 @@ export default class Tabs extends TabsHandler {
   private async rpcSubscribe(
     request: RequestRpcSubscribe,
     id: string,
-    port: Port
+    port: Port,
   ): Promise<boolean> {
     const innerCb = createSubscription<"pub(rpc.subscribe)">(id, port)
     const cb = (_error: Error | null, data: SubscriptionMessageTypes["pub(rpc.subscribe)"]): void =>
@@ -272,7 +272,7 @@ export default class Tabs extends TabsHandler {
     const innerCb = createSubscription<"pub(rpc.subscribeConnected)">(id, port)
     const cb = (
       _error: Error | null,
-      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"]
+      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"],
     ): void => innerCb(data)
 
     this.#rpcState.rpcSubscribeConnected(request, cb, port)
@@ -292,7 +292,7 @@ export default class Tabs extends TabsHandler {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
     const url = `${chrome.runtime.getURL(
-      "dashboard.html"
+      "dashboard.html",
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
     chrome.tabs.query({ url: nonFragment }).then((tabs) => {
@@ -304,7 +304,7 @@ export default class Tabs extends TabsHandler {
             // eslint-disable-next-line no-console
             console.error("Failed to redirect tab to phishing page", { err })
             sentry.captureException(err, { extra: { url } })
-          })
+          }),
         )
     })
   }
@@ -331,7 +331,7 @@ export default class Tabs extends TabsHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    url: string
+    url: string,
   ): Promise<ResponseType<TMessageType>> {
     if (type === "pub(phishing.redirectIfDenied)") {
       return this.redirectIfPhishing(url)
@@ -379,7 +379,7 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(
           url,
           false,
-          (request as SignerPayloadRaw).address
+          (request as SignerPayloadRaw).address,
         )
         return this.bytesSign(url, request as SignerPayloadRaw, port)
 
@@ -387,7 +387,7 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(
           url,
           false,
-          (request as SignerPayloadJSON).address
+          (request as SignerPayloadJSON).address,
         )
         return this.extrinsicSign(url, request as SignerPayloadJSON, port)
 

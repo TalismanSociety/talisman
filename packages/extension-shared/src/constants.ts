@@ -31,6 +31,9 @@ export const BLOWFISH_BASE_PATH = process.env.BLOWFISH_BASE_PATH || "https://bfp
 export const BLOWFISH_API_KEY = process.env.BLOWFISH_API_KEY
 export const NFTS_API_KEY = process.env.NFTS_API_KEY
 export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nfts-api.talisman.xyz"
+export const TAOSTATS_BASE_PATH =
+  process.env.TAOSTATS_BASE_PATH || "https://taostats-api-proxy.talismn.workers.dev"
+export const TAOSTATS_API_KEY = process.env.TAOSTATS_API_KEY
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
@@ -39,10 +42,13 @@ export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
 export const TALISMAN_WEB_APP_SWAP_URL = "https://app.talisman.xyz/transport/swap"
 
+export const TALISMAN_QUEST_APP_URL = "https://quest.talisman.xyz"
+
 export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
-export const QUEST_APP_URL = "https://quest.talisman.xyz"
+// Wallet-specific invite link
+export const DISCORD_TALISMAN_URL = "https://discord.gg/EF3Zf4R5bD"
 
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint

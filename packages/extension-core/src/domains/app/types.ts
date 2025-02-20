@@ -1,11 +1,13 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { Properties } from "posthog-js"
+import { ChainId, TokenId } from "@talismn/chaindata-provider"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
+import { PostHogCaptureProperties } from "../analytics/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
+  rampConfig: RampConfig
+  rampSupportedTokenIds: Record<string, string>
   buyTokens: {
     tokenIds: TokenId[]
   }
@@ -13,6 +15,12 @@ export type RemoteConfigStoreData = {
     apiUrl: string
     apiKeyName?: string
     apiKeyValue?: string
+  }
+  nominationPools: Record<ChainId, number[]>
+  stakingPools: Record<ChainId, (number | string)[]>
+  postHogUrl: string
+  documentation: {
+    unifiedAddressDocsUrl: string
   }
 }
 
@@ -29,10 +37,6 @@ export interface RequestRoute {
   route: string
 }
 
-export type ModalOpenRequestBuy = {
-  modalType: "buy"
-}
-export type ModalOpenRequest = ModalOpenRequestBuy
 export type SendFundsOpenRequest = {
   from?: Address
   tokenId?: TokenId
@@ -42,7 +46,7 @@ export type SendFundsOpenRequest = {
 
 export interface AnalyticsCaptureRequest {
   eventName: string
-  options?: Properties
+  options?: PostHogCaptureProperties
 }
 
 // values must match the flags defined in config repository
@@ -50,6 +54,10 @@ export type FeatureFlags = Partial<{
   BUY_CRYPTO: boolean
   LINK_STAKING: boolean
   USE_ONFINALITY_API_KEY: boolean
+  RISK_ANALYSIS: boolean
+  NEW_FEATURES_HOME_BANNER: boolean
+  QUEST_LINK: boolean
+  UNIFIED_ADDRESS_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 
@@ -105,12 +113,16 @@ export interface AppMessages {
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [string | undefined, boolean]
-  "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
-  "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]
   "pri(app.promptLogin)": [null, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
+}
+
+type RampConfig = {
+  rampBasePath: string
+  rampApiBasePath: string
+  rampApiKey: string
 }

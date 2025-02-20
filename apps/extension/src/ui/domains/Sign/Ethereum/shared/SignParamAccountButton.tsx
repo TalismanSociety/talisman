@@ -1,9 +1,10 @@
 import { isEthereumAddress } from "@talismn/util"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { useAccountByAddress } from "@ui/state"
 
 import { SignParamButton, SignParamButtonProps } from "./SignParamButton"
 

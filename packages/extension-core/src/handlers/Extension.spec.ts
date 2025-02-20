@@ -15,7 +15,6 @@ import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
-import { chaindataProvider } from "../rpcs/chaindata"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
@@ -120,7 +119,7 @@ describe("Extension", () => {
         password,
         exportPw,
       },
-      {} as chrome.runtime.Port
+      {} as chrome.runtime.Port,
     )
 
     expect(result.exportedJson.address).toBe(address)
@@ -174,7 +173,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -251,7 +250,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -260,7 +259,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        })
+        }),
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -321,7 +320,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -330,7 +329,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        })
+        }),
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -411,7 +410,7 @@ describe("Extension", () => {
           address,
           ...pair.meta,
         },
-        {} as chrome.runtime.Port
+        {} as chrome.runtime.Port,
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -420,7 +419,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        })
+        }),
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -432,24 +431,6 @@ describe("Extension", () => {
       const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
       expect(verif.isValid).toBeTruthy()
     })
-  })
-
-  test("hydrates chaindata when requested", async () => {
-    // the un-hydrated chaindata provider should be empty
-    expect((await chaindataProvider.chainIds()).length).toStrictEqual(0)
-    expect((await chaindataProvider.evmNetworkIds()).length).toStrictEqual(0)
-
-    // submit the hydrate chaindata messages (usually sent by the popup/dashboard frontend to the backend)
-    expect(
-      await Promise.all([
-        messageSender("pri(chains.subscribe)", null),
-        messageSender("pri(eth.networks.subscribe)", null),
-      ])
-    ).toStrictEqual([true, true])
-
-    // the hydrated chaindata provier should now have chains, evmNetworks and tokens!
-    expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
-    expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
   })
 
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {

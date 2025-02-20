@@ -1,12 +1,12 @@
-import { Chain } from "@extension/core"
-import { activeTokensWithTestnetsMapAtom } from "@ui/atoms"
-import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 
+import { Chain } from "@extension/core"
+import { useTokensMap } from "@ui/state"
+
 const useChainsAndSearchSymbols = <T extends Chain>(
-  chains: T[]
+  chains: T[],
 ): Array<T & { searchSymbols: string[] }> => {
-  const tokensWithTestnetsMap = useAtomValue(activeTokensWithTestnetsMapAtom)
+  const tokensWithTestnetsMap = useTokensMap({ activeOnly: true, includeTestnets: true })
 
   return useMemo(
     () =>
@@ -20,7 +20,7 @@ const useChainsAndSearchSymbols = <T extends Chain>(
           ...(chain.tokens ? chain.tokens.map(({ id }) => tokensWithTestnetsMap[id]?.symbol) : []),
         ].filter((symbol): symbol is string => typeof symbol === "string"),
       })),
-    [chains, tokensWithTestnetsMap]
+    [chains, tokensWithTestnetsMap],
   )
 }
 

@@ -25,7 +25,7 @@ export const Background = () => {
     (version: BgVersion) => () => {
       setBgVersion(version)
     },
-    []
+    [],
   )
 
   const handleResetClick = useCallback(() => {
@@ -66,7 +66,7 @@ export const Background = () => {
             spellCheck={false}
             className={classNames(
               "text-body-secondary h-full w-full resize-none rounded bg-white/5 p-8 font-mono backdrop-blur-[9.6rem]",
-              configV2 === null && "outline-alert-error outline"
+              configV2 === null && "outline-alert-error outline",
             )}
             onChange={(e) => setStrConfigV2(e.target.value)}
             defaultValue={strConfigV2}
@@ -80,7 +80,7 @@ export const Background = () => {
             spellCheck={false}
             className={classNames(
               "text-body-secondary h-full w-full resize-none rounded bg-white/5 p-8 font-mono backdrop-blur-[9.6rem]",
-              configV3 === null && "outline-alert-error outline"
+              configV3 === null && "outline-alert-error outline",
             )}
             onChange={(e) => setStrConfigV3(e.target.value)}
             defaultValue={strConfigV3}
@@ -89,7 +89,7 @@ export const Background = () => {
           {configV3 === null && <div className="text-alert-error">Invalid JSON</div>}
         </div>
       </div>
-      <div className="fixed left-0 top-0 -z-10 m-0 block h-full  w-full  overflow-hidden">
+      <div className="fixed left-0 top-0 -z-10 m-0 block h-full w-full overflow-hidden">
         {bgVersion === "v2" && (
           <MysticalBackgroundV2
             config={configV2}

@@ -7,6 +7,7 @@
   html {
     /* this defines the root font size, on which 'rem' units are based */
     font-size: 10px;
+    scrollbar-color: theme(colors.grey.700) transparent;
     @apply min-h-screen;
   }
 
@@ -162,7 +163,7 @@
   }
 
   .balance-revealable::after {
-    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden opacity-[15%];
+    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden bg-cover bg-no-repeat opacity-[15%];
     content: "";
     /* ./blur.svg */
     background-image: url("data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==");

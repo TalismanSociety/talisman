@@ -34,20 +34,15 @@ import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
-import { useEvmChainIcon } from "@ui/hooks/useEvmChainIcon"
-import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
-import { useSetting } from "@ui/hooks/useSettings"
-import useToken from "@ui/hooks/useToken"
+import { useEvmNetwork, useEvmNetworks, useSetting, useToken } from "@ui/state"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
 import { RemoveEvmNetworkButton } from "./RemoveEvmNetworkButton"
 import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
-import { evmNetworkFormSchema } from "./schema"
+import { EvmNetworkFormData, evmNetworkFormSchema } from "./schema"
 
 type EvmNetworkFormProps = {
   evmNetworkId?: EvmNetworkId
@@ -105,14 +100,17 @@ const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) =>
 export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const { t } = useTranslation("admin")
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
+  const existingEvmNetwork = useEvmNetwork(evmNetworkId)
+  const existingToken = useToken(existingEvmNetwork?.nativeToken?.id)
 
-  const { evmNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
+  const evmNetworks = useEvmNetworks()
+
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
   const tEditMode = evmNetworkId ? t("Edit") : t("Add")
 
-  const formProps = useForm<RequestUpsertCustomEvmNetwork>({
+  const formProps = useForm<EvmNetworkFormData>({
     mode: "all",
     defaultValues,
     context: { evmNetworkId },
@@ -128,7 +126,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     clearErrors,
     setError,
     reset,
-    formState: { errors, isValid, isSubmitting, isDirty, touchedFields },
+    formState: { errors, isValid, isSubmitting, isDirty },
   } = formProps
 
   const { rpcs, id, tokenCoingeckoId } = watch()
@@ -157,33 +155,9 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
 
   const tokenLogoUrl = useMemo(
     // existing icon has priority
-    () =>
-      touchedFields?.tokenCoingeckoId
-        ? coingeckoLogoUrl
-        : defaultValues?.tokenLogoUrl ?? coingeckoLogoUrl,
-    [coingeckoLogoUrl, defaultValues?.tokenLogoUrl, touchedFields?.tokenCoingeckoId]
+    () => coingeckoLogoUrl ?? existingToken?.logo ?? null,
+    [coingeckoLogoUrl, existingToken?.logo],
   )
-
-  const { chainInfo } = useEvmChainInfo(id)
-  const { url: chainIconUrl } = useEvmChainIcon(chainInfo?.icon)
-  const chainLogoUrl = useMemo(
-    // existing icon has priority
-    () => defaultValues?.chainLogoUrl ?? chainIconUrl ?? null,
-    [chainIconUrl, defaultValues?.chainLogoUrl]
-  )
-
-  const autoFill = useCallback(async () => {
-    if (!chainInfo) return
-
-    setValue("name", chainInfo.name)
-    setValue("blockExplorerUrl", chainInfo.explorers?.[0]?.url ?? "")
-    setValue("tokenDecimals", chainInfo.nativeCurrency.decimals)
-    setValue("isTestnet", chainInfo.name.toLocaleLowerCase().includes("testnet"))
-    setValue("tokenSymbol", chainInfo.nativeCurrency.symbol, {
-      shouldValidate: true,
-      shouldTouch: true,
-    })
-  }, [chainInfo, setValue])
 
   // attempt an autofill once chain id is detected
   useEffect(() => {
@@ -194,30 +168,36 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
       if (!errors.id) setError("id", { message: t("Network already exists") })
     } else {
       if (errors.id) clearErrors("id")
-      autoFill()
     }
-  }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id, t])
+  }, [clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id, t])
 
   const [showRemove, showReset] = useMemo(
     () =>
       isCustom && isBuiltInEvmNetwork.isFetched
         ? [!isBuiltInEvmNetwork.data, !!isBuiltInEvmNetwork.data]
         : [false, false],
-    [isCustom, isBuiltInEvmNetwork.data, isBuiltInEvmNetwork.isFetched]
+    [isCustom, isBuiltInEvmNetwork.data, isBuiltInEvmNetwork.isFetched],
   )
 
   const [submitError, setSubmitError] = useState<string>()
   const submit = useCallback(
-    async (network: RequestUpsertCustomEvmNetwork) => {
+    async (network: EvmNetworkFormData) => {
       try {
-        await api.ethNetworkUpsert({ ...network, tokenLogoUrl, chainLogoUrl })
+        const requestData: RequestUpsertCustomEvmNetwork = {
+          ...network,
+          rpcs: network.rpcs?.map((rpc) => ({ url: rpc.url })) ?? [],
+          tokenLogoUrl,
+          tokenCoingeckoId: network.tokenCoingeckoId ?? null,
+        }
+
+        await api.ethNetworkUpsert(requestData)
         if (network.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [chainLogoUrl, tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets]
+    [tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets],
   )
 
   // on edit screen, wait for existing network to be loaded
@@ -248,10 +228,10 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
                 className="text-body-disabled cursor-not-allowed"
                 before={
                   <ChainLogoBase
-                    logo={chainLogoUrl}
+                    logo={existingEvmNetwork?.logo}
                     className={classNames(
                       "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
-                      !id && "opacity-50"
+                      !id && "opacity-50",
                     )}
                   />
                 }
@@ -351,7 +331,7 @@ const useRpcChainId = (rpcUrl: string) => {
       setDebouncedRpcUrl(rpcUrl)
     },
     250,
-    [rpcUrl]
+    [rpcUrl],
   )
 
   return useQuery({
@@ -364,7 +344,7 @@ const useRpcChainId = (rpcUrl: string) => {
   })
 }
 
-const DEFAULT_VALUES: Partial<RequestUpsertCustomEvmNetwork> = {
+const DEFAULT_VALUES: Partial<EvmNetworkFormData> = {
   rpcs: [{ url: "" }], // provides one empty row
 }
 
@@ -383,8 +363,8 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 
 const evmNetworkToFormData = (
   network?: EvmNetwork | CustomEvmNetwork,
-  nativeToken?: CustomSubNativeToken
-): RequestUpsertCustomEvmNetwork | undefined => {
+  nativeToken?: CustomSubNativeToken,
+): EvmNetworkFormData | undefined => {
   if (!network || !nativeToken) return undefined
 
   return {
@@ -394,11 +374,9 @@ const evmNetworkToFormData = (
     blockExplorerUrl:
       network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
     isTestnet: !!network.isTestnet,
-    chainLogoUrl: network.logo ?? null,
-    tokenCoingeckoId: nativeToken.coingeckoId ?? null,
+    tokenCoingeckoId: nativeToken.coingeckoId ?? "",
     tokenSymbol: nativeToken.symbol,
     tokenDecimals: nativeToken.decimals,
-    tokenLogoUrl: nativeToken.logo ?? null,
   }
 }
 

@@ -12,7 +12,10 @@ export const CopyAddressLayout: FC<CopyAddressLayoutProps> = ({ title, children 
   const { close } = useCopyAddressModal()
 
   return (
-    <div id="copy-address-modal" className="flex h-full w-full flex-col overflow-hidden bg-black">
+    <div
+      id="copy-address-modal"
+      className="relative flex h-full w-full flex-col overflow-hidden bg-black"
+    >
       <div className="flex h-32 w-full shrink-0 items-center px-12">
         <div className="w-12"></div>
         <div className="text-body-secondary grow text-center">{title}</div>

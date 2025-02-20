@@ -18,6 +18,7 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(app.changePassword)",
   "pri(app.changePassword.subscribe)",
   "pri(accounts.export)",
+  "pri(accounts.export.all)",
   "pri(accounts.export.pk)",
   "pri(accounts.create)",
   "pri(accounts.create.suri)",
@@ -29,6 +30,13 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(mnemonic.validateMnemonic)",
 ]
 const OBFUSCATED_PAYLOAD = "#OBFUSCATED#"
+
+// ignore the ones that generate too much spam, making it hard to debug other things
+const IGNORED_LOG_MESSAGES: MessageTypes[] = [
+  "pri(keepalive)",
+  "pri(keepunlocked)",
+  "pri(app.analyticsCapture)",
+]
 
 const formatFrom = (source: string) => {
   if (["extension", "<unknown>"].includes(source)) return source
@@ -49,7 +57,7 @@ const PORT_DISCONNECTED_MESSAGES = [
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
   port: chrome.runtime.Port,
-  extensionPortName = PORT_EXTENSION
+  extensionPortName = PORT_EXTENSION,
 ): void => {
   const { id, message, request } = data
   const isExtension = port.name === extensionPortName
@@ -60,8 +68,8 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   }`
   const shouldLog = !OBFUSCATE_LOG_MESSAGES.includes(message)
 
-  // eslint-disable-next-line no-console
-  log.debug(`[${port.name} REQ] ${source}`, { request: shouldLog ? request : OBFUSCATED_PAYLOAD })
+  if (!IGNORED_LOG_MESSAGES.includes(message))
+    log.debug(`[${port.name} REQ] ${source}`, { request: shouldLog ? request : OBFUSCATED_PAYLOAD })
 
   const safePostMessage = (port: chrome.runtime.Port | undefined, message: unknown): void => {
     // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
@@ -87,10 +95,11 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // resolve the promise and send back the response
   promise
     .then((response): void => {
-      log.debug(`[${port.name} RES] ${source}`, {
-        request: shouldLog ? request : OBFUSCATED_PAYLOAD,
-        response: shouldLog ? response : OBFUSCATED_PAYLOAD,
-      })
+      if (!IGNORED_LOG_MESSAGES.includes(message))
+        log.debug(`[${port.name} RES] ${source}`, {
+          request: shouldLog ? request : OBFUSCATED_PAYLOAD,
+          response: shouldLog ? response : OBFUSCATED_PAYLOAD,
+        })
 
       // between the start and the end of the promise, the user may have closed
       // the tab, in which case port will be undefined
@@ -116,7 +125,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           id,
           error: cleanupEvmErrorMessage(
             (message === "pri(eth.request)" && evmError.details) ||
-              (evmError.shortMessage ?? evmError.message ?? "Unknown error")
+              (evmError.shortMessage ?? evmError.message ?? "Unknown error"),
           ),
           code: error.code,
           rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently

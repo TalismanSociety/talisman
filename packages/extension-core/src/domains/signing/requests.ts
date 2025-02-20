@@ -1,17 +1,17 @@
 import { RpcTransactionRequest } from "viem"
 
-import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
 import type { AccountJson } from "../accounts/types"
-import { EvmNetworkId } from "../ethereum/types"
 import type { EthSignRequest, SubstrateSigningRequest } from "./types"
+import { requestStore } from "../../libs/requests/store"
+import { EvmNetworkId } from "../ethereum/types"
 
 export const signAndSendEth = (
   url: string,
   request: RpcTransactionRequest,
   ethChainId: EvmNetworkId,
   account: AccountJson,
-  port: Port
+  port: Port,
 ) => {
   return requestStore.createRequest(
     {
@@ -22,7 +22,7 @@ export const signAndSendEth = (
       type: "eth-send",
       method: "eth_sendTransaction",
     },
-    port
+    port,
   )
 }
 
@@ -37,7 +37,7 @@ export const signEth = (
   request: EthSignRequest["request"],
   ethChainId: EvmNetworkId,
   account: AccountJson,
-  port: Port
+  port: Port,
 ) => {
   return requestStore.createRequest(
     {
@@ -48,7 +48,7 @@ export const signEth = (
       method,
       request,
     },
-    port
+    port,
   )
 }
 
@@ -56,7 +56,7 @@ export const signSubstrate = (
   url: string,
   request: SubstrateSigningRequest["request"],
   account: AccountJson,
-  port: Port
+  port: Port,
 ) => {
   return requestStore.createRequest(
     {
@@ -65,6 +65,6 @@ export const signSubstrate = (
       request,
       account,
     },
-    port
+    port,
   )
 }

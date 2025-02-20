@@ -1,11 +1,12 @@
+import { useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+
 import { ProviderType } from "@extension/core"
 import { TALISMAN_WEB_APP_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import { useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useAuthorisedSites } from "@ui/state"
 
 import { AuthorizedSite } from "./AuthorisedSite"
 import { AuthorisedSitesBatchActions } from "./AuthorisedSiteBatchActions"
@@ -35,14 +36,14 @@ export const AuthorisedSites = () => {
       hasPolkadotSites: Object.values(sites).some((site) => !!site.addresses),
       hasEthereumSites: Object.values(sites).some((site) => !!site.ethAddresses),
     }),
-    [sites]
+    [sites],
   )
 
   const showBatchActions = useMemo(
     () =>
       (providerType === "polkadot" && hasPolkadotSites) ||
       (providerType === "ethereum" && hasEthereumSites),
-    [hasEthereumSites, hasPolkadotSites, providerType]
+    [hasEthereumSites, hasPolkadotSites, providerType],
   )
 
   useEffect(() => {

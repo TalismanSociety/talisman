@@ -1,33 +1,5 @@
-import { activeTokensStore, isTokenActive } from "@extension/core"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { Spacer } from "@talisman/components/Spacer"
-import { TogglePill } from "@talisman/components/TogglePill"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import {
-  chainsMapAtomFamily,
-  evmNetworksMapAtomFamily,
-  settingsAtomFamily,
-  tokensMapAtomFamily,
-} from "@ui/atoms"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
-import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
-import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSetting } from "@ui/hooks/useSettings"
-import useTokens from "@ui/hooks/useTokens"
-import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
-import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { atom, useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -43,6 +15,32 @@ import {
   Toggle,
 } from "talisman-ui"
 import urlJoin from "url-join"
+
+import { activeTokensStore, isTokenActive } from "@extension/core"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { Spacer } from "@talisman/components/Spacer"
+import { TogglePill } from "@talisman/components/TogglePill"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import {
+  useActiveTokensState,
+  useBalancesHydrate,
+  useEvmNetwork,
+  useEvmNetworks,
+  useEvmNetworksMap,
+  useSetting,
+  useTokens,
+} from "@ui/state"
+import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
+import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
+import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 const CustomPill = () => {
   const { t } = useTranslation("admin")
@@ -71,7 +69,7 @@ const useCoingeckoUrl = (token: Token) => {
   return useMemo(
     () =>
       token.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
-    [token]
+    [token],
   )
 }
 
@@ -174,7 +172,7 @@ const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
   )
 }
 
-const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
+const renderNetwork = (network: SimpleEvmNetwork) => {
   return (
     <div className="flex items-center gap-5">
       <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
@@ -188,12 +186,12 @@ const NetworkSelect = ({
   selectedId,
   onChange,
 }: {
-  networks: (EvmNetwork | CustomEvmNetwork)[]
+  networks: SimpleEvmNetwork[]
   selectedId: EvmNetworkId | null
   onChange: (evmNetworkId: EvmNetworkId) => void
 }) => {
-  const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
-    networks.find((n) => n.id === selectedId)
+  const [selected, setSelected] = useState<SimpleEvmNetwork | undefined>(
+    networks.find((n) => n.id === selectedId),
   )
 
   useEffect(() => {
@@ -206,12 +204,12 @@ const NetworkSelect = ({
   }, [selectedId, networks, selected])
 
   const handleChange = useCallback(
-    (item: EvmNetwork | CustomEvmNetwork | null) => {
+    (item: SimpleEvmNetwork | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
@@ -233,26 +231,18 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Tokens",
 }
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(settingsAtomFamily("useTestnets")),
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-)
-
-export const TokensPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const { evmNetworks, evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
+  const tokens = useTokens({ activeOnly: false, includeTestnets })
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(false)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
@@ -263,7 +253,7 @@ export const TokensPage = () => {
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
-    return [{ id: "ALL", name: "All networks" } as EvmNetwork, ...sortBy(evmNetworks, "name")]
+    return [{ id: "ALL", name: "All networks" } as SimpleEvmNetwork, ...sortBy(evmNetworks, "name")]
   }, [evmNetworks])
   const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
 
@@ -285,8 +275,8 @@ export const TokensPage = () => {
 
     return sortBy(
       result,
-      (t) => evmNetworksMap[t.evmNetwork!.id].name,
-      (t) => t.symbol
+      (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
+      (t) => t.symbol,
     )
   }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])
 
@@ -299,7 +289,7 @@ export const TokensPage = () => {
           t.isDefault ||
           isCustomErc20Token(t) ||
           isCustomUniswapV2Token(t) ||
-          knownTokens.includes(t.id)
+          knownTokens.includes(t.id),
       )
 
     return filteredTokens.filter(
@@ -309,7 +299,7 @@ export const TokensPage = () => {
         (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
         t.symbol.toLowerCase().includes(lowerSearch) ||
         (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
-        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch))
+        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)),
     )
   }, [activeTokens, evmNetworkId, filteredTokens, search])
 
@@ -325,12 +315,7 @@ export const TokensPage = () => {
   if (!filteredTokens) return null
 
   return (
-    <DashboardLayout
-      analytics={ANALYTICS_PAGE}
-      withBack
-      centered
-      backTo="/settings/networks-tokens"
-    >
+    <>
       <div className="flex w-full gap-8">
         <HeaderBlock
           title={t("Ethereum Tokens")}
@@ -372,6 +357,12 @@ export const TokensPage = () => {
       </div>
       <Spacer />
       <TokensTable tokens={displayTokens} />
-    </DashboardLayout>
+    </>
   )
 }
+
+export const TokensPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

@@ -1,8 +1,9 @@
 import { RotateCcwIcon } from "@talismn/icons"
-import { useKnownChain } from "@ui/hooks/useKnownChain"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
+import { useKnownChain } from "@ui/hooks/useKnownChain"
 
 export const EnableNetworkToggle: FC<{ chainId?: string }> = ({ chainId }) => {
   const { t } = useTranslation("admin")

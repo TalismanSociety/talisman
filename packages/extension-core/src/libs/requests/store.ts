@@ -1,10 +1,8 @@
 import { TEST } from "extension-shared"
-import { ReplaySubject, map } from "rxjs"
+import { map, ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
 
-import { genericSubscription } from "../../handlers/subscriptions"
 import type { Port } from "../../types/base"
-import { windowManager } from "../WindowManager"
 import type {
   AnyRespondableRequest,
   KnownRequest,
@@ -15,17 +13,22 @@ import type {
   Resolver,
   ValidRequests,
 } from "./types"
+import { genericSubscription } from "../../handlers/subscriptions"
+import { windowManager } from "../WindowManager"
 import { isRequestOfType } from "./utils"
 
 class RequestCounts {
   #counts: Record<KnownRequestTypes, number>
 
   constructor(requests: AnyRespondableRequest[]) {
-    const reqCounts = requests.reduce((counts, request) => {
-      if (!counts[request.type]) counts[request.type] = 0
-      counts[request.type] += 1
-      return counts
-    }, {} as Record<KnownRequestTypes, number>)
+    const reqCounts = requests.reduce(
+      (counts, request) => {
+        if (!counts[request.type]) counts[request.type] = 0
+        counts[request.type] += 1
+        return counts
+      },
+      {} as Record<KnownRequestTypes, number>,
+    )
 
     this.#counts = reqCounts
   }
@@ -52,7 +55,7 @@ export class RequestStore {
   allRequests(): AnyRespondableRequest[]
   allRequests<T extends KnownRequestTypes>(type: T): KnownRespondableRequest<T>[]
   allRequests<T extends KnownRequestTypes>(
-    type?: T
+    type?: T,
   ): KnownRespondableRequest<T>[] | AnyRespondableRequest[] {
     if (!type) return Object.values(this.requests).map((req) => req.request)
 
@@ -74,7 +77,7 @@ export class RequestStore {
 
   public createRequest<
     TRequest extends Omit<ValidRequests, "id">,
-    T extends KnownRequestTypes = TRequest["type"]
+    T extends KnownRequestTypes = TRequest["type"],
   >(requestOptions: TRequest, port?: Port): Promise<KnownResponse<T>> {
     const id = `${requestOptions.type}.${v4()}` as KnownRequestId<T>
 
@@ -127,15 +130,15 @@ export class RequestStore {
       id,
       port,
       this.observable.pipe(
-        map((reqs) => (types ? reqs.filter((req) => types.includes(req.type)) : reqs))
-      )
+        map((reqs) => (types ? reqs.filter((req) => types.includes(req.type)) : reqs)),
+      ),
     )
   }
 
   private onCompleteRequest<T extends KnownRequestTypes>(
     id: KnownRequestId<T>,
     resolve: Resolver<KnownResponse<T>>["resolve"],
-    reject: (error: Error) => void
+    reject: (error: Error) => void,
   ): Resolver<KnownResponse<T>> {
     const complete = (): void => {
       if (this.requests[id]) windowManager.popupClose(this.requests[id].windowId)
@@ -176,15 +179,15 @@ export class RequestStore {
   public getAllRequests(): ValidRequests[]
   public getAllRequests<T extends KnownRequestTypes>(requestType: T): KnownRequest<T>[]
   public getAllRequests<T extends KnownRequestTypes>(
-    requestType?: T
+    requestType?: T,
   ): KnownRequest<T>[] | ValidRequests[] {
     return (requestType ? this.allRequests(requestType) : this.allRequests()).map(
-      this.extractBaseRequest
+      this.extractBaseRequest,
     )
   }
 
   protected extractBaseRequest<T extends KnownRequestTypes>(
-    request: KnownRespondableRequest<T> | AnyRespondableRequest
+    request: KnownRespondableRequest<T> | AnyRespondableRequest,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { reject, resolve, ...data } = request

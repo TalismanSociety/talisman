@@ -16,10 +16,10 @@ export const deriveMiniMetadataId = ({
   u8aToHex(
     xxhashAsU8a(
       new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}${balancesConfig}`),
-      64
+      64,
     ),
     undefined,
-    false
+    false,
   )
 
 export type MiniMetadataStatus =

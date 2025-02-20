@@ -1,11 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { api } from "@ui/api"
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
+
+import { FadeIn } from "@talisman/components/FadeIn"
+import { api } from "@ui/api"
 
 type FormData = {
   mnemonic: string
@@ -36,7 +37,7 @@ const schema = yup
     mnemonic: yup
       .string()
       .trim()
-      .required("")
+      .required(" ")
       .transform(cleanupMnemonic)
       .test("valid-mnemonic", "Invalid recovery phrase", testValidMnemonic),
   })

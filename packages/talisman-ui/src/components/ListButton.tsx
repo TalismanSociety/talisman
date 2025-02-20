@@ -8,12 +8,12 @@ export const ListButton = forwardRef<HTMLButtonElement, ListButtonProps>(
     <button
       className={classNames(
         "bg-grey-800 hover:bg-grey-700 text-body-secondary hover:text-body allow-focus flex h-28 w-full items-center gap-6 rounded-sm px-8 text-left",
-        className
+        className,
       )}
       ref={ref}
       type="button"
       {...props}
     />
-  )
+  ),
 )
 ListButton.displayName = "ListButton"

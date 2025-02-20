@@ -5,13 +5,13 @@ import { db, DbBlobId } from "./db"
 
 export const updateDbBlob = async <Id extends DbBlobId, Data extends { id: Id }>(
   id: Id,
-  data: Data
+  data: Data,
 ) => {
   await db.blobs.put({ id, data: pako.deflate(JSON.stringify(data)) })
 }
 
 export const getDbBlob = async <Id extends DbBlobId, Data extends { id: Id }>(
-  id: Id
+  id: Id,
 ): Promise<Data | null> => {
   try {
     const blob = await db.blobs.get(id)

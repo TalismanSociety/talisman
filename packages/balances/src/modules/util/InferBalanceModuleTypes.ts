@@ -17,21 +17,22 @@ export type AnyNewBalanceModule = NewBalanceModule<any, any, any, any, any>
  * string as input, and then return some data associated with that module with the correct type:
  * function getChainMeta<T extends AnyBalanceModule>(type: InferModuleType<T>): InferChainMeta<T> | undefined
  */
-type InferBalanceModuleTypes<T extends AnyNewBalanceModule> = T extends NewBalanceModule<
-  infer TModuleType,
-  infer TTokenType,
-  infer TChainMeta,
-  infer TModuleConfig,
-  infer TTransferParams
->
-  ? {
-      TModuleType: TModuleType
-      TTokenType: TTokenType
-      TChainMeta: TChainMeta
-      TModuleConfig: TModuleConfig
-      TTransferParams: TTransferParams
-    }
-  : never
+type InferBalanceModuleTypes<T extends AnyNewBalanceModule> =
+  T extends NewBalanceModule<
+    infer TModuleType,
+    infer TTokenType,
+    infer TChainMeta,
+    infer TModuleConfig,
+    infer TTransferParams
+  >
+    ? {
+        TModuleType: TModuleType
+        TTokenType: TTokenType
+        TChainMeta: TChainMeta
+        TModuleConfig: TModuleConfig
+        TTransferParams: TTransferParams
+      }
+    : never
 export type InferModuleType<T extends AnyNewBalanceModule> =
   InferBalanceModuleTypes<T>["TModuleType"]
 export type InferTokenType<T extends AnyNewBalanceModule> = InferBalanceModuleTypes<T>["TTokenType"]

@@ -1,7 +1,8 @@
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@extension/core"
-import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
 import { Dropdown } from "talisman-ui"
+
+import { EvmNetworkId, SimpleEvmNetwork } from "@extension/core"
+import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 
 import { NetworkLogo } from "./NetworkLogo"
 
@@ -14,7 +15,7 @@ type NetworkSelectProps = {
   withTestnets: boolean
 }
 
-const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
+const renderNetwork = (network: SimpleEvmNetwork) => {
   return (
     <div className="flex items-center gap-5">
       <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
@@ -32,8 +33,8 @@ export const NetworkSelect = ({
   withTestnets,
 }: NetworkSelectProps) => {
   const networks = useSortedEvmNetworks(withTestnets)
-  const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
-    networks.find((n) => n.id === defaultChainId)
+  const [selected, setSelected] = useState<SimpleEvmNetwork | undefined>(
+    networks.find((n) => n.id === defaultChainId),
   )
 
   useEffect(() => {
@@ -46,12 +47,12 @@ export const NetworkSelect = ({
   }, [defaultChainId, networks, selected])
 
   const handleChange = useCallback(
-    (item: EvmNetwork | CustomEvmNetwork | null) => {
+    (item: SimpleEvmNetwork | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)
     },
-    [onChange]
+    [onChange],
   )
 
   return (

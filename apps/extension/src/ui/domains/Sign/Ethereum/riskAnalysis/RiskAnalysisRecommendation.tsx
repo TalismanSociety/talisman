@@ -68,7 +68,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
         iconClassName: "bg-body-secondary/10",
         title: t("Unavailable"),
         description: t(
-          "Risk Assessment is not supported for this network. Proceed at your own risk."
+          "Risk Assessment is not supported for this network. Proceed at your own risk.",
         ),
       }
     }
@@ -91,7 +91,7 @@ const RiskAnalysisRecommendationInner: FC<{
       className={classNames(
         "leading-paragraph flex w-full gap-8 rounded p-4",
         bgClassName,
-        textClassName
+        textClassName,
       )}
     >
       <div className="flex flex-col justify-center">
@@ -101,7 +101,7 @@ const RiskAnalysisRecommendationInner: FC<{
       </div>
       <div className="flex w-full grow flex-col justify-center gap-1">
         <div className="font-bold">{title}</div>
-        <div className="text-body-secondary ">{description}</div>
+        <div className="text-body-secondary">{description}</div>
       </div>
     </div>
   )

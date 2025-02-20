@@ -1,7 +1,8 @@
+import { useCallback, useState } from "react"
+
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
-import { useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
-import { useCallback, useState } from "react"
+import { useMnemonic, useMnemonics } from "@ui/state"
 
 export enum Stages {
   Acknowledgement = "Acknowledgement",
@@ -25,7 +26,7 @@ const useMnemonicBackupModalProvider = () => {
       setStage(Stages.Acknowledgement)
       innerOpen()
     },
-    [innerOpen, setStage]
+    [innerOpen, setStage],
   )
 
   const isBackupConfirmed = useCallback(
@@ -33,7 +34,7 @@ const useMnemonicBackupModalProvider = () => {
       const mnemonic = mnemonics.find((m) => m.id === mnemonicId)
       return !!mnemonic?.confirmed
     },
-    [mnemonics]
+    [mnemonics],
   )
 
   return {
@@ -48,5 +49,5 @@ const useMnemonicBackupModalProvider = () => {
 }
 
 export const [MnemonicBackupModalProviderWrapper, useMnemonicBackupModal] = provideContext(
-  useMnemonicBackupModalProvider
+  useMnemonicBackupModalProvider,
 )

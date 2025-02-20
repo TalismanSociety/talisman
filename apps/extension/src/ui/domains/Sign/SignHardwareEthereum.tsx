@@ -1,12 +1,12 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
-import { EthSignMessageMethod } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { FC, Suspense, lazy } from "react"
+import { FC, Suspense } from "react"
 
-import SignDcentEthereum from "./SignDcentEthereum"
+import { AccountJsonAny, AccountType, EthSignMessageMethod } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
-const SignLedgerEthereum = lazy(() => import("./SignLedgerEthereum"))
+import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
+import { SignLedgerEthereum } from "./SignLedgerEthereum"
 
 export type SignHardwareEthereumProps = {
   evmNetworkId?: EvmNetworkId
@@ -25,7 +25,7 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
 
   switch (account?.origin) {
     case AccountType.Dcent:
-      return SignDcentEthereum
+      return SignDcentUnsupportedMessage
     case AccountType.Ledger:
     case // @ts-expect-error incomplete migration, remove once migration is completed
     "HARDWARE":
@@ -41,7 +41,7 @@ export const SignHardwareEthereum: FC<SignHardwareEthereumProps> = (props) => {
   if (!SignHardwareComponent || !props.payload) return null
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SuspenseTracker name="SignHardwareEthereum" />}>
       <SignHardwareComponent {...props} />
     </Suspense>
   )

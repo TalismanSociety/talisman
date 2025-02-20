@@ -1,9 +1,10 @@
-import { appStore } from "@extension/core"
-import { BRAVE_BALANCES_URL } from "@extension/shared"
-import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Toggle } from "talisman-ui"
+
+import { appStore } from "@extension/core"
+import { BRAVE_BALANCES_URL } from "@extension/shared"
+import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 
 type BraveWarningModalProps = {
   className?: string

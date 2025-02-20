@@ -1,32 +1,56 @@
-import { accountsByCategoryAtomFamily, balancesHydrateAtom } from "@ui/atoms"
-import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
-import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
-import { atom, useAtomValue } from "jotai"
-import { FC, ReactNode } from "react"
+import { bind } from "@react-rxjs/core"
+import { FC, PropsWithChildren, useEffect } from "react"
+import { combineLatest } from "rxjs"
 
-import { usePortfolioProvisioning } from "./usePortfolio"
+import { portfolioAccounts$ } from "@ui/hooks/usePortfolioAccounts"
+import {
+  authorisedSites$,
+  balancesHydrate$,
+  portfolioSelectedAccounts$,
+  remoteConfig$,
+  usePortfolio,
+} from "@ui/state"
 
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(accountsByCategoryAtomFamily("all")),
-    get(remoteConfigAtom),
-    get(balancesHydrateAtom),
-    get(stakingBannerAtom),
-  ])
+import { PortfolioNavigationProvider, usePortfolioNavigation } from "./usePortfolioNavigation"
+
+const [usePreload] = bind(
+  combineLatest([balancesHydrate$, remoteConfig$, authorisedSites$, portfolioAccounts$]),
 )
 
-export const PortfolioContainer: FC<{ children: ReactNode; renderWhileLoading?: boolean }> = ({
+export const PortfolioContainer: FC<PropsWithChildren<{ renderWhileLoading?: boolean }>> = ({
   children,
   renderWhileLoading, // true in popup, false in dashboard
 }) => {
-  useAtomValue(preloadAtom)
+  usePreload()
 
-  // keeps portfolio sync atoms up to date with subscription async atoms
-  const isProvisioned = usePortfolioProvisioning()
+  return (
+    <PortfolioNavigationProvider>
+      <SelectedAccountsGuard>
+        <ProvisionedPortfolioGuard renderWhileLoading={renderWhileLoading}>
+          {children}
+        </ProvisionedPortfolioGuard>
+      </SelectedAccountsGuard>
+    </PortfolioNavigationProvider>
+  )
+}
+
+const ProvisionedPortfolioGuard: FC<PropsWithChildren<{ renderWhileLoading?: boolean }>> = ({
+  children,
+  renderWhileLoading,
+}) => {
+  const { isProvisioned } = usePortfolio()
 
   // on popup home page, portfolio is loading while we display the home page
   // but on dashboard, don't render until portfolio is provisioned
-  if (!renderWhileLoading && !isProvisioned) return null
+  return !renderWhileLoading && !isProvisioned ? null : children
+}
 
-  return <>{children}</>
+const SelectedAccountsGuard: FC<PropsWithChildren> = ({ children }) => {
+  const { selectedAccounts } = usePortfolioNavigation()
+
+  useEffect(() => {
+    portfolioSelectedAccounts$.next(selectedAccounts)
+  }, [selectedAccounts])
+
+  return children
 }

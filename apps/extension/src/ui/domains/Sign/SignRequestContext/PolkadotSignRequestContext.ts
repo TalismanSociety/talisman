@@ -1,27 +1,27 @@
-import { isJsonPayload } from "@extension/core"
-import { SubstrateSigningRequest } from "@extension/core"
-import { log } from "@extension/shared"
 import { GenericExtrinsic } from "@polkadot/types"
 import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
-import { provideContext } from "@talisman/util/provideContext"
+import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import { balancesHydrateAtom } from "@ui/atoms"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
-import { useAtomValue } from "jotai"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
+import { DecodedCall, ScaleApi } from "sapi"
 
-import { useSubstratePayloadMetadata } from "../../../hooks/useSubstratePayloadMetadata"
+import { Address, isJsonPayload, SubstrateSigningRequest } from "@extension/core"
+import { log } from "@extension/shared"
+import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
+import { useBalancesHydrate, useChainByGenesisHash } from "@ui/state"
+import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
+
+import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  extrinsic: GenericExtrinsic | null | undefined
+  extrinsic: GenericExtrinsic | null | undefined,
 ) => {
   const chain = useChainByGenesisHash(
-    payload && isJsonPayload(payload) ? payload.genesisHash : undefined
+    payload && isJsonPayload(payload) ? payload.genesisHash : undefined,
   )
 
   return useQuery({
@@ -55,34 +55,85 @@ const usePartialFee = (
   })
 }
 
+const useDryRun = ({
+  from,
+  sapi,
+  decodedCall,
+}: {
+  from: Address
+  sapi: ScaleApi | null | undefined
+  decodedCall: DecodedCall<unknown> | null | undefined
+}) => {
+  return useQuery({
+    queryKey: ["useDryRun", from, papiStringify(decodedCall), sapi?.id],
+    queryFn: async () => {
+      if (!from || !sapi || !decodedCall) return null
+
+      return sapi.getDryRunCall(from, decodedCall)
+    },
+    refetchInterval: 10_000,
+  })
+}
+
 const usePolkadotSigningRequestProvider = ({
   signingRequest,
 }: {
   signingRequest: SubstrateSigningRequest
 }) => {
-  useAtomValue(balancesHydrateAtom)
+  useBalancesHydrate() // preload
 
   const jsonPayload = isJsonPayload(signingRequest.request.payload)
     ? signingRequest.request.payload
     : null
 
-  const { data: payloadMetadata } = useSubstratePayloadMetadata(jsonPayload, true)
+  const { data: payloadMetadata } = useSubstratePayloadMetadataSuspense(jsonPayload)
 
   // if target chains has CheckMetadataHash signed extension, we must always use the modified payload
-  const [modifiedPayload, registry, shortMetadata] = useMemo(() => {
+  const [modifiedPayload, registry, shortMetadata, sapi] = useMemo(() => {
     return !jsonPayload || !payloadMetadata
-      ? [undefined, undefined, undefined]
+      ? [undefined, undefined, undefined, undefined]
       : [
           payloadMetadata.payloadWithMetadataHash,
           payloadMetadata.registry,
           payloadMetadata.txMetadata,
+          payloadMetadata.sapi,
         ]
   }, [payloadMetadata, jsonPayload])
 
   const payload = useMemo(
     () => modifiedPayload || signingRequest.request.payload,
-    [modifiedPayload, signingRequest.request.payload]
+    [modifiedPayload, signingRequest.request.payload],
   )
+
+  const decodedCall = useMemo(() => {
+    if (!sapi || !isJsonPayload(payload)) return null
+
+    try {
+      return sapi.getDecodedCallFromPayload(payload)
+    } catch (err) {
+      log.error("failed to decode call", { err })
+      return null
+    }
+  }, [payload, sapi])
+
+  const isDryRunAvailable = useMemo(
+    () => sapi?.isApiAvailable("DryRunApi", "dry_run_call") || false,
+    [sapi],
+  )
+
+  const {
+    data: dryRun,
+    isLoading: dryRunIsLoading,
+    error: dryRunError,
+  } = useDryRun({
+    from: payload.address,
+    sapi,
+    decodedCall,
+  })
+
+  useEffect(() => {
+    log.log("DRY RUN", { dryRun, dryRunIsLoading, dryRunError, decodedCall, payload })
+  }, [dryRun, dryRunIsLoading, dryRunError, decodedCall, payload])
 
   const [extrinsic, errorDecodingExtrinsic] = useMemo(() => {
     try {
@@ -117,7 +168,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload]
+    [baseRequest, modifiedPayload],
   )
 
   const approveQr = useCallback(
@@ -132,7 +183,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload]
+    [baseRequest, modifiedPayload],
   )
 
   const approveSignet = useCallback(async () => {
@@ -175,9 +226,14 @@ const usePolkadotSigningRequestProvider = ({
     errorFee,
     registry,
     shortMetadata,
+    sapi,
+    decodedCall,
+    isDryRunAvailable,
+    dryRun,
+    dryRunIsLoading,
   }
 }
 
 export const [PolkadotSigningRequestProvider, usePolkadotSigningRequest] = provideContext(
-  usePolkadotSigningRequestProvider
+  usePolkadotSigningRequestProvider,
 )

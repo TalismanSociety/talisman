@@ -1,13 +1,15 @@
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { Balances } from "extension-core"
+import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
 
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolio, useSelectedCurrency } from "@ui/state"
 
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
-import { usePortfolio } from "../usePortfolio"
-import { useSelectedAccount } from "../useSelectedAccount"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
@@ -15,8 +17,8 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
-        className
+        "text-body-secondary bg-grey-850 mb-4 mt-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
+        className,
       )}
     >
       <div>
@@ -52,25 +54,30 @@ const HeaderRow = () => {
     unavailable: locked,
   } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
 
+  if (!balances.count) return null
+
   return (
-    <div className="text-body-secondary bg-grey-850 mb-12 rounded p-8 text-left text-base">
+    <div className="text-body-secondary bg-grey-850 mb-4 rounded p-8 text-left text-base">
       <div className="grid grid-cols-[40%_30%_30%]">
         <Statistics
           className="h-auto w-auto p-0"
           title={t("Total Value")}
           fiat={portfolio}
           showCurrencyToggle
+          align="left"
         />
         <Statistics
           className="h-auto w-auto items-end p-0 pr-8"
           title={t("Locked")}
           fiat={locked}
           locked
+          align="right"
         />
         <Statistics
           className="h-auto w-auto items-end p-0"
           title={t("Available")}
           fiat={available}
+          align="right"
         />
       </div>
     </div>
@@ -80,26 +87,77 @@ const HeaderRow = () => {
 export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolio()
-  const { account } = useSelectedAccount()
-  // group by token (symbol)
+  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
+
+  const location = useLocation()
 
   if (!symbolBalances.length && !isInitialising) {
     return (
-      <div className="text-body-secondary bg-grey-850 rounded-sm p-8">
-        {account ? t("No assets were found on this account.") : t("No assets were found.")}
+      <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
+        {selectedAccount
+          ? t("No assets were found on this account.")
+          : selectedFolder
+            ? t("No assets were found in this folder.")
+            : t("No assets were found.")}
       </div>
     )
   }
 
   return (
-    <div className="text-body-secondary min-w-[45rem] text-left text-base">
+    <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
       {!!symbolBalances.length && <HeaderRow />}
-
-      {symbolBalances.map(([symbol, b]) => (
-        <AssetRow key={symbol} balances={b} />
-      ))}
+      <VirtualizedRows symbolBalances={symbolBalances} />
       {isInitialising && <AssetRowSkeleton />}
+    </div>
+  )
+}
+
+const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
+  const [noCountUp, setNoCountUp] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // we only want count up on the first rendering of the table
+      // ex: sorting or filtering rows using search box should not trigger count up
+      setNoCountUp(true)
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [])
+
+  const virtualizer = useVirtualizer({
+    count: symbolBalances.length,
+    overscan: 6,
+    gap: 8,
+    estimateSize: () => 66,
+    getScrollElement: () => document.getElementById("main"),
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            {!!symbolBalances[item.index] && (
+              <AssetRow balances={symbolBalances[item.index][1]} noCountUp={noCountUp} />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

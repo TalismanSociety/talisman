@@ -1,7 +1,3 @@
-import { AccountType } from "@extension/core"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -10,15 +6,21 @@ import {
   UnlockIcon,
 } from "@talismn/icons"
 import { classNames, sleep } from "@talismn/util"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { AccountType } from "@extension/core"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useSelectedCurrency } from "@ui/state"
+
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
+import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { JsonImportAccount, useJsonAccountImport } from "./context"
 import { UnlockJsonAccountsButton } from "./UnlockJsonAccountsButton"
 
@@ -50,8 +52,14 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               genesisHash={account.genesisHash}
             />
             <div className="flex grow flex-col gap-2 overflow-hidden">
-              <div className=" overflow-hidden text-ellipsis whitespace-nowrap text-base">
-                {account.name} <AccountTypeIcon origin={account.origin as AccountType} />
+              <div className="flex w-full items-center gap-1 overflow-hidden text-base">
+                <div className="truncate">{account.name}</div>
+                <div className="shrink-0">
+                  <AccountTypeIcon
+                    className="text-primary inline-block"
+                    origin={account.origin as AccountType}
+                  />
+                </div>
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>
             </div>
@@ -129,6 +137,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     selectAll,
     selectNone,
     importAccounts,
+    requiresFilePassword,
   } = useJsonAccountImport()
 
   const { selectedCount, totalCount } = useMemo(() => {
@@ -141,7 +150,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     (id: string) => (select: boolean) => {
       selectAccount(id, select)
     },
-    [selectAccount]
+    [selectAccount],
   )
 
   const [isImporting, setIsImporting] = useState(false)
@@ -157,7 +166,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
         title: t("Importing {{count}} accounts", { count }),
         subtitle: t("Please wait"),
       },
-      { autoClose: false }
+      { autoClose: false },
     )
 
     // ensure notification has time to display
@@ -185,7 +194,8 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     return !accounts.filter((a) => !a.isExisting && a.isPrivateKeyAvailable).length
   }, [accounts])
 
-  if (!accounts?.length) return null
+  if (requiresFilePassword) return null
+  if (!accounts?.length) return <BackToAddAccountButton methodType="import" />
 
   return (
     <FadeIn>
@@ -224,25 +234,28 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
       <div
         className={classNames(
           "scrollable scrollable-800 mt-6 flex max-h-[28rem] flex-col gap-4 overflow-y-auto",
-          accounts.length > 4 && "pr-4"
+          accounts.length > 4 && "pr-4",
         )}
       >
         {accounts.map((acc, i) => (
           <JsonAccount key={i} account={acc} onSelect={handleSelect(acc.id)} />
         ))}
       </div>
-      <div className="mt-16 flex w-full justify-end gap-8">
-        <UnlockJsonAccountsButton />
-        <Button
-          icon={ArrowRightIcon}
-          type="button"
-          primary
-          disabled={!canImport}
-          onClick={handleImportClick}
-          processing={isImporting}
-        >
-          {t("Import")}
-        </Button>
+      <div className="mt-16 flex w-full justify-between">
+        <BackToAddAccountButton methodType="import" />
+        <div className="flex justify-end gap-8">
+          <UnlockJsonAccountsButton />
+          <Button
+            icon={ArrowRightIcon}
+            type="button"
+            primary
+            disabled={!canImport}
+            onClick={handleImportClick}
+            processing={isImporting}
+          >
+            {t("Import")}
+          </Button>
+        </div>
       </div>
     </FadeIn>
   )

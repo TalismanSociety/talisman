@@ -1,27 +1,29 @@
-import { getTotalFeesFromGasSettings, isAcalaEvmPlus } from "@extension/core"
+import { BalanceFormatter } from "@talismn/balances"
+import { TokenId } from "@talismn/chaindata-provider"
+import { ChevronRightIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { FC, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+
 import {
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
+  getTotalFeesFromGasSettings,
+  isAcalaEvmPlus,
 } from "@extension/core"
-import { BalanceFormatter } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { ChevronRightIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import useToken from "@ui/hooks/useToken"
-import { FC, useCallback, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { useToken } from "@ui/state"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { useFeePriorityOptionsUI } from "./common"
 
 const getGasSettings = (
   gasSettingsByPriority: GasSettingsByPriority,
-  priority: EthPriorityOptionName
+  priority: EthPriorityOptionName,
 ) => {
   switch (gasSettingsByPriority.type) {
     case "eip1559":
@@ -104,7 +106,7 @@ const PriorityOption = ({
       gasSettings,
       txDetails.estimatedGas,
       txDetails.baseFeePerGas,
-      txDetails.estimatedL1DataFee ?? 0n
+      txDetails.estimatedL1DataFee ?? 0n,
     )
   }, [
     gasSettingsByPriority,
@@ -122,7 +124,7 @@ const PriorityOption = ({
       type="button"
       className={classNames(
         "hover:bg-grey-700 mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-none hover:text-white",
-        selected ? "bg-grey-700 text-white" : "text-body-secondary bg-grey-750"
+        selected ? "bg-grey-700 text-white" : "text-body-secondary bg-grey-750",
       )}
     >
       <div>
@@ -174,7 +176,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
     (priority: EthPriorityOptionName) => () => {
       if (onChange) onChange(priority)
     },
-    [onChange]
+    [onChange],
   )
 
   return (

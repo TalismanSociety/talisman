@@ -1,18 +1,19 @@
-import { AddressBookContact } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { convertAddress } from "@talismn/util"
+import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import * as yup from "yup"
+
+import { AddressBookContact } from "@extension/core"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import * as yup from "yup"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 
@@ -29,7 +30,7 @@ type FormValues = {
 }
 
 const schema = yup.object({
-  name: yup.string().trim().required(""),
+  name: yup.string().trim().required(" "),
   limitToNetwork: yup.bool(),
 })
 
@@ -43,7 +44,7 @@ const AddToAddressBookDrawerForm: FC<{
   const { add } = useAddressBook()
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === convertAddress(address, null),
-    [address, addressType]
+    [address, addressType],
   )
   const {
     register,
@@ -85,7 +86,7 @@ const AddToAddressBookDrawerForm: FC<{
         setError("name", err as Error)
       }
     },
-    [add, address, addressType, tokenGenesisHash, onClose, setError]
+    [add, address, addressType, tokenGenesisHash, onClose, setError],
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)
@@ -95,7 +96,7 @@ const AddToAddressBookDrawerForm: FC<{
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit]
+    [handleSubmit, submit],
   )
 
   useEffect(() => {

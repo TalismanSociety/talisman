@@ -1,17 +1,21 @@
 import { useEffect } from "react"
-import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
+import { Route, Routes, useSearchParams } from "react-router-dom"
 
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
+import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
+import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
+import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
+import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
-import { DashboardPortfolioLayout } from "../../layout/DashboardPortfolioLayout"
-import { PortfolioAsset } from "./PortfolioAsset"
+import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
+import { PortfolioLayout } from "./Shared/PortfolioLayout"
 
-export const PortfolioRoutes = () => {
+const BuyTokensOpener = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
   const { open: openBuyTokensModal } = useBuyTokensModal()
 
@@ -24,21 +28,38 @@ export const PortfolioRoutes = () => {
     updateSearchParams(searchParams, { replace: true })
   }, [openBuyTokensModal, searchParams, updateSearchParams])
 
-  return (
-    // share layout to prevent sidebar flickering when navigating between pages
-    <DashboardLayout centered large className="min-w-[auto]">
-      <PortfolioContainer>
-        {/* share layout to prevent tabs flickering */}
-        <DashboardPortfolioLayout>
-          <Routes>
-            <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-            <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
-            <Route path="tokens" element={<PortfolioAssets />} />
-            <Route path="nfts" element={<PortfolioNfts />} />
-            <Route path="*" element={<Navigate to="tokens" />} />
-          </Routes>
-        </DashboardPortfolioLayout>
-      </PortfolioContainer>
-    </DashboardLayout>
-  )
+  return null
 }
+
+export const PortfolioRoutes = () => (
+  <PortfolioContainer>
+    <DashboardLayout sidebar="accounts">
+      <BuyTokensOpener />
+
+      {/* share layout to prevent tabs flickering */}
+      <PortfolioLayout toolbar={<PortfolioToolbar />} header={<PortfolioHeader />}>
+        <Routes>
+          <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+          <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+          <Route path="tokens" element={<PortfolioAssets />} />
+          <Route path="nfts" element={<PortfolioNfts />} />
+          <Route path="*" element={<NavigateWithQuery url="tokens" />} />
+        </Routes>
+      </PortfolioLayout>
+    </DashboardLayout>
+  </PortfolioContainer>
+)
+
+const PortfolioToolbar = () => (
+  <Routes>
+    <Route path="tokens" element={<PortfolioToolbarTokens />} />
+    <Route path="nfts" element={<PortfolioToolbarNfts />} />
+  </Routes>
+)
+
+const PortfolioHeader = () => (
+  <Routes>
+    <Route path="tokens/:symbol" element={<PortfolioAssetHeader />} />
+    <Route path="*" element={<DashboardPortfolioHeader />} />
+  </Routes>
+)

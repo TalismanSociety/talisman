@@ -8,7 +8,7 @@ import {
   SortableRpcItemProps,
 } from "../NetworkRpcsListField"
 import { getSubstrateRpcInfo, wsRegEx } from "./helpers"
-import { SubNetworkFormData } from "./types"
+import { SubNetworkFormData } from "./schema"
 
 const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
   const [fetchingGenesisHash, setFetchingGenesisHash] = useState(false)
@@ -20,7 +20,7 @@ const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
   const getGenesisHash = useCallback(
     async (
       name: `rpcs.${number}.url`,
-      value: FieldPathValue<SubNetworkFormData, `rpcs.${number}.url`>
+      value: FieldPathValue<SubNetworkFormData, `rpcs.${number}.url`>,
     ) => {
       await (async () => {
         try {
@@ -47,7 +47,7 @@ const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
       })()
       setFetchingGenesisHash(false)
     },
-    [index, setError, setValue, t]
+    [index, setError, setValue, t],
   )
 
   return (

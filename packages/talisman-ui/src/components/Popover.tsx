@@ -99,7 +99,7 @@ export function usePopover({
       setLabelId,
       setDescriptionId,
     }),
-    [open, setOpen, interactions, data, modal, labelId, descriptionId]
+    [open, setOpen, interactions, data, modal, labelId, descriptionId],
   )
 }
 
@@ -156,7 +156,7 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
           ...props,
           ...children.props,
           "data-state": context.open ? "open" : "closed",
-        })
+        }),
       )
     }
 
@@ -172,7 +172,7 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
         {children}
       </button>
     )
-  }
+  },
 )
 
 export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(
@@ -195,11 +195,12 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
             aria-describedby={context.descriptionId}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
+            data-no-dnd="true"
           >
             {props.children}
           </div>
         </FloatingFocusManager>
       </FloatingPortal>
     )
-  }
+  },
 )

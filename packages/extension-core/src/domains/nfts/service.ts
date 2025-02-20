@@ -125,7 +125,7 @@ const nftsState$ = combineLatest([nftsStore$, status$]).pipe(
       hiddenNftCollectionIds,
     }
     return data
-  })
+  }),
 )
 
 export const subscribeNfts = (callback: (data: NftData) => void) => {
@@ -181,7 +181,7 @@ export const refreshNftMetadata = async (id: string) => {
 nftsStore$
   .pipe(
     map(({ nfts, collections }) => ({ nfts, collections })),
-    distinctUntilChanged(isEqual)
+    distinctUntilChanged(isEqual),
   )
   .subscribe(() => {
     UPDATE_INTERVAL = 60 * 60 * 1000

@@ -1,31 +1,26 @@
-import { log } from "@extension/shared"
-import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
 import { Chain } from "@talismn/chaindata-provider"
 import { LoaderIcon, SecretIcon } from "@talismn/icons"
-import { api } from "@ui/api"
-import {
-  MnemonicCreateModal,
-  MnemonicCreateModalProvider,
-  useMnemonicCreateModal,
-} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { chainsMapAtomFamily, evmNetworksMapAtomFamily } from "@ui/atoms"
-import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
-import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useAppState } from "@ui/hooks/useAppState"
-import useChains from "@ui/hooks/useChains"
-import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { log, POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
+import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
+import { useAppState, useBalancesHydrate, useChains, useMnemonic } from "@ui/state"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation("admin")
@@ -56,7 +51,7 @@ const SetVerifierCertificateContentInner = () => {
           title: t("Error"),
           subtitle: t("Failed to set verifier certificate."),
         },
-        { autoClose: false }
+        { autoClose: false, closeOnClick: true },
       )
     }
   }, [generateMnemonic, mnemonicId, t])
@@ -68,7 +63,7 @@ const SetVerifierCertificateContentInner = () => {
       </h3>
       <p>
         {t(
-          "Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate."
+          "Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate.",
         )}
       </p>
       <p>{t("Select the recovery phrase to use a verifier certificate, or generate a new one.")}</p>
@@ -138,7 +133,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 
 const MetadataPortalContent = () => {
   const { t } = useTranslation("admin")
-  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useChains({ activeOnly: false, includeTestnets: true })
   const [chain, setChain] = useState<Chain | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 
@@ -155,14 +150,14 @@ const MetadataPortalContent = () => {
       chains
         .filter((c) => c.rpcs?.length)
         .sort((c1, c2) => c1.name?.localeCompare(c2.name ?? "") ?? 0),
-    [chains]
+    [chains],
   )
 
   const handleSetTab = useCallback(
     (tab: Tab) => () => {
       setTab(tab)
     },
-    []
+    [],
   )
 
   return (
@@ -178,7 +173,7 @@ const MetadataPortalContent = () => {
 
       {chain?.genesisHash && (
         <>
-          <p className=" mt-4">
+          <p className="mt-4">
             <Trans
               t={t}
               components={{
@@ -235,27 +230,26 @@ const MetadataPortalContent = () => {
   )
 }
 
-const preloadAtom = atom(async (get) => {
-  await Promise.all([
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-  ])
-})
-
-export const QrMetadataPage = () => {
+const Content = () => {
   const { t } = useTranslation("admin")
-  useAtomValue(preloadAtom)
+  useBalancesHydrate() // preload
 
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)
 
   return (
-    <DashboardLayout centered withBack backTo="/settings/networks-tokens">
+    <>
       <HeaderBlock
         title={t("Polkadot Vault Metadata")}
         text={t("Register networks on your Polkadot Vault device, or update their metadata.")}
       />
       {mnemonic ? <MetadataPortalContent /> : <SetVerifierCertificateContent />}
-    </DashboardLayout>
+    </>
   )
 }
+
+export const QrMetadataPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)

@@ -162,7 +162,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
         throw new EthProviderRpcError(
           "Internal JSON-RPC error.",
           ETH_ERROR_EIP1474_INTERNAL_ERROR,
-          rpcData
+          rpcData,
         )
       }
     }

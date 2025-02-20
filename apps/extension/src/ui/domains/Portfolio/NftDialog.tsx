@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import format from "date-fns/format"
+import { format } from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import {
@@ -34,7 +34,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetwork, useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -44,9 +44,6 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
 import { getNftCollectionFloorUsd } from "./Nfts/helpers"
-import { useIsFavoriteNft } from "./Nfts/useIsFavoriteNft"
-import { useIsHiddenNftCollection } from "./Nfts/useIsHiddenNftCollection"
-import { useNft } from "./Nfts/useNft"
 
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()
@@ -55,7 +52,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     (url: string) => () => {
       window.open(url, "_blank", "")
     },
-    []
+    [],
   )
 
   const isCollectionHidden = useIsHiddenNftCollection(nft.collectionId)
@@ -75,7 +72,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         title: t("Requesting refresh"),
         subtitle: t("Please wait"),
       },
-      { autoClose: false }
+      { autoClose: false },
     )
 
     try {
@@ -406,7 +403,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       { label: t("Collection"), value: "collection" },
       { label: t("NFT"), value: "nft" },
     ],
-    [t]
+    [t],
   )
 
   useEffect(() => {
@@ -415,7 +412,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
 
   const webResourceUrl = useMemo(
     () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
-    [nft.imageUrl, nft.audioUrl, nft.modelUrl, nft.otherUrl, nft.videoUrl]
+    [nft.imageUrl, nft.audioUrl, nft.modelUrl, nft.otherUrl, nft.videoUrl],
   )
 
   const handleFullScreenViewClick = useCallback(() => {
@@ -428,7 +425,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         "h-full w-full",
         "@2xl:overflow-hidden",
         "bg-black shadow",
-        "@2xl:grid-cols-2 @2xl:grid"
+        "@2xl:grid-cols-2 @2xl:grid",
       )}
     >
       <div className="@2xl:block hidden overflow-hidden">
@@ -444,7 +441,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       <div
         className={classNames(
           "flex h-full grow flex-col overflow-y-auto font-light",
-          "@2xl:overflow-hidden"
+          "@2xl:overflow-hidden",
         )}
       >
         <div className="@2xl:bg-transparent @2xl:px-12 @2xl:py-8 flex w-full items-center gap-4 bg-black px-8 py-6">
@@ -474,7 +471,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         </div>
         <div className="@2xl:overflow-hidden @2xl:pr-0 flex grow flex-col gap-12 px-12 py-8 font-light">
           <div className="@2xl:pr-12">
-            <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
+            <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base" />
           </div>
           <div className="@2xl:pr-1 grow overflow-hidden">
             <ScrollableArea
@@ -518,7 +515,7 @@ const NftDialogInner: FC<{
       onDismiss={handleDismiss}
       className={classNames(
         "@container h-[50rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg"
+        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg",
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >

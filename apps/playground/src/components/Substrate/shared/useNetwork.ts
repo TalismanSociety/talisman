@@ -22,7 +22,7 @@ const useNetworkProvider = ({ storageKey = "useNetwork" }: NetworkConfig) => {
     (url?: string) => {
       setData({ wsUrl: url })
     },
-    [setData]
+    [setData],
   )
 
   return { wsUrl, setWsUrl }

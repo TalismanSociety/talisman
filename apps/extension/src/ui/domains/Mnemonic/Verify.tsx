@@ -22,8 +22,8 @@ const WordSlot = ({
       error
         ? "text-brand-orange border-brand-orange border border-dashed"
         : active || word
-        ? "text-body border-body border border-solid"
-        : "text-body-secondary border-body-secondary border border-dashed"
+          ? "text-body border-body border border-solid"
+          : "text-body-secondary border-body-secondary border border-dashed",
     )}
   >
     <span className="select-none">{number}. </span>
@@ -44,7 +44,7 @@ const WordOption = ({
     onClick={onClick}
     disabled={selected}
     className={classNames(
-      "bg-black-tertiary text-body enabled:hover:bg-grey-700 rounded-xl px-8 py-3 disabled:text-opacity-20"
+      "bg-black-tertiary text-body enabled:hover:bg-grey-700 rounded-xl px-8 py-3 disabled:text-opacity-20",
     )}
   >
     <span className="notranslate">{word}</span>
@@ -85,7 +85,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
     (i: number) => {
       return matchedDisplayIdx.includes(i)
     },
-    [matchedDisplayIdx]
+    [matchedDisplayIdx],
   )
 
   const handleSelectWord = useCallback(
@@ -101,7 +101,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
         setErrorIndex(matchedLength)
       }
     },
-    [displayWords, matchedLength, mnemonicWords, isMatchedWord]
+    [displayWords, matchedLength, mnemonicWords, isMatchedWord],
   )
 
   if (!mnemonic) return <>{t("No Mnemonic Available")}</>
@@ -127,8 +127,8 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
                       i < matchedLength
                         ? mnemonicWords[i]
                         : i === errorIndex && selectedIndex !== undefined
-                        ? displayWords[selectedIndex]
-                        : ""
+                          ? displayWords[selectedIndex]
+                          : ""
                     }
                     active={matchedLength === i}
                     error={errorIndex === i}

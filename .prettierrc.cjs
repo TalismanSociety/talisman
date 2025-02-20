@@ -1,9 +1,4 @@
 /** @type {import('prettier').Config} */
-const pluginsConfig = {
-  plugins: [require("@ianvs/prettier-plugin-sort-imports"), require("prettier-plugin-tailwindcss")],
-}
-
-/** @type {import('prettier').Config} */
 const importSortConfig = {
   importOrder: [
     // built-ins like `node:fs`
@@ -28,12 +23,13 @@ const importSortConfig = {
 
   // defaults to "1.0.0" - higher versions of typescript unlock more import-sort capabilities
   // https://github.com/IanVS/prettier-plugin-sort-imports?tab=readme-ov-file#importordertypescriptversion
-  importOrderTypeScriptVersion: "5.2.2",
+  importOrderTypeScriptVersion: "5.6.3",
 }
 
 /** @type {import('prettier').Config} */
 module.exports = {
-  ...pluginsConfig,
+  plugins: ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+
   ...importSortConfig,
 
   printWidth: 100,

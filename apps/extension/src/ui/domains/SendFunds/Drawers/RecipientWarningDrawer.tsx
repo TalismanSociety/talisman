@@ -4,7 +4,7 @@ import { Button, Drawer } from "talisman-ui"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/state"
 
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"

@@ -1,12 +1,12 @@
 import { assert } from "@polkadot/util"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 
+import type { Port } from "../../types/base"
+import type { AuthorizedSite, RequestAuthorizeTab } from "./types"
 import { requestStore } from "../../libs/requests/store"
 import { KnownRequestIdOnly } from "../../libs/requests/types"
-import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import sitesAuthorisedStore from "./store"
-import type { AuthorizedSite, RequestAuthorizeTab } from "./types"
 
 export const ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE =
   "Pending authorisation request already exists for this site. Please accept or reject the request."
@@ -15,7 +15,7 @@ class AuthError extends Error {}
 export const requestAuthoriseSite = async (
   url: string,
   request: RequestAuthorizeTab,
-  port: Port
+  port: Port,
 ) => {
   const { err, val: domain } = urlToDomain(url)
   if (err) throw new AuthError(domain)
@@ -37,7 +37,7 @@ export const requestAuthoriseSite = async (
         request,
         type: "auth",
       },
-      port
+      port,
     )
     .then(async (response) => {
       const { addresses = [] } = response

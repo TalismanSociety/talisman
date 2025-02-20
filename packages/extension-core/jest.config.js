@@ -18,8 +18,8 @@ module.exports = {
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "mjs"],
   setupFiles: [
     "jest-webextension-mock",
-    "fake-indexeddb/auto",
     "jest-fetch-mock/setupJest",
+    "fake-indexeddb/auto",
     "<rootDir>/tests/setup",
   ],
   setupFilesAfterEnv: ["<rootDir>/tests/mocks/index.ts"],

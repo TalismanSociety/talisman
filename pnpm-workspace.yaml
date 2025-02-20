@@ -1,4 +1,6 @@
 packages:
-  - 'apps/*'
-  - 'config/*'
-  - 'packages/*'
+  - ".papi/descriptors"
+  - "apps/*"
+  - "config/*"
+  - "packages/*"
+  - "lib/*"
