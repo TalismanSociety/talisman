@@ -12,10 +12,8 @@ import { findChainMeta, getUniqueChainIds } from "../util"
 import { SubNativeBalance, SubNativeToken } from "./types"
 import {
   DecodeResult_GetStakeInfoForColdkey,
-  DecodeResult_old_GetStakeInfoForColdkey,
   EncodeParams_GetStakeInfoForColdkey,
-  EncodeParams_old_GetStakeInfoForColdkey,
-  SUBTENSOR_ROOT_NETUID,
+  SUBTENSOR_MIN_STAKE_AMOUNT_PLANK,
 } from "./util/subtensor"
 
 export async function subscribeSubtensorStaking(
@@ -111,31 +109,6 @@ export async function subscribeSubtensorStaking(
           >
         >
         const queryMethods: Array<QueryMethod> = [
-          // old method
-          async () => {
-            const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
-            const params = EncodeParams_old_GetStakeInfoForColdkey(address)
-            const response = await chainConnector.send(
-              chainId,
-              "state_call",
-              [method, params],
-              undefined,
-              { expectErrors: true }, // don't pollute the wallet logs when this request fails
-            )
-            const result = DecodeResult_old_GetStakeInfoForColdkey(response)
-            if (!Array.isArray(result)) return []
-
-            const stakes = result
-              ?.map(({ coldkey, hotkey, stake }) => ({
-                address: coldkey,
-                hotkey,
-                stake: BigInt(stake),
-              }))
-              .filter(({ stake }) => stake !== 0n)
-
-            return stakes
-          },
-
           // new method
           async () => {
             const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
@@ -151,15 +124,13 @@ export async function subscribeSubtensorStaking(
             if (!Array.isArray(result)) return []
 
             const stakes = result
-              // Filter out subnet stakes for now
-              .filter((stake) => stake.netuid === SUBTENSOR_ROOT_NETUID)
               ?.map(({ coldkey, hotkey, netuid, stake }) => ({
                 address: coldkey,
                 hotkey,
-                netuid: BigInt(netuid),
+                netuid: Number(netuid),
                 stake: BigInt(stake),
               }))
-              .filter(({ stake }) => stake !== 0n)
+              .filter(({ stake }) => stake > SUBTENSOR_MIN_STAKE_AMOUNT_PLANK)
 
             return stakes
           },
