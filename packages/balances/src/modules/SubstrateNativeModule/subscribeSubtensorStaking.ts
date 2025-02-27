@@ -163,7 +163,8 @@ export async function subscribeSubtensorStaking(
       // convert our Array<Stakes> into Array<Balances>, which we can then return to the native balance module
       map((stakes) =>
         stakes.map(
-          ({ address, hotkey, stake }): SubNativeBalance => ({
+          // @ts-expect-error TODO: add netuid to the type
+          ({ address, hotkey, stake, netuid }): SubNativeBalance => ({
             source: "substrate-native",
             status: "live",
             address,
@@ -179,6 +180,7 @@ export async function subscribeSubtensorStaking(
                 meta: {
                   type: "subtensor-staking",
                   hotkey,
+                  netuid,
                 },
               },
             ],

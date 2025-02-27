@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useGetBittensorValidators } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorValidator"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -128,18 +129,23 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 
     // BITTENSOR
     const subtensor = tokenBalances.each.flatMap((b) =>
-      b.subtensor.map((subtensor, index) => ({
-        key: `${b.id}-subtensor-${index}`,
-        title: getLockTitle({ label: "subtensor-staking" }),
+      b.subtensor.map((subtensor, index) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        description: (subtensor.meta as any)?.description ?? undefined,
-        tokens: BigNumber(subtensor.amount.tokens),
-        fiat: subtensor.amount.fiat(currency),
-        locked: true,
-        // only show address when we're viewing balances for all accounts
-        address: account ? undefined : b.address,
-        meta: subtensor.meta,
-      })),
+        const { meta } = subtensor as any
+        return {
+          key: `${b.id}-subtensor-${index}`,
+          title: getLockTitle({
+            label: meta.netuid === ROOT_NETUID ? "subtensor-staking" : "subnet-staking",
+          }),
+          description: meta?.description ?? undefined,
+          tokens: BigNumber(subtensor.amount.tokens),
+          fiat: subtensor.amount.fiat(currency),
+          locked: true,
+          // only show address when we're viewing balances for all accounts
+          address: account ? undefined : b.address,
+          meta: meta,
+        }
+      }),
     )
 
     return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
@@ -182,15 +188,25 @@ const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
   })
 
   return useMemo(() => {
-    return detailRows.map((row) => {
-      if (row.meta?.type === "subtensor-staking")
-        return {
-          ...row,
-          description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkey)?.name,
-          isLoading: isLoadingValidators,
-        } as BalanceDetailRow
+    return detailRows
+      .map((row) => {
+        if (row.meta?.type === "subtensor-staking")
+          return {
+            ...row,
+            description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkey)?.name,
+            isLoading: isLoadingValidators,
+          } as BalanceDetailRow
 
-      return row
-    })
+        return row
+      })
+      .sort((a, b) => {
+        if (a.key === "available") return -1 // "available" always first
+        if (b.key === "available") return 1
+
+        if (a.meta?.netuid === 0 && b.meta?.netuid !== 0) return -1 // Move netuid === 0 after available
+        if (b.meta?.netuid === 0 && a.meta?.netuid !== 0) return 1
+
+        return 0 // Preserve relative order for others
+      })
   }, [detailRows, isLoadingValidators, validators])
 }
