@@ -80,7 +80,8 @@ const allBalances$ = combineLatest([
       return false
     })
     return new Balances(validBalances, hydrate)
-  }, shareReplay(1)),
+  }),
+  shareReplay(1),
 )
 
 type BalanceQueryParams = {
