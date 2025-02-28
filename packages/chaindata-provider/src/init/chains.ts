@@ -13,7 +13,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "1003004",
+    specVersion: "1004000",
     nativeToken: {
       id: "polkadot-substrate-native",
     },
@@ -271,11 +271,6 @@ export const chains = [
         name: "Subsocial",
       },
       {
-        id: "t-3-rn",
-        paraId: 3333,
-        name: "t3rn",
-      },
-      {
         id: "unique",
         paraId: 2037,
         name: "Unique",
@@ -315,7 +310,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-kusama",
     specName: "kusama",
-    specVersion: "1003003",
+    specVersion: "1004000",
     nativeToken: {
       id: "kusama-substrate-native",
     },
@@ -525,11 +520,6 @@ export const chains = [
         name: "Sora",
       },
       {
-        id: "tinker",
-        paraId: 2125,
-        name: "InvArch Tinkernet",
-      },
-      {
         id: "turing",
         paraId: 2114,
         name: "Turing",
@@ -558,7 +548,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 563,
+    sortIndex: 570,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -568,7 +558,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1003004",
+    specVersion: "1004000",
     nativeToken: {
       id: "kusama-asset-hub-substrate-native",
     },
@@ -672,7 +662,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 564,
+    sortIndex: 571,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -682,7 +672,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-kusama",
     specName: "bridge-hub-kusama",
-    specVersion: "1003003",
+    specVersion: "1004000",
     nativeToken: {
       id: "kusama-bridge-hub-substrate-native",
     },
@@ -746,7 +736,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 804,
+    sortIndex: 815,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -757,7 +747,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemint",
     specName: "statemint",
-    specVersion: "1003004",
+    specVersion: "1004000",
     nativeToken: {
       id: "polkadot-asset-hub-substrate-native",
     },
@@ -1088,7 +1078,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 805,
+    sortIndex: 816,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,
@@ -1099,7 +1089,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-polkadot",
     specName: "bridge-hub-polkadot",
-    specVersion: "1003003",
+    specVersion: "1004000",
     nativeToken: {
       id: "polkadot-bridge-hub-substrate-native",
     },
