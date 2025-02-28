@@ -516,10 +516,18 @@ export class Balance {
   get total() {
     const extra = this.getValue("extra") as FormattedAmount<ExtraAmount<string>, string>[]
 
+    // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
+    // if not (old model: vara, avail, cere), staked amount is not in the account and it needs to be added to the total
+    const nomPoolStakedPlancks = this.locks.some(
+      (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking",
+    )
+      ? 0n
+      : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
+
     return this.#format(
       this.free.planck +
         this.reserved.planck +
-        this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
+        nomPoolStakedPlancks +
         this.crowdloans.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         includeInTotalExtraAmount(extra),
@@ -641,9 +649,18 @@ export class Balance {
     const baseUnavailable = this.#storage.useLegacyTransferableCalculation
       ? oldCalculation()
       : newCalculation()
+
+    // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
+    // if not (old model: vara, avail, cere), staked amount is not in the account and it needs to be added to the total
+    const nomPoolStakedPlancks = this.locks.some(
+      (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking",
+    )
+      ? 0n
+      : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
+
     const otherUnavailable =
+      nomPoolStakedPlancks +
       this.crowdloans.reduce((total, each) => total + each.amount.planck, 0n) +
-      this.nompools.reduce((total, each) => total + each.amount.planck, 0n) +
       this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
     return this.#format(baseUnavailable + otherUnavailable)
   }
