@@ -5,15 +5,20 @@ import { SS58String } from "polkadot-api"
 import { exhaustMap, from, interval, map, mergeMap, toArray } from "rxjs"
 
 import type { SubNativeModule } from "./index"
+import type { DynamicInfoType } from "./util/subtensor"
 import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import { AddressesByToken, SubscriptionCallback } from "../../types"
 import { findChainMeta, getUniqueChainIds } from "../util"
 import { SubNativeBalance, SubNativeToken } from "./types"
 import {
+  calculateTaoFromDynamicInfo,
+  DecodeResult_GetDynamicInfo,
   DecodeResult_GetStakeInfoForColdkey,
+  EncodeParams_GetDynamicInfo,
   EncodeParams_GetStakeInfoForColdkey,
   SUBTENSOR_MIN_STAKE_AMOUNT_PLANK,
+  SUBTENSOR_ROOT_NETUID,
 } from "./util/subtensor"
 
 export async function subscribeSubtensorStaking(
@@ -88,28 +93,16 @@ export async function subscribeSubtensorStaking(
     const subtensorQueries = from(addresses).pipe(
       // mergeMap lets us run N concurrent queries, where N is the value of `concurrency`
       mergeMap(async (address) => {
-        // We support two staked TAO methods,
-        // the old subtensor staking, and the new dTAO subtensor staking.
-        //
-        // We first attempt to query via the old method, then using a try {} catch {} we detect
-        // if it failed, and if so we try the new method.
         type QueryMethod = () => Promise<
-          Array<
-            | {
-                address: SS58String
-                hotkey: SS58String
-                stake: bigint
-              }
-            | {
-                address: SS58String
-                hotkey: SS58String
-                netuid: bigint
-                stake: bigint
-              }
-          >
+          Array<{
+            address: SS58String
+            hotkey: SS58String
+            stake: bigint
+            netuid: number
+            dynamicInfo: DynamicInfoType | void | null
+          }>
         >
         const queryMethods: Array<QueryMethod> = [
-          // new method
           async () => {
             const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
             const params = EncodeParams_GetStakeInfoForColdkey(address)
@@ -123,14 +116,51 @@ export async function subscribeSubtensorStaking(
             const result = DecodeResult_GetStakeInfoForColdkey(response)
             if (!Array.isArray(result)) return []
 
+            const uniqueNetuids = Array.from(new Set(result.map((item) => item.netuid)))
+
+            const dynamicInfoMethod = "SubnetInfoRuntimeApi_get_dynamic_info"
+            const dynamicInfoResults = uniqueNetuids.map((netuid) => {
+              if (netuid !== 0n) {
+                return chainConnector
+                  .send(
+                    chainId,
+                    "state_call",
+                    [dynamicInfoMethod, EncodeParams_GetDynamicInfo(Number(netuid))],
+                    undefined,
+                    { expectErrors: true },
+                  )
+                  .then((res) => {
+                    return DecodeResult_GetDynamicInfo(res)
+                  })
+                  .catch((error) => {
+                    throw new Error(`Failed to fetch dynamic info for netuid ${netuid}:`, error)
+                  })
+              }
+              return null
+            })
+
+            const resolvedDynamicInfo = await Promise.all(dynamicInfoResults)
+
             const stakes = result
-              ?.map(({ coldkey, hotkey, netuid, stake }) => ({
-                address: coldkey,
-                hotkey,
-                netuid: Number(netuid),
-                stake: BigInt(stake),
-              }))
-              .filter(({ stake }) => stake > SUBTENSOR_MIN_STAKE_AMOUNT_PLANK)
+              ?.map(({ coldkey, hotkey, netuid, stake: stakeAmount }) => {
+                const dynamicInfo = resolvedDynamicInfo.find((info) => info?.netuid === netuid)
+                const alphaStakedInTao = calculateTaoFromDynamicInfo({
+                  dynamicInfo,
+                  alphaStaked: BigInt(stakeAmount),
+                })
+
+                const stakeByNetuid =
+                  Number(netuid) === SUBTENSOR_ROOT_NETUID ? BigInt(stakeAmount) : alphaStakedInTao
+
+                return {
+                  address: coldkey,
+                  hotkey,
+                  netuid: Number(netuid),
+                  stake: stakeByNetuid,
+                  dynamicInfo,
+                }
+              })
+              .filter(({ stake }) => stake >= SUBTENSOR_MIN_STAKE_AMOUNT_PLANK)
 
             return stakes
           },
@@ -162,9 +192,9 @@ export async function subscribeSubtensorStaking(
       mergeMap((stakes) => stakes),
       // convert our Array<Stakes> into Array<Balances>, which we can then return to the native balance module
       map((stakes) =>
-        stakes.map(
-          // @ts-expect-error TODO: add netuid to the type
-          ({ address, hotkey, stake, netuid }): SubNativeBalance => ({
+        stakes.map(({ address, hotkey, stake, netuid, dynamicInfo }): SubNativeBalance => {
+          const { tokenSymbol, subnetName, subnetIdentity } = dynamicInfo ?? {}
+          return {
             source: "substrate-native",
             status: "live",
             address,
@@ -181,18 +211,28 @@ export async function subscribeSubtensorStaking(
                   type: "subtensor-staking",
                   hotkey,
                   netuid,
+                  dynamicInfo: {
+                    tokenSymbol,
+                    subnetName,
+                    subnetIdentity: {
+                      ...subnetIdentity,
+                      subnetName: subnetIdentity?.subnetName || subnetName,
+                    },
+                  },
                 },
               },
             ],
-          }),
-        ),
+          }
+        }),
       ),
     )
 
     // This observable will run the subtensorQueries on a 30s (30_000ms) interval.
     // However, if the last run has not yet completed (e.g. its been 30s but we're still fetching some balances),
     // then exhaustMap will wait until the next interval (so T: 60s, T: 90s, T: 120s, etc) before re-executing the subtensorQueries.
-    const subtensorQueriesInterval = interval(30_000).pipe(exhaustMap(() => subtensorQueries))
+    // TODO: Revert this to 30s, using 10s for dev only
+    // const subtensorQueriesInterval = interval(30_000).pipe(exhaustMap(() => subtensorQueries))
+    const subtensorQueriesInterval = interval(10_000).pipe(exhaustMap(() => subtensorQueries))
 
     // subscribe to the balances
     const subscription = subtensorQueriesInterval.subscribe({
