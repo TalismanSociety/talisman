@@ -103,6 +103,17 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     genericEvent("open copy address", { from: "address book" })
   }, [contact.address, contactChain?.id, genericEvent, openCopyAddressModal])
 
+  const isMultiAddress = useMemo(() => {
+    try {
+      const encoding = detectAddressEncoding(contact.address)
+      // for substrate addresses, if not network specific we can't know which address format to display
+      if (encoding === "ss58" && !contact.genesisHash) return true
+      return false
+    } catch {
+      return false
+    }
+  }, [contact])
+
   return (
     <div className="bg-black-secondary group flex h-32 w-full items-center justify-between gap-4 rounded px-8">
       <AccountIcon
@@ -113,7 +124,15 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
       <div className="flex grow flex-col justify-between overflow-hidden">
         <div className="truncate">{contact.name}</div>
         <div>
-          <Address className="text-body-secondary text-xs" address={contact.address} />
+          {isMultiAddress ? (
+            <div className="text-body-secondary text-xs">{t("Multichain address")}</div>
+          ) : (
+            <Address
+              className="text-body-secondary text-xs"
+              address={contact.address}
+              genesisHash={contact.genesisHash}
+            />
+          )}
         </div>
       </div>
       <div className={`text-body-disabled flex shrink-0 gap-2`}>
