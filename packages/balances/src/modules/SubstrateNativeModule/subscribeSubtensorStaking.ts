@@ -90,6 +90,9 @@ export async function subscribeSubtensorStaking(
 
     // sets the number of addresses to query in parallel (per chain, since each chain runs in parallel to the others)
     const concurrency = 4
+    // In-memory cache for successful dynamic info results
+    const dynamicInfoCache = new Map<number, DynamicInfoType>()
+
     const subtensorQueries = from(addresses).pipe(
       // mergeMap lets us run N concurrent queries, where N is the value of `concurrency`
       mergeMap(async (address) => {
@@ -120,20 +123,30 @@ export async function subscribeSubtensorStaking(
 
             const dynamicInfoMethod = "SubnetInfoRuntimeApi_get_dynamic_info"
             const dynamicInfoResults = uniqueNetuids.map((netuid) => {
-              if (netuid !== 0n) {
+              const netuidNumber = Number(netuid)
+              if (netuidNumber !== 0) {
                 return chainConnector
                   .send(
                     chainId,
                     "state_call",
-                    [dynamicInfoMethod, EncodeParams_GetDynamicInfo(Number(netuid))],
+                    [dynamicInfoMethod, EncodeParams_GetDynamicInfo(netuidNumber)],
                     undefined,
                     { expectErrors: true },
                   )
                   .then((res) => {
-                    return DecodeResult_GetDynamicInfo(res)
+                    const decodedResult = DecodeResult_GetDynamicInfo(res)
+                    dynamicInfoCache.set(netuidNumber, decodedResult) // Store successful response in cache
+                    return decodedResult
                   })
                   .catch((error) => {
-                    throw new Error(`Failed to fetch dynamic info for netuid ${netuid}:`, error)
+                    if (dynamicInfoCache.has(netuidNumber)) {
+                      return dynamicInfoCache.get(netuidNumber) // Return cached response on failure
+                    }
+
+                    throw new Error(
+                      `Failed to fetch dynamic info for netuid ${netuidNumber}:`,
+                      error,
+                    )
                   })
               }
               return null
