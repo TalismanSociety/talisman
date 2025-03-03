@@ -155,21 +155,13 @@ export async function subscribeSubtensorStaking(
             const resolvedDynamicInfo = await Promise.all(dynamicInfoResults)
 
             const stakes = result
-              ?.map(({ coldkey, hotkey, netuid, stake: stakeAmount }) => {
+              ?.map(({ coldkey, hotkey, netuid, stake }) => {
                 const dynamicInfo = resolvedDynamicInfo.find((info) => info?.netuid === netuid)
-                const alphaStakedInTao = calculateTaoFromDynamicInfo({
-                  dynamicInfo,
-                  alphaStaked: BigInt(stakeAmount),
-                })
-
-                const stakeByNetuid =
-                  Number(netuid) === SUBTENSOR_ROOT_NETUID ? BigInt(stakeAmount) : alphaStakedInTao
-
                 return {
                   address: coldkey,
                   hotkey,
                   netuid: Number(netuid),
-                  stake: stakeByNetuid,
+                  stake: BigInt(stake),
                   dynamicInfo,
                 }
               })
@@ -207,6 +199,14 @@ export async function subscribeSubtensorStaking(
       map((stakes) =>
         stakes.map(({ address, hotkey, stake, netuid, dynamicInfo }): SubNativeBalance => {
           const { tokenSymbol, subnetName, subnetIdentity } = dynamicInfo ?? {}
+
+          const alphaStakedInTao = calculateTaoFromDynamicInfo({
+            dynamicInfo,
+            alphaStaked: stake,
+          })
+
+          const stakeByNetuid = Number(netuid) === SUBTENSOR_ROOT_NETUID ? stake : alphaStakedInTao
+
           return {
             source: "substrate-native",
             status: "live",
@@ -219,11 +219,12 @@ export async function subscribeSubtensorStaking(
                 source: "subtensor-staking",
                 type: "subtensor",
                 label: "subtensor-staking",
-                amount: stake.toString(),
+                amount: stakeByNetuid.toString(),
                 meta: {
                   type: "subtensor-staking",
                   hotkey,
                   netuid,
+                  amountTao: stake.toString(),
                   dynamicInfo: {
                     tokenSymbol,
                     subnetName,
