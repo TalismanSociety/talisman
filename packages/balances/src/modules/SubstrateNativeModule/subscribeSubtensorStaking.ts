@@ -245,8 +245,7 @@ export async function subscribeSubtensorStaking(
     // However, if the last run has not yet completed (e.g. its been 30s but we're still fetching some balances),
     // then exhaustMap will wait until the next interval (so T: 60s, T: 90s, T: 120s, etc) before re-executing the subtensorQueries.
     // TODO: Revert this to 30s, using 10s for dev only
-    // const subtensorQueriesInterval = interval(30_000).pipe(exhaustMap(() => subtensorQueries))
-    const subtensorQueriesInterval = interval(10_000).pipe(exhaustMap(() => subtensorQueries))
+    const subtensorQueriesInterval = interval(30_000).pipe(exhaustMap(() => subtensorQueries))
 
     // subscribe to the balances
     const subscription = subtensorQueriesInterval.subscribe({
