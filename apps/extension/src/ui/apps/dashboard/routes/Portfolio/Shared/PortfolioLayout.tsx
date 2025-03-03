@@ -53,25 +53,28 @@ export const PortfolioLayout: FC<
   PropsWithChildren & { toolbar?: ReactNode; header?: ReactNode }
 > = ({ header, toolbar, children }) => {
   return (
-    <div className="relative flex w-full flex-col gap-6 pb-12">
-      <Suspense
-        fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
-      >
-        {header ?? <DashboardPortfolioHeader />}
-        <PortfolioAccountCheck>
-          <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
-            <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
-            <div className="shrink-0">
-              <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
-                {toolbar}
-              </Suspense>
+    // "-mx-4 px-4" allows for portfolio staking badges to overflow, while keeping a consistant width limit and keep content centered
+    <div className="-mx-4 w-full px-4">
+      <div className="relative flex w-full flex-col gap-6 pb-12">
+        <Suspense
+          fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
+        >
+          {header ?? <DashboardPortfolioHeader />}
+          <PortfolioAccountCheck>
+            <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
+              <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
+              <div className="shrink-0">
+                <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
+                  {toolbar}
+                </Suspense>
+              </div>
             </div>
-          </div>
-          <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>
-            {children}
-          </Suspense>
-        </PortfolioAccountCheck>
-      </Suspense>
+            <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.TabContent" />}>
+              {children}
+            </Suspense>
+          </PortfolioAccountCheck>
+        </Suspense>
+      </div>
     </div>
   )
 }
