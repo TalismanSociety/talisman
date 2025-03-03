@@ -114,7 +114,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 
             if (
               mnemonicId &&
-              derivationPath &&
+              typeof derivationPath === "string" && // allow empty string (substrate default)
               isValidDerivationPath(derivationPath, oldPair.type)
             ) {
               // keep the "link" to associated mnemonic by rederiving the account from it
