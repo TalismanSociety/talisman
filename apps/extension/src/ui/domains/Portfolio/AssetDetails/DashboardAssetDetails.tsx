@@ -1,6 +1,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
+import { BigNumber } from "bignumber.js"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -159,16 +160,26 @@ const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, 
       {!isUniswapV2LpToken &&
         detailRows
           .filter((row) => row.tokens.gt(0))
-          .map((row, i, rows) => (
-            <ChainTokenBalancesDetailRow
-              key={row.key}
-              row={row}
-              isLastRow={rows.length === i + 1}
-              symbol={token.symbol}
-              status={status}
-              tokenId={tokenId}
-            />
-          ))}
+          .map((row, i, rows) => {
+            const { symbol } = token
+            const { meta: { dynamicInfo = {} } = {}, title } = row
+
+            const balanceDetailSymbol = title.toLowerCase().includes("subnet")
+              ? dynamicInfo?.tokenSymbol
+              : symbol
+
+            return (
+              <ChainTokenBalancesDetailRow
+                key={row.key}
+                row={row}
+                isLastRow={rows.length === i + 1}
+                symbol={balanceDetailSymbol}
+                status={status}
+                tokenId={tokenId}
+                tokenDecimals={token.decimals}
+              />
+            )
+          })}
     </div>
   )
 }
@@ -248,51 +259,59 @@ const ChainTokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
+  tokenDecimals,
 }: {
   row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
-}) => (
-  <div
-    key={row.key}
-    className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
-  >
-    <div>
-      <AssetState
-        title={row.title}
-        description={row.description}
-        render
-        address={row.address}
-        isLoading={row.isLoading}
-        locked={row.locked}
-      />
+  tokenDecimals: number
+}) => {
+  const alphaBalanceInTao = new BigNumber(planckToTokens(row.meta?.amountTao, tokenDecimals) || "0")
+
+  const tokenBalance = alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
+
+  return (
+    <div
+      key={row.key}
+      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+    >
+      <div>
+        <AssetState
+          title={row.title}
+          description={row.description}
+          render
+          address={row.address}
+          isLoading={row.isLoading}
+          locked={row.locked}
+        />
+      </div>
+      {!row.locked && <div></div>}
+      <div>
+        <AssetBalanceCellValue
+          render={tokenBalance.gt(0)}
+          tokens={tokenBalance}
+          fiat={row.fiat}
+          symbol={symbol}
+          locked={row.locked}
+          balancesStatus={status}
+          className={classNames(
+            (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+          )}
+        />
+      </div>
+      {!!row.locked && row.meta && tokenId && (
+        <LockedExtra
+          tokenId={tokenId}
+          address={row.address}
+          isLoading={status.status === "fetching"}
+          rowMeta={row.meta}
+        />
+      )}
     </div>
-    {!row.locked && <div></div>}
-    <div>
-      <AssetBalanceCellValue
-        render={row.tokens.gt(0)}
-        tokens={row.tokens}
-        fiat={row.fiat}
-        symbol={symbol}
-        locked={row.locked}
-        balancesStatus={status}
-        className={classNames(
-          (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
-        )}
-      />
-    </div>
-    {!!row.locked && row.meta && tokenId && (
-      <LockedExtra
-        tokenId={tokenId}
-        address={row.address}
-        isLoading={status.status === "fetching"}
-        rowMeta={row.meta}
-      />
-    )}
-  </div>
-)
+  )
+}
 
 const LockedExtra: FC<{
   tokenId: TokenId
@@ -374,8 +393,6 @@ export const DashboardAssetDetails: FC<{ balances: Balances; symbol: string }> =
   const { balancesByToken } = useAssetDetails(balances)
 
   if (balancesByToken.length === 0) return <NoTokensMessage symbol={symbol} />
-
-  // console.log({ balancesByToken })
 
   return (
     <div className="text-body-secondary">
