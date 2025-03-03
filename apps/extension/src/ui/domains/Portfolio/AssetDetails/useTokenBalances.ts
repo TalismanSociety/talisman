@@ -205,7 +205,10 @@ const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
         if (a.key === "available") return -1 // "available" always first
         if (b.key === "available") return 1
 
-        if (a.meta?.netuid === 0 && b.meta?.netuid !== 0) return -1 // Move netuid === 0 after available
+        if (a.title === "Reserved") return -1 // "reserved" always second
+        if (b.title === "Reserved") return 1
+
+        if (a.meta?.netuid === 0 && b.meta?.netuid !== 0) return -1 // Move netuid === 0 after reserved
         if (b.meta?.netuid === 0 && a.meta?.netuid !== 0) return 1
 
         return 0 // Preserve relative order for others
