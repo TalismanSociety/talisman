@@ -51,7 +51,7 @@ const AssetState = ({
   return (
     <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
-        <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
+        <div className="shrink-0 whitespace-nowrap font-bold capitalize text-white">{title}</div>
         {/* show description next to title when address is set */}
         {description && address && <div className="grow truncate text-sm">{description}</div>}
         {!description && address && isLoading && (

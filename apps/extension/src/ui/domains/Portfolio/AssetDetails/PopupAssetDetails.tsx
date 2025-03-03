@@ -219,7 +219,7 @@ const TokenBalancesDetailRow = ({
     >
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
         <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
-          <div className="truncate">{row.title}</div>
+          <div className="truncate capitalize">{row.title}</div>
           {!!row.locked && tokenId && row.meta && (
             <LockedExtra
               tokenId={tokenId}
