@@ -132,11 +132,13 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       b.subtensor.map((subtensor, index) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { meta } = subtensor as any
+        const title = getLockTitle({
+          label: meta.netuid === ROOT_NETUID ? "subtensor-staking" : "subnet-staking",
+        })
         return {
           key: `${b.id}-subtensor-${index}`,
-          title: getLockTitle({
-            label: meta.netuid === ROOT_NETUID ? "subtensor-staking" : "subnet-staking",
-          }),
+
+          title: meta.netuid === ROOT_NETUID ? title : `${title} ${meta.netuid}`,
           description: meta?.description ?? undefined,
           tokens: BigNumber(subtensor.amount.tokens),
           fiat: subtensor.amount.fiat(currency),

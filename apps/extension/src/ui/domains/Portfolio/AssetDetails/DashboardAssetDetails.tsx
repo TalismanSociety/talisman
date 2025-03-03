@@ -13,6 +13,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
@@ -297,7 +298,7 @@ const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string; netuid?: number }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
@@ -324,6 +325,11 @@ const LockedExtra: FC<{
   const canUnbond = useMemo(
     () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === "bittensor-substrate-native",
     [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+  )
+
+  const isExternalUnbond = useMemo(
+    () => tokenId === "bittensor-substrate-native" && rowMeta.netuid !== ROOT_NETUID,
+    [rowMeta.netuid, tokenId],
   )
 
   if (!rowAddress) return null
@@ -354,6 +360,7 @@ const LockedExtra: FC<{
           address={rowAddress}
           variant="large"
           poolId={rowMeta.poolId ?? rowMeta.hotkey}
+          isExternalUnbond={isExternalUnbond}
         />
       ) : null}
     </div>
@@ -367,6 +374,8 @@ export const DashboardAssetDetails: FC<{ balances: Balances; symbol: string }> =
   const { balancesByToken } = useAssetDetails(balances)
 
   if (balancesByToken.length === 0) return <NoTokensMessage symbol={symbol} />
+
+  // console.log({ balancesByToken })
 
   return (
     <div className="text-body-secondary">
