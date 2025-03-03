@@ -1,6 +1,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, CreditCardIcon, LockIcon, ZapOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
+import { BigNumber } from "bignumber.js"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -99,16 +100,25 @@ const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, 
       {!isUniswapV2LpToken &&
         detailRows
           .filter((row) => row.tokens.gt(0))
-          .map((row, i, rows) => (
-            <TokenBalancesDetailRow
-              key={row.key}
-              row={row}
-              isLastRow={rows.length === i + 1}
-              symbol={token.symbol}
-              status={status}
-              tokenId={tokenId}
-            />
-          ))}
+          .map((row, i, rows) => {
+            const { symbol } = token
+            const { meta: { dynamicInfo = {} } = {}, title } = row
+
+            const balanceDetailSymbol = title.toLowerCase().includes("subnet")
+              ? dynamicInfo?.tokenSymbol
+              : symbol
+            return (
+              <TokenBalancesDetailRow
+                key={row.key}
+                row={row}
+                isLastRow={rows.length === i + 1}
+                symbol={balanceDetailSymbol}
+                status={status}
+                tokenId={tokenId}
+                tokenDecimals={token.decimals}
+              />
+            )
+          })}
     </div>
   )
 }
@@ -188,69 +198,76 @@ const TokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
+  tokenDecimals,
 }: {
   row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId
-}) => (
-  <div
-    className={classNames(
-      "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-      isLastRow && "rounded-b-sm",
-    )}
-  >
-    <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-      <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
-        <div className="truncate">{row.title}</div>
-        {!!row.locked && tokenId && row.meta && (
-          <LockedExtra
-            tokenId={tokenId}
-            address={row.address}
-            rowMeta={row.meta}
-            isLoading={status.status === "fetching" || !!row.isLoading}
-          />
-        )}
-      </div>
-      {!!row.address && (
-        <div className="text-xs">
-          <PortfolioAccount address={row.address} />
-        </div>
-      )}
-      {!row.address && row.isLoading && !row.description && row.locked && (
-        <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
-      )}
-      {!row.address && row.description && (
-        <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-          {row.description}
-        </div>
-      )}
-    </div>
+  tokenDecimals: number
+}) => {
+  const alphaBalanceInTao = new BigNumber(planckToTokens(row.meta?.amountTao, tokenDecimals) || "0")
+
+  const tokenBalance = alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
+  return (
     <div
       className={classNames(
-        "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
-        status.status === "fetching" && "animate-pulse transition-opacity",
+        "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
+        isLastRow && "rounded-b-sm",
       )}
     >
+      <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+        <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
+          <div className="truncate">{row.title}</div>
+          {!!row.locked && tokenId && row.meta && (
+            <LockedExtra
+              tokenId={tokenId}
+              address={row.address}
+              rowMeta={row.meta}
+              isLoading={status.status === "fetching" || !!row.isLoading}
+            />
+          )}
+        </div>
+        {!!row.address && (
+          <div className="text-xs">
+            <PortfolioAccount address={row.address} />
+          </div>
+        )}
+        {!row.address && row.isLoading && !row.description && row.locked && (
+          <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
+        )}
+        {!row.address && row.description && (
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+            {row.description}
+          </div>
+        )}
+      </div>
       <div
         className={classNames(
-          "flex h-10 items-center gap-2 font-bold",
-          row.locked ? "text-body-secondary" : "text-white",
+          "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
+          status.status === "fetching" && "animate-pulse transition-opacity",
         )}
       >
-        <Tokens amount={row.tokens} symbol={symbol} isBalance />
-        {row.locked ? <LockIcon className="lock shrink-0" /> : null}
-        {status.status === "stale" ? (
-          <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />
-        ) : null}
-      </div>
-      <div className="text-xs">
-        {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+        <div
+          className={classNames(
+            "flex h-10 items-center gap-2 font-bold",
+            row.locked ? "text-body-secondary" : "text-white",
+          )}
+        >
+          <Tokens amount={tokenBalance} symbol={symbol} isBalance />
+          {row.locked ? <LockIcon className="lock shrink-0" /> : null}
+          {status.status === "stale" ? (
+            <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />
+          ) : null}
+        </div>
+        <div className="text-xs">
+          {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 const LockedExtra: FC<{
   tokenId: TokenId
