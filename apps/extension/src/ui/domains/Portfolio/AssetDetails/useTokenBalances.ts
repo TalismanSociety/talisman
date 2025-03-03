@@ -140,7 +140,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
           title:
             meta.netuid === ROOT_NETUID
               ? title
-              : `[${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName}`,
+              : `Subnet Staking [${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName}`,
           description: meta?.description ?? undefined,
           tokens: BigNumber(subtensor.amount.tokens),
           fiat: subtensor.amount.fiat(currency),
