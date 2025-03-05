@@ -11,7 +11,7 @@ const fetchBittensorValidator = async (
 
     return await (
       await fetch(`${TAOSTATS_BASE_PATH}/api/validator/latest/v1?hotkey=${hotkey}`, {
-        method: "GET",
+        method: "PUT",
         headers: {
           "X-Extension-ID": TAOSTATS_API_KEY ?? "",
           "Content-Type": "application/json",

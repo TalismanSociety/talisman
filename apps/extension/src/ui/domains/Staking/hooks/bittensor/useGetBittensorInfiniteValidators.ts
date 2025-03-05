@@ -11,7 +11,7 @@ const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<Valid
       await fetch(
         `${TAOSTATS_BASE_PATH}/api/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
         {
-          method: "GET",
+          method: "PUT",
           headers: {
             "X-Extension-ID": TAOSTATS_API_KEY ?? "",
             "Content-Type": "application/json",
@@ -19,6 +19,7 @@ const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<Valid
         },
       )
     ).json()
+
     return response
   } catch (cause) {
     throw new Error("Failed to fetch TAO stats", { cause })
