@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
 
 const fetchBittensorValidator = async (
@@ -29,31 +29,6 @@ export const useGetBittensorValidator = (hotkey: string | number | null | undefi
     queryFn: () => fetchBittensorValidator(hotkey),
     enabled: !!hotkey,
     staleTime: 10 * 60 * 1000,
-  })
-}
-
-export const useGetBittensorValidators = ({
-  hotkeys,
-  isEnabled = true,
-}: {
-  hotkeys: (string | undefined)[]
-  isEnabled?: boolean
-}) => {
-  return useQueries({
-    queries: hotkeys.map((hotkey) => ({
-      queryKey: ["useGetBittensorValidator", hotkey],
-      queryFn: () => fetchBittensorValidator(hotkey),
-      enabled: !!hotkey && isEnabled,
-      staleTime: 10 * 60 * 1000,
-    })),
-    combine: (results) => {
-      return {
-        data: results.map((result) => result.data?.data?.[0]).filter(Boolean),
-        isPending: results.some((result) => result.isPending),
-        isLoading: results.some((result) => result.isLoading),
-        error: results.find((result) => result.isError),
-      }
-    },
   })
 }
 
