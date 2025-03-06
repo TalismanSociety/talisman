@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
+import { TAOSTATS_BASE_PATH } from "extension-shared"
 
 const fetchBittensorValidator = async (
   hotkey: string | number | null | undefined,
@@ -13,7 +13,6 @@ const fetchBittensorValidator = async (
       await fetch(`${TAOSTATS_BASE_PATH}/api/validator/latest/v1?hotkey=${hotkey}`, {
         method: "GET",
         headers: {
-          "X-Extension-ID": TAOSTATS_API_KEY ?? "",
           "Content-Type": "application/json",
         },
       })

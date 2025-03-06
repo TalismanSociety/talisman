@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
-import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
+import { TAOSTATS_BASE_PATH } from "extension-shared"
 
 import { ValidatorsData } from "./types"
 
@@ -13,7 +13,6 @@ const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<Valid
         {
           method: "GET",
           headers: {
-            "X-Extension-ID": TAOSTATS_API_KEY ?? "",
             "Content-Type": "application/json",
           },
         },
