@@ -6,8 +6,9 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
-import { useGetBittensorValidators } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorValidator"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 import { useChain, useSelectedCurrency, useToken } from "@ui/state"
@@ -128,18 +129,29 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 
     // BITTENSOR
     const subtensor = tokenBalances.each.flatMap((b) =>
-      b.subtensor.map((subtensor, index) => ({
-        key: `${b.id}-subtensor-${index}`,
-        title: getLockTitle({ label: "subtensor-staking" }),
+      b.subtensor.map((subtensor, index) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        description: (subtensor.meta as any)?.description ?? undefined,
-        tokens: BigNumber(subtensor.amount.tokens),
-        fiat: subtensor.amount.fiat(currency),
-        locked: true,
-        // only show address when we're viewing balances for all accounts
-        address: account ? undefined : b.address,
-        meta: subtensor.meta,
-      })),
+        const { meta } = subtensor as any
+        const rootTitle = getLockTitle({
+          label: "subtensor-staking",
+        })
+        const subnetTitle =
+          meta.netuid && meta.dynamicInfo?.subnetIdentity?.subnetName
+            ? `Subnet Staking [${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName}`
+            : "Subnet Staking"
+
+        return {
+          key: `${b.id}-subtensor-${index}`,
+          title: meta.netuid === ROOT_NETUID ? rootTitle : subnetTitle,
+          description: meta?.description ?? undefined,
+          tokens: BigNumber(subtensor.amount.tokens),
+          fiat: subtensor.amount.fiat(currency),
+          locked: true,
+          // only show address when we're viewing balances for all accounts
+          address: account ? undefined : b.address,
+          meta: meta,
+        }
+      }),
     )
 
     return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
@@ -169,28 +181,32 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 }
 
 const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
-  // fetch the validator name for each subtensor staking lock, so we can display it in the description
-  const hotkeys = useMemo(() => {
-    return detailRows
-      .filter((row) => row.meta?.type === "subtensor-staking" && !!row.meta?.hotkey)
-      .map((row) => row.meta?.hotkey as string)
-  }, [detailRows])
-
-  const { data: validators, isLoading: isLoadingValidators } = useGetBittensorValidators({
-    hotkeys,
-    isEnabled: !!hotkeys.length,
-  })
+  const { combinedValidatorsData, isLoading: isLoadingCombinedValidators } =
+    useCombinedBittensorValidatorsData()
 
   return useMemo(() => {
-    return detailRows.map((row) => {
-      if (row.meta?.type === "subtensor-staking")
-        return {
-          ...row,
-          description: validators?.find((v) => v?.hotkey.ss58 === row.meta.hotkey)?.name,
-          isLoading: isLoadingValidators,
-        } as BalanceDetailRow
+    return detailRows
+      .map((row) => {
+        if (row.meta?.type === "subtensor-staking")
+          return {
+            ...row,
+            description: combinedValidatorsData?.find((v) => v?.poolId === row.meta.hotkey)?.name,
+            isLoading: isLoadingCombinedValidators,
+          } as BalanceDetailRow
 
-      return row
-    })
-  }, [detailRows, isLoadingValidators, validators])
+        return row
+      })
+      .sort((a, b) => {
+        if (a.key === "available") return -1 // "available" always first
+        if (b.key === "available") return 1
+
+        if (a.title === "Reserved") return -1 // "reserved" always second
+        if (b.title === "Reserved") return 1
+
+        if (a.meta?.netuid === 0 && b.meta?.netuid !== 0) return -1 // Move netuid === 0 after reserved
+        if (b.meta?.netuid === 0 && a.meta?.netuid !== 0) return 1
+
+        return 0 // Preserve relative order for others
+      })
+  }, [detailRows, combinedValidatorsData, isLoadingCombinedValidators])
 }

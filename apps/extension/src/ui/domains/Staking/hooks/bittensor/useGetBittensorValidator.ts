@@ -1,5 +1,5 @@
-import { useQueries, useQuery } from "@tanstack/react-query"
-import { TAOSTATS_API_KEY, TAOSTATS_BASE_PATH } from "extension-shared"
+import { useQuery } from "@tanstack/react-query"
+import { TAOSTATS_BASE_PATH } from "extension-shared"
 
 const fetchBittensorValidator = async (
   hotkey: string | number | null | undefined,
@@ -13,7 +13,6 @@ const fetchBittensorValidator = async (
       await fetch(`${TAOSTATS_BASE_PATH}/api/validator/latest/v1?hotkey=${hotkey}`, {
         method: "GET",
         headers: {
-          "X-Extension-ID": TAOSTATS_API_KEY ?? "",
           "Content-Type": "application/json",
         },
       })
@@ -29,31 +28,6 @@ export const useGetBittensorValidator = (hotkey: string | number | null | undefi
     queryFn: () => fetchBittensorValidator(hotkey),
     enabled: !!hotkey,
     staleTime: 10 * 60 * 1000,
-  })
-}
-
-export const useGetBittensorValidators = ({
-  hotkeys,
-  isEnabled = true,
-}: {
-  hotkeys: (string | undefined)[]
-  isEnabled?: boolean
-}) => {
-  return useQueries({
-    queries: hotkeys.map((hotkey) => ({
-      queryKey: ["useGetBittensorValidator", hotkey],
-      queryFn: () => fetchBittensorValidator(hotkey),
-      enabled: !!hotkey && isEnabled,
-      staleTime: 10 * 60 * 1000,
-    })),
-    combine: (results) => {
-      return {
-        data: results.map((result) => result.data?.data?.[0]).filter(Boolean),
-        isPending: results.some((result) => result.isPending),
-        isLoading: results.some((result) => result.isLoading),
-        error: results.find((result) => result.isError),
-      }
-    },
   })
 }
 

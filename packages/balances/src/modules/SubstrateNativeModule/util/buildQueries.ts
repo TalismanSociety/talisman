@@ -1,6 +1,7 @@
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { Binary, decodeScale, encodeStateKey } from "@talismn/scale"
 import { BigMath, blake2Concat, decodeAnyAddress } from "@talismn/util"
+import { Enum } from "polkadot-api"
 import { Struct, u32, u128 } from "scale-ts"
 
 import log from "../../../log"
@@ -102,6 +103,7 @@ export async function buildQueries(
       let locksQueryLocks: Array<AmountWithLabel<string>> = []
       let freezesQueryLocks: Array<AmountWithLabel<string>> = []
       let unbondingQueryLocks: Array<AmountWithLabel<string>> = []
+      let holdsQueryLocks: Array<AmountWithLabel<string>> = []
 
       const baseQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
         // For chains which are using metadata < v14
@@ -250,6 +252,53 @@ export async function buildQueries(
         return { chainId, stateKey, decodeResult }
       })()
 
+      const holdsQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
+        const scaleCoder = chainStorageCoders.get(chainId)?.holds
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid address in ${chainId} holds query ${address}`,
+          address,
+        )
+        if (!stateKey) return
+
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = Array<{
+            id?: Enum<{ DelegatedStaking: Enum<{ StakingDelegation: undefined }> }>
+            amount?: bigint
+          }>
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode holds on chain ${chainId}`,
+          )
+
+          // at this time we re only interested in DelegatedStaking holds, to determine if nom pool staked amount is included in reserved or not
+          holdsQueryLocks =
+            decoded
+              ?.filter((hold) => hold.id?.type)
+              .map((hold) => ({
+                type: "locked",
+                source: "substrate-native-holds",
+                label: hold.id!.type,
+                // anount needs to be 0 or a row could appear in the UI, this entry is just for information
+                amount: "0",
+                meta: { amount: (hold?.amount ?? 0n).toString() },
+              })) ?? []
+
+          // values should be replaced entirely, not merged or appended
+          const nonHoldsValues = balanceJson.values.filter(
+            (v) => v.source !== "substrate-native-holds",
+          )
+          balanceJson.values = nonHoldsValues.concat(holdsQueryLocks)
+
+          return balanceJson
+        }
+
+        return { chainId, stateKey, decodeResult }
+      })()
+
       const freezesQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
         const scaleCoder = chainStorageCoders.get(chainId)?.freezes
         const stateKey = encodeStateKey(
@@ -350,7 +399,7 @@ export async function buildQueries(
         return { chainId, stateKey, decodeResult }
       })()
 
-      const queries = [baseQuery, locksQuery, freezesQuery, unbondingQuery].filter(
+      const queries = [baseQuery, locksQuery, freezesQuery, holdsQuery, unbondingQuery].filter(
         (query): query is RpcStateQuery<SubNativeBalance> => Boolean(query),
       )
 

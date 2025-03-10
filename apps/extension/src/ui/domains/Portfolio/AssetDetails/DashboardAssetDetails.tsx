@@ -1,6 +1,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
+import { BigNumber } from "bignumber.js"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { Address, Balance, Balances } from "extension-core"
 import { FC, Suspense, useMemo } from "react"
@@ -13,6 +14,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
@@ -49,7 +51,7 @@ const AssetState = ({
   return (
     <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
-        <div className="shrink-0 whitespace-nowrap font-bold text-white">{title}</div>
+        <div className="shrink-0 whitespace-nowrap font-bold capitalize text-white">{title}</div>
         {/* show description next to title when address is set */}
         {description && address && <div className="grow truncate text-sm">{description}</div>}
         {!description && address && isLoading && (
@@ -158,16 +160,26 @@ const TokenBalances: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, 
       {!isUniswapV2LpToken &&
         detailRows
           .filter((row) => row.tokens.gt(0))
-          .map((row, i, rows) => (
-            <ChainTokenBalancesDetailRow
-              key={row.key}
-              row={row}
-              isLastRow={rows.length === i + 1}
-              symbol={token.symbol}
-              status={status}
-              tokenId={tokenId}
-            />
-          ))}
+          .map((row, i, rows) => {
+            const { symbol } = token
+            const { meta: { dynamicInfo = {} } = {}, title } = row
+
+            const balanceDetailSymbol = title.toLowerCase().includes("subnet")
+              ? dynamicInfo?.tokenSymbol
+              : symbol
+
+            return (
+              <ChainTokenBalancesDetailRow
+                key={row.key}
+                row={row}
+                isLastRow={rows.length === i + 1}
+                symbol={balanceDetailSymbol}
+                status={status}
+                tokenId={tokenId}
+                tokenDecimals={token.decimals}
+              />
+            )
+          })}
     </div>
   )
 }
@@ -247,57 +259,65 @@ const ChainTokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
+  tokenDecimals,
 }: {
   row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
-}) => (
-  <div
-    key={row.key}
-    className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
-  >
-    <div>
-      <AssetState
-        title={row.title}
-        description={row.description}
-        render
-        address={row.address}
-        isLoading={row.isLoading}
-        locked={row.locked}
-      />
+  tokenDecimals: number
+}) => {
+  const alphaBalanceInTao = new BigNumber(planckToTokens(row.meta?.amountTao, tokenDecimals) || "0")
+
+  const tokenBalance = alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
+
+  return (
+    <div
+      key={row.key}
+      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+    >
+      <div>
+        <AssetState
+          title={row.title}
+          description={row.description}
+          render
+          address={row.address}
+          isLoading={row.isLoading}
+          locked={row.locked}
+        />
+      </div>
+      {!row.locked && <div></div>}
+      <div>
+        <AssetBalanceCellValue
+          render={tokenBalance.gt(0)}
+          tokens={tokenBalance}
+          fiat={row.fiat}
+          symbol={symbol}
+          locked={row.locked}
+          balancesStatus={status}
+          className={classNames(
+            (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+          )}
+        />
+      </div>
+      {!!row.locked && row.meta && tokenId && (
+        <LockedExtra
+          tokenId={tokenId}
+          address={row.address}
+          isLoading={status.status === "fetching"}
+          rowMeta={row.meta}
+        />
+      )}
     </div>
-    {!row.locked && <div></div>}
-    <div>
-      <AssetBalanceCellValue
-        render={row.tokens.gt(0)}
-        tokens={row.tokens}
-        fiat={row.fiat}
-        symbol={symbol}
-        locked={row.locked}
-        balancesStatus={status}
-        className={classNames(
-          (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
-        )}
-      />
-    </div>
-    {!!row.locked && row.meta && tokenId && (
-      <LockedExtra
-        tokenId={tokenId}
-        address={row.address}
-        isLoading={status.status === "fetching"}
-        rowMeta={row.meta}
-      />
-    )}
-  </div>
-)
+  )
+}
 
 const LockedExtra: FC<{
   tokenId: TokenId
   address?: string // this is only set when browsing all accounts
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string }
+  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string; netuid?: number }
 }> = ({ tokenId, address, rowMeta, isLoading }) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
@@ -324,6 +344,11 @@ const LockedExtra: FC<{
   const canUnbond = useMemo(
     () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === "bittensor-substrate-native",
     [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+  )
+
+  const isExternalUnbond = useMemo(
+    () => tokenId === "bittensor-substrate-native" && rowMeta.netuid !== ROOT_NETUID,
+    [rowMeta.netuid, tokenId],
   )
 
   if (!rowAddress) return null
@@ -354,6 +379,7 @@ const LockedExtra: FC<{
           address={rowAddress}
           variant="large"
           poolId={rowMeta.poolId ?? rowMeta.hotkey}
+          isExternalUnbond={isExternalUnbond}
         />
       ) : null}
     </div>

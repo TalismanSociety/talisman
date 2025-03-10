@@ -10,6 +10,7 @@ import { createNotification } from "../../notifications"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { settingsStore } from "../app/store.settings"
+import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { addEvmTransaction, updateTransactionStatus } from "./helpers"
 import { WatchTransactionOptions } from "./types"
@@ -85,6 +86,13 @@ export const watchEthereumTransaction = async (
             receipt.blockNumber,
             true,
           )
+
+        // if tx orignates from a dapp, in case it's a swap for a new token, launch an asset discovery scan
+        if (!!siteUrl && !!unsigned.from)
+          assetDiscoveryScanner.startScan({
+            networkIds: [evmNetworkId],
+            addresses: [unsigned.from],
+          })
       }
     } catch (err) {
       const isNotFound =

@@ -188,7 +188,7 @@ export const AddLedgerSelectNetwork = () => {
 
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
-      <div className="flex-grow">
+      <div>
         <HeaderBlock
           title={t("Connect Ledger")}
           text={t("What type of account would you like to connect?")}
@@ -280,7 +280,7 @@ export const AddLedgerSelectNetwork = () => {
             )}
           </>
         )}
-        <div className={classNames("mt-16 h-[20rem]", showConnect ? "visible" : "invisible")}>
+        <div className={classNames("mt-16 h-[12rem]", showConnect ? "visible" : "invisible")}>
           {showConnect && platform === "polkadot" && chainId && (
             <>
               {substrateAppType === AddSubstrateLedgerAppType.Legacy && (
