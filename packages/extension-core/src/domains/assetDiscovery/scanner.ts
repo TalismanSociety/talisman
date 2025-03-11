@@ -9,7 +9,15 @@ import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
-import { combineLatest, debounceTime, distinct, distinctUntilKeyChanged, map, skip } from "rxjs"
+import {
+  combineLatest,
+  debounceTime,
+  distinct,
+  distinctUntilKeyChanged,
+  filter,
+  map,
+  skip,
+} from "rxjs"
 import { PublicClient } from "viem"
 
 import { db } from "../../db"
@@ -18,6 +26,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isEvmToken } from "../../util/isEvmToken"
 import { appStore } from "../app/store.app"
+import { passwordStore } from "../app/store.password"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
@@ -57,6 +66,7 @@ class AssetDiscoveryScanner {
   constructor() {
     this.watchNewAccounts()
     this.watchEnabledNetworks()
+    this.scanOnUnlock()
     this.resume()
   }
 
@@ -87,7 +97,7 @@ class AssetDiscoveryScanner {
                 networkIds,
               })
 
-              this.startScan({ networkIds, addresses })
+              await this.startScan({ networkIds, addresses })
             }
           }
 
@@ -112,7 +122,7 @@ class AssetDiscoveryScanner {
         ),
         distinct((allActiveNetworkIds) => allActiveNetworkIds.join("")),
       )
-      .subscribe((allActiveNetworkIds) => {
+      .subscribe(async (allActiveNetworkIds) => {
         try {
           if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
             const networkIds = allActiveNetworkIds.filter(
@@ -127,7 +137,7 @@ class AssetDiscoveryScanner {
                 networkIds,
               })
 
-              this.startScan({ networkIds, addresses })
+              await this.startScan({ networkIds, addresses })
             }
           }
 
@@ -140,8 +150,33 @@ class AssetDiscoveryScanner {
       })
   }
 
+  private scanOnUnlock = () => {
+    passwordStore.isLoggedIn
+      .pipe(
+        filter((status) => status === "TRUE"),
+        debounceTime(10_000),
+      )
+      .subscribe(async () => {
+        try {
+          await awaitKeyringLoaded()
+          const allEvmNetworks = await chaindataProvider.evmNetworks()
+
+          const addresses = keyring.getAccounts().map((acc) => acc.address)
+          const networkIds = allEvmNetworks.filter((n) => n.forceScan).map((n) => n.id)
+
+          if (!addresses.length || !networkIds.length) return
+
+          // on wallet unlock, scan networks with forceScan:true
+          // this helps discovery during growth campagins, where users are incentivized to send tokens from CEXs
+          await this.startScan({ addresses, networkIds })
+        } catch (err) {
+          log.error("[AssetDiscovery] Failed to start scan on unlock", { err })
+        }
+      })
+  }
+
   private resume(): void {
-    setTimeout(async () => {
+    setTimeout(() => {
       this.executeNextScan()
       // resume after 5 sec to not interfere with other startup routines
       // could be longer but because of MV3 it's better to start asap
@@ -436,10 +471,10 @@ class AssetDiscoveryScanner {
       .filter((n) => isEvmNetworkActive(n, activeEvmNetworks))
       .map((n) => n.id)
 
-    // enqueue scan
-    this.startScan({ networkIds, addresses })
-
     await appStore.set({ isAssetDiscoveryScanPending: false })
+
+    // enqueue scan
+    await this.startScan({ networkIds, addresses })
   }
 
   private async enableDiscoveredTokens(): Promise<void> {
