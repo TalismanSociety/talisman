@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   hideBalances: false,
   hideDust: false,
   allowNotifications: true,
-  autoLockMinutes: 0,
+  autoLockMinutes: 15,
   spiritClanFeatures: true,
   selectableCurrencies: ["usd", "dot", "eth"],
   selectedCurrency: "usd",
