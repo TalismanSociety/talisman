@@ -535,7 +535,7 @@ const getActiveNetworkIdsToScan = async () => {
   ])
 
   return evmNetworks
-    .filter((n) => !n.isTestnet && isEvmNetworkActive(n, activeEvmNetworks))
+    .filter((n) => n.forceScan || (!n.isTestnet && isEvmNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
     .map((n) => n.id)
 }
 

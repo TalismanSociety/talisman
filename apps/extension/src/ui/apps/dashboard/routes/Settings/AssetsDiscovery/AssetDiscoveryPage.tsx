@@ -382,8 +382,12 @@ const Header: FC = () => {
     useAssetDiscoveryScanProgress()
 
   const [includeTestnets] = useSetting("useTestnets")
-  const activeNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
   const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
+
+  const activeNetworks = useActiveEvmNetworksState()
+  const recommendedNetworks = useMemo(() => {
+    return allNetworks.filter((n) => n.forceScan || isEvmNetworkActive(n, activeNetworks))
+  }, [activeNetworks, allNetworks])
 
   const allAccounts = useAccounts("all")
   const addresses = allAccounts.map((a) => a.address)
@@ -394,12 +398,12 @@ const Header: FC = () => {
     (all: boolean) => async () => {
       isInitializingScan$.next(true)
       await api.assetDiscoveryStartScan({
-        networkIds: (all ? allNetworks : activeNetworks).map((n) => n.id),
+        networkIds: (all ? allNetworks : recommendedNetworks).map((n) => n.id),
         addresses,
       })
       isInitializingScan$.next(false)
     },
-    [activeNetworks, addresses, allNetworks],
+    [recommendedNetworks, addresses, allNetworks],
   )
 
   const handleCancelScanClick = useCallback(() => {
@@ -486,7 +490,7 @@ const Header: FC = () => {
           </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem onClick={handleScanClick(false)}>
-              {t("Scan active networks")} ({activeNetworks.length})
+              {t("Scan recommended networks")} ({recommendedNetworks.length})
             </ContextMenuItem>
             <ContextMenuItem onClick={handleScanClick(true)}>
               {t("Scan all networks")} ({allNetworks.length})
