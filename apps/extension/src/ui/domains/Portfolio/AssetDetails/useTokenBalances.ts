@@ -136,9 +136,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
           label: "subtensor-staking",
         })
         const subnetTitle =
-          meta.netuid && meta.dynamicInfo?.subnetIdentity?.subnetName
-            ? `Subnet Staking [${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName}`
-            : "Subnet Staking"
+          `Subnet Staking [${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName || ""}`.trim()
 
         return {
           key: `${b.id}-subtensor-${index}`,
