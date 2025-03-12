@@ -97,30 +97,47 @@ export async function subscribeSubtensorStaking(
       uniqueNetuids: number[],
     ): Promise<(DynamicInfoType | null | undefined)[]> => {
       const DYNAMIC_INFO_METHOD = "SubnetInfoRuntimeApi_get_dynamic_info"
+      const MAX_RETRIES = 3
+      const RETRY_DELAY_MS = 500
+
+      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
       const fetchInfo = async (netuid: number): Promise<DynamicInfoType | null | undefined> => {
         if (netuid === 0) return null
 
-        try {
-          const response = await chainConnector.send(
-            chainId,
-            "state_call",
-            [DYNAMIC_INFO_METHOD, EncodeParams_GetDynamicInfo(netuid)],
-            undefined,
-            { expectErrors: true },
-          )
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+          try {
+            const response = await chainConnector.send(
+              chainId,
+              "state_call",
+              [DYNAMIC_INFO_METHOD, EncodeParams_GetDynamicInfo(netuid)],
+              undefined,
+              { expectErrors: true },
+            )
 
-          const result = netuid === 7 ? "aBcd2f" : response
-          const decodedResult = DecodeResult_GetDynamicInfo(result)
+            const decodedResult = DecodeResult_GetDynamicInfo(response)
 
-          dynamicInfoCache.set(netuid, decodedResult) // Cache successful response
-          return decodedResult
-        } catch (error) {
-          if (dynamicInfoCache.has(netuid)) {
-            return dynamicInfoCache.get(netuid) // Use cached value on failure
+            dynamicInfoCache.set(netuid, decodedResult) // Cache successful response
+            return decodedResult
+          } catch (error) {
+            log.warn(`Attempt ${attempt} failed for netuid ${netuid}:`, error)
+
+            if (attempt < MAX_RETRIES) {
+              const backoffTime = RETRY_DELAY_MS * 2 ** (attempt - 1)
+              log.info(`Retrying in ${backoffTime}ms...`)
+              await delay(backoffTime)
+            }
           }
-          log.error(`Failed to fetch dynamic info for netuid ${netuid}:`, error)
-          return null
         }
+
+        if (dynamicInfoCache.has(netuid)) {
+          return dynamicInfoCache.get(netuid) // Use cached value on failure
+        }
+
+        log.error(
+          `Failed to fetch dynamic info for netuid ${netuid} after ${MAX_RETRIES} attempts.`,
+        )
+        return null
       }
 
       return Promise.all(uniqueNetuids.map(fetchInfo))
