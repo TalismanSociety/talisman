@@ -1,0 +1,112 @@
+import { TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import { ReactNode, Suspense } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Balances } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
+import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { UseTokenReturnType } from "@ui/state"
+
+import { BalanceSummary } from "../../useTokenBalancesSummary"
+import { CopyAddressButton } from "../CopyAddressIconButton"
+import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
+import { TokenContextMenu } from "../TokenContextMenu"
+
+type TokenBalancesListProps = {
+  tokenId: TokenId
+  token: UseTokenReturnType
+  balances: Balances
+  detailRowsLength: number
+  chainOrNetworkId: string
+  chainOrNetworkName: string
+  networkType: string
+  summary: BalanceSummary
+  status: BalancesStatus
+  children: ReactNode
+}
+
+export const TokenBalancesList = ({
+  tokenId,
+  token,
+  balances,
+  detailRowsLength,
+  chainOrNetworkId,
+  chainOrNetworkName,
+  networkType,
+  summary,
+  status,
+  children,
+}: TokenBalancesListProps) => {
+  const { t } = useTranslation()
+
+  if (!token) return null
+
+  return (
+    <div className="mb-8">
+      <div
+        className={classNames(
+          "bg-grey-800 grid grid-cols-[40%_30%_30%]",
+          detailRowsLength ? "rounded-t" : "rounded",
+        )}
+      >
+        <div className="flex">
+          <div className="shrink-0 p-8 text-xl">
+            <TokenLogo tokenId={tokenId} />
+          </div>
+          <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
+            <div className="base text-body flex items-center font-bold">
+              <ChainLogo className="mr-2" id={chainOrNetworkId} />
+              <span className="mr-2">{chainOrNetworkName}</span>
+              <CopyAddressButton networkId={chainOrNetworkId} />
+              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
+                <SendFundsTokenButton tokenId={tokenId} />
+                {tokenId && (
+                  <TokenContextMenu
+                    tokenId={tokenId}
+                    placement="bottom-start"
+                    className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full p-0 text-xs opacity-50"
+                  />
+                )}
+              </Suspense>
+            </div>
+            <div>{networkType}</div>
+          </div>
+        </div>
+        <div>
+          <AssetBalanceCellValue
+            locked
+            render={summary.lockedTokens.gt(0)}
+            tokens={summary.lockedTokens}
+            fiat={summary.lockedFiat}
+            symbol={token.symbol}
+            tooltip={t("Total Locked Balance")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity",
+            )}
+          />
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          {tokenId && <BondButton tokenId={tokenId} balances={balances} />}
+          <AssetBalanceCellValue
+            render
+            tokens={summary.availableTokens}
+            fiat={summary.availableFiat}
+            symbol={token.symbol}
+            tooltip={t("Total Available Balance")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity",
+            )}
+          />
+        </div>
+      </div>
+      {children}
+    </div>
+  )
+}
