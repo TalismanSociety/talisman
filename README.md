@@ -183,3 +183,5 @@ pnpm changeset
 ## Security disclosures
 
 If you find a security issue or exploit, please email us at **security@talisman.xyz**. Please _DO NOT_ create an issue or PR in this repo for security issues.
+
+-
