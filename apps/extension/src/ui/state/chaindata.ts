@@ -314,3 +314,5 @@ export const [useTokensMap, getTokensMap$] = bind(
 export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
   return allTokensMap$.pipe(map((tokensMap) => (tokenId && tokensMap[tokenId ?? "#"]) || null))
 })
+
+export type UseTokenReturnType = ReturnType<typeof useToken>
