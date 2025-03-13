@@ -19,31 +19,36 @@ ZipPlugin.prototype.apply = function (compiler) {
   }
 
   compiler.hooks.done.tapAsync(ZipPlugin.name, (_, callback) => {
-    const output = fs.createWriteStream(path.join(options.folder, options.filename))
-    var archive = archiver("zip")
+    try {
+      console.log(`ZipPlugin Generating ${options.filename}`)
+      const output = fs.createWriteStream(path.join(options.folder, options.filename))
+      var archive = archiver("zip")
 
-    output.on("close", function () {
-      console.log(`${options.filename} generated : ${archive.pointer()} total bytes`)
-      callback()
-    })
+      output.on("close", function () {
+        console.log(`${options.filename} generated : ${archive.pointer()} total bytes`)
+        callback()
+      })
 
-    archive.on("error", function (err) {
-      console.error("Failed to create zip file", err)
-      callback(err)
-    })
+      archive.on("error", function (err) {
+        console.error("Failed to create zip file", err)
+        callback(err)
+      })
 
-    archive.pipe(output)
-    const ignore = [options.filename]
-    if (options.exclude) {
-      ignore.push(options.exclude)
+      archive.pipe(output)
+      const ignore = [options.filename]
+      if (options.exclude) {
+        ignore.push(options.exclude)
+      }
+
+      archive.glob("**/*", {
+        cwd: options.folder,
+        ignore,
+      })
+
+      archive.finalize()
+    } catch (err) {
+      console.error("ZipPlugin", err)
     }
-
-    archive.glob("**/*", {
-      cwd: options.folder,
-      ignore,
-    })
-
-    archive.finalize()
   })
 }
 
