@@ -386,7 +386,10 @@ const Header: FC = () => {
 
   const activeNetworks = useActiveEvmNetworksState()
   const recommendedNetworks = useMemo(() => {
-    return allNetworks.filter((n) => n.forceScan || isEvmNetworkActive(n, activeNetworks))
+    return allNetworks.filter(
+      (n) =>
+        isEvmNetworkActive(n, activeNetworks) || (n.forceScan && activeNetworks[n.id] !== false),
+    )
   }, [activeNetworks, allNetworks])
 
   const allAccounts = useAccounts("all")

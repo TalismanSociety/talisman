@@ -159,10 +159,9 @@ class AssetDiscoveryScanner {
       .subscribe(async () => {
         try {
           await awaitKeyringLoaded()
-          const allEvmNetworks = await chaindataProvider.evmNetworks()
 
           const addresses = keyring.getAccounts().map((acc) => acc.address)
-          const networkIds = allEvmNetworks.filter((n) => n.forceScan).map((n) => n.id)
+          const networkIds = await getNetworkIdsToForceScan()
 
           if (!addresses.length || !networkIds.length) return
 
@@ -536,6 +535,17 @@ const getActiveNetworkIdsToScan = async () => {
 
   return evmNetworks
     .filter((n) => n.forceScan || (!n.isTestnet && isEvmNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
+    .map((n) => n.id)
+}
+
+const getNetworkIdsToForceScan = async () => {
+  const [evmNetworks, activeEvmNetworks] = await Promise.all([
+    chaindataProvider.evmNetworks(),
+    activeEvmNetworksStore.get(),
+  ])
+
+  return evmNetworks
+    .filter((n) => n.forceScan && activeEvmNetworks[n.id] !== false) // note: forceScan must also work on testnets
     .map((n) => n.id)
 }
 
