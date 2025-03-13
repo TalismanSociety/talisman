@@ -13,9 +13,6 @@ import {
 import { keyringStore } from "../../keyring/store"
 
 jest.setTimeout(20_000)
-jest.mock("../../../util/isBackgroundPage", () => ({
-  isBackgroundPage: jest.fn().mockResolvedValue(true),
-}))
 
 describe("App handler when password is not trimmed", () => {
   let extension: Extension
