@@ -41,7 +41,7 @@ class KeyringStore {
 
   constructor() {
     if (!isBackgroundPage())
-      throw new Error("Keyring store can only be accessed from the background thread")
+      log.warn("Keyring store should only be accessed from the background thread")
 
     this.#keyring$ = this.#json$.pipe(
       map((json) => (json ? Keyring.load(json) : Keyring.create())),
