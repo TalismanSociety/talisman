@@ -3,9 +3,12 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "@extension/core"
 
 import { useTokenBalances } from "../useTokenBalances"
+import { BittensorTokenBalances } from "./BittensorTokenBalances"
 import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
 import { ChainTokenBalancesUniswapV2Row } from "./ChainTokenBalancesUniswapV2Row"
 import { TokenBalancesList } from "./TokenBalancesList"
+
+const BITTENSOR_TOKEN_ID = "bittensor-substrate-native"
 
 type TokenBalancesParams = {
   balances: Balances
@@ -22,6 +25,10 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
   const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
+
+  if (tokenId === BITTENSOR_TOKEN_ID) {
+    return <BittensorTokenBalances tokenId={tokenId} balances={balances} />
+  }
 
   return (
     <TokenBalancesList
@@ -50,19 +57,12 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
         detailRows
           .filter((row) => row.tokens.gt(0))
           .map((row, i, rows) => {
-            const { symbol } = token
-            const { meta: { dynamicInfo = {} } = {}, title } = row
-
-            const balanceDetailSymbol = title.toLowerCase().includes("subnet")
-              ? dynamicInfo?.tokenSymbol
-              : symbol
-
             return (
               <ChainTokenBalancesDetailRow
                 key={row.key}
                 row={row}
                 isLastRow={rows.length === i + 1}
-                symbol={balanceDetailSymbol}
+                symbol={token.symbol}
                 status={status}
                 tokenId={tokenId}
                 tokenDecimals={token.decimals}

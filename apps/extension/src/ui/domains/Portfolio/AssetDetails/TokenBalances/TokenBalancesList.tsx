@@ -24,10 +24,12 @@ type TokenBalancesListProps = {
   detailRowsLength: number
   chainOrNetworkId: string
   chainOrNetworkName: string
-  networkType: string
+  networkType?: string
+  assetPriceInfo?: ReactNode
   summary: BalanceSummary
   status: BalancesStatus
   children: ReactNode
+  shouldDisplayChainLogo?: boolean
 }
 
 export const TokenBalancesList = ({
@@ -38,9 +40,11 @@ export const TokenBalancesList = ({
   chainOrNetworkId,
   chainOrNetworkName,
   networkType,
+  assetPriceInfo,
   summary,
   status,
   children,
+  shouldDisplayChainLogo = true,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -60,7 +64,7 @@ export const TokenBalancesList = ({
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">
-              <ChainLogo className="mr-2" id={chainOrNetworkId} />
+              {shouldDisplayChainLogo && <ChainLogo className="mr-2" id={chainOrNetworkId} />}
               <span className="mr-2">{chainOrNetworkName}</span>
               <CopyAddressButton networkId={chainOrNetworkId} />
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
@@ -74,7 +78,8 @@ export const TokenBalancesList = ({
                 )}
               </Suspense>
             </div>
-            <div>{networkType}</div>
+            {assetPriceInfo && assetPriceInfo}
+            {networkType && <div>{networkType}</div>}
           </div>
         </div>
         <div>
