@@ -177,6 +177,7 @@ rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
 ```bash
 # Make changes, and then run:
 pnpm changeset
+
 # Select the packages which have been modified and write a commit message
 ```
 
