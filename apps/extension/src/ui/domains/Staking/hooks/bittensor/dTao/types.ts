@@ -43,3 +43,18 @@ export type SubnetApiResponse = {
   pagination: Pagination
   data: SubnetPool[]
 }
+
+export type SubnetDescription = {
+  netuid: string | number
+  bittensor_id: string
+  name: string
+  description: string
+  hw_requirements: string
+  github: string
+  image_url: string
+}
+
+export type SubnetApiDescriptionsResponse = {
+  pagination: Pagination
+  data: SubnetDescription[]
+}
