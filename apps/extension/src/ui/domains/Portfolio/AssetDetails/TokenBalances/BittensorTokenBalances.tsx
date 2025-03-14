@@ -3,9 +3,11 @@ import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 import { useTokenBalances } from "../useTokenBalances"
+import { AssetPercentageChange } from "./AssetPercentageChange"
 // import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
 
@@ -17,6 +19,7 @@ type TokenBalancesParams = {
 export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
   const tokenRates = useTokenRates(tokenId)
   const currency = useSelectedCurrency()
+  const { subnetData, isError, isLoading, isFetchingNextPage } = useCombinedSubnetData()
   const { chainOrNetwork, summary, token, detailRows, status } = useTokenBalances({
     tokenId,
     balances,
@@ -31,6 +34,8 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
   return Object.keys(groupedStakes).map((key, i) => {
     const isDefaultGroup = Number(key) === ROOT_NETUID
     const [fistGroupStake] = groupedStakes[key]!
+
+    const { price_change_1_day } = subnetData[Number(key)] ?? {}
 
     const {
       meta: {
@@ -51,7 +56,14 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
     const assetPriceInfo = isDefaultGroup ? (
       <div>Root</div>
     ) : (
-      <Fiat amount={formatter?.fiat(currency) ?? 0} noCountUp />
+      <div className="flex items-center space-x-2">
+        <Fiat amount={formatter?.fiat(currency) ?? 0} noCountUp />
+        <AssetPercentageChange
+          priceChange={price_change_1_day}
+          isError={isError}
+          isLoading={isFetchingNextPage || isLoading}
+        />
+      </div>
     )
 
     return (

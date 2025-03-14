@@ -73,5 +73,6 @@ export const useCombinedSubnetData = () => {
     subnetData: subnetData,
     isError: isSubnetDescriptionsError || isSubnetPoolsError,
     isLoading: isSubnetDescriptionsLoading || isSubnetPoolsLoading,
+    isFetchingNextPage: isSubnetDescriptionsFetchingNextPage || isSubnetPoolsFetchingNextPage,
   }
 }
