@@ -58,3 +58,8 @@ export type SubnetApiDescriptionsResponse = {
   pagination: Pagination
   data: SubnetDescription[]
 }
+
+export type SubnetData = Partial<SubnetDescription> &
+  Partial<SubnetPool> & {
+    descriptionName?: string
+  }
