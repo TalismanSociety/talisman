@@ -30,6 +30,7 @@ type TokenBalancesListProps = {
   status: BalancesStatus
   children: ReactNode
   shouldDisplayChainLogo?: boolean
+  symbol: string
 }
 
 export const TokenBalancesList = ({
@@ -45,6 +46,7 @@ export const TokenBalancesList = ({
   status,
   children,
   shouldDisplayChainLogo = true,
+  symbol,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -88,7 +90,7 @@ export const TokenBalancesList = ({
             render={summary.lockedTokens.gt(0)}
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
-            symbol={token.symbol}
+            symbol={symbol}
             tooltip={t("Total Locked Balance")}
             balancesStatus={status}
             className={classNames(
@@ -102,7 +104,7 @@ export const TokenBalancesList = ({
             render
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
-            symbol={token.symbol}
+            symbol={symbol}
             tooltip={t("Total Available Balance")}
             balancesStatus={status}
             className={classNames(

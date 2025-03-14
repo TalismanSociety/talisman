@@ -41,6 +41,7 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
       networkType={networkType}
       summary={summary}
       status={status}
+      symbol={token.symbol}
     >
       {isUniswapV2LpToken &&
         balances.sorted

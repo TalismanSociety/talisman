@@ -1,4 +1,6 @@
+import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
 import { TokenId } from "@talismn/chaindata-provider"
+import BigNumber from "bignumber.js"
 import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -6,6 +8,7 @@ import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
+import { type BalanceSummary } from "../../useTokenBalancesSummary"
 import { useTokenBalances } from "../useTokenBalances"
 import { AssetPercentageChange } from "./AssetPercentageChange"
 // import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
@@ -33,10 +36,11 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
 
   return Object.keys(groupedStakes).map((key, i) => {
     const isDefaultGroup = Number(key) === ROOT_NETUID
-    const [fistGroupStake] = groupedStakes[key]!
-
+    const groupedStakesByKey = groupedStakes[key]!
+    const [fistGroupStake] = groupedStakesByKey
     const { price_change_1_day } = subnetData[Number(key)] ?? {}
 
+    // Destruct data from the first stake in the group, as the data is the destructed data is the  same for all stakes in the group
     const {
       meta: {
         alphaToTaoRate,
@@ -44,8 +48,31 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
       } = {},
     } = fistGroupStake
 
+    const groupSummary = groupedStakesByKey.reduce<BalanceSummary>(
+      (acc, { fiat, meta: { amountTao } = {} }) => {
+        return {
+          ...acc,
+          lockedFiat: acc.lockedFiat! + (fiat || 0),
+          lockedTokens: acc.lockedTokens.plus(
+            BigNumber(amountTao / Number(SCALE_FACTOR.toString())),
+          ),
+        }
+      },
+      {
+        availableFiat: 0,
+        availableTokens: BigNumber(0),
+        lockedFiat: 0,
+        lockedTokens: BigNumber(0),
+        totalFiat: 0,
+        totalTokens: BigNumber(0),
+      },
+    )
+
     const subnetListName = `${key} | ${subnetName} ${tokenSymbol}`
     const chainName = isDefaultGroup ? chainOrNetwork.name || "" : subnetListName
+
+    const rowSummary = isDefaultGroup ? summary : groupSummary
+    const symbol = isDefaultGroup ? token.symbol : tokenSymbol
 
     const formatter = new BalanceFormatter(
       BigInt(alphaToTaoRate || "0"),
@@ -76,9 +103,10 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         chainOrNetworkId={chainOrNetwork.id}
         chainOrNetworkName={chainName}
         assetPriceInfo={assetPriceInfo}
-        summary={summary}
+        summary={rowSummary}
         status={status}
         shouldDisplayChainLogo={false}
+        symbol={symbol}
       >
         {" "}
         <div>banana</div>
