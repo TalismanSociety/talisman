@@ -11,7 +11,7 @@ import { useSelectedCurrency, useTokenRates } from "@ui/state"
 import { type BalanceSummary } from "../../useTokenBalancesSummary"
 import { useTokenBalances } from "../useTokenBalances"
 import { AssetPercentageChange } from "./AssetPercentageChange"
-// import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
+import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
 
 type TokenBalancesParams = {
@@ -68,7 +68,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
       },
     )
 
-    const subnetListName = `${key} | ${subnetName} ${tokenSymbol}`
+    const subnetListName = `${key} | ${subnetName || ""} ${tokenSymbol || ""}`.trim()
     const chainName = isDefaultGroup ? chainOrNetwork.name || "" : subnetListName
 
     const rowSummary = isDefaultGroup ? summary : groupSummary
@@ -108,46 +108,26 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         shouldDisplayChainLogo={false}
         symbol={symbol}
       >
-        {" "}
-        <div>banana</div>
+        {groupedStakesByKey.map((row, i, rows) => {
+          const { meta: { dynamicInfo = {} } = {}, title } = row
+
+          const balanceDetailSymbol = title.toLowerCase().includes("subnet")
+            ? dynamicInfo?.tokenSymbol
+            : symbol
+
+          return (
+            <ChainTokenBalancesDetailRow
+              key={row.key}
+              row={row}
+              isLastRow={rows.length === i + 1}
+              symbol={balanceDetailSymbol}
+              status={status}
+              tokenId={tokenId}
+              tokenDecimals={token.decimals}
+            />
+          )
+        })}
       </TokenBalancesList>
     )
   })
-
-  // return (
-  //   <TokenBalancesList
-  //     tokenId={tokenId}
-  //     token={token}
-  //     balances={balances}
-  //     detailRowsLength={detailRows.length}
-  //     chainOrNetworkId={chainOrNetwork.id}
-  //     chainOrNetworkName={chainOrNetwork.name ?? ""}
-  //     networkType={networkType}
-  //     summary={summary}
-  //     status={status}
-  //   >
-  //     {detailRows
-  //       .filter((row) => row.tokens.gt(0))
-  //       .map((row, i, rows) => {
-  //         const { symbol } = token
-  //         const { meta: { dynamicInfo = {} } = {}, title } = row
-
-  //         const balanceDetailSymbol = title.toLowerCase().includes("subnet")
-  //           ? dynamicInfo?.tokenSymbol
-  //           : symbol
-
-  //         return (
-  //           <ChainTokenBalancesDetailRow
-  //             key={row.key}
-  //             row={row}
-  //             isLastRow={rows.length === i + 1}
-  //             symbol={balanceDetailSymbol}
-  //             status={status}
-  //             tokenId={tokenId}
-  //             tokenDecimals={token.decimals}
-  //           />
-  //         )
-  //       })}
-  //   </TokenBalancesList>
-  // )
 }
