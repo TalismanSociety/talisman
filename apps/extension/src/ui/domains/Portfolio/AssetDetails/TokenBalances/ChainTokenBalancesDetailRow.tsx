@@ -24,7 +24,9 @@ export const ChainTokenBalancesDetailRow = ({
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
   tokenDecimals: number
 }) => {
-  const alphaBalanceInTao = new BigNumber(planckToTokens(row.meta?.amountTao, tokenDecimals) || "0")
+  const alphaBalanceInTao = new BigNumber(
+    planckToTokens(row.meta?.amountStaked, tokenDecimals) || "0",
+  )
 
   const tokenBalance = alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
 

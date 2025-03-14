@@ -251,7 +251,7 @@ export async function subscribeSubtensorStaking(
                   type: "subtensor-staking",
                   hotkey,
                   netuid,
-                  amountTao: stake.toString(),
+                  amountStaked: stake.toString(),
                   alphaToTaoRate,
                   dynamicInfo: {
                     tokenSymbol,

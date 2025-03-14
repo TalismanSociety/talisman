@@ -49,12 +49,12 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
     } = fistGroupStake
 
     const groupSummary = groupedStakesByKey.reduce<BalanceSummary>(
-      (acc, { fiat, meta: { amountTao } = {} }) => {
+      (acc, { fiat, meta: { amountStaked } = {} }) => {
         return {
           ...acc,
           lockedFiat: acc.lockedFiat! + (fiat || 0),
           lockedTokens: acc.lockedTokens.plus(
-            BigNumber(amountTao / Number(SCALE_FACTOR.toString())),
+            BigNumber(amountStaked / Number(SCALE_FACTOR.toString())),
           ),
         }
       },
