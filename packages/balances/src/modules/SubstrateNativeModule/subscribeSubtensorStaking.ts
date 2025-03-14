@@ -17,6 +17,7 @@ import {
   DecodeResult_GetStakeInfoForColdkey,
   EncodeParams_GetDynamicInfo,
   EncodeParams_GetStakeInfoForColdkey,
+  ONE_ALPHA_TOKEN,
   SUBTENSOR_MIN_STAKE_AMOUNT_PLANK,
   SUBTENSOR_ROOT_NETUID,
 } from "./util/subtensor"
@@ -226,6 +227,11 @@ export async function subscribeSubtensorStaking(
               })
             : 1n
 
+          const alphaToTaoRate = calculateTaoFromDynamicInfo({
+            dynamicInfo,
+            alphaStaked: ONE_ALPHA_TOKEN,
+          }).toString()
+
           const stakeByNetuid = Number(netuid) === SUBTENSOR_ROOT_NETUID ? stake : alphaStakedInTao
 
           return {
@@ -246,6 +252,7 @@ export async function subscribeSubtensorStaking(
                   hotkey,
                   netuid,
                   amountTao: stake.toString(),
+                  alphaToTaoRate,
                   dynamicInfo: {
                     tokenSymbol,
                     subnetName,
