@@ -198,11 +198,6 @@ export const chains = [
         name: "LAOS",
       },
       {
-        id: "litentry",
-        paraId: 2013,
-        name: "Litentry",
-      },
-      {
         id: "logion-polkadot",
         paraId: 3354,
         name: "Logion",
@@ -486,11 +481,6 @@ export const chains = [
         id: "karura",
         paraId: 2000,
         name: "Karura",
-      },
-      {
-        id: "khala",
-        paraId: 2004,
-        name: "Khala",
       },
       {
         id: "kintsugi",
@@ -794,7 +784,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 830,
+    sortIndex: 829,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -1142,7 +1132,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 831,
+    sortIndex: 830,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,
