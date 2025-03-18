@@ -36,8 +36,8 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
 
   return Object.keys(groupedStakes).map((key, i) => {
     const isDefaultGroup = Number(key) === ROOT_NETUID
-    const groupedStakesByKey = groupedStakes[key]!
-    const [fistGroupStake] = groupedStakesByKey
+    const groupedStakesByNetuid = groupedStakes[key]!
+    const [fistGroupStake] = groupedStakesByNetuid
     const { price_change_1_day } = subnetData[Number(key)] ?? {}
 
     // Destruct data from the first stake in the group, as the data is the destructed data is the  same for all stakes in the group
@@ -48,7 +48,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
       } = {},
     } = fistGroupStake
 
-    const groupSummary = groupedStakesByKey.reduce<BalanceSummary>(
+    const groupSummary = groupedStakesByNetuid.reduce<BalanceSummary>(
       (acc, { fiat, meta: { amountStaked } = {} }) => {
         return {
           ...acc,
@@ -108,7 +108,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         shouldDisplayChainLogo={false}
         symbol={symbol}
       >
-        {groupedStakesByKey.map((row, i, rows) => {
+        {groupedStakesByNetuid.map((row, i, rows) => {
           const { meta: { dynamicInfo = {} } = {}, title } = row
 
           const balanceDetailSymbol = title.toLowerCase().includes("subnet")
