@@ -4,8 +4,8 @@ import { Balances } from "@extension/core"
 
 import { useTokenBalances } from "../useTokenBalances"
 import { BittensorTokenBalances } from "./BittensorTokenBalances"
-import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
 import { ChainTokenBalancesUniswapV2Row } from "./ChainTokenBalancesUniswapV2Row"
+import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
 
 const BITTENSOR_TOKEN_ID = "bittensor-substrate-native"
@@ -59,7 +59,7 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
           .filter((row) => row.tokens.gt(0))
           .map((row, i, rows) => {
             return (
-              <ChainTokenBalancesDetailRow
+              <TokenBalancesDetailRow
                 key={row.key}
                 row={row}
                 isLastRow={rows.length === i + 1}

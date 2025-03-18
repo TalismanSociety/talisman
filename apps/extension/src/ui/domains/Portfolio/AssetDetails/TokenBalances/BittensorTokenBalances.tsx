@@ -11,7 +11,7 @@ import { useSelectedCurrency, useTokenRates } from "@ui/state"
 import { type BalanceSummary } from "../../useTokenBalancesSummary"
 import { useTokenBalances } from "../useTokenBalances"
 import { AssetPercentageChange } from "./AssetPercentageChange"
-import { ChainTokenBalancesDetailRow } from "./ChainTokenBalancesDetailRow"
+import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
 
 type TokenBalancesParams = {
@@ -116,7 +116,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
             : symbol
 
           return (
-            <ChainTokenBalancesDetailRow
+            <TokenBalancesDetailRow
               key={row.key}
               row={row}
               isLastRow={rows.length === i + 1}

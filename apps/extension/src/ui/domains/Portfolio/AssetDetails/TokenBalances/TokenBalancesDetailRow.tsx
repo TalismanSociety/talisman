@@ -9,7 +9,7 @@ import { BalanceDetailRow } from "../useTokenBalances"
 import { AssetState } from "./AssetState"
 import { LockedExtra } from "./LockedExtra"
 
-export const ChainTokenBalancesDetailRow = ({
+export const TokenBalancesDetailRow = ({
   row,
   isLastRow,
   status,
