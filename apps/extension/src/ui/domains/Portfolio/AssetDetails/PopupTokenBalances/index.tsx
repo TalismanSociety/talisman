@@ -3,11 +3,10 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "@extension/core"
 
 import { useTokenBalances } from "../useTokenBalances"
+import { BittensorTokenBalances } from "./BittensorTokenBalances"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
 import { TokenBalancesUniswapV2Row } from "./TokenBalancesUniswapV2Row"
-
-// import { BittensorTokenBalances } from "./BittensorTokenBalances"
 
 const BITTENSOR_TOKEN_ID = "bittensor-substrate-native"
 
@@ -26,8 +25,7 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
   if (tokenId === BITTENSOR_TOKEN_ID) {
-    return <div>Jk, WIP</div>
-    // return <BittensorTokenBalances tokenId={tokenId} balances={balances} />
+    return <BittensorTokenBalances tokenId={tokenId} balances={balances} />
   }
 
   const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"

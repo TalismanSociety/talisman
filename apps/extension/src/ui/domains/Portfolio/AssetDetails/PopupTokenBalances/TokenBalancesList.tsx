@@ -41,7 +41,7 @@ export const TokenBalancesList = ({
   chainOrNetworkId,
   chainOrNetworkName,
   networkType,
-  // assetPriceInfo,
+  assetPriceInfo,
   // summary,
   // status,
   children,
@@ -71,7 +71,8 @@ export const TokenBalancesList = ({
             </div>
           </div>
           <div className="text-body-secondary flex justify-between text-xs">
-            <div>{networkType}</div>
+            {assetPriceInfo && assetPriceInfo}
+            {networkType && <div>{networkType}</div>}
           </div>
         </div>
         {tokenId && (
