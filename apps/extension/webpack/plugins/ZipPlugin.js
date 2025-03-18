@@ -24,18 +24,18 @@ ZipPlugin.prototype.apply = function (compiler) {
 
     output.on("error", function (err) {
       console.error("Failed to create zip file (output)", err)
-      try {
-        console.info(
-          `fs.readdirSync("${path.join(options.folder, "..")}"): ${fs.readdirSync(path.join(options.folder, ".."))}`,
-        )
-      } catch (error) {
-        console.error(`Failed to readdir ${path.join(options.folder, "..")}`)
+
+      for (let i = 0; i <= 5; i++) {
+        const parents = new Array(i).fill("..")
+        try {
+          console.info(
+            `fs.readdirSync("${path.join(options.folder, ...parents)}"): ${fs.readdirSync(path.join(options.folder, ...parents))}`,
+          )
+        } catch (error) {
+          console.error(`Failed to readdir ${path.join(options.folder, ...parents)}`)
+        }
       }
-      try {
-        console.info(`fs.readdirSync("${options.folder}"): ${fs.readdirSync(options.folder)}`)
-      } catch (error) {
-        console.error(`Failed to readdir ${options.folder}`)
-      }
+
       callback(err)
     })
     output.on("close", function () {
