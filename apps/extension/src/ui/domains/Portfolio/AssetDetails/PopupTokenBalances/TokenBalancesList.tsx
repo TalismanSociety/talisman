@@ -7,46 +7,31 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { UseTokenReturnType } from "@ui/state"
 
-import { BalanceSummary } from "../../useTokenBalancesSummary"
 import { CopyAddressButton } from "../CopyAddressIconButton"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"
 
 type TokenBalancesListProps = {
   tokenId: TokenId
-  token: UseTokenReturnType
   balances: Balances
   detailRowsLength: number
   chainOrNetworkId: string
   chainOrNetworkName: string
   networkType?: string
   assetPriceInfo?: ReactNode
-  summary: BalanceSummary
-  status: BalancesStatus
   children: ReactNode
-  shouldDisplayChainLogo?: boolean
-  symbol: string
 }
-
-// TODO: Double check if these props are really needed or not.
 
 export const TokenBalancesList = ({
   tokenId,
-  // token,
   balances,
   detailRowsLength,
   chainOrNetworkId,
   chainOrNetworkName,
   networkType,
   assetPriceInfo,
-  // summary,
-  // status,
   children,
-  // shouldDisplayChainLogo = true,
-  // symbol,
 }: TokenBalancesListProps) => {
   return (
     <div className={classNames("text-body-secondary text-sm")}>

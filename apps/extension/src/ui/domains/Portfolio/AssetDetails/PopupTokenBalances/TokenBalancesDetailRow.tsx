@@ -34,6 +34,7 @@ export const TokenBalancesDetailRow = ({
   )
 
   const tokenBalance = alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
+
   return (
     <div
       className={classNames(
