@@ -22,13 +22,17 @@ ZipPlugin.prototype.apply = function (compiler) {
     const output = fs.createWriteStream(path.join(options.folder, options.filename))
     var archive = archiver("zip")
 
+    output.on("error", function (err) {
+      console.error("Failed to create zip file (output)", err)
+      callback(err)
+    })
     output.on("close", function () {
-      console.log(`${options.filename} generated : ${archive.pointer()} total bytes`)
+      console.log(`${options.filename} generated: ${archive.pointer()} total bytes`)
       callback()
     })
 
     archive.on("error", function (err) {
-      console.error("Failed to create zip file", err)
+      console.error("Failed to create zip file (archive)", err)
       callback(err)
     })
 
