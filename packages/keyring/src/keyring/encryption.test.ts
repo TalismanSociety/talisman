@@ -20,6 +20,13 @@ describe("encryption", () => {
 
     expect(decrypted).toEqual(new TextEncoder().encode(TEST_STRING))
   })
+
+  it("breaks when decrypting garbage data", async () => {
+    const TEST_STRING = generateRandomUnicodeString(20_000)
+    const TEST_PASSWORD = "password"
+
+    await expect(decryptData(TEST_STRING, TEST_PASSWORD)).rejects.toThrow("Failed to decrypt data")
+  })
 })
 
 const generateRandomUnicodeString = (length: number) => {
