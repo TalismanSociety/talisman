@@ -293,7 +293,7 @@ export const SendFundsConfirmForm = () => {
   const { from, to, chain, evmNetwork, evmTransaction } = useSendFunds()
 
   return (
-    <RiskAnalysisProvider riskAnalysis={evmTransaction?.riskAnalysis}>
+    <RiskAnalysisProvider riskAnalysis={evmTransaction?.riskAnalysis} signer={from}>
       <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
         <ScrollContainer
           className="w-full grow"

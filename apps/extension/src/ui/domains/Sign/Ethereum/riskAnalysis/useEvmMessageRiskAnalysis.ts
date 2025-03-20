@@ -1,24 +1,11 @@
-import { EvmSignTypedDataData, ScanMessageEvm200Response } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { BLOWFISH_API_KEY, log } from "extension-shared"
+import { log, RISK_ANALYSIS_API_URL } from "extension-shared"
 import urlJoin from "url-join"
 
 import { EthSignMessageMethod } from "@extension/core"
 import { useFeatureFlag } from "@ui/state"
 
-import { getBlowfishApiUrl, getBlowfishClient, getBlowfishLanguage } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
-
-const getTypedDataPayload = (msg: string): EvmSignTypedDataData | null => {
-  try {
-    // parse and remove unsupported fields
-    const { domain, message, primaryType, types } = JSON.parse(msg) as EvmSignTypedDataData
-    return { domain, message, primaryType, types }
-  } catch (err) {
-    // most likely a text message
-    return null
-  }
-}
 
 type UseEvmMessageRiskAnalysisProps = {
   evmNetworkId: EvmNetworkId | undefined
@@ -27,49 +14,6 @@ type UseEvmMessageRiskAnalysisProps = {
   account: string | undefined
   origin: string
   disableAutoRiskScan?: boolean
-}
-
-// TODO delete once client.scanMessage supports personal_sign
-const fetchPersonalSignMessageScan = async (
-  evmNetworkId: EvmNetworkId,
-  message: string,
-  account: string,
-  origin: string,
-) => {
-  try {
-    const apiUrl = getBlowfishApiUrl(evmNetworkId)
-    if (!apiUrl) return null
-
-    const search = new URLSearchParams({ language: getBlowfishLanguage(), method: "personal_sign" })
-
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-      "X-Api-Version": "2023-06-05",
-    }
-    if (BLOWFISH_API_KEY) headers["X-Api-Key"] = BLOWFISH_API_KEY
-
-    const req = await fetch(`${urlJoin(apiUrl, "/scan/message")}?${search.toString()}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        message: {
-          kind: "PERSONAL_SIGN",
-          rawMessage: message,
-        },
-        metadata: {
-          origin,
-        },
-        userAccount: account,
-      }),
-    })
-
-    if (!req.ok) throw new Error(req.statusText)
-
-    return req.json() as Promise<ScanMessageEvm200Response>
-  } catch (err) {
-    log.error("Failed to scan message", { err })
-    throw new Error((err as Error).message)
-  }
 }
 
 export const useEvmMessageRiskAnalysis = ({
@@ -87,25 +31,48 @@ export const useEvmMessageRiskAnalysis = ({
     evmNetworkId,
     disableAutoRiskScan,
     queryKey: ["useEvmMessageRiskAnalysis", evmNetworkId, method, message, account, origin],
-    queryFn: () => {
+    queryFn: async () => {
       if (!evmNetworkId || !method || !message || !account) return null
 
-      const client = getBlowfishClient(evmNetworkId)
-      if (!client) return null
-
       switch (method) {
-        case "personal_sign": {
-          // client.scanMessage doesn't support personal_sign yet
-          // return client.scanMessage(message, account, { origin })
-
-          // workaround while waiting on fix
-          return fetchPersonalSignMessageScan(evmNetworkId, message, account, origin)
-        }
         case "eth_signTypedData":
         case "eth_signTypedData_v4": {
-          const payload = getTypedDataPayload(message)
-          if (!payload) return null
-          return client.scanSignTypedData(payload, account, { origin })
+          // console.log("[useEvmMessageRiskAnalysis]", {
+          //   chainId: evmNetworkId,
+          //   source: origin,
+          //   method,
+          //   message,
+          //   json: JSON.parse(message),
+          //   userAccount: account,
+          // })
+
+          const response = await fetch(urlJoin(RISK_ANALYSIS_API_URL, "msg"), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: JSON.stringify({
+              chainId: evmNetworkId,
+              source: origin,
+              method,
+              message: JSON.parse(message),
+              userAccount: account,
+            }),
+          })
+
+          const { ok, status, statusText } = response
+          if (!ok) throw new Error(`Risk analysis failed with status ${status} ${statusText}`)
+
+          const result = await response.json()
+
+          log.log("[useEvmMessageRiskAnalysis]", { result })
+
+          return result
+        }
+        case "personal_sign": {
+          // this is always safe, no need to scan
+          return null
         }
         default:
           throw new Error("Unsupported message type. Proceed with caution")

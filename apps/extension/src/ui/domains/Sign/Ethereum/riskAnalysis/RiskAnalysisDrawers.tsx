@@ -1,4 +1,3 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -13,7 +12,10 @@ import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
 import { EvmRiskAnalysis } from "./types"
 
-const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
+const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis; signer: string }> = ({
+  riskAnalysis,
+  signer,
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -22,7 +24,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ risk
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-12">
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
-          <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
+          <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} signer={signer} />
         </div>
       </div>
       <RisksAnalysisAcknowledgement riskAnalysis={riskAnalysis} />
@@ -84,8 +86,8 @@ const RiskAnalysisCriticalPane: FC<{
   const { isOpen, open, close } = useOpenClose()
 
   useEffect(() => {
-    if (riskAnalysis?.result?.action === ActionEnum.Block) open()
-  }, [open, riskAnalysis?.result?.action])
+    if (riskAnalysis?.result?.validation.actionType === "Dangerous") open()
+  }, [open, riskAnalysis?.result?.validation.actionType])
 
   return (
     <Transition show={isOpen}>
@@ -129,11 +131,12 @@ const RiskAnalysisCriticalPane: FC<{
   )
 }
 
-export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis; onReject?: () => void }> = ({
-  riskAnalysis,
-  onReject,
-}) => {
-  if (!riskAnalysis) return null
+export const RiskAnalysisDrawers: FC<{
+  signer?: string
+  riskAnalysis?: EvmRiskAnalysis
+  onReject?: () => void
+}> = ({ signer, riskAnalysis, onReject }) => {
+  if (!riskAnalysis || !signer) return null
 
   return (
     <>
@@ -143,7 +146,7 @@ export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis; onReject?
         isOpen={riskAnalysis.review.drawer.isOpen}
         onDismiss={riskAnalysis.review.drawer.close}
       >
-        <RiskAnalysisDrawerContent riskAnalysis={riskAnalysis} />
+        <RiskAnalysisDrawerContent riskAnalysis={riskAnalysis} signer={signer} />
       </Drawer>
       <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} onReject={onReject} />
       <Drawer anchor="bottom" containerId="main" isOpen={riskAnalysis.shouldPromptAutoRiskScan}>

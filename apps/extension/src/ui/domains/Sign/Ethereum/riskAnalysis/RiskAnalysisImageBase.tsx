@@ -1,4 +1,5 @@
 import { ImageIcon, QuestionCircleIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { IPFS_GATEWAY } from "extension-shared"
 import React, { CSSProperties, memo, useCallback, useMemo, useState } from "react"
 
@@ -9,10 +10,10 @@ export const RiskAnalysisImageBase: React.FC<{
   isSolanaLogo?: boolean
   width: number
   height: number
-  borderRadius?: CSSProperties["borderRadius"]
+  //borderRadius?: CSSProperties["borderRadius"]
   alt: string
   type: "nft" | "currency" | "unknown"
-}> = memo(function ImageBase({ src: originalSrc, width, height, borderRadius, alt, type }) {
+}> = memo(function ImageBase({ src: originalSrc, width, height, alt, type }) {
   const src = originalSrc?.startsWith("ipfs://") ? IPFS_GATEWAY + originalSrc.slice(7) : originalSrc
   const [hasPlaceholder, setHasPlaceholder] = useState(!src)
   const handleImageError = useCallback(() => {
@@ -21,12 +22,7 @@ export const RiskAnalysisImageBase: React.FC<{
   const content = useMemo(() => {
     if (hasPlaceholder || !src) {
       return (
-        <RiskAnalysisPlaceholderImage
-          type={type}
-          width={width}
-          height={height}
-          borderRadius={borderRadius}
-        />
+        <RiskAnalysisPlaceholderImage type={type} width={width} height={height} borderRadius={6} />
       )
     } else {
       return (
@@ -36,11 +32,11 @@ export const RiskAnalysisImageBase: React.FC<{
           src={src}
           onError={handleImageError}
           alt={alt}
-          className="rounded-sm object-cover"
+          className={classNames("rounded-sm object-cover", type === "currency" && "rounded-full")}
         />
       )
     }
-  }, [hasPlaceholder, src, width, height, borderRadius, handleImageError, alt, type])
+  }, [hasPlaceholder, src, width, height, handleImageError, alt, type])
   return <div className="flex flex-col">{content}</div>
 })
 

@@ -1,14 +1,15 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useOpenClose } from "talisman-ui"
 
-export const useRisksReview = (action?: ActionEnum) => {
+import { TenderlyActionType } from "./types"
+
+export const useRisksReview = (action?: TenderlyActionType) => {
   const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
 
   const drawer = useOpenClose(false)
 
   const isRiskAcknowledgementRequired = useMemo(
-    () => action === ActionEnum.Block || action === ActionEnum.Warn,
+    () => action === "Dangerous" || action === "Warning",
     [action],
   )
 

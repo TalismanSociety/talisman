@@ -226,9 +226,6 @@ importers:
 
   apps/extension:
     dependencies:
-      '@blowfishxyz/api-client':
-        specifier: 0.1.20
-        version: 0.1.20
       '@dnd-kit/core':
         specifier: 6.1.0
         version: 6.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2666,9 +2663,6 @@ packages:
     resolution: {integrity: sha512-mNW+FfvKZqa1axChEd1ReRpw3P8siiW28YQ8BBJpR2syZqb5cJWOG4Sr/dj3lBcBNQqcqnAUkZPnBxQj8+Ftvg==}
     peerDependencies:
       '@polkadot/api': 15.0.1
-
-  '@blowfishxyz/api-client@0.1.20':
-    resolution: {integrity: sha512-Xsf7f7vsJi6Dhx6CjLwjyqnNfyMdd9QxraSp45+LKtxie1KIpypCbqi+rkPef8p88C5zhCQ3Z6ihb0wH7TygJg==}
 
   '@changesets/apply-release-plan@7.0.5':
     resolution: {integrity: sha512-1cWCk+ZshEkSVEZrm2fSj1Gz8sYvxgUL4Q78+1ZZqeqfuevPTPk033/yUZ3df8BKMohkqqHfzj0HOOrG0KtXTw==}
@@ -14565,8 +14559,6 @@ snapshots:
   '@bifrost-finance/type-definitions@1.11.3(@polkadot/api@15.0.1(bufferutil@4.0.8)(utf-8-validate@6.0.4))':
     dependencies:
       '@polkadot/api': 15.0.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-
-  '@blowfishxyz/api-client@0.1.20': {}
 
   '@changesets/apply-release-plan@7.0.5':
     dependencies:

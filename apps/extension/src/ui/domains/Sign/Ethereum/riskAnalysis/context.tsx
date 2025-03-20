@@ -7,6 +7,7 @@ import { EvmRiskAnalysis } from "./types"
 
 type RisksAnalysisProviderProps = {
   riskAnalysis?: EvmRiskAnalysis
+  signer?: string
 }
 
 const useRisksAnalysisProvider = ({ riskAnalysis }: RisksAnalysisProviderProps) => {
@@ -17,11 +18,11 @@ const [RiskAnalysisProviderInner, useRiskAnalysis] = provideContext(useRisksAnal
 
 export const RiskAnalysisProvider: FC<
   RisksAnalysisProviderProps & { children: ReactNode; onReject?: () => void }
-> = ({ riskAnalysis, children, onReject }) => {
+> = ({ riskAnalysis, signer, children, onReject }) => {
   return (
     <RiskAnalysisProviderInner riskAnalysis={riskAnalysis}>
       {children}
-      <RiskAnalysisDrawers riskAnalysis={riskAnalysis} onReject={onReject} />
+      <RiskAnalysisDrawers riskAnalysis={riskAnalysis} signer={signer} onReject={onReject} />
     </RiskAnalysisProviderInner>
   )
 }

@@ -1,4 +1,3 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import {
   ShieldNotOkIcon,
   ShieldOkIcon,
@@ -11,7 +10,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
-import { EvmRiskAnalysis } from "./types"
+import { EvmRiskAnalysis, TenderlyScannerFinding } from "./types"
 
 const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnalysis) => {
   const { t } = useTranslation()
@@ -22,42 +21,49 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
         Icon: ShieldUnknownIcon,
         bgClassName: "bg-grey-800",
         iconClassName: "text-body-disabled",
-        ...scanError,
+        title: t("An error occured"),
+        description: scanError,
       }
 
-    switch (result?.action) {
-      case ActionEnum.Block:
+    switch (result?.validation.actionType) {
+      case "Dangerous":
         return {
           Icon: ShieldNotOkIcon,
           bgClassName: "bg-brand-orange/10",
           textClassName: "text-brand-orange",
           iconClassName: "bg-brand-orange/10",
           title: t("Critical Risk"),
-          // in this case there should always be at least 1 warning
-          description: result.warnings[0]?.message ?? "",
+          description: result.validation.actionReason ?? "",
         }
-      case ActionEnum.Warn:
+      case "Warning":
         return {
           Icon: ShieldZapIcon,
           bgClassName: "bg-alert-warn/10",
           textClassName: "text-alert-warn",
           iconClassName: "bg-alert-warn/10",
           title: t("Medium Risk"),
-          // in this case there should always be at least 1 warning
-          description: result.warnings[0]?.message ?? "",
+          description: result.validation.actionReason ?? "",
         }
-      case ActionEnum.None:
+      case "Safe":
         return {
           Icon: ShieldOkIcon,
           bgClassName: "bg-green/10",
           textClassName: "text-green",
           iconClassName: "bg-green/10",
-          title: result.warnings.length ? t("No Risk Found") : t("Low Risk"),
+          title: t("Low Risk"), // TODO say "No Risk Found" if there is none
           description:
-            result.warnings[0]?.message ??
+            result.validation.actionReason ??
             (type === "transaction"
               ? t("No risks were identified in this transaction")
               : t("No risks were identified in this message")),
+        }
+      case "Error":
+        return {
+          Icon: ShieldUnknownIcon,
+          bgClassName: "bg-grey-800",
+          iconClassName: "text-body-disabled",
+          title: t("Failed to validate"),
+          description: result.validation.actionReason,
         }
     }
     if (!isAvailable) {
@@ -74,7 +80,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
     }
 
     return null
-  }, [isAvailable, result?.action, result?.warnings, scanError, t, type])
+  }, [isAvailable, result, scanError, t, type])
 }
 
 const RiskAnalysisRecommendationInner: FC<{
@@ -110,8 +116,18 @@ const RiskAnalysisRecommendationInner: FC<{
 export const RiskAnalysisRecommendation: FC<{
   riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
-  return riskAnalysis.result?.warnings.length ? (
-    <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
+  const risks = useMemo(
+    () =>
+      riskAnalysis.result?.validation.scanners
+        ? Object.entries(riskAnalysis.result?.validation.scanners)
+            .filter(([, value]) => value?.label)
+            .map(([name, value]) => ({ name, ...value.label }) as TenderlyScannerFinding)
+        : [],
+    [riskAnalysis.result],
+  )
+
+  return risks.length ? (
+    <RiskAnalysisWarnings warnings={risks} />
   ) : (
     <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
   )

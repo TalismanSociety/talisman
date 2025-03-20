@@ -5,15 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { useSetting } from "@ui/state"
 
-import { getBlowfishChainInfo } from "./blowfish"
-import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import {
-  BlowfishEvmChainInfo,
-  PayloadType,
-  ResponseType,
-  RiskAnalysisScanError,
-  RisksReview,
-} from "./types"
+import { PayloadType, ResponseType, RisksReview } from "./types"
 import { useRisksReview } from "./useRisksReview"
 
 type UseEvmRiskAnalysisBaseProps<
@@ -37,8 +29,8 @@ type EvmRiskAnalysisResult<Type extends PayloadType, Result = ResponseType<Type>
   isValidating: boolean
   result: Result | undefined
   error: unknown
-  scanError: RiskAnalysisScanError | null
-  chainInfo: BlowfishEvmChainInfo | null
+  scanError: string | null
+  evmNetworkId: EvmNetworkId | undefined
   review: RisksReview
   launchScan: () => void
 }
@@ -60,16 +52,16 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     [autoRiskScan, disableAutoRiskScan],
   )
 
-  const chainInfo = useMemo(
-    () => (evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null),
-    [evmNetworkId],
-  )
+  // const chainInfo = useMemo(
+  //   () => (evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null),
+  //   [evmNetworkId],
+  // )
 
   const [isAvailable, unavailableReason] = useMemo(() => {
-    if (!chainInfo) return [false, t("Risk analysis is not available on this network")]
+    // if (!chainInfo) return [false, t("Risk analysis is not available on this network")]
     if (!enabled) return [false, t("Risk analysis unavailable")]
     return [true, undefined]
-  }, [chainInfo, enabled, t])
+  }, [enabled, t])
 
   // if undefined, user has never used the feature
   const shouldPromptAutoRiskScan = useMemo(
@@ -99,11 +91,15 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     retry: false,
   })
 
-  const review = useRisksReview(result?.action)
+  const review = useRisksReview(result?.validation.actionType)
 
   const scanError = useMemo(
-    () => (result ? getRiskAnalysisScanError(type, result, t) : null),
-    [type, result, t],
+    // () => (result ? getRiskAnalysisScanError(type, result, t) : null),
+    () =>
+      result?.validation.actionType === "Error"
+        ? (result.validation.actionReason ?? "Failed to validate")
+        : null,
+    [result],
   )
 
   const launchScan = useCallback(() => {
@@ -138,7 +134,7 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     error,
     scanError,
     launchScan,
-    chainInfo,
+    evmNetworkId,
     review,
     shouldPromptAutoRiskScan,
   }
