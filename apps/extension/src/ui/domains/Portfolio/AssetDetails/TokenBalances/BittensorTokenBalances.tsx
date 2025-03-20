@@ -4,12 +4,17 @@ import BigNumber from "bignumber.js"
 import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { CHAIN_INFO, DTAO_LOGO, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import {
+  CHAIN_INFO,
+  DTAO_LOGO,
+  ROOT_NETUID,
+  sortGroupedStakes,
+} from "@ui/domains/Staking/Bittensor/constants"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 import { type BalanceSummary } from "../../useTokenBalancesSummary"
-import { BalanceDetailRow, useTokenBalances } from "../useTokenBalances"
+import { useTokenBalances } from "../useTokenBalances"
 import { AssetPercentageChange } from "./AssetPercentageChange"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
@@ -33,28 +38,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
 
   const groupedStakes = Object.groupBy(detailRows, ({ meta }) => meta?.netuid ?? CHAIN_INFO)
 
-  const sortObjectEntries = (
-    obj: Partial<Record<string | number, BalanceDetailRow[]>>,
-    firstKey: string,
-  ) => {
-    return Object.entries(obj).sort(([keyA], [keyB]) => {
-      if (keyA === firstKey) return -1 // Place firstKey at the top
-      if (keyB === firstKey) return 1
-
-      const numA = Number(keyA)
-      const numB = Number(keyB)
-
-      // Sort numeric keys as numbers
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return numA - numB
-      }
-
-      // Sort remaining keys alphabetically
-      return keyA.localeCompare(keyB, undefined, { numeric: true })
-    })
-  }
-
-  const sortedGroupedStakes = sortObjectEntries(groupedStakes, CHAIN_INFO)
+  const sortedGroupedStakes = sortGroupedStakes(groupedStakes, CHAIN_INFO)
 
   return sortedGroupedStakes.map(([key, groupedStakesByNetuid], i) => {
     const isChainIfo = key === CHAIN_INFO

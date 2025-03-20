@@ -39,6 +39,7 @@ type TokenBalancesListProps = {
 export const TokenBalancesList = ({
   tokenId,
   token,
+  tokenLogoUrl,
   balances,
   detailRowsLength,
   chainOrNetworkId,
@@ -52,7 +53,6 @@ export const TokenBalancesList = ({
   shouldDisplayActionBtns = true,
   shouldDisplayStakeBtn = true,
   shouldDisplayTotalAvailableBalance = true,
-  tokenLogoUrl,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 

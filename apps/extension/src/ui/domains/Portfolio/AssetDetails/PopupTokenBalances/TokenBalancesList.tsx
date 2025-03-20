@@ -14,6 +14,7 @@ import { TokenContextMenu } from "../TokenContextMenu"
 
 type TokenBalancesListProps = {
   tokenId: TokenId
+  tokenLogoUrl?: string
   balances: Balances
   detailRowsLength: number
   chainOrNetworkId: string
@@ -21,10 +22,13 @@ type TokenBalancesListProps = {
   networkType?: string
   assetPriceInfo?: ReactNode
   children: ReactNode
+  shouldDisplayActionBtns?: boolean
+  shouldDisplayStakeBtn?: boolean // TODO: This prop should be removed once dTao stake is implemented
 }
 
 export const TokenBalancesList = ({
   tokenId,
+  tokenLogoUrl,
   balances,
   detailRowsLength,
   chainOrNetworkId,
@@ -32,6 +36,8 @@ export const TokenBalancesList = ({
   networkType,
   assetPriceInfo,
   children,
+  shouldDisplayActionBtns = true,
+  shouldDisplayStakeBtn = true,
 }: TokenBalancesListProps) => {
   return (
     <div className={classNames("text-body-secondary text-sm")}>
@@ -42,17 +48,21 @@ export const TokenBalancesList = ({
         )}
       >
         <div className="text-xl">
-          <TokenLogo tokenId={tokenId} />
+          <TokenLogo tokenId={tokenId} url={tokenLogoUrl} />
         </div>
         <div className="flex grow flex-col justify-center gap-2 pr-8">
           <div className="flex grow justify-between font-bold text-white">
             <div className="flex items-center">
               <ChainLogo className="mr-2" id={chainOrNetworkId} />
               <span className="mr-2 truncate">{chainOrNetworkName}</span>
-              <CopyAddressButton networkId={chainOrNetworkId} />
-              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                <SendFundsTokenButton tokenId={tokenId} shouldClose />
-              </Suspense>
+              {shouldDisplayActionBtns && (
+                <>
+                  <CopyAddressButton networkId={chainOrNetworkId} />
+                  <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
+                    <SendFundsTokenButton tokenId={tokenId} shouldClose />
+                  </Suspense>
+                </>
+              )}
             </div>
           </div>
           <div className="text-body-secondary flex justify-between text-xs">
@@ -60,14 +70,14 @@ export const TokenBalancesList = ({
             {networkType && <div>{networkType}</div>}
           </div>
         </div>
-        {tokenId && (
+        {tokenId && shouldDisplayStakeBtn && (
           <div className="size-[3.8rem] shrink-0 empty:hidden">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
               <BondButton tokenId={tokenId} balances={balances} />
             </Suspense>
           </div>
         )}
-        {tokenId && (
+        {tokenId && shouldDisplayActionBtns && (
           <TokenContextMenu
             tokenId={tokenId}
             className="hover:bg-grey-700 focus-visible:bg-grey-700 rounded-full"
