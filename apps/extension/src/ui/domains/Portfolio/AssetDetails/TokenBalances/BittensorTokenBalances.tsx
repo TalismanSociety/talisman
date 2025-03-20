@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js"
 import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import { CHAIN_INFO, DTAO_LOGO, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
@@ -18,8 +18,6 @@ type TokenBalancesParams = {
   tokenId: TokenId
   balances: Balances
 }
-
-const CHAIN_INFO = "chainInfo"
 
 export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
   const tokenRates = useTokenRates(tokenId)
@@ -125,6 +123,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         key={i}
         tokenId={tokenId}
         token={token}
+        tokenLogoUrl={!isChainIfo && !isRootStake ? DTAO_LOGO : undefined}
         balances={balances}
         detailRowsLength={detailRows.length}
         chainOrNetworkId={chainOrNetwork.id}

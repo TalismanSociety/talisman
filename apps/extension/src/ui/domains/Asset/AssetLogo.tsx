@@ -93,9 +93,10 @@ type AssetLogoProps = {
   // for tokens which are in our tokens store, we can just reference them
   // by id and this component will fetch their logo from our chaindata
   id?: TokenId
+  url?: string | null
 }
 
-const AssetLogoInner: FC<AssetLogoProps> = ({ className, id }) => {
+const AssetLogoInner: FC<AssetLogoProps> = ({ className, id, url }) => {
   const token = useToken(id)
 
   // round logos except if they are hosted in Talisman's chaindata repo
@@ -104,7 +105,7 @@ const AssetLogoInner: FC<AssetLogoProps> = ({ className, id }) => {
   // special logos for LP tokens
   if (token?.type === "evm-uniswapv2") return <LpAssetLogo className={className} id={id} />
 
-  return <AssetLogoBase className={className} url={token?.logo} rounded={rounded} />
+  return <AssetLogoBase className={className} url={token?.logo || url} rounded={rounded} />
 }
 
 const AssetLogoFallback: FC<{ className?: string }> = ({ className }) => (

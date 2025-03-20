@@ -20,6 +20,7 @@ import { TokenContextMenu } from "../TokenContextMenu"
 type TokenBalancesListProps = {
   tokenId: TokenId
   token: UseTokenReturnType
+  tokenLogoUrl?: string
   balances: Balances
   detailRowsLength: number
   chainOrNetworkId: string
@@ -51,6 +52,7 @@ export const TokenBalancesList = ({
   shouldDisplayActionBtns = true,
   shouldDisplayStakeBtn = true,
   shouldDisplayTotalAvailableBalance = true,
+  tokenLogoUrl,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -66,7 +68,7 @@ export const TokenBalancesList = ({
       >
         <div className="flex">
           <div className="shrink-0 p-8 text-xl">
-            <TokenLogo tokenId={tokenId} />
+            <TokenLogo tokenId={tokenId} url={tokenLogoUrl} />
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">
