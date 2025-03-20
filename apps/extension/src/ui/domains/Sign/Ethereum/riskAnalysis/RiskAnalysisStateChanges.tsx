@@ -209,17 +209,24 @@ const StateChangeFooter: FC<{
 
   const { t } = useTranslation()
 
+  const [assetLink, assetLabel] = useMemo(() => {
+    return [
+      getTokenExplorerUrl(network?.explorerUrl, change.assetInfo.contractAddress),
+      change.assetInfo.name ??
+        (change.assetInfo.contractAddress
+          ? shortenAddress(change.assetInfo.contractAddress, 6, 4)
+          : t("Unknown")),
+    ]
+  }, [change.assetInfo.contractAddress, change.assetInfo.name, network?.explorerUrl, t])
+
   if (change.kind === "asset") {
-    const assetLink = getTokenExplorerUrl(network?.explorerUrl, change.assetInfo.contractAddress)
     const isPositive = isPositiveStateChange(change, signer)
     const targetAddress = isPositive ? change.from : change.to
     const counterPartyLink = getAddressExplorerUrl(network?.explorerUrl, targetAddress)
 
-    // const fungible = isFungible(change.assetInfo)
-
     return (
       <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
-        <FooterFieldLink href={assetLink} label={t("Asset:")} value={change.assetInfo.name} />
+        <FooterFieldLink href={assetLink} label={t("Asset:")} value={assetLabel} />
 
         {!!targetAddress && (
           <FooterFieldLink
@@ -233,18 +240,19 @@ const StateChangeFooter: FC<{
   }
 
   if (change.kind === "exposure") {
-    const assetLink = getTokenExplorerUrl(network?.explorerUrl, change.assetInfo.contractAddress)
     const counterPartyLink = getAddressExplorerUrl(network?.explorerUrl, change.spender)
     const fungible = isFungible(change.assetInfo)
 
     return fungible ? (
       <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
-        <FooterFieldLink href={assetLink} label={t("Asset:")} value={change.assetInfo.name} />
-        <FooterFieldLink
-          href={counterPartyLink}
-          label={t("Spender:")}
-          value={shortenAddress(change.spender, 6, 4)}
-        />
+        <FooterFieldLink href={assetLink} label={t("Asset:")} value={assetLabel} />
+        {change.spender && (
+          <FooterFieldLink
+            href={counterPartyLink}
+            label={t("Spender:")}
+            value={shortenAddress(change.spender, 6, 4)}
+          />
+        )}
       </div>
     ) : (
       <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
@@ -252,11 +260,13 @@ const StateChangeFooter: FC<{
         {!!change.dollarValue && (
           <FooterField label={t("USD value:")} value={formatPriceString(change.dollarValue)} />
         )}
-        <FooterFieldLink
-          href={counterPartyLink}
-          label={t("Spender:")}
-          value={shortenAddress(change.spender, 6, 4)}
-        />
+        {change.spender && (
+          <FooterFieldLink
+            href={counterPartyLink}
+            label={t("Spender:")}
+            value={shortenAddress(change.spender, 6, 4)}
+          />
+        )}
       </div>
     )
   }
@@ -325,8 +335,18 @@ const isFungible = (assetInfo: TenderlyChange["assetInfo"]) => {
     case "Fungible":
       return true
 
-    default:
+    default: {
+      switch (assetInfo.standard) {
+        case "ERC721":
+        case "ERC1155":
+          return true
+        case "ERC20":
+          return false
+      }
+
+      log.warn("isFungible: Unknown asset type", assetInfo)
       return false
+    }
   }
 }
 
@@ -341,13 +361,13 @@ const HumanReadableDiff: FC<{
   const text = useMemo(() => {
     if (change.kind === "asset" && isFungible(change.assetInfo) && change.type === "Transfer") {
       if (change.from && isAddressEqual(change.from, signer))
-        return `Send ${formatDecimals(change.amount)} ${change.assetInfo.symbol.toUpperCase()}`
+        return `Send ${formatDecimals(change.amount)} ${change.assetInfo.symbol?.toUpperCase()}`
       else if (isAddressEqual(change.to, signer))
-        return `Receive ${formatDecimals(change.amount)} ${change.assetInfo.symbol.toUpperCase()}`
+        return `Receive ${formatDecimals(change.amount)} ${change.assetInfo.symbol?.toUpperCase()}`
     }
 
     if (change.kind === "asset")
-      return `${change.type} ${formatDecimals(change.amount)} ${change.assetInfo.symbol.toUpperCase()}`
+      return `${change.type} ${formatDecimals(change.amount)} ${change.assetInfo.symbol?.toUpperCase()}`
 
     if (change.type && change.amount && change.assetInfo.symbol)
       return `${change.type} ${formatDecimals(change.amount)} ${change.assetInfo.symbol.toUpperCase()}`
@@ -435,22 +455,22 @@ export const RiskAnalysisStateChanges: FC<{
   if (!assetChanges.length && !exposureChanges.length) return null
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col gap-4">
       {!!assetChanges.length && (
-        <>
+        <div>
           <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
           {assetChanges.map((change, i) => (
             <StateChange key={i} change={change} evmNetworkId={evmNetworkId} signer={signer} />
           ))}
-        </>
+        </div>
       )}
       {!!exposureChanges.length && (
-        <>
+        <div>
           <div className="text-body-secondary text-sm">{t("Exposure changes")}</div>
           {exposureChanges.map((change, i) => (
             <StateChange key={i} change={change} evmNetworkId={evmNetworkId} signer={signer} />
           ))}
-        </>
+        </div>
       )}
     </div>
   )

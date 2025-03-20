@@ -9,32 +9,34 @@ export type TenderlyAssetType = "Fungible" | "Native" | "NonFungible"
 export type TenderlyAssetInfo = {
   standard: string // "ERC20" | "NativeCurrency",
   type: TenderlyAssetType
-  contractAddress: string
-  symbol: string
-  name: string
-  logo: string
-  decimals: number
-  dollarValue: number
+  contractAddress?: string
+  symbol?: string
+  name?: string
+  logo?: string
+  decimals?: number
+  dollarValue?: number
 }
 
 export type TenderlyAssetChange = {
   assetInfo: TenderlyAssetInfo
+  id: string // hex encoded of the tokenId, for nfts
   type: string // "Transfer" | "Mint"
   from?: string // undefined if mint
   to: string
-  rawAmount: string // hex wei
-  amount: string
-  dollarValue: string
+  rawAmount?: string // hex wei
+  amount?: string
+  dollarValue?: string
 }
 
 export type TenderlyExposureChange = {
   assetInfo: TenderlyAssetInfo
+  id: string // hex encoded of the tokenId, for nfts
   type: string // "Permit" "Approve"
   owner: string
   spender: string
   rawAmount: string // hex wei
-  dollarValue: string
-  amount: string
+  dollarValue?: string
+  amount?: string
   // dollarValue: string
 }
 
