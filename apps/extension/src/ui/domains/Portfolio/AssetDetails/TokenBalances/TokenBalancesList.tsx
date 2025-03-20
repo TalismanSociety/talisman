@@ -29,8 +29,10 @@ type TokenBalancesListProps = {
   summary: BalanceSummary
   status: BalancesStatus
   children: ReactNode
-  shouldDisplayChainLogo?: boolean
   symbol: string
+  shouldDisplayActionBtns?: boolean
+  shouldDisplayStakeBtn?: boolean // TODO: This prop should be removed once dTao stake is implemented
+  shouldDisplayTotalAvailableBalance?: boolean
 }
 
 export const TokenBalancesList = ({
@@ -45,8 +47,10 @@ export const TokenBalancesList = ({
   summary,
   status,
   children,
-  shouldDisplayChainLogo = true,
   symbol,
+  shouldDisplayActionBtns = true,
+  shouldDisplayStakeBtn = true,
+  shouldDisplayTotalAvailableBalance = true,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -66,19 +70,23 @@ export const TokenBalancesList = ({
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">
-              {shouldDisplayChainLogo && <ChainLogo className="mr-2" id={chainOrNetworkId} />}
+              <ChainLogo className="mr-2" id={chainOrNetworkId} />
               <span className="mr-2">{chainOrNetworkName}</span>
-              <CopyAddressButton networkId={chainOrNetworkId} />
-              <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                <SendFundsTokenButton tokenId={tokenId} />
-                {tokenId && (
-                  <TokenContextMenu
-                    tokenId={tokenId}
-                    placement="bottom-start"
-                    className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full p-0 text-xs opacity-50"
-                  />
-                )}
-              </Suspense>
+              {shouldDisplayActionBtns && (
+                <>
+                  <CopyAddressButton networkId={chainOrNetworkId} />
+                  <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
+                    <SendFundsTokenButton tokenId={tokenId} />
+                    {tokenId && (
+                      <TokenContextMenu
+                        tokenId={tokenId}
+                        placement="bottom-start"
+                        className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full p-0 text-xs opacity-50"
+                      />
+                    )}
+                  </Suspense>
+                </>
+              )}
             </div>
             {assetPriceInfo && assetPriceInfo}
             {networkType && <div>{networkType}</div>}
@@ -98,10 +106,14 @@ export const TokenBalancesList = ({
             )}
           />
         </div>
-        <div className="flex items-center justify-end gap-2">
-          {tokenId && <BondButton tokenId={tokenId} balances={balances} />}
+        <div className="flex items-center justify-end">
+          {tokenId && shouldDisplayStakeBtn && (
+            <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
+              <BondButton tokenId={tokenId} balances={balances} />
+            </div>
+          )}
           <AssetBalanceCellValue
-            render
+            render={shouldDisplayTotalAvailableBalance}
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={symbol}

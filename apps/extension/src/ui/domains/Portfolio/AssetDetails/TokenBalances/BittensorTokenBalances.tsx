@@ -9,7 +9,7 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 import { type BalanceSummary } from "../../useTokenBalancesSummary"
-import { useTokenBalances } from "../useTokenBalances"
+import { BalanceDetailRow, useTokenBalances } from "../useTokenBalances"
 import { AssetPercentageChange } from "./AssetPercentageChange"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
@@ -19,11 +19,13 @@ type TokenBalancesParams = {
   balances: Balances
 }
 
+const CHAIN_INFO = "chainInfo"
+
 export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
   const tokenRates = useTokenRates(tokenId)
   const currency = useSelectedCurrency()
   const { subnetData, isError, isLoading, isFetchingNextPage } = useCombinedSubnetData()
-  const { chainOrNetwork, summary, token, detailRows, status } = useTokenBalances({
+  const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
     tokenId,
     balances,
   })
@@ -31,13 +33,35 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
   // wait for data to load
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
-  // Rows that are not should be defaulted to 0 and be grouped with Rootnet stakes
-  const groupedStakes = Object.groupBy(detailRows, ({ meta }) => meta?.netuid ?? ROOT_NETUID)
+  const groupedStakes = Object.groupBy(detailRows, ({ meta }) => meta?.netuid ?? CHAIN_INFO)
 
-  return Object.keys(groupedStakes).map((key, i) => {
-    const isDefaultGroup = Number(key) === ROOT_NETUID
-    const groupedStakesByNetuid = groupedStakes[key]!
-    const [fistGroupStake] = groupedStakesByNetuid
+  const sortObjectEntries = (
+    obj: Partial<Record<string | number, BalanceDetailRow[]>>,
+    firstKey: string,
+  ) => {
+    return Object.entries(obj).sort(([keyA], [keyB]) => {
+      if (keyA === firstKey) return -1 // Place firstKey at the top
+      if (keyB === firstKey) return 1
+
+      const numA = Number(keyA)
+      const numB = Number(keyB)
+
+      // Sort numeric keys as numbers
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB
+      }
+
+      // Sort remaining keys alphabetically
+      return keyA.localeCompare(keyB, undefined, { numeric: true })
+    })
+  }
+
+  const sortedGroupedStakes = sortObjectEntries(groupedStakes, CHAIN_INFO)
+
+  return sortedGroupedStakes.map(([key, groupedStakesByNetuid], i) => {
+    const isChainIfo = key === CHAIN_INFO
+    const isRootStake = Number(key) === ROOT_NETUID
+    const [fistGroupStake] = groupedStakesByNetuid ?? []
     const { price_change_1_day } = subnetData[Number(key)] ?? {}
 
     // Destruct data from the first stake in the group, as the data is the destructed data is the  same for all stakes in the group
@@ -48,31 +72,34 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
       } = {},
     } = fistGroupStake
 
-    const groupSummary = groupedStakesByNetuid.reduce<BalanceSummary>(
-      (acc, { fiat, meta: { amountStaked } = {} }) => {
-        return {
-          ...acc,
-          lockedFiat: acc.lockedFiat! + (fiat || 0),
-          lockedTokens: acc.lockedTokens.plus(
-            BigNumber(amountStaked / Number(SCALE_FACTOR.toString())),
-          ),
-        }
-      },
-      {
-        availableFiat: 0,
-        availableTokens: BigNumber(0),
-        lockedFiat: 0,
-        lockedTokens: BigNumber(0),
-        totalFiat: 0,
-        totalTokens: BigNumber(0),
-      },
-    )
+    const defaultSummary = {
+      availableFiat: 0,
+      availableTokens: BigNumber(0),
+      lockedFiat: 0,
+      lockedTokens: BigNumber(0),
+      totalFiat: 0,
+      totalTokens: BigNumber(0),
+    }
+
+    const groupSummary =
+      groupedStakesByNetuid?.reduce<BalanceSummary>(
+        (acc, { fiat, meta: { amountStaked } = {} }) => {
+          return {
+            ...acc,
+            lockedFiat: acc.lockedFiat! + (fiat || 0),
+            lockedTokens: acc.lockedTokens.plus(
+              BigNumber(amountStaked / Number(SCALE_FACTOR.toString())),
+            ),
+          }
+        },
+        defaultSummary,
+      ) ?? defaultSummary
 
     const subnetListName = `${key} | ${subnetName || ""} ${tokenSymbol || ""}`.trim()
-    const chainName = isDefaultGroup ? chainOrNetwork.name || "" : subnetListName
+    const chainName = isRootStake || isChainIfo ? chainOrNetwork.name || "" : subnetListName
 
-    const rowSummary = isDefaultGroup ? summary : groupSummary
-    const symbol = isDefaultGroup ? token.symbol : tokenSymbol
+    const rowSummary = isChainIfo ? summary : groupSummary
+    const symbol = isRootStake ? token.symbol : tokenSymbol
 
     const formatter = new BalanceFormatter(
       BigInt(alphaToTaoRate || "0"),
@@ -80,9 +107,7 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
       tokenRates,
     )
 
-    const assetPriceInfo = isDefaultGroup ? (
-      <div>Root</div>
-    ) : (
+    const assetPriceInfo = !isRootStake && !isChainIfo && (
       <div className="flex items-center space-x-2">
         <Fiat amount={formatter?.fiat(currency) ?? 0} noCountUp />
         <AssetPercentageChange
@@ -92,6 +117,8 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         />
       </div>
     )
+
+    const rowNetworkType = isChainIfo ? networkType : isRootStake ? "Root" : ""
 
     return (
       <TokenBalancesList
@@ -103,12 +130,15 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         chainOrNetworkId={chainOrNetwork.id}
         chainOrNetworkName={chainName}
         assetPriceInfo={assetPriceInfo}
+        networkType={rowNetworkType}
         summary={rowSummary}
         status={status}
-        shouldDisplayChainLogo={false}
         symbol={symbol}
+        shouldDisplayActionBtns={isChainIfo}
+        shouldDisplayStakeBtn={isChainIfo || isRootStake}
+        shouldDisplayTotalAvailableBalance={isChainIfo}
       >
-        {groupedStakesByNetuid.map((row, i, rows) => {
+        {groupedStakesByNetuid?.map((row, i, rows) => {
           const { meta: { dynamicInfo = {} } = {}, title } = row
 
           const balanceDetailSymbol = title.toLowerCase().includes("subnet")
