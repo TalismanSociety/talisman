@@ -55,14 +55,27 @@ export const useEvmMessageRiskAnalysis = ({
             body: JSON.stringify({
               chainId: evmNetworkId,
               source: origin,
-              method,
+              method: "SIGN_TYPED_DATA",
               message: JSON.parse(message),
               userAccount: account,
             }),
           })
 
           const { ok, status, statusText } = response
-          if (!ok) throw new Error(`Risk analysis failed with status ${status} ${statusText}`)
+          if (!ok) {
+            log.log("[useEvmMessageRiskAnalysis] failed", {
+              body: {
+                chainId: evmNetworkId,
+                source: origin,
+                method: "SIGN_TYPED_DATA",
+                message: JSON.parse(message),
+                userAccount: account,
+              },
+              status,
+              statusText,
+            })
+            throw new Error(`Risk analysis failed with status ${status} ${statusText}`)
+          }
 
           const result = await response.json()
 

@@ -45,33 +45,32 @@ export const useEvmTransactionRiskAnalysis = ({
     queryFn: async () => {
       if (!evmNetworkId || !txData?.from) return null
 
-      try {
-        // console.log("[useEvmTransactionRiskAnalysis]", { txData, origin, evmNetworkId })
-        const response = await fetch(urlJoin(RISK_ANALYSIS_API_URL, "tx"), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          body: JSON.stringify({
-            chainId: evmNetworkId,
-            source: origin,
-            payload: txData,
-          }),
-        })
+      // console.log("[useEvmTransactionRiskAnalysis]", { txData, origin, evmNetworkId })
+      const response = await fetch(urlJoin(RISK_ANALYSIS_API_URL, "tx"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          chainId: evmNetworkId,
+          source: origin,
+          payload: txData,
+        }),
+      })
 
-        const { ok, status, statusText } = response
-        if (!ok) throw new Error(`Risk analysis failed with status ${status} ${statusText}`)
-
-        const result = await response.json()
-
-        log.log("[useEvmTransactionRiskAnalysis]", { result })
-
-        return result
-      } catch (err) {
-        log.error("[useEvmTransactionRiskAnalysis] Risk analysis failed", { err })
-        return null
+      const { ok, statusText } = response
+      if (!ok) {
+        // if(statusText.startsWith("404"))
+        //   throw new Error(`Risk analysis is not available on this network`)
+        throw new Error(statusText)
       }
+
+      const result = await response.json()
+
+      log.log("[useEvmTransactionRiskAnalysis]", { result })
+
+      return result
     },
     enabled: enabled && !!txData && !!evmNetworkId,
   })

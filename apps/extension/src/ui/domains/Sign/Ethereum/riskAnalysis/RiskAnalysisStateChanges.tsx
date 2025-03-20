@@ -234,9 +234,7 @@ const StateChangeFooter: FC<{
 
   if (change.kind === "exposure") {
     const assetLink = getTokenExplorerUrl(network?.explorerUrl, change.assetInfo.contractAddress)
-    const targetAddress = change.spender
-    const counterPartyLink = getAddressExplorerUrl(network?.explorerUrl, targetAddress)
-
+    const counterPartyLink = getAddressExplorerUrl(network?.explorerUrl, change.spender)
     const fungible = isFungible(change.assetInfo)
 
     return fungible ? (
@@ -244,8 +242,8 @@ const StateChangeFooter: FC<{
         <FooterFieldLink href={assetLink} label={t("Asset:")} value={change.assetInfo.name} />
         <FooterFieldLink
           href={counterPartyLink}
-          label={t("To:")}
-          value={shortenAddress(targetAddress, 6, 4)}
+          label={t("Spender:")}
+          value={shortenAddress(change.spender, 6, 4)}
         />
       </div>
     ) : (
@@ -256,8 +254,8 @@ const StateChangeFooter: FC<{
         )}
         <FooterFieldLink
           href={counterPartyLink}
-          label={t("To:")}
-          value={shortenAddress(targetAddress, 6, 4)}
+          label={t("Spender:")}
+          value={shortenAddress(change.spender, 6, 4)}
         />
       </div>
     )
@@ -337,6 +335,9 @@ const HumanReadableDiff: FC<{
   evmNetworkId: EvmNetworkId
   signer: string
 }> = ({ change, evmNetworkId, signer }) => {
+  const network = useEvmNetwork(evmNetworkId)
+  const { t } = useTranslation()
+
   const text = useMemo(() => {
     if (change.kind === "asset" && isFungible(change.assetInfo) && change.type === "Transfer") {
       if (change.from && isAddressEqual(change.from, signer))
@@ -354,6 +355,23 @@ const HumanReadableDiff: FC<{
     log.warn("HumanReadableDiff: unknown change kind", change, evmNetworkId, signer)
     return null
   }, [change, evmNetworkId, signer])
+
+  if (change.type && change.assetInfo.contractAddress) {
+    const contractLink = getAddressExplorerUrl(
+      network?.explorerUrl,
+      change.assetInfo.contractAddress,
+    )
+    return (
+      <div className="flex items-center gap-6">
+        <div>{change.type}</div>
+        <FooterFieldLink
+          href={contractLink}
+          label={t("Contract:")}
+          value={shortenAddress(change.assetInfo.contractAddress, 6, 4)}
+        />
+      </div>
+    )
+  }
 
   if (!text) return <div></div>
 

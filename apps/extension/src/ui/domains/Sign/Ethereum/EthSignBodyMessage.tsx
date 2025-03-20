@@ -127,9 +127,11 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
-      <div className="mb-8">
-        <RiskAnalysisPillButton />
-      </div>
+      {isTypedData && (
+        <div className="mb-8">
+          <RiskAnalysisPillButton />
+        </div>
+      )}
       <Message
         className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
         text={text}

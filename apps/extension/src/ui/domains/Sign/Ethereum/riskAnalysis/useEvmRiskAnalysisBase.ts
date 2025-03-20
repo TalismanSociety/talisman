@@ -91,13 +91,17 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     retry: false,
   })
 
+  // useEffect(() => {
+  //   console.log("useEvmRiskAnalysisBase", { result, error, isLoading })
+  // }, [result, error, isLoading])
+
   const review = useRisksReview(result?.validation.actionType)
 
   const scanError = useMemo(
     // () => (result ? getRiskAnalysisScanError(type, result, t) : null),
     () =>
       result?.validation.actionType === "Error"
-        ? (result.validation.actionReason ?? "Failed to validate")
+        ? (result?.validation.actionReason ?? "Failed to validate")
         : null,
     [result],
   )
