@@ -13,8 +13,8 @@ export type SortMethod = {
 }
 
 const sortMethods: SortMethod[] = [
-  { label: "Name", value: "name" },
   { label: "Total Staked", value: "totalStaked" },
+  { label: "Name", value: "name" },
   { label: "N° of Stakers", value: "totalStakers" },
   { label: "Rewards", value: "apr" },
 ]
