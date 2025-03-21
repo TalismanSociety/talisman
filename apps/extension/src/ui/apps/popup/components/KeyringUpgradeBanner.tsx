@@ -33,7 +33,7 @@ export const KeyringUpgradeBanner = () => {
     <div
       className={classNames(
         "relative z-0 overflow-hidden",
-        "text-tiny select-none rounded-sm p-6",
+        "select-none rounded-sm p-6 text-xs",
         "border border-white",
       )}
     >
