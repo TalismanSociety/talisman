@@ -23,12 +23,11 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
     tokenId,
     balances,
   })
-  const { detailRows } = useTokenBalances({
-    tokenId,
-    balances,
-  })
 
-  const groupedStakes = Object.groupBy(detailRows, ({ meta }) => meta?.netuid ?? CHAIN_INFO)
+  const groupedStakes = Object.groupBy(
+    tokenBalances.detailRows,
+    ({ meta }) => meta?.netuid ?? CHAIN_INFO,
+  )
 
   const sortedGroupedStakes = useMemo(
     () => sortGroupedStakes(groupedStakes, CHAIN_INFO),
