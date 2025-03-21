@@ -1,7 +1,7 @@
 import { Balances } from "@extension/core"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
 
-import { TokenBalances } from "./TokenBalances"
+import { TokenBalances } from "./DashboardTokenBalances"
 import { useAssetDetails } from "./useAssetDetails"
 
 type DashboardAssetDetailsParams = {

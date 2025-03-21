@@ -11,7 +11,7 @@ import {
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
-import { AssetPercentageChange } from "../TokenBalances/AssetPercentageChange"
+import { AssetPercentageChange } from "../DashboardTokenBalances/AssetPercentageChange"
 import { useTokenBalances } from "../useTokenBalances"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
