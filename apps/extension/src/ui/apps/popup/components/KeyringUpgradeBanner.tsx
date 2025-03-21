@@ -52,7 +52,7 @@ export const KeyringUpgradeBanner = () => {
         <p className="text-body-secondary mt-2">
           <Trans
             t={t}
-            defaults="Wallet system upgrade on April 15, 2025. Make sure you've backed your recovery phrases now to secure access to your accounts. Only you have access to them."
+            defaults="Talisman will have a system upgrade on April 15, 2025. Make sure you've backed your recovery phrases to secure access to your accounts. Only you have access to them."
           ></Trans>
         </p>
         <div className="mt-5 grid grid-cols-2 gap-4">
