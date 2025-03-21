@@ -4,6 +4,8 @@ import { SubnetData } from "./types"
 import { useGetInfiniteSubnetDescriptions } from "./useGetInfiniteSubnetDescriptions"
 import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
 
+export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
+
 export const useCombinedSubnetData = () => {
   const [subnetData, setSubnetData] = useState<Record<number, SubnetData>>({})
   const {

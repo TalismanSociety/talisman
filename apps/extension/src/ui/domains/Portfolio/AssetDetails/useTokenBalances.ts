@@ -33,6 +33,8 @@ type TokenBalancesParams = {
   balances: Balances
 }
 
+export type TokenBalances = ReturnType<typeof useTokenBalances>
+
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
