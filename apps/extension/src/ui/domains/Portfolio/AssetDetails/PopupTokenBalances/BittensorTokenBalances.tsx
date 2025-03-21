@@ -2,12 +2,8 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import {
-  CHAIN_INFO,
-  DTAO_LOGO,
-  ROOT_NETUID,
-  sortGroupedStakes,
-} from "@ui/domains/Staking/Bittensor/constants"
+import { CHAIN_INFO, DTAO_LOGO, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/sortGroupedStakes"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 

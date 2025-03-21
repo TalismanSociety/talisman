@@ -2,7 +2,8 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "extension-core"
 import { useMemo } from "react"
 
-import { CHAIN_INFO, sortGroupedStakes } from "@ui/domains/Staking/Bittensor/constants"
+import { CHAIN_INFO } from "@ui/domains/Staking/Bittensor/constants"
+import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/sortGroupedStakes"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useTokenRates } from "@ui/state"
 
