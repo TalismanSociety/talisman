@@ -38,6 +38,7 @@ export type AppStoreData = {
   hideGetStarted?: boolean
   bittensorUnbondBlockNumber: DelegatorsBlockNumberByAccount
   hideUnifiedAddressBanner?: boolean
+  hideKeyringUpgradeBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"

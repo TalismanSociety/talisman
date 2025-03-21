@@ -6,6 +6,7 @@ import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 
 import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
+import { resetSessionOnUnlock } from "./domains/app/store.session"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
@@ -113,3 +114,5 @@ cryptoWaitReady()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const iconManager = new IconManager()
+
+resetSessionOnUnlock()
