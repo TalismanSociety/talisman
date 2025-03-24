@@ -230,6 +230,15 @@ export class Keyring {
     return accountFromStorage(account)
   }
 
+  /**
+   * Needs to be called before deriving an account from a mnemonic.
+   *
+   * This will ensure that it is present (or add it if possible) in the keyring before actually creating the account.
+   *
+   * @param options
+   * @param password
+   * @returns the id of the mnemonic
+   */
   private async ensureMnemonic(options: AddAccountDeriveOptions, password: string) {
     await this.checkPassword(password)
 
