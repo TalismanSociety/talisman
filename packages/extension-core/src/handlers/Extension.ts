@@ -6,6 +6,7 @@ import { AccountsHandler } from "../domains/accounts"
 import { AccountType } from "../domains/accounts/types"
 import AppHandler from "../domains/app/handler"
 import { trackPopupSummaryData } from "../domains/app/popupSummaries"
+import { hideGetStartedOnceFunded } from "../domains/app/utils"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
 import { ChainsHandler } from "../domains/chains"
@@ -115,6 +116,9 @@ export default class Extension extends ExtensionHandler {
 
     // keeps summary data tables for the popup home screen up to date
     trackPopupSummaryData()
+
+    // hides the get started component has soon as the wallet owns funds
+    hideGetStartedOnceFunded()
   }
 
   private cleanup() {
