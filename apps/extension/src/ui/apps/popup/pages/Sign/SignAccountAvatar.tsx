@@ -1,3 +1,4 @@
+import { getAccountGenesisHash } from "@talismn/keyring"
 import { encodeAnyAddress } from "@talismn/util"
 import { Account } from "extension-core"
 import { FC } from "react"
@@ -17,7 +18,7 @@ export const SignAccountAvatar: FC<{ account?: Account; ss58Format?: number | nu
         <AccountIcon
           className="text-xl"
           address={account.address}
-          genesisHash={"genesisHash" in account ? account.genesisHash : undefined}
+          genesisHash={getAccountGenesisHash(account)}
         />
       </TooltipTrigger>
       <TooltipContent>

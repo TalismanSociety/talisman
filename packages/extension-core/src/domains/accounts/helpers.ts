@@ -1,7 +1,12 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
-import { Account, isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
+import {
+  Account,
+  getAccountGenesisHash,
+  isAccountEthereum,
+  isAccountNotContact,
+} from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
@@ -109,7 +114,7 @@ export const isCurveCompatibleWithChain = (
 }
 
 export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
-  const genesisHash = "genesisHash" in account ? account.genesisHash : undefined
+  const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
