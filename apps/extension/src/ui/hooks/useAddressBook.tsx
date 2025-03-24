@@ -9,16 +9,18 @@ type ContactInfo = { address: string; name: string; genesisHash?: HexString }
 export const useAddressBook = () => {
   const contacts = useContacts()
 
-  const add = useCallback(({ address, name, genesisHash }: ContactInfo) => {
-    api.accountAddExternal([
-      {
-        type: "contact",
-        name,
-        address,
-        genesisHash,
-      },
-    ])
-  }, [])
+  const add = useCallback(
+    ({ address, name, genesisHash }: ContactInfo) =>
+      api.accountAddExternal([
+        {
+          type: "contact",
+          name,
+          address,
+          genesisHash,
+        },
+      ]),
+    [],
+  )
 
   const deleteContact = useCallback(
     ({ address }: { address: string }) => api.accountForget(address),
