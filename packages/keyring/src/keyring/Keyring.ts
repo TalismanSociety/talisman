@@ -194,7 +194,7 @@ export class Keyring {
       account.name = name
     }
     if (account.type === "watch-only" && isPortfolio !== undefined) {
-      if (typeof isPortfolio !== "boolean") throw new Error("confirmed is required")
+      if (typeof isPortfolio !== "boolean") throw new Error("isPortfolio must be a boolean")
       account.isPortfolio = isPortfolio
     }
     // allow updating genesisHash only for contacts

@@ -1,9 +1,10 @@
 import { IS_FIREFOX, log } from "extension-shared"
 
-/*
-Used to check if the current page is a background page. 
-It is useful for preventing the execution of certain code inside or outside of the background page.
-*/
+/**
+ * Used to check if the current page is a background page.
+ *
+ * It is useful for preventing the execution of certain code inside or outside of the background page.
+ */
 export const isBackgroundPage = () => {
   try {
     if (typeof chrome !== "undefined" && chrome.runtime && chrome.extension) {

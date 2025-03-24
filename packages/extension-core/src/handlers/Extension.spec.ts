@@ -119,7 +119,7 @@ describe("Extension", () => {
   })
 
   describe("custom user extension tests", () => {
-    let account: Account, payload: SignerPayloadJSON //pair: KeyringPair
+    let account: Account, payload: SignerPayloadJSON
 
     beforeEach(async () => {
       requestStore.clearRequests()
