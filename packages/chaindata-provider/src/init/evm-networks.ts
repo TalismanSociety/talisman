@@ -2,7 +2,7 @@ export const evmNetworks = [
   {
     id: "1",
     isTestnet: false,
-    sortIndex: 353,
+    sortIndex: 352,
     name: "Ethereum Mainnet",
     themeColor: "#62688f",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/1.svg",
@@ -76,5 +76,6 @@ export const evmNetworks = [
     ],
     balancesMetadata: [],
     isDefault: true,
+    forceScan: false,
   },
 ]

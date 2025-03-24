@@ -46,6 +46,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
+import { KeyringUpgradeBanner } from "../../components/KeyringUpgradeBanner"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 import { UnifiedAddressInfoBanner } from "../../components/UnifiedAddressInfoBanner"
 
@@ -299,6 +300,7 @@ const Accounts = ({
       ) : (
         <>
           <AllAccountsHeader accounts={accounts} />
+          <KeyringUpgradeBanner />
           <NewFeaturesButton />
           <UnifiedAddressInfoBanner />
         </>

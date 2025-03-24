@@ -2,7 +2,7 @@ import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { SS58String } from "polkadot-api"
-import { exhaustMap, from, interval, map, mergeMap, toArray } from "rxjs"
+import { exhaustMap, from, interval, map, mergeMap, startWith, toArray } from "rxjs"
 
 import type { SubNativeModule } from "./index"
 import type { DynamicInfoType } from "./util/subtensor"
@@ -93,6 +93,56 @@ export async function subscribeSubtensorStaking(
     // In-memory cache for successful dynamic info results
     const dynamicInfoCache = new Map<number, DynamicInfoType>()
 
+    const fetchDynamicInfoForNetuids = async (
+      uniqueNetuids: number[],
+    ): Promise<(DynamicInfoType | null | undefined)[]> => {
+      const DYNAMIC_INFO_METHOD = "SubnetInfoRuntimeApi_get_dynamic_info"
+      const MAX_RETRIES = 3
+      const RETRY_DELAY_MS = 500
+
+      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+      const fetchInfo = async (netuid: number): Promise<DynamicInfoType | null | undefined> => {
+        if (netuid === 0) return null
+
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+          try {
+            const response = await chainConnector.send(
+              chainId,
+              "state_call",
+              [DYNAMIC_INFO_METHOD, EncodeParams_GetDynamicInfo(netuid)],
+              undefined,
+              { expectErrors: true },
+            )
+
+            const decodedResult = DecodeResult_GetDynamicInfo(response)
+
+            dynamicInfoCache.set(netuid, decodedResult) // Cache successful response
+            return decodedResult
+          } catch (error) {
+            log.warn(`Attempt ${attempt} failed for netuid ${netuid}:`, error)
+
+            if (attempt < MAX_RETRIES) {
+              const backoffTime = RETRY_DELAY_MS * 2 ** (attempt - 1)
+              log.info(`Retrying in ${backoffTime}ms...`)
+              await delay(backoffTime)
+            }
+          }
+        }
+
+        if (dynamicInfoCache.has(netuid)) {
+          return dynamicInfoCache.get(netuid) // Use cached value on failure
+        }
+
+        log.error(
+          `Failed to fetch dynamic info for netuid ${netuid} after ${MAX_RETRIES} attempts.`,
+        )
+        return null
+      }
+
+      return Promise.all(uniqueNetuids.map(fetchInfo))
+    }
+
     const subtensorQueries = from(addresses).pipe(
       // mergeMap lets us run N concurrent queries, where N is the value of `concurrency`
       mergeMap(async (address) => {
@@ -119,50 +169,18 @@ export async function subscribeSubtensorStaking(
             const result = DecodeResult_GetStakeInfoForColdkey(response)
             if (!Array.isArray(result)) return []
 
-            const uniqueNetuids = Array.from(new Set(result.map((item) => item.netuid)))
+            const uniqueNetuids = Array.from(new Set(result.map((item) => Number(item.netuid))))
 
-            const dynamicInfoMethod = "SubnetInfoRuntimeApi_get_dynamic_info"
-            const dynamicInfoResults = uniqueNetuids.map((netuid) => {
-              const netuidNumber = Number(netuid)
-              if (netuidNumber !== 0) {
-                return chainConnector
-                  .send(
-                    chainId,
-                    "state_call",
-                    [dynamicInfoMethod, EncodeParams_GetDynamicInfo(netuidNumber)],
-                    undefined,
-                    { expectErrors: true },
-                  )
-                  .then((res) => {
-                    const decodedResult = DecodeResult_GetDynamicInfo(res)
-                    dynamicInfoCache.set(netuidNumber, decodedResult) // Store successful response in cache
-                    return decodedResult
-                  })
-                  .catch((error) => {
-                    if (dynamicInfoCache.has(netuidNumber)) {
-                      return dynamicInfoCache.get(netuidNumber) // Return cached response on failure
-                    }
-
-                    throw new Error(
-                      `Failed to fetch dynamic info for netuid ${netuidNumber}:`,
-                      error,
-                    )
-                  })
-              }
-              return null
-            })
-
-            const resolvedDynamicInfo = await Promise.all(dynamicInfoResults)
+            await fetchDynamicInfoForNetuids(uniqueNetuids)
 
             const stakes = result
               ?.map(({ coldkey, hotkey, netuid, stake }) => {
-                const dynamicInfo = resolvedDynamicInfo.find((info) => info?.netuid === netuid)
                 return {
                   address: coldkey,
                   hotkey,
                   netuid: Number(netuid),
                   stake: BigInt(stake),
-                  dynamicInfo,
+                  dynamicInfo: dynamicInfoCache.get(Number(netuid)),
                 }
               })
               .filter(({ stake }) => stake >= SUBTENSOR_MIN_STAKE_AMOUNT_PLANK)
@@ -200,10 +218,13 @@ export async function subscribeSubtensorStaking(
         stakes.map(({ address, hotkey, stake, netuid, dynamicInfo }): SubNativeBalance => {
           const { tokenSymbol, subnetName, subnetIdentity } = dynamicInfo ?? {}
 
-          const alphaStakedInTao = calculateTaoFromDynamicInfo({
-            dynamicInfo,
-            alphaStaked: stake,
-          })
+          // Add 1n balance if failed to fetch dynamic info, so the position is not ignored by Balance lib and is displayed in the UI.
+          const alphaStakedInTao = dynamicInfo
+            ? calculateTaoFromDynamicInfo({
+                dynamicInfo,
+                alphaStaked: stake,
+              })
+            : 1n
 
           const stakeByNetuid = Number(netuid) === SUBTENSOR_ROOT_NETUID ? stake : alphaStakedInTao
 
@@ -244,8 +265,12 @@ export async function subscribeSubtensorStaking(
     // This observable will run the subtensorQueries on a 30s (30_000ms) interval.
     // However, if the last run has not yet completed (e.g. its been 30s but we're still fetching some balances),
     // then exhaustMap will wait until the next interval (so T: 60s, T: 90s, T: 120s, etc) before re-executing the subtensorQueries.
-    // TODO: Revert this to 30s, using 10s for dev only
-    const subtensorQueriesInterval = interval(30_000).pipe(exhaustMap(() => subtensorQueries))
+    const subtensorQueriesInterval = interval(30_000).pipe(
+      startWith(0), // start immediately
+      exhaustMap(() => {
+        return subtensorQueries
+      }),
+    )
 
     // subscribe to the balances
     const subscription = subtensorQueriesInterval.subscribe({

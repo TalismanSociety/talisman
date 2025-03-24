@@ -1,7 +1,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
+import { TALISMAN_WEB_APP_STAKING_POSITIONS_URL } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,7 +33,7 @@ export const UnbondButton: FC<{
 
   const handleClick = useCallback(() => {
     if (isExternalUnbond) {
-      window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
+      window.open(TALISMAN_WEB_APP_STAKING_POSITIONS_URL, "_blank")
       return
     }
     open({ tokenId, address, poolId })

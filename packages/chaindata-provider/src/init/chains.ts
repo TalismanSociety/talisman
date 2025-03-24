@@ -13,7 +13,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "1004000",
+    specVersion: "1004001",
     nativeToken: {
       id: "polkadot-substrate-native",
     },
@@ -33,6 +33,9 @@ export const chains = [
         url: "wss://rpc.ibp.network/polkadot",
       },
       {
+        url: "wss://1rpc.io/dot",
+      },
+      {
         url: "wss://polkadot-rpc.dwellir.com",
       },
       {
@@ -45,10 +48,19 @@ export const chains = [
         url: "wss://polkadot-public-rpc.blockops.network/ws",
       },
       {
+        url: "wss://rpc-polkadot.helixstreet.io",
+      },
+      {
         url: "wss://polkadot.dotters.network",
       },
       {
         url: "wss://rpc-polkadot.luckyfriday.io",
+      },
+      {
+        url: "wss://polkadot.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://polkadot.rpc.permanence.io",
       },
       {
         url: "wss://polkadot.public.curie.radiumblock.co/ws",
@@ -131,9 +143,19 @@ export const chains = [
         name: "Frequency",
       },
       {
+        id: "geminis",
+        paraId: 2038,
+        name: "Geminis",
+      },
+      {
         id: "hashed",
         paraId: 2093,
         name: "Hashed",
+      },
+      {
+        id: "heima",
+        paraId: 2013,
+        name: "Heima",
       },
       {
         id: "hydradx",
@@ -161,6 +183,11 @@ export const chains = [
         name: "InvArch",
       },
       {
+        id: "jamton",
+        paraId: 3397,
+        name: "Jamton",
+      },
+      {
         id: "kilt-spiritnet",
         paraId: 2086,
         name: "KILT Spiritnet",
@@ -169,11 +196,6 @@ export const chains = [
         id: "laos",
         paraId: 3370,
         name: "LAOS",
-      },
-      {
-        id: "litentry",
-        paraId: 2013,
-        name: "Litentry",
       },
       {
         id: "logion-polkadot",
@@ -206,9 +228,19 @@ export const chains = [
         name: "Nodle",
       },
       {
-        id: "peaq",
-        paraId: 3338,
-        name: "Peaq",
+        id: "oak",
+        paraId: 2090,
+        name: "Oak",
+      },
+      {
+        id: "omnibtc",
+        paraId: 2053,
+        name: "OmniBTC",
+      },
+      {
+        id: "parallel",
+        paraId: 2012,
+        name: "Parallel",
       },
       {
         id: "pendulum",
@@ -264,6 +296,11 @@ export const chains = [
         id: "sora-polkadot",
         paraId: 2025,
         name: "Sora",
+      },
+      {
+        id: "subdao",
+        paraId: 2018,
+        name: "SubDAO",
       },
       {
         id: "subsocial-polkadot",
@@ -330,6 +367,9 @@ export const chains = [
         url: "wss://rpc.ibp.network/kusama",
       },
       {
+        url: "wss://1rpc.io/ksm",
+      },
+      {
         url: "wss://kusama-rpc.dwellir.com",
       },
       {
@@ -339,10 +379,16 @@ export const chains = [
         url: "wss://kusama-rpc.publicnode.com",
       },
       {
+        url: "wss://rpc-kusama.helixstreet.io",
+      },
+      {
         url: "wss://kusama.dotters.network",
       },
       {
         url: "wss://rpc-kusama.luckyfriday.io",
+      },
+      {
+        url: "wss://kusama.api.onfinality.io/public-ws",
       },
       {
         url: "wss://kusama.public.curie.radiumblock.co/ws",
@@ -352,9 +398,6 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io",
-      },
-      {
-        url: "wss://kusama.rpc.subquery.network/public/ws",
       },
     ],
     evmNetworks: [],
@@ -440,14 +483,14 @@ export const chains = [
         name: "Karura",
       },
       {
-        id: "khala",
-        paraId: 2004,
-        name: "Khala",
-      },
-      {
         id: "kintsugi",
         paraId: 2092,
         name: "Kintsugi",
+      },
+      {
+        id: "kpron",
+        paraId: 2019,
+        name: "Kpron",
       },
       {
         id: "kreivo",
@@ -505,6 +548,11 @@ export const chains = [
         name: "Robonomics Kusama",
       },
       {
+        id: "sakura",
+        paraId: 2016,
+        name: "Sakura",
+      },
+      {
         id: "shadow-kusama",
         paraId: 2012,
         name: "Crust Shadow",
@@ -548,7 +596,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 571,
+    sortIndex: 578,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -587,7 +635,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://sys.ibp.network/statemine",
+        url: "wss://sys.ibp.network/asset-hub-kusama",
       },
       {
         url: "wss://asset-hub-kusama-rpc.dwellir.com",
@@ -662,7 +710,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 572,
+    sortIndex: 579,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -736,7 +784,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 821,
+    sortIndex: 829,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -833,10 +881,16 @@ export const chains = [
         url: "wss://statemint-rpc-tn.dwellir.com",
       },
       {
+        url: "wss://polkadot-assethub-rpc.blockops.network/ws",
+      },
+      {
         url: "wss://asset-hub-polkadot.dotters.network",
       },
       {
         url: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
+      },
+      {
+        url: "wss://statemint.api.onfinality.io/public-ws",
       },
       {
         url: "wss://polkadot-asset-hub-rpc.polkadot.io",
@@ -1078,7 +1132,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 822,
+    sortIndex: 830,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,
@@ -1120,6 +1174,9 @@ export const chains = [
       },
       {
         url: "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
+      },
+      {
+        url: "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
       },
       {
         url: "wss://polkadot-bridge-hub-rpc.polkadot.io",
