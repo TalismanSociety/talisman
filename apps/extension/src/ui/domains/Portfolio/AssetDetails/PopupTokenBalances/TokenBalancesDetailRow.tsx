@@ -2,6 +2,7 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { BigNumber } from "bignumber.js"
+import { useMemo } from "react"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -29,11 +30,12 @@ export const TokenBalancesDetailRow = ({
   tokenId,
   tokenDecimals,
 }: TokenBalancesDetailRowProps) => {
-  const alphaBalanceInTao = new BigNumber(
-    planckToTokens(row.meta?.amountStaked, tokenDecimals) || "0",
-  )
-
-  const tokenBalance = alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
+  const tokenBalance = useMemo(() => {
+    const alphaBalanceInTao = new BigNumber(
+      planckToTokens(row.meta?.amountStaked, tokenDecimals) || "0",
+    )
+    return alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
+  }, [row.meta?.amountStaked, row.tokens, tokenDecimals])
 
   return (
     <div

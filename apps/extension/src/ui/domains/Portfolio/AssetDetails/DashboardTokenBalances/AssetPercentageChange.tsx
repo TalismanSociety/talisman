@@ -1,4 +1,5 @@
 import { classNames } from "@talismn/util"
+import { useMemo } from "react"
 
 type AssetPercentageChangeProps = {
   priceChange: string | null | undefined
@@ -12,8 +13,11 @@ export const AssetPercentageChange = ({
   isError,
 }: AssetPercentageChangeProps) => {
   const num = parseFloat(priceChange || "0")
-  const truncatedValue = num.toFixed(1)
-  const formattedValue = num > 0 ? `+${truncatedValue}` : truncatedValue
+
+  const formattedValue = useMemo(() => {
+    const truncatedValue = num.toFixed(1)
+    return num > 0 ? `+${truncatedValue}` : truncatedValue
+  }, [num])
 
   if (isError) return null
 
