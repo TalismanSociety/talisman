@@ -4,9 +4,9 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EyeIcon,
+  PencilIcon,
   PlusIcon,
   SettingsIcon,
-  UserIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
@@ -241,7 +241,7 @@ const AccountsToolbar = () => {
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
           <PortfolioToolbarButton onClick={handleManageAccountsClick}>
-            <UserIcon />
+            <PencilIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
         <TooltipContent>{t("Manage accounts")}</TooltipContent>
