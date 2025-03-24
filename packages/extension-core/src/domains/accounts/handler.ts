@@ -258,7 +258,7 @@ export default class AccountsHandler extends ExtensionHandler {
       jsonAccounts.push(val)
     }
 
-    // // export accounts the same way as keyring.backupAccounts() from @polkadot/ui-keyring
+    // export accounts the same way as keyring.backupAccounts() from @polkadot/ui-keyring
     const exportedJson = objectSpread(
       {},
       jsonEncrypt(stringToU8a(JSON.stringify(jsonAccounts)), ["batch-pkcs8"], exportPw),
