@@ -1,5 +1,6 @@
 import { isAccountOwned } from "@talismn/keyring"
 import { isTalismanHostname, log } from "extension-shared"
+import { distinctUntilKeyChanged } from "rxjs"
 
 import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"
@@ -83,17 +84,23 @@ export default class Extension extends ExtensionHandler {
       Object.entries(sites)
         .filter(([, site]) => site.connectAllSubstrate)
         .forEach(async ([url, autoAddSite]) => {
-          const existignAddresses = autoAddSite.addresses || []
+          const existingAddresses = autoAddSite.addresses || []
 
           const newAddresses = accounts
             .filter((acc) => isTalismanHostname(autoAddSite.url) || isAccountOwned(acc))
-            .filter(({ address }) => !existignAddresses.includes(address))
+            .filter(({ address }) => !existingAddresses.includes(address))
             .map(({ address }) => address)
 
-          autoAddSite.addresses = [...existignAddresses, ...newAddresses]
+          autoAddSite.addresses = [...existingAddresses, ...newAddresses]
           await stores.sites.updateSite(url, autoAddSite)
         })
     })
+
+    this.stores.app.observable
+      .pipe(distinctUntilKeyChanged("onboarded"))
+      .subscribe(({ onboarded }) => {
+        if (onboarded === "TRUE") this.checkSpiritKeyOwnership()
+      })
 
     this.initDb()
     this.cleanup()
