@@ -170,7 +170,13 @@ export async function subscribeSubtensorStaking(
             const result = DecodeResult_GetStakeInfoForColdkey(response)
             if (!Array.isArray(result)) return []
 
-            const uniqueNetuids = Array.from(new Set(result.map((item) => Number(item.netuid))))
+            const uniqueNetuids = Array.from(
+              new Set(
+                result
+                  .map((item) => Number(item.netuid))
+                  .filter((netuid) => netuid !== SUBTENSOR_ROOT_NETUID),
+              ),
+            )
 
             await fetchDynamicInfoForNetuids(uniqueNetuids)
 
