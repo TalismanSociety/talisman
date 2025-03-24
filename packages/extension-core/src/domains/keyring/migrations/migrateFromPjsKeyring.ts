@@ -260,20 +260,21 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 
     /**
      * Delete old data
+     * @dev: we will do this step in a future version, allowing us to rollback if necessary
      */
-    try {
-      // cleanup
-      const keys = Object.keys(await chrome.storage.local.get(null)).filter((key) =>
-        key.startsWith("account:0x"),
-      )
-      await Promise.all(keys.map(async (key) => await chrome.storage.local.remove(key)))
+    // try {
+    //   // cleanup
+    //   const keys = Object.keys(await chrome.storage.local.get(null)).filter((key) =>
+    //     key.startsWith("account:0x"),
+    //   )
+    //   await Promise.all(keys.map(async (key) => await chrome.storage.local.remove(key)))
 
-      await mnemonicsStore.clear()
-      await addressBookStore.clear()
-    } catch (err) {
-      log.error("Migration cleanup failed", { err })
-      // ignore
-    }
+    //   await mnemonicsStore.clear()
+    //   await addressBookStore.clear()
+    // } catch (err) {
+    //   log.error("Migration cleanup failed", { err })
+    //   // ignore
+    // }
 
     await appStore.delete("currentMigration")
   } finally {
