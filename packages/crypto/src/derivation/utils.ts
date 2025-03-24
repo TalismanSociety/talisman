@@ -51,8 +51,10 @@ export const addressFromSuri = (suri: string, type: KeypairCurve) => {
   return addressFromPublicKey(publicKey, encoding)
 }
 
-// @dev: we only expect suri to contain a mnemonic and derivation path
-// for other cases see https://polkadot.js.org/docs/keyring/start/suri/
+/**
+ * @dev we only expect suri to contain a mnemonic and derivation path.
+ * for other cases see https://polkadot.js.org/docs/keyring/start/suri/
+ */
 export const parseSuri = (suri: string) => {
   // extract password if any
   const indexOfPassword = suri.indexOf("///")
