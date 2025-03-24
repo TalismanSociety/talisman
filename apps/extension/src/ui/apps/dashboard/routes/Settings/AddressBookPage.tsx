@@ -215,11 +215,13 @@ const Content = () => {
   const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
   const contactsToDisplay = useMemo(
     () =>
-      contacts.filter(
-        (contact) =>
-          addressType === "all" ||
-          detectAddressEncoding(contact.address) === contactTypeAddressTypeMap[addressType],
-      ),
+      contacts
+        .filter(
+          (contact) =>
+            addressType === "all" ||
+            detectAddressEncoding(contact.address) === contactTypeAddressTypeMap[addressType],
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
     [contacts, addressType],
   )
 
