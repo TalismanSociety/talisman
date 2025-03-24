@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { isAddressEqual } from "@talismn/crypto"
+import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { isValidSubstrateAddress } from "@talismn/util"
 import { AccountContact } from "extension-core"
 import { HexString } from "extension-shared"
@@ -84,9 +84,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
             const normalised = normalise(value, isEthAddress ? "ethereum" : "ss58")
             const { accounts, contacts } = context
-            if (accounts.includes(normalised))
-              return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
+
             const contact = contacts.find((c) => isAddressEqual(c.address, normalised))
+
+            if (!contact && accounts.includes(normalised))
+              return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
+
             if (contact) {
               // existing contact is limited to a single network
               if (contact.genesisHash)
@@ -108,7 +111,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
     () => ({
       existingNormalisedContacts: contacts,
-      existingAccountAddresses: accounts.map((acc) => acc.address),
+      existingAccountAddresses: accounts.map((acc) => normalizeAddress(acc.address)),
     }),
     [contacts, accounts],
   )
