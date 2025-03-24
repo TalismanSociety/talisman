@@ -259,9 +259,11 @@ const Content = () => {
         {contactsToDisplay.length === 0 && (
           <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
             <span>
-              {t("You have no saved {{addressType}} contacts yet.", {
-                addressType: startCase(addressType),
-              })}
+              {addressType === "all"
+                ? t("You have no saved contacts yet.")
+                : t("You have no saved {{addressType}} contacts yet.", {
+                    addressType: startCase(addressType),
+                  })}
             </span>
             <Button primary onClick={open} iconLeft={PlusIcon}>
               {t("Add a contact")}
