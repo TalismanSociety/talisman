@@ -40,7 +40,7 @@ export const useAccountExportPrivateKeyModal = () => {
   const canExportAccountFunc = (account?: Account | null) =>
     isAccountEthereum(account) && isAccountOfType(account, "keypair")
 
-  const canExportAccount = useMemo(() => account?.type === "keypair", [account])
+  const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
   const exportAccount = useCallback(
     async (password: string) => {
