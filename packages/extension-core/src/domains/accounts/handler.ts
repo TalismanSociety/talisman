@@ -144,11 +144,10 @@ export default class AccountsHandler extends ExtensionHandler {
       throw new Error("Password not supported for suri")
     }
 
-    //suri includes the derivation path if any
-    const { mnemonic, derivationPath } = parseSuri(suri)
+    // suri includes the derivation path if any
+    const { mnemonic, derivationPath } = parsedSuri
 
     let mnemonicId = await keyringStore.getExistingMnemonicId(mnemonic)
-
     if (!mnemonicId) {
       const result = await keyringStore.addMnemonic({
         name: `${name} Recovery Phrase`,
