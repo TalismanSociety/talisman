@@ -24,7 +24,7 @@ type AccountRowAccount = {
 }
 
 type AccountRowProps = {
-  account: AccountRowAccount // SendFundsAccount | AccountWithBalance
+  account: AccountRowAccount
   genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
