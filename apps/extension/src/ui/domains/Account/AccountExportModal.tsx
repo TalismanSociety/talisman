@@ -41,7 +41,7 @@ export const useAccountExportModal = () => {
 
   const canExportAccountFunc = (account?: Account | null) => isAccountOfType(account, "keypair")
 
-  const canExportAccount = useMemo(() => account?.type === "keypair", [account])
+  const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
   const exportAccount = useCallback(
     async (password: string, newPw: string) => {
