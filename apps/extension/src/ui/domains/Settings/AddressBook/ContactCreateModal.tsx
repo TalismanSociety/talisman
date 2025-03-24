@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { isAddressEqual } from "@talismn/crypto"
 import { isValidSubstrateAddress } from "@talismn/util"
 import { AccountContact } from "extension-core"
 import { HexString } from "extension-shared"
@@ -85,7 +86,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             const { accounts, contacts } = context
             if (accounts.includes(normalised))
               return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
-            const contact = contacts.find((c) => c.address === normalised)
+            const contact = contacts.find((c) => isAddressEqual(c.address, normalised))
             if (contact) {
               // existing contact is limited to a single network
               if (contact.genesisHash)
@@ -94,7 +95,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
                 })
 
               // existing contact is a multichain contact
-              return ctx.createError({ message: t("Address already saved in contacts") })
+              return ctx.createError({ message: t("Contact already exists") })
             }
             return true
           }),
@@ -204,7 +205,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         })
         close()
       } catch (error) {
-        setError("name", error as Error)
+        setError("address", { message: (error as Error).message }, { shouldFocus: true })
       }
     },
     [close, add, setError, t],
