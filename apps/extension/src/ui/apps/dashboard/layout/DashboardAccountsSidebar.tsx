@@ -1,4 +1,4 @@
-import { CheckIcon, EyeIcon, PlusIcon, UserIcon } from "@talismn/icons"
+import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
   AccountsCatalogTree,
@@ -122,7 +122,7 @@ const Accounts = () => {
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton onClick={handleManageAccountsClick} className="p-3">
-              <UserIcon className="size-10" />
+              <PencilIcon className="size-10" />
             </IconButton>
           </TooltipTrigger>
           <TooltipContent>{t("Manage Accounts")}</TooltipContent>

@@ -4,9 +4,9 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EyeIcon,
+  PencilIcon,
   PlusIcon,
   SettingsIcon,
-  UserIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
@@ -46,7 +46,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
-import { KeyringUpgradeBanner } from "../../components/KeyringUpgradeBanner"
+import { BackupReminderBanner } from "../../components/BackupReminderBanner"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 import { UnifiedAddressInfoBanner } from "../../components/UnifiedAddressInfoBanner"
 
@@ -244,7 +244,7 @@ const AccountsToolbar = () => {
       <Tooltip placement="bottom-end">
         <TooltipTrigger asChild>
           <PortfolioToolbarButton onClick={handleManageAccountsClick}>
-            <UserIcon />
+            <PencilIcon />
           </PortfolioToolbarButton>
         </TooltipTrigger>
         <TooltipContent>{t("Manage accounts")}</TooltipContent>
@@ -300,7 +300,7 @@ const Accounts = ({
       ) : (
         <>
           <AllAccountsHeader accounts={accounts} />
-          <KeyringUpgradeBanner />
+          <BackupReminderBanner />
           <NewFeaturesButton />
           <UnifiedAddressInfoBanner />
         </>

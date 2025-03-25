@@ -33,6 +33,8 @@ type TokenBalancesParams = {
   balances: Balances
 }
 
+export type TokenBalances = ReturnType<typeof useTokenBalances>
+
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
@@ -135,12 +137,10 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         const rootTitle = getLockTitle({
           label: "subtensor-staking",
         })
-        const subnetTitle =
-          `Subnet Staking [${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName || ""}`.trim()
 
         return {
           key: `${b.id}-subtensor-${index}`,
-          title: meta.netuid === ROOT_NETUID ? rootTitle : subnetTitle,
+          title: meta.netuid === ROOT_NETUID ? rootTitle : "Subnet Staking",
           description: meta?.description ?? undefined,
           tokens: BigNumber(subtensor.amount.tokens),
           fiat: subtensor.amount.fiat(currency),

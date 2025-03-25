@@ -47,7 +47,7 @@ export type AppStoreData = {
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
-  hideKeyringUpgradeBanner?: boolean
+  hideBackupReminderBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
