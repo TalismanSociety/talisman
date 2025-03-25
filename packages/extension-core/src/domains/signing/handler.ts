@@ -92,6 +92,7 @@ export default class SigningHandler extends ExtensionHandler {
                 }),
               )
 
+        // NOTE: If this step fails, the dapp will throw 1010: Invalid Transaction: Transaction has a bad signature
         if (payload.withSignedTransaction) {
           try {
             const tx = registry.createType(
