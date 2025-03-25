@@ -1,4 +1,4 @@
-import { AlertCircleIcon, XIcon } from "@talismn/icons"
+import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -7,11 +7,11 @@ import { Button, IconButton } from "talisman-ui"
 import { api } from "@ui/api"
 import { useAppState, useMnemonics, useSessionState } from "@ui/state"
 
-export const KeyringUpgradeBanner = () => {
+export const BackupReminderBanner = () => {
   const { t } = useTranslation()
   const mnemonics = useMnemonics()
-  const [hideBanner, setHideBanner] = useAppState("hideKeyringUpgradeBanner")
-  const [isSnoozed, setIsSnoozed] = useSessionState("isKeyringUpgradeBannerSnoozed")
+  const [hideBanner, setHideBanner] = useAppState("hideBackupReminderBanner")
+  const [isSnoozed, setIsSnoozed] = useSessionState("isBackupReminderBannerSnoozed")
 
   const showBanner = useMemo(
     () => !isSnoozed && !hideBanner && !!mnemonics.length,
@@ -39,12 +39,7 @@ export const KeyringUpgradeBanner = () => {
     >
       <div className="relative z-10">
         <div className="flex items-center gap-4 text-base">
-          <div className="flex grow items-center gap-2 font-bold">
-            <div className="bg-primary/10 inline-flex size-12 items-center justify-center rounded-full">
-              <AlertCircleIcon className="text-primary-500 text-md" />
-            </div>
-            <div className="text-sm">{t("Backup your recovery phrases")}</div>
-          </div>
+          <div className="grow text-sm font-bold">{t("Protect your funds")}</div>
           <div>
             <IconButton className="text-md text-body select-auto" onClick={onSnoozeClick}>
               <XIcon />
@@ -54,7 +49,7 @@ export const KeyringUpgradeBanner = () => {
         <p className="text-body-secondary mt-2">
           <Trans
             t={t}
-            defaults="Talisman will have a system upgrade on April 15, 2025. Make sure you've backed up your recovery phrases to secure access to your accounts. Only you have access to them."
+            defaults="Your recovery phrases control your accounts. Talisman is a non custodial wallet so only you have access to your keys, make sure you have backed them up."
           ></Trans>
         </p>
         <div className="mt-5 grid grid-cols-2 gap-4">
@@ -63,7 +58,7 @@ export const KeyringUpgradeBanner = () => {
             onClick={onHideClick}
             className="border-body-secondary text-body-secondary h-16 rounded-full text-xs"
           >
-            {t("Don't remind me again")}
+            {t("Don't show again")}
           </Button>
 
           <Button primary small onClick={goToMnemonics} className="h-16 rounded-full text-xs">

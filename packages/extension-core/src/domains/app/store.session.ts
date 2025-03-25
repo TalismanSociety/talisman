@@ -1,11 +1,11 @@
 import { StorageProvider } from "../../libs/Store"
 
 export interface SessionStoreData {
-  isKeyringUpgradeBannerSnoozed: boolean
+  isBackupReminderBannerSnoozed: boolean
 }
 
 export const DEFAULT_VALUES: SessionStoreData = {
-  isKeyringUpgradeBannerSnoozed: false,
+  isBackupReminderBannerSnoozed: false,
 }
 
 export class SessionStore extends StorageProvider<SessionStoreData> {
