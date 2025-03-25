@@ -1,5 +1,166 @@
 # @talismn/balances
 
+## 0.7.0
+
+### Minor Changes
+
+- 703566b: fix: equilibrium/genshiro duplicated balances
+- fdc3740: bump viem
+- 1e69fd7: bump deps
+- e4c41df: noDiscovery property on tokens
+- 84dd6ac: update to new tokenRates shape
+- 71cbd2d: chore: viem v2
+- 97c8cda: remove symbol from native token ids
+- 908baf2: Add nomination pool ID to balance metadata
+- 228eb68: feat: custom user extensions support
+- 89e4533: bump papi
+- 69ba869: reserved nompool staking
+- fdc3740: use erc20 aggregator
+- d257ab5: chore: bump viem
+- a127d6c: Added dTao staking balances and Alpha to Tao price calculations
+- 176139a: Added alpha to tao token rate, changed "amountTao" to "amountStake" for clarity
+- 998e610: subtensor hotkey in balance meta
+
+### Patch Changes
+
+- 771a5be: fix: incorrect cached/stale balances for evm accounts
+- 07f348b: feat: evm-uniswapv2 tokens
+- 42567c0: fix: support `Fungible` available balance calculation
+- 59ecc3d: feat: show unbonding status for native staking balances
+- 5d833e8: chore: small cleanup of ChaindataProviderExtension method names
+- d2ccdaf: fix: balance subscriptions never update registry cache with new metadata
+- 911f932: fix: papify nompoolAccountId util
+- 6021b64: feat: add subtensor delegated staking
+- 64e4344: bump deps
+- 122f828: rename "direct staking" => "delegated staking"
+- 8b5f619: fix: don't delete cached balances when upgrading from a cephalopoded chaindata
+- c8a27b3: Dedexifiction of balances
+- a839969: prevent unnecessary erc20 balance change callbacks
+- e75f799: chore: upgrade polkadot-js dependencies
+- a25771e: prettier fix
+- 1d9c88a: fix: frozen token amounts in `SubAssetsModule`
+- a868f95: fix: clear balance db if migration error
+- 89e7b6b: feat: support foreign assets pallet
+- 372f995: replace ethers by viem
+- c4d5967: bump typescript version
+- a916db0: docs: added @talismn/balances readme
+- 9623582: Fix bug causing duplicated balances
+- a3a1bd7: feat: psp22 balances module
+- c36375f: Use Balances::transfer_allow_death as default method for substrate balance transfers
+- ea4d120: feat: migrated to scale-ts
+- c8a27b3: Improve typing of tokens property on BalanceModule
+- 620b7eb: Dependency updates
+- aec0216: typing fix
+- 70760fd: Fixed dTao staked balances fetching
+- f830db3: fix: crowdloans & nom pool staking
+- 828698b: fix: upgraded papi
+- 5aadf99: fix: renamed renamed Unknown -> Unit for tokens with no symbol
+- aec0216: typings
+- 5aadf99: feat: native token balances on custom networks
+- f44f560: feat: azns lookups
+- d981017: fix: rename univ2 poolAddress -> contractAddress
+- afb0284: feat: upgraded @talismn/balances-react to support new chaindata
+- d58d1a2: Update chaindata hydration, and minimetadata fetching, to be less blocking
+- d3aedfb: feat: support dTAO staking balances
+- 05ca588: feat: migrated to pnpm
+- 90f42b7: feat: parameterise orml tokens palletId
+- 4b830e8: Update for extension manifest v3
+- aca1ab0: fix: hydrate chains before mini metadata
+- Updated dependencies [123647e]
+- Updated dependencies [42567c0]
+- Updated dependencies [0339e5e]
+- Updated dependencies [2ef26d2]
+- Updated dependencies [e4c41df]
+- Updated dependencies [d981017]
+- Updated dependencies [5d833e8]
+- Updated dependencies [03939d5]
+- Updated dependencies [1e77eeb]
+- Updated dependencies [d2ccdaf]
+- Updated dependencies [123647e]
+- Updated dependencies [68bf06a]
+- Updated dependencies [d58d1a2]
+- Updated dependencies [64e4344]
+- Updated dependencies [fdc3740]
+- Updated dependencies [5b747e8]
+- Updated dependencies [5048f86]
+- Updated dependencies [c8a27b3]
+- Updated dependencies [b82777a]
+- Updated dependencies [1e69fd7]
+- Updated dependencies [d20764a]
+- Updated dependencies [e75f799]
+- Updated dependencies [89e4533]
+- Updated dependencies [a25771e]
+- Updated dependencies [5a54fd6]
+- Updated dependencies [f926b14]
+- Updated dependencies [be0d19e]
+- Updated dependencies [71cbd2d]
+- Updated dependencies [603bc1e]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [122f828]
+- Updated dependencies [89e7b6b]
+- Updated dependencies [97c8cda]
+- Updated dependencies [66a31f4]
+- Updated dependencies [ade2908]
+- Updated dependencies [372f995]
+- Updated dependencies [c4d5967]
+- Updated dependencies [6973d01]
+- Updated dependencies [f2f68f3]
+- Updated dependencies [d58d1a2]
+- Updated dependencies [84dd6ac]
+- Updated dependencies [d257ab5]
+- Updated dependencies [fdc3740]
+- Updated dependencies [1eacbbc]
+- Updated dependencies [776432e]
+- Updated dependencies [d11555c]
+- Updated dependencies [2c865c4]
+- Updated dependencies [b024b64]
+- Updated dependencies [ea4d120]
+- Updated dependencies [23f0d3a]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [620b7eb]
+- Updated dependencies [850381a]
+- Updated dependencies [828698b]
+- Updated dependencies [dc0eaeb]
+- Updated dependencies [14483ac]
+- Updated dependencies [48c7374]
+- Updated dependencies [b6f986f]
+- Updated dependencies [114d885]
+- Updated dependencies [5aadf99]
+- Updated dependencies [88e86c6]
+- Updated dependencies [fd7f109]
+- Updated dependencies [fdc3740]
+- Updated dependencies [b5a3f7d]
+- Updated dependencies [4cace80]
+- Updated dependencies [89e4533]
+- Updated dependencies [d981017]
+- Updated dependencies [0f4def6]
+- Updated dependencies [afb0284]
+- Updated dependencies [a6c1b2a]
+- Updated dependencies [d257ab5]
+- Updated dependencies [d58d1a2]
+- Updated dependencies [1a8818a]
+- Updated dependencies [65fbb98]
+- Updated dependencies [d3aedfb]
+- Updated dependencies [fe275d9]
+- Updated dependencies [6d9e378]
+- Updated dependencies [84dd6ac]
+- Updated dependencies [05ca588]
+- Updated dependencies [4b830e8]
+- Updated dependencies [6489a32]
+- Updated dependencies [d2fdbba]
+- Updated dependencies [1da5992]
+- Updated dependencies [f5eab24]
+- Updated dependencies [95ff715]
+- Updated dependencies [372f995]
+- Updated dependencies [fdc3740]
+- Updated dependencies [9ebcd93]
+  - @talismn/token-rates@1.0.0
+  - @talismn/chaindata-provider@0.8.0
+  - @talismn/scale@0.1.0
+  - @talismn/chain-connector-evm@0.8.0
+  - @talismn/chain-connector@0.8.0
+  - @talismn/util@0.3.0
+
 ## 0.6.0
 
 ### Minor Changes

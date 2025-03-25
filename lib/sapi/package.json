@@ -1,7 +1,7 @@
 {
   "name": "sapi",
   "private": true,
-  "exports" :{
+  "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
@@ -10,7 +10,7 @@
     "@polkadot-api/metadata-builders": "0.9.1",
     "@polkadot-api/merkleize-metadata": "1.1.9",
     "@polkadot/types": "15.8.1",
-    "@polkadot/types-codec":  "15.8.1",
+    "@polkadot/types-codec": "15.8.1",
     "@polkadot-api/utils": "0.1.2",
     "@polkadot/util": "13.4.3"
   },

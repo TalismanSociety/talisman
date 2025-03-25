@@ -1,5 +1,32 @@
 # @talismn/util
 
+## 0.3.0
+
+### Minor Changes
+
+- 68bf06a: feat: isBooleanTrue helper
+- 1e69fd7: bump deps
+- 89e4533: add isAscii method
+- 1eacbbc: feat: tapDebug
+- d11555c: refactor: core package
+- 84dd6ac: formatPrice utility
+
+### Patch Changes
+
+- d58d1a2: fetch miniMetadata only if necessary
+- 64e4344: bump deps
+- 5b747e8: fix: evm tx timeouts
+- e75f799: chore: upgrade polkadot-js dependencies
+- a25771e: prettier fix
+- 122f828: added formatTokenDecimals util fn
+- 372f995: replace ethers by viem
+- c4d5967: bump typescript version
+- e0eb84a: Error handling improvements
+- 620b7eb: Dependency updates
+- afb0284: feat: upgraded @talismn/balances-react to support new chaindata
+- d58d1a2: Update chaindata hydration, and minimetadata fetching, to be less blocking
+- 05ca588: feat: migrated to pnpm
+
 ## 0.2.0
 
 ### Minor Changes
