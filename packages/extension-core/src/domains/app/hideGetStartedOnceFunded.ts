@@ -7,7 +7,6 @@ import { log } from "extension-shared"
 import { combineLatest, throttleTime } from "rxjs"
 
 import { db } from "../../db"
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isAccountCompatibleWithChain } from "../accounts/helpers"
 import { balancePool } from "../balances/pool"
 import { chaindataProvider } from "../chains/chaindataProvider"
@@ -22,8 +21,6 @@ import { settingsStore } from "./store.settings"
 export const hideGetStartedOnceFunded = async () => {
   const hideGetStarted = await appStore.get("hideGetStarted")
   if (hideGetStarted) return
-
-  await awaitKeyringLoaded()
 
   const sub = combineLatest([
     settingsStore.observable,
