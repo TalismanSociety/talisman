@@ -1,12 +1,11 @@
 import { TypeRegistry } from "@polkadot/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
+import { Account } from "extension-core"
 import { FC } from "react"
 
-import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
 import { useAccountByAddress } from "@ui/state"
 
-import { SignDcentUnsupportedMessage } from "./SignDcentUnsupportedMessage"
 import { SignLedgerSubstrateGeneric } from "./SignLedgerSubstrateGeneric"
 import { SignLedgerSubstrateLegacy } from "./SignLedgerSubstrateLegacy"
 
@@ -22,23 +21,15 @@ export type SignHardwareSubstrateProps = {
   registry?: TypeRegistry
 }
 
-const getSignHardwareComponent = (account: AccountJsonAny | null) => {
+const getSignHardwareComponent = (account: Account | null) => {
   if (!account) return null
 
-  switch (account?.origin) {
-    case AccountType.Dcent:
-      return SignDcentUnsupportedMessage
-    case AccountType.Ledger: {
-      switch (account?.ledgerApp) {
-        case SubstrateLedgerAppType.Generic:
-          return SignLedgerSubstrateGeneric
-        case SubstrateLedgerAppType.Legacy:
-        default:
-          return SignLedgerSubstrateLegacy
-      }
-    }
+  switch (account?.type) {
+    case "ledger-polkadot":
+      return account.genesisHash ? SignLedgerSubstrateLegacy : SignLedgerSubstrateGeneric
+
     default:
-      throw new Error(`Unknown sign hardware account type for account origin ${account?.origin}`)
+      throw new Error(`Unknown sign hardware account type for account type ${account?.type}`)
   }
 }
 

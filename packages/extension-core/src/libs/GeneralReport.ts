@@ -1,15 +1,16 @@
-import keyring from "@polkadot/ui-keyring"
+import { Account, isAccountOwned } from "@talismn/keyring"
 import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
 
 import { db } from "../db"
-import { AccountType } from "../domains/accounts/types"
+import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
 import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
 import { Balances } from "../domains/balances/types"
+import { keyringStore } from "../domains/keyring/store"
 import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
@@ -90,14 +91,14 @@ async function getGeneralReport() {
   // accounts
   //
 
-  const accounts = keyring.getAccounts()
+  const accounts = await keyringStore.getAccounts()
 
-  const ownedAccounts = accounts.filter(({ meta }) => meta.origin !== AccountType.Watched)
+  const ownedAccounts = accounts.filter(isAccountOwned)
   const ownedAccountsCount = ownedAccounts.length
   const ownedAddresses = ownedAccounts.map((account) => account.address)
   const ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
-  const watchedAccounts = accounts.filter(({ meta }) => meta.origin === AccountType.Watched)
+  const watchedAccounts = accounts.filter((acc) => !isAccountOwned(acc))
   const watchedAccountsCount = watchedAccounts.length
 
   let disconnect!: () => void
@@ -143,7 +144,7 @@ async function getGeneralReport() {
   }
 
   // account type breakdown
-  const accountBreakdown: Record<Lowercase<AccountType>, number> = {
+  const accountBreakdown: Record<Lowercase<LegacyAccountOrigin>, number> = {
     talisman: 0,
     qr: 0,
     ledger: 0,
@@ -152,8 +153,8 @@ async function getGeneralReport() {
     signet: 0,
   }
   for (const account of accounts) {
-    const origin = account.meta.origin as AccountType | undefined
-    const type = origin?.toLowerCase?.() as Lowercase<AccountType> | undefined
+    const origin = getLegacyAccountOrigin(account)
+    const type = origin?.toLowerCase?.() as Lowercase<LegacyAccountOrigin> | undefined
     if (type) accountBreakdown[type] = (accountBreakdown[type] ?? 0) + 1
   }
 
@@ -278,5 +279,23 @@ async function getGeneralReport() {
 
     // util
     lastGeneralReport: Math.trunc(Date.now() / 1000),
+  }
+}
+
+const getLegacyAccountOrigin = (account: Account): LegacyAccountOrigin => {
+  switch (account.type) {
+    case "keypair":
+      return LegacyAccountOrigin.Talisman
+    case "ledger-ethereum":
+    case "ledger-polkadot":
+      return LegacyAccountOrigin.Ledger
+    case "polkadot-vault":
+      return LegacyAccountOrigin.Qr
+    case "watch-only":
+      return LegacyAccountOrigin.Watched
+    case "signet":
+      return LegacyAccountOrigin.Signet
+    default:
+      return account.type as LegacyAccountOrigin
   }
 }

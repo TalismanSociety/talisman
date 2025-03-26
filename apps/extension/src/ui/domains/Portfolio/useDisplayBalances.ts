@@ -1,17 +1,24 @@
 import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/util"
-import { useMemo } from "react"
-import { combineLatest, map } from "rxjs"
-
-import { AccountJsonAny, Balance, Balances } from "@extension/core"
+import {
+  Account,
+  Balance,
+  Balances,
+  getAccountGenesisHash,
+  isAccountEthereum,
+  isAccountPolkadot,
+} from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
-} from "@extension/shared"
+} from "extension-shared"
+import { useMemo } from "react"
+import { combineLatest, map } from "rxjs"
+
 import { portfolio$, portfolioSelectedAccounts$, usePortfolioSelectedAccounts } from "@ui/state"
 
 // TODO: default tokens should be controlled from chaindata
-const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: Balances) => {
+const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balances) => {
   const accountHasSomeBalance =
     balances.find((b) => !accounts || accounts.some((a) => isAddressEqual(a.address, b.address)))
       .sum.planck.total > 0n
@@ -19,23 +26,25 @@ const shouldDisplayBalance = (accounts: AccountJsonAny[] | undefined, balances: 
   return (balance: Balance): boolean => {
     const account = accounts?.find((a) => isAddressEqual(a.address, balance.address))
     // don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
-    if (account?.type === "ethereum" && account.isHardware && !balance.evmNetworkId) return false
+    if (isAccountEthereum(account) && account.type === "ledger-ethereum" && !balance.evmNetworkId)
+      return false
 
     const hasNonZeroBalance = balance.total.planck > 0
     if (hasNonZeroBalance) return true
 
     // only show DEFAULT_TOKENS if account has no balance
     if (!accountHasSomeBalance) {
-      const isSubstrateAccount = account?.type !== "ethereum"
+      const isSubstrateAccount = isAccountPolkadot(account)
       const isSubstrateToken = DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)
       if (isSubstrateAccount && isSubstrateToken) return true
 
-      const isEthereumAccount = !account || account?.type === "ethereum"
+      const isEthereumAccount = !account || isAccountEthereum(account)
       const isEthereumToken = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)
       if (isEthereumAccount && isEthereumToken) return true
     }
 
-    if (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash)
+    const genesisHash = getAccountGenesisHash(account)
+    if (!!genesisHash && genesisHash === balance.chain?.genesisHash)
       return balance.token?.type === "substrate-native" || balance.total.planck > 0n
 
     return false

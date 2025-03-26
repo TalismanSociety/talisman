@@ -1,8 +1,8 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthSignMessageMethod } from "extension-core"
 import { log, RISK_ANALYSIS_API_URL } from "extension-shared"
 import urlJoin from "url-join"
 
-import { EthSignMessageMethod } from "@extension/core"
 import { useFeatureFlag } from "@ui/state"
 
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"

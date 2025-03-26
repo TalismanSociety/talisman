@@ -5,14 +5,14 @@ import { useChain, useChainByGenesisHash, useEvmNetwork } from "@ui/state"
 
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"
 
-const useChainByIdOrGenesisHash = (idOrGenesisHash: string | undefined) => {
+const useChainByIdOrGenesisHash = (idOrGenesisHash: string | null | undefined) => {
   const chainById = useChain(idOrGenesisHash)
   const chainByGenesisHash = useChainByGenesisHash(idOrGenesisHash)
 
   return chainById ?? chainByGenesisHash ?? null
 }
 
-export const useViewOnExplorer = (address: string, networkIdOrHash?: string) => {
+export const useViewOnExplorer = (address: string, networkIdOrHash?: string | null) => {
   const { open: openNetworkPickerModal } = useExplorerNetworkPickerModal()
   const chain = useChainByIdOrGenesisHash(networkIdOrHash)
   const evmNetwork = useEvmNetwork(networkIdOrHash)

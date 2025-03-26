@@ -7,12 +7,12 @@ import {
   SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountOfType, getAccountGenesisHash, isAccountOfType, Mnemonic } from "extension-core"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -21,7 +21,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { Address } from "@ui/domains/Account/Address"
-import { Mnemonic, useAccounts, useAppState, useMnemonics } from "@ui/state"
+import { useAccounts, useAppState, useMnemonics } from "@ui/state"
 
 import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {
@@ -76,15 +76,20 @@ const useMnemonicAccounts = (mnemonicId: string) => {
   return useMemo(
     () =>
       accounts
-        .filter((account) => account.derivedMnemonicId === mnemonicId)
+        .filter((acc) => isAccountOfType(acc, "keypair"))
+        .filter((account) => account.mnemonicId === mnemonicId)
         .sort((a1, a2) => (a1.derivationPath ?? "")?.localeCompare(a2.derivationPath ?? "")),
     [accounts, mnemonicId],
   )
 }
 
-const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => (
+const AccountRow: FC<{ account: AccountOfType<"keypair"> }> = ({ account }) => (
   <div className="text-body-secondary bg-grey-900 mt-4 flex h-[4.8rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8">
-    <AccountIcon className="text-lg" address={account.address} genesisHash={account.genesisHash} />
+    <AccountIcon
+      className="text-lg"
+      address={account.address}
+      genesisHash={getAccountGenesisHash(account)}
+    />
     <div className="flex grow flex-col gap-1 overflow-hidden">
       <div className="text-body max-w-full truncate text-sm">{account.name}</div>
       <div className="text-body-secondary text-xs">

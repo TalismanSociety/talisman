@@ -1,7 +1,6 @@
 import * as Sentry from "@sentry/browser"
+import { log } from "extension-shared"
 import { formatGwei, parseGwei, PublicClient } from "viem"
-
-import { log } from "@extension/shared"
 
 import { EthBaseFeeTrend } from "../../../../../../../packages/extension-core/src/domains/signing/types"
 

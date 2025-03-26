@@ -1,7 +1,6 @@
 import { bind } from "@react-rxjs/core"
+import { errorsStore, ErrorsStoreData } from "extension-core"
 import { map, shareReplay } from "rxjs"
-
-import { errorsStore, ErrorsStoreData } from "@extension/core"
 
 import { debugObservable } from "./util/debugObservable"
 

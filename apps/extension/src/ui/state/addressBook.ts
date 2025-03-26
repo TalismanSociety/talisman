@@ -1,9 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import { AddressBookContact, addressBookStore } from "extension-core"
 import { map } from "rxjs"
 
-import { debugObservable } from "./util/debugObservable"
+import { accounts$ } from "./accounts"
 
-export const [useContacts, contacts$] = bind<AddressBookContact[]>(
-  addressBookStore.observable.pipe(map(Object.values), debugObservable("contacts$")),
+export const [useContacts, contacts$] = bind(
+  accounts$.pipe(map((accounts) => accounts.filter((acc) => acc.type === "contact"))),
 )

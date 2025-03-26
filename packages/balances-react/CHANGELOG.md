@@ -1,5 +1,155 @@
 # @talismn/balances-react
 
+## 0.7.0
+
+### Patch Changes
+
+- 42567c0: fix: support `Fungible` available balance calculation
+- 64e4344: bump deps
+- 8f8de17: fix: typing
+- c8a27b3: Dedexifiction of balances
+- a9e31c4: Remove dead imports
+- 2439876: fix: remove old tokenRates for tokens which have no coingeckoId anymore
+- 3fcfd51: fix: `provided an invalid object where a stream was expected` error in signet
+- a25771e: prettier fix
+- ea4d120: feat: migrated to scale-ts
+- 620b7eb: Dependency updates
+- 73b4a79: chore: tidy up balances store
+- afb0284: feat: upgraded @talismn/balances-react to support new chaindata
+- c0b25f2: feat: add enableChains prop to BalancesProvider
+- 6d9e378: fix: remap lookup ids when building miniMetadatas
+- 05ca588: feat: migrated to pnpm
+- 84b90cb: feat: enabledTokens filter in `@talismn/balances-react`
+- Updated dependencies [771a5be]
+- Updated dependencies [123647e]
+- Updated dependencies [07f348b]
+- Updated dependencies [42567c0]
+- Updated dependencies [0339e5e]
+- Updated dependencies [2ef26d2]
+- Updated dependencies [e4c41df]
+- Updated dependencies [59ecc3d]
+- Updated dependencies [d981017]
+- Updated dependencies [5d833e8]
+- Updated dependencies [03939d5]
+- Updated dependencies [1e77eeb]
+- Updated dependencies [d2ccdaf]
+- Updated dependencies [703566b]
+- Updated dependencies [911f932]
+- Updated dependencies [123647e]
+- Updated dependencies [68bf06a]
+- Updated dependencies [d58d1a2]
+- Updated dependencies [6021b64]
+- Updated dependencies [64e4344]
+- Updated dependencies [fdc3740]
+- Updated dependencies [5b747e8]
+- Updated dependencies [122f828]
+- Updated dependencies [8b5f619]
+- Updated dependencies [5048f86]
+- Updated dependencies [c8a27b3]
+- Updated dependencies [b82777a]
+- Updated dependencies [1e69fd7]
+- Updated dependencies [a839969]
+- Updated dependencies [e4c41df]
+- Updated dependencies [d20764a]
+- Updated dependencies [e75f799]
+- Updated dependencies [89e4533]
+- Updated dependencies [a25771e]
+- Updated dependencies [1d9c88a]
+- Updated dependencies [84dd6ac]
+- Updated dependencies [5a54fd6]
+- Updated dependencies [f926b14]
+- Updated dependencies [be0d19e]
+- Updated dependencies [71cbd2d]
+- Updated dependencies [603bc1e]
+- Updated dependencies [a868f95]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [122f828]
+- Updated dependencies [89e7b6b]
+- Updated dependencies [97c8cda]
+- Updated dependencies [66a31f4]
+- Updated dependencies [ade2908]
+- Updated dependencies [908baf2]
+- Updated dependencies [372f995]
+- Updated dependencies [c4d5967]
+- Updated dependencies [6973d01]
+- Updated dependencies [f2f68f3]
+- Updated dependencies [a916db0]
+- Updated dependencies [d58d1a2]
+- Updated dependencies [84dd6ac]
+- Updated dependencies [d257ab5]
+- Updated dependencies [fdc3740]
+- Updated dependencies [1eacbbc]
+- Updated dependencies [776432e]
+- Updated dependencies [d11555c]
+- Updated dependencies [2c865c4]
+- Updated dependencies [9623582]
+- Updated dependencies [a3a1bd7]
+- Updated dependencies [b024b64]
+- Updated dependencies [c36375f]
+- Updated dependencies [ea4d120]
+- Updated dependencies [23f0d3a]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [c8a27b3]
+- Updated dependencies [228eb68]
+- Updated dependencies [620b7eb]
+- Updated dependencies [850381a]
+- Updated dependencies [aec0216]
+- Updated dependencies [70760fd]
+- Updated dependencies [f830db3]
+- Updated dependencies [828698b]
+- Updated dependencies [dc0eaeb]
+- Updated dependencies [14483ac]
+- Updated dependencies [5aadf99]
+- Updated dependencies [48c7374]
+- Updated dependencies [aec0216]
+- Updated dependencies [b6f986f]
+- Updated dependencies [114d885]
+- Updated dependencies [5aadf99]
+- Updated dependencies [88e86c6]
+- Updated dependencies [fd7f109]
+- Updated dependencies [fdc3740]
+- Updated dependencies [b5a3f7d]
+- Updated dependencies [f44f560]
+- Updated dependencies [4cace80]
+- Updated dependencies [89e4533]
+- Updated dependencies [69ba869]
+- Updated dependencies [d981017]
+- Updated dependencies [0f4def6]
+- Updated dependencies [fdc3740]
+- Updated dependencies [afb0284]
+- Updated dependencies [a6c1b2a]
+- Updated dependencies [d257ab5]
+- Updated dependencies [d58d1a2]
+- Updated dependencies [1a8818a]
+- Updated dependencies [65fbb98]
+- Updated dependencies [d3aedfb]
+- Updated dependencies [a127d6c]
+- Updated dependencies [fe275d9]
+- Updated dependencies [176139a]
+- Updated dependencies [6d9e378]
+- Updated dependencies [998e610]
+- Updated dependencies [84dd6ac]
+- Updated dependencies [05ca588]
+- Updated dependencies [90f42b7]
+- Updated dependencies [4b830e8]
+- Updated dependencies [6489a32]
+- Updated dependencies [d2fdbba]
+- Updated dependencies [aca1ab0]
+- Updated dependencies [1da5992]
+- Updated dependencies [f5eab24]
+- Updated dependencies [95ff715]
+- Updated dependencies [372f995]
+- Updated dependencies [fdc3740]
+- Updated dependencies [9ebcd93]
+  - @talismn/balances@0.7.0
+  - @talismn/token-rates@1.0.0
+  - @talismn/chaindata-provider@0.8.0
+  - @talismn/scale@0.1.0
+  - @talismn/chain-connector-evm@0.8.0
+  - @talismn/chain-connector@0.8.0
+  - @talismn/util@0.3.0
+  - @talismn/connection-meta@0.2.0
+
 ## 0.6.0
 
 ### Minor Changes

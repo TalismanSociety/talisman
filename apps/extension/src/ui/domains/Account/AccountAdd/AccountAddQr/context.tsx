@@ -1,9 +1,8 @@
 import { HexString } from "@polkadot/util/types"
-import { decodeAnyAddress, sleep } from "@talismn/util"
+import { decodeAnyAddress } from "@talismn/util"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
-import { VerifierCertificateType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -25,7 +24,7 @@ export type CONFIGURE_STATE = {
   submitting?: true
 }
 
-type VerifierCertificateTypeState = VerifierCertificateType | undefined
+type VerifierCertificateTypeState = "import" | "new" | "existing" | null
 
 export type CONFIGURE_VERIFIER_CERT_STATE = {
   type: "CONFIGURE_VERIFIER_CERT"
@@ -59,7 +58,7 @@ type Action =
   | { method: "setConfigureVerifierCert" }
   | {
       method: "setVerifierCertType"
-      verifierCertificateType: VerifierCertificateTypeState
+      verifierCertificateType?: VerifierCertificateTypeState
       verifierCertificateMnemonicId?: string | undefined
       verifierCertificateMnemonic?: string | undefined
       mnemonicConfirmed?: boolean
@@ -167,9 +166,6 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         { autoClose: false },
       )
 
-      // pause to prevent double notification
-      await sleep(1000)
-
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
       if (state.type === "CONFIGURE_VERIFIER_CERT" && state.verifierCertificateConfig) {
         const {
@@ -180,17 +176,20 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         } = state.verifierCertificateConfig
         if (verifierCertificateType) {
           if (verifierCertificateType === "import" && mnemonic) {
-            await api.setVerifierCertMnemonic(verifierCertificateType, {
+            await api.setVerifierCertMnemonic({
+              type: "new",
               mnemonic,
               confirmed: true,
             })
           } else if (verifierCertificateType === "new" && verifierCertificateMnemonic) {
-            await api.setVerifierCertMnemonic(verifierCertificateType, {
+            await api.setVerifierCertMnemonic({
+              type: "new",
               mnemonic: verifierCertificateMnemonic,
               confirmed: mnemonicConfirmed ?? false,
             })
           } else if (verifierCertificateType === "existing" && verifierCertificateMnemonicId) {
-            await api.setVerifierCertMnemonic(verifierCertificateType, {
+            await api.setVerifierCertMnemonic({
+              type: "existing",
               mnemonicId: verifierCertificateMnemonicId,
             })
           }
@@ -198,11 +197,14 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       }
 
       try {
-        const createdAddress = await api.accountCreateQr(
-          name || t("My Polkadot Vault Account"),
-          address,
-          lockToNetwork ? genesisHash : null,
-        )
+        const [createdAddress] = await api.accountAddExternal([
+          {
+            type: "polkadot-vault",
+            name: name || t("My Polkadot Vault Account"),
+            address,
+            genesisHash: lockToNetwork ? genesisHash : null,
+          },
+        ])
 
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {

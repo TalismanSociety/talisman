@@ -1,8 +1,8 @@
-import keyring from "@polkadot/ui-keyring"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { isAccountEthereum, isAccountOwned } from "@talismn/keyring"
 import { parseAbi } from "viem"
 
-import { AccountType } from "../domains/accounts/types"
+import { keyringStore } from "../domains/keyring/store"
 import { chainConnectorEvm } from "../rpcs/chain-connector-evm"
 import { abiErc721 } from "./abi"
 
@@ -15,10 +15,11 @@ export const hasErc721Nft = async ({
   evmNetworkId: EvmNetworkId
   contractAddress: Address
 }): Promise<Record<Address, boolean>> => {
-  const evmAddresses = keyring
-    .getAccounts()
-    .filter(({ meta }) => meta.type === "ethereum" && meta.origin !== AccountType.Watched)
-    .map(({ address }) => address as Address)
+  const accounts = await keyringStore.getAccounts()
+  const evmAddresses = accounts
+    .filter(isAccountEthereum)
+    .filter(isAccountOwned)
+    .map(({ address }) => address)
 
   if (!evmAddresses.length) return {}
 

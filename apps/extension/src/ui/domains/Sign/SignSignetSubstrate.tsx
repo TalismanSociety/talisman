@@ -1,13 +1,12 @@
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
+import { AccountSignet, SignerPayloadRaw } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { AccountJsonSignet, SignerPayloadRaw } from "@extension/core"
-
 type Props = {
-  account: AccountJsonSignet
+  account: AccountSignet
   onCancel: () => void
   onApprove: () => Promise<void>
   payload: SignerPayloadJSON | SignerPayloadRaw
@@ -45,16 +44,17 @@ export const SignSignetSubstrate: React.FC<Props> = ({ account, onApprove, onCan
   return (
     <div className={"flex w-full flex-col gap-6"}>
       <SignetSignetError {...error} />
-      {onCancel && (
-        <Button className="w-full" onClick={onCancel}>
-          {t("Cancel")}
+      <div className={"grid w-full grid-cols-2 gap-8"}>
+        {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
+        <Button
+          primary
+          onClick={onApprove}
+          disabled={!!error.call || !!error.network}
+          className="px-4"
+        >
+          {t("Sign on Signet")}
         </Button>
-      )}
-      {!error.call && !error.network && (
-        <Button className="w-full" onClick={onApprove} primary>
-          {t("Approve in Signet")}
-        </Button>
-      )}
+      </div>
     </div>
   )
 }

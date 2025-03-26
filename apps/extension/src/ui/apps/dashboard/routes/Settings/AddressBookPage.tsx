@@ -1,6 +1,7 @@
+import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountAddressType } from "extension-shared"
+import { ProviderType } from "extension-core"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
@@ -24,7 +25,6 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { ProviderType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
@@ -103,6 +103,17 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     genericEvent("open copy address", { from: "address book" })
   }, [contact.address, contactChain?.id, genericEvent, openCopyAddressModal])
 
+  const isMultiAddress = useMemo(() => {
+    try {
+      const encoding = detectAddressEncoding(contact.address)
+      // for substrate addresses, if not network specific we can't know which address format to display
+      if (encoding === "ss58" && !contact.genesisHash) return true
+      return false
+    } catch {
+      return false
+    }
+  }, [contact])
+
   return (
     <div className="bg-black-secondary group flex h-32 w-full items-center justify-between gap-4 rounded px-8">
       <AccountIcon
@@ -113,7 +124,15 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
       <div className="flex grow flex-col justify-between overflow-hidden">
         <div className="truncate">{contact.name}</div>
         <div>
-          <Address className="text-body-secondary text-xs" address={contact.address} />
+          {isMultiAddress ? (
+            <div className="text-body-secondary text-xs">{t("Multichain address")}</div>
+          ) : (
+            <Address
+              className="text-body-secondary text-xs"
+              address={contact.address}
+              genesisHash={contact.genesisHash}
+            />
+          )}
         </div>
       </div>
       <div className={`text-body-disabled flex shrink-0 gap-2`}>
@@ -175,7 +194,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   )
 }
 
-const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
+const contactTypeAddressTypeMap: Record<ProviderType, AddressEncoding> = {
   polkadot: "ss58",
   ethereum: "ethereum",
 }
@@ -196,10 +215,13 @@ const Content = () => {
   const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
   const contactsToDisplay = useMemo(
     () =>
-      contacts.filter(
-        (contact) =>
-          addressType === "all" || contact.addressType === contactTypeAddressTypeMap[addressType],
-      ),
+      contacts
+        .filter(
+          (contact) =>
+            addressType === "all" ||
+            detectAddressEncoding(contact.address) === contactTypeAddressTypeMap[addressType],
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
     [contacts, addressType],
   )
 
@@ -239,9 +261,11 @@ const Content = () => {
         {contactsToDisplay.length === 0 && (
           <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
             <span>
-              {t("You have no saved {{addressType}} contacts yet.", {
-                addressType: startCase(addressType),
-              })}
+              {addressType === "all"
+                ? t("You have no saved contacts yet.")
+                : t("You have no saved {{addressType}} contacts yet.", {
+                    addressType: startCase(addressType),
+                  })}
             </span>
             <Button primary onClick={open} iconLeft={PlusIcon}>
               {t("Add a contact")}

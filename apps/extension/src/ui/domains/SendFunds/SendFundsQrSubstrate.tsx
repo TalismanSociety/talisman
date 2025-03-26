@@ -1,10 +1,10 @@
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
+import { AccountPolkadotVault, getAccountGenesisHash, privacyRoundCurrency } from "extension-core"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { AccountJsonQr, privacyRoundCurrency } from "@extension/core"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -87,8 +87,8 @@ const SendFundsQrSubstrate = () => {
 
   return (
     <QrSubstrate
-      account={account as AccountJsonQr}
-      genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
+      account={account as AccountPolkadotVault}
+      genesisHash={chain?.genesisHash ?? getAccountGenesisHash(account)}
       payload={subTransaction.unsigned}
       onReject={showQrApproval(false)}
       onSignature={handleSigned}

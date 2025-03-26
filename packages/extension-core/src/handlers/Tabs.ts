@@ -4,7 +4,6 @@ import type {
   MetadataDef,
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
-import type { KeyringPair } from "@polkadot/keyring/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
@@ -15,8 +14,6 @@ import {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-import keyring from "@polkadot/ui-keyring"
-import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert, isNumber } from "@polkadot/util"
 import { isTalismanUrl, log } from "extension-shared"
 import { combineLatest } from "rxjs"
@@ -39,6 +36,7 @@ import {
   ResponseEncryptEncrypt,
 } from "../domains/encrypt/types"
 import { EthTabsHandler } from "../domains/ethereum"
+import { keyringStore } from "../domains/keyring/store"
 import { requestInjectMetadata } from "../domains/metadata/requests"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
@@ -99,13 +97,13 @@ export default class Tabs extends TabsHandler {
     return true
   }
 
-  #getFilteredAccounts(
+  async #getFilteredAccounts(
     site: AuthorizedSite,
     { anyType }: RequestAccountList,
     developerMode: boolean,
   ) {
     return getPublicAccounts(
-      Object.values(accountsObservable.subject.getValue()),
+      await keyringStore.getAccounts(),
       filterAccountsByAddresses(site.addresses, anyType),
       { includeWatchedAccounts: developerMode || isTalismanUrl(site.url) },
     )
@@ -144,87 +142,52 @@ export default class Tabs extends TabsHandler {
     )
   }
 
-  private getSigningPair(address: string): KeyringPair {
-    const pair = keyring.getPair(address)
-
-    assert(pair, "Unable to find keypair")
-
-    return pair
-  }
-
-  private bytesSign(
+  private async bytesSign(
     url: string,
     request: SignerPayloadRaw,
     port: Port,
   ): Promise<SubstrateSignResponse> {
     const address = request.address
-    const pair = this.getSigningPair(address)
 
-    return signSubstrate(
-      url,
-      new RequestBytesSign(request),
-      {
-        address,
-        ...pair.meta,
-      },
-      port,
-    )
+    const account = await keyringStore.getAccount(address)
+    if (!account) throw new Error("Account not found")
+
+    return signSubstrate(url, new RequestBytesSign(request), account, port)
   }
 
-  private extrinsicSign(
+  private async extrinsicSign(
     url: string,
     request: SignerPayloadJSON,
     port: Port,
   ): Promise<SubstrateSignResponse> {
     const address = request.address
-    const pair = this.getSigningPair(address)
 
-    return signSubstrate(
-      url,
-      new RequestExtrinsicSign(request),
-      {
-        address,
-        ...pair.meta,
-      },
-      port,
-    )
+    const account = await keyringStore.getAccount(address)
+    if (!account) throw new Error("Account not found")
+
+    return signSubstrate(url, new RequestExtrinsicSign(request), account, port)
   }
 
-  private messageEncrypt(
+  private async messageEncrypt(
     url: string,
     request: EncryptPayload,
     port: Port,
   ): Promise<ResponseEncryptEncrypt> {
-    const address = request.address
-    const pair = this.getSigningPair(address)
-    return requestEncrypt(
-      url,
-      request,
-      {
-        address,
-        ...pair.meta,
-      },
-      port,
-    )
+    const account = await keyringStore.getAccount(request.address)
+    if (!account) throw new Error("Account not found")
+
+    return requestEncrypt(url, request, account, port)
   }
 
-  private messageDecrypt(
+  private async messageDecrypt(
     url: string,
     request: DecryptPayload,
     port: Port,
   ): Promise<ResponseEncryptDecrypt> {
-    const address = request.address
-    const pair = this.getSigningPair(address)
+    const account = await keyringStore.getAccount(request.address)
+    if (!account) throw new Error("Account not found")
 
-    return requestDecrypt(
-      url,
-      request,
-      {
-        address,
-        ...pair.meta,
-      },
-      port,
-    )
+    return requestDecrypt(url, request, account, port)
   }
 
   private metadataProvide(url: string, request: MetadataDef, port: Port): Promise<boolean> {

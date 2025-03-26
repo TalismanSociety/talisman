@@ -1,8 +1,8 @@
+import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   MnemonicCreateModal,
@@ -29,7 +29,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
 
   // TODO user should choose which one to pick
   const existingMnemonicId = useMemo(() => {
-    const existing = mnemonics.find((s) => ["legacy", "imported", "generated"].includes(s.source))
+    const existing = mnemonics[0]
     if (existing) return existing.id
     return
   }, [mnemonics])

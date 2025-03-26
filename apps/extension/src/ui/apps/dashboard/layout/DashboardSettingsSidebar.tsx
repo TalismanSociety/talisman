@@ -2,12 +2,12 @@ import {
   AlertCircleIcon,
   GlobeIcon,
   LinkIcon,
+  PencilIcon,
   PlusIcon,
   SecretIcon,
   ShieldIcon,
   SlidersIcon,
   TalismanHandIcon,
-  UserIcon,
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -50,9 +50,9 @@ export const DashboardSettingsSidebar = () => {
       <div className="flex w-full flex-col gap-2">
         <SidebarNavItem to="/settings/general" label={t("General")} icon={<SlidersIcon />} />
         <SidebarNavItem
-          label={t("Accounts")}
+          label={t("Manage Accounts")}
           to="/settings/accounts"
-          icon={<UserIcon />}
+          icon={<PencilIcon />}
           matchPath="/accounts/*"
         />
         <SidebarNavItem

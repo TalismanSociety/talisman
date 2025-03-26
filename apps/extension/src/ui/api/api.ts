@@ -74,65 +74,31 @@ export const api: MessageTypes = {
   cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
 
   // mnemonic messages -------------------------------------------------------
+  mnemonicsSubscribe: (cb) => messageService.subscribe("pri(mnemonics.subscribe)", null, cb),
   mnemonicUnlock: (mnemonicId, password) =>
-    messageService.sendMessage("pri(mnemonic.unlock)", { mnemonicId, password }),
+    messageService.sendMessage("pri(mnemonics.unlock)", { mnemonicId, password }),
   mnemonicConfirm: (mnemonicId, confirmed: boolean) =>
-    messageService.sendMessage("pri(mnemonic.confirm)", { mnemonicId, confirmed }),
+    messageService.sendMessage("pri(mnemonics.confirm)", { mnemonicId, confirmed }),
   mnemonicRename: (mnemonicId, name) =>
-    messageService.sendMessage("pri(mnemonic.rename)", { mnemonicId, name }),
+    messageService.sendMessage("pri(mnemonics.rename)", { mnemonicId, name }),
   mnemonicDelete: (mnemonicId) =>
-    messageService.sendMessage("pri(mnemonic.delete)", { mnemonicId }),
+    messageService.sendMessage("pri(mnemonics.delete)", { mnemonicId }),
   validateMnemonic: (mnemonic) =>
-    messageService.sendMessage("pri(mnemonic.validateMnemonic)", mnemonic),
-  setVerifierCertMnemonic: (certType, options) =>
-    messageService.sendMessage("pri(mnemonic.setVerifierCertMnemonic)", {
-      type: certType,
-      options,
-    }),
+    messageService.sendMessage("pri(mnemonics.validateMnemonic)", mnemonic),
+  setVerifierCertMnemonic: (options) =>
+    messageService.sendMessage("pri(mnemonics.setVerifierCertMnemonic)", options),
 
   // account messages ---------------------------------------------------
-  accountCreate: (name, type, options) =>
-    messageService.sendMessage("pri(accounts.create)", { name, type, ...options }),
-  accountCreateFromSuri: (name, suri, type) =>
-    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
+  accountAddExternal: (options) =>
+    messageService.sendMessage("pri(accounts.add.external)", options),
+  accountAddDerive: (options) => messageService.sendMessage("pri(accounts.add.derive)", options),
+  accountAddKeypair: (options) => messageService.sendMessage("pri(accounts.add.keypair)", options),
+  accountCreate: (name, curve, options) =>
+    messageService.sendMessage("pri(accounts.create)", { name, curve, ...options }),
+  accountCreateFromSuri: (name, suri, curve) =>
+    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, curve }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateLedgerSubstrate: (account) =>
-    messageService.sendMessage("pri(accounts.create.ledger.substrate)", account),
-
-  accountCreateLedgerEthereum: (name, address, path) =>
-    messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
-      name,
-      address,
-      path,
-    }),
-  accountCreateDcent: (name, address, type, path, tokenIds) =>
-    messageService.sendMessage("pri(accounts.create.dcent)", {
-      name,
-      address,
-      type,
-      path,
-      tokenIds,
-    }),
-  accountCreateQr: (name, address, genesisHash) =>
-    messageService.sendMessage("pri(accounts.create.qr)", {
-      name,
-      address,
-      genesisHash,
-    }),
-  accountCreateWatched: (name, address, isPortfolio) =>
-    messageService.sendMessage("pri(accounts.create.watched)", {
-      name,
-      address,
-      isPortfolio,
-    }),
-  accountCreateSignet: (name, address, genesisHash, signetUrl) =>
-    messageService.sendMessage("pri(accounts.create.signet)", {
-      name,
-      address,
-      genesisHash,
-      signetUrl,
-    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountsCatalogSubscribe: (cb) =>
     messageService.subscribe("pri(accounts.catalog.subscribe)", null, cb),
@@ -151,13 +117,13 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.export.all)", { password, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
+  accountUpdateContact: (options) =>
+    messageService.sendMessage("pri(accounts.update.contact)", options),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
-  validateDerivationPath: (derivationPath, type) =>
-    messageService.sendMessage("pri(accounts.validateDerivationPath)", { derivationPath, type }),
   addressLookup: (lookup) => messageService.sendMessage("pri(accounts.address.lookup)", lookup),
-  getNextDerivationPath: (mnemonicId, type) =>
-    messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, type }),
+  getNextDerivationPath: (mnemonicId, curve) =>
+    messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, curve }),
 
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>

@@ -1,6 +1,7 @@
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import BigNumber from "bignumber.js"
+import { log } from "extension-shared"
 import debounce from "lodash/debounce"
 import {
   ChangeEventHandler,
@@ -15,7 +16,6 @@ import {
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
-import { log } from "@extension/shared"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"

@@ -16,6 +16,7 @@ import {
   migrateAssetDiscoveryV2,
 } from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
+import { migrateFromPjsKeyring } from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
 import { Migrations } from "./types"
 
@@ -34,6 +35,7 @@ export const migrations: Migrations = [
   migrateAutoLockTimeoutToMinutes,
   migrateAnaliticsPurgePendingCaptures,
   migrateAssetDiscoveryV2,
+  migrateFromPjsKeyring,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:

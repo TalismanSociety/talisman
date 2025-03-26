@@ -1,15 +1,15 @@
 import md5 from "blueimp-md5"
-import { useCallback, useMemo, useState } from "react"
-import { useDebounce } from "react-use"
-import { BehaviorSubject } from "rxjs"
-
 import {
   AddressesAndTokens,
   AddressesByChain,
   Balances,
   BalanceSubscriptionResponse,
   AddressesAndEvmNetwork as EvmNetworksAndAddresses,
-} from "@extension/core"
+} from "extension-core"
+import { useCallback, useMemo, useState } from "react"
+import { useDebounce } from "react-use"
+import { BehaviorSubject } from "rxjs"
+
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useBalancesHydrate } from "@ui/state"

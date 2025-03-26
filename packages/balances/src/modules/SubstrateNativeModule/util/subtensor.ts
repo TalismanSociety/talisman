@@ -4,7 +4,9 @@ import { bool, Bytes, compact, Option as ScaleOption, Struct, Vector } from "sca
 
 export const SUBTENSOR_ROOT_NETUID = 0
 export const SUBTENSOR_MIN_STAKE_AMOUNT_PLANK = 1000000n
-const SCALE_FACTOR = 10n ** 9n // Equivalent to 1e9 for precision
+const TAO_DECIMALS = 9n
+export const SCALE_FACTOR = 10n ** TAO_DECIMALS // Equivalent to 10e9 for precision
+export const ONE_ALPHA_TOKEN = SCALE_FACTOR
 
 const BittensorAccountPrefix = 42
 const BittensorAccountId = AccountId(BittensorAccountPrefix)
@@ -136,7 +138,7 @@ export const calculateAlphaPrice = ({
   return result // Scaled price as bigint
 }
 
-const calculateTaoAmountFromAlpha = ({
+export const calculateTaoAmountFromAlpha = ({
   alphaPrice,
   alphaStaked,
 }: {

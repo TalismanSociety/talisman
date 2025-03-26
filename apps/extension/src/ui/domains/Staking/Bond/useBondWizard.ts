@@ -293,9 +293,9 @@ export const useBondWizard = () => {
     stakeWarningMessage,
     bondType,
 
-    payload: !inputErrorMessage && isFormValid && canStake && !isCanStakeLoading ? payload : null,
+    payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,
-    isLoadingPayload,
+    isLoadingPayload: isLoadingPayload || isCanStakeLoading,
     errorPayload,
 
     feeEstimate,

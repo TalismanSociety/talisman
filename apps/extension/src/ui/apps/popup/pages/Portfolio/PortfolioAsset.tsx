@@ -1,12 +1,12 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { Balances } from "extension-core"
 import { uniq } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { IconButton } from "talisman-ui"
 
-import { Balances } from "@extension/core"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"

@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { sleep } from "@talismn/util"
+import { LedgerEthDerivationPathType } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -7,7 +8,6 @@ import { Navigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
-import { LedgerEthDerivationPathType } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
 import { LedgerSubstrateLegacyAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
@@ -133,16 +133,16 @@ export const AddLedgerSelectAccount = () => {
     useState<LedgerEthDerivationPathType>("LedgerLive")
 
   const isInvalidInputs = useMemo(() => {
-    if (!data.type) return true
-    if (data.type === "sr25519" && !data.substrateAppType) return true
+    if (!data.platform) return true
+    if (data.platform === "polkadot" && !data.substrateAppType) return true
     if (
-      data.type === "sr25519" &&
+      data.platform === "polkadot" &&
       data.substrateAppType === AddSubstrateLedgerAppType.Legacy &&
       !data.chainId
     )
       return true
     return false
-  }, [data.chainId, data.substrateAppType, data.type])
+  }, [data.chainId, data.substrateAppType, data.platform])
 
   if (isInvalidInputs) return <Navigate to="/accounts/add/ledger" replace />
 
@@ -150,7 +150,7 @@ export const AddLedgerSelectAccount = () => {
     <form className="flex max-h-screen flex-col gap-12" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
         <h1 className="m-0">{t("Connect Ledger")}</h1>
-        {data.type === "ethereum" && (
+        {data.platform === "ethereum" && (
           <>
             <p className="text-body-secondary mb-12 mt-[1em]">
               {t(
@@ -168,7 +168,7 @@ export const AddLedgerSelectAccount = () => {
         )}
         <p className="text-body-secondary mb-12 mt-[1em]">
           {t("Please select which account(s) you'd like to connect.")}
-          {data.type === "ethereum" && (
+          {data.platform === "ethereum" && (
             <>
               <br />
               {t(
@@ -177,7 +177,7 @@ export const AddLedgerSelectAccount = () => {
             </>
           )}
         </p>
-        {data.type === "sr25519" && (
+        {data.platform === "polkadot" && (
           <>
             {data.substrateAppType === AddSubstrateLedgerAppType.Legacy && (
               <LedgerSubstrateLegacyAccountPicker
@@ -200,7 +200,7 @@ export const AddLedgerSelectAccount = () => {
             )}
           </>
         )}
-        {data.type === "ethereum" && (
+        {data.platform === "ethereum" && (
           <LedgerEthereumAccountPicker
             name={t("Ledger Ethereum")}
             derivationPathType={derivationPathType}

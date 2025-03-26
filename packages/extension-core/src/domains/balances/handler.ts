@@ -1,4 +1,4 @@
-import keyring from "@polkadot/ui-keyring"
+import { isAccountPolkadot } from "@talismn/keyring"
 import { isValidSubstrateAddress } from "@talismn/util"
 
 import { createSubscription, portDisconnected, unsubscribe } from "../../handlers/subscriptions"
@@ -6,7 +6,7 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
+import { keyringStore } from "../keyring/store"
 import { balancePool, ExternalBalancePool } from "./pool"
 import { RequestBalance, RequestBalancesByParamsSubscribe } from "./types"
 
@@ -27,10 +27,10 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.subscribe)": {
         const onDisconnected = portDisconnected(port)
 
-        await awaitKeyringLoaded()
-        const updateSubstrateChains = keyring
-          .getAccounts()
-          .some((account) => account.meta.type !== "ethereum")
+        const accounts = await keyringStore.getAccounts()
+
+        // TODO fix this logic: some chains with evm type accounts should still be updated (ex: Mythos, Moonbeam, LAOS)
+        const updateSubstrateChains = accounts.some(isAccountPolkadot)
 
         // TODO: Run this on a timer or something instead of when subscribing to balances
         // todo check if not awaiting this causes any issues with custom networks

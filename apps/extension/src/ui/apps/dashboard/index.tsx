@@ -8,6 +8,7 @@ import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
+import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 
 import { AccountAddMenu } from "./routes/AccountAdd"
@@ -146,7 +147,7 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 
 const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
   const { t } = useTranslation()
-  const { isLoggedIn, isOnboarded } = useLoginCheck()
+  const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
   const wasLoggedIn = useRef(false)
 
   useEffect(() => {
@@ -167,6 +168,8 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
 
   if (!isLoggedIn)
     return <FullScreenLocked title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
+
+  if (isMigrating) return <MigrationProgress />
 
   return <>{children}</>
 }

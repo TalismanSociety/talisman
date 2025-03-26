@@ -1,6 +1,6 @@
+import { ChainId } from "extension-core"
 import { useMemo } from "react"
 
-import { ChainId } from "@extension/core"
 import { useRemoteConfig } from "@ui/state"
 
 export const useRecommendedPoolsIds = (chainId?: ChainId | null | undefined) => {

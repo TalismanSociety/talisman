@@ -1,8 +1,8 @@
+import { AccountLedgerPolkadot } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonHardwareSubstrate } from "@extension/core"
-import { log } from "@extension/shared"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/state"
@@ -21,7 +21,7 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   registry,
 }) => {
   const { t } = useTranslation()
-  const account = useAccountByAddress(payload?.address)
+  const account = useAccountByAddress(payload?.address) as AccountLedgerPolkadot | null
   const { sign } = useLedgerSubstrateLegacy(account?.genesisHash)
 
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
@@ -34,7 +34,7 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     setIsSigning(true)
 
     try {
-      const signature = await sign(payload, account as AccountJsonHardwareSubstrate, registry)
+      const signature = await sign(payload, account, registry)
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })

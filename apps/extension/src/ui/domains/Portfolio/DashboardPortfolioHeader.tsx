@@ -9,7 +9,7 @@ import {
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames } from "@talismn/util"
-import { AccountJsonAny, AccountType, TreeFolder } from "extension-core"
+import { Account, getAccountGenesisHash, isAccountOwned, TreeFolder } from "extension-core"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,7 +40,7 @@ import { FolderContextMenu } from "../Account/FolderContextMenu"
 import { useBuyTokensModal } from "../Asset/Buy/hooks/useBuyTokensModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
-const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder | null }> = ({
+const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }> = ({
   account,
   folder,
 }) => {
@@ -53,10 +53,10 @@ const SelectionScope: FC<{ account: AccountJsonAny | null; folder?: TreeFolder |
           <AccountIcon
             className="shrink-0 text-[2rem]"
             address={account.address}
-            genesisHash={account.genesisHash}
+            genesisHash={getAccountGenesisHash(account)}
           />
           <div className="truncate">{account.name ?? shortenAddress(account.address)}</div>
-          <AccountTypeIcon origin={account.origin} className="text-primary" />
+          <AccountTypeIcon type={account.type} className="text-primary" />
         </div>
         <div className="shrink-0">
           <AccountContextMenu
@@ -239,10 +239,10 @@ const TopActions: FC = () => {
   const showQuestLink = useFeatureFlag("QUEST_LINK")
 
   const [disableActions, disabledReason] = useMemo(() => {
-    if (!!selectedAccount && !isOwnedAccount(selectedAccount))
+    if (!!selectedAccount && !isAccountOwned(selectedAccount))
       return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
 
-    if (!selectedAccounts.some(isOwnedAccount))
+    if (!selectedAccounts.some(isAccountOwned))
       return [true, t("Cannot send or receive funds on accounts that you don't own") as string]
 
     return [false, ""]
@@ -273,7 +273,7 @@ const TopActions: FC = () => {
         {
           analyticsName: "Goto",
           analyticsAction: "open receive",
-          label: !!selectedAccount && !isOwnedAccount(selectedAccount) ? t("Copy") : t("Receive"),
+          label: !!selectedAccount && !isAccountOwned(selectedAccount) ? t("Copy") : t("Receive"),
           icon: ArrowDownIcon,
           onClick: () =>
             openCopyAddressModal({
@@ -327,16 +327,6 @@ const TopActions: FC = () => {
       {showQuestLink && <QuestLink />}
     </div>
   )
-}
-
-const isOwnedAccount = (account: AccountJsonAny) => {
-  switch (account.origin) {
-    case AccountType.Watched:
-    case AccountType.Signet:
-      return false
-    default:
-      return true
-  }
 }
 
 const QuestLink = () => {

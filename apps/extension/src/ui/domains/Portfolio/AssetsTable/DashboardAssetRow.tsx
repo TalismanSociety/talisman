@@ -1,9 +1,9 @@
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Balances } from "extension-core"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Balances } from "@extension/core"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"

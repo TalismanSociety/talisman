@@ -1,5 +1,5 @@
 import { isAddressEqual, normalizeAddress } from "@talismn/util"
-import { AccountJsonAny, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
+import { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
@@ -64,7 +64,7 @@ const usePortfolioNavigationProvider = () => {
     [searchParams, updateSearchParams],
   )
 
-  const selectedAccount = useMemo<AccountJsonAny | null>(() => {
+  const selectedAccount = useMemo<Account | null>(() => {
     return (
       allAccounts.find((acc) => accountAddress && isAddressEqual(acc.address, accountAddress)) ??
       null

@@ -1,9 +1,9 @@
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
 
@@ -25,13 +25,11 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
   onClick,
 }) => {
   const account = useAccountByAddress(address as string)
-  const contact = useContact(address, tokenGenesisHash)
 
   const { name, genesisHash: accountGenesisHash } = useMemo(() => {
-    if (account) return account
-    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
+    if (account) return { name: account.name, genesisHash: getAccountGenesisHash(account) }
     return { name: undefined, genesisHash: undefined }
-  }, [account, contact])
+  }, [account])
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,
@@ -55,7 +53,7 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
             <Address address={displayAddress} startCharCount={6} endCharCount={6} />
           )}
         </div>
-        <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
+        <AccountTypeIcon type={account?.type} className="text-primary-500" />
       </div>
     </PillButton>
   )

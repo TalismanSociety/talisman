@@ -1,11 +1,10 @@
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { ChainId, EvmNetworkId } from "extension-core"
+import { ChainId, EvmNetworkId, getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { useContact } from "@ui/hooks/useContact"
 import { useAccountByAddress, useChain } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
@@ -17,7 +16,6 @@ export const SummaryAddressDisplay: FC<{
   mode: SummaryDisplayMode
 }> = ({ address, networkId, mode }) => {
   const account = useAccountByAddress(address)
-  const contact = useContact(address)
   const chain = useChain(networkId)
 
   const formattedAddress = useMemo(() => {
@@ -34,10 +32,10 @@ export const SummaryAddressDisplay: FC<{
         <AccountIcon
           className={classNames("inline-block align-sub text-[1.2em]")}
           address={address}
-          genesisHash={account?.genesisHash ?? contact?.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
         />
         <span className="ml-[0.3em] truncate">
-          {account?.name ?? contact?.name ?? (
+          {account?.name ?? (
             <Address startCharCount={6} endCharCount={4} address={address} noTooltip />
           )}
         </span>
@@ -56,11 +54,11 @@ export const SummaryAddressDisplay: FC<{
             <AccountIcon
               className={classNames("inline-block align-sub text-[1.2em]")}
               address={address}
-              genesisHash={account?.genesisHash ?? contact?.genesisHash}
+              genesisHash={getAccountGenesisHash(account)}
             />
           </div>
           <div className="truncate">
-            {account?.name ?? contact?.name ?? (
+            {account?.name ?? (
               <Address startCharCount={6} endCharCount={4} address={address} noTooltip />
             )}
           </div>

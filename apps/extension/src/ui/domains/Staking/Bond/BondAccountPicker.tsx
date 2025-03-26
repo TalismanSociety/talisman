@@ -1,5 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
+import { getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -31,10 +32,16 @@ export const BondAccountPicker = () => {
           if (!token) return false
 
           if (isEthereumAddress(account.address))
-            return isEvmToken(token) || (chain?.account === "secp256k1" && !account.isHardware)
+            return (
+              isEvmToken(token) ||
+              (chain?.account === "secp256k1" && !isAccountOfType(account, "ledger-polkadot"))
+            )
           else return chain && chain?.account !== "secp256k1"
         })
-        .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
+        .filter((account) => {
+          const genesisHash = getAccountGenesisHash(account)
+          return !genesisHash || genesisHash === chain?.genesisHash
+        }),
     [allAccounts, chain, search, token],
   )
 

@@ -1,8 +1,8 @@
 import { isAddressEqual } from "@talismn/util"
+import { Account, AuthorizedSite, isAccountEthereum } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny, AuthorizedSite } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
@@ -12,20 +12,20 @@ import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 
-const isMatch = (acc: AccountJsonAny) => (address: string) => isAddressEqual(acc.address, address)
+const isMatch = (acc: Account) => (address: string) => isAddressEqual(acc.address, address)
 
 const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
   const accounts = useAccountsForSite(site)
 
   // using a local state allows for optimistic updates
   const [activeAccounts, setActiveAccounts] = useState(() =>
-    accounts.map((acc) => [acc, site.addresses?.some(isMatch(acc))] as [AccountJsonAny, boolean]),
+    accounts.map((acc) => [acc, site.addresses?.some(isMatch(acc))] as [Account, boolean]),
   )
 
   const handleUpdateAccounts = useCallback(
     (addresses: string[]) => {
       setActiveAccounts(
-        accounts.map((acc) => [acc, addresses.some(isMatch(acc))] as [AccountJsonAny, boolean]),
+        accounts.map((acc) => [acc, addresses.some(isMatch(acc))] as [Account, boolean]),
       )
       api.authorizedSiteUpdate(site.id, {
         addresses,
@@ -49,10 +49,8 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const activeAccounts = useMemo(
     () =>
       accounts
-        .filter((acc) => acc.type === "ethereum")
-        .map(
-          (acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [AccountJsonAny, boolean],
-        ),
+        .filter(isAccountEthereum)
+        .map((acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [Account, boolean]),
     [accounts, site?.ethAddresses],
   )
 

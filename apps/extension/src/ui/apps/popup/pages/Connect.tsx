@@ -1,11 +1,11 @@
 import { InfoIcon } from "@talismn/icons"
+import { Account, isAccountEthereum, KnownRequestIdOnly, ProviderType } from "extension-core"
 import capitalize from "lodash/capitalize"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Button, Drawer } from "talisman-ui"
 
-import { AccountJsonAny, KnownRequestIdOnly, ProviderType } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
@@ -54,7 +54,7 @@ const NoAccountWarning = ({
 }
 
 type ConnectComponent = FC<{
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   connected: string[]
   setConnected: (connected: string[]) => void
   onNoAccountClose: (navigateToAddAccount: boolean) => () => void
@@ -148,8 +148,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   const { t } = useTranslation("request")
 
   const activeAccounts = useMemo(
-    () =>
-      accounts.map((acc) => [acc, connected.includes(acc.address)] as [AccountJsonAny, boolean]),
+    () => accounts.map((acc) => [acc, connected.includes(acc.address)] as [Account, boolean]),
     [accounts, connected],
   )
 
@@ -192,7 +191,7 @@ export const ConnectEth: ConnectComponent = ({
   const { t } = useTranslation("request")
 
   const ethAccounts = useMemo(() => {
-    return accounts.filter(({ type }) => type === "ethereum")
+    return accounts.filter(isAccountEthereum)
   }, [accounts])
 
   return (

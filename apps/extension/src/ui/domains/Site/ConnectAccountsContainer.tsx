@@ -1,10 +1,10 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
 import { useAccounts } from "@ui/state"
@@ -36,9 +36,7 @@ const ConnectionStatusContainer: FC<{
   )
 }
 
-const ConnectedAccountsSummary: FC<{ connectedAccounts: AccountJsonAny[] }> = ({
-  connectedAccounts,
-}) => {
+const ConnectedAccountsSummary: FC<{ connectedAccounts: Account[] }> = ({ connectedAccounts }) => {
   const { t } = useTranslation()
   return (
     <>

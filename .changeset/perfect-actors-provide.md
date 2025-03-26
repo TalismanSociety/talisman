@@ -1,5 +1,0 @@
----
-"@talismn/icons": patch
----
-
-cleanup

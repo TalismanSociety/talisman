@@ -1,7 +1,7 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmAddress } from "extension-core"
 import { useMemo } from "react"
 
-import { EvmAddress } from "@extension/core"
 import { useTokens } from "@ui/state"
 import { isErc20Token } from "@ui/util/isErc20Token"
 

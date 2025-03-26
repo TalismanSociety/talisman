@@ -1,10 +1,10 @@
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
+import { errorsStore } from "extension-core"
 import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { errorsStore } from "@extension/core"
 import { Card } from "@talisman/components/Card"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"

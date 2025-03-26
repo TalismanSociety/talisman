@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Mnemonic } from "extension-core"
 import { FC, RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -8,7 +9,7 @@ import * as yup from "yup"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { Mnemonic, useMnemonic, useMnemonics } from "@ui/state"
+import { useMnemonic, useMnemonics } from "@ui/state"
 
 type FormData = {
   name: string

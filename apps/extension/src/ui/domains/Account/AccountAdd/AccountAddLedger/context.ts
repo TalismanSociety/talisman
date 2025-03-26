@@ -1,24 +1,21 @@
 import { assert } from "@polkadot/util"
+import { Platform } from "@talismn/crypto"
+import { AddAccountExternalOptions } from "extension-core"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import {
-  AccountAddressType,
-  RequestAccountCreateLedgerEthereum,
-  RequestAccountCreateLedgerSubstrate,
-  RequestAccountCreateLedgerSubstrateGeneric,
-  RequestAccountCreateLedgerSubstrateLegacy,
-  SubstrateLedgerAppType,
-} from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useChain } from "@ui/state"
 
-export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
-export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
-
-export type LedgerAccountDefSubstrate = RequestAccountCreateLedgerSubstrate
-export type LedgerAccountDefEthereum = RequestAccountCreateLedgerEthereum
+export type LedgerAccountDefSubstrate = Extract<
+  AddAccountExternalOptions,
+  { type: "ledger-polkadot" }
+>
+export type LedgerAccountDefEthereum = Extract<
+  AddAccountExternalOptions,
+  { type: "ledger-ethereum" }
+>
 export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
 
 export enum AddSubstrateLedgerAppType {
@@ -27,37 +24,17 @@ export enum AddSubstrateLedgerAppType {
   Migration = "Migration",
 }
 
-const getSubstrateLedgerAppType = (type: AddSubstrateLedgerAppType) => {
-  switch (type) {
-    case AddSubstrateLedgerAppType.Legacy:
-      return SubstrateLedgerAppType.Legacy
-    case AddSubstrateLedgerAppType.Generic:
-    case AddSubstrateLedgerAppType.Migration:
-      return SubstrateLedgerAppType.Generic
-  }
-}
-
 type LedgerCreationInputs = {
-  type: AccountAddressType
+  platform: Platform
   substrateAppType: AddSubstrateLedgerAppType
   accounts: LedgerAccountDef[]
   chainId?: string
 }
 
-const createAccount = (account: LedgerAccountDef, substrateAppType?: SubstrateLedgerAppType) => {
-  if (substrateAppType) {
-    return api.accountCreateLedgerSubstrate(account as LedgerAccountDefSubstrate)
-  } else {
-    // assume ethereum
-    const { name, address, path } = account as LedgerAccountDefEthereum
-    return api.accountCreateLedgerEthereum(name, address, path)
-  }
-}
-
 const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
-    type: params.get("type") as AccountAddressType,
+    platform: params.get("platform") as Platform | undefined,
   }))
   const chain = useChain(data.chainId as string)
 
@@ -69,8 +46,9 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
   }, [])
 
   const connectAccounts = useCallback(
-    async (accounts: LedgerAccountDef[]) => {
-      if (data.type !== "ethereum") assert(data.substrateAppType, "Substrate app type is required")
+    (accounts: LedgerAccountDef[]) => {
+      if (data.platform !== "ethereum")
+        assert(data.substrateAppType, "Substrate app type is required")
 
       if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
         assert(
@@ -80,18 +58,9 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       setData((prev) => ({ ...prev, accounts }))
 
-      const addresses: string[] = []
-      for (const account of accounts)
-        addresses.push(
-          await createAccount(
-            account,
-            data.substrateAppType ? getSubstrateLedgerAppType(data.substrateAppType) : undefined,
-          ),
-        )
-
-      return addresses
+      return api.accountAddExternal(accounts)
     },
-    [chain?.genesisHash, data.substrateAppType, data.type],
+    [chain?.genesisHash, data.substrateAppType, data.platform],
   )
 
   return { data, updateData, connectAccounts, onSuccess }

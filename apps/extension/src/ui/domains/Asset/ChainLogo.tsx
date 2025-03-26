@@ -1,8 +1,8 @@
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
 import { FC, Suspense, useCallback, useEffect, useId, useMemo, useState } from "react"
 
-import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@extension/shared"
 import { useChain, useEvmNetwork } from "@ui/state"
 
 type ChainLogoBaseProps = {

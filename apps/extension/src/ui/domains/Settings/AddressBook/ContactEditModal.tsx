@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { HexString } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -25,13 +26,13 @@ import { ContactModalProps } from "./types"
 
 type FormValues = {
   name: string
-  genesisHash?: string
+  genesisHash?: HexString
   limitToNetwork?: boolean
 }
 
 const schema = yup.object({
   name: yup.string().required(" "),
-  genesisHash: yup.string(),
+  genesisHash: yup.mixed<HexString>(),
   limitToNetwork: yup.bool(),
 })
 
@@ -68,7 +69,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
   const chains = useChainsFilteredByAddressPrefix(contact?.address)
   const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
-    (genesisHash?: string) =>
+    (genesisHash?: HexString) =>
       setValue("genesisHash", genesisHash, {
         shouldDirty: true,
         shouldTouch: true,

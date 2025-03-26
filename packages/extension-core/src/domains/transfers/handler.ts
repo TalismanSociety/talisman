@@ -1,16 +1,15 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
+import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
 import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
-import { getPairForAddressSafely, getPairFromAddress } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
-import { getPrivateKey } from "../../util/getPrivateKey"
 import { validateHexString } from "../../util/validateHexString"
 import {
   getEthTransferTransactionBase,
@@ -19,6 +18,9 @@ import {
   serializeTransactionRequest,
 } from "../ethereum/helpers"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
+import { getPjsKeyringPairFake } from "../keyring/getPjsKeyringPairFake"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
 import { transferAnalytics } from "./helpers"
 import AssetTransfersRpc from "./rpc/AssetTransfers"
@@ -40,7 +42,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip = "0",
     method = "transfer_keep_alive",
   }: RequestAssetTransfer) {
-    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+    const result = await withPjsKeyringPair(fromAddress, async (pair) => {
       const token = await chaindataProvider.tokenById(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -121,7 +123,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       tokenType === "substrate-psp22" ||
       tokenType === "substrate-tokens"
     ) {
-      const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
+      const pair = getPjsKeyringPairFake(fromAddress) // no need for an unlocked pair for fee estimation
       try {
         return await AssetTransfersRpc.checkFee(
           chainId,
@@ -224,14 +226,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const transaction = prepareTransaction(transfer, parsedGasSettings, nonce)
     const unsigned = serializeTransactionRequest(transaction)
 
-    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+    const result = await withSecretKey(fromAddress, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Unauthorised")
-
-      const privateKey = getPrivateKey(pair, password, "hex")
+      const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
 
       const hash = await client.sendTransaction({

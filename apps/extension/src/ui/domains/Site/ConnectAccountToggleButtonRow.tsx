@@ -1,15 +1,14 @@
 import { classNames } from "@talismn/util"
+import { Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { AccountJsonAny } from "@extension/core"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
 
 export const ConnectAccountToggleButtonRow: FC<{
-  account: AccountJsonAny
+  account: Account
   showAddress?: boolean
   checked?: boolean
   onClick?: () => void
@@ -25,7 +24,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     <AccountIcon
       className="shrink-0 text-lg"
       address={account.address}
-      genesisHash={account?.genesisHash}
+      genesisHash={getAccountGenesisHash(account)}
     />
     <div className="truncate text-left text-sm">
       <Tooltip placement="bottom-start">
@@ -48,9 +47,9 @@ export const ConnectAccountToggleButtonRow: FC<{
       </Tooltip>
     </div>
     <AccountTypeIcon
-      origin={account.origin}
+      type={account.type}
       className="text-primary"
-      signetUrl={account.signetUrl as string}
+      signetUrl={getAccountSignetUrl(account)}
     />
     <div className="grow"></div>
     <div

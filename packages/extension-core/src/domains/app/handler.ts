@@ -1,4 +1,3 @@
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "extension-shared"
@@ -22,7 +21,7 @@ import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
 import { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
-import { changePassword } from "./helpers"
+import { keyringStore } from "../keyring/store"
 import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
 import { ChangePasswordStatusUpdateStatus } from "./types"
@@ -38,8 +37,8 @@ export default class AppHandler extends ExtensionHandler {
 
     assert(pass === passConfirm, "Passwords do not match")
 
-    const accounts = keyring.getAccounts().length
-    assert(!accounts, "Accounts already exist")
+    const accounts = await keyringStore.getAccounts()
+    assert(!accounts.length, "Accounts already exist")
 
     // Before any accounts are created, we want to add talisman.xyz as an authorised site with connectAllSubstrate
     this.stores.sites.set({
@@ -121,7 +120,8 @@ export default class AppHandler extends ExtensionHandler {
     genericSubscription<"pri(app.changePassword.subscribe)">(id, port, progressObservable)
     try {
       // only allow users who have confirmed backing up their recovery phrase to change PW
-      const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
+      const mnemonics = await keyringStore.getMnemonics()
+      const mnemonicsUnconfirmed = mnemonics.some((m) => !m.confirmed)
       assert(
         !mnemonicsUnconfirmed,
         "Please backup all recovery phrases before attempting to change your password.",
@@ -145,17 +145,18 @@ export default class AppHandler extends ExtensionHandler {
         newSalt = salt
       }
 
+      // compute new keyring password
       const transformedPw = await this.stores.password.transformPassword(currentPw)
-      const result = await changePassword(
-        { currentPw: transformedPw, newPw: hashedNewPw },
-        updateProgress,
-      )
-      if (!result.ok) throw new Error(result.val)
 
-      updateProgress(ChangePasswordStatusUpdateStatus.AUTH)
-
-      // update password secret
+      // precompute password check data so we dont attempt to change keyring password if this fails
       const secretResult = await this.stores.password.createAuthSecret(hashedNewPw)
+
+      // the change is atomic: if this breaks then local storage wont be updated, we dont need to bother with a backup/restore mechanism
+      updateProgress(ChangePasswordStatusUpdateStatus.KEYPAIRS)
+      await keyringStore.changePassword(transformedPw, hashedNewPw)
+
+      // update password storage
+      updateProgress(ChangePasswordStatusUpdateStatus.AUTH)
       const pwStoreData: Partial<PasswordStoreData> = {
         ...secretResult,
         isTrimmed: false,
@@ -168,7 +169,7 @@ export default class AppHandler extends ExtensionHandler {
       await this.stores.password.setPlaintextPassword(newPw)
       updateProgress(ChangePasswordStatusUpdateStatus.DONE)
 
-      return result.val
+      return true
     } catch (error) {
       updateProgress(ChangePasswordStatusUpdateStatus.ERROR, (error as Error).message)
       return false
@@ -181,11 +182,12 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async resetWallet() {
-    // delete all the accounts
-    keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
     this.stores.app.set({ onboarded: "FALSE" })
+
     await this.stores.password.reset()
-    await this.stores.mnemonics.clear()
+
+    await keyringStore.reset()
+
     await windowManager.openOnboarding("/import?resetWallet=true")
     // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
     await this.stores.sites.clear()

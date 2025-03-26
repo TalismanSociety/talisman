@@ -2,10 +2,10 @@ import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountType } from "extension-core"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountType } from "@extension/core"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useBalances, useSelectedCurrency, useToken } from "@ui/state"
 
@@ -17,7 +17,7 @@ import Tokens from "../../Asset/Tokens"
 
 export type NomPoolBondAccount = {
   address: string
-  origin?: AccountType
+  type?: AccountType
   name?: string
   genesisHash?: string | null
   balance?: Balance
@@ -107,7 +107,7 @@ const AccountRow: FC<AccountRowProps> = ({
                 <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
-            <AccountTypeIcon origin={account.origin} className="text-primary" />
+            <AccountTypeIcon type={account.type} className="text-primary" />
           </div>
           <Address className="text-body-secondary text-xs" address={displayAddress} />
         </div>

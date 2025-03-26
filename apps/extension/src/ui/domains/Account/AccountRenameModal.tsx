@@ -1,18 +1,18 @@
 import { bind } from "@react-rxjs/core"
+import { Account } from "extension-core"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Modal, ModalDialog } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountRename } from "./AccountRename"
 
-const localAccount$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const localAccount$ = new BehaviorSubject<Account | null>(null)
 
-const setLocalAccount = (account: AccountJsonAny | null) => {
+const setLocalAccount = (account: Account | null) => {
   localAccount$.next(account)
 }
 
@@ -25,7 +25,7 @@ export const useAccountRenameModal = () => {
   const account = useLocalAccount() ?? selectedAccount
 
   const open = useCallback(
-    (account?: AccountJsonAny) => {
+    (account?: Account) => {
       setLocalAccount(account ?? null)
       innerOpen()
     },

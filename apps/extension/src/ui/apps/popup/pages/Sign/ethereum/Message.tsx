@@ -1,8 +1,8 @@
+import { isAccountOfType } from "extension-core"
 import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { AccountJsonDcent, AccountType } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,
@@ -60,7 +60,7 @@ export const EthSignMessageRequest = () => {
         </PopupContent>
         <PopupFooter>
           <Suspense fallback={null}>
-            {account.origin === AccountType.Watched && (
+            {isAccountOfType(account, "watch-only") && (
               <SignAlertMessage className="mb-6" type="error">
                 {t("Cannot sign with a watch-only account.")}
               </SignAlertMessage>
@@ -72,11 +72,11 @@ export const EthSignMessageRequest = () => {
             )}
             {account && request && (
               <>
-                {account.isHardware ? (
+                {isAccountOfType(account, "ledger-ethereum") ? (
                   <SignHardwareEthereum
                     method={request.method}
                     payload={request.request}
-                    account={account as AccountJsonDcent}
+                    account={account}
                     onSigned={approveHardware}
                     onCancel={reject}
                     containerId="main"
@@ -87,7 +87,7 @@ export const EthSignMessageRequest = () => {
                       {t("Cancel")}
                     </Button>
                     <SignApproveButton
-                      disabled={!isValid || account.origin === AccountType.Watched}
+                      disabled={!isValid || isAccountOfType(account, "watch-only")}
                       processing={processing}
                       primary
                       onClick={approve}

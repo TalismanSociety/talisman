@@ -1,9 +1,9 @@
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
+import { privacyRoundCurrency, SignerPayloadJSON } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useState } from "react"
 
-import { privacyRoundCurrency, SignerPayloadJSON } from "@extension/core"
-import { log } from "@extension/shared"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"

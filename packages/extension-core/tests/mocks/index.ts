@@ -59,4 +59,8 @@ jest.mock("@polkadot/apps-config/api", () => {
   }
 })
 
+jest.mock("../../src/util/isBackgroundPage", () => ({
+  isBackgroundPage: jest.fn().mockImplementation(() => true),
+}))
+
 export {}

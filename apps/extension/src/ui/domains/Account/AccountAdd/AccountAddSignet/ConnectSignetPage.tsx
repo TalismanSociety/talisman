@@ -1,10 +1,10 @@
 import { ArrowRightIcon } from "@talismn/icons"
+import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"

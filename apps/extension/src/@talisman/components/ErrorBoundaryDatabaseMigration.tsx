@@ -1,7 +1,6 @@
+import { MIGRATION_ERROR_MSG } from "extension-core"
 import { Component, ErrorInfo, ReactNode } from "react"
 import { ProcessAnimation } from "talisman-ui"
-
-import { MIGRATION_ERROR_MSG } from "@extension/core"
 
 const ErrorMessage = () => (
   <div className="text-whit mx-auto flex h-[60rem] w-[40rem] flex-col px-12 py-16 text-center">

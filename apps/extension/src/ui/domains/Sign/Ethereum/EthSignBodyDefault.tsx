@@ -1,7 +1,7 @@
+import { BalanceFormatter } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BalanceFormatter } from "@extension/core"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useToken, useTokenRates } from "@ui/state"
 

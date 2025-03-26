@@ -1,6 +1,6 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountJsonAny, AccountsCatalogTree } from "extension-core"
+import { Account, AccountsCatalogTree } from "extension-core"
 import { FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -28,7 +28,7 @@ export const TreeItems: FC<{
   items: UiTreeItem[]
   parentId: string
   disableFolderDrop?: boolean
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   balanceTotalPerAccount: Record<string, number>
 }> = ({ treeName, items, parentId, disableFolderDrop, accounts, balanceTotalPerAccount }) => {
   // disallow dropping folders into folders
@@ -71,7 +71,7 @@ export const TreeItem: FC<{
   item: UiTreeItem
   isDragged: boolean
   disableFolderDrop: boolean
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
 }> = ({
@@ -129,7 +129,7 @@ export const TreeItemFolder: FC<{
   folder: UiTreeFolder
   balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   disableFolderDrop?: boolean
 }> = ({ folder, balanceTotalPerAccount, treeName, accounts, disableFolderDrop }) => {
   const { t } = useTranslation()

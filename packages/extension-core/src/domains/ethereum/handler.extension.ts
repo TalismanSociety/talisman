@@ -1,5 +1,4 @@
 import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { CustomEvmNativeToken, evmNativeTokenId } from "@talismn/balances"
@@ -14,9 +13,9 @@ import Dexie from "dexie"
 import { DEBUG, log } from "extension-shared"
 import { isEqual } from "lodash"
 import { distinctUntilChanged, map } from "rxjs"
+import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
-import { getPairForAddressSafely } from "../../handlers/helpers"
 import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -26,8 +25,8 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { getPrivateKey } from "../../util/getPrivateKey"
 import { getHostName } from "../app/helpers"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { activeTokensStore } from "../tokens/store.activeTokens"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
@@ -44,12 +43,7 @@ export class EthHandler extends ExtensionHandler {
         const queued = requestStore.getRequest(id)
         assert(queued, "Unable to find request")
 
-        const {
-          method,
-          resolve,
-          ethChainId,
-          account: { address: accountAddress },
-        } = queued
+        const { method, resolve, ethChainId } = queued
 
         const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
         assert(client, "Unable to find client for chain " + ethChainId)
@@ -67,7 +61,6 @@ export class EthHandler extends ExtensionHandler {
 
         resolve(hash)
 
-        const account = keyring.getAccount(accountAddress)
         const { val: host, ok } = getHostName(queued.url)
 
         talismanAnalytics.captureDelayed("sign transaction approve", {
@@ -76,7 +69,7 @@ export class EthHandler extends ExtensionHandler {
           dapp: queued.url,
           chain: Number(ethChainId),
           networkType: "ethereum",
-          hardwareType: account?.meta.hardwareType,
+          hardwareType: "ledger", // atm ledger is the only type of hardware account that we support for evm
         })
         return true
       } catch (err) {
@@ -99,14 +92,11 @@ export class EthHandler extends ExtensionHandler {
     const tx = parseTransactionRequest(transaction)
     if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await getPairForAddressSafely(account.address, async (pair) => {
+    const result = await withSecretKey(account.address, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
       assert(client, "Missing client for chain " + ethChainId)
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Unauthorised")
-
-      const privateKey = getPrivateKey(pair, password, "hex")
+      const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
 
       return await client.sendTransaction({
@@ -185,13 +175,11 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
 
-    const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
+    const result = await withSecretKey(unsigned.from, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Unauthorised")
-      const privateKey = getPrivateKey(pair, password, "hex")
+      const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
 
       const tx = parseTransactionRequest(unsigned)
@@ -233,16 +221,10 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const {
-      method,
-      resolve,
-      account: { address: accountAddress },
-      url,
-    } = queued
+    const { method, resolve, url } = queued
 
     resolve(signedPayload)
 
-    const account = keyring.getAccount(accountAddress)
     const { ok, val: host } = getHostName(url)
     talismanAnalytics.captureDelayed("sign approve", {
       method,
@@ -251,7 +233,7 @@ export class EthHandler extends ExtensionHandler {
       dapp: url,
       chain: Number(queued.ethChainId),
       networkType: "ethereum",
-      hardwareType: account?.meta.hardwareType,
+      hardwareType: "ledger",
     })
 
     return true
@@ -264,10 +246,11 @@ export class EthHandler extends ExtensionHandler {
 
     const { method, request, reject, resolve, url } = queued
 
-    const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const { val, ok } = await withSecretKey(queued.account.address, async (secretKey) => {
       const pw = await this.stores.password.getPassword()
       assert(pw, "Unauthorised")
-      const privateKey = getPrivateKey(pair, pw, "buffer")
+
+      const privateKey = Buffer.from(secretKey)
       let signature: string
 
       if (method === "personal_sign") {

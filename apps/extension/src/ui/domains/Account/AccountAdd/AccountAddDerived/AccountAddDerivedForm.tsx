@@ -1,7 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { isValidDerivationPath, KeypairCurve, Platform } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
-import { classNames, sleep } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { RequestAccountCreateOptions } from "extension-core"
+import { log } from "extension-shared"
 import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -18,12 +21,6 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import {
-  AccountAddressType,
-  RequestAccountCreateOptions,
-  UiAccountAddressType,
-} from "@extension/core"
-import { log } from "@extension/shared"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
@@ -33,19 +30,30 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { useAccounts, useMnemonics } from "@ui/state"
 
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
-const useNextAvailableDerivationPath = (mnemonicId: string | null, type: AccountAddressType) => {
+const platformToCurve = (platform: Platform): KeypairCurve => {
+  switch (platform) {
+    case "ethereum":
+      return "ethereum"
+    case "polkadot":
+      return "sr25519"
+    default:
+      throw new Error("Not implemented")
+  }
+}
+
+const useNextAvailableDerivationPath = (mnemonicId: string | null, curve: KeypairCurve) => {
   return useQuery({
-    queryKey: ["useNextAvailableDerivationPath", mnemonicId, type],
+    queryKey: ["useNextAvailableDerivationPath", mnemonicId, curve],
     queryFn: () => {
-      if (!mnemonicId || !type) return null
-      return api.getNextDerivationPath(mnemonicId, type)
+      if (!mnemonicId || !curve) return null
+      return api.getNextDerivationPath(mnemonicId, curve)
     },
     enabled: !!mnemonicId,
     refetchInterval: false,
@@ -55,18 +63,18 @@ const useNextAvailableDerivationPath = (mnemonicId: string | null, type: Account
 
 const useLookupAddress = (
   mnemonicId: string | null,
-  type: AccountAddressType,
+  curve: KeypairCurve,
   derivationPath: string | null | undefined,
 ) => {
   return useQuery({
     queryKey: ["useLookupAddress", mnemonicId, derivationPath],
     queryFn: async () => {
       // empty string is valid
-      if (!mnemonicId || !type || typeof derivationPath !== "string") return null
-      if (!(await api.validateDerivationPath(derivationPath, type))) return null
-      return api.addressLookup({ mnemonicId, type, derivationPath })
+      if (!mnemonicId || !curve || typeof derivationPath !== "string") return null
+      if (!isValidDerivationPath(derivationPath, curve)) return null
+      return api.addressLookup({ mnemonicId, curve, derivationPath })
     },
-    enabled: !!mnemonicId && type && typeof derivationPath === "string",
+    enabled: !!mnemonicId && curve && typeof derivationPath === "string",
     refetchInterval: false,
     retry: false,
   })
@@ -100,7 +108,11 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
-  const urlParamType = (params.get("type") ?? undefined) as UiAccountAddressType | undefined
+  const defaultPlatform = useMemo(() => {
+    // type is for legacy compatibility
+    return (params.get("platform") ?? params.get("type") ?? undefined) as Platform | undefined
+  }, [params])
+
   const mnemonics = useMnemonics()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
@@ -110,28 +122,26 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       yup
         .object({
           name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
-          type: yup
-            .mixed<UiAccountAddressType>()
-            .required(" ")
-            .oneOf(["ethereum", "sr25519"])
-            .defined(),
+          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
           derivationPath: yup.string().defined(""),
           isCustomDerivationPath: yup.boolean(),
           mnemonicId: yup.string().defined().nullable(),
         })
         .required()
         .test("validateDerivationPath", t("Invalid derivation path"), async (val, ctx) => {
-          const { isCustomDerivationPath, derivationPath, mnemonicId, type } = val as FormData
+          const { isCustomDerivationPath, derivationPath, mnemonicId, platform } = val as FormData
           if (!isCustomDerivationPath) return true
 
-          if (!(await api.validateDerivationPath(derivationPath, type)))
+          const curve = platformToCurve(platform)
+
+          if (!isValidDerivationPath(derivationPath, curve))
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),
             })
 
           if (mnemonicId) {
-            const address = await api.addressLookup({ mnemonicId, derivationPath, type })
+            const address = await api.addressLookup({ mnemonicId, derivationPath, curve })
             if (allAccounts.some((a) => a.address === address))
               return ctx.createError({
                 path: "derivationPath",
@@ -155,14 +165,19 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
-    defaultValues: { type: urlParamType, mnemonicId: mnemonics[0]?.id ?? null, derivationPath: "" },
+    defaultValues: {
+      platform: defaultPlatform,
+      mnemonicId: mnemonics[0]?.id ?? null,
+      derivationPath: "",
+    },
   })
 
   const { generateMnemonic } = useMnemonicCreateModal()
 
   const submit = useCallback(
-    async ({ name, type, mnemonicId, isCustomDerivationPath, derivationPath }: FormData) => {
+    async ({ name, platform, mnemonicId, isCustomDerivationPath, derivationPath }: FormData) => {
       let options: RequestAccountCreateOptions
+      const curve = platformToCurve(platform)
 
       // note on derivation path :
       // undefined : backend will use next available derivation path
@@ -192,10 +207,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       )
 
       try {
-        // pause to prevent double notification
-        await sleep(1000)
-
-        const address = await api.accountCreate(name, type, options)
+        const address = await api.accountCreate(name, curve, options)
 
         onSuccess(address)
 
@@ -216,9 +228,9 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
     [generateMnemonic, onSuccess, t],
   )
 
-  const handleTypeChange = useCallback(
-    (type: UiAccountAddressType) => {
-      setValue("type", type, { shouldValidate: true })
+  const handlePlatformChange = useCallback(
+    (platform: Platform) => {
+      setValue("platform", platform, { shouldValidate: true })
       setFocus("name")
     },
     [setFocus, setValue],
@@ -231,11 +243,13 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
     [setValue],
   )
 
-  const { type, mnemonicId, isCustomDerivationPath, derivationPath } = watch()
-  const { data: nextDerivationPath } = useNextAvailableDerivationPath(mnemonicId, type)
+  const { platform, mnemonicId, isCustomDerivationPath, derivationPath } = watch()
+  const curve = useMemo(() => platformToCurve(platform), [platform])
+
+  const { data: nextDerivationPath } = useNextAvailableDerivationPath(mnemonicId, curve)
   const { data: address } = useLookupAddress(
     mnemonicId,
-    type,
+    curve,
     isCustomDerivationPath ? derivationPath : nextDerivationPath,
   )
 
@@ -248,20 +262,20 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
   useEffect(() => {
     // if we have a type in the url, set it
-    if (urlParamType) handleTypeChange(urlParamType)
-  }, [urlParamType, handleTypeChange])
+    if (defaultPlatform) handlePlatformChange(defaultPlatform)
+  }, [defaultPlatform, handlePlatformChange])
 
   return (
     <form onSubmit={handleSubmit(submit)}>
       <div className="flex flex-col gap-16">
-        {!urlParamType && (
-          <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
+        {!defaultPlatform && (
+          <AccountPlatformSelector defaultValue={defaultPlatform} onChange={handlePlatformChange} />
         )}
 
         <div
           className={classNames(
             "flex flex-col gap-8 transition-opacity",
-            type ? "opacity-100" : "opacity-0",
+            platform ? "opacity-100" : "opacity-0",
           )}
         >
           {!!mnemonics.length && (
@@ -277,8 +291,10 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
               after={
                 address ? (
                   <Tooltip>
-                    <TooltipTrigger>
-                      <AccountIcon address={address} className="text-xl" />
+                    <TooltipTrigger asChild>
+                      <div className="size-16">
+                        <AccountIcon address={address} className="text-xl" />
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent>{address}</TooltipContent>
                   </Tooltip>
@@ -302,7 +318,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             >
               <FormFieldInputText
                 {...register("derivationPath")}
-                placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+                placeholder={curve === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
                 spellCheck={false}
                 disabled={!isCustomDerivationPath}
                 autoComplete="off"

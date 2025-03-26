@@ -1,6 +1,6 @@
+import { DEBUG } from "extension-shared"
 import { useMemo } from "react"
 
-import { DEBUG } from "@extension/shared"
 import { useChainsMap, useEvmNetworksMap, useRemoteConfig, useTokensMap } from "@ui/state"
 
 import { RampAsset, RampAssetWithTokenAndChain } from "../types"

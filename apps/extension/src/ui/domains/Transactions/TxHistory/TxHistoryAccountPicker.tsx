@@ -1,6 +1,6 @@
 import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountJsonAny } from "extension-core"
+import { Account, getAccountGenesisHash } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -15,7 +15,7 @@ import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 
 export const TxHistoryAccountPicker: FC<{
   isOpen?: boolean
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   selectedAddress: string | null
   onDismiss: () => void
   onSelect: (address: string | null) => void
@@ -65,7 +65,7 @@ export const TxHistoryAccountPicker: FC<{
 }
 
 const AccountsList: FC<{
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   selectedAddress: string | null
   showAllAccountsBtn?: boolean
   onSelect: (address: string | null) => void
@@ -93,12 +93,15 @@ const AccountsList: FC<{
 }
 
 const AccountRow: FC<{
-  account: AccountJsonAny | null
+  account: Account | null
   selected?: boolean
   onClick: () => void
 }> = ({ account, selected, onClick }) => {
   const { t } = useTranslation()
-  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
+  const formattedAddress = useFormattedAddress(
+    account?.address,
+    account ? getAccountGenesisHash(account) : null,
+  )
 
   return (
     <button
@@ -114,7 +117,7 @@ const AccountRow: FC<{
       {account ? (
         <AccountIcon
           address={account.address}
-          genesisHash={account.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
           className="shrink-0 text-lg"
         />
       ) : (
@@ -135,7 +138,7 @@ const AccountRow: FC<{
                   ))
                 : t("All Accounts")}
             </div>
-            {account && <AccountTypeIcon origin={account.origin} className="text-primary" />}
+            {account && <AccountTypeIcon type={account.type} className="text-primary" />}
           </div>
           {account && (
             <Address className="text-body-secondary text-xs" address={formattedAddress} />

@@ -1,4 +1,5 @@
 import { ChevronDownIcon, GlobeIcon } from "@talismn/icons"
+import { getAccountGenesisHash } from "extension-core"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
@@ -44,8 +45,8 @@ const AccountFilterButton = () => {
         <div className="flex size-full items-center gap-4 overflow-hidden px-4">
           {account ? (
             <AccountIcon
-              address={account?.address}
-              genesisHash={account?.genesisHash}
+              address={account.address}
+              genesisHash={getAccountGenesisHash(account)}
               className="text-md shrink-0"
             />
           ) : (

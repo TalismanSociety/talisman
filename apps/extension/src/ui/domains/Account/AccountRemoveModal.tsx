@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { Account } from "extension-core"
 import { isEqual } from "lodash"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -6,15 +7,14 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { AccountJsonAny, AccountType } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
-const accountToRemove$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const accountToRemove$ = new BehaviorSubject<Account | null>(null)
 const [useAccount] = bind(
-  accountToRemove$.pipe(distinctUntilChanged<AccountJsonAny | null>(isEqual)),
+  accountToRemove$.pipe(distinctUntilChanged<Account | null>(isEqual)),
   null,
 )
 
@@ -25,7 +25,7 @@ export const useAccountRemoveModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRemoveModal")
 
   const open = useCallback(
-    (account?: AccountJsonAny) => {
+    (account?: Account) => {
       accountToRemove$.next(account ?? null)
       innerOpen()
     },
@@ -78,7 +78,7 @@ export const AccountRemoveModal = () => {
               values={{ accountName }}
             />
           </p>
-          {account?.origin !== AccountType.Watched && (
+          {account?.type === "keypair" && (
             <p className="mt-4 text-sm">
               {t("Ensure you have backed up your recovery phrase or private key before removing.")}
             </p>

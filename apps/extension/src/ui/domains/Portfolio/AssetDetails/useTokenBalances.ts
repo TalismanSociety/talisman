@@ -1,10 +1,10 @@
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
+import { Address, Balances } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
@@ -32,6 +32,8 @@ type TokenBalancesParams = {
   tokenId: TokenId
   balances: Balances
 }
+
+export type TokenBalances = ReturnType<typeof useTokenBalances>
 
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)
@@ -135,12 +137,10 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         const rootTitle = getLockTitle({
           label: "subtensor-staking",
         })
-        const subnetTitle =
-          `Subnet Staking [${meta.netuid}] ${meta.dynamicInfo?.subnetIdentity?.subnetName || ""}`.trim()
 
         return {
           key: `${b.id}-subtensor-${index}`,
-          title: meta.netuid === ROOT_NETUID ? rootTitle : subnetTitle,
+          title: meta.netuid === ROOT_NETUID ? rootTitle : "Subnet Staking",
           description: meta?.description ?? undefined,
           tokens: BigNumber(subtensor.amount.tokens),
           fiat: subtensor.amount.fiat(currency),

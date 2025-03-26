@@ -1,15 +1,15 @@
 import { PlusIcon, SecretIcon } from "@talismn/icons"
+import { Account, isAccountOfType } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
 import { useAccounts, useMnemonics } from "@ui/state"
 
 export type MnemonicOption = {
   value: string
   label: string
-  accounts?: AccountJsonAny[]
+  accounts?: Account[]
 }
 
 const GENERATE_MNEMONIC_OPTION = {
@@ -31,12 +31,12 @@ export const AccountAddMnemonicDropdown: FC<{
   const mnemonicOptions: MnemonicOption[] = useMemo(() => {
     const accountsByMnemonic = allAccounts.reduce(
       (result, acc) => {
-        if (!acc.derivedMnemonicId) return result
-        if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
-        result[acc.derivedMnemonicId].push(acc)
+        if (!isAccountOfType(acc, "keypair") || !acc.mnemonicId) return result
+        if (!result[acc.mnemonicId]) result[acc.mnemonicId] = []
+        result[acc.mnemonicId].push(acc)
         return result
       },
-      {} as Record<string, AccountJsonAny[]>,
+      {} as Record<string, Account[]>,
     )
     return [
       ...mnemonics

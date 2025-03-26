@@ -1,85 +1,93 @@
 import { assert } from "@polkadot/util"
-import { mnemonicValidate } from "@polkadot/util-crypto"
+import { isValidMnemonic } from "@talismn/crypto"
 
+import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "../../types"
-import {
-  RequestAccountCreateOptionsExistingMnemonic,
-  RequestAccountCreateOptionsNewMnemonic,
-} from "../accounts/types"
-import { MnemonicSource } from "./store"
+import { Port } from "../../types/base"
+import { keyringStore } from "../keyring/store"
 import { RequestSetVerifierCertificateMnemonic } from "./types"
 
 export default class MnemonicHandler extends ExtensionHandler {
-  private async setVerifierCertMnemonic({ type, options }: RequestSetVerifierCertificateMnemonic) {
-    switch (type) {
-      case "new":
-      case "import": {
-        const { mnemonic, confirmed } = options as RequestAccountCreateOptionsNewMnemonic
+  private async setVerifierCertMnemonic(options: RequestSetVerifierCertificateMnemonic) {
+    switch (options.type) {
+      case "new": {
+        const { mnemonic, confirmed } = options
         assert(mnemonic, "Mnemonic should be provided")
-        const isValidMnemonic = mnemonicValidate(mnemonic)
-        assert(isValidMnemonic, "Invalid mnemonic")
+
+        const isValid = isValidMnemonic(mnemonic)
+        assert(isValid, "Invalid mnemonic")
+
         const password = await this.stores.password.getPassword()
         if (!password) throw new Error("Unauthorised")
-        const { err, val } = await this.stores.mnemonics.add(
-          "Vault Verifier Certificate Mnemonic",
+
+        const { id } = await keyringStore.addMnemonic({
+          name: "Vault Verifier Certificate Mnemonic",
           mnemonic,
-          password,
-          type === "import" ? MnemonicSource.Imported : MnemonicSource.Generated,
-          type === "import" ? true : confirmed,
-        )
-        if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
-        await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
-        break
+          confirmed,
+        })
+        await this.stores.app.set({ vaultVerifierCertificateMnemonicId: id })
+        return true
       }
       case "existing": {
-        const { mnemonicId } = options as RequestAccountCreateOptionsExistingMnemonic
+        const { mnemonicId } = options
         assert(mnemonicId, "MnemonicId should be provided")
+
+        const mnemonic = await keyringStore.getMnemonic(mnemonicId)
+        assert(mnemonic, "Unable to find mnemonic")
+
         await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
-        break
+        return true
       }
       default:
-        throw new Error(`Unable to handle setVerifierCertMnemonic message with type ${type}`)
+        throw new Error("Invalid request")
     }
-    return true
+  }
+
+  private mnemonicsSubscribe(id: string, port: Port) {
+    return genericAsyncSubscription<"pri(mnemonics.subscribe)">(id, port, keyringStore.mnemonics$)
   }
 
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
+    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(mnemonic.unlock)": {
-        const { password, mnemonicId } = request as RequestType<"pri(mnemonic.unlock)">
+      case "pri(mnemonics.subscribe)":
+        return this.mnemonicsSubscribe(id, port)
+
+      case "pri(mnemonics.unlock)": {
+        const { password, mnemonicId } = request as RequestType<"pri(mnemonics.unlock)">
         const transformedPw = await this.stores.password.transformPassword(password)
         assert(transformedPw, "Password error")
 
-        const seedResult = await this.stores.mnemonics.getMnemonic(mnemonicId, transformedPw)
-        assert(seedResult.val, "No mnemonic present")
-        assert(seedResult.ok, seedResult.val)
-        return seedResult.val
+        return keyringStore.getMnemonicText(mnemonicId, transformedPw)
       }
 
-      case "pri(mnemonic.confirm)": {
-        const { confirmed, mnemonicId } = request as RequestType<"pri(mnemonic.confirm)">
-        return await this.stores.mnemonics.setConfirmed(mnemonicId, confirmed)
+      case "pri(mnemonics.confirm)": {
+        const { confirmed, mnemonicId } = request as RequestType<"pri(mnemonics.confirm)">
+        await keyringStore.updateMnemonic(mnemonicId, { confirmed })
+        return true
       }
 
-      case "pri(mnemonic.rename)": {
-        const { mnemonicId, name } = request as RequestType<"pri(mnemonic.rename)">
-        return this.stores.mnemonics.setName(mnemonicId, name)
+      case "pri(mnemonics.rename)": {
+        const { mnemonicId, name } = request as RequestType<"pri(mnemonics.rename)">
+        await keyringStore.updateMnemonic(mnemonicId, { name })
+        return true
       }
 
-      case "pri(mnemonic.delete)": {
-        const { mnemonicId } = request as RequestType<"pri(mnemonic.delete)">
-        return this.stores.mnemonics.delete(mnemonicId)
+      case "pri(mnemonics.delete)": {
+        const { mnemonicId } = request as RequestType<"pri(mnemonics.delete)">
+        await keyringStore.removeMnemonic(mnemonicId)
+        return true
       }
 
-      case "pri(mnemonic.validateMnemonic)":
-        return mnemonicValidate(request as string)
+      case "pri(mnemonics.validateMnemonic)":
+        return isValidMnemonic(request as string)
 
-      case "pri(mnemonic.setVerifierCertMnemonic)":
+      case "pri(mnemonics.setVerifierCertMnemonic)":
         return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
 
       default:

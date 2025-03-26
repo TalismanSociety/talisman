@@ -1,13 +1,13 @@
 import { bind } from "@react-rxjs/core"
 import { normalizeAddress } from "@talismn/util"
-import { AccountJsonAny, AccountType, Trees } from "extension-core"
+import { Account, isAccountOfType, isAccountOwned, isAccountPortfolio, Trees } from "extension-core"
 import { map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 
-export const accounts$ = new Observable<AccountJsonAny[]>((subscriber) => {
+export const accounts$ = new Observable<Account[]>((subscriber) => {
   const unsubscribe = api.accountsSubscribe((accounts) => {
     subscriber.next(accounts)
   })
@@ -44,26 +44,18 @@ export const [useAccountByAddress, getAccountByAddress$] = bind(
 
 export type AccountCategory = "all" | "watched" | "owned" | "portfolio" | "signet"
 
-const IS_EXTERNAL: Partial<Record<AccountType, true>> = {
-  [AccountType.Dcent]: true,
-  [AccountType.Watched]: true,
-  [AccountType.Signet]: true,
-}
-
 export const [useAccounts, getAccountsByCategory$] = bind((category: AccountCategory = "all") =>
   accounts$.pipe(
     map((accounts) => {
       switch (category) {
         case "portfolio":
-          return accounts.filter(
-            ({ origin, isPortfolio }) => !origin || !IS_EXTERNAL[origin] || isPortfolio,
-          )
+          return accounts.filter(isAccountPortfolio)
         case "watched":
-          return accounts.filter(({ origin }) => origin === AccountType.Watched)
+          return accounts.filter((acc) => isAccountOfType(acc, "watch-only"))
         case "owned":
-          return accounts.filter(({ origin }) => !origin || !IS_EXTERNAL[origin])
+          return accounts.filter(isAccountOwned)
         case "signet":
-          return accounts.filter(({ origin }) => origin === AccountType.Signet)
+          return accounts.filter((acc) => isAccountOfType(acc, "signet"))
         case "all":
           return accounts
       }

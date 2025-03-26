@@ -9,12 +9,19 @@ import { StorageProvider } from "../../libs/Store"
 
 const storageKey = "mnemonics"
 
+// TODO : yeet
+/**
+ * @deprecated
+ */
 export enum MnemonicSource {
   Imported = "imported",
   Generated = "generated",
   Legacy = "legacy",
 }
 
+/**
+ * @deprecated
+ */
 export type MnemonicData = {
   id: string
   name: string
@@ -23,8 +30,14 @@ export type MnemonicData = {
   confirmed: boolean
 }
 
+/**
+ * @deprecated
+ */
 export type MnemonicsStoreData = Record<string, MnemonicData>
 
+/**
+ * @deprecated
+ */
 export enum MnemonicErrors {
   IncorrectPassword = "Incorrect password",
   InvalidMnemonic = "Invalid mnemonic",
@@ -35,6 +48,9 @@ export enum MnemonicErrors {
   AlreadyExists = "Mnemonic already exists in MnemonicsStore",
 }
 
+/**
+ * @deprecated
+ */
 export const encryptMnemonic = async (mnemonic: string, password: string) => {
   const cipher = await encrypt(password, mnemonic)
 
@@ -44,6 +60,9 @@ export const encryptMnemonic = async (mnemonic: string, password: string) => {
   return cipher
 }
 
+/**
+ * @deprecated
+ */
 export const decryptMnemonic = async (
   cipher: string,
   password: string,
@@ -62,6 +81,10 @@ const cleanupMnemonic = (mnemonic: string) => {
 }
 
 type MnemonicId = string
+
+/**
+ * @deprecated
+ */
 export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   public async add(
     name: string,
@@ -129,4 +152,7 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   }
 }
 
+/**
+ * @deprecated to be used only by migrations
+ */
 export const mnemonicsStore = new MnemonicsStore(storageKey)

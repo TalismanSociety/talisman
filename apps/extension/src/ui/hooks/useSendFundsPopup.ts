@@ -1,10 +1,10 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { Account } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny, AccountType } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccounts, useBalances } from "@ui/state"
 
@@ -14,7 +14,7 @@ const isCompatibleAddress = (from: Address, to: Address) => {
 }
 
 export const useSendFundsPopup = (
-  account: AccountJsonAny | null | undefined,
+  account: Account | null | undefined,
   tokenId?: TokenId,
   tokenSymbol?: string,
   to?: Address,
@@ -31,20 +31,16 @@ export const useSendFundsPopup = (
     canSendFunds: boolean
     cannotSendFundsReason?: string
   }>(() => {
-    if (account?.origin === "WATCHED")
+    if (account?.type === "watch-only")
       return {
         canSendFunds: false,
         cannotSendFundsReason: t("Watched accounts cannot send funds"),
       }
-    if (account?.origin === AccountType.Dcent)
+
+    if (account?.type === "signet")
       return {
         canSendFunds: false,
-        cannotSendFundsReason: t("D'CENT accounts cannot send funds"),
-      }
-    if (account?.origin === "SIGNET")
-      return {
-        canSendFunds: false,
-        cannotSendFundsReason: t(`Please send funds on Signet: ${account.signetUrl}`),
+        cannotSendFundsReason: t(`Please send funds on Signet: ${account.url}`),
       }
     if (tokenId && transferableBalance === 0n)
       return {

@@ -13,6 +13,12 @@ const TRUE: ONBOARDED_TRUE = "TRUE"
 const FALSE: ONBOARDED_FALSE = "FALSE"
 const UNKNOWN: ONBOARDED_UNKNOWN = "UNKNOWN"
 
+type CurrentMigration = {
+  name: string
+  progress?: number // ratio between 0 and 1
+  errors?: string[]
+}
+
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
 export type BlockNumberByDelegator = {
   [delegator: string | number]: number
@@ -38,6 +44,10 @@ export type AppStoreData = {
   hideGetStarted?: boolean
   bittensorUnbondBlockNumber: DelegatorsBlockNumberByAccount
   hideUnifiedAddressBanner?: boolean
+
+  // represents a migration that is currently running
+  currentMigration?: CurrentMigration
+  hideBackupReminderBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"

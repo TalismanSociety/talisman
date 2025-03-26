@@ -1,15 +1,15 @@
 import { Balance } from "@talismn/balances"
+import { LegacyAccountOrigin } from "extension-core"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountType } from "@extension/core"
 import { useBalances, useToken } from "@ui/state"
 
 import { AccountRow } from "./AccountRow"
 
 export type SendFundsAccount = {
   address: string
-  origin?: AccountType
+  origin?: LegacyAccountOrigin
   name?: string
   genesisHash?: string | null
   balance?: Balance

@@ -1,11 +1,11 @@
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
+import { isAccountCompatibleWithChain } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
@@ -44,7 +44,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
             !!chain.name &&
             // account is undefined for contacts
             (account
-              ? isAccountCompatibleWithChain(chain, account.type ?? "sr25519", account.genesisHash)
+              ? isAccountCompatibleWithChain(chain, account)
               : isAddressCompatibleWithChain(chain, address)),
         )
         .map(

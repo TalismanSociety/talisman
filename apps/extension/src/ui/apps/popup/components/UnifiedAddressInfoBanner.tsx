@@ -1,5 +1,6 @@
 import { ArrowRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { isAccountPolkadot } from "extension-core"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
@@ -13,7 +14,7 @@ export const UnifiedAddressInfoBanner = () => {
   const accounts = useAccounts()
 
   const showBanner = useMemo(
-    () => allowBanner && !hideBanner && accounts.some((a) => a.type !== "ethereum"),
+    () => allowBanner && !hideBanner && accounts.some(isAccountPolkadot),
     [accounts, allowBanner, hideBanner],
   )
 

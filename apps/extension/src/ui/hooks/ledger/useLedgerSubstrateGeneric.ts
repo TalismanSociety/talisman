@@ -3,7 +3,7 @@ import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
-  AccountJsonHardwareSubstrate,
+  AccountLedgerPolkadot,
   isJsonPayload,
   SignerPayloadJSON,
   SignerPayloadRaw,
@@ -53,7 +53,7 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
   const sign = useCallback(
     (
       payload: SignerPayloadJSON | SignerPayloadRaw,
-      account: AccountJsonHardwareSubstrate,
+      account: AccountLedgerPolkadot,
       registry?: TypeRegistry | null,
       txMetadata?: string | null,
     ) => {
@@ -82,7 +82,7 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
 const signPayload = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  account: AccountJsonHardwareSubstrate,
+  account: AccountLedgerPolkadot,
   legacyApp?: SubstrateAppParams | null,
   registry?: TypeRegistry | null,
   txMetadata?: string | null,

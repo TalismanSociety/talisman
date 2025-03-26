@@ -1,7 +1,7 @@
+import { appStore, isAccountOfType } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
-import { appStore } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccounts, useAppState, useBalanceTotals, useMnemonics } from "@ui/state"
 
@@ -31,8 +31,9 @@ export const useMnemonicBackup = () => {
       accounts
         .filter(
           (account) =>
-            account.derivedMnemonicId &&
-            notBackedUp.map((m) => m.id).includes(account.derivedMnemonicId),
+            isAccountOfType(account, "keypair") &&
+            account.mnemonicId &&
+            notBackedUp.map((m) => m.id).includes(account.mnemonicId),
         )
         .map((account) => account.address),
     [accounts, notBackedUp],

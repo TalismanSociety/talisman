@@ -1,11 +1,12 @@
 import { bind } from "@react-rxjs/core"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { isAddressEqual } from "@talismn/util"
+import { Account, Balances } from "extension-core"
 import { t } from "i18next"
 import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
 
-import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -51,9 +52,10 @@ const getNetworkTokenSymbols = ({
   return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
 }
 
-const getAccountsType = (accounts?: AccountJsonAny[]) => {
-  if (accounts?.every((a) => a.type === "ethereum")) return "ethereum"
-  if (accounts?.every((a) => a.type !== "ethereum")) return "sr25519" // TODO rename substrate or ss58
+const getAccountsAddressEncoding = (accounts?: Account[]): AddressEncoding | undefined => {
+  const encodings = accounts?.map(({ address }) => detectAddressEncoding(address))
+  if (encodings?.every((encoding) => encoding === "ethereum")) return "ethereum"
+  if (encodings?.every((encoding) => encoding === "ss58")) return "ss58"
   return undefined
 }
 
@@ -62,12 +64,12 @@ const getNetworkOptions = ({
   chains,
   evmNetworks,
   balances,
-  type,
+  addressEncoding,
 }: {
   tokens: Token[]
   chains: Chain[]
   evmNetworks: EvmNetwork[]
-  type?: AccountAddressType
+  addressEncoding?: AddressEncoding
   balances?: Balances
 }) => {
   // register all chains to account for hybrid chains, delete non-ethereum ones later if necessary
@@ -79,7 +81,7 @@ const getNetworkOptions = ({
     sortIndex,
   }))
 
-  if (evmNetworks && (!type || type === "ethereum"))
+  if (evmNetworks && (!addressEncoding || addressEncoding === "ethereum"))
     evmNetworks.forEach(({ id, name, substrateChain, sortIndex }) => {
       const existing = result.find(({ id }) => id === substrateChain?.id)
       if (existing) existing.evmNetworkId = id
@@ -94,7 +96,7 @@ const getNetworkOptions = ({
     })
 
   // if ethereum account is selected, remove all chains that don't have an evm network
-  if (type === "ethereum") result = result.filter(({ evmNetworkId }) => !!evmNetworkId)
+  if (addressEncoding === "ethereum") result = result.filter(({ evmNetworkId }) => !!evmNetworkId)
 
   // fill symbols
   result.forEach((network) => {
@@ -158,9 +160,7 @@ const getFilteredBalances = ({
 }
 
 // TODO review this, we may want to use usePortfolioNavigation instead
-export const portfolioSelectedAccounts$ = new BehaviorSubject<AccountJsonAny[] | undefined>(
-  undefined,
-)
+export const portfolioSelectedAccounts$ = new BehaviorSubject<Account[] | undefined>(undefined)
 
 export const [usePortfolioSelectedAccounts] = bind(portfolioSelectedAccounts$)
 
@@ -248,13 +248,13 @@ const portfolioForSelectedNetwork$ = combineLatest([
         : portfolioBalances
 
       const networkBalances = getFilteredBalances({ networkFilter, allBalances, hydrate })
-      const accountType = getAccountsType(selectedAccounts)
+      const addressEncoding = getAccountsAddressEncoding(selectedAccounts)
       const networks = getNetworkOptions({
         tokens,
         chains,
         evmNetworks,
         balances: allBalances,
-        type: accountType,
+        addressEncoding,
       })
 
       return {
@@ -264,9 +264,8 @@ const portfolioForSelectedNetwork$ = combineLatest([
         evmNetworks,
         hydrate,
         networkFilter,
-
         networkBalances,
-        accountType,
+        addressEncoding,
         networks,
         isInitialising,
         isProvisioned,

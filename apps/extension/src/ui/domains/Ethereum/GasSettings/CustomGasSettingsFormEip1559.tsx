@@ -2,6 +2,15 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
+import {
+  EthGasSettingsEip1559,
+  EthTransactionDetails,
+  EvmNetworkId,
+  GasSettingsByPriorityEip1559,
+  getHumanReadableErrorMessage,
+  getMaxFeePerGas,
+} from "extension-core"
+import { log } from "extension-shared"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -18,15 +27,6 @@ import {
 import { formatGwei, parseGwei, TransactionRequest } from "viem"
 import * as yup from "yup"
 
-import {
-  EthGasSettingsEip1559,
-  EthTransactionDetails,
-  EvmNetworkId,
-  GasSettingsByPriorityEip1559,
-  getHumanReadableErrorMessage,
-  getMaxFeePerGas,
-} from "@extension/core"
-import { log } from "@extension/shared"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"

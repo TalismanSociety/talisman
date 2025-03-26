@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
+import { Account, isAccountOfType } from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -7,7 +8,6 @@ import { BehaviorSubject } from "rxjs"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountJsonAny, AccountType } from "@extension/core"
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
@@ -17,9 +17,9 @@ import { api } from "@ui/api"
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const localAccount$ = new BehaviorSubject<AccountJsonAny | null>(null)
+const localAccount$ = new BehaviorSubject<Account | null>(null)
 
-const setLocalAccount = (account: AccountJsonAny | null) => {
+const setLocalAccount = (account: Account | null) => {
   localAccount$.next(account)
 }
 
@@ -32,15 +32,14 @@ export const useAccountExportModal = () => {
   const account = useLocalAccount() ?? selectedAccount
 
   const open = useCallback(
-    (account?: AccountJsonAny) => {
+    (account?: Account) => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
     [innerOpen],
   )
 
-  const canExportAccountFunc = (account?: AccountJsonAny | null) =>
-    account?.origin === AccountType.Talisman
+  const canExportAccountFunc = (account?: Account | null) => isAccountOfType(account, "keypair")
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 

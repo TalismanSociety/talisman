@@ -1,23 +1,17 @@
-import { Token } from "@talismn/chaindata-provider"
-import { DbTokenRates } from "@talismn/token-rates"
-
 import type {
+  Account,
   AuthorizedSite,
   AuthorizedSites,
   BalanceSubscriptionResponse,
   Chain,
   ProviderType,
   SimpleEvmNetwork,
-} from "@extension/core"
-import {
-  AccountJsonAny,
-  AccountType,
-  AnalyticsCaptureRequest,
-  SitesAuthorizedStore,
-  Trees,
-} from "@extension/core"
+} from "extension-core"
+import { Token } from "@talismn/chaindata-provider"
+import { DbTokenRates } from "@talismn/token-rates"
+import { AnalyticsCaptureRequest, SitesAuthorizedStore, Trees } from "extension-core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TALISMAN_WEB_APP_DOMAIN } from "@extension/shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { ADDRESSES } from "../constants"
 
@@ -49,34 +43,31 @@ const mockedApiMethods = {
     .mockImplementation(
       (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true)),
     ),
-  accountsSubscribe: jest.fn().mockImplementation((cb: (accounts: AccountJsonAny[]) => void) => {
+  accountsSubscribe: jest.fn().mockImplementation((cb: (accounts: Account[]) => void) => {
     cb([
       {
+        type: "keypair",
         address: ADDRESSES.GAV,
-        isExternal: false,
-        isHardware: false,
         name: "Gav",
-        suri: "a very bad mnemonic which actually doesn't have twelve words",
-        type: "sr25519",
+        curve: "sr25519",
+        createdAt: 1739192645517,
       },
       {
+        type: "keypair",
         address: ADDRESSES.VITALIK,
-        isExternal: false,
-        isHardware: false,
         name: "Vitalik",
-        suri: "another very bad mnemonic which also doesn't have twelve words",
-        type: "ethereum",
+        curve: "ethereum",
+        createdAt: 1739192646517,
       },
       {
+        type: "ledger-polkadot",
         address: ADDRESSES.ALICE,
         name: "Substrate Ledger",
-        hardwareType: "ledger",
-        isHardware: true,
-        origin: AccountType.Ledger,
+        app: "polkadot",
         accountIndex: 0,
         addressOffset: 0,
         genesisHash: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-        type: "sr25519",
+        createdAt: 1739192646517,
       },
     ])
     return () => undefined

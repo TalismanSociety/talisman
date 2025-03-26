@@ -1,13 +1,12 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, ChainId, ChainList, Token } from "@talismn/chaindata-provider"
+import { Account, Address, getAccountGenesisHash, isAccountEthereum } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { getAddress } from "viem"
 
-import { AccountJsonAny, Address, AddressBookContact } from "@extension/core"
-import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import {
   useAccountByAddress,
   useAccounts,
@@ -28,8 +27,7 @@ export type CopyAddressWizardPage = "chain" | "account" | "copy"
 type CopyAddressWizardState = CopyAddressWizardInputs & { route: CopyAddressWizardPage }
 
 const isAccountCompatibleWithChain = (
-  accounts: AccountJsonAny[],
-  contacts: AddressBookContact[],
+  accounts: Account[],
   chainsMap: ChainList,
   address: Address | undefined | null,
   chainId: ChainId | undefined | null,
@@ -40,19 +38,16 @@ const isAccountCompatibleWithChain = (
   const account = accounts.find(
     (a) => address && convertAddress(a.address, null) === convertAddress(address, null),
   )
-  const contact = contacts.find(
-    (c) => address && convertAddress(c.address, null) === convertAddress(address, null),
-  )
 
-  if (!(account || contact) || !chain) {
+  if (!account || !chain) {
     log.warn("unknown account/chain compatibility", { account, chain, address, chainId })
     return true
   }
 
-  if (account && account.genesisHash && account.genesisHash !== chain.genesisHash) return false
-  if (contact && contact.genesisHash && contact.genesisHash !== chain.genesisHash) return false
+  const accountGenesisHash = getAccountGenesisHash(account)
+  if (account && accountGenesisHash && accountGenesisHash !== chain.genesisHash) return false
 
-  const isEthereum = account?.type === "ethereum" || contact?.addressType === "ethereum"
+  const isEthereum = isAccountEthereum(account)
 
   if (isEthereum) return chain.account === "secp256k1"
   return chain.account !== "secp256k1"
@@ -150,43 +145,30 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [])
 
   const accounts = useAccounts()
-  const { contacts } = useAddressBook()
   const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
     (chainId: ChainId | null, legacyFormat?: boolean) => {
       // if account & chain are not compatible, clear address
-      const address = isAccountCompatibleWithChain(
-        accounts,
-        contacts,
-        chainsMap,
-        state.address,
-        chainId,
-      )
+      const address = isAccountCompatibleWithChain(accounts, chainsMap, state.address, chainId)
         ? state.address
         : undefined
 
       setStateAndUpdateRoute({ networkId: chainId, address, legacyFormat })
     },
-    [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.address],
+    [accounts, chainsMap, setStateAndUpdateRoute, state.address],
   )
 
   const setAddress = useCallback(
     (address: Address) => {
       if (state.networkId) {
-        const chainId = isAccountCompatibleWithChain(
-          accounts,
-          contacts,
-          chainsMap,
-          address,
-          state.networkId,
-        )
+        const chainId = isAccountCompatibleWithChain(accounts, chainsMap, address, state.networkId)
           ? state.networkId
           : undefined
         setStateAndUpdateRoute({ address, networkId: chainId })
       } else setStateAndUpdateRoute({ address })
     },
-    [accounts, chainsMap, contacts, setStateAndUpdateRoute, state.networkId],
+    [accounts, chainsMap, setStateAndUpdateRoute, state.networkId],
   )
 
   const goToAddressPage = useCallback(() => {
@@ -199,7 +181,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   // If chain restricted account, automatically select the chain
   const account = useAccountByAddress(state.address)
-  const targetChain = useChainByGenesisHash(account?.genesisHash)
+  const targetChain = useChainByGenesisHash(getAccountGenesisHash(account))
   useEffect(() => {
     if (targetChain) setChainId(targetChain.id)
   }, [setChainId, targetChain])

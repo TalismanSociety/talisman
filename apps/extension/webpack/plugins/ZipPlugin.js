@@ -22,13 +22,29 @@ ZipPlugin.prototype.apply = function (compiler) {
     const output = fs.createWriteStream(path.join(options.folder, options.filename))
     var archive = archiver("zip")
 
+    output.on("error", function (err) {
+      console.error("Failed to create zip file (output)", err)
+
+      for (let i = 0; i <= 5; i++) {
+        const parents = new Array(i).fill("..")
+        try {
+          console.info(
+            `fs.readdirSync("${path.join(options.folder, ...parents)}"): ${fs.readdirSync(path.join(options.folder, ...parents))}`,
+          )
+        } catch (error) {
+          console.error(`Failed to readdir ${path.join(options.folder, ...parents)}`)
+        }
+      }
+
+      callback(err)
+    })
     output.on("close", function () {
-      console.log(`${options.filename} generated : ${archive.pointer()} total bytes`)
+      console.log(`${options.filename} generated: ${archive.pointer()} total bytes`)
       callback()
     })
 
     archive.on("error", function (err) {
-      console.error("Failed to create zip file", err)
+      console.error("Failed to create zip file (archive)", err)
       callback(err)
     })
 

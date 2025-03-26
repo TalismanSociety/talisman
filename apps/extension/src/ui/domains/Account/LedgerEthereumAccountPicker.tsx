@@ -1,8 +1,8 @@
+import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "@extension/core"
-import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
@@ -79,9 +79,10 @@ const useLedgerEthereumAccounts = (
           refAddressCache.current[path] = { address }
 
           newAccounts[i] = {
+            type: "ledger-ethereum",
+            derivationPath: path,
             accountIndex,
             name: `${name.trim()} ${accountIndex + 1}`,
-            path,
             address,
           } as LedgerEthereumAccount
 
@@ -113,7 +114,7 @@ const useLedgerEthereumAccounts = (
       withBalances && derivedAccounts.filter(Boolean).length === itemsPerPage
         ? derivedAccounts
             .filter((acc): acc is LedgerEthereumAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ethereum" }))
+            .map(({ address }) => ({ address, curve: "ethereum" }))
         : [],
     [derivedAccounts, itemsPerPage, withBalances],
   )
@@ -140,7 +141,7 @@ const useLedgerEthereumAccounts = (
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
-          selected: selectedAccounts.some((sa) => sa.path === acc.path),
+          selected: selectedAccounts.some((sa) => sa.derivationPath === acc.derivationPath),
           balances: accountBalances,
           isBalanceLoading,
         }
@@ -185,11 +186,16 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { name, address, path } = acc as LedgerEthereumAccount
+    const { name, address, derivationPath } = acc as LedgerEthereumAccount
     setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.path === path)
-        ? prev.filter((pa) => pa.path !== path)
-        : prev.concat({ name, address, path }),
+      prev.some((pa) => pa.derivationPath === derivationPath)
+        ? prev.filter((pa) => pa.derivationPath !== derivationPath)
+        : prev.concat({
+            type: "ledger-ethereum",
+            name,
+            address,
+            derivationPath,
+          }),
     )
   }, [])
 

@@ -36,9 +36,8 @@ const DERIVATION_PATHS_PATTERNS = {
 const getDerivationPathFromPattern = (index = 0, pattern: string) =>
   pattern.replace("INDEX", index.toString())
 
-// used a lot around the codebase, expects a slash at the start
 export const getEthDerivationPath = (index = 0) =>
-  `/${getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS.BIP44)}`
+  getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS.BIP44)
 
 // used as arg when creating ledger account, expects no slash at the start
 export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, index = 0) => {

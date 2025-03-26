@@ -1,5 +1,6 @@
 import { EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
+import { activeTokensStore, isTokenActive } from "extension-core"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -16,7 +17,6 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { activeTokensStore, isTokenActive } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"

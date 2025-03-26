@@ -1,17 +1,19 @@
+import { Account, isAccountPortfolio } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 
-export const useAccountToggleIsPortfolio = (account?: AccountJsonAny) => {
+export const useAccountToggleIsPortfolio = (account?: Account) => {
   const { t } = useTranslation()
 
   const { canToggleIsPortfolio, toggleLabel } = useMemo(
     () => ({
-      canToggleIsPortfolio: account?.origin === "WATCHED",
-      toggleLabel: account?.isPortfolio ? t("Make followed-only account") : t("Add to portfolio"),
+      canToggleIsPortfolio: account?.type === "watch-only",
+      toggleLabel: isAccountPortfolio(account)
+        ? t("Make followed-only account")
+        : t("Add to portfolio"),
     }),
     [account, t],
   )
@@ -19,7 +21,7 @@ export const useAccountToggleIsPortfolio = (account?: AccountJsonAny) => {
   const toggleIsPortfolio = useCallback(async () => {
     if (!account) return
 
-    const isPortfolio = !!account?.isPortfolio
+    const isPortfolio = isAccountPortfolio(account)
 
     const notificationId = notify(
       {

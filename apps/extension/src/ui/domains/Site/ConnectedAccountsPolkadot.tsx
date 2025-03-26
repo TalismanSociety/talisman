@@ -1,28 +1,27 @@
 import { InfoIcon } from "@talismn/icons"
+import { Account, isAccountEthereum } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { AccountJsonAny } from "@extension/core"
 
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
 const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
 
 export const ConnectedAccountsPolkadot: FC<{
-  activeAccounts: Array<[AccountJsonAny, boolean]>
+  activeAccounts: Array<[Account, boolean]>
   onUpdateAccounts: (addresses: string[]) => void
 }> = ({ activeAccounts, onUpdateAccounts }) => {
   const { t } = useTranslation()
 
   const hasEthereumActiveAccounts = useMemo(
-    () => activeAccounts.some((acc) => acc[0].type === "ethereum" && acc[1]),
+    () => activeAccounts.some((acc) => isAccountEthereum(acc[0]) && acc[1]),
     [activeAccounts],
   )
   const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
 
   const displayedAccounts = useMemo(
-    () => activeAccounts.filter(([acc]) => enableEvmAccounts || acc.type !== "ethereum"),
+    () => activeAccounts.filter(([acc]) => enableEvmAccounts || !isAccountEthereum(acc)),
     [activeAccounts, enableEvmAccounts],
   )
 
@@ -51,7 +50,7 @@ export const ConnectedAccountsPolkadot: FC<{
       if (enabled) {
         onUpdateAccounts(
           activeAccounts
-            .filter(([acc, isConnected]) => acc.type !== "ethereum" && isConnected)
+            .filter(([acc, isConnected]) => !isAccountEthereum(acc) && isConnected)
             .map(([a]) => a.address),
         )
       }

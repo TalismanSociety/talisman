@@ -3,21 +3,22 @@ import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import {
+  AssetTransferMethod,
+  getEthTransferTransactionBase,
+  isAccountInTypes,
+  isAccountOfType,
+  privacyRoundCurrency,
+  serializeGasSettings,
+  serializeTransactionRequest,
+  SignerPayloadJSON,
+} from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { TransactionRequest } from "viem"
 
-import {
-  AccountType,
-  AssetTransferMethod,
-  getEthTransferTransactionBase,
-  privacyRoundCurrency,
-  serializeGasSettings,
-  serializeTransactionRequest,
-  SignerPayloadJSON,
-} from "@extension/core"
-import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -415,16 +416,10 @@ const useSendFundsProvider = () => {
 
   const { isValid, error, errorDetails } = useMemo(() => {
     try {
-      if (fromAccount?.origin === AccountType.Watched)
+      if (fromAccount?.type === "watch-only")
         return {
           isValid: false,
           error: t("Cannot send from a watched account"),
-        }
-
-      if (fromAccount?.origin === AccountType.Dcent)
-        return {
-          isValid: false,
-          error: t("Cannot send from a D'CENT account"),
         }
 
       if (token && !isTransferableToken(token))
@@ -512,26 +507,25 @@ const useSendFundsProvider = () => {
       return { isValid: true, error: t("Failed to validate") }
     }
   }, [
-    balance,
-    maxCostBreakdown,
-    evmInvalidTxError,
-    evmTransaction?.error,
-    from,
-    isSendingEnough,
-    maxAmount,
-    sendMax,
-    subTransaction?.error,
-
-    to,
-    token,
-    tokenId,
-    tokensToBeReaped,
-    transfer,
-    feeToken,
-    feeTokenBalance,
-    estimatedFee,
-    fromAccount?.origin,
+    fromAccount?.type,
     t,
+    token,
+    evmInvalidTxError,
+    transfer,
+    balance?.transferable.planck,
+    feeToken,
+    estimatedFee,
+    feeTokenBalance,
+    from,
+    to,
+    sendMax,
+    maxAmount,
+    tokenId,
+    maxCostBreakdown,
+    tokensToBeReaped,
+    isSendingEnough,
+    evmTransaction?.error,
+    subTransaction?.error,
   ])
 
   const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading
@@ -546,13 +540,13 @@ const useSendFundsProvider = () => {
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
-    if (fromAccount?.origin === AccountType.Qr) {
+    if (isAccountOfType(fromAccount, "polkadot-vault")) {
       if (isSubToken(token)) return "qrSubstrate"
       else if (isEvmToken(token))
         return "unknown" // Parity signer / parity vault don't support ethereum accounts
       else throw new Error("Unknown token type")
     }
-    if (fromAccount?.isHardware) {
+    if (isAccountInTypes(fromAccount, ["ledger-ethereum", "ledger-polkadot"])) {
       if (isSubToken(token)) return "hardwareSubstrate"
       else if (isEvmToken(token)) return "hardwareEthereum"
       else throw new Error("Unknown token type")

@@ -1,5 +1,6 @@
+import { Account } from "@talismn/keyring"
+
 import { BaseRequest, BaseRequestId } from "../../types/base"
-import { AccountJson } from "../accounts/types"
 
 export interface EncryptPayloadBase {
   /**
@@ -77,7 +78,7 @@ export type DecryptRequestIdOnly = { id: DecryptRequestId }
 
 interface BaseEncryptRequest<T extends ENCRYPT_ENCRYPT_PREFIX | ENCRYPT_DECRYPT_PREFIX>
   extends BaseRequest<T> {
-  account: AccountJson
+  account: Account
   url: string
 }
 export interface EncryptEncryptRequest extends BaseEncryptRequest<ENCRYPT_ENCRYPT_PREFIX> {

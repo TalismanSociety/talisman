@@ -1,6 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Platform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Chain } from "extension-core"
 import { t } from "i18next"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -9,17 +11,16 @@ import { useNavigate } from "react-router-dom"
 import { Button, Dropdown, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
 
-import { Chain, UiAccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import {
   ChainWithLedgerApp,
   useLedgerSubstrateChain,
   useLedgerSubstrateChains,
 } from "@ui/hooks/ledger/useLedgerSubstrateChains"
-import { isAddSubstrateLedgerAppType, isUiAccountAddressType } from "@ui/util/typeCheckers"
+import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
@@ -98,14 +99,14 @@ export const AddLedgerSelectNetwork = () => {
     () =>
       yup
         .object({
-          type: yup.mixed(isUiAccountAddressType).defined(),
+          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
           chainId: yup.string(),
           substrateAppType: yup.mixed(isAddSubstrateLedgerAppType),
         })
         .required()
         .test("validateFormData", t("Invalid parameters"), async (val, ctx) => {
-          const { type, chainId, substrateAppType } = val as FormData
-          if (type === "sr25519") {
+          const { platform, chainId, substrateAppType } = val as FormData
+          if (platform === "polkadot") {
             if (!substrateAppType)
               return ctx.createError({
                 path: "substrateAppType",
@@ -143,13 +144,13 @@ export const AddLedgerSelectNetwork = () => {
 
   type FormData = yup.InferType<typeof schema>
 
-  const [accountType, chainId, substrateAppType] = watch(["type", "chainId", "substrateAppType"])
+  const [platform, chainId, substrateAppType] = watch(["platform", "chainId", "substrateAppType"])
 
   const chain = useLedgerSubstrateChain(chainId ?? (defaultValues.chainId as string))
 
   const submit = useCallback(
-    async ({ type, chainId, substrateAppType }: FormData) => {
-      updateData({ type, chainId, substrateAppType })
+    async ({ platform, chainId, substrateAppType }: FormData) => {
+      updateData({ platform, chainId, substrateAppType })
       navigate("account")
     },
     [navigate, updateData],
@@ -158,16 +159,16 @@ export const AddLedgerSelectNetwork = () => {
   const handleNetworkChange = useCallback(
     (chain: Chain | null) => {
       reset({
-        type: "sr25519",
+        platform: "polkadot",
         chainId: chain?.id,
       })
     },
     [reset],
   )
 
-  const handleTypeChange = useCallback(
-    (type: UiAccountAddressType) => {
-      reset({ type })
+  const handlePlatformChange = useCallback(
+    (platform: Platform) => {
+      reset({ platform })
     },
     [reset],
   )
@@ -183,7 +184,7 @@ export const AddLedgerSelectNetwork = () => {
 
   const [isLedgerReady, setIsLedgerReady] = useState(false)
 
-  const showConnect = accountType === "ethereum" || (accountType === "sr25519" && substrateAppType)
+  const showConnect = platform === "ethereum" || (platform === "polkadot" && substrateAppType)
 
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
@@ -193,8 +194,8 @@ export const AddLedgerSelectNetwork = () => {
           text={t("What type of account would you like to connect?")}
         />
         <Spacer small />
-        <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
-        {accountType === "sr25519" && (
+        <AccountPlatformSelector defaultValue={platform} onChange={handlePlatformChange} />
+        {platform === "polkadot" && (
           <>
             <div className="bg-black-secondary mt-12 rounded p-12">
               <h2 className="text-body-secondary leading-paragraph text-base">
@@ -213,7 +214,7 @@ export const AddLedgerSelectNetwork = () => {
 
                   {chain.supportedLedgerApps.length > 1 && (
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <div className="text-body-secondary flex items-center gap-2 align-middle text-xs">
                           <InfoIcon />
                           <span className="overflow-hidden text-ellipsis whitespace-nowrap">
@@ -280,7 +281,7 @@ export const AddLedgerSelectNetwork = () => {
           </>
         )}
         <div className={classNames("mt-16 h-[12rem]", showConnect ? "visible" : "invisible")}>
-          {showConnect && accountType === "sr25519" && chainId && (
+          {showConnect && platform === "polkadot" && chainId && (
             <>
               {substrateAppType === AddSubstrateLedgerAppType.Legacy && (
                 <ConnectLedgerSubstrateLegacy
@@ -306,12 +307,12 @@ export const AddLedgerSelectNetwork = () => {
             </>
           )}
 
-          {accountType === "ethereum" && (
+          {platform === "ethereum" && (
             <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
           )}
         </div>
       </div>
-      {!!accountType && (
+      {!!platform && (
         <div className="flex justify-end">
           <Button
             className="w-[24rem]"

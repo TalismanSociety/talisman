@@ -1,16 +1,18 @@
-import keyring from "@polkadot/ui-keyring"
+import { isAccountOwned } from "@talismn/keyring"
 import { isTalismanHostname, log } from "extension-shared"
+import { distinctUntilKeyChanged } from "rxjs"
 
 import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"
-import { AccountType } from "../domains/accounts/types"
 import AppHandler from "../domains/app/handler"
+import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
 import { trackPopupSummaryData } from "../domains/app/popupSummaries"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
 import { ChainsHandler } from "../domains/chains"
 import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
+import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
 import { NftsHandler } from "../domains/nfts"
@@ -25,7 +27,6 @@ import { talismanAnalytics } from "../libs/Analytics"
 import { ExtensionHandler } from "../libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "../types"
 import { Port, RequestIdOnly } from "../types/base"
-import { awaitKeyringLoaded } from "../util/awaitKeyringLoaded"
 import { fetchHasSpiritKey } from "../util/hasSpiritKey"
 import { ExtensionStore } from "./stores"
 import { unsubscribe } from "./subscriptions"
@@ -47,7 +48,7 @@ export default class Extension extends ExtensionHandler {
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),
-      mnemonic: new MnemonicHandler(stores),
+      mnemonics: new MnemonicHandler(stores),
       signing: new SigningHandler(stores),
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
@@ -78,34 +79,29 @@ export default class Extension extends ExtensionHandler {
       return store
     })
 
-    awaitKeyringLoaded().then(() => {
-      // Watches keyring to do things that depend on type of accounts added
-      keyring.accounts.subject.subscribe(async (addresses) => {
-        const sites = await stores.sites.get()
+    keyringStore.accounts$.subscribe(async (accounts) => {
+      const sites = await stores.sites.get()
 
-        Object.entries(sites)
-          .filter(([, site]) => site.connectAllSubstrate)
-          .forEach(async ([url, autoAddSite]) => {
-            const newAddresses = Object.values(addresses)
-              .filter(
-                ({ json: { meta } }) =>
-                  isTalismanHostname(autoAddSite.url) ||
-                  ![AccountType.Watched, AccountType.Dcent].includes(meta.origin as AccountType),
-              )
-              .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
-              .map(({ json: { address } }) => address)
+      Object.entries(sites)
+        .filter(([, site]) => site.connectAllSubstrate)
+        .forEach(async ([url, autoAddSite]) => {
+          const existingAddresses = autoAddSite.addresses || []
 
-            autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
-            await stores.sites.updateSite(url, autoAddSite)
-          })
-      })
+          const newAddresses = accounts
+            .filter((acc) => isTalismanHostname(autoAddSite.url) || isAccountOwned(acc))
+            .filter(({ address }) => !existingAddresses.includes(address))
+            .map(({ address }) => address)
 
-      this.stores.app.observable.subscribe(({ onboarded }) => {
-        if (onboarded === "TRUE") {
-          this.checkSpiritKeyOwnership()
-        }
-      })
+          autoAddSite.addresses = [...existingAddresses, ...newAddresses]
+          await stores.sites.updateSite(url, autoAddSite)
+        })
     })
+
+    this.stores.app.observable
+      .pipe(distinctUntilKeyChanged("onboarded"))
+      .subscribe(({ onboarded }) => {
+        if (onboarded === "TRUE") this.checkSpiritKeyOwnership()
+      })
 
     this.initDb()
     this.cleanup()
@@ -115,6 +111,9 @@ export default class Extension extends ExtensionHandler {
 
     // keeps summary data tables for the popup home screen up to date
     trackPopupSummaryData()
+
+    // hides the get started component has soon as the wallet owns funds
+    hideGetStartedOnceFunded()
   }
 
   private cleanup() {

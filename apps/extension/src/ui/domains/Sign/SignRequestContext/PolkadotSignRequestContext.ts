@@ -3,11 +3,11 @@ import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polka
 import { HexString } from "@polkadot/util/types"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
+import { Address, isJsonPayload, SubstrateSigningRequest } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
 import { DecodedCall, ScaleApi } from "sapi"
 
-import { Address, isJsonPayload, SubstrateSigningRequest } from "@extension/core"
-import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useBalancesHydrate, useChainByGenesisHash } from "@ui/state"

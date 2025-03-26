@@ -1,5 +1,3 @@
-import keyring from "@polkadot/ui-keyring"
-import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import {
   AddressesByToken,
@@ -9,6 +7,7 @@ import {
   StoredBalanceJson,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
+import { Account, isAccountNotContact } from "@talismn/keyring"
 import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
 import { Dexie, liveQuery } from "dexie"
@@ -32,13 +31,13 @@ import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
-import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { isBackgroundPage } from "../../util/isBackgroundPage"
 import { settingsStore } from "../app/store.settings"
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { Chain } from "../chains/types"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmNetwork } from "../ethereum/types"
+import { keyringStore } from "../keyring/store"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import {
   AddressesAndEvmNetwork,
@@ -148,12 +147,8 @@ abstract class BalancePool {
     this.#persist = Boolean(persist)
 
     // check for use outside of the background/service worker
-    isBackgroundPage().then((backgroundPage) => {
-      if (backgroundPage) return
-      throw new Error(
-        `Balances pool should only be used in the background page - used in: ${window.location.href}`,
-      )
-    })
+    if (!isBackgroundPage())
+      throw new Error(`Balances pool should only be used in the background page`)
 
     this.#balances = combineLatest([
       combineLatest([this.#initialising, this.#isRestartPending]).pipe(
@@ -511,15 +506,10 @@ abstract class BalancePool {
    *
    * @param accounts - The accounts to watch for balances.
    */
-  protected async setAccounts(accounts: Record<string, SingleAddress>) {
-    // update the list of watched addresses
+  protected async setAccounts(accounts: Account[]) {
     const addresses = Object.fromEntries(
-      Object.entries(accounts).map(([address, details]) => {
-        const { genesisHash } = details.json.meta
-        if (!genesisHash) return [address, null]
-
-        // For accounts locked to a single chain, only query balances on that chain
-        return [address, [genesisHash]]
+      accounts.map((account) => {
+        return [account.address, "genesisHash" in account ? [account.genesisHash!] : null]
       }),
     )
     this.addresses.next(addresses)
@@ -728,15 +718,12 @@ class KeyringBalancePool extends BalancePool {
    * Creates a subscription to automatically call `this.setAccounts` when `keyring.accounts.subject` updates.
    */
   private async initializeKeyringSubscription() {
-    // When initializing, our keyring object doesn't immediately contain all of our accounts.
-    // To avoid deleting the balances for accounts which are in the wallet, but have not yet
-    // been loaded into the keyring, we wait for the full keyring to be loaded.
-    await awaitKeyringLoaded()
-
     // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
     // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
-    return keyring.accounts.subject
+    return keyringStore.accounts$
       .pipe(
+        map((accounts) => accounts.filter(isAccountNotContact)),
+        distinctUntilChanged<Account[]>(isEqual),
         tap(() => {
           this.setIsRestartPending()
         }),

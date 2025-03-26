@@ -11,6 +11,15 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import {
+  Account,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  DiscoveredBalance,
+  getAccountGenesisHash,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "extension-core"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -29,14 +38,6 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import {
-  AccountJsonAny,
-  activeEvmNetworksStore,
-  activeTokensStore,
-  DiscoveredBalance,
-  isEvmNetworkActive,
-  isTokenActive,
-} from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -93,7 +94,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
     () =>
       [...new Set(addresses)]
         .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as AccountJsonAny[],
+        .filter(Boolean) as Account[],
     [allAccounts, addresses],
   )
   const { t } = useTranslation("admin")
@@ -109,7 +110,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
           <AccountIcon
             className="shrink-0"
             address={account.address}
-            genesisHash={account.genesisHash}
+            genesisHash={getAccountGenesisHash(account)}
           />
           <div className="text-body grow truncate">{account.name}</div>
           <div>{shortenAddress(account.address)}</div>
@@ -202,7 +203,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
     () =>
       [...new Set(assets.map((a) => a.address))]
         .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as AccountJsonAny[],
+        .filter(Boolean) as Account[],
     [allAccounts, assets],
   )
 
@@ -507,7 +508,7 @@ const Header: FC = () => {
 
 const AccountsWrapper: FC<{
   children?: ReactNode
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   className?: string
 }> = ({ children, accounts, className }) => {
   return (

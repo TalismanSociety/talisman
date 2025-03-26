@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Account, getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
 
-import { AccountJsonAny } from "@extension/core"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -11,7 +11,7 @@ import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
 import { AccountContextMenu } from "../AccountContextMenu"
 
 export const TreeItemAccount: FC<{
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   address: string
   balanceTotalPerAccount: Record<string, number>
   isInFolder?: boolean
@@ -34,14 +34,18 @@ export const TreeItemAccount: FC<{
           isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850",
         )}
       >
-        <AccountIcon className="text-xl" address={address} genesisHash={account?.genesisHash} />
+        <AccountIcon
+          className="text-xl"
+          address={address}
+          genesisHash={getAccountGenesisHash(account)}
+        />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="flex items-center gap-2">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{account.name}</div>
             <AccountTypeIcon
               className="text-primary"
-              origin={account.origin}
-              signetUrl={account.signetUrl as string}
+              type={account.type}
+              signetUrl={account.type === "signet" ? account.url : undefined}
             />
           </div>
           <div className="text-body-secondary @2xl:text-sm text-xs">

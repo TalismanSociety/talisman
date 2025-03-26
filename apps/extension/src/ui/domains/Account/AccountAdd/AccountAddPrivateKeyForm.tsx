@@ -1,6 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
+import { bytesToString, parseSecretKey } from "@talismn/crypto"
 import { encodeAnyAddress } from "@talismn/util"
+import { isAccountEthereum } from "extension-core"
 import i18next from "i18next"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -104,7 +106,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
   const { t } = useTranslation("admin")
   const allAccounts = useAccounts()
   const accountEthAddresses = useMemo(
-    () => allAccounts.filter(({ type }) => type === "ethereum").map((a) => a.address),
+    () => allAccounts.filter(isAccountEthereum).map((a) => a.address),
     [allAccounts],
   )
 
@@ -148,7 +150,15 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         { autoClose: false },
       )
       try {
-        const address = await api.accountCreateFromSuri(name, privateKey, "ethereum")
+        const secretKey = parseSecretKey(privateKey, "ethereum")
+
+        const [address] = await api.accountAddKeypair([
+          {
+            name,
+            curve: "ethereum",
+            secretKey: bytesToString("base64", secretKey),
+          },
+        ])
 
         onSuccess(address)
         notifyUpdate(notificationId, {
@@ -191,8 +201,10 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
             after={
               targetAddress ? (
                 <Tooltip>
-                  <TooltipTrigger>
-                    <AccountIcon address={targetAddress} className="text-xl" />
+                  <TooltipTrigger asChild>
+                    <div className="size-16">
+                      <AccountIcon address={targetAddress} className="text-xl" />
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>{targetAddress}</TooltipContent>
                 </Tooltip>

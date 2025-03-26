@@ -3,13 +3,13 @@ import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { normalizeAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import merge from "lodash/merge"
 import { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
-import { TransactionStatus, WalletTransaction } from "./types"
+import { filterIsSameNetworkAndAddressTx } from "./exports"
+import { TransactionStatus } from "./types"
 
 type AddTransactionOptions = {
   label?: string
@@ -101,25 +101,6 @@ export const addSubstrateTransaction = async (
     log.error("addSubstrateTransaction", { err, hash, payload, options })
   }
 }
-
-export const filterIsSameNetworkAndAddressTx =
-  (ref: WalletTransaction) => (tx: WalletTransaction) => {
-    if (normalizeAddress(ref.account) !== normalizeAddress(tx.account)) return false
-    if (ref.networkType !== tx.networkType) return false
-    if (
-      ref.networkType === "evm" &&
-      tx.networkType === "evm" &&
-      ref.evmNetworkId === tx.evmNetworkId
-    )
-      return true
-    if (
-      ref.networkType === "substrate" &&
-      tx.networkType === "substrate" &&
-      ref.genesisHash === tx.genesisHash
-    )
-      return true
-    return false
-  }
 
 export const updateTransactionStatus = async (
   hash: string,

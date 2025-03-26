@@ -6,10 +6,10 @@ import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkad
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
+import { LegacyAccountOrigin } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { AccountType } from "@extension/core"
-import { log } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
@@ -20,7 +20,7 @@ export type JsonImportAccount = {
   address: string
   name: string
   genesisHash: string
-  origin: AccountType
+  origin: LegacyAccountOrigin
   selected: boolean
   isLocked: boolean
   isPrivateKeyAvailable: boolean
@@ -59,9 +59,7 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const accounts = useMemo<AccountImportDef[]>(
     () =>
-      pairs
-        .filter((p): p is KeyringPair & { type: string } => !!p.type)
-        .map((p) => ({ address: p.address, type: p.type, genesisHash: p.meta?.genesisHash })),
+      pairs.map((p) => ({ address: p.address, curve: p.type, genesisHash: p.meta?.genesisHash })),
     [pairs],
   )
   const allBalances = useAccountImportBalances(accounts)
@@ -180,7 +178,7 @@ const useJsonAccountImportProvider = () => {
         address: encodeAnyAddress(pair.address, chain?.prefix ?? undefined),
         name: pair.meta.name as string,
         genesisHash: pair.meta.genesisHash as string,
-        origin: pair.meta.origin as AccountType,
+        origin: pair.meta.origin as LegacyAccountOrigin,
         isExisting,
         selected: !isExisting && selectedAccounts.includes(pair.address),
         isLocked: pair.isLocked,
@@ -269,7 +267,7 @@ const useJsonAccountImportProvider = () => {
     return true
   }, [pairs, selectedAccounts])
 
-  const importAccounts = useCallback(async () => {
+  const importAccounts = useCallback(() => {
     assert(selectedAccounts.length, "No accounts selected")
     assert(pairs, "Pairs unavailable")
 
@@ -284,9 +282,7 @@ const useJsonAccountImportProvider = () => {
 
     const unlockedPairs = pairsToImport.map((p) => p.toJson())
 
-    const addresses = await api.accountCreateFromJson(unlockedPairs)
-
-    return addresses
+    return api.accountCreateFromJson(unlockedPairs)
   }, [pairs, selectedAccounts])
 
   return {

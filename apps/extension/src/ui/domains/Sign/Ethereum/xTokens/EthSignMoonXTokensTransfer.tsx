@@ -1,10 +1,10 @@
 import { hexToU8a } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
+import { EvmAddress } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EvmAddress } from "@extension/core"
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
 import { useChain, useChains, useToken, useTokens } from "@ui/state"

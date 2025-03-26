@@ -1,10 +1,10 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { Balances } from "extension-core"
+import { HexString } from "extension-shared"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 
-import { Balances } from "@extension/core"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 
 import { Fiat } from "../Asset/Fiat"
@@ -115,10 +115,11 @@ const AccountButton: FC<AccountButtonProps> = ({
   )
 }
 
-export type DerivedAccountBase = AccountJson & {
+export type DerivedAccountBase = {
   name: string
   accountIndex: number
   address: string
+  genesisHash?: HexString
   balances: Balances
   connected?: boolean
   selected?: boolean

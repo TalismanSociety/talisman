@@ -2,22 +2,21 @@ import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountType } from "extension-core"
 import { useMemo } from "react"
 
-import { AccountType } from "@extension/core"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
-import { AccountWithBalance } from "../Asset/Buy/types"
 import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
-export type SendFundsAccount = {
+type AccountRowAccount = {
   address: string
-  origin?: AccountType
+  type?: AccountType
   name?: string
   genesisHash?: string | null
   balance?: Balance | undefined
@@ -25,7 +24,7 @@ export type SendFundsAccount = {
 }
 
 type AccountRowProps = {
-  account: SendFundsAccount | AccountWithBalance
+  account: AccountRowAccount
   genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
@@ -51,10 +50,7 @@ export const AccountRow = ({
   className,
   onClear,
 }: AccountRowProps) => {
-  const formattedAddress = useFormattedAddress(
-    account?.address,
-    genesisHash ?? account?.genesisHash,
-  )
+  const formattedAddress = useFormattedAddress(account?.address, genesisHash ?? account.genesisHash)
 
   const displayAddress = useMemo(
     () => (noFormat ? account?.address : formattedAddress),
@@ -87,7 +83,7 @@ export const AccountRow = ({
                 <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
-            <AccountTypeIcon origin={account.origin} className="text-primary" />
+            <AccountTypeIcon type={account.type} className="text-primary" />
           </div>
           <Address className="text-body-secondary text-xs" address={displayAddress} />
         </div>

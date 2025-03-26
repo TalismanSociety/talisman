@@ -15,13 +15,14 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
+import { keyringStore } from "../keyring/store"
 import { activeChainsStore } from "./store.activeChains"
 
 export class ChainsHandler extends ExtensionHandler {
   private async validateVaultVerifierCertificateMnemonic() {
     const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
     assert(vaultMnemoicId, "No Polkadot Vault Verifier Certificate Mnemonic set")
-    const vaultCipher = await this.stores.mnemonics.get(vaultMnemoicId)
+    const vaultCipher = await keyringStore.getMnemonic(vaultMnemoicId)
     assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
     return true
   }

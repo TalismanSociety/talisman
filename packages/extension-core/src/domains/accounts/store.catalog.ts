@@ -1,13 +1,13 @@
+import { Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
+
 import { StorageProvider } from "../../libs/Store"
 import {
   addAccount,
-  bySortOrder,
   removeAccount,
   RequestAccountsCatalogAction,
   runActionsOnTrees,
   Trees,
 } from "./helpers.catalog"
-import { AccountJsonAny } from "./types"
 
 // AccountsCatalogData is here in case we want to use this to store anything
 // else in addition to the two `Tree` objects in the future
@@ -22,39 +22,26 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
 
   /**
    * This method will sort a given array of accounts into the order that they have in the store.
-   *
-   * It will also set the `sortOrder` field on each account.
-   *
-   * It will also set the `folderId` and `folderName` fields on each account which is in a folder.
    */
-  sortAccountsByCatalogOrder = async (accounts: AccountJsonAny[]) => {
-    const accountsByAddress = new Map(accounts.map((account) => [account.address, account]))
+  sortAccountsByCatalogOrder = async (accounts: Account[]) => {
+    let orderedAddresses: string[] = []
 
-    let nextSortIndex = 0
     await this.withTrees((trees) => {
-      ;[...trees.portfolio, ...trees.watched].forEach((item) => {
-        if (item.type === "account") {
-          const account = accountsByAddress.get(item.address)
-          if (!account) return
-
-          account.folderId = undefined
-          account.folderName = undefined
-          account.sortOrder = nextSortIndex++
-        }
-
-        if (item.type === "folder")
-          item.tree.forEach((folderItem) => {
-            const account = accountsByAddress.get(folderItem.address)
-            if (!account) return
-
-            account.folderId = item.id
-            account.folderName = item.name
-            account.sortOrder = nextSortIndex++
-          })
-      })
+      orderedAddresses = [...trees.portfolio, ...trees.watched].reduce<string[]>((prev, curr) => {
+        if (curr.type === "account") prev.push(curr.address)
+        if (curr.type === "folder") curr.tree.forEach((item) => prev.push(item.address))
+        return prev
+      }, [])
     })
 
-    return accounts.sort(bySortOrder)
+    return accounts.sort((a, b) => {
+      const aIndex = orderedAddresses.indexOf(a.address)
+      const bIndex = orderedAddresses.indexOf(b.address)
+      if (aIndex === -1 && bIndex === -1) return (a.createdAt ?? 0) - (b.createdAt ?? 0)
+      if (aIndex === -1) return 1
+      if (bIndex === -1) return -1
+      return aIndex - bIndex
+    })
   }
 
   /**
@@ -64,15 +51,17 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    *
    * If all of the given accounts are already in the catalog, this method will noop.
    */
-  addAccounts = async (accounts: Array<{ address: string; isPortfolio?: boolean }>) =>
+  addAccounts = async (accounts: Account[]) =>
     await this.withTrees((trees) =>
       accounts
-        .map(({ address, isPortfolio }) => {
-          const addTree = isPortfolio !== false ? trees.portfolio : trees.watched
-          const rmTree = isPortfolio !== false ? trees.watched : trees.portfolio
+        .filter(isAccountNotContact)
+        .map((account) => {
+          const [addTree, rmTree] = isAccountPortfolio(account)
+            ? [trees.portfolio, trees.watched]
+            : [trees.watched, trees.portfolio]
 
-          const added = addAccount(addTree, address)
-          const removed = removeAccount(rmTree, address)
+          const added = addAccount(addTree, account.address)
+          const removed = removeAccount(rmTree, account.address)
 
           return added || removed
         })
@@ -121,7 +110,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
     const ensureArray = <T>(item: T) => (Array.isArray(item) ? item : [])
     const trees: Trees = {
       portfolio: ensureArray(store.portfolio),
-      watched: ensureArray(store.watched),
+      watched: ensureArray(store.watched).filter(isAccountNotContact),
     }
 
     // run the callback against the data

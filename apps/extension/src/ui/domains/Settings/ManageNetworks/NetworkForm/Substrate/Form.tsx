@@ -1,12 +1,12 @@
 import { HexString } from "@polkadot/util/types"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { RequestUpsertCustomChain } from "extension-core"
 import { ReactNode, useCallback, useMemo, useState } from "react"
 import { FormProvider, UseFormReturn } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { RequestUpsertCustomChain } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"

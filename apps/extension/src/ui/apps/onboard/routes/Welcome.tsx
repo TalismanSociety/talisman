@@ -1,12 +1,12 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ChainId, EvmNetworkId } from "extension-core"
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { TalismanColouredHandWhiteTextLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -97,13 +97,12 @@ export const WelcomeNetworkStack = ({ className, ids }: NetworkStackProps) => {
 export const WelcomePage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const { reset, updateData, setStage } = useOnboard()
+  const { reset, setStage } = useOnboard()
   const navigate = useNavigate()
 
   const handleNextClick = useCallback(
     () => async () => {
       reset()
-      updateData({ mnemonic: undefined }) // always clear this one, even in dev mode
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Goto",
@@ -111,7 +110,7 @@ export const WelcomePage = () => {
       })
       navigate("/password")
     },
-    [navigate, reset, updateData],
+    [navigate, reset],
   )
 
   useEffect(() => {

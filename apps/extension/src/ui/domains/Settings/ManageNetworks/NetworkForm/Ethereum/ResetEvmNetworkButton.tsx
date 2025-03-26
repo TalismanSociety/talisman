@@ -1,10 +1,10 @@
 import { sleep } from "@talismn/util"
+import { CustomEvmNetwork, EvmNetwork } from "extension-core"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"

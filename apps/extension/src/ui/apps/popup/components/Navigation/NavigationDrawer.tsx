@@ -13,12 +13,12 @@ import {
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
+import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Drawer, IconButton } from "talisman-ui"
 
-import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"

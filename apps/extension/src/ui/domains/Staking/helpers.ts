@@ -49,7 +49,7 @@ export const getStakingAPR = async (sapi: ScaleApi) => {
   if (!currentEra) throw new Error("Current era unavailable")
 
   const maxErasToCheck = Math.min(15, historyDepth)
-  const eras = range(currentEra - maxErasToCheck, currentEra - 1)
+  const eras = range(currentEra - maxErasToCheck, currentEra - 1).filter((era) => era >= 0)
 
   const [eraRewards, eraTotalStakes] = await Promise.all([
     Promise.all(
@@ -110,43 +110,26 @@ export const getNomPoolStakingPayload = async (
   isBondExtra: boolean,
   withSetClaimPermission: boolean,
 ) => {
-  if (withSetClaimPermission)
-    return sapi.getExtrinsicPayload(
-      "Utility",
-      "batch_all",
-      {
-        calls: [
-          isBondExtra
-            ? sapi.getDecodedCall("NominationPools", "bond_extra", {
-                extra: Enum("FreeBalance", amount),
-              })
-            : sapi.getDecodedCall("NominationPools", "join", { amount, pool_id: poolId }),
-          sapi.getDecodedCall("NominationPools", "set_claim_permission", {
-            permission: Enum("PermissionlessCompound"),
-          }),
-        ],
-      },
-      { address },
-    )
+  const call_joinPoolOrBondExtra = isBondExtra
+    ? sapi.getDecodedCall("NominationPools", "bond_extra", { extra: Enum("FreeBalance", amount) })
+    : sapi.getDecodedCall("NominationPools", "join", { amount, pool_id: poolId })
 
-  return isBondExtra
-    ? sapi.getExtrinsicPayload(
-        "NominationPools",
-        "bond_extra",
-        {
-          extra: Enum("FreeBalance", amount),
-        },
-        { address },
-      )
-    : sapi.getExtrinsicPayload(
-        "NominationPools",
-        "join",
-        {
-          amount,
-          pool_id: poolId,
-        },
-        { address },
-      )
+  const call_setClaimPermission = withSetClaimPermission
+    ? sapi.getDecodedCall("NominationPools", "set_claim_permission", {
+        permission: Enum("PermissionlessCompound"),
+      })
+    : undefined
+
+  const call_remark = sapi.getDecodedCall("System", "remark_with_event", {
+    remark: Binary.fromText("Seek the Talisman"),
+  })
+
+  return sapi.getExtrinsicPayload(
+    "Utility",
+    "batch_all",
+    { calls: [call_joinPoolOrBondExtra, call_setClaimPermission, call_remark].filter(Boolean) },
+    { address },
+  )
 }
 export const cleanupNomPoolName = (name: string | null | undefined) =>
   name

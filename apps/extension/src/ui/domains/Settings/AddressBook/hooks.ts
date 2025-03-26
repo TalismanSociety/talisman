@@ -1,6 +1,6 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, CustomChain } from "@talismn/chaindata-provider"
-import { convertAddress, decodeSs58Format } from "@talismn/util"
+import { decodeSs58Address, detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
+import { HexString } from "extension-shared"
 import { useEffect, useMemo } from "react"
 
 import { useChains } from "@ui/state"
@@ -10,20 +10,28 @@ export const useChainsFilteredByAddressPrefix = (address?: string) => {
 
   return useMemo(() => {
     if (!address) return []
-    if (isEthereumAddress(address)) return []
 
-    const ss58Format = decodeSs58Format(address)
-    if (typeof ss58Format !== "number") return []
+    try {
+      const encoding = detectAddressEncoding(address)
+      if (encoding !== "ss58") return []
 
-    if (ss58Format === 42) return chains
-    return chains.filter((c) => c.prefix === ss58Format)
+      const [, ss58Format] = decodeSs58Address(address)
+      if (typeof ss58Format !== "number") return []
+
+      // 42 is generic format
+      if (ss58Format === 42) return chains
+      return chains.filter((c) => c.prefix === ss58Format)
+    } catch (err) {
+      // invalid address
+      return []
+    }
   }, [address, chains])
 }
 
 export const useGenesisHashEffects = (
   chains: (Chain | CustomChain)[],
-  genesisHash: string | undefined,
-  setGenesisHash: (genesisHash?: string) => void,
+  genesisHash: HexString | undefined,
+  setGenesisHash: (genesisHash?: HexString) => void,
 ) => {
   useEffect(() => {
     // If there's only 1 chain to pick from, immediately pick it
@@ -42,8 +50,8 @@ export const useAddressEffects = (
 ) => {
   useEffect(() => {
     try {
-      const addressType = address ? (isEthereumAddress(address) ? "ethereum" : "ss58") : "UNKNOWN"
-      const isGeneric = addressType === "ss58" && address === convertAddress(address, null)
+      const addressType = detectAddressEncoding(address)
+      const isGeneric = addressType === "ss58" && address === normalizeAddress(address)
 
       // If address is a generic address, disable limitToNetwork by default
       if (isGeneric) setLimitToNetwork(false)

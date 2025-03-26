@@ -1,9 +1,5 @@
 import { isBigInt } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { encodeFunctionData, PublicClient, TransactionRequest } from "viem"
-
 import {
   EthGasSettings,
   EthGasSettingsEip1559,
@@ -21,7 +17,11 @@ import {
   isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
-} from "@extension/core"
+} from "extension-core"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { encodeFunctionData, PublicClient, TransactionRequest } from "viem"
+
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEvmNetwork } from "@ui/state"

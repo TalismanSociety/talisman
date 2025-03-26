@@ -1,5 +1,6 @@
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { getTransactionSerializable } from "extension-core"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import {
@@ -11,7 +12,6 @@ import {
   TransactionRequest,
 } from "viem"
 
-import { getTransactionSerializable } from "@extension/core"
 import { useEvmNetwork } from "@ui/state"
 
 const getOpStackEthL1DataFee = async (

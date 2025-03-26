@@ -1,4 +1,5 @@
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -17,14 +18,18 @@ export const PortfolioAccount = ({
   if (!account) return null
   return (
     <div className={classNames("flex items-center gap-3", className)}>
-      <AccountIcon className="!text-[1em]" address={address} genesisHash={account?.genesisHash} />
+      <AccountIcon
+        className="!text-[1em]"
+        address={address}
+        genesisHash={getAccountGenesisHash(account)}
+      />
       <div className="max-w-lg overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? t("Unknown")}
       </div>
       <AccountTypeIcon
         className="text-primary"
-        origin={account?.origin}
-        signetUrl={account.signetUrl as string}
+        type={account?.type}
+        signetUrl={getAccountSignetUrl(account)}
       />
     </div>
   )

@@ -2,6 +2,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address as TAddress } from "@talismn/balances"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -9,7 +10,6 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress, useAccounts, useChain } from "@ui/state"
 
@@ -36,20 +36,21 @@ type AddressPillButtonProps = {
 
 const AddressPillButton: FC<AddressPillButtonProps> = ({
   address,
-  genesisHash: chainGenesisHash,
+  genesisHash,
   className,
   onClick,
 }) => {
   const account = useAccountByAddress(address as string)
-  const contact = useContact(address, chainGenesisHash)
 
-  const { name, genesisHash: accountGenesisHash } = useMemo(() => {
-    if (account) return account
-    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
-    return { name: undefined, genesisHash: undefined }
-  }, [account, contact])
+  const [name, accountGenesisHash] = useMemo(() => {
+    if (account) return [account.name, getAccountGenesisHash(account)]
+    return [undefined, undefined]
+  }, [account])
 
-  const formattedAddress = useFormattedAddress(address ?? undefined, accountGenesisHash)
+  const formattedAddress = useFormattedAddress(
+    address ?? undefined,
+    accountGenesisHash ?? genesisHash,
+  )
 
   if (!address) return null
 
@@ -60,7 +61,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
         <div className="leading-base grow truncate">
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
-        <AccountTypeIcon origin={account?.origin} className="text-primary" />
+        <AccountTypeIcon type={account?.type} className="text-primary" />
       </div>
     </PillButton>
   )
@@ -186,8 +187,6 @@ export const CopyAddressCopyForm = () => {
     return typeof oldPrefix === "number" && typeof prefix === "number" && oldPrefix !== prefix
   }, [chain])
 
-  const genesisHash = chain?.genesisHash
-
   const { t } = useTranslation()
 
   if (!formattedAddress) return null
@@ -201,7 +200,7 @@ export const CopyAddressCopyForm = () => {
             <div>
               <AddressPillButton
                 address={formattedAddress}
-                genesisHash={genesisHash}
+                genesisHash={chain?.genesisHash}
                 onClick={goToAddressPage}
               />
             </div>

@@ -1,7 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AddressBookContact } from "extension-core"
+import { AccountContact } from "extension-core"
+import { HexString } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -33,13 +35,13 @@ type FormValues = {
   name: string
   searchAddress: string
   address: string
-  genesisHash?: string
+  genesisHash?: HexString
   limitToNetwork?: boolean
 }
 
 interface ValidationContext {
   accounts: string[]
-  contacts: AddressBookContact[]
+  contacts: AccountContact[]
 }
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -82,9 +84,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
             const normalised = normalise(value, isEthAddress ? "ethereum" : "ss58")
             const { accounts, contacts } = context
-            if (accounts.includes(normalised))
+
+            const contact = contacts.find((c) => isAddressEqual(c.address, normalised))
+
+            if (!contact && accounts.includes(normalised))
               return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
-            const contact = contacts.find((c) => c.address === normalised)
+
             if (contact) {
               // existing contact is limited to a single network
               if (contact.genesisHash)
@@ -93,11 +98,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
                 })
 
               // existing contact is a multichain contact
-              return ctx.createError({ message: t("Address already saved in contacts") })
+              return ctx.createError({ message: t("Contact already exists") })
             }
             return true
           }),
-        genesisHash: yup.string(),
+        genesisHash: yup.mixed<HexString>(),
         limitToNetwork: yup.bool(),
       }),
     [t],
@@ -105,13 +110,8 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
     () => ({
-      existingNormalisedContacts: contacts.map((c) => ({
-        ...c,
-        address: normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType),
-      })),
-      existingAccountAddresses: accounts.map((acc) =>
-        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58"),
-      ),
+      existingNormalisedContacts: contacts,
+      existingAccountAddresses: accounts.map((acc) => normalizeAddress(acc.address)),
     }),
     [contacts, accounts],
   )
@@ -166,7 +166,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const chains = useChainsFilteredByAddressPrefix(address)
   const chainsByGenesisHash = useChainsMapByGenesisHash()
   const setGenesisHash = useCallback(
-    (genesisHash?: string) =>
+    (genesisHash?: HexString) =>
       setValue("genesisHash", genesisHash, {
         shouldDirty: true,
         shouldTouch: true,
@@ -194,7 +194,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         await add({
           name,
           address,
-          addressType: isEthereumAddress(address) ? "ethereum" : "ss58",
           genesisHash: limitToNetwork ? genesisHash : undefined,
         })
         sendAnalyticsEvent({
@@ -209,7 +208,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         })
         close()
       } catch (error) {
-        setError("name", error as Error)
+        setError("address", { message: (error as Error).message }, { shouldFocus: true })
       }
     },
     [close, add, setError, t],

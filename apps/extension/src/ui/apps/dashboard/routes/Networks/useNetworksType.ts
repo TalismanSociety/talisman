@@ -1,7 +1,6 @@
+import { ProviderType } from "extension-core"
 import { useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-
-import { ProviderType } from "@extension/core"
 
 export const useNetworksType = () => {
   const params = useParams()

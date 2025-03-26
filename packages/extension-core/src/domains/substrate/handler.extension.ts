@@ -1,7 +1,6 @@
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { u8aToHex } from "@polkadot/util"
 
-import { getPairForAddressSafely } from "../../handlers/helpers"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -9,6 +8,7 @@ import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../
 import { Port } from "../../types/base"
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { dismissTransaction, watchSubstrateTransaction } from "../transactions"
 
 export class SubHandler extends ExtensionHandler {
@@ -24,7 +24,7 @@ export class SubHandler extends ExtensionHandler {
     )
 
     if (!signature) {
-      const result = await getPairForAddressSafely(payload.address, async (pair) => {
+      const result = await withPjsKeyringPair(payload.address, async (pair) => {
         const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
           version: payload.version,
         })

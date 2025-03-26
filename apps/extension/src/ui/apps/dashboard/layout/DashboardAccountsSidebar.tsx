@@ -1,6 +1,13 @@
-import { CheckIcon, EyeIcon, PlusIcon, UserIcon } from "@talismn/icons"
+import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountsCatalogTree, AccountType, TreeItem } from "extension-core"
+import {
+  AccountsCatalogTree,
+  AccountType,
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+  isAccountPortfolio,
+  TreeItem,
+} from "extension-core"
 import { FC, Fragment, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -46,11 +53,13 @@ const Accounts = () => {
 
     const treeItemToOption =
       (treeName: AccountsCatalogTree) =>
-      (item: TreeItem): AccountOption => {
+      (item: TreeItem): AccountOption | null => {
         const account =
           item.type === "account"
             ? accounts.find((account) => account.address === item.address)
             : undefined
+
+        if (item.type === "account" && !account) return null
 
         return item.type === "account"
           ? {
@@ -58,10 +67,10 @@ const Accounts = () => {
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
               total: balanceTotalPerAccount?.[item.address] ?? 0,
-              genesisHash: account?.genesisHash,
-              origin: account?.origin,
-              isPortfolio: !!account?.isPortfolio,
-              signetUrl: account?.signetUrl as string | undefined,
+              genesisHash: getAccountGenesisHash(account),
+              accountType: account?.type,
+              isPortfolio: isAccountPortfolio(account),
+              signetUrl: getAccountSignetUrl(account),
             }
           : {
               type: "folder",
@@ -76,8 +85,8 @@ const Accounts = () => {
             }
       }
 
-    const filterEmptyFolders = (option: AccountOption) =>
-      option.type !== "folder" || !!option.addresses.length
+    const filterEmptyFolders = (option: AccountOption | null): option is AccountOption =>
+      !!option && (option.type !== "folder" || !!option.addresses.length)
 
     return [
       portfolioTree.map(treeItemToOption("portfolio")).filter(filterEmptyFolders),
@@ -113,7 +122,7 @@ const Accounts = () => {
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton onClick={handleManageAccountsClick} className="p-3">
-              <UserIcon className="size-10" />
+              <PencilIcon className="size-10" />
             </IconButton>
           </TooltipTrigger>
           <TooltipContent>{t("Manage Accounts")}</TooltipContent>
@@ -158,7 +167,7 @@ type AccountAccountOption = {
   address: string
   total?: number
   genesisHash?: string | null
-  origin?: AccountType
+  accountType?: AccountType
   isPortfolio?: boolean
   signetUrl?: string
 }
@@ -204,7 +213,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
         label={
           <div className="flex w-full items-center gap-2">
             <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
-            <AccountTypeIcon className="text-primary shrink-0" origin={option.origin} />
+            <AccountTypeIcon className="text-primary shrink-0" type={option.accountType} />
           </div>
         }
         logo={<div className="size-20 shrink-0"></div>}

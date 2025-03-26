@@ -5,7 +5,7 @@ import { getMetadataRpcFromDef, log } from "extension-shared"
 
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"
-import { mnemonicsStore } from "../../domains/mnemonics/store"
+import { keyringStore } from "../../domains/keyring/store"
 import { SignerPayloadGenesisHash } from "../../domains/signing/types"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -35,14 +35,13 @@ export const getVerifierMnemonic = async () => {
   assert(mnemonicId !== undefined, "Verifier mnemonic not found")
   assert(mnemonicId !== null, "Talisman configured to not use verifier mnemonic")
 
-  const { ok, val: mnemonic } = await mnemonicsStore.getMnemonic(mnemonicId, pw)
-  if (!ok || !mnemonic) throw new Error("Failed to get verifier mnemonic", { cause: mnemonic })
-  return mnemonic
+  return keyringStore.getMnemonicText(mnemonicId, pw)
 }
 
 const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
   try {
     const mnemonic = await getVerifierMnemonic()
+
     const keyring = new Keyring()
     const signingPair = keyring.createFromUri(mnemonic, {}, "sr25519")
 

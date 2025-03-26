@@ -2,6 +2,7 @@ import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -9,7 +10,6 @@ import urlJoin from "url-join"
 
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useContact } from "@ui/hooks/useContact"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress, useChain, useEvmNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
@@ -89,13 +89,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
 }) => {
   const chain = useChain(chainId as string)
   const account = useAccountByAddress(address)
-  const contact = useContact(address, chain?.genesisHash)
-  const blockExplorerUrl = useBlockExplorerUrl(
-    address,
-    chainId,
-    evmNetworkId,
-    !!account || !!contact,
-  )
+  const blockExplorerUrl = useBlockExplorerUrl(address, chainId, evmNetworkId, !!account)
 
   const resolvedAddress = useMemo(() => {
     return chain && address ? convertAddress(address, chain.prefix) : address
@@ -104,13 +98,13 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   const [onChainId] = useOnChainId(resolvedAddress ?? undefined)
 
   const text = useMemo(
-    () => account?.name ?? contact?.name ?? (address ? shortenAddress(address, 6, 6) : null),
-    [account?.name, address, contact?.name],
+    () => account?.name ?? (address ? shortenAddress(address, 6, 6) : null),
+    [account?.name, address],
   )
 
   const handleCopyAddress = useCallback(() => {
-    copyAddress((!!account || !!contact ? resolvedAddress : address) as string)
-  }, [account, address, contact, resolvedAddress])
+    copyAddress((account ? resolvedAddress : address) as string)
+  }, [account, address, resolvedAddress])
 
   if (!address || !resolvedAddress || !text) return null
 
@@ -133,13 +127,13 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         <AccountIcon
           className="!text-lg"
           address={resolvedAddress}
-          genesisHash={account?.genesisHash ?? contact?.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
         />
         <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon
-          origin={account?.origin}
+          type={account?.type}
           className="text-primary"
-          signetUrl={account?.signetUrl as string}
+          signetUrl={getAccountSignetUrl(account)}
         />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">

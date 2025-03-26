@@ -1,11 +1,11 @@
 import { CopyIcon, FileSearchIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
+import { BalanceFormatter } from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 import { formatEther, formatGwei } from "viem"
 
-import { BalanceFormatter } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Fiat } from "@ui/domains/Asset/Fiat"

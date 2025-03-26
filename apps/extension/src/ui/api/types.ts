@@ -1,6 +1,5 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
-import type { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
 import { BalanceJson } from "@talismn/balances"
 import {
@@ -11,14 +10,11 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
+import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
-import { MetadataDef } from "inject/substrate/types"
-import { TransactionRequest } from "viem"
-
 import {
-  AccountAddressType,
-  AccountJson,
+  Account,
   AddEthereumChainRequest,
   AddEthereumChainRequestId,
   AddressesAndEvmNetwork,
@@ -42,14 +38,19 @@ import {
   EvmAddress,
   LoggedinType,
   MetadataUpdateStatus,
+  Mnemonic,
   NftData,
   ProviderType,
-  RequestAccountCreateLedgerSubstrate,
+  RequestAccountContactUpdate,
   RequestAccountCreateOptions,
+  RequestAccountsCatalogAction,
+  RequestAddAccountDerive,
+  RequestAddAccountExternal,
+  RequestAddAccountKeypair,
   RequestAddressLookup,
   RequestBalance,
   RequestMetadataId,
-  RequestSetVerifierCertParams,
+  RequestSetVerifierCertificateMnemonic,
   RequestUpsertCustomChain,
   RequestUpsertCustomEvmNetwork,
   ResponseAssetTransfer,
@@ -59,15 +60,14 @@ import {
   SignerPayloadJSON,
   SigningRequestID,
   SimpleEvmNetwork,
+  Trees,
   UnsubscribeFn,
   ValidRequests,
   WalletTransactionTransferInfo,
   WatchAssetRequestId,
-} from "@extension/core"
-import {
-  RequestAccountsCatalogAction,
-  Trees,
-} from "@extension/core/domains/accounts/helpers.catalog"
+} from "extension-core"
+import { MetadataDef } from "inject/substrate/types"
+import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
   keepalive: () => Promise<boolean>
@@ -125,40 +125,27 @@ export default interface MessageTypes {
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------
+  mnemonicsSubscribe: (cb: (mnemonics: Mnemonic[]) => void) => UnsubscribeFn
   mnemonicUnlock: (mnemonicId: string, pass: string) => Promise<string>
   mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
   mnemonicDelete: (mnemonicId: string) => Promise<boolean>
   validateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
+  setVerifierCertMnemonic: (options: RequestSetVerifierCertificateMnemonic) => Promise<boolean>
 
   // account message types ---------------------------------------------------
+  accountAddExternal: (options: RequestAddAccountExternal) => Promise<string[]>
+  accountAddDerive: (options: RequestAddAccountDerive) => Promise<string[]>
+  accountAddKeypair: (options: RequestAddAccountKeypair) => Promise<string[]>
   accountCreate: (
     name: string,
-    type: AccountAddressType,
+    curve: KeypairCurve,
     options: RequestAccountCreateOptions,
   ) => Promise<string>
-  accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromSuri: (name: string, suri: string, curve?: KeypairCurve) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateLedgerSubstrate: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
-  accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
-  accountCreateDcent: (
-    name: string,
-    address: string,
-    type: KeypairType,
-    path: string,
-    tokenIds: TokenId[],
-  ) => Promise<string>
-  accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
-  accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
-  accountCreateSignet: (
-    name: string,
-    address: string,
-    genesisHash: `0x${string}`,
-    signetUrl: string,
-  ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
-  accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
+  accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
   accountsOnChainIdsResolveNames: (
@@ -177,9 +164,9 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPairs$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
-  validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>
+  accountUpdateContact: (options: RequestAccountContactUpdate) => Promise<boolean>
   addressLookup: (lookup: RequestAddressLookup) => Promise<string>
-  getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
+  getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 
   // balance message types ---------------------------------------------------
   getBalance: ({

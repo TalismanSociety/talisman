@@ -1,11 +1,9 @@
-import { AccountsStore } from "@polkadot/extension-base/stores"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
+import { DEBUG, log, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 
 import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
+import { sessionStore } from "./domains/app/store.session"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
@@ -95,21 +93,9 @@ chrome.runtime.onConnect.addListener((_port): void => {
 
 !DEBUG && chrome.runtime.setUninstallURL("https://thxbye.talisman.xyz/")
 
-// initial setup
-//
-// wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-cryptoWaitReady()
-  .then((): void => {
-    // load all the keyring data
-    keyring.loadAll({
-      store: new AccountsStore(),
-      type: "sr25519",
-      filter: (json) => {
-        return typeof json?.address === "string"
-      },
-    })
-  })
-  .catch(sentry.captureException)
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const iconManager = new IconManager()
+
+sessionStore.reset().catch((err) => {
+  log.error("Failed to reset session store", err)
+})

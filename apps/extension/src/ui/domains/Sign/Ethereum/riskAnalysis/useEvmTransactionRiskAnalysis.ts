@@ -1,9 +1,9 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { log, RISK_ANALYSIS_API_URL } from "extension-shared"
 import { useMemo } from "react"
 import urlJoin from "url-join"
 import { getAddress, TransactionRequest } from "viem"
 
-import { log, RISK_ANALYSIS_API_URL } from "@extension/shared"
 import { useFeatureFlag } from "@ui/state"
 
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"

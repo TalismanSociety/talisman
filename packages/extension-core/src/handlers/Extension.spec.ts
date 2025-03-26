@@ -1,28 +1,23 @@
 import type { MetadataDef } from "@polkadot/extension-inject/types"
-import type { KeyringPair } from "@polkadot/keyring/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import { AccountsStore } from "@polkadot/extension-base/stores"
 import { TypeRegistry } from "@polkadot/types"
-import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
+import { Account } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { getMessageSenderFn } from "../../tests/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
+import { keyringStore } from "../domains/keyring/store"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
 jest.setTimeout(10_000)
-
-jest.mock("../util/isBackgroundPage", () => ({
-  isBackgroundPage: jest.fn().mockResolvedValue(true),
-}))
 
 // Mock the hasSpiritKey module to return false
 jest.mock("../util/hasSpiritKey", () => {
@@ -44,8 +39,6 @@ describe("Extension", () => {
     // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
     await cryptoWaitReady()
 
-    keyring.loadAll({ store: new AccountsStore() })
-
     extensionStores.sites.set({
       "localhost:3000": {
         addresses: [],
@@ -58,12 +51,13 @@ describe("Extension", () => {
     return new Extension(extensionStores)
   }
 
-  const getAccount = async (): Promise<string> => {
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
+  const getAccount = async () => {
+    const accounts = await keyringStore.getAccounts()
+    const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     expect(account).toBeDefined()
 
     if (!account) throw new Error("Account not found")
-    return account.address
+    return account
   }
 
   beforeAll(async () => {
@@ -77,12 +71,12 @@ describe("Extension", () => {
     })
     const address = await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
-      type: "sr25519", // ecdsa has determistic signatures
+      curve: "sr25519", // ecdsa has determistic signatures
       mnemonic: suri,
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
+    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
@@ -105,9 +99,7 @@ describe("Extension", () => {
     const pw = await passwordStore.getPassword()
     expect(pw).toBeTruthy()
 
-    const {
-      pair: { address },
-    } = keyring.addUri(suri, pw)
+    const { address } = await getAccount()
 
     const exportPw = "newPassword"
 
@@ -127,17 +119,15 @@ describe("Extension", () => {
   })
 
   describe("custom user extension tests", () => {
-    let address: string, payload: SignerPayloadJSON, pair: KeyringPair
+    let account: Account, payload: SignerPayloadJSON
 
     beforeEach(async () => {
       requestStore.clearRequests()
       // need to use the pw from the store, because it may need to be trimmed
-      address = await getAccount()
-      pair = keyring.getPair(address)
-      const pw = await passwordStore.getPassword()
-      pair.decodePkcs8(pw)
+      account = await getAccount()
+
       payload = {
-        address,
+        address: account.address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
         blockNumber: "0x00000393",
         era: "0x3601",
@@ -169,10 +159,7 @@ describe("Extension", () => {
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...pair.meta,
-        },
+        account,
         {} as chrome.runtime.Port,
       )
 
@@ -192,7 +179,7 @@ describe("Extension", () => {
         version: payload.version,
       })
 
-      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, account.address)
       expect(verif.isValid).toBeTruthy()
     })
 
@@ -223,7 +210,7 @@ describe("Extension", () => {
       await db.metadata.put(meta)
 
       const payload: SignerPayloadJSON = {
-        address,
+        address: account.address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
         blockNumber: "0x00000393",
         era: "0x3601",
@@ -246,10 +233,7 @@ describe("Extension", () => {
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...pair.meta,
-        },
+        account,
         {} as chrome.runtime.Port,
       )
 
@@ -268,7 +252,7 @@ describe("Extension", () => {
         version: payload.version,
       })
 
-      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, account.address)
       expect(verif.isValid).toBeTruthy()
     })
 
@@ -316,10 +300,7 @@ describe("Extension", () => {
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...pair.meta,
-        },
+        account,
         {} as chrome.runtime.Port,
       )
 
@@ -338,7 +319,7 @@ describe("Extension", () => {
         version: payload.version,
       })
 
-      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, account.address)
       expect(verif.isValid).toBeTruthy()
     })
 
@@ -375,7 +356,7 @@ describe("Extension", () => {
       await db.metadata.put(meta)
 
       const payload = {
-        address,
+        address: account.address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
         blockNumber: "0x00000393",
         era: "0x3601",
@@ -406,10 +387,7 @@ describe("Extension", () => {
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...pair.meta,
-        },
+        account,
         {} as chrome.runtime.Port,
       )
 
@@ -428,21 +406,21 @@ describe("Extension", () => {
         version: payload.version,
       })
 
-      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, account.address)
       expect(verif.isValid).toBeTruthy()
     })
   })
 
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {
     // app.talisman.xyz should already be in the authorised sites store after onboarding
-    const existingAddress = await getAccount()
+    const account = await getAccount()
     const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
     expect(talismanSite && talismanSite.addresses)
-    expect(talismanSite.addresses?.includes(existingAddress))
+    expect(talismanSite.addresses?.includes(account.address))
 
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "AutoAdd",
-      type: "sr25519",
+      curve: "sr25519",
       mnemonicId,
     })
 

@@ -1,20 +1,21 @@
-import keyring from "@polkadot/ui-keyring"
-import { cryptoIsReady, encodeAddress, isEthereumAddress } from "@polkadot/util-crypto"
+import { encodeAddressSs58 } from "@talismn/crypto"
+import { isAccountOwned, isAccountPolkadot } from "@talismn/keyring"
 import { print } from "graphql"
 import gql from "graphql-tag"
+
+import { keyringStore } from "../domains/keyring/store"
 
 const RMRK_GRAPHQL_URL = "https://gql.rmrk.link/v1/graphql"
 const SPIRIT_KEYS_COLLECTION_ID = "b6e98494bff52d3b1e-SPIRIT"
 const KUSAMA_SS58_PREFIX = 2
 
 export const fetchHasSpiritKey = async () => {
-  if (!cryptoIsReady()) throw new Error("Crypto not ready")
+  const accounts = await keyringStore.getAccounts()
 
-  const ksmAddresses = keyring
-    .getAccounts()
-    .filter((acc) => !isEthereumAddress(acc.address))
-    .filter((acc) => !acc.meta?.isExternal || acc.meta?.isHardware)
-    .map((acc) => encodeAddress(acc.publicKey, KUSAMA_SS58_PREFIX))
+  const ksmAddresses = accounts
+    .filter(isAccountPolkadot)
+    .filter(isAccountOwned)
+    .map((acc) => encodeAddressSs58(acc.address, KUSAMA_SS58_PREFIX))
 
   const query = gql`
           query {

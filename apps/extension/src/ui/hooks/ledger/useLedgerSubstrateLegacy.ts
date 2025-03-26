@@ -2,7 +2,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { SubstrateApp } from "@zondax/ledger-substrate"
 import {
-  AccountJsonHardwareSubstrate,
+  AccountLedgerPolkadot,
   isJsonPayload,
   SignerPayloadJSON,
   SignerPayloadRaw,
@@ -68,7 +68,7 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
   const sign = useCallback(
     (
       payload: SignerPayloadJSON | SignerPayloadRaw,
-      account: AccountJsonHardwareSubstrate,
+      account: AccountLedgerPolkadot,
       registry: TypeRegistry,
     ) => {
       return withLedger((ledger) =>
@@ -113,7 +113,7 @@ const getAccountAddress = async (
 const signJsonPayload = async (
   ledger: SubstrateApp,
   payload: SignerPayloadJSON,
-  account: AccountJsonHardwareSubstrate,
+  account: AccountLedgerPolkadot,
   registry: TypeRegistry,
 ) => {
   // Legacy dapps don't support the CheckMetadataHash signed extension
@@ -149,7 +149,7 @@ const signJsonPayload = async (
 const signRawPayload = async (
   ledger: SubstrateApp,
   payload: SignerPayloadRaw,
-  account: AccountJsonHardwareSubstrate,
+  account: AccountLedgerPolkadot,
 ) => {
   const unsigned = u8aWrapBytes(payload.data)
   if (unsigned.length > 256)

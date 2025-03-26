@@ -1,10 +1,10 @@
 import { classNames } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC } from "react"
 
-import { AccountJsonAny } from "@extension/core"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 
-export const AccountsStack: FC<{ accounts: AccountJsonAny[]; className?: string }> = ({
+export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
   accounts,
   className,
 }) => {

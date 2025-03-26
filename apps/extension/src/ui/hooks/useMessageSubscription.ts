@@ -1,9 +1,8 @@
 import { isFunction } from "@polkadot/util"
+import { UnsubscribeFn } from "extension-core"
+import { DEBUG } from "extension-shared"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
-
-import { UnsubscribeFn } from "@extension/core"
-import { DEBUG } from "@extension/shared"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscription = { subject: BehaviorSubject<any>; unsubscribe?: () => void }

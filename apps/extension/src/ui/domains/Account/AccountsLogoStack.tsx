@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
+import { Account } from "extension-core"
 import { useMemo } from "react"
 
-import { AccountJsonAny } from "@extension/core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
@@ -33,7 +33,7 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
   )
 }
 
-export const AccountsLogoStackItem = ({ account }: { account?: AccountJsonAny }) => {
+export const AccountsLogoStackItem = ({ account }: { account?: Account }) => {
   if (!account) return null
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">
@@ -44,7 +44,7 @@ export const AccountsLogoStackItem = ({ account }: { account?: AccountJsonAny })
   )
 }
 
-export const AccountsLogoStackMore = ({ accounts }: { accounts: AccountJsonAny[] }) => {
+export const AccountsLogoStackMore = ({ accounts }: { accounts: Account[] }) => {
   if (!accounts.length) return null
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">
@@ -57,7 +57,7 @@ export const AccountsLogoStackMore = ({ accounts }: { accounts: AccountJsonAny[]
   )
 }
 
-const MoreAccountsTooltip = ({ accounts }: { accounts: AccountJsonAny[] }) => (
+const MoreAccountsTooltip = ({ accounts }: { accounts: Account[] }) => (
   <div className="text-left">
     {accounts.map(({ name, address }) => (
       <div key={address}>{name}</div>

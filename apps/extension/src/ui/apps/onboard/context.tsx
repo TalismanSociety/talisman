@@ -1,7 +1,7 @@
+import { passwordStore, settingsStore } from "extension-core"
 import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { AccountAddressType, passwordStore, settingsStore } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState, useIsOnboarded } from "@ui/state"
@@ -11,10 +11,7 @@ export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "j
 export type OnboardingWizardData = {
   password?: string
   passwordConfirm?: string
-  mnemonic?: string
   allowTracking?: boolean
-  importAccountType?: AccountAddressType
-  importMethodType?: ImportMethodType
 }
 
 const DEFAULT_DATA: OnboardingWizardData = {}

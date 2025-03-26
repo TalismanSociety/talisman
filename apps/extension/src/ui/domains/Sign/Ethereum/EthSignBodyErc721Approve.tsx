@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
+import { TOKEN_APPROVALS_URL } from "extension-shared"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
 
-import { TOKEN_APPROVALS_URL } from "@extension/shared"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { getNftMetadata } from "@ui/util/getNftMetadata"
 

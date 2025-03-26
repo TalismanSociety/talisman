@@ -1,9 +1,9 @@
+import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "extension-core"
 import { TFunction } from "i18next"
 import sortBy from "lodash/sortBy"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@extension/core"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { usePortfolio } from "@ui/state"
 

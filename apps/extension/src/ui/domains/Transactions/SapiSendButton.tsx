@@ -1,6 +1,6 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { toHex } from "@talismn/scale"
-import { AccountJsonQr, AccountType, SignerPayloadJSON } from "extension-core"
+import { AccountPolkadotVault, SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
 import { FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -100,7 +100,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, on
         containerId={containerId ?? "main"}
         genesisHash={payload.genesisHash}
         payload={payload}
-        account={account as AccountJsonQr}
+        account={account as AccountPolkadotVault}
         onSignature={handleSigned}
       />
     </div>
@@ -155,15 +155,15 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
   const account = useAccountByAddress(props.payload?.address)
 
   const signMethod = useMemo(() => {
-    switch (account?.origin) {
-      case AccountType.Qr:
+    switch (account?.type) {
+      case "polkadot-vault":
         return "qr"
-      case AccountType.Ledger:
+      case "ledger-polkadot":
         return "hardware"
-      case AccountType.Talisman:
+      case "keypair":
         return "local"
       default:
-        throw new Error(`Unsupported account type '${account?.origin}'`)
+        throw new Error(`Unsupported account type '${account?.type}'`)
     }
   }, [account])
 

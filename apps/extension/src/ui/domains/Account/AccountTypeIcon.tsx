@@ -1,55 +1,37 @@
-import {
-  DcentIcon,
-  EyeIcon,
-  LinkIcon,
-  PolkadotVaultIcon,
-  SignetIcon,
-  UsbIcon,
-} from "@talismn/icons"
+import { EyeIcon, LinkIcon, PolkadotVaultIcon, SignetIcon, UsbIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountType } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountType } from "@extension/core"
-
 type AccountTypeIconProps = {
-  origin?: AccountType | null
+  type?: AccountType | null
   showLinked?: boolean
   className?: string
   signetUrl?: string
 }
 
 export const AccountTypeIcon: FC<AccountTypeIconProps> = ({
-  origin,
+  type,
   showLinked,
   className,
   signetUrl,
 }) => {
   const { t } = useTranslation()
 
-  const { Icon, tooltip } = useMemo(() => {
-    if (!!showLinked && origin === AccountType.Talisman)
-      return { Icon: LinkIcon, tooltip: t("Local account") }
-    if (
-      origin === AccountType.Ledger ||
-      // @ts-expect-error incomplete migration, remove once migration is completed
-      origin === "HARDWARE"
-    )
-      return { Icon: UsbIcon, tooltip: t("Ledger account") }
-    if (origin === AccountType.Qr)
-      return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
-    if (origin === AccountType.Watched) return { Icon: EyeIcon, tooltip: t("Watched account") }
-    if (origin === AccountType.Dcent)
-      return { Icon: DcentIcon, tooltip: t("D'CENT Biometric Wallet account") }
-    if (origin === AccountType.Signet)
-      return {
-        Icon: SignetIcon,
-        tooltip: t(`Signet Vault${signetUrl !== undefined ? `: ${signetUrl}` : ""}`),
-      }
+  const [Icon, tooltip] = useMemo(() => {
+    if (!type) return [undefined, undefined]
 
-    return {}
-  }, [origin, showLinked, signetUrl, t])
+    if (!!showLinked && type === "keypair") return [LinkIcon, t("Local account")]
+    if (["ledger-ethereum", "ledger-polkadot"].includes(type)) return [UsbIcon, t("Ledger account")]
+    if (type === "polkadot-vault") return [PolkadotVaultIcon, t("Polkadot Vault account")]
+    if (type === "watch-only") return [EyeIcon, t("Watched account")]
+    if (type === "signet")
+      return [SignetIcon, t(`Signet Vault${signetUrl !== undefined ? `: ${signetUrl}` : ""}`)]
+
+    return [undefined, undefined]
+  }, [type, showLinked, signetUrl, t])
 
   if (!origin || !Icon) return null
 

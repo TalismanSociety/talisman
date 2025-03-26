@@ -1,11 +1,12 @@
+import { getAccountGenesisHash } from "@talismn/keyring"
 import { encodeAnyAddress } from "@talismn/util"
+import { Account } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountJsonAny } from "@extension/core"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 
-export const SignAccountAvatar: FC<{ account?: AccountJsonAny; ss58Format?: number | null }> = ({
+export const SignAccountAvatar: FC<{ account?: Account; ss58Format?: number | null }> = ({
   account,
   ss58Format,
 }) => {
@@ -17,7 +18,7 @@ export const SignAccountAvatar: FC<{ account?: AccountJsonAny; ss58Format?: numb
         <AccountIcon
           className="text-xl"
           address={account.address}
-          genesisHash={account.genesisHash}
+          genesisHash={getAccountGenesisHash(account)}
         />
       </TooltipTrigger>
       <TooltipContent>

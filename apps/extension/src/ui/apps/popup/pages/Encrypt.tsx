@@ -1,9 +1,9 @@
+import { Account, DecryptRequestIdOnly, EncryptRequestIdOnly } from "extension-core"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Button } from "talisman-ui"
 
-import { AccountJson, DecryptRequestIdOnly, EncryptRequestIdOnly } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
@@ -20,7 +20,7 @@ const SignMessage = ({
   request,
   isDecrypt,
 }: {
-  account: AccountJson
+  account: Account
   request: string
   isDecrypt: boolean
 }) => {

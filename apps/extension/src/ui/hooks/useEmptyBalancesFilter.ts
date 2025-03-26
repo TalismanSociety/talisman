@@ -1,6 +1,5 @@
+import { AccountJson, Balance, Balances } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
-
-import { AccountJson, Balance, Balances } from "@extension/core"
 
 export default function useEmptyBalancesFilter(
   balances: Balances,

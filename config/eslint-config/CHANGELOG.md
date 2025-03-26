@@ -1,5 +1,12 @@
 # @talismn/eslint-config
 
+## 0.0.3
+
+### Patch Changes
+
+- 64e4344: bump deps
+- c4d5967: bump typescript version
+
 ## 0.0.2
 
 ### Patch Changes

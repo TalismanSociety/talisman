@@ -1,11 +1,8 @@
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import { AccountsStore } from "@polkadot/extension-base/stores"
-import keyring from "@polkadot/ui-keyring"
-import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 
-import { AccountType } from "../../../domains/accounts/types"
 import { signSubstrate } from "../../../domains/signing/requests"
 import { requestStore } from "../../../libs/requests/store"
 import { windowManager } from "../../../libs/WindowManager"
@@ -14,11 +11,19 @@ const mnemonic = "seed sock milk update focus rotate barely fade car face mechan
 const password = "passw0rd"
 
 const createAccount = () => {
-  const { pair } = keyring.addUri(mnemonic, password, {
-    name: "Test Account",
-    origin: AccountType.Talisman,
-  })
-  return pair
+  const keyring = Keyring.create()
+  return keyring.addAccountDerive(
+    {
+      type: "new-mnemonic",
+      mnemonicName: "Test Mnemonic",
+      mnemonic,
+      name: "Test Account",
+      curve: "sr25519",
+      derivationPath: "",
+      confirmed: true,
+    },
+    password,
+  )
 }
 
 jest.mock("../../../libs/WindowManager", () => {
@@ -32,17 +37,10 @@ jest.mock("../../../libs/WindowManager", () => {
 })
 
 describe("Signing requests store", () => {
-  beforeAll(async () => {
-    // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-    await cryptoWaitReady()
-
-    keyring.loadAll({ store: new AccountsStore() })
-  })
-
   test("create request method", async () => {
-    const { address, meta } = createAccount()
+    const account = await createAccount()
     const payload: SignerPayloadJSON = {
-      address,
+      address: account.address,
       blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
       blockNumber: "0x00000393",
       era: "0x3601",
@@ -68,10 +66,7 @@ describe("Signing requests store", () => {
     signSubstrate(
       "http://test.com",
       new RequestExtrinsicSign(payload),
-      {
-        address,
-        ...meta,
-      },
+      account,
       {} as chrome.runtime.Port,
     )
 

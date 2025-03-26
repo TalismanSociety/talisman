@@ -81,17 +81,18 @@ export const TryTalismanContent: FC<{
         action: "Add watched account (custom)",
       })
 
-      const isPortfolio = true
-
       try {
         // throws if address is invalid
         encodeAnyAddress(address)
 
-        const resultAddress = await api.accountCreateWatched(
-          isNsLookup ? searchAddress : shortenAddress(address),
-          address,
-          isPortfolio,
-        )
+        const [resultAddress] = await api.accountAddExternal([
+          {
+            type: "watch-only",
+            name: isNsLookup ? searchAddress : shortenAddress(address),
+            address,
+            isPortfolio: true,
+          },
+        ])
 
         setPending(false)
         setError(null)
@@ -214,8 +215,14 @@ const FollowAccountButton = ({
       action: `Add watched account (${name ?? description ?? address})`,
     })
 
-    const isPortfolio = true
-    await api.accountCreateWatched(name ?? shortenAddress(address), address, isPortfolio)
+    await api.accountAddExternal([
+      {
+        type: "watch-only",
+        name: name ?? shortenAddress(address),
+        address,
+        isPortfolio: true,
+      },
+    ])
   }, [address, analytics, description, name])
 
   const isAdded = useMemo(

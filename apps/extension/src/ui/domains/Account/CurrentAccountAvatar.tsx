@@ -1,8 +1,8 @@
 import { classNames } from "@talismn/util"
+import { Account, getAccountGenesisHash, TreeFolder } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny, TreeFolder } from "@extension/core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 
@@ -16,14 +16,14 @@ const Avatar = ({
   className,
 }: {
   className?: string
-  account?: AccountJsonAny | null
+  account?: Account | null
   folder?: TreeFolder | null
 }) => {
   return account?.address ? (
     <AccountIcon
       className={className}
       address={account.address}
-      genesisHash={account.genesisHash}
+      genesisHash={getAccountGenesisHash(account)}
     />
   ) : folder ? (
     <div className={className}>

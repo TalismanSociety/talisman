@@ -2,13 +2,21 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
+import {
+  Button,
+  FormFieldContainer,
+  FormFieldInputText,
+  Modal,
+  ModalDialog,
+  useOpenClose,
+} from "talisman-ui"
 import * as yup from "yup"
 
 import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
+import { useAccounts } from "@ui/state"
 
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
@@ -113,7 +121,11 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             password. This avoids exposing your Talisman password to other wallets or applications.
           </Trans>
         </p>
-
+        <p className="text-body-secondary text-sm">
+          {t(
+            "Please note that only polkadot.js compatible accounts with stored private keys can be exported. Hardware, QR-based, and watch-only accounts will not be exported.",
+          )}
+        </p>
         <div className="mt-12">
           <div className="mb-6 flex h-[1.2em] items-center justify-between text-sm">
             <div className="text-body-disabled">
@@ -161,4 +173,28 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       </form>
     </div>
   )
+}
+
+export const useExportAllAccountsModal = () => {
+  const accounts = useAccounts()
+  const { isOpen: isOpenExportAll, open: openExportAll, close: closeExportAll } = useOpenClose()
+
+  const exportableAccounts = useMemo(
+    () =>
+      accounts.filter(
+        (account) =>
+          // export only keypair accounts, others have metadata that are specific to each wallet
+          account.type === "keypair" &&
+          // only export pjs compatible accounts to be compatible with pjs json format
+          ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve),
+      ),
+    [accounts],
+  )
+
+  return {
+    isOpenExportAll,
+    openExportAll,
+    closeExportAll,
+    canExportAll: !!exportableAccounts.length,
+  }
 }

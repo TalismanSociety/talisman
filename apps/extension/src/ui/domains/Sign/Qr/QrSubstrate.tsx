@@ -2,12 +2,17 @@ import { HexString } from "@polkadot/util/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import {
+  AccountPolkadotVault,
+  isJsonPayload,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "extension-core"
+import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AccountJsonQr, isJsonPayload, SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
-import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useChainByGenesisHash } from "@ui/state"
@@ -43,9 +48,9 @@ type ScanState =
   | { page: "RECEIVE" }
 
 interface Props {
-  account: AccountJsonQr
+  account: AccountPolkadotVault
   className?: string
-  genesisHash?: HexString
+  genesisHash?: HexString | null
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
   payload: SignerPayloadJSON | SignerPayloadRaw
@@ -253,8 +258,8 @@ const SendPage = ({
   chain,
   containerId,
 }: {
-  account: AccountJsonQr
-  genesisHash: HexString | undefined
+  account: AccountPolkadotVault
+  genesisHash: HexString | null | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
   reject?: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>

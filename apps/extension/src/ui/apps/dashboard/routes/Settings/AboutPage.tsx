@@ -6,16 +6,16 @@ import {
   MapIcon,
   TalismanHandIcon,
 } from "@talismn/icons"
-import { Trans, useTranslation } from "react-i18next"
-import { CtaButton } from "talisman-ui"
-
 import {
   DISCORD_TALISMAN_URL,
   PRIVACY_POLICY_URL,
   RELEASE_NOTES_URL,
   TALISMAN_DOCS_URL_PREFIX,
   TERMS_OF_USE_URL,
-} from "@extension/shared"
+} from "extension-shared"
+import { Trans, useTranslation } from "react-i18next"
+import { CtaButton } from "talisman-ui"
+
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 

@@ -6,11 +6,11 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
+import { Account, AccountsCatalogTree } from "extension-core"
 import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
-import { AccountJsonAny, AccountsCatalogTree } from "@extension/core"
 import { api } from "@ui/api"
 
 import type { UiTree, UiTreePosition } from "./types"
@@ -25,7 +25,7 @@ const DRAGGED_OVERLAY_STYLE: CSSProperties = {
 }
 
 export const ManageAccountsList: FC<{
-  accounts: AccountJsonAny[]
+  accounts: Account[]
   balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree
   tree: UiTree

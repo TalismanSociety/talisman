@@ -1,6 +1,12 @@
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountJsonAny, Balance, Balances } from "extension-core"
+import {
+  Account,
+  Balance,
+  Balances,
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+} from "extension-core"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -25,7 +31,7 @@ import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances, useChainByGenesisHash, usePortfolio, useSelectedCurrency } from "@ui/state"
 
-const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
+const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
@@ -52,14 +58,14 @@ const SendFundsButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) =
   )
 }
 
-const CopyAddressButton: FC<{ account?: AccountJsonAny | null }> = ({ account }) => {
+const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { selectedFolder } = usePortfolioNavigation()
 
   const { genericEvent } = useAnalytics()
 
-  const chain = useChainByGenesisHash(account?.genesisHash)
+  const chain = useChainByGenesisHash(getAccountGenesisHash(account))
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
       address: account?.address,
@@ -117,7 +123,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
     [account, balancesByAddress, folder, networkBalances],
   )
 
-  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
+  const formattedAddress = useFormattedAddress(account?.address, getAccountGenesisHash(account))
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -148,8 +154,8 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
               </div>
               <AccountTypeIcon
                 className="text-primary"
-                origin={account?.origin}
-                signetUrl={account?.signetUrl as string}
+                type={account?.type}
+                signetUrl={getAccountSignetUrl(account)}
               />
             </div>
             <div className={classNames("truncate", account ? "text-body-secondary" : "")}>

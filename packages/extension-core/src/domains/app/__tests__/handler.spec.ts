@@ -1,9 +1,6 @@
 /* eslint-disable no-console */
-import { AccountsStore } from "@polkadot/extension-base/stores"
-import keyring from "@polkadot/ui-keyring"
-import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert } from "@polkadot/util"
-import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { KeyringStorage } from "@talismn/keyring"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
@@ -13,13 +10,9 @@ import {
   GettableStoreData,
   setLocalStorage,
 } from "../../../handlers/stores"
+import { keyringStore } from "../../keyring/store"
 
 jest.setTimeout(20_000)
-jest.mock("../../../util/isBackgroundPage", () => ({
-  isBackgroundPage: jest.fn().mockResolvedValue(true),
-}))
-
-keyring.loadAll({ store: new AccountsStore() })
 
 describe("App handler when password is not trimmed", () => {
   let extension: Extension
@@ -27,14 +20,10 @@ describe("App handler when password is not trimmed", () => {
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
-  let accountsJson: KeyringPairs$Json
-
+  let keyringBackupJson: KeyringStorage
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
-    // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-    await cryptoWaitReady()
-
     return new Extension(extensionStores)
   }
 
@@ -44,8 +33,7 @@ describe("App handler when password is not trimmed", () => {
 
   beforeAll(async () => {
     await chrome.storage.local.clear()
-
-    keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
+    await keyringStore.reset()
 
     extension = await createExtension()
     const port = chrome.runtime.connect("talismanTest")
@@ -58,29 +46,32 @@ describe("App handler when password is not trimmed", () => {
 
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
-      type: "sr25519",
+      curve: "sr25519",
       mnemonic: suri,
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
+    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
+
     initialStoreData = await getLocalStorage()
 
-    accountsJson = await keyring.backupAccounts(
-      keyring.getPairs().map((pair) => pair.address),
+    keyringBackupJson = await keyringStore.backup(
       await extensionStores.password.transformPassword(password),
+      password,
     )
   })
 
   beforeEach(async () => {
-    const { seedPhrase, password: passwordStoreData, settings } = initialStoreData
-    await setLocalStorage({ seedPhrase, password: passwordStoreData, settings })
+    const { password: passwordStoreData, settings } = initialStoreData
+    await setLocalStorage({ password: passwordStoreData, settings })
     extensionStores.password.clearPassword()
 
-    keyring.restoreAccounts(
-      accountsJson,
+    await keyringStore.restore(
+      keyringBackupJson,
+      password,
       await extensionStores.password.transformPassword(password),
     )
+
     await messageSender("pri(app.authenticate)", {
       pass: password,
     })
@@ -107,10 +98,21 @@ describe("App handler when password is not trimmed", () => {
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
   })
 
+  test("cannot change password if mnemonic is not confirmed", async () => {
+    const newPw = "noSpaces"
+    const changePasswordAttempt = await messageSender("pri(app.changePassword.subscribe)", {
+      currentPw: password,
+      newPw,
+      newPwConfirm: newPw,
+    })
+
+    expect(changePasswordAttempt).toBe(false)
+  })
+
   test("can change password to one without spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-    // mnemonic store needs to have confirmed === true
-    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
+    // mnemonic store needs to have confirmed === true or password cannot be changed
+    await keyringStore.updateMnemonic(mnemonicId, { confirmed: true })
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
@@ -126,22 +128,21 @@ describe("App handler when password is not trimmed", () => {
 
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
+    const accounts = await keyringStore.getAccounts()
+    const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
-    const pairAgain = keyring.getPair(account.address)
-    expect(pairAgain.isLocked)
-    pairAgain.decodePkcs8(hashedPw)
-    expect(pairAgain.isLocked).toBeFalsy()
+    const secretKey = await keyringStore.getAccountSecretKey(account.address, hashedPw)
+    expect(secretKey).toBeTruthy()
 
-    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
-    expect(seedResult.ok && seedResult.val).toBeTruthy()
+    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
+    expect(mnemonic).toEqual(suri)
   })
 
   test("can change password to one with spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
+    await keyringStore.updateMnemonic(mnemonicId, { confirmed: true })
 
     const newPw = " Spaces "
     const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
@@ -157,17 +158,16 @@ describe("App handler when password is not trimmed", () => {
     const hashedPw = await extensionStores.password.getHashedPassword(newPw)
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
+    const accounts = await keyringStore.getAccounts()
+    const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
-    const pairAgain = keyring.getPair(account.address)
-    expect(pairAgain.isLocked)
-    pairAgain.decodePkcs8(hashedPw)
-    expect(pairAgain.isLocked).toBeFalsy()
+    const exported = await keyringStore.getAccountSecretKey(account.address, hashedPw)
+    expect(exported).toBeTruthy()
 
-    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
-    expect(seedResult.ok && seedResult.val).toBeTruthy()
+    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
+    expect(mnemonic).toEqual(suri)
   })
 })
 
@@ -177,13 +177,10 @@ describe("App handler when password is trimmed", () => {
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
-  let accountsJson: KeyringPairs$Json
+  let keyringBackupJson: KeyringStorage
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
-    // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-    await cryptoWaitReady()
-
     return new Extension(extensionStores)
   }
 
@@ -193,7 +190,7 @@ describe("App handler when password is trimmed", () => {
 
   beforeAll(async () => {
     await chrome.storage.local.clear()
-    keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
+    await keyringStore.reset()
 
     extension = await createExtension()
     const port = chrome.runtime.connect("talismanTest")
@@ -208,33 +205,34 @@ describe("App handler when password is trimmed", () => {
 
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
-      type: "sr25519",
+      curve: "sr25519",
       mnemonic: suri,
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
+    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 
     await extensionStores.app.setOnboarded()
 
     initialStoreData = await getLocalStorage()
 
-    accountsJson = await keyring.backupAccounts(
-      keyring.getPairs().map((pair) => pair.address),
+    keyringBackupJson = await keyringStore.backup(
       await extensionStores.password.transformPassword(password),
+      password,
     )
   })
 
   beforeEach(async () => {
-    const { seedPhrase, password: passwordStoreData, settings } = initialStoreData
-
-    await setLocalStorage({ seedPhrase, password: passwordStoreData, settings })
+    const { password: passwordStoreData, settings } = initialStoreData
+    await setLocalStorage({ password: passwordStoreData, settings })
     extensionStores.password.clearPassword()
 
-    keyring.restoreAccounts(
-      accountsJson,
+    await keyringStore.restore(
+      keyringBackupJson,
+      password,
       await extensionStores.password.transformPassword(password),
     )
+
     await messageSender("pri(app.authenticate)", {
       pass: password,
     })
@@ -269,7 +267,7 @@ describe("App handler when password is trimmed", () => {
   test("can change password to one without spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // mnemonic store needs to have confirmed === true
-    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
+    await keyringStore.updateMnemonic(mnemonicId, { confirmed: true })
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
@@ -284,22 +282,21 @@ describe("App handler when password is trimmed", () => {
     const hashedPw = await extensionStores.password.getHashedPassword(newPw)
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
+    const accounts = await keyringStore.getAccounts()
+    const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
-    const pairAgain = keyring.getPair(account.address)
-    expect(pairAgain.isLocked)
-    pairAgain.decodePkcs8(hashedPw)
-    expect(pairAgain.isLocked).toBeFalsy()
+    const secretKey = await keyringStore.getAccountSecretKey(account.address, hashedPw)
+    expect(secretKey).toBeTruthy()
 
-    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
-    expect(seedResult.ok && seedResult.val).toBeTruthy()
+    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
+    expect(mnemonic).toEqual(suri)
   })
 
   test("can change password to one with spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
-    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
+    await keyringStore.updateMnemonic(mnemonicId, { confirmed: true })
 
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
 
@@ -316,16 +313,15 @@ describe("App handler when password is trimmed", () => {
     const hashedPw = await extensionStores.password.getHashedPassword(newPw)
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
+    const accounts = await keyringStore.getAccounts()
+    const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
-    const pairAgain = keyring.getPair(account.address)
-    expect(pairAgain.isLocked)
-    pairAgain.decodePkcs8(hashedPw)
-    expect(pairAgain.isLocked).toBeFalsy()
+    const secretKey = await keyringStore.getAccountSecretKey(account.address, hashedPw)
+    expect(secretKey).toBeTruthy()
 
-    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
-    expect(seedResult.ok && seedResult.val).toBeTruthy()
+    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
+    expect(mnemonic).toEqual(suri)
   })
 })

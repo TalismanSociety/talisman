@@ -1,14 +1,13 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import {
+  EthPriorityOptionName,
+  getMaxTransactionCost,
+  serializeTransactionRequest,
+} from "extension-core"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 
-import {
-  AccountType,
-  EthPriorityOptionName,
-  getMaxTransactionCost,
-  serializeTransactionRequest,
-} from "@extension/core"
 import { useAccountByAddress } from "@ui/state"
 
 import { useEthBalance } from "./useEthBalance"
@@ -38,11 +37,8 @@ export const useIsValidEthTransaction = (
     queryFn: async () => {
       if (!publicClient || !tx || !account || balance === undefined) return null
 
-      if (account.origin === "WATCHED")
+      if (account.type === "watch-only")
         throw new Error(t("Cannot sign transactions with a watched account"))
-
-      if (account.origin === AccountType.Dcent)
-        throw new Error(t("Cannot sign transactions with a D'CENT account"))
 
       // balance checks
       const value = tx.value ?? 0n

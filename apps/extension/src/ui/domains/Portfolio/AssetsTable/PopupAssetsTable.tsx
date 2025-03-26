@@ -1,10 +1,10 @@
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { Balances } from "extension-core"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"

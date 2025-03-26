@@ -1,6 +1,6 @@
 {
   "name": "@talismn/util",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -31,9 +31,9 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
-    "@polkadot/keyring": "13.2.3",
-    "@polkadot/util": "13.2.3",
-    "@polkadot/util-crypto": "13.2.3",
+    "@polkadot/keyring": "13.4.3",
+    "@polkadot/util": "13.4.3",
+    "@polkadot/util-crypto": "13.4.3",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^29.5.14",

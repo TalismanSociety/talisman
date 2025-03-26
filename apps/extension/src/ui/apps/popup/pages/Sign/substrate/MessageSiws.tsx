@@ -1,10 +1,10 @@
 import { UserRightIcon } from "@talismn/icons"
 import { SiwsMessage } from "@talismn/siws"
+import { Account, Chain } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { AccountJsonAny, Chain } from "@extension/core"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { ViewDetailsAddress } from "@ui/domains/Sign/ViewDetails/ViewDetailsAddress"
@@ -12,7 +12,7 @@ import { ViewDetailsButton } from "@ui/domains/Sign/ViewDetails/ViewDetailsButto
 import { ViewDetailsField } from "@ui/domains/Sign/ViewDetails/ViewDetailsField"
 
 export type Props = {
-  account: AccountJsonAny
+  account: Account
   chain: Chain | null | undefined
   request: SiwsMessage
   validationError: string | null
@@ -59,7 +59,7 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
 }
 
 const ViewDetailsContent: FC<{
-  account: AccountJsonAny
+  account: Account
   request: SiwsMessage
   onClose: () => void
 }> = ({ account, request, onClose }) => {

@@ -1,36 +1,36 @@
+import { HexString } from "extension-shared"
 import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
 
-import { AddressBookContact, addressBookStore } from "@extension/core"
+import { api } from "@ui/api"
 import { useContacts } from "@ui/state"
 
+type ContactInfo = { address: string; name: string; genesisHash?: HexString }
+
 export const useAddressBook = () => {
-  const { t } = useTranslation()
   const contacts = useContacts()
 
   const add = useCallback(
-    ({ address, ...rest }: AddressBookContact) =>
-      addressBookStore.set({ [address]: { address, ...rest } }),
+    ({ address, name, genesisHash }: ContactInfo) =>
+      api.accountAddExternal([
+        {
+          type: "contact",
+          name,
+          address,
+          genesisHash,
+        },
+      ]),
     [],
   )
 
   const deleteContact = useCallback(
-    ({ address }: { address: string }) => addressBookStore.delete(address),
+    ({ address }: { address: string }) => api.accountForget(address),
     [],
   )
 
   const edit = useCallback(
-    async ({
-      address,
-      name,
-      genesisHash,
-    }: Pick<AddressBookContact, "address" | "name" | "genesisHash">) => {
-      const existing = await addressBookStore.get(address)
-      if (!existing)
-        throw new Error(t(`Contact with address {{address}} doesn't exist`, { address }))
-      return await addressBookStore.set({ [address]: { ...existing, name, genesisHash } })
-    },
-    [t],
+    ({ address, name, genesisHash }: ContactInfo) =>
+      api.accountUpdateContact({ address, name, genesisHash }),
+    [],
   )
 
   return {

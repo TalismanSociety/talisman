@@ -1,3 +1,5 @@
+import { isAccountEthereum } from "extension-core"
+
 import { AccountCategory, useAccounts } from "@ui/state"
 
 /**
@@ -11,6 +13,6 @@ export const useAccountAddresses = (
 ): string[] => {
   const accounts = useAccounts(accountFilter)
   return accounts
-    .filter(({ type }) => !ethereumOnly || type === "ethereum")
+    .filter((account) => !ethereumOnly || isAccountEthereum(account))
     .map(({ address }) => address)
 }

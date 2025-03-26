@@ -1,7 +1,6 @@
+import { TOKEN_APPROVALS_URL } from "extension-shared"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { TOKEN_APPROVALS_URL } from "@extension/shared"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
