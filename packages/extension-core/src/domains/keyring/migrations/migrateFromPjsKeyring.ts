@@ -258,6 +258,11 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
       throw new Error("Migration failed")
     }
 
+    // copy the password store's data, so we have a snapshot of it that matches the old keyring
+    // this entry is to be deleted in a future version
+    const { password: passwordPjsBackup } = await chrome.storage.local.get("password")
+    await chrome.storage.local.set({ passwordPjsBackup })
+
     /**
      * Delete old data
      * @dev: we will do this step in a future version, allowing us to rollback if necessary
