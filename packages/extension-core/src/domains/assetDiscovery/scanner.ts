@@ -29,7 +29,7 @@ import { passwordStore } from "../app/store.password"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
-import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
+import { activeTokensStore } from "../tokens/store.activeTokens"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
 
@@ -280,10 +280,13 @@ class AssetDiscoveryScanner {
         .filter((token) => {
           const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
           if (!evmNetwork) return false
-          if (evmNetwork.isTestnet || token.isTestnet) return false
-          if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
-          if (token.noDiscovery) return false
-          return !isTokenActive(token, activeTokens)
+          if (!evmNetwork.forceScan) {
+            if (evmNetwork.isTestnet || token.isTestnet) return false
+            if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
+            if (token.noDiscovery) return false
+          }
+          // scan only if token has never been enabled or disabled
+          return activeTokens[token.id] === undefined
         })
 
       await assetDiscoveryStore.mutate((prev) => ({
@@ -332,6 +335,7 @@ class AssetDiscoveryScanner {
                 .flat(),
               (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap),
             )
+
             let startIndex = 0
 
             // skip checks that were already scanned
@@ -493,15 +497,16 @@ class AssetDiscoveryScanner {
         await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))
       ).filter((network): network is EvmNetwork => !!network)
 
-      // activate tokens that have not been explicitely disabled and that are not default tokens
-      for (const token of tokens)
-        if (activeTokens[token.id] === undefined && !isTokenActive(token, activeTokens)) {
+      // activate tokens that have not been explicitely enabled or disabled
+      for (const token of tokens) {
+        if (activeTokens[token.id] === undefined) {
           log.debug("[AssetDiscovery] Automatically enabling discovered asset", { token })
-          activeTokensStore.setActive(token.id, true)
+          await activeTokensStore.setActive(token.id, true)
         }
+      }
 
       // activate networks that have not been explicitely disabled and that are not default networks
-      for (const evmNetwork of evmNetworks)
+      for (const evmNetwork of evmNetworks) {
         if (
           activeEvmNetworks[evmNetwork.id] === undefined &&
           !isEvmNetworkActive(evmNetwork, activeEvmNetworks)
@@ -509,6 +514,7 @@ class AssetDiscoveryScanner {
           log.debug("[AssetDiscovery] Automatically enabling discovered network", { evmNetwork })
           activeEvmNetworksStore.setActive(evmNetwork.id, true)
         }
+      }
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
         err,
