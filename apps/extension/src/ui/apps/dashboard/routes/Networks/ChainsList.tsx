@@ -1,12 +1,12 @@
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeChainsStore, isChainActive } from "extension-core"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { ActiveChains, activeChainsStore, isChainActive } from "extension-core"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -165,13 +165,6 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
     })
   }, [exactMatches, filteredChains])
 
-  const handleNetworkActiveChanged = useCallback(
-    (network: Chain) => (enable: boolean) => {
-      activeChainsStore.setActive(network.id, enable)
-    },
-    [],
-  )
-
   const activateAll = useCallback(
     (activate = false) =>
       () => {
@@ -219,27 +212,56 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
           </Modal>
         </Suspense>
       </div>
-      {sortedChains.map((chain) => (
-        <ChainsListItem
-          key={chain.id}
-          chain={chain}
-          isActive={isChainActive(chain, networksActiveState)}
-          onEnableChanged={handleNetworkActiveChanged(chain)}
-        />
-      ))}
+      <VirtualizedRows networks={sortedChains} activeNetworksState={networksActiveState} />
     </div>
   )
 }
 
-const ChainsListItem = ({
-  chain,
-  isActive,
-  onEnableChanged,
-}: {
-  chain: Chain
-  isActive: boolean
-  onEnableChanged: (enable: boolean) => void
-}) => {
+const VirtualizedRows: FC<{
+  networks: Chain[]
+  activeNetworksState: ActiveChains
+}> = ({ networks, activeNetworksState }) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: networks.length,
+    overscan: 6,
+    gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => document.getElementById("main"),
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            <ChainRow network={networks[item.index]} activeNetworksState={activeNetworksState} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const ChainRow: FC<{
+  network: Chain
+  activeNetworksState: ActiveChains
+}> = ({ network: chain, activeNetworksState: activeChainsState }) => {
+  const isActive = useMemo(() => !!activeChainsState[chain.id], [activeChainsState, chain.id])
+
   const navigate = useNavigate()
   const handleChainClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -253,22 +275,15 @@ const ChainsListItem = ({
     navigate(`./${chain.id}`)
   }, [navigate, chain.id])
 
-  // there are lots of chains so we should only render visible rows to prevent performance issues
-  const refContainer = useRef<HTMLDivElement>(null)
-  const intersection = useIntersection(refContainer, {
-    root: null,
-    rootMargin: "1000px",
-  })
-
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      onEnableChanged(e.target.checked)
+      activeChainsStore.setActive(chain.id, e.target.checked)
     },
-    [onEnableChanged],
+    [chain.id],
   )
 
-  const rowContent = intersection?.isIntersecting ? (
-    <>
+  return (
+    <div className="relative h-28">
       <ListButton key={chain.id} role="button" onClick={handleChainClick}>
         <ChainLogo className="rounded-full text-xl" id={chain.id} />
         <div className="text-body truncate">{chain.name}</div>
@@ -282,12 +297,6 @@ const ChainsListItem = ({
         checked={isActive}
         onChange={handleEnableChanged}
       />
-    </>
-  ) : null
-
-  return (
-    <div ref={refContainer} className="relative h-28">
-      {rowContent}
     </div>
   )
 }

@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom"
 import { combineLatest } from "rxjs"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -117,15 +116,11 @@ const Content = () => {
         <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
       </div>
       <Spacer small />
-      {/* The `FadeIn` with the `key` is a dirty workaround for https://github.com/streamich/react-use/issues/2376 */}
-      {/* Without it, when the search results change order, the `useIntersection` inside them bugs out and they turn blank */}
-      <FadeIn key={search || "DEFAULT"}>
-        {networksType === "polkadot" ? (
-          <ChainsList activeOnly={activeOnly} search={search} />
-        ) : (
-          <EvmNetworksList activeOnly={activeOnly} search={search} />
-        )}
-      </FadeIn>
+      {networksType === "polkadot" ? (
+        <ChainsList activeOnly={activeOnly} search={search} />
+      ) : (
+        <EvmNetworksList activeOnly={activeOnly} search={search} />
+      )}
     </>
   )
 }

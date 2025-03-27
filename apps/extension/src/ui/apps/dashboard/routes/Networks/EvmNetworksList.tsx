@@ -1,12 +1,17 @@
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "extension-core"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+  SimpleEvmNetwork,
+} from "extension-core"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -140,13 +145,6 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
     const filter = (network: SimpleEvmNetwork) => {
       if (activeOnly && !isEvmNetworkActive(network, networksActiveState)) return false
 
-      // if (!lowerSearch)
-      //   return (
-      //     network.isDefault ||
-      //     networksActiveState[network.id] !== undefined ||
-      //     isCustomEvmNetwork(network)
-      //   )
-
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
         network.nativeToken?.id.toLowerCase().includes(lowerSearch)
@@ -177,13 +175,6 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
       return 0
     })
   }, [exactMatches, filteredEvmNetworks])
-
-  const handleNetworkActiveChanged = useCallback(
-    (network: SimpleEvmNetwork) => (enable: boolean) => {
-      activeEvmNetworksStore.setActive(network.id, enable)
-    },
-    [],
-  )
 
   const enableAll = useCallback(
     (enable = false) =>
@@ -233,27 +224,62 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
           </Modal>
         </Suspense>
       </div>
-      {sortedNetworks.map((network) => (
-        <EvmNetworksListItem
-          key={network.id}
-          network={network}
-          isActive={isEvmNetworkActive(network, networksActiveState)}
-          onEnableChanged={handleNetworkActiveChanged(network)}
-        />
-      ))}
+      <VirtualizedRows networks={sortedNetworks} activeNetworksState={networksActiveState} />
     </div>
   )
 }
 
-const EvmNetworksListItem = ({
-  network,
-  isActive,
-  onEnableChanged,
-}: {
+const VirtualizedRows: FC<{
+  networks: SimpleEvmNetwork[]
+  activeNetworksState: ActiveEvmNetworks
+}> = ({ networks, activeNetworksState }) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: networks.length,
+    overscan: 6,
+    gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => document.getElementById("main"),
+  })
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            <EvmNetworksRow
+              network={networks[item.index]}
+              activeNetworksState={activeNetworksState}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const EvmNetworksRow: FC<{
   network: SimpleEvmNetwork
-  isActive: boolean
-  onEnableChanged: (enable: boolean) => void
-}) => {
+  activeNetworksState: ActiveEvmNetworks
+}> = ({ network, activeNetworksState }) => {
+  const isActive = useMemo(
+    () => !!activeNetworksState[network.id],
+    [activeNetworksState, network.id],
+  )
+
   const navigate = useNavigate()
   const handleNetworkClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -267,22 +293,15 @@ const EvmNetworksListItem = ({
     navigate(`./${network.id}`)
   }, [navigate, network.id])
 
-  // there are lots of networks so we should only render visible rows to prevent performance issues
-  const refContainer = useRef<HTMLDivElement>(null)
-  const intersection = useIntersection(refContainer, {
-    root: null,
-    rootMargin: "1000px",
-  })
-
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      onEnableChanged(e.target.checked)
+      activeEvmNetworksStore.setActive(network.id, e.target.checked)
     },
-    [onEnableChanged],
+    [network.id],
   )
 
-  const rowContent = intersection?.isIntersecting ? (
-    <>
+  return (
+    <div className="relative h-28">
       <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
         <ChainLogo className="rounded-full text-xl" id={network.id} />
         <div className="text-body truncate">{network.name}</div>
@@ -296,12 +315,6 @@ const EvmNetworksListItem = ({
         checked={isActive}
         onChange={handleEnableChanged}
       />
-    </>
-  ) : null
-
-  return (
-    <div ref={refContainer} className="relative h-28">
-      {rowContent}
     </div>
   )
 }
