@@ -1,8 +1,9 @@
 import { InfoIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useIntersection } from "react-use"
 import { Checkbox, Drawer, IconButton } from "talisman-ui"
 
 import { AppPill } from "@talisman/components/AppPill"
@@ -11,7 +12,6 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { useIsVisible } from "@ui/hooks/useIsVisible"
 import {
   useActiveEvmNetworksState,
   useAuthorisedSites,
@@ -182,12 +182,12 @@ const NetworkButton: FC<{
 }> = ({ network, isSelected, onClick }) => {
   const { t } = useTranslation()
 
-  // using intersection observers here instead of react-virtual because it doesn't support having 2 lists inside a single scroll container
-  const [ref, isVisible] = useIsVisible<HTMLDivElement>(NETWORK_VISIBILITY_OPTIONS)
+  const ref = useRef<HTMLDivElement>(null)
+  const intersection = useIntersection(ref, NETWORK_VISIBILITY_OPTIONS)
 
   return (
     <div ref={ref} className="h-28 w-full shrink-0">
-      {isVisible && (
+      {!!intersection?.isIntersecting && (
         <button
           key={network.id}
           type="button"

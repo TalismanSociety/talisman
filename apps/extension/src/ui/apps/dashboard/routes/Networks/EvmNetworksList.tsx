@@ -120,7 +120,10 @@ const DeactivateNetworksModalContent: FC<{
   )
 }
 
-export const EvmNetworksList = ({ search }: { search?: string }) => {
+export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
+  activeOnly,
+  search,
+}) => {
   const { t } = useTranslation("admin")
 
   const [includeTestnets] = useSetting("useTestnets")
@@ -135,12 +138,14 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     const lowerSearch = search?.toLowerCase() ?? ""
 
     const filter = (network: SimpleEvmNetwork) => {
-      if (!lowerSearch)
-        return (
-          network.isDefault ||
-          networksActiveState[network.id] !== undefined ||
-          isCustomEvmNetwork(network)
-        )
+      if (activeOnly && !isEvmNetworkActive(network, networksActiveState)) return false
+
+      // if (!lowerSearch)
+      //   return (
+      //     network.isDefault ||
+      //     networksActiveState[network.id] !== undefined ||
+      //     isCustomEvmNetwork(network)
+      //   )
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
@@ -157,7 +162,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     )
 
     return [filtered, exactMatches] as const
-  }, [evmNetworks, networksActiveState, search])
+  }, [evmNetworks, networksActiveState, search, activeOnly])
 
   const sortedNetworks = useMemo(() => {
     const byName = sortBy(filteredEvmNetworks, "name")
@@ -192,7 +197,12 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
 
   const ocDeactivateAllModal = useOpenClose()
 
-  if (!sortedNetworks) return null
+  if (!sortedNetworks.length)
+    return (
+      <div className="text-body-secondary bg-grey-850 rounded-sm p-12 text-center">
+        {t("No networks found")}
+      </div>
+    )
 
   return (
     <div className="flex flex-col gap-4">
@@ -237,7 +247,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
 
 const EvmNetworksListItem = ({
   network,
-  isActive: isActive,
+  isActive,
   onEnableChanged,
 }: {
   network: SimpleEvmNetwork

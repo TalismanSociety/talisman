@@ -115,7 +115,10 @@ const DeactivateNetworksModalContent: FC<{
   )
 }
 
-export const ChainsList = ({ search }: { search?: string }) => {
+export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
+  activeOnly,
+  search,
+}) => {
   const { t } = useTranslation("admin")
   const [useTestnets] = useSetting("useTestnets")
   const allChains = useChains()
@@ -126,14 +129,18 @@ export const ChainsList = ({ search }: { search?: string }) => {
   )
 
   const [filteredChains, exactMatches] = useMemo(() => {
-    if (search === undefined || search.length < 1) return [chains, [] as string[]] as const
+    const arChains = activeOnly
+      ? chains.filter((n) => isChainActive(n, networksActiveState))
+      : chains
+
+    if (search === undefined || search.length < 1) return [arChains, [] as string[]] as const
     const lowerSearch = search.toLowerCase()
 
     const filter = (chain: Chain) =>
       chain.name?.toLowerCase().includes(lowerSearch) ||
       chain.nativeToken?.id.toLowerCase().includes(lowerSearch)
 
-    const filtered = chains.filter(filter)
+    const filtered = arChains.filter(filter)
     const exactMatches = filtered.flatMap((chain) =>
       lowerSearch.trim() === chain.name?.toLowerCase().trim() ||
       lowerSearch.trim() === chain.nativeToken?.id.toLowerCase().trim()
@@ -142,7 +149,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
     )
 
     return [filtered, exactMatches] as const
-  }, [chains, search])
+  }, [chains, search, activeOnly, networksActiveState])
 
   const sortedChains = useMemo(() => {
     const byName = sortBy(filteredChains, "name")
@@ -175,7 +182,12 @@ export const ChainsList = ({ search }: { search?: string }) => {
 
   const ocDeactivateAllModal = useOpenClose()
 
-  if (!sortedChains) return null
+  if (!sortedChains.length)
+    return (
+      <div className="text-body-secondary bg-grey-850 rounded-sm p-12 text-center">
+        {t("No networks found")}
+      </div>
+    )
 
   return (
     <div className="flex flex-col gap-4">
