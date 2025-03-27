@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.8.1
+
+### Patch Changes
+
+- e83310e: generate init data
+
 ## 0.8.0
 
 ### Minor Changes

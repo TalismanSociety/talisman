@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.3.1
+
+### Patch Changes
+
+- 9c4a335: chore: updated readme
+
 ## 0.3.0
 
 ### Minor Changes
