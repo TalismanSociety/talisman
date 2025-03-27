@@ -154,7 +154,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                       ></button>
                     ),
                   }}
-                  defaults="Click to activate networks. One-time only. For full management, visit <Link>Manage Networks</Link>."
+                  defaults="Click to activate and select network. For full management, visit <Link>Manage Networks</Link>."
                 />
               </div>
             </div>
