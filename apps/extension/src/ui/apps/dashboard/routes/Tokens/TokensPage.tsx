@@ -3,7 +3,7 @@ import { InfoIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
 import sortBy from "lodash/sortBy"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import {
@@ -147,8 +147,6 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
 }
 
 const VirtualizedRows: FC<{ tokens: Token[] }> = ({ tokens }) => {
-  const ref = useRef<HTMLDivElement>(null)
-
   const virtualizer = useVirtualizer({
     count: tokens.length,
     overscan: 6,
@@ -158,7 +156,7 @@ const VirtualizedRows: FC<{ tokens: Token[] }> = ({ tokens }) => {
   })
 
   return (
-    <div ref={ref}>
+    <div>
       <div
         className="relative w-full"
         style={{

@@ -9,7 +9,7 @@ import {
   SimpleEvmNetwork,
 } from "extension-core"
 import sortBy from "lodash/sortBy"
-import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
@@ -233,8 +233,6 @@ const VirtualizedRows: FC<{
   networks: SimpleEvmNetwork[]
   activeNetworksState: ActiveEvmNetworks
 }> = ({ networks, activeNetworksState }) => {
-  const ref = useRef<HTMLDivElement>(null)
-
   const virtualizer = useVirtualizer({
     count: networks.length,
     overscan: 6,
@@ -244,7 +242,7 @@ const VirtualizedRows: FC<{
   })
 
   return (
-    <div ref={ref}>
+    <div>
       <div
         className="relative w-full"
         style={{
