@@ -258,7 +258,10 @@ const ChainRow: FC<{
   network: Chain
   activeNetworksState: ActiveChains
 }> = ({ network: chain, activeNetworksState: activeChainsState }) => {
-  const isActive = useMemo(() => !!activeChainsState[chain.id], [activeChainsState, chain.id])
+  const isActive = useMemo(
+    () => isChainActive(chain, activeChainsState),
+    [activeChainsState, chain],
+  )
 
   const navigate = useNavigate()
   const handleChainClick = useCallback(() => {

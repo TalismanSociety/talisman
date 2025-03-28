@@ -274,8 +274,8 @@ const EvmNetworksRow: FC<{
   activeNetworksState: ActiveEvmNetworks
 }> = ({ network, activeNetworksState }) => {
   const isActive = useMemo(
-    () => !!activeNetworksState[network.id],
-    [activeNetworksState, network.id],
+    () => isEvmNetworkActive(network, activeNetworksState),
+    [activeNetworksState, network],
   )
 
   const navigate = useNavigate()
