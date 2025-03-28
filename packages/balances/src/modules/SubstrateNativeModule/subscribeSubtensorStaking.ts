@@ -121,11 +121,11 @@ export async function subscribeSubtensorStaking(
             dynamicInfoCache.set(netuid, decodedResult) // Cache successful response
             return decodedResult
           } catch (error) {
-            log.warn(`Attempt ${attempt} failed for netuid ${netuid}:`, error)
+            log.trace(`Attempt ${attempt} failed for netuid ${netuid}:`, error)
 
             if (attempt < MAX_RETRIES) {
               const backoffTime = RETRY_DELAY_MS * 2 ** (attempt - 1)
-              log.info(`Retrying in ${backoffTime}ms...`)
+              log.trace(`Retrying in ${backoffTime}ms...`)
               await delay(backoffTime)
             }
           }
@@ -135,7 +135,7 @@ export async function subscribeSubtensorStaking(
           return dynamicInfoCache.get(netuid) // Use cached value on failure
         }
 
-        log.error(
+        log.trace(
           `Failed to fetch dynamic info for netuid ${netuid} after ${MAX_RETRIES} attempts.`,
         )
         return null
