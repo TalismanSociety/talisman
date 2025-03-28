@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, TokenRatesError, TokenRatesList } from "@talismn/token-rates"
-import { remoteConfigStore } from "extension-core"
+import { remoteConfigStore, settingsStore } from "extension-core"
 import { log } from "extension-shared"
 import { SetStateAction, useEffect, useState } from "react"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
@@ -39,10 +39,15 @@ const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
 // use this to prevent multiple fetches for the same token list
 const safeFetchTokenRates = async (tokenList: TokenList) => {
   const cacheKey = Object.keys(tokenList).join(",")
-  const coingecko = await remoteConfigStore.get("coingecko")
+  const config = await remoteConfigStore.get("coinsApi")
+  const selectedCurrency = await settingsStore.get("selectedCurrency")
 
   if (!FETCH_TOKEN_RATES_CACHE[cacheKey]) {
-    FETCH_TOKEN_RATES_CACHE[cacheKey] = fetchTokenRates(tokenList, coingecko).finally(() => {
+    FETCH_TOKEN_RATES_CACHE[cacheKey] = fetchTokenRates(
+      tokenList,
+      [selectedCurrency],
+      config,
+    ).finally(() => {
       delete FETCH_TOKEN_RATES_CACHE[cacheKey]
     })
   }
