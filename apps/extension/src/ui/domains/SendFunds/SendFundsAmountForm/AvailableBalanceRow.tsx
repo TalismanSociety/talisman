@@ -2,7 +2,7 @@ import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "../../Asset/Fiat"
-import Tokens from "../../Asset/Tokens"
+import { Tokens } from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
 import { Container } from "./Container"
 

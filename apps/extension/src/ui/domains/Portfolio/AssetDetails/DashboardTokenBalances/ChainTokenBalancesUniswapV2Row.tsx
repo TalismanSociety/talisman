@@ -3,7 +3,7 @@ import { Balance } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/state"
 

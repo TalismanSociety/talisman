@@ -16,6 +16,11 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       ETH: "1",
     },
   },
+  swaps: {
+    questApi: "",
+    simpleswapApiKey: "",
+    curatedTokens: [],
+  },
   coingecko: {
     apiUrl: "https://api.coingecko.com",
   },

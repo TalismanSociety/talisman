@@ -19,6 +19,7 @@ import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
@@ -164,14 +165,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { open: openRampsModal } = useRampsModal()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
   const ownedAccounts = useAccounts("owned")
+  const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
-
-  const handleSwapClick = useCallback(() => {
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [])
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -205,7 +203,12 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => handleSwapClick(),
+          onClick: canSwap
+            ? () => openSwapTokensModal()
+            : () => {
+                window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
+                if (IS_EMBEDDED_POPUP) window.close()
+              },
           disabled: disableActions,
           disabledReason,
         },
@@ -223,11 +226,12 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
       ].filter(isNotNil),
     [
       canBuy,
+      canSwap,
       disableActions,
       disabledReason,
-      handleSwapClick,
-      openRampsModal,
       openCopyAddressModal,
+      openRampsModal,
+      openSwapTokensModal,
       t,
     ],
   )

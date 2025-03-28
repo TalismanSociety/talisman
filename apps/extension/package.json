@@ -115,7 +115,7 @@
     "ts-results": "3.3.0",
     "typescript": "^5.6.3",
     "url-join": "^5.0.0",
-    "viem": "^2.21.34",
+    "viem": "^2.27.3",
     "yup": "1.4.0",
     "zod": "^3.24.2"
   },
@@ -178,6 +178,7 @@
     "speed-measure-webpack-plugin": "^1.5.0",
     "stream-http": "^3.2.0",
     "style-loader": "4.0.0",
+    "swaps-port": "./src/ui/domains/Swap/swaps-port",
     "tailwindcss": "^3.4.14",
     "terser-webpack-plugin": "5.3.10",
     "ts-jest": "^29.2.5",

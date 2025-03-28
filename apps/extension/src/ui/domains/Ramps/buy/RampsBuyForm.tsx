@@ -11,7 +11,7 @@ import { Button, useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency, useToken } from "@ui/state"
 
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"

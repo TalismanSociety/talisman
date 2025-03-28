@@ -21,7 +21,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
 

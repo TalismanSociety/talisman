@@ -21,6 +21,9 @@ const normalizeAnyAddress = (address: string) => {
   switch (detectAddressEncoding(address)) {
     case "ethereum":
       return checksumEthereumAddress(address)
+    case "bech32m":
+    case "bech32":
+    case "base58check":
     case "base58":
       return address
     case "ss58": {

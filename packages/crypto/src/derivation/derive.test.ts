@@ -1,6 +1,6 @@
-import type { AddressEncoding, KeypairCurve } from "../types"
+import type { KeypairCurve } from "../types"
 import { deriveKeypair } from "."
-import { addressFromPublicKey } from "../address"
+import { addressEncodingFromCurve, addressFromPublicKey } from "../address"
 import { entropyToSeed, mnemonicToEntropy } from "../mnemonic"
 
 const ETH_MNEMONIC = "test test test test test test test test test test test junk"
@@ -17,19 +17,6 @@ const SOLANA_MNEMONIC = "test test test test test test test test test test test 
 const SOLANA_DERIVATION_PATH = "m/44'/501'/0'/0'"
 const SOLANA_ADDRESS = "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
 
-const getAddressFormatFromCurve = (curve: KeypairCurve): AddressEncoding => {
-  switch (curve) {
-    case "sr25519":
-    case "ed25519":
-    case "ecdsa":
-      return "ss58"
-    case "ethereum":
-      return "ethereum"
-    case "solana":
-      return "base58"
-  }
-}
-
 const checkDerivedAddress = async (
   mnemonic: string,
   derivationPath: string,
@@ -39,7 +26,7 @@ const checkDerivedAddress = async (
   const entropy = mnemonicToEntropy(mnemonic)
   const seed = await entropyToSeed(entropy, curve)
   const secret = deriveKeypair(seed, derivationPath, curve)
-  const format = getAddressFormatFromCurve(curve)
+  const format = addressEncodingFromCurve(curve)
   expect(address).toEqual(addressFromPublicKey(secret.publicKey, format))
 }
 

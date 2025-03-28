@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next"
 import { Button, useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useToken } from "@ui/state"
 

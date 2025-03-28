@@ -44,7 +44,7 @@
     "polkadot-api": "1.7.6",
     "rxjs": "^7.8.1",
     "scale-ts": "^1.6.1",
-    "viem": "^2.21.34"
+    "viem": "^2.27.3"
   },
   "devDependencies": {
     "@polkadot/api-contract": "15.8.1",

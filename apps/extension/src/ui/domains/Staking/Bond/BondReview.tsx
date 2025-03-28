@@ -72,16 +72,15 @@ export const BondReview = () => {
         </div>
       </div>
       <div className="grow"></div>
-      {payload && (
-        <SapiSendButton
-          containerId="StakingModalDialog"
-          label={t("Stake")}
-          payload={payload}
-          onSubmitted={onSubmitted}
-          txMetadata={txMetadata}
-          disabled={isDisabled}
-        />
-      )}
+      <SapiSendButton
+        containerId="StakingModalDialog"
+        label={t("Stake")}
+        loading={!payload}
+        payload={payload ?? undefined}
+        onSubmitted={onSubmitted}
+        txMetadata={txMetadata}
+        disabled={isDisabled}
+      />
     </div>
   )
 }

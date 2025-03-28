@@ -81,15 +81,18 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleSwapClick = useCallback(() => {
+  const canSwap = useFeatureFlag("SWAPS")
+  const handleSwapClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
       action: "Swap button",
     })
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
+    canSwap
+      ? await api.dashboardOpen("/portfolio/tokens?swapTokens=open")
+      : window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
     window.close()
-  }, [])
+  }, [canSwap])
 
   const { allBackedUp } = useMnemonicBackup()
   const handleBackupClick = useCallback(() => {
@@ -165,7 +168,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
               <span className="flex items-center gap-2">
                 {t("Swap")}
-                <ExternalLinkIcon />
+                {!canSwap && <ExternalLinkIcon />}
               </span>
             </NavItem>
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>

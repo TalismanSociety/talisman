@@ -23,6 +23,7 @@ import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
+import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
@@ -87,18 +88,19 @@ const Popup = () => {
         </Routes>
       </Suspense>
       <Suspense fallback={<SuspenseTracker name="Modals & alerts" />}>
-        <AccountRenameModal />
-        <AccountRemoveModal />
         <AccountExportModal />
         <AccountExportPrivateKeyModal />
-        <CopyAddressModal />
-        <RampsModal />
-        <ExplorerNetworkPickerModal />
+        <AccountRemoveModal />
+        <AccountRenameModal />
         <BackupWarningDrawer />
-        <LedgerPolkadotUpgradeAlertDrawer />
         <BondModal />
-        <UnbondModal />
+        <CopyAddressModal />
+        <ExplorerNetworkPickerModal />
+        <LedgerPolkadotUpgradeAlertDrawer />
         <NomPoolWithdrawModal />
+        <RampsModal />
+        <SwapTokensModal />
+        <UnbondModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

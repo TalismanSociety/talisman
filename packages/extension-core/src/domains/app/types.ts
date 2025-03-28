@@ -12,6 +12,11 @@ export type RemoteConfigStoreData = {
     rampApiKey: string
     rampNetworks: Record<string, string> // maps a Ramp network ID to an EvmNetworkId or ChainId
   }
+  swaps: {
+    questApi?: string
+    simpleswapApiKey?: string
+    curatedTokens?: string[]
+  }
   coingecko: {
     apiUrl: string
     apiKeyName?: string
@@ -61,6 +66,7 @@ export type FeatureFlags = Partial<{
   USE_ONFINALITY_API_KEY: boolean
   RISK_ANALYSIS: boolean
   NEW_FEATURES_HOME_BANNER: boolean
+  SWAPS: boolean
   QUEST_LINK: boolean
   UNIFIED_ADDRESS_BANNER: boolean
   AUTONOMYS_QUEST_BANNER: boolean

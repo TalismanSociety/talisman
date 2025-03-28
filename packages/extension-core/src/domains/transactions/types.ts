@@ -11,6 +11,12 @@ export type WatchTransactionOptions = {
   siteUrl?: string
   notifications?: boolean
   transferInfo?: WalletTransactionTransferInfo
+  /**
+   * Used to store extra information about this tx.
+   * For populating the transaction history.
+   * In the future we should migrate transferInfo into this.
+   */
+  txInfo?: WalletTransactionInfo
 }
 
 export type WalletTransactionTransferInfo = {
@@ -18,6 +24,28 @@ export type WalletTransactionTransferInfo = {
   value?: string
   to?: Address
 }
+
+export type WalletTransactionInfo =
+  // | {
+  //     /**
+  //      * NOTE: Not used yet.
+  //      * We need to migrate existing txs from `transferInfo` to txInfo,
+  //      * where txInfo["type"] === "transfer".
+  //      */
+  //     type: "transfer"
+  //     tokenId: TokenId
+  //     value: string
+  //     to: Address
+  //   } |
+  {
+    type: "swap-simpleswap"
+    exchangeId: string
+    fromTokenId: TokenId
+    toTokenId: TokenId
+    fromAmount: string
+    toAmount: string
+    to: Address
+  }
 
 export type WalletTransactionBase = WalletTransactionTransferInfo & {
   account: Address
@@ -30,6 +58,7 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
   nonce: number
   blockNumber?: string
   confirmed?: boolean
+  txInfo?: WalletTransactionInfo
 }
 
 export type EvmWalletTransaction = WalletTransactionBase & {

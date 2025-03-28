@@ -10,7 +10,8 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useAccounts, useAppState } from "@ui/state"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -38,6 +39,8 @@ export const GetStarted = () => {
     onDismissClick,
   } = useGetStarted()
 
+  const canBuy = useFeatureFlag("BUY_CRYPTO")
+
   // ensure it appears if it was hidden and user deletes all accounts
   if (hasAccounts && isHidden) return null
 
@@ -64,7 +67,7 @@ export const GetStarted = () => {
       </div>
 
       {hasAccounts ? (
-        <div className="gao-8 grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-3 gap-8">
           <GetStartedActionButton
             label={t("Receive")}
             className="text-sm"
@@ -77,12 +80,14 @@ export const GetStarted = () => {
             iconTop={<GetStartedSwapIcon className="size-10" />}
             onClick={onSwapClick}
           />
-          <GetStartedActionButton
-            label={t("Buy")}
-            className="text-sm"
-            iconTop={<GetStartedBuyIcon className="size-10" />}
-            onClick={onBuyClick}
-          />
+          {canBuy && (
+            <GetStartedActionButton
+              label={t("Buy")}
+              className="text-sm"
+              iconTop={<GetStartedBuyIcon className="size-10" />}
+              onClick={onBuyClick}
+            />
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-8">
@@ -119,8 +124,9 @@ const useGetStarted = () => {
   const hasAccounts = useMemo(() => !!ownedAccounts.length, [ownedAccounts])
 
   const navigate = useNavigate()
-  const { open: openRamps } = useRampsModal()
   const { open: onCopyAddressModal } = useCopyAddressModal()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openRamps } = useRampsModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
 
@@ -142,19 +148,20 @@ const useGetStarted = () => {
     else openTryTalismanModal()
   }, [navigate, openTryTalismanModal])
 
-  const onSwapClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
-
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-
-    closeIfEmbeddedPopup()
-  }, [])
-
   const onReceiveClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "receive" })
 
     onCopyAddressModal()
   }, [onCopyAddressModal])
+
+  const canSwap = useFeatureFlag("SWAPS")
+  const onSwapClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
+
+    if (canSwap) return void openSwapTokensModal()
+    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
+    closeIfEmbeddedPopup()
+  }, [canSwap, openSwapTokensModal])
 
   const onBuyClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "open ramps" })

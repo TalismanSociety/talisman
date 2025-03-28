@@ -12,6 +12,7 @@ import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/Migra
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
+import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 
 import DashboardNotifications from "."
@@ -39,20 +40,21 @@ export const DashboardNotificationsAndModals = () => {
       {/* this actually needs renders in place at the bottom of the page */}
       <DashboardNotifications />
       {/* below components can be rendered from anywhere */}
-      <BackupWarningModal />
-      <RampsModal />
-      <AccountRenameModal />
       <AccountExportModal />
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
+      <AccountRenameModal />
+      <BackupWarningModal />
+      <BondModal />
       <CopyAddressModal />
       <ExplorerNetworkPickerModal />
-      <MigratePasswordModal />
-      <OnboardingToast />
-      <BondModal />
-      <UnbondModal />
-      <NomPoolWithdrawModal />
       <GetStartedModals />
+      <MigratePasswordModal />
+      <NomPoolWithdrawModal />
+      <OnboardingToast />
+      <RampsModal />
+      <SwapTokensModal />
+      <UnbondModal />
     </Suspense>
   )
 }

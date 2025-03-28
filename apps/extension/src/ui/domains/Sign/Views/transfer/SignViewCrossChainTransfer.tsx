@@ -12,7 +12,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useChain, useEvmNetwork, useSelectedCurrency } from "@ui/state"
 

@@ -53,7 +53,7 @@ interface Props {
   genesisHash?: HexString | null
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
-  payload: SignerPayloadJSON | SignerPayloadRaw
+  payload?: SignerPayloadJSON | SignerPayloadRaw
   containerId: string
   skipInit?: boolean
   narrowMargin?: boolean
@@ -167,7 +167,7 @@ export const QrSubstrate = ({
               <div className="text-body-secondary absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
                 <LoaderIcon className="animate-spin-slow text-3xl" />
               </div>
-              {qrCodeSource && isJsonPayload(payload) && (
+              {qrCodeSource && payload && isJsonPayload(payload) && (
                 <MetadataQrCode
                   genesisHash={payload.genesisHash}
                   specVersion={payload.specVersion}
@@ -260,7 +260,7 @@ const SendPage = ({
 }: {
   account: AccountPolkadotVault
   genesisHash: HexString | null | undefined
-  payload: SignerPayloadJSON | SignerPayloadRaw
+  payload?: SignerPayloadJSON | SignerPayloadRaw
   reject?: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
   scanState: SendScanState
@@ -277,7 +277,9 @@ const SendPage = ({
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
           </div>
-          <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
+          {payload && (
+            <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
+          )}
         </div>
 
         <div className="text-body-secondary mb-10 mt-14 max-w-md text-center leading-10">
@@ -288,7 +290,7 @@ const SendPage = ({
           </Trans>
         </div>
 
-        {isJsonPayload(payload) ? (
+        {payload && isJsonPayload(payload) ? (
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-4">
               <button

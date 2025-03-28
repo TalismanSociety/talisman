@@ -1,5 +1,11 @@
-import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import {
+  ArrowRightIcon,
+  LoaderIcon,
+  MoreHorizontalIcon,
+  RocketIcon,
+  XOctagonIcon,
+} from "@talismn/icons"
+import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict } from "date-fns"
 import {
@@ -17,8 +23,8 @@ import i18next from "i18next"
 import {
   FC,
   forwardRef,
-  PropsWithChildren,
   ReactNode,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -40,8 +46,9 @@ import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { useSimpleswapSwapStatus } from "@ui/domains/Swap/hooks/useSimpleswapSwapStatus"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
   useChainByGenesisHash,
@@ -185,11 +192,19 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
   )
 }
 
-const TxIconContainer: FC<
-  PropsWithChildren & { tooltip?: string | null; networkId?: EvmNetworkId | ChainId }
-> = ({ children, tooltip, networkId }) => (
+const TxIconContainer = ({
+  className,
+  tooltip,
+  networkId,
+  children,
+}: {
+  className?: string
+  tooltip?: string | null
+  networkId?: EvmNetworkId | ChainId
+  children?: ReactNode
+}) => (
   <Tooltip>
-    <TooltipTrigger className="relative h-16 w-16 shrink-0 cursor-default">
+    <TooltipTrigger className={classNames("relative h-16 w-16 shrink-0 cursor-default", className)}>
       {children}
       {!!networkId && (
         <ChainLogo
@@ -255,6 +270,7 @@ const EvmTxActions: FC<{
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
+  const txInfo = tx.txInfo
   const canReplace = useCanReplaceTx(tx)
 
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
@@ -278,6 +294,17 @@ const EvmTxActions: FC<{
   )
 
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+
+  const simpleswapHref = useMemo(() => {
+    if (!txInfo || txInfo.type !== "swap-simpleswap" || !txInfo.exchangeId) return
+    return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
+  }, [txInfo])
+  const handleSimpleswapClick = useCallback(() => {
+    if (!simpleswapHref) return
+    window.open(simpleswapHref, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
+  }, [simpleswapHref])
+
   const hrefBlockExplorer = useMemo(
     () => (evmNetwork?.explorerUrl ? urlJoin(evmNetwork.explorerUrl, "tx", tx.hash) : null),
     [evmNetwork?.explorerUrl, tx.hash],
@@ -364,6 +391,15 @@ const EvmTxActions: FC<{
                 </button>
               </>
             )}
+            {tx.status === "success" && simpleswapHref && (
+              <button
+                type="button"
+                onClick={handleSimpleswapClick}
+                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
+              >
+                {t("View swap status")}
+              </button>
+            )}
             {hrefBlockExplorer && (
               <button
                 type="button"
@@ -397,8 +433,8 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
     case "pending":
       return (
         <>
-          <span>{t("Sending")} </span>
-          <LoaderIcon className="animate-spin-slow" />
+          <span>{t("Submitting")} </span>
+          <LoaderIcon className="animate-spin-slow text-body-disabled" />
         </>
       )
     case "success":
@@ -413,6 +449,53 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
     case "unknown":
       return <span>{t("Unknown")}</span>
   }
+}
+
+const SwapTransactionStatusLabel = ({
+  tx,
+}: {
+  tx: SubWalletTransaction | EvmWalletTransaction
+}) => {
+  const { t } = useTranslation()
+  const swapStatus = useSimpleswapSwapStatus(
+    tx.txInfo?.type === "swap-simpleswap" ? tx.txInfo.exchangeId : undefined,
+  )
+
+  // show regular tx status while tx is still submitting
+  if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
+
+  switch (swapStatus?.status) {
+    case "waiting":
+    case "confirming":
+    case "exchanging":
+    case "sending":
+      return (
+        <>
+          {swapStatus?.status === "waiting" ? <span>{t("Depositing funds")} </span> : null}
+          {swapStatus?.status === "confirming" ? <span>{t("Confirming")} </span> : null}
+          {swapStatus?.status === "exchanging" ? <span>{t("Exchanging")} </span> : null}
+          {swapStatus?.status === "sending" ? <span>{t("Sending")} </span> : null}
+          <LoaderIcon className="animate-spin-slow text-body-disabled" />
+        </>
+      )
+    case "failed":
+      return <TransactionStatusLabel status={"error"} />
+    case "finished":
+      return <TransactionStatusLabel status={tx.status} />
+    default:
+      return <TransactionStatusLabel status={"unknown"} />
+  }
+}
+const SwapTransactionStatusLabelFallback = () => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <span className="bg-body-disabled select-none rounded text-transparent">
+        {t("Submitting")}{" "}
+      </span>
+      <LoaderIcon className="animate-spin-slow text-body-disabled" />
+    </>
+  )
 }
 
 const TransactionRowBase: FC<{
@@ -480,8 +563,9 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 }) => {
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
 
+  const txInfo = tx.txInfo
   const { isTransfer, value, tokenId } = useMemo(() => {
-    const isTransfer = !!tx.tokenId && !!tx.value && tx.to
+    const isTransfer = txInfo?.type !== "swap-simpleswap" && !!tx.tokenId && !!tx.value && tx.to
     return isTransfer
       ? { isTransfer, value: tx.value, tokenId: tx.tokenId, to: tx.to }
       : {
@@ -490,11 +574,22 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           tokenId: evmNetwork?.nativeToken?.id,
           to: tx.unsigned.to,
         }
-  }, [evmNetwork?.nativeToken?.id, tx.to, tx.tokenId, tx.unsigned.to, tx.unsigned.value, tx.value])
+  }, [
+    evmNetwork?.nativeToken?.id,
+    tx.to,
+    tx.tokenId,
+    tx.unsigned.to,
+    tx.unsigned.value,
+    tx.value,
+    txInfo,
+  ])
 
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const currency = useSelectedCurrency()
+
+  const fromToken = useToken(txInfo?.fromTokenId)
+  const toToken = useToken(txInfo?.toTokenId)
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -525,6 +620,18 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
             <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
           </TxIconContainer>
+        ) : txInfo?.type === "swap-simpleswap" ? (
+          <div className="flex items-center">
+            <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
+              <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+            <TxIconContainer
+              className="-ml-4"
+              networkId={toToken?.chain?.id ?? toToken?.evmNetwork?.id}
+            >
+              <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+          </div>
         ) : isTransfer && token ? (
           <TxIconContainer
             tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
@@ -540,7 +647,13 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       }
       status={
         <>
-          <TransactionStatusLabel status={tx.status} />
+          {tx.txInfo?.type === "swap-simpleswap" ? (
+            <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
+              <SwapTransactionStatusLabel tx={tx} />
+            </Suspense>
+          ) : (
+            <TransactionStatusLabel status={tx.status} />
+          )}
           {tx.isReplacement && (
             <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
               {t("Replacement")}
@@ -550,17 +663,47 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        !!amount &&
-        !!token && (
-          <Tokens
-            amount={amount.tokens}
-            decimals={token.decimals}
-            noCountUp
-            symbol={token.symbol}
-          />
+        txInfo?.type === "swap-simpleswap" ? (
+          <div className="flex flex-col">
+            <div className="flex items-center justify-end gap-1">
+              <Tokens
+                className="pointer-events-none"
+                amount={planckToTokens(txInfo.fromAmount, fromToken?.decimals)}
+                decimals={fromToken?.decimals}
+                noCountUp
+                noTooltip
+                symbol={fromToken?.symbol}
+              />
+              <ArrowRightIcon className="text-body-inactive" />
+            </div>
+            <Tokens
+              className="pointer-events-none"
+              amount={planckToTokens(txInfo.toAmount, toToken?.decimals)}
+              decimals={toToken?.decimals ?? 0}
+              noCountUp
+              noTooltip
+              symbol={toToken?.symbol}
+            />
+          </div>
+        ) : (
+          !!amount &&
+          !!token && (
+            <Tokens
+              className="pointer-events-none"
+              amount={amount.tokens}
+              decimals={token.decimals}
+              noCountUp
+              noTooltip
+              symbol={token.symbol}
+            />
+          )
         )
       }
-      fiat={!!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
+      fiat={
+        txInfo?.type !== "swap-simpleswap" &&
+        !!amount &&
+        amount.fiat(currency) && <Fiat amount={amount} noCountUp />
+      }
       actions={
         <EvmTxActions
           tx={tx}
@@ -588,6 +731,8 @@ const SubTxActions: FC<{
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
+  const txInfo = tx.txInfo
+
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
@@ -605,6 +750,17 @@ const SubTxActions: FC<{
   )
 
   const chain = useChainByGenesisHash(tx.genesisHash)
+
+  const simpleswapHref = useMemo(() => {
+    if (!txInfo || txInfo.type !== "swap-simpleswap" || !txInfo.exchangeId) return
+    return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
+  }, [txInfo])
+  const handleSimpleswapClick = useCallback(() => {
+    if (!simpleswapHref) return
+    window.open(simpleswapHref, "_blank")
+    if (IS_EMBEDDED_POPUP) window.close()
+  }, [simpleswapHref])
+
   const hrefBlockExplorer = useMemo(
     () => (chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : null),
     [chain?.subscanUrl, tx.hash],
@@ -648,6 +804,15 @@ const SubTxActions: FC<{
               isOpen ? "visible opacity-100" : "invisible opacity-0",
             )}
           >
+            {tx.status === "success" && simpleswapHref && (
+              <button
+                type="button"
+                onClick={handleSimpleswapClick}
+                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
+              >
+                {t("View swap status")}
+              </button>
+            )}
             {hrefBlockExplorer && (
               <button
                 type="button"
@@ -683,13 +848,18 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   const tokenRates = useTokenRates(tx.tokenId)
   const currency = useSelectedCurrency()
 
+  const txInfo = tx.txInfo
   const { isTransfer, amount } = useMemo(() => {
-    const isTransfer = tx.value && tx.tokenId && tx.to && token
+    const isTransfer =
+      txInfo?.type !== "swap-simpleswap" && tx.value && tx.tokenId && tx.to && token
     return {
       isTransfer,
       amount: isTransfer ? new BalanceFormatter(tx.value, token.decimals, tokenRates) : null,
     }
-  }, [token, tokenRates, tx.to, tx.tokenId, tx.value])
+  }, [token, tokenRates, tx.to, tx.tokenId, tx.value, txInfo])
+
+  const fromToken = useToken(txInfo?.fromTokenId)
+  const toToken = useToken(txInfo?.toTokenId)
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -715,6 +885,18 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
           <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
             <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
           </TxIconContainer>
+        ) : txInfo?.type === "swap-simpleswap" ? (
+          <div className="flex items-center">
+            <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
+              <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+            <TxIconContainer
+              className="-ml-4"
+              networkId={toToken?.chain?.id ?? toToken?.evmNetwork?.id}
+            >
+              <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+          </div>
         ) : isTransfer && token ? (
           <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
             <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
@@ -727,7 +909,13 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       }
       status={
         <>
-          <TransactionStatusLabel status={tx.status} />
+          {tx.txInfo?.type === "swap-simpleswap" ? (
+            <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
+              <SwapTransactionStatusLabel tx={tx} />
+            </Suspense>
+          ) : (
+            <TransactionStatusLabel status={tx.status} />
+          )}
           {tx.isReplacement && (
             <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
               {t("Replacement")}
@@ -737,17 +925,48 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        !!amount &&
-        !!token && (
-          <Tokens
-            amount={amount.tokens}
-            decimals={token.decimals}
-            noCountUp
-            symbol={token.symbol}
-          />
+        txInfo?.type === "swap-simpleswap" ? (
+          // tx is a swap deposit
+          <div className="flex flex-col">
+            <div className="flex items-center justify-end gap-1">
+              <Tokens
+                className="pointer-events-none"
+                amount={planckToTokens(txInfo.fromAmount, fromToken?.decimals)}
+                decimals={fromToken?.decimals}
+                symbol={fromToken?.symbol}
+                noCountUp
+                noTooltip
+              />
+              <ArrowRightIcon className="text-body-inactive" />
+            </div>
+            <Tokens
+              className="pointer-events-none"
+              amount={planckToTokens(txInfo.toAmount, toToken?.decimals)}
+              decimals={toToken?.decimals ?? 0}
+              symbol={toToken?.symbol}
+              noCountUp
+              noTooltip
+            />
+          </div>
+        ) : (
+          !!amount &&
+          !!token && (
+            <Tokens
+              className="pointer-events-none"
+              amount={amount.tokens}
+              decimals={token.decimals}
+              noCountUp
+              noTooltip
+              symbol={token.symbol}
+            />
+          )
         )
       }
-      fiat={!!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
+      fiat={
+        txInfo?.type !== "swap-simpleswap" &&
+        !!amount &&
+        amount.fiat(currency) && <Fiat amount={amount} noCountUp />
+      }
       actions={
         <SubTxActions
           tx={tx}
