@@ -17,6 +17,7 @@ import {
   useBalances,
   useChains,
   useIsBalanceInitializing,
+  useRemoteConfig,
   useSetting,
 } from "@ui/state"
 
@@ -120,43 +121,54 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
   search,
 }) => {
   const { t } = useTranslation("admin")
-  const [useTestnets] = useSetting("useTestnets")
-  const allChains = useChains()
+  const [includeTestnets] = useSetting("useTestnets")
+  const { recommendedNetworks } = useRemoteConfig()
   const networksActiveState = useActiveChainsState()
-  const chains = useMemo(
-    () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),
-    [allChains, useTestnets],
-  )
+  const chains = useChains({ activeOnly: false, includeTestnets })
+
+  const allSortedNetworks = useMemo(() => {
+    return sortBy(chains, "name").sort((n1, n2) => {
+      const idx1 = recommendedNetworks?.indexOf(n1.id) ?? -1
+      const idx2 = recommendedNetworks?.indexOf(n2.id) ?? -1
+
+      if ([idx1, idx2].some((v) => v > -1)) {
+        if (idx1 === -1) return 1
+        if (idx2 === -1) return -1
+        return idx1 - idx2
+      }
+
+      return 0
+    })
+  }, [chains, recommendedNetworks])
 
   const [filteredChains, exactMatches] = useMemo(() => {
-    const arChains = activeOnly
-      ? chains.filter((n) => isChainActive(n, networksActiveState))
-      : chains
+    const lowerSearch = search?.toLowerCase() ?? ""
 
-    if (search === undefined || search.length < 1) return [arChains, [] as string[]] as const
-    const lowerSearch = search.toLowerCase()
+    const filter = (network: Chain) => {
+      if (activeOnly && !isChainActive(network, networksActiveState)) return false
 
-    const filter = (chain: Chain) =>
-      chain.name?.toLowerCase().includes(lowerSearch) ||
-      chain.nativeToken?.id.toLowerCase().includes(lowerSearch)
+      return (
+        network.name?.toLowerCase().includes(lowerSearch) ||
+        network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+      )
+    }
 
-    const filtered = arChains.filter(filter)
-    const exactMatches = filtered.flatMap((chain) =>
-      lowerSearch.trim() === chain.name?.toLowerCase().trim() ||
-      lowerSearch.trim() === chain.nativeToken?.id.toLowerCase().trim()
-        ? [chain.id]
+    const filtered = allSortedNetworks.filter(filter)
+    const exactMatches = filtered.flatMap((network) =>
+      lowerSearch.trim() === network.name?.toLowerCase().trim() ||
+      lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
+        ? [network.id]
         : [],
     )
 
     return [filtered, exactMatches] as const
-  }, [chains, search, activeOnly, networksActiveState])
+  }, [search, allSortedNetworks, activeOnly, networksActiveState])
 
   const sortedChains = useMemo(() => {
-    const byName = sortBy(filteredChains, "name")
-    if (exactMatches.length < 1) return byName
+    if (exactMatches.length < 1) return filteredChains
 
     // put exact matches at the top of the list
-    return byName.sort((a, b) => {
+    return filteredChains.sort((a, b) => {
       const aExactMatch = exactMatches.includes(a.id)
       const bExactMatch = exactMatches.includes(b.id)
       if (aExactMatch && !bExactMatch) return -1

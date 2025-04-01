@@ -22,6 +22,7 @@ import {
   useBalances,
   useEvmNetworks,
   useIsBalanceInitializing,
+  useRemoteConfig,
   useSetting,
 } from "@ui/state"
 
@@ -132,10 +133,23 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
   const { t } = useTranslation("admin")
 
   const [includeTestnets] = useSetting("useTestnets")
-  const evmNetworks = useEvmNetworks({
-    activeOnly: false,
-    includeTestnets,
-  })
+  const { recommendedNetworks } = useRemoteConfig()
+  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
+
+  const allSortedNetworks = useMemo(() => {
+    return sortBy(evmNetworks, "name").sort((n1, n2) => {
+      const idx1 = recommendedNetworks?.indexOf(n1.id) ?? -1
+      const idx2 = recommendedNetworks?.indexOf(n2.id) ?? -1
+
+      if ([idx1, idx2].some((v) => v > -1)) {
+        if (idx1 === -1) return 1
+        if (idx2 === -1) return -1
+        return idx1 - idx2
+      }
+
+      return 0
+    })
+  }, [evmNetworks, recommendedNetworks])
 
   const networksActiveState = useActiveEvmNetworksState()
 
@@ -151,7 +165,7 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
       )
     }
 
-    const filtered = evmNetworks.filter(filter)
+    const filtered = allSortedNetworks.filter(filter)
     const exactMatches = filtered.flatMap((network) =>
       lowerSearch.trim() === network.name?.toLowerCase().trim() ||
       lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
@@ -160,14 +174,13 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
     )
 
     return [filtered, exactMatches] as const
-  }, [evmNetworks, networksActiveState, search, activeOnly])
+  }, [allSortedNetworks, networksActiveState, search, activeOnly])
 
+  // bump exact matches to the top of the list
   const sortedNetworks = useMemo(() => {
-    const byName = sortBy(filteredEvmNetworks, "name")
-    if (exactMatches.length < 1) return byName
+    if (exactMatches.length < 1) return filteredEvmNetworks
 
-    // put exact matches at the top of the list
-    return byName.sort((a, b) => {
+    return filteredEvmNetworks.sort((a, b) => {
       const aExactMatch = exactMatches.includes(a.id)
       const bExactMatch = exactMatches.includes(b.id)
       if (aExactMatch && !bExactMatch) return -1
