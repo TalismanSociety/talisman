@@ -267,17 +267,9 @@ export class Balances {
     return [...this]
   }
 
-  /**
-   * Get an array of balances in this collection, sorted by chain sortIndex.
-   *
-   * @returns A sorted array of the balances in this collection.
-   */
+  /** @deprecated use each instead */
   get sorted() {
-    return [...this].sort(
-      (a, b) =>
-        ((a.chain || a.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER) -
-        ((b.chain || b.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER),
-    )
+    return this.each
   }
 
   /**

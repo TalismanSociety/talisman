@@ -8,6 +8,7 @@ export type Chain = {
   id: ChainId // The ID of this chain
   isTestnet: boolean // Is this chain a testnet?
   isDefault: boolean // Is this chain enabled by default?
+  /** @deprecated */
   sortIndex: number | null // The sortIndex of this chain
   genesisHash: `0x${string}` | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
