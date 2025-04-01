@@ -81,7 +81,12 @@ export class TokenRatesStore {
 
   async hydrateStore(): Promise<boolean> {
     try {
-      const tokensList = await chaindataProvider.tokensById()
+      const [tokens, activeTokens] = await Promise.all([
+        chaindataProvider.tokensById(),
+        activeTokensStore.get(),
+      ])
+
+      const tokensList = filterActiveTokens(tokens, activeTokens)
       await this.updateTokenRates(tokensList)
 
       return true
@@ -91,6 +96,9 @@ export class TokenRatesStore {
     }
   }
 
+  /**
+   * WARNING: Make sure the tokens list `tokens` only includes active tokens.
+   */
   private async updateTokenRates(tokens: TokenList): Promise<void> {
     const now = Date.now()
     const strTokenIds = Object.keys(tokens ?? {})
