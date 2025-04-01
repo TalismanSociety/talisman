@@ -22,8 +22,7 @@ export type CoinsApiConfig = {
 }
 
 export const DEFAULT_COINAPI_CONFIG: CoinsApiConfig = {
-  //apiUrl: "https://coins.talisman.xyz",
-  apiUrl: "http://localhost:8787",
+  apiUrl: "https://coins.talisman.xyz",
 }
 export async function fetchTokenRates(
   tokens: Record<TokenId, Token>,
