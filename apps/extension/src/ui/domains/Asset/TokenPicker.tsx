@@ -316,7 +316,7 @@ const TokensList: FC<TokensListProps> = ({
     tokenRatesMap,
   ])
 
-  // sort alphabetically by symbol + chain n
+  // sort alphabetically by symbol + chain name
   const sortTokens = useCallback(
     (tokens: TokenData[]): TokenData[] =>
       sortBy(sortBy(tokens, "chainName"), "token.symbol").sort((a, b) => {
