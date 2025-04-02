@@ -41,7 +41,7 @@ export const BittensorTokenBalanceList = ({
   const [fistGroupStake] = groupedStakesByNetuid ?? []
   const { chainOrNetwork, summary, token, detailRows, status, networkType } = tokenBalances
   const { subnetData, isError, isLoading, isFetchingNextPage } = combinedSubnetData
-  const { price_change_1_day } = subnetData[Number(listKey)] ?? {}
+  const { price_change_1_day, subnet_name } = subnetData[Number(listKey)] ?? {}
 
   // wait for data to load
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
@@ -74,7 +74,7 @@ export const BittensorTokenBalanceList = ({
       }
     }, defaultSummary) ?? defaultSummary
 
-  const subnetListName = `${listKey} | ${subnetName || ""} ${tokenSymbol || ""}`.trim()
+  const subnetListName = `${listKey} | ${subnetName || subnet_name} ${tokenSymbol || ""}`.trim()
   const chainName = isRootStake || isChainIfo ? chainOrNetwork.name || "" : subnetListName
 
   const rowSummary = isChainIfo ? summary : groupSummary

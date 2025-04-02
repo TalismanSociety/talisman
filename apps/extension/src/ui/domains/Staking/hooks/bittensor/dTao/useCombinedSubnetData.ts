@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { SubnetData } from "./types"
-import { useGetInfiniteSubnetDescriptions } from "./useGetInfiniteSubnetDescriptions"
+import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
 import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
 
 export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
@@ -15,7 +15,7 @@ export const useCombinedSubnetData = () => {
     isError: isSubnetDescriptionsError,
     isLoading: isSubnetDescriptionsLoading,
     fetchNextPage: fetchSubnetDescriptionsNextPage,
-  } = useGetInfiniteSubnetDescriptions()
+  } = useGetInfiniteSubnetIdentities()
 
   const {
     data: subnetPoolsData,
@@ -49,7 +49,7 @@ export const useCombinedSubnetData = () => {
 
     const descriptions = subnetDescriptionsData.pages
       .flatMap((page) => page.data)
-      .map((desc) => ({ ...desc, descriptionName: desc.name }))
+      .map((desc) => ({ ...desc, descriptionName: desc.subnet_name }))
     const pools = subnetPoolsData.pages.flatMap((page) => page.data)
 
     const combinedSubnetData = descriptions.reduce(

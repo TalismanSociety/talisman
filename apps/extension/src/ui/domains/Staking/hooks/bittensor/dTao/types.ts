@@ -43,23 +43,23 @@ export type SubnetApiResponse = {
   pagination: Pagination
   data: SubnetPool[]
 }
-
-export type SubnetDescription = {
-  netuid: string | number
-  bittensor_id: string
-  name: string
-  description: string
-  hw_requirements: string
-  github: string
-  image_url: string
+type SubnetIdentity = {
+  netuid: number
+  subnet_name: string
+  github_repo: string | null
+  subnet_contact: string | null
+  subnet_url: string | null
+  discord: string | null
+  description: string | null
+  additional: string | null
 }
 
 export type SubnetApiDescriptionsResponse = {
   pagination: Pagination
-  data: SubnetDescription[]
+  data: SubnetIdentity[]
 }
 
-export type SubnetData = Partial<SubnetDescription> &
+export type SubnetData = Partial<SubnetIdentity> &
   Partial<SubnetPool> & {
     descriptionName?: string
   }
