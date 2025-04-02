@@ -78,6 +78,7 @@ export const BuyTokensTokenPicker = () => {
           selected={id}
           onSelect={handleTokenSelect}
           tokenFilter={tokenFilter}
+          isRamp
         />
       </ScrollContainer>
     </BuyTokensLayout>
