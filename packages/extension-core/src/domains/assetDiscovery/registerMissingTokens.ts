@@ -71,8 +71,6 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
     (a) => a.networkId,
   )
 
-  const chainsWithNewAssets = new Set<string>()
-
   await Promise.all(
     Object.entries(assetsByNetworkId).map(async ([networkId, assets]) => {
       try {
@@ -113,8 +111,6 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
                 decimals,
                 logo: "", // TODO unknown token url
               })
-
-              chainsWithNewAssets.add(networkId)
             } catch (err) {
               log.warn("[AssetDiscovery] Failed to add discovered asset", id, { err })
               // if a contract isnt a erc20, in some cases the promise wont resolve
@@ -138,7 +134,7 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
   stop()
 
   // returns the list of chain ids for which we have discovered assets
-  return [...chainsWithNewAssets]
+  return Object.keys(assetsByNetworkId)
 }
 
 const getErc20Details = async (client: Client, address: EvmAddress) => {
