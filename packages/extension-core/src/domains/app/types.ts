@@ -22,6 +22,9 @@ export type RemoteConfigStoreData = {
   documentation: {
     unifiedAddressDocsUrl: string
   }
+  assetDiscovery: {
+    apiUrl: string
+  }
 }
 
 export interface RequestOnboardCreatePassword {

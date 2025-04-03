@@ -30,6 +30,7 @@ import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.ac
 import { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
 import { activeTokensStore } from "../tokens/store.activeTokens"
+import { registerMissingTokens } from "./registerMissingTokens"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
 
@@ -263,6 +264,8 @@ class AssetDiscoveryScanner {
       if (!scope) return
 
       log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
+
+      await registerMissingTokens(scope.addresses)
 
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
@@ -498,22 +501,19 @@ class AssetDiscoveryScanner {
       ).filter((network): network is EvmNetwork => !!network)
 
       // activate tokens that have not been explicitely enabled or disabled
-      for (const token of tokens) {
-        if (activeTokens[token.id] === undefined) {
-          log.debug("[AssetDiscovery] Automatically enabling discovered asset", { token })
-          await activeTokensStore.setActive(token.id, true)
-        }
+      const tokenIdsToActivate = tokens.filter((t) => activeTokens[t.id] === undefined)
+      if (tokenIdsToActivate.length) {
+        log.debug("[AssetDiscovery] Automatically enabling discovered assets", tokenIdsToActivate)
+        await activeTokensStore.set(Object.fromEntries(tokenIdsToActivate.map((t) => [t.id, true])))
       }
 
-      // activate networks that have not been explicitely disabled and that are not default networks
-      for (const evmNetwork of evmNetworks) {
-        if (
-          activeEvmNetworks[evmNetwork.id] === undefined &&
-          !isEvmNetworkActive(evmNetwork, activeEvmNetworks)
-        ) {
-          log.debug("[AssetDiscovery] Automatically enabling discovered network", { evmNetwork })
-          activeEvmNetworksStore.setActive(evmNetwork.id, true)
-        }
+      // activate networks that have not been explicitely enabled or disabled
+      const networkIdsToActivate = evmNetworks.filter((n) => activeEvmNetworks[n.id] === undefined)
+      if (networkIdsToActivate.length) {
+        log.debug("[AssetDiscovery] Automatically enabling networks", networkIdsToActivate)
+        await activeEvmNetworksStore.set(
+          Object.fromEntries(networkIdsToActivate.map((t) => [t.id, true])),
+        )
       }
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {

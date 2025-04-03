@@ -36,6 +36,9 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     unifiedAddressDocsUrl:
       "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
   },
+  assetDiscovery: {
+    apiUrl: "https://ada.talisman.xyz",
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes

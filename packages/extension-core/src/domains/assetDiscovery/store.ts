@@ -1,7 +1,9 @@
 import { Address } from "@talismn/balances"
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { log } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
+import { EvmAddress } from "../ethereum/types"
 import { AssetDiscoveryScanScope } from "./types"
 
 export type AssetDiscoveryScanType = "manual" // | "automatic"
@@ -22,7 +24,8 @@ export type AssetDiscoveryScanState = {
   lastScanAccounts: string[]
   lastScanNetworks: string[]
   lastScanTokensCount: number
-  queue?: AssetDiscoveryScanScope[] // may be undefined for older installs : TODO migration ?
+  queue?: AssetDiscoveryScanScope[]
+  invalidErc20s?: string[]
 }
 
 export const DEFAULT_STATE: AssetDiscoveryScanState = {
@@ -35,6 +38,7 @@ export const DEFAULT_STATE: AssetDiscoveryScanState = {
   lastScanNetworks: [],
   lastScanTokensCount: 0,
   queue: [],
+  invalidErc20s: [],
 }
 
 class AssetDiscoveryStore extends StorageProvider<AssetDiscoveryScanState> {
@@ -44,6 +48,22 @@ class AssetDiscoveryStore extends StorageProvider<AssetDiscoveryScanState> {
 
   reset() {
     return this.set(DEFAULT_STATE)
+  }
+
+  async isInvalidErc20(evmNetworkId: EvmNetworkId, contractAddress: EvmAddress) {
+    const key = `${evmNetworkId}::${contractAddress.toLowerCase()}`
+    const invalidErc20s = (await this.get("invalidErc20s")) ?? []
+    return invalidErc20s.includes(key)
+  }
+
+  async setInvalidErc20(evmNetworkId: EvmNetworkId, contractAddress: EvmAddress) {
+    log.debug("[AssetDiscovery] setting invalid erc20", evmNetworkId, contractAddress)
+    const key = `${evmNetworkId}::${contractAddress.toLowerCase()}`
+    return this.mutate((state) => {
+      const oldInvalidErc20s = state.invalidErc20s ?? []
+      const invalidErc20s = [...new Set([...oldInvalidErc20s, key])]
+      return { ...state, invalidErc20s }
+    })
   }
 }
 
