@@ -77,7 +77,6 @@ class AssetDiscoveryScanner {
     // identify newly added accounts and scan those
     keyringStore.accounts$
       .pipe(
-        debounceTime(500),
         map((accounts) => accounts.map((account) => account.address).sort()),
         distinct((addresses) => addresses.join("")),
       )
@@ -113,7 +112,6 @@ class AssetDiscoveryScanner {
     // identify newly enabled networks and scan those
     combineLatest([chaindataProvider.evmNetworksByIdObservable, activeEvmNetworksStore.observable])
       .pipe(
-        debounceTime(500),
         map(([networksById, activeNetworks]) =>
           Object.keys(activeNetworks)
             .filter((k) => !!activeNetworks[k] && networksById[k] && !networksById.isTestnet)
@@ -265,7 +263,8 @@ class AssetDiscoveryScanner {
 
       log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
 
-      await registerMissingTokens(scope.addresses)
+      const newNetworkIds = await registerMissingTokens(scope.addresses)
+      const networkIdsToScan = [...new Set([...scope.networkIds, ...newNetworkIds])]
 
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
@@ -279,15 +278,13 @@ class AssetDiscoveryScanner {
 
       const tokensToScan = allTokens
         .filter(isEvmToken)
-        .filter((t) => scope.networkIds.includes(t.evmNetwork?.id ?? ""))
+        .filter((t) => networkIdsToScan.includes(t.evmNetwork?.id ?? ""))
         .filter((token) => {
           const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
           if (!evmNetwork) return false
-          if (!evmNetwork.forceScan) {
-            if (evmNetwork.isTestnet || token.isTestnet) return false
-            if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
-            if (token.noDiscovery) return false
-          }
+          if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
+          if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
+          if (token.noDiscovery) return false
           // scan only if token has never been enabled or disabled
           return activeTokens[token.id] === undefined
         })

@@ -31,14 +31,16 @@ export const registerMissingTokens = async (addresses: string[]) => {
   const stop = log.timer("[AssetDiscovery] registerMissingTokens")
 
   const evmAddresses = addresses.map(isEthereumAddress)
-  if (!evmAddresses.length) return
+  if (!evmAddresses.length) return []
 
   const discoveredAssets = await discoverTokensFromApi(addresses)
-  if (!discoveredAssets.length) return
+  if (!discoveredAssets.length) return []
 
-  await ensureDiscoveredAssets(discoveredAssets)
+  const newNetworkIds = await ensureDiscoveredAssets(discoveredAssets)
 
   stop()
+
+  return newNetworkIds
 }
 
 const discoverTokensFromApi = async (addresses: string[]) => {
@@ -64,32 +66,34 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
     chaindataProvider.evmNetworksById(),
   ])
 
-  const assetsByChain = groupBy(
+  const assetsByNetworkId = groupBy(
     assets.filter((asset) => asset.type === "erc20"),
     (a) => a.networkId,
   )
 
+  const chainsWithNewAssets = new Set<string>()
+
   await Promise.all(
-    Object.entries(assetsByChain).map(async ([chainId, assets]) => {
+    Object.entries(assetsByNetworkId).map(async ([networkId, assets]) => {
       try {
-        const network = evmNetworksById[chainId]
+        const network = evmNetworksById[networkId]
 
         // ignore unknown networks
         if (!network) return
 
-        const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(chainId)
+        const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
         if (!provider) return
 
         await Promise.all(
           assets.map(async (asset) => {
-            const id = `${chainId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
+            const id = `${networkId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
             if (
               tokensById[id] ||
-              tokensById[`${chainId}-evm-uniswapv2-${asset.contractAddress.toLowerCase()}`] // could be a known LP too
+              tokensById[`${networkId}-evm-uniswapv2-${asset.contractAddress.toLowerCase()}`] // could be a known LP too
             )
               return
 
-            if (await assetDiscoveryStore.isInvalidErc20(chainId, asset.contractAddress)) return
+            if (await assetDiscoveryStore.isInvalidErc20(networkId, asset.contractAddress)) return
 
             try {
               const { decimals, symbol } = await Promise.race([
@@ -99,16 +103,18 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
 
               log.debug("[AssetDiscovery] Adding discovered asset", symbol, id)
               await chaindataProvider.addCustomToken({
-                id: `${chainId}-evm-erc20-${asset.contractAddress.toLocaleLowerCase()}`,
+                id: `${networkId}-evm-erc20-${asset.contractAddress.toLocaleLowerCase()}`,
                 type: "evm-erc20",
                 isCustom: true,
                 contractAddress: asset.contractAddress,
-                evmNetwork: { id: chainId },
+                evmNetwork: { id: networkId },
                 isTestnet: network.isTestnet,
                 symbol,
                 decimals,
                 logo: "", // TODO unknown token url
               })
+
+              chainsWithNewAssets.add(networkId)
             } catch (err) {
               log.warn("[AssetDiscovery] Failed to add discovered asset", id, { err })
               // if a contract isnt a erc20, in some cases the promise wont resolve
@@ -117,12 +123,12 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
                 err instanceof ContractFunctionExecutionError ||
                 (err as Error)?.message === "Timeout"
               )
-                await assetDiscoveryStore.setInvalidErc20(chainId, asset.contractAddress)
+                await assetDiscoveryStore.setInvalidErc20(networkId, asset.contractAddress)
             }
           }),
         )
       } catch (err) {
-        log.error("[AssetDiscovery] Failed to ensure discovered assets for network %s", chainId, {
+        log.error("[AssetDiscovery] Failed to ensure discovered assets for network %s", networkId, {
           err,
         })
       }
@@ -130,6 +136,9 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
   )
 
   stop()
+
+  // returns the list of chain ids for which we have discovered assets
+  return [...chainsWithNewAssets]
 }
 
 const getErc20Details = async (client: Client, address: EvmAddress) => {
