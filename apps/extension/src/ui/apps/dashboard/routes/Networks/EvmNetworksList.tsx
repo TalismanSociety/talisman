@@ -8,7 +8,6 @@ import {
   isEvmNetworkActive,
   SimpleEvmNetwork,
 } from "extension-core"
-import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -137,7 +136,7 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
   const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
 
   const allSortedNetworks = useMemo(() => {
-    return sortBy(evmNetworks, "name").sort((n1, n2) => {
+    return evmNetworks.concat().sort((n1, n2) => {
       const idx1 = recommendedNetworks?.indexOf(n1.id) ?? -1
       const idx2 = recommendedNetworks?.indexOf(n2.id) ?? -1
 
@@ -147,7 +146,7 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
         return idx1 - idx2
       }
 
-      return 0
+      return (n1.name ?? "").localeCompare(n2.name ?? "")
     })
   }, [evmNetworks, recommendedNetworks])
 

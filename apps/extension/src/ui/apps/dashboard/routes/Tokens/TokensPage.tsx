@@ -284,7 +284,10 @@ const Content = () => {
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
-    return [{ id: "ALL", name: "All networks" } as SimpleEvmNetwork, ...sortBy(evmNetworks, "name")]
+    return [
+      { id: "ALL", name: "All networks" } as SimpleEvmNetwork,
+      ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
+    ]
   }, [evmNetworks])
   const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
 
