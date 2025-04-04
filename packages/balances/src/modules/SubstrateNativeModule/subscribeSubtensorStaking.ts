@@ -12,6 +12,7 @@ import { AddressesByToken, SubscriptionCallback } from "../../types"
 import { findChainMeta, getUniqueChainIds } from "../util"
 import { SubNativeBalance, SubNativeToken } from "./types"
 import {
+  BITTENSOR_TESTNET_CHAIN_ID,
   calculateTaoFromDynamicInfo,
   DecodeResult_GetDynamicInfo,
   DecodeResult_GetStakeInfoForColdkey,
@@ -158,6 +159,7 @@ export async function subscribeSubtensorStaking(
         >
         const queryMethods: Array<QueryMethod> = [
           async () => {
+            if (chainId === BITTENSOR_TESTNET_CHAIN_ID) return []
             const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
             const params = EncodeParams_GetStakeInfoForColdkey(address)
             const response = await chainConnector.send(

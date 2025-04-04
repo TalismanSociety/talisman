@@ -7,6 +7,7 @@ export const SUBTENSOR_MIN_STAKE_AMOUNT_PLANK = 1000000n
 const TAO_DECIMALS = 9n
 export const SCALE_FACTOR = 10n ** TAO_DECIMALS // Equivalent to 10e9 for precision
 export const ONE_ALPHA_TOKEN = SCALE_FACTOR
+export const BITTENSOR_TESTNET_CHAIN_ID = "bittensor-testnet"
 
 const BittensorAccountPrefix = 42
 const BittensorAccountId = AccountId(BittensorAccountPrefix)
