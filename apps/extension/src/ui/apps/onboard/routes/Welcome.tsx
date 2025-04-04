@@ -1,21 +1,20 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ChainId, EvmNetworkId } from "extension-core"
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "extension-shared"
-import { useCallback, useEffect, useMemo } from "react"
+import { FC, useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { TalismanColouredHandWhiteTextLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useChainsMap, useEvmNetworksMap } from "@ui/state"
 
+import logoBase from "../assets/base.svg?url"
+import logoBittensor from "../assets/bittensor.svg?url"
+import logoMainnet from "../assets/mainnet.svg?url"
+import logoPolkadot from "../assets/polkadot.svg?url"
+import logoSonic from "../assets/sonic.svg?url"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
 
@@ -35,61 +34,31 @@ const handleLinkClick = (action: string) => () => {
   })
 }
 
-const WelcomeNetworkStackItem = ({ network }: { network?: PortfolioNetwork }) => {
-  const tooltip = useMemo(
-    () => (
-      <div className="flex items-center gap-2">
-        <ChainLogo id={network?.id} />
-        <div>
-          {network?.label} ({network?.type})
-        </div>
-      </div>
-    ),
-    [network],
-  )
-
-  if (!network) return null
-
+const NetworkItem: FC<{ logo: string; label: string }> = ({ logo, label }) => {
   return (
-    <div className="ml-[-1rem] inline-block overflow-hidden">
-      <WithTooltip tooltip={tooltip}>
-        <ChainLogo key={network.id} id={network.id} className="h-20 w-20" />
-      </WithTooltip>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <img src={logo} alt={label} className="ml-[-1rem] inline-block size-20 overflow-hidden" />
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   )
 }
 
-type NetworkStackProps = { ids: (ChainId | EvmNetworkId)[]; className?: string }
-export const WelcomeNetworkStack = ({ className, ids }: NetworkStackProps) => {
-  const { t } = useTranslation()
-
-  const chainsMap = useChainsMap()
-  const evmNetworksMap = useEvmNetworksMap()
-  const networks = useMemo(
-    () =>
-      ids.flatMap((id) => {
-        const chain = chainsMap[id]
-        const evmNetwork = evmNetworksMap[id]
-        if (!chain && !evmNetwork) return []
-
-        const relay = chain?.relay?.id ? chainsMap[chain.relay.id] : null
-        const { label, type } = getNetworkInfo(t, { chain, evmNetwork, relay })
-
-        return { id, label, type, logo: chain?.logo ?? evmNetwork?.logo }
-      }),
-    [chainsMap, evmNetworksMap, ids, t],
-  )
-
+const SupportedNetworks = () => {
   return (
-    <div className={classNames("flex shrink-0 content-center pl-[1rem]", className)}>
-      {networks?.map((network, idx) => (
-        <WelcomeNetworkStackItem key={`${network}-${idx}`} network={network} />
-      ))}
+    <div className={classNames("my-10 flex h-20 shrink-0 content-center pl-[1rem]")}>
+      <NetworkItem logo={logoMainnet} label="Ethereum Mainnet" />
+      <NetworkItem logo={logoBase} label="Base" />
+      <NetworkItem logo={logoSonic} label="Sonic" />
+      <NetworkItem logo={logoBittensor} label="Bittensor" />
+      <NetworkItem logo={logoPolkadot} label="Polkadot" />
       <div className="ml-[-1rem] flex h-full w-auto p-1">
         <div className="text-grey-200 ring-body-secondary bg-grey-750 relative flex w-auto flex-col justify-center rounded-full px-3 text-center ring-1">
           <div className="font-bold">800+</div>
         </div>
       </div>
+      <div className="text-body-secondary ml-2 content-center text-sm">Networks supported</div>
     </div>
   )
 }
@@ -138,13 +107,7 @@ export const WelcomePage = () => {
               "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic",
             )}
           </div>
-          <div className="justify flex justify-between gap-2 py-10 align-middle">
-            <WelcomeNetworkStack
-              ids={["1", "8453", "146", "bittensor", "polkadot"]}
-              className="h-20"
-            />
-            <div className="text-body-secondary content-center text-sm">Networks supported</div>
-          </div>
+          <SupportedNetworks />
         </div>
         <div className="welcome-button flex w-[44rem] flex-col gap-8">
           <Button primary icon={ArrowRightIcon} onClick={handleNextClick()}>
