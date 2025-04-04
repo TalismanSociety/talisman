@@ -3,7 +3,7 @@ import { erc20Abi, erc20BalancesAggregatorAbi, EvmErc20Token } from "@talismn/ba
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { isAccountEthereum } from "@talismn/keyring"
-import { isEthereumAddress, throwAfter } from "@talismn/util"
+import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
@@ -187,7 +187,7 @@ class AssetDiscoveryScanner {
     const networkIds = scope.networkIds.filter((id) => evmNetworksMap[id])
     if (!addresses.length || !networkIds.length) return false
 
-    log.debug("[AssetDiscovery] Enqueue scan", { addresses, networkIds })
+    log.debug("[AssetDiscovery] Enqueue scan", { addresses, networkIds, dequeue })
 
     // add to queue
     await assetDiscoveryStore.mutate((state) => ({
@@ -263,18 +263,45 @@ class AssetDiscoveryScanner {
 
       log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
 
-      const newNetworkIds = await registerMissingTokens(scope.addresses)
-      const networkIdsToScan = [...new Set([...scope.networkIds, ...newNetworkIds])]
+      const foundTokenIds = await registerMissingTokens(scope.addresses)
 
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
-      const [allTokens, evmNetworks, activeTokens] = await Promise.all([
+      const [allTokens, evmNetworks, activeTokens, activeNetworks] = await Promise.all([
         chaindataProvider.tokens(),
         chaindataProvider.evmNetworksById(),
         activeTokensStore.get(),
+        activeEvmNetworksStore.get(),
       ])
 
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
+
+      // add all networks that contain an asset that was discovered and whose enabled status is not set yet
+      // key idea: dont scan mainnet (8K tokens) unless a new token is found on it
+      const additionalNetworkIds: string[] = foundTokenIds
+        .map((tokenId) => tokensMap[tokenId])
+        .filter((token) => {
+          if (!token || !token.noDiscovery) return false
+
+          switch (token.type) {
+            case "evm-erc20":
+              return activeTokens[token.id] === undefined
+            case "evm-native":
+              return (
+                activeNetworks[token.evmNetwork.id] === undefined ||
+                activeTokens[token.id] === undefined
+              )
+            default:
+              return false
+          }
+        })
+        .map((t) => {
+          log.debug("[AssetDiscovery] Forcing scan because of", t.id)
+          return t.evmNetwork?.id
+        })
+        .filter((id): id is string => !!id)
+
+      const networkIdsToScan = [...new Set([...scope.networkIds, ...additionalNetworkIds])]
 
       const tokensToScan = allTokens
         .filter(isEvmToken)
@@ -302,6 +329,13 @@ class AssetDiscoveryScanner {
       const totalChecks = tokensToScan.length * scope.addresses.length
       const totalTokens = tokensToScan.length
 
+      log.debug(
+        "[AssetDiscovery] Starting scan: %d tokens, %d total checks",
+        totalTokens,
+        totalChecks,
+        { networkIdsToScan },
+      )
+
       const subScopeChange = assetDiscoveryStore.observable
         .pipe(distinctUntilKeyChanged("currentScanScope", isEqual), skip(1))
         .subscribe(() => {
@@ -314,6 +348,8 @@ class AssetDiscoveryScanner {
           .filter((n) => n.erc20aggregator)
           .map((n) => [n.id, n.erc20aggregator] as const),
       )
+
+      const stop = log.timer("[AssetDiscovery] Scan completed")
 
       // process multiple networks at a time
       await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
@@ -437,7 +473,7 @@ class AssetDiscoveryScanner {
 
       subScopeChange.unsubscribe()
 
-      log.debug("[AssetDiscovery] Scan completed", scope)
+      stop()
 
       await this.enableDiscoveredTokens() // if pending tokens to enable, do it now
     } catch (cause) {
@@ -512,6 +548,8 @@ class AssetDiscoveryScanner {
           Object.fromEntries(networkIdsToActivate.map((t) => [t.id, true])),
         )
       }
+
+      await sleep(100) // pause to ensure local storage observables fires before we exit
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
         err,

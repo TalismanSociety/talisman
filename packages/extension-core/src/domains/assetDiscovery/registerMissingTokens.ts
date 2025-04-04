@@ -27,6 +27,11 @@ type DiscoveredAssetNative = {
 
 type DiscoveredAsset = DiscoveredAssetErc20 | DiscoveredAssetNative
 
+/**
+ *
+ * @param addresses
+ * @returns list of all token ids that were found
+ */
 export const registerMissingTokens = async (addresses: string[]) => {
   const stop = log.timer("[AssetDiscovery] registerMissingTokens")
 
@@ -36,11 +41,11 @@ export const registerMissingTokens = async (addresses: string[]) => {
   const discoveredAssets = await discoverTokensFromApi(addresses)
   if (!discoveredAssets.length) return []
 
-  const newNetworkIds = await ensureDiscoveredAssets(discoveredAssets)
+  const foundTokenIds = await ensureDiscoveredAssets(discoveredAssets)
 
   stop()
 
-  return newNetworkIds
+  return foundTokenIds
 }
 
 const discoverTokensFromApi = async (addresses: string[]) => {
@@ -66,10 +71,9 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
     chaindataProvider.evmNetworksById(),
   ])
 
-  const assetsByNetworkId = groupBy(
-    assets.filter((asset) => asset.type === "erc20"),
-    (a) => a.networkId,
-  )
+  const assetsByNetworkId = groupBy(assets, (a) => a.networkId)
+
+  const foundTokenIds = new Set<string>()
 
   await Promise.all(
     Object.entries(assetsByNetworkId).map(async ([networkId, assets]) => {
@@ -84,12 +88,22 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
 
         await Promise.all(
           assets.map(async (asset) => {
-            const id = `${networkId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
-            if (
-              tokensById[id] ||
-              tokensById[`${networkId}-evm-uniswapv2-${asset.contractAddress.toLowerCase()}`] // could be a known LP too
-            )
+            if (asset.type === "native") {
+              foundTokenIds.add(`${networkId}-evm-native`)
               return
+            }
+
+            const id = `${networkId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
+            if (tokensById[id]) {
+              foundTokenIds.add(id)
+              return
+            }
+
+            const lpTokenId = `${networkId}-evm-uniswapv2-${asset.contractAddress.toLowerCase()}`
+            if (tokensById[lpTokenId]) {
+              foundTokenIds.add(lpTokenId)
+              return
+            }
 
             if (await assetDiscoveryStore.isInvalidErc20(networkId, asset.contractAddress)) return
 
@@ -101,7 +115,7 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
 
               log.debug("[AssetDiscovery] Adding discovered asset", symbol, id)
               await chaindataProvider.addCustomToken({
-                id: `${networkId}-evm-erc20-${asset.contractAddress.toLocaleLowerCase()}`,
+                id,
                 type: "evm-erc20",
                 isCustom: true,
                 contractAddress: asset.contractAddress,
@@ -109,8 +123,10 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
                 isTestnet: network.isTestnet,
                 symbol,
                 decimals,
-                logo: "", // TODO unknown token url
+                logo: "",
               })
+
+              foundTokenIds.add(id)
             } catch (err) {
               log.warn("[AssetDiscovery] Failed to add discovered asset", id, { err })
               // if a contract isnt a erc20, in some cases the promise wont resolve
@@ -133,8 +149,7 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
 
   stop()
 
-  // returns the list of chain ids for which we have discovered assets
-  return Object.keys(assetsByNetworkId)
+  return [...foundTokenIds]
 }
 
 const getErc20Details = async (client: Client, address: EvmAddress) => {
