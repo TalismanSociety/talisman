@@ -50,7 +50,7 @@ export const BittensorTokenBalanceList = ({
   const {
     meta: {
       alphaToTaoRate,
-      dynamicInfo: { subnetIdentity: { subnetName } = {}, tokenSymbol } = {},
+      dynamicInfo: { subnetIdentity: { subnetName = subnet_name } = {}, tokenSymbol } = {},
     } = {},
   } = fistGroupStake
 
@@ -74,7 +74,7 @@ export const BittensorTokenBalanceList = ({
       }
     }, defaultSummary) ?? defaultSummary
 
-  const subnetListName = `${listKey} | ${subnetName || subnet_name} ${tokenSymbol || ""}`.trim()
+  const subnetListName = `${listKey} | ${subnetName} ${tokenSymbol || ""}`.trim()
   const chainName = isRootStake || isChainIfo ? chainOrNetwork.name || "" : subnetListName
 
   const rowSummary = isChainIfo ? summary : groupSummary
