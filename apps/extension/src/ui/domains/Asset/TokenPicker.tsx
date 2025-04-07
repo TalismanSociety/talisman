@@ -230,7 +230,6 @@ type TokensListProps = {
   address?: Address
   selected?: TokenId
   search?: string
-  showEmptyBalances?: boolean
   allowUntransferable?: boolean
   ownedOnly?: boolean
   isRamp?: boolean
@@ -242,7 +241,6 @@ const TokensList: FC<TokensListProps> = ({
   address,
   selected,
   search,
-  showEmptyBalances,
   allowUntransferable,
   ownedOnly,
   isRamp,
@@ -379,21 +377,14 @@ const TokensList: FC<TokensListProps> = ({
         ...t,
         balances: arAccountBalances.filter((b) => b.tokenId === t.id),
       }))
-      .filter((t) => showEmptyBalances || t.balances.some((bal) => bal.transferable.planck > 0n))
+      .filter((t) => t.balances.some((bal) => bal.transferable.planck > 0n))
       .map((t) => ({
         ...t,
         balances: new Balances(t.balances),
       }))
 
     return sortTokens(tokensWithPosBalance)
-  }, [
-    accountBalances.count,
-    accountBalances.each,
-    isRamp,
-    accountCompatibleTokens,
-    sortTokens,
-    showEmptyBalances,
-  ])
+  }, [accountBalances.count, accountBalances.each, isRamp, accountCompatibleTokens, sortTokens])
 
   // apply user search
   const tokens = useMemo(() => {
@@ -467,7 +458,6 @@ type TokenPickerProps = {
   address?: string
   selected?: TokenId
   initialSearch?: string
-  showEmptyBalances?: boolean
   allowUntransferable?: boolean
   ownedOnly?: boolean
   className?: string
@@ -480,7 +470,6 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   address,
   selected,
   initialSearch = "",
-  showEmptyBalances,
   allowUntransferable,
   ownedOnly,
   className,
@@ -510,7 +499,6 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           address={address}
           selected={selected}
           search={deferredSearch}
-          showEmptyBalances={showEmptyBalances}
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}
           tokenFilter={tokenFilter}
