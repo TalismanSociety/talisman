@@ -11,7 +11,6 @@ export const MigrationProgress = () => {
   const { t } = useTranslation()
 
   const [migration] = useAppState("currentMigration")
-
   if (!migration) return null
 
   return (
@@ -50,7 +49,7 @@ export const MigrationProgress = () => {
               <ul className="text-alert-warn grow overflow-scroll pl-8">
                 {migration.errors.map((err, idx) => (
                   <li key={idx} className="list-disc">
-                    {err}
+                    {migration.name}: {String(err)}
                   </li>
                 ))}
               </ul>
@@ -65,7 +64,7 @@ export const MigrationProgress = () => {
             </div>
           ) : (
             <p className="text-body-secondary mt-4 text-center text-base">
-              {migration.name} -{" "}
+              <span>{t("Progress:")}</span>{" "}
               <span className="tabular-nums">{(100 * (migration.progress ?? 0)).toFixed(0)}%</span>
             </p>
           )}
