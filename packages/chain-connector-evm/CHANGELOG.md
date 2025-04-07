@@ -1,5 +1,12 @@
 # @talismn/chain-connector-evm
 
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [bcf9520]
+  - @talismn/chaindata-provider@0.8.2
+
 ## 0.8.1
 
 ### Patch Changes

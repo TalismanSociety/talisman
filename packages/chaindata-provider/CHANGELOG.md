@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.8.2
+
+### Patch Changes
+
+- bcf9520: generate init data
+
 ## 0.8.1
 
 ### Patch Changes

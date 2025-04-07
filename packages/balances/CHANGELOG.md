@@ -1,5 +1,16 @@
 # @talismn/balances
 
+## 0.7.2
+
+### Patch Changes
+
+- 042d340: chore: convert subtensor staking WARNs to TRACEs
+- Updated dependencies [bcf9520]
+  - @talismn/chaindata-provider@0.8.2
+  - @talismn/chain-connector@0.8.2
+  - @talismn/chain-connector-evm@0.8.2
+  - @talismn/token-rates@1.0.2
+
 ## 0.7.1
 
 ### Patch Changes
