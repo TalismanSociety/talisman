@@ -62,16 +62,15 @@ export const getPjsInjectedAccount = (
 
 export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
-  (accounts: Account[]) =>
-    accounts
+  (accounts: Account[]) => {
+    return accounts
       .filter(({ address }) => addresses.some((a) => isAddressEqual(a, address)))
-      .filter((acc) =>
-        anyType
-          ? true
-          : "curve" in acc
-            ? ["ed25519", "sr25519", "ecdsa", "ethereum"].includes(acc.curve) // from pjs's canDerive(type)
-            : false,
-      )
+      .filter((acc) => {
+        if (anyType) return true
+        const type = getAccountKeypairType(acc)
+        return ["ed25519", "sr25519", "ecdsa", "ethereum"].includes(type)
+      })
+  }
 
 export const getPublicAccounts = (
   accounts: Account[],
