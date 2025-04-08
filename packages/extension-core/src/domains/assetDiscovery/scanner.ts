@@ -281,7 +281,7 @@ class AssetDiscoveryScanner {
       const additionalNetworkIds: string[] = foundTokenIds
         .map((tokenId) => tokensMap[tokenId])
         .filter((token) => {
-          if (!token || !token.noDiscovery) return false
+          if (!token || token.noDiscovery) return false
 
           switch (token.type) {
             case "evm-erc20":
