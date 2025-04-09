@@ -6,6 +6,7 @@ import {
   getAccountGenesisHash,
   isAccountEthereum,
   isAccountNotContact,
+  isAccountPolkadot,
 } from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
@@ -44,13 +45,20 @@ export const sortAccounts =
     return sorted
   }
 
+const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
+  // some dapps pass only sr25519 as filter
+  if (isAccountPolkadot(account)) return "sr25519"
+  if (isAccountEthereum(account)) return "ethereum"
+  throw new Error("Unsupported account type")
+}
+
 export const getPjsInjectedAccount = (
   account: Account,
   options = { includePortalOnlyInfo: false },
 ): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address: account.address,
   name: account.name,
-  type: getAccountKeypairType(account),
+  type: getInjectedAccountType(account),
   ...("genesisHash" in account && account.genesisHash ? { genesisHash: account.genesisHash } : {}),
   ...(options.includePortalOnlyInfo
     ? {
