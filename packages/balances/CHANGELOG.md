@@ -1,5 +1,11 @@
 # @talismn/balances
 
+## 0.8.0
+
+### Minor Changes
+
+- 0636646: fix getValueId coercing 0 to falsy when evaluating subtensor balance
+
 ## 0.7.2
 
 ### Patch Changes
