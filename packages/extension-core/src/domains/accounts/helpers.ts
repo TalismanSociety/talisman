@@ -5,6 +5,7 @@ import {
   Account,
   getAccountGenesisHash,
   isAccountEthereum,
+  isAccountLedgerPolkadotGeneric,
   isAccountNotContact,
 } from "@talismn/keyring"
 
@@ -115,5 +116,6 @@ export const isCurveCompatibleWithChain = (
 export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
+  if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
   return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
