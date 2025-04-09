@@ -6,17 +6,24 @@ const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey>
     new TextEncoder().encode(password),
     "PBKDF2",
     false,
-    ["deriveKey"],
+    ["deriveBits"],
   )
 
-  return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt,
-      iterations: 100000,
-      hash: "SHA-256",
-    },
-    keyMaterial,
+  // NOTE: react-native-quick-crypto (our `global.crypto` polyfill on Talisman mobile) doesn't support `crypto.subtle.deriveKey`.
+  // But, we can work around this by using `crypto.subtle.deriveBits` and `crypto.subtle.importKey`, which when used together
+  // can provide the same functionality as `crypto.subtle.deriveKey`.
+  return crypto.subtle.importKey(
+    "raw",
+    await crypto.subtle.deriveBits(
+      {
+        name: "PBKDF2",
+        salt,
+        iterations: 100_000,
+        hash: "SHA-256",
+      },
+      keyMaterial,
+      256,
+    ),
     { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"],
