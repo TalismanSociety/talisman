@@ -1,4 +1,8 @@
-import { AccountLedgerPolkadot, isAccountOfType } from "extension-core"
+import {
+  AccountLedgerPolkadot,
+  isAccountLedgerPolkadotGeneric,
+  isAccountOfType,
+} from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 
@@ -31,10 +35,10 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   const legacyApp = useLedgerSubstrateAppByName(migrationAppName as string)
   const { sign } = useLedgerSubstrateGeneric({ legacyApp })
 
-  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
   const signWithLedger = useCallback(async () => {
-    if (!payload || !onSigned || !account) return
+    if (!payload || !onSigned || !account || !isAccountLedgerPolkadotGeneric(account)) return
 
     onSentToDevice?.(true)
     setIsSigning(true)

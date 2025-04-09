@@ -1,6 +1,7 @@
 import { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
-import { SubstrateApp } from "@zondax/ledger-substrate"
+import { isAddressEqual } from "@talismn/crypto"
+import { SubstrateApp, supportedApps } from "@zondax/ledger-substrate"
 import {
   AccountLedgerPolkadot,
   isJsonPayload,
@@ -18,6 +19,7 @@ import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
   ERROR_LEDGER_NO_APP,
   getCustomNativeLedgerError,
+  getOpenLedgerAppError,
   getTalismanLedgerError,
   TalismanLedgerError,
 } from "./errors"
@@ -123,22 +125,20 @@ const signJsonPayload = async (
       "This network requires the Polkadot Generic app",
     )
 
+  await checkAppAndDevice(account, ledger)
+
   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
     version: payload.version,
   })
 
   const unsigned = extrinsicPayload.toU8a(true)
 
+  const { accountIndex, change, addressOffset } = getAccountSpecs(account)
   const {
     signature: signatureBuffer,
     error_message,
     return_code,
-  } = await ledger.sign(
-    LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
-    LEDGER_HARDENED_OFFSET + 0,
-    LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
-    Buffer.from(unsigned),
-  )
+  } = await ledger.sign(accountIndex, change, addressOffset, Buffer.from(unsigned))
 
   if (return_code !== LEDGER_SUCCESS_CODE)
     throw getCustomNativeLedgerError(error_message, return_code)
@@ -158,20 +158,51 @@ const signRawPayload = async (
       t("The message is too long to be signed with Ledger."),
     )
 
+  await checkAppAndDevice(account, ledger)
+
+  const { accountIndex, change, addressOffset } = getAccountSpecs(account)
+  const { address } = await ledger.getAddress(accountIndex, change, addressOffset)
+  if (!isAddressEqual(address, account.address))
+    throw getTalismanLedgerError(
+      t(
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
+      ),
+    )
+
   const {
     signature: signatureBuffer,
     error_message,
     return_code,
-  } = await ledger.signRaw(
-    LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
-    LEDGER_HARDENED_OFFSET + 0,
-    LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
-    Buffer.from(unsigned),
-  )
+  } = await ledger.signRaw(accountIndex, change, addressOffset, Buffer.from(unsigned))
 
   if (return_code !== LEDGER_SUCCESS_CODE)
     throw getCustomNativeLedgerError(error_message, return_code)
 
   // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
   return u8aToHex(new Uint8Array(signatureBuffer.slice(1)))
+}
+
+const getAccountSpecs = (account: AccountLedgerPolkadot) => ({
+  accountIndex: LEDGER_HARDENED_OFFSET + (account.accountIndex ?? 0),
+  change: LEDGER_HARDENED_OFFSET + 0,
+  addressOffset: LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
+})
+
+const checkAppAndDevice = async (account: AccountLedgerPolkadot, ledger: SubstrateApp) => {
+  const app = supportedApps.find((a) => a.name === account.app)
+  if (!app)
+    throw getTalismanLedgerError(
+      t("Could not find which Ledger app can be used with this account. Please contact support."),
+    )
+
+  if (ledger.cla !== app.cla) throw getOpenLedgerAppError(app.name)
+
+  const { accountIndex, change, addressOffset } = getAccountSpecs(account)
+  const { address } = await ledger.getAddress(accountIndex, change, addressOffset)
+  if (!isAddressEqual(address, account.address))
+    throw getTalismanLedgerError(
+      t(
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
+      ),
+    )
 }
