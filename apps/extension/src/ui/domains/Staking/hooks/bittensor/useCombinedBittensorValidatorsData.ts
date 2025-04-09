@@ -65,5 +65,6 @@ export const useCombinedBittensorValidatorsData = () => {
     isLoading: isSupportedDelegatesLoading || isValidatorsLoading || isFetchingNextPage,
     isSupportedValidatorsError: isBittensorSupportedDelegatesError,
     isInfiniteValidatorsError,
+    isError: isInfiniteValidatorsError || isBittensorSupportedDelegatesError,
   }
 }

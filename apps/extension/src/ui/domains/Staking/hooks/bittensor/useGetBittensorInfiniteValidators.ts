@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { TAOSTATS_BASE_PATH } from "extension-shared"
 
-import { ValidatorsData } from "./types"
+import { type ValidatorsData } from "./types"
 
 const MAX_PAGE_SIZE = 100
 
