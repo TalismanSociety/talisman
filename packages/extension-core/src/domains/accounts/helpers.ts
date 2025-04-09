@@ -46,9 +46,9 @@ export const sortAccounts =
   }
 
 const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
+  if (isAccountEthereum(account)) return "ethereum"
   // some dapps pass only sr25519 as filter
   if (isAccountPolkadot(account)) return "sr25519"
-  if (isAccountEthereum(account)) return "ethereum"
   throw new Error("Unsupported account type")
 }
 
