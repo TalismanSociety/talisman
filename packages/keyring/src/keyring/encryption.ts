@@ -1,34 +1,21 @@
-// Derive a key generated with PBKDF2 that will be used for AES-GCM encryption
-const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey> => {
-  // Deriving 32-byte key using PBKDF2 with 100000 iterations and SHA-256
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(password),
-    "PBKDF2",
-    false,
-    ["deriveBits"],
-  )
+import { pbkdf2 } from "@talismn/crypto"
 
-  // NOTE: react-native-quick-crypto (our `global.crypto` polyfill on Talisman mobile) doesn't support `crypto.subtle.deriveKey`.
-  // But, we can work around this by using `crypto.subtle.deriveBits` and `crypto.subtle.importKey`, which when used together
-  // can provide the same functionality as `crypto.subtle.deriveKey`.
-  return crypto.subtle.importKey(
+// Derive a key generated with PBKDF2 that will be used for AES-GCM encryption
+const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey> =>
+  // Deriving 32-byte key using PBKDF2 with 100,000 iterations and SHA-256
+  await crypto.subtle.importKey(
     "raw",
-    await crypto.subtle.deriveBits(
-      {
-        name: "PBKDF2",
-        salt,
-        iterations: 100_000,
-        hash: "SHA-256",
-      },
-      keyMaterial,
-      256,
+    await pbkdf2(
+      "SHA-256",
+      new TextEncoder().encode(password),
+      salt,
+      100_000, // 100,000 iterations
+      32, // 32 bytes (32 * 8 == 256 bits)
     ),
     { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"],
   )
-}
 
 export const encryptData = async (data: Uint8Array, password: string): Promise<string> => {
   try {

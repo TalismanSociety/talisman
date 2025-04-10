@@ -71,7 +71,7 @@ const useLookupAddress = (
     queryFn: async () => {
       // empty string is valid
       if (!mnemonicId || !curve || typeof derivationPath !== "string") return null
-      if (!isValidDerivationPath(derivationPath, curve)) return null
+      if (!(await isValidDerivationPath(derivationPath, curve))) return null
       return api.addressLookup({ mnemonicId, curve, derivationPath })
     },
     enabled: !!mnemonicId && curve && typeof derivationPath === "string",
@@ -134,7 +134,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
           const curve = platformToCurve(platform)
 
-          if (!isValidDerivationPath(derivationPath, curve))
+          if (!(await isValidDerivationPath(derivationPath, curve)))
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),

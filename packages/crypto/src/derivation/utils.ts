@@ -39,11 +39,11 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
   }
 }
 
-export const addressFromSuri = (suri: string, type: KeypairCurve) => {
+export const addressFromSuri = async (suri: string, type: KeypairCurve) => {
   const { mnemonic, derivationPath, password } = parseSuri(suri)
 
   const entropy = mnemonicToEntropy(mnemonic)
-  const seed = entropyToSeed(entropy, type, password) // ~80ms
+  const seed = await entropyToSeed(entropy, type, password) // ~80ms
   const { secretKey } = deriveKeypair(seed, derivationPath, type)
   const publicKey = getPublicKeyFromSecret(secretKey, type)
   const encoding = addressEncodingFromCurve(type)
@@ -92,9 +92,9 @@ export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
 }
 
 // @dev: didn't find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
-export const isValidDerivationPath = (derivationPath: string, curve: KeypairCurve) => {
+export const isValidDerivationPath = async (derivationPath: string, curve: KeypairCurve) => {
   try {
-    deriveKeypair(getDevSeed(curve), derivationPath, curve)
+    deriveKeypair(await getDevSeed(curve), derivationPath, curve)
     return true
   } catch (err) {
     return false
