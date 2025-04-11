@@ -16,7 +16,7 @@ const calculateTaoAmountFromAlpha = ({
   return expectedAlpha / Number(SCALE_FACTOR.toString())
 }
 
-export const calculateTaoFromPoolInfo = ({
+export const calculateTaoFromAlphaStaked = ({
   alphaIn,
   taoIn,
   alphaStaked,
