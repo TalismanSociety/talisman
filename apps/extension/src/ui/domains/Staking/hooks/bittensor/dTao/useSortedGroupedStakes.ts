@@ -39,17 +39,14 @@ export const useSortedGroupedStakes = ({ balances, tokenId }: SortedGroupedStake
     if (!Number(alphaToTaoRate) && netuid) {
       const { total_tao, alpha_in_pool } = subnetData[Number(netuid)] ?? {}
 
-      const alphaToTaoRateTaoStats = Math.trunc(
-        calculateTaoFromAlphaStaked({
-          alphaIn: Number(alpha_in_pool),
-          taoIn: Number(total_tao),
-          alphaStaked: Number(ONE_ALPHA_TOKEN.toString()), // use exactly 1 alpha token to get the rate of Alpha to Tao token
-        }),
-      ).toString()
+      const alphaToTaoRateTaoStats = calculateTaoFromAlphaStaked({
+        alphaIn: Number(alpha_in_pool),
+        taoIn: Number(total_tao),
+        alphaStaked: Number(ONE_ALPHA_TOKEN.toString()), // use exactly 1 alpha token to get the rate of Alpha to Tao token
+      })
 
       const alphaAmountInTao = Math.trunc(
-        Number(alphaToTaoRateTaoStats || 0) *
-          ((amountStaked || 0) / Number(SCALE_FACTOR.toString())),
+        alphaToTaoRateTaoStats * ((amountStaked || 0) / Number(SCALE_FACTOR.toString())),
       )
 
       const formatter = new BalanceFormatter(
