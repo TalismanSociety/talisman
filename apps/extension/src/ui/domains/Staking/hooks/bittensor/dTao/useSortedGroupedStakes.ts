@@ -27,50 +27,50 @@ export const useSortedGroupedStakes = ({ balances, tokenId }: SortedGroupedStake
     tokenId,
     balances,
   })
-  const { token } = tokenBalances
 
-  const stakesWithFiatFallback = tokenBalances.detailRows.map((stake) => {
-    const { fiat, meta: { alphaToTaoRate, netuid, amountStaked } = {} } = stake
+  const sortedGroupedStakes = useMemo(() => {
+    const { token } = tokenBalances
 
-    let fiatAmount = fiat
+    const stakesWithFiatFallback = tokenBalances.detailRows.map((stake) => {
+      const { fiat, meta: { alphaToTaoRate, netuid, amountStaked } = {} } = stake
 
-    // If alphaToTaoRate is 0, means the balances lib failed to decode the dynamic info of the subnet.
-    // In this case we need to calculate the fiat value on the frontend using pool info from tao stats.
-    if (!Number(alphaToTaoRate) && netuid) {
-      const { total_tao, alpha_in_pool } = subnetData[Number(netuid)] ?? {}
+      let fiatAmount = fiat
 
-      const alphaToTaoRateTaoStats = calculateTaoFromAlphaStaked({
-        alphaIn: Number(alpha_in_pool),
-        taoIn: Number(total_tao),
-        alphaStaked: Number(ONE_ALPHA_TOKEN.toString()), // use exactly 1 alpha token to get the rate of Alpha to Tao token
-      })
+      // If alphaToTaoRate is 0, means the balances lib failed to decode the dynamic info of the subnet.
+      // In this case we need to calculate the fiat value on the frontend using pool info from tao stats.
+      if (!Number(alphaToTaoRate) && netuid) {
+        const { total_tao, alpha_in_pool } = subnetData[Number(netuid)] ?? {}
 
-      const alphaAmountInTao = Math.trunc(
-        alphaToTaoRateTaoStats * ((amountStaked || 0) / Number(SCALE_FACTOR.toString())),
-      )
+        const alphaToTaoRateTaoStats = calculateTaoFromAlphaStaked({
+          alphaIn: Number(alpha_in_pool),
+          taoIn: Number(total_tao),
+          alphaStaked: Number(ONE_ALPHA_TOKEN.toString()), // use exactly 1 alpha token to get the rate of Alpha to Tao token
+        })
 
-      const formatter = new BalanceFormatter(
-        BigInt(alphaAmountInTao.toString()),
-        token?.decimals,
-        tokenRates,
-      )
-      fiatAmount = formatter.fiat(currency)
-    }
-    return {
-      ...stake,
-      fiat: fiatAmount,
-    }
-  })
+        const alphaAmountInTao = Math.trunc(
+          alphaToTaoRateTaoStats * ((amountStaked || 0) / Number(SCALE_FACTOR.toString())),
+        )
 
-  const groupedStakes = Object.groupBy(
-    stakesWithFiatFallback,
-    ({ meta }) => meta?.netuid ?? CHAIN_INFO,
-  )
+        const formatter = new BalanceFormatter(
+          BigInt(alphaAmountInTao.toString()),
+          token?.decimals,
+          tokenRates,
+        )
+        fiatAmount = formatter.fiat(currency)
+      }
+      return {
+        ...stake,
+        fiat: fiatAmount,
+      }
+    })
 
-  const sortedGroupedStakes = useMemo(
-    () => sortGroupedStakes(groupedStakes, CHAIN_INFO),
-    [groupedStakes],
-  )
+    const groupedStakes = Object.groupBy(
+      stakesWithFiatFallback,
+      ({ meta }) => meta?.netuid ?? CHAIN_INFO,
+    )
+
+    return sortGroupedStakes(groupedStakes, CHAIN_INFO)
+  }, [currency, subnetData, tokenBalances, tokenRates])
 
   return { sortedGroupedStakes }
 }
