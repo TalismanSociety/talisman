@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { format } from "date-fns/format"
+// import { format } from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import {
@@ -48,12 +48,12 @@ import { getNftCollectionFloorUsd } from "./Nfts/helpers"
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()
 
-  const handleOpenUrl = useCallback(
-    (url: string) => () => {
-      window.open(url, "_blank", "")
-    },
-    [],
-  )
+  // const handleOpenUrl = useCallback(
+  //   (url: string) => () => {
+  //     window.open(url, "_blank", "")
+  //   },
+  //   [],
+  // )
 
   const isCollectionHidden = useIsHiddenNftCollection(nft.collectionId)
 
@@ -104,11 +104,12 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         <MoreHorizontalIcon className="size-12" />
       </ContextMenuTrigger>
       <ContextMenuContent>
-        {nft.marketplaces.map((mp, i) => (
+        {/* // TODO */}
+        {/* {nft.marketplaces.map((mp, i) => (
           <ContextMenuItem key={i} onClick={handleOpenUrl(mp.url)}>
             {t("Open in {{marketplace}}", { marketplace: mp.name })}
           </ContextMenuItem>
-        ))}
+        ))} */}
         <ContextMenuItem onClick={handleHideCollectionClick}>
           {isCollectionHidden ? t("Show collection") : t("Hide collection")}
         </ContextMenuItem>
@@ -125,7 +126,7 @@ const TabContentCollection: FC<{
   nft: Nft
 }> = ({ collection, nft }) => {
   const { t } = useTranslation()
-  const network = useEvmNetwork(nft.evmNetworkId)
+  const network = useEvmNetwork(nft.networkId)
 
   const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
@@ -136,21 +137,21 @@ const TabContentCollection: FC<{
         <div className="text-right">
           {floorPrice ? <Fiat amount={floorPrice} forceCurrency="usd" /> : t("Unavailable")}
         </div>
-        <div className="text-body-secondary">{t("Items")}</div>
+        {/* <div className="text-body-secondary">{t("Items")}</div>
         <div className="text-right">{collection.totalQuantity}</div>
         <div className="text-body-secondary">{t("Holders")}</div>
-        <div className="text-right">{collection.distinctOwners}</div>
+        <div className="text-right">{collection.distinctOwners}</div> */}
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
-          <ChainLogo id={nft.evmNetworkId} className="text-md" />
+          <ChainLogo id={nft.networkId} className="text-md" />
           <div className="truncate">{network?.name}</div>
         </div>
         <div className="text-body-secondary">{t("Contract")}</div>
         <div className="text-right">
-          <NetworkAddress address={nft.contract.address} networkId={nft.evmNetworkId} />
+          <NetworkAddress address={nft.contract} networkId={nft.networkId} />
         </div>
         <div className="text-body-secondary">{t("Type")}</div>
-        <div className="text-right">{nft.contract.type ?? t("Unknown")}</div>
+        <div className="text-right">{nft.type ?? t("Unknown")}</div>
       </div>
       {!!collection.description && (
         <>
@@ -194,7 +195,7 @@ const TabContentNft: FC<{
             </div>
           </>
         )}
-        {nft.owners.map(({ address, acquiredAt, quantity }) => (
+        {Object.entries(nft.owners).map(([address, quantity]) => (
           <Fragment key={address}>
             <div className="text-body-secondary">{t("Owner")}</div>
             <div className="flex items-center justify-end gap-[0.5em]">
@@ -207,8 +208,8 @@ const TabContentNft: FC<{
                 <CopyIcon />
               </IconButton>
             </div>
-            <div className="text-body-secondary">{t("Acquired on")}</div>
-            <div className="text-right">{format(new Date(acquiredAt), "P")}</div>
+            {/* <div className="text-body-secondary">{t("Acquired on")}</div>
+            <div className="text-right">{format(new Date(acquiredAt), "P")}</div> */}
             {quantity > 1 && (
               <>
                 <div className="text-body-secondary">{t("Quantity")}</div>
@@ -218,13 +219,14 @@ const TabContentNft: FC<{
           </Fragment>
         ))}
       </div>
-      {(!!nft.description || !!nft.properties.length) && <div className="bg-grey-800 h-0.5"></div>}
+      {/* {(!!nft.description || !!nft.properties.length) && <div className="bg-grey-800 h-0.5"></div>}
       {!!nft.description && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Description")}</div>
           <div>{nft.description}</div>
         </div>
-      )}
+      )} */}
+      {/* TODO
       {!!nft.properties.length && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Properties")}</div>
@@ -237,7 +239,7 @@ const TabContentNft: FC<{
             ))}
           </div>
         </div>
-      )}
+      )} */}
     </>
   )
 }
@@ -352,42 +354,42 @@ const NftVideo: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
   )
 }
 
-const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
-  const refPlayer = useRef<HTMLAudioElement>(null)
+// const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
+//   const refPlayer = useRef<HTMLAudioElement>(null)
 
-  useEffect(() => {
-    const player = refPlayer.current
+//   useEffect(() => {
+//     const player = refPlayer.current
 
-    const timeout = setTimeout(() => {
-      // there are 2 in the page, only play the one that is visible
-      if (player?.checkVisibility()) player.play()
-    }, 250)
+//     const timeout = setTimeout(() => {
+//       // there are 2 in the page, only play the one that is visible
+//       if (player?.checkVisibility()) player.play()
+//     }, 250)
 
-    return () => {
-      clearTimeout(timeout)
-      if (player) player.pause()
-    }
-  }, [])
+//     return () => {
+//       clearTimeout(timeout)
+//       if (player) player.pause()
+//     }
+//   }, [])
 
-  const handleBgClick = useCallback(() => {
-    // audio will open in another tab, pause it first
-    if (refPlayer.current) refPlayer.current.pause()
-  }, [])
+//   const handleBgClick = useCallback(() => {
+//     // audio will open in another tab, pause it first
+//     if (refPlayer.current) refPlayer.current.pause()
+//   }, [])
 
-  if (!nft.audioUrl) return null
-  return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-    <div className={classNames("relative", className)} onClick={handleBgClick}>
-      <NftImage src={nft.previews.medium ?? nft.imageUrl} className="absolute size-full" />
-      <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
-    </div>
-  )
-}
+//   if (!nft.audioUrl) return null
+//   return (
+//     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+//     <div className={classNames("relative", className)} onClick={handleBgClick}>
+//       <NftImage src={nft.previews.medium ?? nft.imageUrl} className="absolute size-full" />
+//       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
+//     </div>
+//   )
+// }
 
 const NftDisplay: FC<{ nft: Nft }> = ({ nft }) => {
   if (nft.videoUrl) return <NftVideo nft={nft} className="size-full" />
-  if (nft.audioUrl) return <NftAudio nft={nft} className={"size-full object-cover"} />
-  return <NftImage src={nft.previews.medium ?? nft.imageUrl} className="size-full object-contain" />
+  //if (nft.audioUrl) return <NftAudio nft={nft} className={"size-full object-cover"} />
+  return <NftImage src={nft.imageUrl ?? nft.previewUrl} className="size-full object-contain" />
 }
 
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({
@@ -411,8 +413,9 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
   }, [nft, collection])
 
   const webResourceUrl = useMemo(
-    () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
-    [nft.imageUrl, nft.audioUrl, nft.modelUrl, nft.otherUrl, nft.videoUrl],
+    //() => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
+    () => nft.videoUrl ?? nft.imageUrl,
+    [nft.imageUrl, nft.videoUrl],
   )
 
   const handleFullScreenViewClick = useCallback(() => {

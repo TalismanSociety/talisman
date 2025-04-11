@@ -17,11 +17,15 @@ export const getNftsNetworkIdsList = async () => {
   return (await firstValueFrom(activeEvmNetworksObservable)).map((n) => n.id).sort()
 }
 
-export const getNftCollectionFloorUsd = (collection: NftCollection): number | null => {
-  return (
-    collection.marketplaces
-      .filter((m) => m.floorUsd)
-      .map((mp) => mp.floorUsd ?? 0)
-      .sort((a, b) => a - b)[0] ?? null
-  )
+export const getNftCollectionFloorUsd = (_collection: NftCollection): number | null => {
+  // TODO
+
+  return 0
+
+  // return (
+  //   collection.marketplaces
+  //     .filter((m) => m.floorUsd)
+  //     .map((mp) => mp.floorUsd ?? 0)
+  //     .sort((a, b) => a - b)[0] ?? null
+  // )
 }

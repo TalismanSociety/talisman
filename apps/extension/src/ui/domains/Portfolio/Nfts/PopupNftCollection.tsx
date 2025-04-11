@@ -60,10 +60,6 @@ const NftRowInner: FC<{
   nft: Nft
   onClick: () => void
 }> = ({ collection, nft, onClick }) => {
-  const imageUrl = useMemo(() => {
-    return nft.previews.small ?? nft.imageUrl
-  }, [nft.imageUrl, nft.previews.small])
-
   const isFavorite = useIsFavoriteNft(nft.id)
 
   return (
@@ -73,7 +69,7 @@ const NftRowInner: FC<{
       className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left"
     >
       <div className="flex grow items-center gap-6 overflow-hidden">
-        <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
+        <NftImage className="size-16" src={nft.previewUrl} alt={collection.name ?? ""} />
         <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
           {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
@@ -124,24 +120,20 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
 }
 
 const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
-  collection,
+  // collection,
   nft,
   onClick,
 }) => {
   // favorites are the first ones in the list, can check just the first one
   const isFavorite = useIsFavoriteNft(nft.id)
 
-  const imageUrl = useMemo(() => {
-    return nft.previews.small ?? nft.imageUrl
-  }, [nft.imageUrl, nft.previews.small])
-
   return (
     <NftTile
       isFavorite={isFavorite}
-      imageUrl={imageUrl}
+      imageUrl={nft.previewUrl}
       onClick={onClick}
       label={nft.name ?? (nft.tokenId ? `#${nft.tokenId}` : "")}
-      networkIds={collection.evmNetworkIds}
+      networkIds={[nft.networkId]}
       count={getNftQuantity(nft)}
     />
   )

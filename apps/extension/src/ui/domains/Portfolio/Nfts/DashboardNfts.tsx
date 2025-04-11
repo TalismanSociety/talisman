@@ -69,7 +69,7 @@ const NftCollectionRowInner: FC<{
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)
   }, [collection, nfts])
 
-  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
+  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
   const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
   const networkName = useMemo(() => {
@@ -183,7 +183,7 @@ const NftCollectionTileInner: FC<{
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)
   }, [collection, nfts])
 
-  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
+  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
   const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {

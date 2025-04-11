@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { isAddressEqual } from "@talismn/crypto"
 import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap } from "rxjs"
 
@@ -55,12 +56,8 @@ const evmNetworks$ = getSettingValue$("useTestnets").pipe(
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
   combineLatest([evmNetworks$, nftData$]).pipe(
-    map(([evmNetworks, { nfts, collections }]) => {
-      const networkIdsWithNfts = [
-        ...new Set(
-          nfts.map((nft) => nft.evmNetworkId).concat(...collections.map((c) => c.evmNetworkIds)),
-        ),
-      ]
+    map(([evmNetworks, { nfts }]) => {
+      const networkIdsWithNfts = [...new Set(nfts.map((nft) => nft.networkId))]
 
       return evmNetworks
         .filter((network) => networkIdsWithNfts.includes(network.id))
@@ -107,8 +104,8 @@ export const [useNfts, nfts$] = bind(
         const lowerSearch = search.toLowerCase()
 
         const addresses = selectedAccounts
-          ? selectedAccounts.map((a) => a.address.toLowerCase())
-          : accounts.map((a) => a.address.toLowerCase())
+          ? selectedAccounts.map((a) => a.address)
+          : accounts.map((a) => a.address)
 
         const networkIds = networkFilter
           ? [networkFilter.evmNetworkId]
@@ -117,7 +114,9 @@ export const [useNfts, nfts$] = bind(
         const nfts = allNfts
           // account filter
           .filter((nft) =>
-            nft.owners.some(({ address }) => addresses.includes(address.toLowerCase())),
+            Object.entries(nft.owners).some(([address]) =>
+              addresses.some((a) => isAddressEqual(a, address)),
+            ),
           )
 
           // visibility mode
@@ -129,7 +128,7 @@ export const [useNfts, nfts$] = bind(
           })
 
           // network filter
-          .filter((nft) => networkIds.includes(nft.evmNetworkId))
+          .filter((nft) => networkIds.includes(nft.networkId))
 
           // search filter
           .filter((nft) => {
@@ -138,8 +137,7 @@ export const [useNfts, nfts$] = bind(
             return (
               collection?.name?.toLowerCase().includes(lowerSearch) ||
               collection?.description?.toLowerCase().includes(lowerSearch) ||
-              nft.name?.toLowerCase().includes(lowerSearch) ||
-              nft.description?.toLowerCase().includes(lowerSearch)
+              nft.name?.toLowerCase().includes(lowerSearch)
             )
           })
 

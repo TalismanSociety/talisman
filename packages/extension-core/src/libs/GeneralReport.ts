@@ -1,3 +1,4 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountOwned } from "@talismn/keyring"
 import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
@@ -96,7 +97,6 @@ async function getGeneralReport() {
   const ownedAccounts = accounts.filter(isAccountOwned)
   const ownedAccountsCount = ownedAccounts.length
   const ownedAddresses = ownedAccounts.map((account) => account.address)
-  const ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
   const watchedAccounts = accounts.filter((acc) => !isAccountOwned(acc))
   const watchedAccountsCount = watchedAccounts.length
@@ -236,7 +236,10 @@ async function getGeneralReport() {
   const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
 
   const ownedNfts = nftsStore$.value.nfts.filter((nft) =>
-    nft.owners.some((o) => ownedAddressesLower.includes(o.address.toLowerCase())),
+    Object.entries(nft.owners).some(
+      ([address, count]) =>
+        !!count && ownedAddresses.some((ownedAddress) => isAddressEqual(address, ownedAddress)),
+    ),
   )
   const ownedCollections = nftsStore$.value.collections.filter((c) =>
     ownedNfts.some((n) => n.collectionId === c.id),

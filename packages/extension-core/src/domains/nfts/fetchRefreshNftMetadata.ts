@@ -1,25 +1,26 @@
-import { NFTS_API_BASE_PATH, NFTS_API_KEY } from "extension-shared"
-import urlJoin from "url-join"
+// import urlJoin from "url-join"
 
-import { RefreshNftMetadataRequestBody } from "./types"
+// import { RefreshNftMetadataRequestBody } from "./types"
 
-export const fetchRefreshNftMetadata = async (
-  evmNetworkId: string,
-  contractAddress: string,
-  tokenId: string,
-) => {
-  const body: RefreshNftMetadataRequestBody = { evmNetworkId, contractAddress, tokenId }
+export const fetchRefreshNftMetadata = async () =>
+  // evmNetworkId: string,
+  // contractAddress: string,
+  // tokenId: string,
+  {
+    throw new Error("Not implemented")
 
-  const headers: HeadersInit = { "Content-Type": "application/json" }
-  if (NFTS_API_KEY) headers["X-API-KEY"] = NFTS_API_KEY
+    // const body: RefreshNftMetadataRequestBody = { evmNetworkId, contractAddress, tokenId }
 
-  const nftsApiUrl = urlJoin(NFTS_API_BASE_PATH, "refresh_metadata")
+    // const headers: HeadersInit = { "Content-Type": "application/json" }
+    // if (NFTS_API_KEY) headers["X-API-KEY"] = NFTS_API_KEY
 
-  const req = await fetch(nftsApiUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-  })
+    // const nftsApiUrl = urlJoin(NFTS_API_BASE_PATH, "refresh_metadata")
 
-  if (!req.ok) throw new Error("Failed to fetch nfts")
-}
+    // const req = await fetch(nftsApiUrl, {
+    //   method: "POST",
+    //   headers,
+    //   body: JSON.stringify(body),
+    // })
+
+    // if (!req.ok) throw new Error("Failed to fetch nfts")
+  }
