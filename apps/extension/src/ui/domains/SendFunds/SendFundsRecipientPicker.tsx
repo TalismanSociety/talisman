@@ -1,13 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
-import {
-  Account,
-  Chain,
-  getAccountGenesisHash,
-  isAccountOfType,
-  isAccountPortfolio,
-} from "extension-core"
+import { Account, Chain, isAccountCompatibleWithChain, isAccountPortfolio } from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -225,23 +219,13 @@ export const SendFundsRecipientPicker = () => {
       allAccounts
         .filter((account) => normalize(account.address) !== normalizedFrom)
         .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
+        .filter((account) => !chain || isAccountCompatibleWithChain(chain, account))
         .filter(
           (account) =>
             !search ||
             account.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address)),
-        )
-        .filter((account) => {
-          const genesisHash = getAccountGenesisHash(account)
-          return !genesisHash || genesisHash === chain?.genesisHash
-        })
-        .filter(
-          (account) =>
-            isFromEthereum ||
-            // do not send funds to ledger generic accounts on incompatible chains
-            chain?.hasCheckMetadataHash ||
-            !(isAccountOfType(account, "ledger-polkadot") && account.genesisHash),
         ),
     [
       allAccounts,
@@ -254,8 +238,7 @@ export const SendFundsRecipientPicker = () => {
       isNsLookup,
       nsLookup,
       normalizedNsLookup,
-      chain?.genesisHash,
-      chain?.hasCheckMetadataHash,
+      chain,
     ],
   )
 

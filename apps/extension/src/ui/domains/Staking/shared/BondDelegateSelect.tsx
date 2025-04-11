@@ -12,6 +12,7 @@ import { BondOption, BondOptionSkeleton } from "./BondOption"
 export type SortMethod<T> = {
   label: string
   value: T
+  isDisabled?: boolean
 }
 
 type BondDelegateSelectProps<T> = {
@@ -47,13 +48,13 @@ export const BondDelegateSelect = <T,>({
         {sortMethods.map((method) => (
           <button
             key={method.label}
-            onClick={() => !isLoading && handleSortMethodChange(method)}
+            onClick={() => !isLoading && !method.isDisabled && handleSortMethodChange(method)}
             className={classNames(
               "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
               method.value === selectedSortMethod.value
                 ? "bg-primary-500 text-black"
                 : "bg-black-tertiary text-grey-400",
-              isLoading && "cursor-not-allowed",
+              (isLoading || method.isDisabled) && "cursor-not-allowed",
             )}
           >
             {t(method.label)}

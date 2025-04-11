@@ -188,7 +188,9 @@ const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
         if (row.meta?.type === "subtensor-staking")
           return {
             ...row,
-            description: combinedValidatorsData?.find((v) => v?.poolId === row.meta.hotkey)?.name,
+            description:
+              combinedValidatorsData?.find((v) => v?.poolId === row.meta.hotkey)?.name ??
+              "Managed delegation",
             isLoading: isLoadingCombinedValidators,
           } as BalanceDetailRow
 

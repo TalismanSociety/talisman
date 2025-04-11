@@ -133,9 +133,9 @@ export const getValueId = (amount: AmountWithLabel<string>) => {
     if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
     if (amount.type === "subtensor") {
       const { hotkey, netuid } = meta
-      if (hotkey && netuid) return `${hotkey.toString()}${netuid.toString()}`
-      return ""
+      if (hotkey && netuid !== undefined) return `${hotkey.toString()}${netuid.toString()}`
     }
+
     return ""
   }
 

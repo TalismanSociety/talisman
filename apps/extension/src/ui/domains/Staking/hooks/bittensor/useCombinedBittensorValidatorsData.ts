@@ -43,9 +43,8 @@ export const useCombinedBittensorValidatorsData = () => {
       return {
         poolId: key,
         name: supportedDelegate.name,
-        apr: parseFloat(validator?.apr ?? "0"),
-        totalStaked: parseFloat(validator?.stake ?? "0"),
-        totalStakers: validator?.nominators ?? 0,
+        totalStaked: parseFloat(validator?.global_weighted_stake ?? "0"),
+        totalStakers: validator?.global_nominators ?? 0,
         hasData: !!validator,
         isError: isInfiniteValidatorsError,
       }
@@ -66,5 +65,6 @@ export const useCombinedBittensorValidatorsData = () => {
     isLoading: isSupportedDelegatesLoading || isValidatorsLoading || isFetchingNextPage,
     isSupportedValidatorsError: isBittensorSupportedDelegatesError,
     isInfiniteValidatorsError,
+    isError: isInfiniteValidatorsError || isBittensorSupportedDelegatesError,
   }
 }

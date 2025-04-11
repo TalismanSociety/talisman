@@ -94,7 +94,11 @@ export const BondOption = ({
             option.isRecommended && !isSelected && "text-green opacity-50",
           ])}
         >
-          {option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}
+          {/*
+            TODO: Uncomment this when taostats provide APR data, view useGetBittensorInfiniteValidators api endpoint
+            {option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}
+            */}
+          --
         </div>
       </div>
     </button>

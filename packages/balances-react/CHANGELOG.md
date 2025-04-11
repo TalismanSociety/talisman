@@ -1,5 +1,12 @@
 # @talismn/balances-react
 
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies [0636646]
+  - @talismn/balances@0.8.0
+
 ## 0.7.2
 
 ### Patch Changes

@@ -2,20 +2,22 @@ import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 
 import { useBondWizard } from "../Bond/useBondWizard"
-import { useGetBittensorValidator } from "../hooks/bittensor/useGetBittensorValidator"
+import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
 
 type BittensorDelegatorNameButtonProps = {
   poolId: string | number | undefined | null
 }
 
 export const BittensorDelegatorNameButton = ({ poolId }: BittensorDelegatorNameButtonProps) => {
-  const { data, isLoading, isError } = useGetBittensorValidator(poolId)
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData()
+
+  const selectedPool = combinedValidatorsData.find((data) => data.poolId === poolId)
 
   const { setStep, step } = useBondWizard()
 
   const defaultPoolName = "Bittensor Pool"
 
-  const poolName = data?.data?.[0].name
+  const poolName = selectedPool?.name
 
   if (isLoading)
     return (

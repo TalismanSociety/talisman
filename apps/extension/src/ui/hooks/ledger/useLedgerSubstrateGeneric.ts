@@ -1,6 +1,7 @@
 import { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
-import { PolkadotGenericApp } from "@zondax/ledger-substrate"
+import { isAddressEqual } from "@talismn/crypto"
+import { PolkadotGenericApp, supportedApps } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   AccountLedgerPolkadot,
@@ -13,7 +14,7 @@ import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { getPolkadotLedgerDerivationPath } from "./common"
-import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
+import { getOpenLedgerAppError, getTalismanLedgerError, TalismanLedgerError } from "./errors"
 import { useLedgerTransport } from "./useLedgerTransport"
 
 type LedgerRequest<T> = (ledger: PolkadotGenericApp) => Promise<T>
@@ -58,10 +59,10 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
       txMetadata?: string | null,
     ) => {
       return withLedger((ledger) => {
-        return signPayload(ledger, payload, account, legacyApp, registry, txMetadata)
+        return signPayload(ledger, payload, account, registry, txMetadata)
       })
     },
-    [withLedger, legacyApp],
+    [withLedger],
   )
 
   const getAddress = useCallback(
@@ -83,13 +84,31 @@ const signPayload = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
   account: AccountLedgerPolkadot,
-  legacyApp?: SubstrateAppParams | null,
   registry?: TypeRegistry | null,
   txMetadata?: string | null,
 ) => {
   if (!ledger) throw new Error("Ledger not connected")
 
-  const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp })
+  // check correct app: 249 is the expected CLA for both polkadot app and polkadot migration app
+  if (ledger.CLA !== 249)
+    throw getOpenLedgerAppError(account.app ? "Polkadot" : "Polkadot Migration")
+
+  // find the app that defines which derivation path to use
+  const app = supportedApps.find((a) => a.name === (account.app ?? "Polkadot"))
+  if (!app)
+    throw getTalismanLedgerError(
+      t("Could not find which Ledger app can be used with this account. Please contact support."),
+    )
+
+  // check correct address
+  const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp: app })
+  const { address } = await ledger.getAddress(path, 42)
+  if (!isAddressEqual(address, account.address))
+    throw getTalismanLedgerError(
+      t(
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
+      ),
+    )
 
   if (isJsonPayload(payload)) {
     if (!payload.withSignedTransaction)
