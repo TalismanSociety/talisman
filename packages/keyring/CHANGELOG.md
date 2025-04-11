@@ -1,5 +1,11 @@
 # @talismn/keyring
 
+## 0.1.2
+
+### Patch Changes
+
+- def6400: fix: genesisHash checks
+
 ## 0.1.1
 
 ### Patch Changes
