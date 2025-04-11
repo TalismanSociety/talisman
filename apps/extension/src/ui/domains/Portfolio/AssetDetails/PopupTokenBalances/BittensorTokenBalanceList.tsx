@@ -1,3 +1,4 @@
+import { ONE_ALPHA_TOKEN } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
 import { TokenId } from "@talismn/chaindata-provider"
 import { type TokenRates } from "@talismn/token-rates"
 import { BalanceFormatter, Balances } from "extension-core"
@@ -8,6 +9,7 @@ import { CHAIN_INFO, DTAO_LOGO, ROOT_NETUID } from "@ui/domains/Staking/Bittenso
 import { type CombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency } from "@ui/state"
 
+import { calculateTaoFromAlphaStaked } from "../../utils/subtensor"
 import { AssetPercentageChange } from "../DashboardTokenBalances/AssetPercentageChange"
 import { type BalanceDetailRow } from "../useTokenBalances"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
@@ -41,6 +43,8 @@ export const BittensorTokenBalanceList = ({
   const {
     price_change_1_day,
     subnet_name,
+    alpha_in_pool,
+    total_tao,
     symbol: subnetTokenSymbol,
   } = subnetData[Number(listKey)] ?? {}
 
@@ -63,7 +67,19 @@ export const BittensorTokenBalanceList = ({
 
   const symbol = isRootStake ? token.symbol : tokenSymbol
 
-  const formatter = new BalanceFormatter(BigInt(alphaToTaoRate || "0"), token?.decimals, tokenRates)
+  const taoStatsRate = Math.trunc(
+    calculateTaoFromAlphaStaked({
+      alphaIn: Number(alpha_in_pool),
+      taoIn: Number(total_tao),
+      alphaStaked: Number(ONE_ALPHA_TOKEN.toString()),
+    }),
+  ).toString()
+
+  const formatter = new BalanceFormatter(
+    BigInt(Number(alphaToTaoRate) > 0 ? alphaToTaoRate : taoStatsRate),
+    token?.decimals,
+    tokenRates,
+  )
 
   const assetPriceInfo = !isRootStake && !isChainIfo && (
     <div className="flex items-center space-x-2">
