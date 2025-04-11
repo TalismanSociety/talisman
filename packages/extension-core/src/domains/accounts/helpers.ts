@@ -56,18 +56,21 @@ const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
 export const getPjsInjectedAccount = (
   account: Account,
   options = { includePortalOnlyInfo: false },
-): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
-  address: account.address,
-  name: account.name,
-  type: getInjectedAccountType(account),
-  ...("genesisHash" in account && account.genesisHash ? { genesisHash: account.genesisHash } : {}),
-  ...(options.includePortalOnlyInfo
-    ? {
-        readonly: account.type === "watch-only",
-        partOfPortfolio: account.type === "watch-only" && account.isPortfolio,
-      }
-    : {}),
-})
+): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => {
+  const genesisHash = getAccountGenesisHash(account)
+  return {
+    address: account.address,
+    name: account.name,
+    type: getInjectedAccountType(account),
+    ...(genesisHash ? { genesisHash } : {}),
+    ...(options.includePortalOnlyInfo
+      ? {
+          readonly: account.type === "watch-only",
+          partOfPortfolio: account.type === "watch-only" && account.isPortfolio,
+        }
+      : {}),
+  }
+}
 
 export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
