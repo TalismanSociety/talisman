@@ -63,3 +63,27 @@ export type SubnetData = Partial<SubnetIdentity> &
   Partial<SubnetPool> & {
     descriptionName?: string
   }
+
+export type ValidatorYield = {
+  hotkey: {
+    ss58: string
+    hex: string
+  }
+  name: string
+  netuid: number
+  block_number: number
+  timestamp: string
+  stake: string
+  one_hour_apy: string
+  one_day_apy: string
+  seven_day_apy: string
+  thirty_day_apy: string
+  one_day_epoch_participation: number | null
+  seven_day_epoch_participation: number | null
+  thirty_day_epoch_participation: number | null
+}
+
+export type ValidatorsYieldApiResponse = {
+  pagination: Pagination
+  data: ValidatorYield[]
+}

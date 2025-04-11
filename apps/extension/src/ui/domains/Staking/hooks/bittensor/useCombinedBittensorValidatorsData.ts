@@ -1,10 +1,12 @@
 import { useEffect, useMemo } from "react"
 
+import { useGetInfiniteValidatorsYieldByNetuid } from "./dTao/useGetInfiniteValidatorsYield"
 import { BondOption } from "./types"
 import { useGetBittensorInfiniteValidators } from "./useGetBittensorInfiniteValidators"
 import { useGetBittensorSupportedDelegates } from "./useGetBittensorSupportedDelegates"
 
 export const useCombinedBittensorValidatorsData = () => {
+  const { data: validatorsYieldData } = useGetInfiniteValidatorsYieldByNetuid({ netuid: 0 })
   const {
     data: supportedDelegates,
     isLoading: isSupportedDelegatesLoading,
@@ -40,11 +42,16 @@ export const useCombinedBittensorValidatorsData = () => {
     const combined: BondOption[] = Object.keys(supportedDelegates).map((key) => {
       const supportedDelegate = supportedDelegates[key]
       const validator = flatInitialValidators.find((validator) => validator?.hotkey?.ss58 === key)
+      const validatorYield = validatorsYieldData?.find(
+        (validator) => validator?.hotkey?.ss58 === key,
+      )
+
       return {
         poolId: key,
         name: supportedDelegate.name,
         totalStaked: parseFloat(validator?.global_weighted_stake ?? "0"),
         totalStakers: validator?.global_nominators ?? 0,
+        validatorYield: validatorYield,
         hasData: !!validator,
         isError: isInfiniteValidatorsError,
       }
@@ -58,6 +65,7 @@ export const useCombinedBittensorValidatorsData = () => {
     isSupportedDelegatesLoading,
     isValidatorsLoading,
     supportedDelegates,
+    validatorsYieldData,
   ])
 
   return {
