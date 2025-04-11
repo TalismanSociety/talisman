@@ -52,6 +52,7 @@ export const useCombinedBittensorValidatorsData = () => {
         totalStaked: parseFloat(validator?.global_weighted_stake ?? "0"),
         totalStakers: validator?.global_nominators ?? 0,
         validatorYield: validatorYield,
+        apr: parseFloat(validatorYield?.thirty_day_apy ?? "0"),
         hasData: !!validator,
         isError: isInfiniteValidatorsError,
       }

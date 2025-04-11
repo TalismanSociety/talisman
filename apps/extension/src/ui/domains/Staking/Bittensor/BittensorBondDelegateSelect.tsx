@@ -16,7 +16,7 @@ const sortMethods: SortMethod[] = [
   { label: "Total Staked", value: "totalStaked" },
   { label: "Name", value: "name" },
   { label: "N° of Stakers", value: "totalStakers" },
-  { label: "Rewards", value: "apr", isDisabled: true },
+  { label: "Rewards", value: "apr" },
 ]
 
 export const BittensorBondDelegateSelect = () => {
@@ -35,9 +35,6 @@ export const BittensorBondDelegateSelect = () => {
         // Sort by name in ascending order (A to Z)
         if (a.name < b.name) return -1
         if (a.name > b.name) return 1
-        // TODO: Uncomment apr sortBy when taostats provide APR data, view useGetBittensorInfiniteValidators api endpoint
-      } else if (sortBy === "apr") {
-        return 0
       } else {
         // Sort other fields in descending order
         if (a[sortBy] > b[sortBy]) return -1

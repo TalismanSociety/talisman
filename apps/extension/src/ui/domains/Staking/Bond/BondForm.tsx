@@ -26,6 +26,7 @@ import { TokenLogo } from "../../Asset/TokenLogo"
 import Tokens from "../../Asset/Tokens"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { STAKING_APR_UNAVAILABLE } from "../helpers"
+import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useStakingAPR } from "../hooks/nomPools/useStakingAPR"
 import { BondPoolName } from "../shared/BondPoolName"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
@@ -311,7 +312,7 @@ export const AmountEdit = () => {
 
 const StakeApr = () => {
   const { t } = useTranslation()
-  const { token } = useBondWizard()
+  const { token, poolId } = useBondWizard()
   let data,
     isLoading = false,
     isError = false,
@@ -320,16 +321,25 @@ const StakeApr = () => {
 
   const hookMap = {
     nominationPool: useStakingAPR,
+    bittensor: useCombinedBittensorValidatorsData,
   }
 
   switch (token?.chain?.id) {
     case "bittensor":
-      // TODO: Uncomment this when taostats provide APR data, view useGetBittensorInfiniteValidators api endpoint
-      // ;({ data, isLoading, isError, error } = hookMap["bittensor"](poolId))
-      // apr = Number(data?.data?.[0].apr)
+      {
+        const {
+          combinedValidatorsData,
+          isLoading: isValidatorsLoading,
+          isError: isBittensorError,
+        } = hookMap["bittensor"]()
+        const validator = combinedValidatorsData.find((validator) => validator.poolId === poolId)
+        data = validator
+        isLoading = isValidatorsLoading
+        isError = isBittensorError
+        error = null
+      }
 
-      ;(isLoading = false), (isError = false), (error = null)
-      apr = 0
+      apr = Number(data?.validatorYield?.thirty_day_apy ?? 0)
       break
     case "analog-timechain":
       ;(isLoading = false), (isError = false), (error = null)

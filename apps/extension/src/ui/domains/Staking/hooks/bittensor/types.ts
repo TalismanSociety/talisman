@@ -66,6 +66,7 @@ export type BondOption = {
   isError: boolean
   isRecommended?: boolean
   validatorYield?: ValidatorYield
+  apr: number
 }
 
 type Address = {
