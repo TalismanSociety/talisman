@@ -148,7 +148,7 @@ export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const [includeTestnets] = useSetting("useTestnets")
-  const chains = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: false, includeTestnets })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)
