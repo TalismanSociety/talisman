@@ -54,7 +54,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
         assert(
           accounts.every((acc) => {
             const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
-            return genesisHash && genesisHash === chain?.genesisHash
+            return !!genesisHash && genesisHash === chain?.genesisHash
           }),
           "Chain mismatch",
         )
