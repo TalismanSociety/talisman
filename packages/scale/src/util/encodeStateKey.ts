@@ -10,7 +10,7 @@ export const encodeStateKey = (
   ...args: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
 ): string | undefined => {
   try {
-    return scaleCoder?.enc(...args)
+    return scaleCoder?.keys?.enc(...args)
   } catch (cause) {
     log.warn(error ?? `Failed to encode stateKey ${JSON.stringify(args)}`, cause)
     return

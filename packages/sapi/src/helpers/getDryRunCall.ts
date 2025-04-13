@@ -1,5 +1,9 @@
-import { polkadot, polkadotAssetHub, PolkadotRuntimeOriginCaller } from "@polkadot-api/descriptors"
-import { TypedApi } from "polkadot-api"
+import type {
+  polkadot,
+  polkadotAssetHub,
+  PolkadotRuntimeOriginCaller,
+} from "@polkadot-api/descriptors"
+import { Enum, TypedApi } from "polkadot-api"
 
 import log from "../log"
 import { DecodedCall } from "../types"
@@ -26,10 +30,7 @@ export const getDryRunCall = async (
         data: null,
       }
 
-    const origin = PolkadotRuntimeOriginCaller.system({
-      type: "Signed",
-      value: from,
-    })
+    const origin: PolkadotRuntimeOriginCaller = Enum("system", Enum("Signed", from))
 
     const { pallet, method, args } = decodedCall
     const call = { type: pallet, value: { type: method, value: args } }

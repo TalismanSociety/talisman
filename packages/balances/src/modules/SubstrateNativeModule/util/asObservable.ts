@@ -14,7 +14,7 @@ export const asObservable =
   (...args: T) =>
     new Observable<R>((subscriber) => {
       const callback: SubscriptionCallback<R> = (error, result) =>
-        error ? subscriber.error(error) : subscriber.next(result)
+        error || result === undefined ? subscriber.error(error) : subscriber.next(result)
 
       const unsubscribe = handler(...args, callback)
 
