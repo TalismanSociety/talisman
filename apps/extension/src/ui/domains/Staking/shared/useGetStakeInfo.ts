@@ -1,7 +1,7 @@
+import { ScaleApi } from "@talismn/sapi"
 import { UseQueryResult } from "@tanstack/react-query"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { useMemo } from "react"
-import { ScaleApi } from "sapi"
 
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"

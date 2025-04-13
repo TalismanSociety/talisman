@@ -1,5 +1,5 @@
+import { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { ScaleApi } from "sapi"
 
 import { ROOT_NETUID } from "../../Bittensor/constants"
 

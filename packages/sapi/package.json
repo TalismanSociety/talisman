@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/scale",
-  "version": "0.1.0",
+  "name": "@talismn/sapi",
+  "version": "0.0.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -8,12 +8,12 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/scale",
+    "directory": "packages/sapi",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-scale.cjs.js",
-  "module": "dist/talismn-scale.esm.js",
+  "main": "dist/talismn-sapi.cjs.js",
+  "module": "dist/talismn-sapi.esm.js",
   "files": [
     "/dist"
   ],
@@ -26,11 +26,14 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
+    "@polkadot-api/descriptors": "workspace:*",
+    "@polkadot-api/merkleize-metadata": "1.1.14",
     "@polkadot-api/metadata-builders": "0.10.2",
-    "@polkadot-api/substrate-bindings": "0.11.1",
     "@polkadot-api/utils": "0.1.2",
     "anylogger": "^1.0.11",
-    "scale-ts": "^1.6.1"
+    "@polkadot/types": "15.8.1",
+    "@polkadot/types-codec": "15.8.1",
+    "@polkadot/util": "13.4.3"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

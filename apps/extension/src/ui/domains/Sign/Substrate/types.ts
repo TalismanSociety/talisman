@@ -1,7 +1,7 @@
 import { PolkadotCalls } from "@polkadot-api/descriptors"
+import { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
-import { DecodedCall, ScaleApi } from "sapi"
 
 export type DecodedBatchCall =
   | {

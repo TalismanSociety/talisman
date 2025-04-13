@@ -1,7 +1,7 @@
 import { polkadot, polkadotAssetHub, PolkadotRuntimeOriginCaller } from "@polkadot-api/descriptors"
-import { log } from "extension-shared"
 import { TypedApi } from "polkadot-api"
 
+import log from "../log"
 import { DecodedCall } from "../types"
 import { getDispatchErrorMessage } from "./errors"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
@@ -18,7 +18,7 @@ export const getDryRunCall = async (
   from: string,
   decodedCall: DecodedCall<unknown>,
 ) => {
-  const stop = log.timer("[sapi] getDryRun")
+  log.log(`[sapi] getDryRun begin: ${Date.now()}`)
   try {
     if (!isApiAvailable(chain, "DryRunApi", "dry_run_call"))
       return {
@@ -60,6 +60,6 @@ export const getDryRunCall = async (
       data: null,
     }
   } finally {
-    stop()
+    log.log(`[sapi] getDryRun end: ${Date.now()}`)
   }
 }

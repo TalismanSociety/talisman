@@ -1,6 +1,6 @@
+import { ScaleApi } from "@talismn/sapi"
 import { ChainId } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
-import { ScaleApi } from "sapi"
 
 import { useGetLatestBlockNumber } from "../../shared/useGetLatestBlockNumber"
 import { useGetBittensorTotalHotkeyColdkeyStakes } from "./useGetBittensorTotalHotkeyColdkeyStakes"

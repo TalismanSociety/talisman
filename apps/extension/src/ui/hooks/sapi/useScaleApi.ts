@@ -1,10 +1,10 @@
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import { getScaleApi, ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 import { getMetadataRpcFromDef } from "extension-shared"
 import { useMemo } from "react"
-import { getScaleApi, ScaleApi } from "sapi"
 
 import { api } from "@ui/api"
 import { useChain, useChainByGenesisHash, useToken } from "@ui/state"

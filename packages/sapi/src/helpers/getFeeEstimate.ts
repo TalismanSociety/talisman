@@ -1,7 +1,7 @@
 import { IRuntimeVersionBase, SignatureOptions, SignerPayloadJSON } from "@polkadot/types/types"
-import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
 
+import log from "../log"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { getTypeRegistry } from "./getTypeRegistry"

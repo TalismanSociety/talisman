@@ -1,5 +1,5 @@
+import { ScaleApi } from "@talismn/sapi"
 import { ChainId } from "extension-core"
-import { ScaleApi } from "sapi"
 
 import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeByHotKey } from "../hooks/bittensor/useGetBittensorStakeByHotKey"

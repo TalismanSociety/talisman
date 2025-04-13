@@ -1,12 +1,12 @@
 import { GenericExtrinsic } from "@polkadot/types"
 import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
+import { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Address, isJsonPayload, SubstrateSigningRequest } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
-import { DecodedCall, ScaleApi } from "sapi"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
