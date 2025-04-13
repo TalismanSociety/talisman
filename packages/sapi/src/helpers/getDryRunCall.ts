@@ -3,7 +3,7 @@ import type {
   polkadotAssetHub,
   PolkadotRuntimeOriginCaller,
 } from "@polkadot-api/descriptors"
-import { Enum, TypedApi } from "polkadot-api"
+import { Enum } from "polkadot-api"
 
 import log from "../log"
 import { DecodedCall } from "../types"
@@ -12,16 +12,29 @@ import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { isApiAvailable } from "./isApiAvailable"
 import { Chain } from "./types"
 
-type DryRunRefChain = typeof polkadot | typeof polkadotAssetHub
-type DryRunResult = Awaited<
-  ReturnType<TypedApi<DryRunRefChain>["apis"]["DryRunApi"]["dry_run_call"]>
->
+type DryRunResult = (
+  | typeof polkadot
+  | typeof polkadotAssetHub
+)["descriptors"]["apis"]["DryRunApi"]["dry_run_call"][1]
 
-export const getDryRunCall = async (
+export const getDryRunCall = async <T>(
   chain: Chain,
   from: string,
   decodedCall: DecodedCall<unknown>,
-) => {
+): Promise<
+  | {
+      available: boolean
+      data: null
+      ok?: undefined
+      errorMessage?: undefined
+    }
+  | {
+      available: boolean
+      data: T
+      ok: boolean
+      errorMessage: string | null
+    }
+> => {
   log.log(`[sapi] getDryRun begin: ${Date.now()}`)
   try {
     if (!isApiAvailable(chain, "DryRunApi", "dry_run_call"))
@@ -49,7 +62,9 @@ export const getDryRunCall = async (
 
     return {
       available: true,
-      data,
+      // NOTE: we can't re-export `@polkadot-api/descriptors` from this package.
+      // So, the caller of this function must pass in their own instance of `type DryRunResult` as the generic argument `T`.
+      data: data as T,
       ok,
       errorMessage,
     }

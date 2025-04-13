@@ -93,8 +93,8 @@ export const getScaleApi = (
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(chain, pallet, method),
 
-    getDryRunCall: (from: string, decodedCall: DecodedCall<unknown>) =>
-      getDryRunCall(chain, from, decodedCall),
+    getDryRunCall: <T>(from: string, decodedCall: DecodedCall<unknown>) =>
+      getDryRunCall<T>(chain, from, decodedCall),
 
     isApiAvailable: (name: string, method: string) => isApiAvailable(chain, name, method),
   }

@@ -28,11 +28,14 @@
   "dependencies": {
     "@polkadot-api/merkleize-metadata": "1.1.14",
     "@polkadot-api/metadata-builders": "0.10.2",
+    "@polkadot-api/substrate-bindings": "0.11.1",
     "@polkadot-api/utils": "0.1.2",
-    "anylogger": "^1.0.11",
     "@polkadot/types": "15.8.1",
     "@polkadot/types-codec": "15.8.1",
-    "@polkadot/util": "13.4.3"
+    "@polkadot/util": "13.4.3",
+    "@talismn/scale": "workspace:*",
+    "anylogger": "^1.0.11",
+    "polkadot-api": "1.7.6"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

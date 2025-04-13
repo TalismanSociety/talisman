@@ -1718,6 +1718,9 @@ importers:
       '@polkadot-api/metadata-builders':
         specifier: 0.10.2
         version: 0.10.2
+      '@polkadot-api/substrate-bindings':
+        specifier: 0.11.1
+        version: 0.11.1
       '@polkadot-api/utils':
         specifier: 0.1.2
         version: 0.1.2
@@ -1730,9 +1733,15 @@ importers:
       '@polkadot/util':
         specifier: 13.4.3
         version: 13.4.3
+      '@talismn/scale':
+        specifier: workspace:*
+        version: link:../scale
       anylogger:
         specifier: ^1.0.11
         version: 1.0.11
+      polkadot-api:
+        specifier: 1.7.6
+        version: 1.7.6(@swc/core@1.7.39(@swc/helpers@0.5.13))(bufferutil@4.0.8)(jiti@2.3.3)(postcss@8.4.47)(rxjs@7.8.2)(utf-8-validate@6.0.4)(yaml@2.6.0)
     devDependencies:
       '@talismn/eslint-config':
         specifier: workspace:*
@@ -4703,7 +4712,7 @@ packages:
     resolution: {integrity: sha512-GksZ6pr6TpIjHm8h9lSQ8pi8BE9VeubNT0OMJ3B5uZJ8pz73NPiqOtCog/x2/QzM1ENChPKxMDhiQuRHsqc+lg==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
-      rollup: '>=4.22.4'
+      rollup: '>=2.79.2'
 
   '@rollup/pluginutils@4.2.1':
     resolution: {integrity: sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==}
