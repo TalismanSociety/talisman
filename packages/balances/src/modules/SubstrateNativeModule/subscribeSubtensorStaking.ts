@@ -2,7 +2,7 @@ import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { isEthereumAddress } from "@talismn/util"
-import { SS58String } from "polkadot-api"
+import { Binary, SS58String } from "polkadot-api"
 import { exhaustMap, from, interval, map, mergeMap, startWith, toArray } from "rxjs"
 
 import type { SubNativeModule } from "./index"
@@ -246,11 +246,22 @@ export async function subscribeSubtensorStaking(
       // convert our Array<Stakes> into Array<Balances>, which we can then return to the native balance module
       map((stakes) =>
         stakes.map(({ address, hotkey, stake, netuid, dynamicInfo }): SubNativeBalance => {
-          const {
-            token_symbol: tokenSymbol,
-            subnet_name: subnetName,
-            subnet_identity: subnetIdentity,
-          } = dynamicInfo ?? {}
+          const { token_symbol, subnet_name, subnet_identity } = dynamicInfo ?? {}
+          const tokenSymbol = new TextDecoder().decode(Uint8Array.from(token_symbol ?? []))
+          const subnetName = new TextDecoder().decode(Uint8Array.from(subnet_name ?? []))
+
+          /** Map from Record<string, Binary> to Record<string, string> */
+          const binaryToText = <T extends Record<string, Binary>>(
+            input: T,
+          ): { [K in keyof T]: string } =>
+            Object.entries(input).reduce(
+              (acc, [key, value]) => {
+                acc[key as keyof T] = value.asText()
+                return acc
+              },
+              {} as { [K in keyof T]: string },
+            )
+          const subnetIdentity = subnet_identity ? binaryToText(subnet_identity) : undefined
 
           // Add 1n balance if failed to fetch dynamic info, so the position is not ignored by Balance lib and is displayed in the UI.
           const alphaStakedInTao = dynamicInfo
@@ -291,7 +302,7 @@ export async function subscribeSubtensorStaking(
                     subnetName,
                     subnetIdentity: {
                       ...subnetIdentity,
-                      subnetName: subnetIdentity?.subnet_name?.asText?.() || subnetName,
+                      subnetName: subnetIdentity?.subnet_name || subnetName,
                     },
                   },
                 },
