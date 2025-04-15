@@ -93,7 +93,7 @@ type FiatCurrencyItemProps = {
   className?: string
 }
 
-export const FiatCurrencyItem = ({
+const FiatCurrencyItem = ({
   item,
   selected,
   className,
