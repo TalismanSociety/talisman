@@ -339,7 +339,9 @@ const NomPoolStakeApr = () => {
   const { token } = useBondWizard()
   const { data, isLoading, isError, error } = useStakingAPR(token?.chain?.id)
 
-  return <StakeAprBase apr={Number(data)} isLoading={isLoading} isError={isError} error={error} />
+  return (
+    <StakeAprBase apr={Number(data ?? 0)} isLoading={isLoading} isError={isError} error={error} />
+  )
 }
 
 const BittensorStakeApr = () => {
