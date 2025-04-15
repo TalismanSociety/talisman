@@ -216,21 +216,63 @@ async function getGeneralReport() {
   const sortedFiatSumPerChainToken = Object.values(balancesPerChainToken)
     .map((balances) => new Balances(balances, { chains, evmNetworks, tokens, tokenRates }))
     .map((balances) => ({
-      balance: balances.sum.fiat("usd").total,
+      totalBalance: balances.sum.fiat("usd").total,
+      transferableBalance: balances.sum.fiat("usd").transferable,
+      unavailableBalance: balances.sum.fiat("usd").unavailable,
       numAccounts: new Set(balances.each.map((b) => b.address)).size,
       chainId: balances.sorted[0].chainId ?? balances.sorted[0].evmNetworkId,
       tokenId: balances.sorted[0].tokenId,
       symbol: balances.sorted[0].token?.symbol,
     }))
-    .sort((a, b) => b.balance - a.balance)
+    .sort((a, b) => b.totalBalance - a.totalBalance)
 
   const totalFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").total)
+  const transferableFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").transferable)
+  const unavailableFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").unavailable)
+
   const tokensBreakdown = sortedFiatSumPerChainToken
-    .filter((token, index) => token.balance > 1 || index < TOP_BALANCES_COUNT)
-    .map((token) => ({ ...token, balance: privacyRoundCurrency(token.balance) }))
+    .filter((token, index) => token.totalBalance > 1 || index < TOP_BALANCES_COUNT)
+    .map((token) => ({
+      ...token,
+      balance: privacyRoundCurrency(token.totalBalance),
+      totalBalance: privacyRoundCurrency(token.totalBalance),
+      transferableBalance: privacyRoundCurrency(token.transferableBalance),
+      unavailableBalance: privacyRoundCurrency(token.unavailableBalance),
+    }))
+
+  const unroundedEcosystemBreakdown = sortedFiatSumPerChainToken
+    .filter((token, index) => token.totalBalance > 1 || index < TOP_BALANCES_COUNT)
+    .reduce(
+      (acc, token) => {
+        if (!token.chainId) return acc
+
+        const eco = chains[token.chainId] ? acc.dot : evmNetworks[token.chainId] ? acc.eth : null
+        if (!eco) return acc
+
+        eco.totalBalance += token.totalBalance
+        eco.transferableBalance += token.transferableBalance
+        eco.unavailableBalance += token.unavailableBalance
+
+        return acc
+      },
+      {
+        dot: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
+        eth: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
+      },
+    )
+  const ecosystemBreakdown = Object.fromEntries(
+    Object.entries(unroundedEcosystemBreakdown).map(([eco, totals]) => [
+      eco,
+      {
+        totalBalance: privacyRoundCurrency(totals.totalBalance),
+        transferableBalance: privacyRoundCurrency(totals.transferableBalance),
+        unavailableBalance: privacyRoundCurrency(totals.unavailableBalance),
+      },
+    ]),
+  )
 
   const topChainTokens = sortedFiatSumPerChainToken
-    .filter(({ balance }) => balance > 0)
+    .filter(({ totalBalance }) => totalBalance > 0)
     .map(({ chainId, tokenId }) => ({ chainId, tokenId }))
     .slice(0, 5)
 
@@ -278,7 +320,10 @@ async function getGeneralReport() {
 
     // tokens
     totalFiatValue,
+    transferableFiatValue,
+    unavailableFiatValue,
     tokens: tokensBreakdown,
+    ecosystems: ecosystemBreakdown,
     topChainTokens,
     topToken,
     numTokens,
