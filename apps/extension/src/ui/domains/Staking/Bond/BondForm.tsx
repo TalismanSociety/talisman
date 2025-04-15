@@ -310,48 +310,13 @@ export const AmountEdit = () => {
   )
 }
 
-const StakeApr = () => {
+const StakeAprBase: FC<{
+  apr: number
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
+}> = ({ apr, isLoading, isError, error }) => {
   const { t } = useTranslation()
-  const { token, poolId } = useBondWizard()
-  let data,
-    isLoading = false,
-    isError = false,
-    apr = 0,
-    error: Error | null
-
-  const hookMap = {
-    nominationPool: useStakingAPR,
-    bittensor: useCombinedBittensorValidatorsData,
-  }
-
-  switch (token?.chain?.id) {
-    case "bittensor":
-      {
-        const {
-          combinedValidatorsData,
-          isLoading: isValidatorsLoading,
-          isError: isBittensorError,
-        } = hookMap["bittensor"]()
-        const validator = combinedValidatorsData.find((validator) => validator.poolId === poolId)
-        data = validator
-        isLoading = isValidatorsLoading
-        isError = isBittensorError
-        error = null
-      }
-
-      apr = Number(data?.validatorYield?.thirty_day_apy ?? 0)
-      break
-    case "analog-timechain":
-      ;(isLoading = false), (isError = false), (error = null)
-      // always show 55% for Analog, as we have a link to their docs explaining the APR for their chain
-      apr = 0.55
-      break
-    default:
-      ;({ data, isLoading, isError, error } = hookMap["nominationPool"](token?.chain?.id))
-      apr = Number(data)
-      break
-  }
-
   const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
 
   if (isLoading)
@@ -368,6 +333,42 @@ const StakeApr = () => {
       <WithAprDocsLink>{display}</WithAprDocsLink>
     </span>
   )
+}
+
+const NomPoolStakeApr = () => {
+  const { token } = useBondWizard()
+  const { data, isLoading, isError, error } = useStakingAPR(token?.chain?.id)
+
+  return <StakeAprBase apr={Number(data)} isLoading={isLoading} isError={isError} error={error} />
+}
+
+const BittensorStakeApr = () => {
+  const { poolId } = useBondWizard()
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData()
+
+  const apr = useMemo(() => {
+    const validator = combinedValidatorsData.find((validator) => validator.poolId === poolId)
+    return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
+  }, [combinedValidatorsData, poolId])
+
+  return <StakeAprBase apr={apr} isLoading={isLoading} isError={isError} error={null} />
+}
+
+const AnalogTimechainStakeApr = () => {
+  return <StakeAprBase apr={0.55} isLoading={false} isError={false} error={null} />
+}
+
+const StakeApr = () => {
+  const { token } = useBondWizard()
+
+  switch (token?.chain?.id) {
+    case "bittensor":
+      return <BittensorStakeApr />
+    case "analog-timechain":
+      return <AnalogTimechainStakeApr />
+    default:
+      return <NomPoolStakeApr />
+  }
 }
 
 /**
