@@ -1,8 +1,8 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { toHex } from "@polkadot-api/utils"
 import { SignerPayloadJSON } from "@polkadot/types/types"
-import { log } from "extension-shared"
 
+import log from "../log"
 import { getTypeRegistry } from "./getTypeRegistry"
 import { Chain, ChainInfo } from "./types"
 

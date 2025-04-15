@@ -9,6 +9,7 @@ export type EvmNetwork = {
   isTestnet: boolean
   isDefault: boolean
   forceScan: boolean
+  /** @deprecated */
   sortIndex: number | null
   name: string | null
   themeColor: string | null

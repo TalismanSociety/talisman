@@ -17,7 +17,7 @@ export const useGetBittensorUnbondBlockNumber = ({
     queryFn: () =>
       address && delegator && unbondBlockNumber[address]
         ? unbondBlockNumber[address]?.[delegator]
-        : undefined,
+        : null,
     enabled: !!address && !!delegator,
   })
 }

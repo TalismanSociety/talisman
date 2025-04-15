@@ -1,8 +1,8 @@
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { SignerPayloadJSON } from "@polkadot/types/types"
-import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
 
+import log from "../log"
 import { PayloadSignerConfig } from "../types"
 import { getPayloadWithMetadataHash } from "./getPayloadWithMetadataHash"
 import { getSendRequestResult } from "./getSendRequestResult"

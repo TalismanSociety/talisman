@@ -1,8 +1,8 @@
 import { XIcon } from "@talismn/icons"
+import { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { SignerPayloadJSON } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { DecodedCall, ScaleApi } from "sapi"
 import { Button, Drawer, IconButton } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"

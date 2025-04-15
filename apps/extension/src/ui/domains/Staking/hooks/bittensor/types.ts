@@ -1,3 +1,5 @@
+import { type ValidatorYield } from "./dTao/types"
+
 type Pagination = {
   current_page: number
   per_page: number
@@ -63,6 +65,8 @@ export type BondOption = {
   hasData: boolean
   isError: boolean
   isRecommended?: boolean
+  validatorYield?: ValidatorYield
+  apr: number
 }
 
 type Address = {

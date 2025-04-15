@@ -1,5 +1,5 @@
+import { DecodedCall } from "@talismn/sapi"
 import { useMemo } from "react"
-import { DecodedCall } from "sapi"
 
 import { DecodedBatchArgs, DecodedCallComponent, isBatchCall } from "../types"
 import { SubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawer"

@@ -1,23 +1,22 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
+import { getScaleApi } from "@talismn/sapi"
 import { isEthereumAddress } from "@talismn/util"
-import { SS58String } from "polkadot-api"
+import { Binary, SS58String } from "polkadot-api"
 import { exhaustMap, from, interval, map, mergeMap, startWith, toArray } from "rxjs"
 
 import type { SubNativeModule } from "./index"
-import type { DynamicInfoType } from "./util/subtensor"
 import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import { AddressesByToken, SubscriptionCallback } from "../../types"
 import { findChainMeta, getUniqueChainIds } from "../util"
 import { SubNativeBalance, SubNativeToken } from "./types"
 import {
-  BITTENSOR_TESTNET_CHAIN_ID,
   calculateTaoFromDynamicInfo,
-  DecodeResult_GetDynamicInfo,
-  DecodeResult_GetStakeInfoForColdkey,
-  EncodeParams_GetDynamicInfo,
-  EncodeParams_GetStakeInfoForColdkey,
+  GetDynamicInfoParams,
+  GetDynamicInfoResult,
+  GetStakeInfoForColdkeyParams,
+  GetStakeInfoForColdkeyResult,
   ONE_ALPHA_TOKEN,
   SUBTENSOR_MIN_STAKE_AMOUNT_PLANK,
   SUBTENSOR_ROOT_NETUID,
@@ -90,37 +89,62 @@ export async function subscribeSubtensorStaking(
       continue
     }
 
+    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
+      miniMetadatas,
+      "substrate-native",
+      chain,
+    )
+    if (!chainMeta?.miniMetadata) {
+      log.warn(`MiniMetadata for chain ${chainId} not found`)
+      continue
+    }
+
+    const scaleApi = getScaleApi(
+      {
+        chainId,
+        send: (...args) =>
+          chainConnector.send(
+            chainId,
+            ...args,
+            { expectErrors: true }, // don't pollute the wallet logs when this request fails
+          ),
+      },
+      chainMeta.miniMetadata as `0x${string}`,
+      token,
+      chain.hasCheckMetadataHash,
+      chain.signedExtensions,
+      chain.registryTypes,
+    )
+
     // sets the number of addresses to query in parallel (per chain, since each chain runs in parallel to the others)
     const concurrency = 4
     // In-memory cache for successful dynamic info results
-    const dynamicInfoCache = new Map<number, DynamicInfoType>()
+    const dynamicInfoCache = new Map<number, GetDynamicInfoResult>()
 
     const fetchDynamicInfoForNetuids = async (
       uniqueNetuids: number[],
-    ): Promise<(DynamicInfoType | null | undefined)[]> => {
-      const DYNAMIC_INFO_METHOD = "SubnetInfoRuntimeApi_get_dynamic_info"
+    ): Promise<(GetDynamicInfoResult | null | undefined)[]> => {
       const MAX_RETRIES = 3
       const RETRY_DELAY_MS = 500
 
       const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-      const fetchInfo = async (netuid: number): Promise<DynamicInfoType | null | undefined> => {
+      const fetchInfo = async (
+        netuid: number,
+      ): Promise<GetDynamicInfoResult | null | undefined> => {
         if (netuid === 0) return null
 
         for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
           try {
-            const response = await chainConnector.send(
-              chainId,
-              "state_call",
-              [DYNAMIC_INFO_METHOD, EncodeParams_GetDynamicInfo(netuid)],
-              undefined,
-              { expectErrors: true },
+            const params: GetDynamicInfoParams = [netuid]
+            const result = await scaleApi.getRuntimeCallValue<GetDynamicInfoResult>(
+              "SubnetInfoRuntimeApi",
+              "get_dynamic_info",
+              params,
             )
 
-            const decodedResult = DecodeResult_GetDynamicInfo(response)
-
-            dynamicInfoCache.set(netuid, decodedResult) // Cache successful response
-            return decodedResult
+            dynamicInfoCache.set(netuid, result) // Cache successful response
+            return result
           } catch (error) {
             log.trace(`Attempt ${attempt} failed for netuid ${netuid}:`, error)
 
@@ -154,22 +178,19 @@ export async function subscribeSubtensorStaking(
             hotkey: SS58String
             stake: bigint
             netuid: number
-            dynamicInfo: DynamicInfoType | void | null
+            dynamicInfo: GetDynamicInfoResult | void | null
           }>
         >
         const queryMethods: Array<QueryMethod> = [
           async () => {
-            if (chainId === BITTENSOR_TESTNET_CHAIN_ID) return []
-            const method = "StakeInfoRuntimeApi_get_stake_info_for_coldkey"
-            const params = EncodeParams_GetStakeInfoForColdkey(address)
-            const response = await chainConnector.send(
-              chainId,
-              "state_call",
-              [method, params],
-              undefined,
-              { expectErrors: true }, // don't pollute the wallet logs when this request fails
+            if (chain.isTestnet) return []
+
+            const params: GetStakeInfoForColdkeyParams = [address]
+            const result = await scaleApi.getRuntimeCallValue<GetStakeInfoForColdkeyResult>(
+              "StakeInfoRuntimeApi",
+              "get_stake_info_for_coldkey",
+              params,
             )
-            const result = DecodeResult_GetStakeInfoForColdkey(response)
             if (!Array.isArray(result)) return []
 
             const uniqueNetuids = Array.from(
@@ -225,7 +246,22 @@ export async function subscribeSubtensorStaking(
       // convert our Array<Stakes> into Array<Balances>, which we can then return to the native balance module
       map((stakes) =>
         stakes.map(({ address, hotkey, stake, netuid, dynamicInfo }): SubNativeBalance => {
-          const { tokenSymbol, subnetName, subnetIdentity } = dynamicInfo ?? {}
+          const { token_symbol, subnet_name, subnet_identity } = dynamicInfo ?? {}
+          const tokenSymbol = new TextDecoder().decode(Uint8Array.from(token_symbol ?? []))
+          const subnetName = new TextDecoder().decode(Uint8Array.from(subnet_name ?? []))
+
+          /** Map from Record<string, Binary> to Record<string, string> */
+          const binaryToText = <T extends Record<string, Binary>>(
+            input: T,
+          ): { [K in keyof T]: string } =>
+            Object.entries(input).reduce(
+              (acc, [key, value]) => {
+                acc[key as keyof T] = value.asText()
+                return acc
+              },
+              {} as { [K in keyof T]: string },
+            )
+          const subnetIdentity = subnet_identity ? binaryToText(subnet_identity) : undefined
 
           // Add 1n balance if failed to fetch dynamic info, so the position is not ignored by Balance lib and is displayed in the UI.
           const alphaStakedInTao = dynamicInfo
@@ -236,7 +272,7 @@ export async function subscribeSubtensorStaking(
             : 1n
 
           const alphaToTaoRate = calculateTaoFromDynamicInfo({
-            dynamicInfo,
+            dynamicInfo: dynamicInfo ?? null,
             alphaStaked: ONE_ALPHA_TOKEN,
           }).toString()
 
@@ -266,7 +302,7 @@ export async function subscribeSubtensorStaking(
                     subnetName,
                     subnetIdentity: {
                       ...subnetIdentity,
-                      subnetName: subnetIdentity?.subnetName || subnetName,
+                      subnetName: subnetIdentity?.subnet_name || subnetName,
                     },
                   },
                 },

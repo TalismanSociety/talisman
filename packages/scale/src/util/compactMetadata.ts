@@ -20,11 +20,9 @@ export type V15StorageItem = NonNullable<V15Pallet["storage"]>["items"][0]
  */
 export const compactMetadata = (
   metadata: V15 | V14,
-  palletsAndItems: Array<{
-    pallet: string
-    items: string[]
-  }>,
-  extraKeepTypes?: number[],
+  palletsAndItems: Array<{ pallet: string; constants?: string[]; items: string[] }> = [],
+  runtimeApisAndMethods: Array<{ runtimeApi: string; methods: string[] }> = [],
+  extraKeepTypes: number[] = [],
 ) => {
   // remove pallets we don't care about
   metadata.pallets = metadata.pallets.filter((pallet) =>
@@ -33,48 +31,94 @@ export const compactMetadata = (
   )
 
   // remove fields we don't care about from each pallet, and extract types for each storage item we care about
-  const items = palletsAndItems.flatMap(({ pallet: palletName, items: itemNames }) => {
-    const pallet = metadata.pallets.find((pallet) => pallet.name === palletName)
-    if (!pallet) {
-      log.debug("Failed to find pallet", palletName)
-      return []
-    }
+  const palletsKeepTypes = palletsAndItems.flatMap(
+    ({ pallet: palletName, constants: constantNames, items: itemNames }) => {
+      const pallet = metadata.pallets.find((pallet) => pallet.name === palletName)
+      if (!pallet) {
+        log.debug("Failed to find pallet", palletName)
+        return []
+      }
 
-    // remove pallet fields we don't care about
-    pallet.calls = undefined
-    pallet.constants = []
-    // v15 (NOT v14) has docs
-    if ("docs" in pallet) pallet.docs = []
-    pallet.errors = undefined
-    pallet.events = undefined
+      // remove pallet fields we don't care about
+      pallet.calls = undefined
+      pallet.constants = constantNames
+        ? pallet.constants.filter((constant) => constantNames.includes(constant.name))
+        : []
+      // v15 (NOT v14) has docs
+      if ("docs" in pallet) pallet.docs = []
+      pallet.errors = undefined
+      pallet.events = undefined
 
-    if (!pallet.storage) return []
+      if (!pallet.storage) return []
 
-    // filter and extract storage items we care about
-    pallet.storage.items = pallet.storage.items.filter((item) =>
-      itemNames.some((itemName) => item.name === itemName),
+      // filter and extract storage items we care about
+      pallet.storage.items = pallet.storage.items.filter((item) =>
+        itemNames.some((itemName) => item.name === itemName),
+      )
+
+      return [
+        ...pallet.storage.items
+          .flatMap((item) => [
+            // each type can be either "Plain" or "Map"
+            // if it's "Plain" we only need to get the value type
+            // if it's a "Map" we want to keep both the key AND the value types
+            item.type.tag === "plain" && item.type.value,
+            item.type.tag === "map" && item.type.value.key,
+            item.type.tag === "map" && item.type.value.value,
+          ])
+          .filter((type): type is number => typeof type === "number"),
+        ...pallet.constants.flatMap((constant) => constant.type),
+      ]
+    },
+  )
+
+  // remove runtime apis we don't care about
+  let runtimeApisKeepTypes: number[] = []
+  if ("apis" in metadata) {
+    // metadata is v15 (NOT v14)
+
+    // keep this api if it's listed in `runtimeApisAndMethods`
+    metadata.apis = metadata.apis.filter((runtimeApi) =>
+      runtimeApisAndMethods.some(
+        ({ runtimeApi: runtimeApiName }) => runtimeApi.name === runtimeApiName,
+      ),
     )
 
-    return pallet.storage.items
-  })
+    // remove methods we don't care about from each runtime api, and extract types for each call's params and result
+    runtimeApisKeepTypes = runtimeApisAndMethods.flatMap(
+      ({ runtimeApi: runtimeApiName, methods: methodNames }) => {
+        const runtimeApi = metadata.apis.find((runtimeApi) => runtimeApi.name === runtimeApiName)
+        if (!runtimeApi) {
+          log.debug("Failed to find runtimeApi", runtimeApiName)
+          return []
+        }
+
+        // remove runtime fields we don't care about
+        runtimeApi.docs = []
+
+        if (!runtimeApi.methods) return []
+
+        // filter and extract methods we care about
+        runtimeApi.methods = runtimeApi.methods.filter((method) =>
+          methodNames.some((methodName) => method.name === methodName),
+        )
+
+        return runtimeApi.methods.flatMap((method) => [
+          // each method has an array of input types (for the params)
+          ...method.inputs.map((input) => input.type),
+          // and one output type (for the result)
+          method.output,
+        ])
+      },
+    )
+  }
 
   // this is a set of type ids which we plan to keep in our compacted metadata
   // anything not in this set will be deleted
   // we start off with just the types of the state calls we plan to make,
   // then we run those types through a function (addDependentTypes) which will also include
   // all of the types which those types depend on - recursively
-  const keepTypes = new Set(
-    items
-      .flatMap((item) => [
-        // each type can be either "Plain" or "Map"
-        // if it's "Plain" we only need to get the value type
-        // if it's a "Map" we want to keep both the key AND the value types
-        item.type.tag === "plain" && item.type.value,
-        item.type.tag === "map" && item.type.value.key,
-        item.type.tag === "map" && item.type.value.value,
-      ])
-      .filter((type): type is number => typeof type === "number"),
-  )
+  const keepTypes = new Set([...palletsKeepTypes, ...runtimeApisKeepTypes])
   extraKeepTypes?.forEach((type) => keepTypes.add(type))
 
   // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
@@ -94,11 +138,6 @@ export const compactMetadata = (
   }
   remapTypeIds(metadata, getNewTypeId)
 
-  // ditch the remaining data we don't need to keep in a miniMetata
-  if ("apis" in metadata) {
-    // metadata is v15 (NOT v14)
-    metadata.apis = []
-  }
   if ("address" in metadata.extrinsic) {
     // metadata is v15 (NOT v14)
     metadata.extrinsic.address = 0
@@ -195,6 +234,7 @@ const addDependentTypes = (
 const remapTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
   remapLookupTypeIds(metadata, getNewTypeId)
   remapStorageTypeIds(metadata, getNewTypeId)
+  remapRuntimeApisTypeIds(metadata, getNewTypeId)
 }
 
 const remapLookupTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
@@ -266,6 +306,23 @@ const remapStorageTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: numb
         item.type.value.key = getNewTypeId(item.type.value.key)
         item.type.value.value = getNewTypeId(item.type.value.value)
       }
+    }
+    for (const constant of pallet.constants ?? []) {
+      constant.type = getNewTypeId(constant.type)
+    }
+  }
+}
+
+const remapRuntimeApisTypeIds = (
+  metadata: V14 | V15,
+  getNewTypeId: (oldTypeId: number) => number,
+) => {
+  for (const runtimeApi of metadata.apis) {
+    for (const method of runtimeApi.methods ?? []) {
+      for (const input of method.inputs) {
+        input.type = getNewTypeId(input.type)
+      }
+      method.output = getNewTypeId(method.output)
     }
   }
 }

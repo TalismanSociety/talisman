@@ -1,7 +1,7 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
+import { ScaleApi } from "@talismn/sapi"
 import { range } from "lodash"
 import { Binary } from "polkadot-api"
-import { ScaleApi } from "sapi"
 
 import { ROOT_NETUID } from "./Bittensor/constants"
 

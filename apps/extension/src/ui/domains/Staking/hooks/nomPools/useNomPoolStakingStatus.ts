@@ -1,8 +1,8 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { useMemo } from "react"
-import { ScaleApi } from "sapi"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"

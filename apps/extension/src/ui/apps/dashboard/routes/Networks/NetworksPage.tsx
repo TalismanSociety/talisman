@@ -1,16 +1,16 @@
 import { bind } from "@react-rxjs/core"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { FC, useCallback, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { combineLatest } from "rxjs"
-import { PillButton } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
+import { TogglePill } from "@talisman/components/TogglePill"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
@@ -27,30 +27,22 @@ import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"
 import { useNetworksType } from "./useNetworksType"
 
-const Notice: FC = () => {
+const NoticeTooltip: FC = () => {
   const { t } = useTranslation("admin")
+
   return (
-    <div className="bg-grey-800 text-body-secondary flex items-center gap-8 rounded p-8 py-6">
-      <div>
-        <InfoIcon className="text-lg" />
-      </div>
-      <div className="grow text-sm">
-        <Trans
-          t={t}
-          defaults="Ethereum network settings are taken from the community maintained <EthereumListsLink>Ethereum Lists</EthereumListsLink>. Talisman does not curate or control which RPCs are used for these networks."
-          components={{
-            EthereumListsLink: (
-              // eslint-disable-next-line jsx-a11y/anchor-has-content
-              <a
-                href="https://github.com/ethereum-lists/chains"
-                target="_blank"
-                className="text-grey-200 hover:text-body"
-              ></a>
-            ),
-          }}
-        />
-      </div>
-    </div>
+    <Tooltip>
+      <TooltipTrigger className="align-text-top">
+        <InfoIcon />
+      </TooltipTrigger>
+      <TooltipContent>
+        {t(
+          "Ethereum network settings are taken from the community maintained Ethereum Lists Github repository.",
+        )}
+        <br />
+        {t("Talisman does not curate or control which RPCs are used for these networks.")}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -81,13 +73,24 @@ const Content = () => {
   }, [navigate])
 
   const [search, setSearch] = useState("")
+  const [activeOnly, setActiveOnly] = useState(false)
 
   return (
     <>
-      <HeaderBlock title={t("Manage Networks")} text={t("Add, enable and disable networks")} />
+      <div className="flex w-full justify-between">
+        <HeaderBlock
+          title={t("Manage Networks")}
+          text={
+            <>
+              {t("Add, enable and disable networks")} <NoticeTooltip />
+            </>
+          }
+        />
+        <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
+          {t("Add network")}
+        </Button>
+      </div>
       <Spacer small />
-      <Notice />
-      <Spacer large />
       <div className="flex justify-end gap-4">
         <OptionSwitch
           options={[
@@ -101,30 +104,23 @@ const Content = () => {
 
         <div className="flex-grow" />
 
+        <TogglePill
+          label={t("Active only")}
+          checked={activeOnly}
+          onChange={() => setActiveOnly((prev) => !prev)}
+        />
         <EnableTestnetPillButton className="h-16" />
-        <PillButton icon={PlusIcon} className="h-16" onClick={handleAddNetworkClick}>
-          {t("Add network")}
-        </PillButton>
       </div>
       <Spacer small />
       <div className="flex gap-4">
-        <SearchInput
-          onChange={setSearch}
-          placeholder={
-            networksType === "polkadot" ? t("Search networks") : t("Search for more networks")
-          }
-        />
+        <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
       </div>
       <Spacer small />
-      {/* The `FadeIn` with the `key` is a dirty workaround for https://github.com/streamich/react-use/issues/2376 */}
-      {/* Without it, when the search results change order, the `useIntersection` inside them bugs out and they turn blank */}
-      <FadeIn key={search || "DEFAULT"}>
-        {networksType === "polkadot" ? (
-          <ChainsList search={search} />
-        ) : (
-          <EvmNetworksList search={search} />
-        )}
-      </FadeIn>
+      {networksType === "polkadot" ? (
+        <ChainsList activeOnly={activeOnly} search={search} />
+      ) : (
+        <EvmNetworksList activeOnly={activeOnly} search={search} />
+      )}
     </>
   )
 }

@@ -1,5 +1,3 @@
-import { pbkdf2 } from "@noble/hashes/pbkdf2"
-import { sha512 } from "@noble/hashes/sha512"
 import {
   entropyToMnemonic as entropyToMnemonicBip39,
   generateMnemonic as generateMnemonicBip39,
@@ -9,6 +7,7 @@ import {
 import { wordlist } from "@scure/bip39/wordlists/english"
 
 import type { KeypairCurve } from "../types"
+import { pbkdf2 } from "../utils"
 
 export const mnemonicToEntropy = (mnemonic: string) => {
   return mnemonicToEntropyBip39(mnemonic, wordlist)
@@ -18,24 +17,29 @@ export const entropyToMnemonic = (entropy: Uint8Array) => {
   return entropyToMnemonicBip39(entropy, wordlist)
 }
 
-const salt = (password: string) => {
-  return new TextEncoder().encode(`mnemonic${password.normalize("NFKD")}`)
-}
+const entropyToSeedSubstrate = async (entropy: Uint8Array, password?: string) =>
+  await pbkdf2(
+    "SHA-512",
+    entropy,
+    mnemonicPasswordToSalt(password ?? ""),
+    2048, // 2048 iterations
+    32, // 32 bytes (32 * 8 == 256 bits)
+  )
 
-const entropyToSeedSubstrate = (entropy: Uint8Array, password?: string) => {
-  return pbkdf2(sha512, entropy, salt(password ?? ""), {
-    c: 2048,
-    dkLen: 32,
-  })
-}
+const entropyToSeedClassic = async (entropy: Uint8Array, password?: string) =>
+  await pbkdf2(
+    "SHA-512",
+    encodeNormalized(entropyToMnemonic(entropy)),
+    mnemonicPasswordToSalt(password ?? ""),
+    2048, // 2048 iterations
+    64, // 64 bytes (64 * 8 == 512 bits)
+  )
 
-const entropyToSeedClassic = (entropy: Uint8Array, password?: string) => {
-  const mnemonic = entropyToMnemonic(entropy)
-  return pbkdf2(sha512, mnemonic.normalize("NFKD"), salt(password ?? ""), {
-    c: 2048,
-    dkLen: 64,
-  })
-}
+const mnemonicPasswordToSalt = (password: string) => encodeNormalized(`mnemonic${password}`)
+
+/** Normalizes a UTF-8 string using `NFKD` form, then encodes it into bytes */
+const encodeNormalized = (utf8: string): Uint8Array =>
+  new TextEncoder().encode(utf8.normalize("NFKD"))
 
 type SeedDerivationType = "substrate" | "classic"
 
@@ -53,14 +57,18 @@ const getSeedDerivationType = (curve: KeypairCurve): SeedDerivationType => {
 
 // when deriving keys from a mnemonic, we usually dont want a password here.
 // a password provided here would be used as a 25th mnemonic word.
-export const entropyToSeed = (entropy: Uint8Array, curve: KeypairCurve, password?: string) => {
+export const entropyToSeed = async (
+  entropy: Uint8Array,
+  curve: KeypairCurve,
+  password?: string,
+) => {
   const type = getSeedDerivationType(curve)
 
   switch (type) {
     case "classic":
-      return entropyToSeedClassic(entropy, password)
+      return await entropyToSeedClassic(entropy, password)
     case "substrate":
-      return entropyToSeedSubstrate(entropy, password)
+      return await entropyToSeedSubstrate(entropy, password)
   }
 }
 
@@ -87,20 +95,20 @@ export const DEV_MNEMONIC_ETHEREUM = "test test test test test test test test te
 // keep dev seeds in cache as we will reuse them to validate multiple derivation paths
 const DEV_SEED_CACHE = new Map<SeedDerivationType, Uint8Array>()
 
-export const getDevSeed = (curve: KeypairCurve) => {
+export const getDevSeed = async (curve: KeypairCurve) => {
   const type = getSeedDerivationType(curve)
 
   if (!DEV_SEED_CACHE.has(type)) {
     switch (type) {
       case "classic": {
         const entropy = mnemonicToEntropy(DEV_MNEMONIC_ETHEREUM)
-        const seed = entropyToSeedClassic(entropy) // 80ms
+        const seed = await entropyToSeedClassic(entropy) // 80ms
         DEV_SEED_CACHE.set(type, seed)
         break
       }
       case "substrate": {
         const entropy = mnemonicToEntropy(DEV_MNEMONIC_POLKADOT)
-        const seed = entropyToSeedSubstrate(entropy) // 80ms
+        const seed = await entropyToSeedSubstrate(entropy) // 80ms
         DEV_SEED_CACHE.set(type, seed)
         break
       }
