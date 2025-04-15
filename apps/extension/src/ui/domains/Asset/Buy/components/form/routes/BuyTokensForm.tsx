@@ -8,18 +8,18 @@ import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
 import { truncateToSignificantDigits } from "../../../utils/truncateToSignificantDigits"
 import { BuyTokensLayout } from "../../BuyTokensLayout"
 import { BuyTokensFiatAmountInput } from "../BuyTokensFiatAmountInput"
-import { BuyTokensNotAvailableDrawer } from "../BuyTokensNotAvailableDrawer"
+//import { BuyTokensNotAvailableDrawer } from "../BuyTokensNotAvailableDrawer"
 import { BuyTokensSelectAccountInput } from "../BuyTokensSelectAccountInput"
 import { BuyTokensTokenAmountInput } from "../BuyTokensTokenAmountInput"
 
 export const BuyTokensForm = () => {
   const { t } = useTranslation()
   const {
-    isRampNotSupported,
+    // isRampNotSupported,
     supportedTokens,
     isBuyForm,
     isFormDisabled,
-    close,
+    // close,
     buySellForm: { watch },
     submit,
   } = useBuyTokensWizard()
@@ -73,23 +73,28 @@ export const BuyTokensForm = () => {
           <div className="text-xs">{t("Deposit Account")}</div>
           <BuyTokensSelectAccountInput />
         </div>
-        {isRampNotSupported && (
+        {/* {isRampNotSupported && (
           <BuyTokensNotAvailableDrawer
             containerId="buy-tokens-modal"
             isOpen={isRampNotSupported}
             onDismiss={close}
           />
-        )}
+        )} */}
         <Button
           type="submit"
-          className={classNames("mt-auto w-full", isRampNotSupported && "cursor-not-allowed")}
+          className={classNames(
+            "mt-auto w-full",
+            //  isRampNotSupported && "cursor-not-allowed")
+          )}
           primary
+          icon={ExternalLinkIcon}
           disabled={isFormDisabled}
         >
-          <div className="flex items-center justify-center gap-2">
-            {isRampNotSupported ? t("Not available") : t("Continue to Ramp")}
+          {t("Continue to Ramp")}
+          {/* <div className="flex items-center justify-center gap-2">
+            {isRampNotSupported ? t("Not available") : }
             {!isRampNotSupported && <ExternalLinkIcon />}
-          </div>
+          </div> */}
         </Button>
       </form>
     </BuyTokensLayout>

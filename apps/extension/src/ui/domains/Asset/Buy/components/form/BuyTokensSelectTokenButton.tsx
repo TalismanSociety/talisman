@@ -21,7 +21,7 @@ const RenderSelectedToken = ({ item }: { item: RampTokenAsset }) => {
 export const BuyTokensSelectTokenButton = () => {
   const { t } = useTranslation()
   const {
-    isRampNotSupported,
+    // isRampNotSupported,
     setRoute,
     buySellForm: { watch, setValue },
   } = useBuyTokensWizard()
@@ -35,7 +35,7 @@ export const BuyTokensSelectTokenButton = () => {
 
   return (
     <BuyTokensButton
-      isDisabled={isRampNotSupported}
+      // isDisabled={isRampNotSupported}
       onClick={() => setRoute("pickToken")}
       onClear={handleClear}
       shouldRenderSelected={!!rampTokenAsset.symbol}

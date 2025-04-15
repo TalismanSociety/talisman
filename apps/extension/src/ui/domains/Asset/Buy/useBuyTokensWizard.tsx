@@ -43,7 +43,7 @@ const useBuyTokensWizardProvider = () => {
   const { open, close } = useBuyTokensModal()
   const [debouncedFiatAmount, setDebouncedFiatAmount] = useDebouncedState("", 300)
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
-  const accounts = useAccounts("portfolio")
+  const accounts = useAccounts("owned")
   const { balanceTotalPerAccount } = usePortfolioAccounts()
 
   const {
@@ -176,16 +176,16 @@ const useBuyTokensWizardProvider = () => {
   })
 
   // Check if Ramp is supported in the user's region
-  const { isError: isRampNotSupported } = useGetRampQuote({
-    currencyCode: "USD",
-    swapAsset: "ETH_ETH",
-    tokenAmount: (1e18).toString(), // 1 ETH
-    fiatAmount: 0,
-    isFiatQuote: false,
-    isBuyForm,
-    isEnabled: true,
-    retry: false,
-  })
+  // const { isError: isRampNotSupported } = useGetRampQuote({
+  //   currencyCode: "USD",
+  //   swapAsset: "ETH_ETH",
+  //   tokenAmount: (1e18).toString(), // 1 ETH
+  //   fiatAmount: 0,
+  //   isFiatQuote: false,
+  //   isBuyForm,
+  //   isEnabled: true,
+  //   retry: false,
+  // })
 
   const quoteUpdateHandler = useCallback(() => {
     if (!rampQuote || isRampQuoteLoading) return
@@ -269,15 +269,12 @@ const useBuyTokensWizardProvider = () => {
   )
 
   const isFormDisabled = useMemo(
-    () =>
-      !isValid ||
-      isRampQuoteError ||
-      isRampQuoteLoading ||
-      !isFiatAboveMinPurchaseAmount ||
-      isRampNotSupported,
+    () => !isValid || isRampQuoteError || isRampQuoteLoading || !isFiatAboveMinPurchaseAmount,
+    // ||
+    // isRampNotSupported,
     [
       isFiatAboveMinPurchaseAmount,
-      isRampNotSupported,
+      //isRampNotSupported,
       isRampQuoteError,
       isRampQuoteLoading,
       isValid,
@@ -296,7 +293,7 @@ const useBuyTokensWizardProvider = () => {
     supportedRampCurrencies,
     isFiatAboveMinPurchaseAmount,
     rampQuote,
-    isRampNotSupported,
+    //isRampNotSupported,
     setIsBuyForm,
     setDebouncedFiatAmount,
     setDebouncedTokenAmount,

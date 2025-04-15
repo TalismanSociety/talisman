@@ -10,7 +10,7 @@ import { BuyTokensConnectAccount } from "./BuyTokensConnectAccount"
 export const BuyTokensSelectAccountInput = () => {
   const { t } = useTranslation()
   const {
-    isRampNotSupported,
+    // isRampNotSupported,
     supportedAccountsWithBalance,
     setRoute,
     buySellForm: { watch, setValue },
@@ -39,10 +39,10 @@ export const BuyTokensSelectAccountInput = () => {
     <button
       className={classNames(
         "border-grey-750 bg-black-secondary h-[5.5rem] w-full rounded-[12px] border-[1px] px-8 py-3",
-        isRampNotSupported && "cursor-not-allowed opacity-70",
+        // isRampNotSupported && "cursor-not-allowed opacity-70",
       )}
       onClick={() => setRoute("pickWallet")}
-      disabled={isRampNotSupported}
+      // disabled={isRampNotSupported}
     >
       {t("Select account")}
     </button>

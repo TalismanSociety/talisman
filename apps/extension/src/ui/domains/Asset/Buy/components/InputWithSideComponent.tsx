@@ -8,7 +8,7 @@ export type InputWithSideComponentProps = {
   inputType: "string" | "number"
   inputPlaceholder: string
   isLoading?: boolean
-  isDisabled: boolean
+  isDisabled?: boolean
   minStep?: string
   errorMessage?: string | null
   sideComponent: React.ReactNode

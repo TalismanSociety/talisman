@@ -7,7 +7,7 @@ type BuyTokensButtonProps = {
   shouldRenderSelected: boolean
   selectedItem: ReactNode
   label: string
-  isDisabled: boolean
+  isDisabled?: boolean
   onClick: () => void
   onClear: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 }
