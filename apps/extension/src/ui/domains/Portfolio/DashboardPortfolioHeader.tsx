@@ -8,7 +8,7 @@ import {
   SendIcon,
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
-import { classNames } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { Account, getAccountGenesisHash, isAccountOwned, TreeFolder } from "extension-core"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
@@ -254,11 +254,11 @@ const TopActions: FC = () => {
   const match = useMatch("/portfolio/tokens/:symbol")
   const symbol = useMemo(() => match?.params.symbol, [match])
 
-  const topActions = useMemo(
+  const topActions = useMemo<ActionProps[]>(
     () =>
       [
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "Send Funds button",
           label: t("Send"),
           icon: SendIcon,
@@ -271,7 +271,7 @@ const TopActions: FC = () => {
           disabledReason,
         },
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "open receive",
           label: !!selectedAccount && !isAccountOwned(selectedAccount) ? t("Copy") : t("Receive"),
           icon: ArrowDownIcon,
@@ -282,7 +282,7 @@ const TopActions: FC = () => {
           disabled: !selectedAccounts.length, // always allow, as long as there is at least one account
         },
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
@@ -293,7 +293,7 @@ const TopActions: FC = () => {
 
         canBuy
           ? {
-              analyticsName: "Goto",
+              analyticsName: "Goto" as const,
               analyticsAction: "Buy Crypto button",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
@@ -302,7 +302,7 @@ const TopActions: FC = () => {
               disabledReason,
             }
           : null,
-      ].filter(Boolean) as Array<ActionProps>,
+      ].filter(isNotNil),
     [
       t,
       disableActions,

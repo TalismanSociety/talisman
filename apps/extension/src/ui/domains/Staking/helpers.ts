@@ -1,5 +1,6 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { ScaleApi } from "@talismn/sapi"
+import { isNotNil } from "@talismn/util"
 import { range } from "lodash"
 import { Binary } from "polkadot-api"
 
@@ -127,7 +128,7 @@ export const getNomPoolStakingPayload = async (
   return sapi.getExtrinsicPayload(
     "Utility",
     "batch_all",
-    { calls: [call_joinPoolOrBondExtra, call_setClaimPermission, call_remark].filter(Boolean) },
+    { calls: [call_joinPoolOrBondExtra, call_setClaimPermission, call_remark].filter(isNotNil) },
     { address },
   )
 }

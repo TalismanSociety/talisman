@@ -1,6 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { isHexString } from "extension-shared"
 import startCase from "lodash/startCase"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -65,7 +66,7 @@ export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | und
     polkadot?.genesisHash,
     kusama?.genesisHash,
     westend?.genesisHash,
-  ].filter(Boolean) as HexString[]
+  ].filter(isHexString)
   const defaultSourceForChain =
     sources.includes("parity") && parityDefaultChains.includes(genesisHash ?? "0x")
       ? "parity"

@@ -7,7 +7,7 @@ import {
   Token,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress, isTruthy } from "@talismn/util"
 import { Address, Hex, PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
@@ -367,7 +367,7 @@ const fetchBalances = async (
 
       // consider only non null balances in the results
       result.results.push(
-        ...balances.filter(Boolean).map(
+        ...balances.filter(isTruthy).map(
           (free, i) =>
             ({
               source: "evm-erc20",

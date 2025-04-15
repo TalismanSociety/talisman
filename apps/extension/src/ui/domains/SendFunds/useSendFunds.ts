@@ -1,7 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
+import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
   AssetTransferMethod,
@@ -401,7 +401,7 @@ const useSendFundsProvider = () => {
             }
           : null
       })
-      .filter(Boolean) as
+      .filter(isNotNil) as
       | {
           token: Token
           existentialDeposit: BalanceFormatter

@@ -10,7 +10,7 @@ import {
   SearchIcon,
   XIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isNotNil, isTruthy } from "@talismn/util"
 import {
   Account,
   activeEvmNetworksStore,
@@ -90,11 +90,11 @@ const [useIsInitializingScan] = bind(isInitializingScan$)
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
-  const accounts = useMemo(
+  const accounts = useMemo<Account[]>(
     () =>
       [...new Set(addresses)]
         .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as Account[],
+        .filter(isNotNil),
     [allAccounts, addresses],
   )
   const { t } = useTranslation("admin")
@@ -199,11 +199,11 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   }, [assets, token, tokenRates])
 
   const allAccounts = useAccounts()
-  const accounts = useMemo(
+  const accounts = useMemo<Account[]>(
     () =>
       [...new Set(assets.map((a) => a.address))]
         .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as Account[],
+        .filter(isNotNil),
     [allAccounts, assets],
   )
 
@@ -565,7 +565,7 @@ const ScanInfo: FC = () => {
   const enableAll = useCallback(async () => {
     const tokenIds = Object.keys(balancesByTokenId)
     const evmNetworkIds = [
-      ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.evmNetwork?.id).filter(Boolean)),
+      ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.evmNetwork?.id).filter(isTruthy)),
     ] as EvmNetworkId[]
     await activeEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await activeTokensStore.set(
@@ -585,12 +585,8 @@ const ScanInfo: FC = () => {
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
     [accounts, lastScanAccounts],
   )
-  const lastNetworks = useMemo(
-    () =>
-      lastScanNetworks.map((id) => evmNetworksMap[id] ?? chainsMap[id]).filter(Boolean) as (
-        | EvmNetwork
-        | Chain
-      )[],
+  const lastNetworks = useMemo<(EvmNetwork | Chain)[]>(
+    () => lastScanNetworks.map((id) => evmNetworksMap[id] ?? chainsMap[id]).filter(isNotNil),
     [chainsMap, evmNetworksMap, lastScanNetworks],
   )
 
