@@ -24,6 +24,7 @@ import TokensHandler from "../domains/tokens/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
+import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "../types"
 import { Port, RequestIdOnly } from "../types/base"
@@ -114,6 +115,15 @@ export default class Extension extends ExtensionHandler {
 
     // hides the get started component has soon as the wallet owns funds
     hideGetStartedOnceFunded()
+
+    // if BUILD is not "dev", submit a "background started" event to posthog
+    if (process.env.BUILD !== "dev") {
+      spawnTaskToCreateNewReport({
+        // the primary purpose of the "background started" event is to submit the opt-in general report.
+        // `wait: true` lets us wait for the report to be created before we submit the event.
+        wait: true,
+      }).then(() => talismanAnalytics.capture("background started"))
+    }
   }
 
   private cleanup() {

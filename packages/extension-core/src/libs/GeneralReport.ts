@@ -3,6 +3,7 @@ import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
 
+import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
@@ -31,8 +32,7 @@ let isBuildingReport = false
 // This should get sent at most once per 24 hours, whenever any other events get sent
 //
 export async function withGeneralReport(properties?: PostHogCaptureProperties) {
-  // If a report has been created but not yet submitted,
-  // this function will attach it to the pending event's properties
+  // if a report has been created but not yet submitted, this function will attach it to the pending event's properties
   const includeExistingReportInProperties = async () => {
     const analyticsReport = await appStore.get("analyticsReport")
     if (!analyticsReport) return
@@ -41,43 +41,55 @@ export async function withGeneralReport(properties?: PostHogCaptureProperties) {
     properties = { ...properties, $set: { ...(properties?.$set ?? {}), ...analyticsReport } }
   }
 
-  // If we've not created a report before, or if it has been REPORTING_PERIOD ms since we last created a report,
-  // this function will spawn an async task to create a new report in the background.
-  const spawnTaskToCreateNewReport = async () => {
-    const analyticsReportCreatedAt = await appStore.get("analyticsReportCreatedAt")
-
-    // if the wallet has already created a report, do nothing when the time since the last report is less than REPORTING_PERIOD
-    const hasCreatedReport = typeof analyticsReportCreatedAt === "number"
-    const timeSinceReportCreated = hasCreatedReport ? Date.now() - analyticsReportCreatedAt : 0
-    if (hasCreatedReport && timeSinceReportCreated < REPORTING_PERIOD) return
-
-    // if we're already creating a report (in response to an event which happened before this one)
-    // then don't try to build another one at the same time
-    if (isBuildingReport) return
-    isBuildingReport = true
-
-    // spawn async task (don't wait for it to complete before continuing)
-    ;(async () => {
-      try {
-        const analyticsReport = await getGeneralReport()
-
-        // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
-        if (analyticsReport === undefined) return
-
-        await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
-      } catch (cause) {
-        console.warn("Failed to build general report", { cause }) // eslint-disable-line no-console
-      } finally {
-        // set this flag back to false so we don't block the next report
-        isBuildingReport = false
-      }
-    })()
-  }
-
+  // if a report has already been created, include it in the event properties
   await includeExistingReportInProperties()
+
+  // if it has been at least REPORTING_PERIOD ms since the last report was created, create a new report
   await spawnTaskToCreateNewReport()
 
   return properties
+}
+
+// If we've not created a report before, or if it has been REPORTING_PERIOD ms since we last created a report,
+// this function will spawn an async task to create a new report in the background.
+export const spawnTaskToCreateNewReport = async ({
+  wait,
+}: {
+  /** If `wait` is true, this function won't resolve until the report has been created */
+  wait?: boolean
+} = {}) => {
+  const analyticsReportCreatedAt = await appStore.get("analyticsReportCreatedAt")
+
+  // if the wallet has already created a report, do nothing when the time since the last report is less than REPORTING_PERIOD
+  const hasCreatedReport = typeof analyticsReportCreatedAt === "number"
+  const timeSinceReportCreated = hasCreatedReport ? Date.now() - analyticsReportCreatedAt : 0
+  if (hasCreatedReport && timeSinceReportCreated < REPORTING_PERIOD) return
+
+  // if we're already creating a report (in response to an event which happened before this one)
+  // then don't try to build another one at the same time
+  if (isBuildingReport) return
+  isBuildingReport = true
+
+  // spawn async task (don't wait for it to complete before continuing)
+  const reportComplete = (async () => {
+    try {
+      const analyticsReport = await getGeneralReport()
+
+      // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
+      if (analyticsReport === undefined) return
+
+      await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
+    } catch (cause) {
+      const error = new Error("Failed to build general report", { cause })
+      console.warn(error) // eslint-disable-line no-console
+      sentry.captureException(error)
+    } finally {
+      // set this flag back to false so we don't block the next report
+      isBuildingReport = false
+    }
+  })()
+
+  if (wait) await reportComplete
 }
 
 async function getGeneralReport() {
@@ -187,7 +199,7 @@ async function getGeneralReport() {
     throw error
   }
 
-  // balances top 20 tokens/networks
+  // balances top 100 tokens/networks
   const TOP_BALANCES_COUNT = 100
   // get balance list per chain/evmNetwork and token
   const balancesPerChainToken = groupBy(
