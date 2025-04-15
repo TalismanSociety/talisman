@@ -7,7 +7,7 @@ import {
   RepeatIcon,
   SendIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -179,11 +179,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
     return { disableActions, disabledReason }
   }, [disabled, ownedAccounts.length, t])
 
-  const topActions = useMemo(
+  const topActions = useMemo<ActionProps[]>(
     () =>
       [
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "Send Funds button",
           label: t("Send"),
           icon: SendIcon,
@@ -192,7 +192,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           disabledReason,
         },
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "open receive",
           label: t("Receive"),
           icon: ArrowDownIcon,
@@ -201,7 +201,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           disabledReason,
         },
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
@@ -211,7 +211,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         },
         canBuy
           ? {
-              analyticsName: "Goto",
+              analyticsName: "Goto" as const,
               analyticsAction: "Buy Crypto button",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
@@ -220,7 +220,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
               disabledReason,
             }
           : null,
-      ].filter(Boolean) as Array<ActionProps>,
+      ].filter(isNotNil),
     [
       canBuy,
       disableActions,

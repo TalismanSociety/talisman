@@ -1,4 +1,4 @@
-import { validateHexString } from "@talismn/util"
+import { isNotNil, validateHexString } from "@talismn/util"
 import { getAccountGenesisHash, isChainActive } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -121,14 +121,12 @@ const useLedgerChainAccounts = (
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
-        ? ledgerAccounts
-            .filter((acc): acc is LedgerSubstrateAccount => !!acc)
-            .map((acc) => ({
-              address: acc.address,
-              curve: "ed25519",
-              genesisHash: acc.genesisHash,
-            }))
+      withBalances && ledgerAccounts.filter(isNotNil).length === itemsPerPage
+        ? ledgerAccounts.filter(isNotNil).map((acc) => ({
+            address: acc.address,
+            curve: "ed25519",
+            genesisHash: acc.genesisHash,
+          }))
         : [],
     [withBalances, itemsPerPage, ledgerAccounts],
   )

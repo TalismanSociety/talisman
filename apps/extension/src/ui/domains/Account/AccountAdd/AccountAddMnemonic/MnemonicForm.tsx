@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isAddressEqual, isValidMnemonic, KeypairCurve, Platform } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
+import { classNames, isTruthy } from "@talismn/util"
 import { getEthDerivationPath } from "extension-core"
 import { DEBUG } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -46,7 +46,7 @@ const cleanupMnemonic = (input = "") =>
     .trim()
     .toLowerCase()
     .split(/[\s\r\n]+/g) //split on whitespace or carriage return
-    .filter(Boolean) //remove empty strings
+    .filter(isTruthy) //remove empty strings
     .join(" ")
 
 const getSuri = (secret: string, curve: KeypairCurve, derivationPath?: string) => {
@@ -146,7 +146,7 @@ export const AccountAddMnemonicForm = () => {
   const curve = useMemo(() => platformToCurve(platform), [platform])
 
   const words = useMemo(
-    () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
+    () => cleanupMnemonic(mnemonic).split(" ").filter(isTruthy).length ?? 0,
     [mnemonic],
   )
 

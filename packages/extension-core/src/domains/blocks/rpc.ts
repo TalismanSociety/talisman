@@ -1,4 +1,5 @@
 import { Block } from "@polkadot/types/interfaces"
+import { isTruthy } from "@talismn/util"
 
 import { chainConnector } from "../../rpcs/chain-connector"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
@@ -17,7 +18,7 @@ export default class BlocksRpc {
 
     // set up method and params
     const method = "chain_getBlock"
-    const params = [blockHash].filter(Boolean)
+    const params = [blockHash].filter(isTruthy)
 
     // query rpc
     const response = await chainConnector.send(chainId, method, params)

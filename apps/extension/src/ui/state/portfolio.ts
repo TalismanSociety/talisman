@@ -2,7 +2,7 @@ import { bind } from "@react-rxjs/core"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
-import { isAddressEqual } from "@talismn/util"
+import { isAddressEqual, isTruthy } from "@talismn/util"
 import { Account, Balances } from "extension-core"
 import { t } from "i18next"
 import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
@@ -48,7 +48,7 @@ const getNetworkTokenSymbols = ({
     if (isEvmToken(token)) return token.evmNetwork?.id === evmNetworkId
     return true
   })
-  return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
+  return networkTokens.map(({ symbol }) => symbol).filter(isTruthy)
 }
 
 const getAccountsAddressEncoding = (accounts?: Account[]): AddressEncoding | undefined => {
