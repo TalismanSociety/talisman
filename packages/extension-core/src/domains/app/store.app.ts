@@ -33,6 +33,7 @@ export type AppStoreData = {
   analyticsRequestShown: boolean
   analyticsReportCreatedAt?: number
   analyticsReport?: GeneralReport
+  lastWalletUpgradedEvent?: string
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   needsSpiritKeyUpdate: boolean
