@@ -8,6 +8,7 @@ export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
   rampConfig: RampConfig
   rampSupportedTokenIds: Record<string, string>
+  rampNetworks: Record<string, string> // maps a Ramp network ID to an EvmNetworkId or ChainId
   buyTokens: {
     tokenIds: TokenId[]
   }

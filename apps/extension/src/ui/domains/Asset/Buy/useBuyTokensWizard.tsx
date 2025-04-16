@@ -6,14 +6,14 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useGetRampOfframpAssetsByCurrency } from "@ui/domains/Asset/Buy/hooks/useGetRampOfframpAssetsByCurrency"
-import { useGetRampOnrampAssetsByCurrency } from "@ui/domains/Asset/Buy/hooks/useGetRampOnrampAssetsByCurrency"
+import { useRampBuyAssetsByCurrency } from "@ui/domains/Asset/Ramp/onramp/useRampBuyAssetsByCurrency"
+import { useGetRampOfframpAssetsByCurrency } from "@ui/domains/Asset/Ramp/onramp/useRampSellAssetsByCurrency"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts, useRemoteConfig } from "@ui/state"
 
 // import { useBuyCurrencyCodes } from "../Ramp/useRampCurrencies"
-import { useGetRampCurrencies } from "../Ramp/useRampOnRampCurrencies"
+import { useGetRampCurrencies } from "../Ramp/onramp/useRampOnRampCurrencies"
 import { useBuyTokensModal } from "./hooks/useBuyTokensModal"
 import { useGetRampQuote } from "./hooks/useGetRampQuote"
 import { useSupportedTokens } from "./hooks/useSupportedTokens"
@@ -141,13 +141,16 @@ const useBuyTokensWizardProvider = () => {
     [isBuyForm, rampCurrencies],
   )
 
-  const { data: rampCurrencyWithOffRampAssets } = useGetRampOnrampAssetsByCurrency({
-    currencyCode: fiatCurrency,
-    fiatAmount: debouncedFiatAmount,
-    tokenAmount: debouncedTokenAmount,
-    tokenId: symbol,
-    isEnabled: true,
-  })
+  const { data: rampCurrencyWithOffRampAssets } = useRampBuyAssetsByCurrency(
+    fiatCurrency,
+    //   {
+    //   currencyCode: fiatCurrency,
+    //   fiatAmount: debouncedFiatAmount,
+    //   tokenAmount: debouncedTokenAmount,
+    //   tokenId: symbol,
+    //   isEnabled: true,
+    // }
+  )
 
   const { data: rampCurrencyWithOfframpAssets } = useGetRampOfframpAssetsByCurrency({
     currencyCode: fiatCurrency,

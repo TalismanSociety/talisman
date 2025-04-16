@@ -2,47 +2,66 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { createFormHook, createFormHookContexts } from "@tanstack/react-form"
+import { useForm, useStore } from "@tanstack/react-form"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+import { z } from "zod"
 
 import { RampCurrencyPickerButton } from "./RampCurrencyPickerButton"
-import { useRampBuyCurrencies } from "./useRampCurrencies"
+import { RampTokenPickerButton } from "./RampTokenPickerButton"
+import { useRampBuyCurrencies } from "./useRampBuyCurrencies"
+import { useRampBuyTokens } from "./useRampBuyTokens"
+
+const schema = z.object({
+  currency: z.string().nonempty(),
+  tokenId: z.string().nonempty(),
+  amount: z.number().gt(0),
+})
 
 type BuyFormData = {
-  currency: string
-  tokenId: TokenId
-  amount: number
+  currency?: string
+  tokenId?: TokenId
+  amount?: number
 }
 
 const DEFAULT_FORM_DATA: BuyFormData = {
-  currency: "",
-  tokenId: "",
-  amount: 0,
+  // currency: "",
+  // tokenId: "",
+  // amount: 0,
 }
 
-export const { fieldContext, formContext, useFieldContext } = createFormHookContexts()
+// export const { fieldContext, formContext, useFieldContext } = createFormHookContexts()
 
-const { useAppForm: useRampBuyForm } = createFormHook({
-  fieldContext,
-  formContext,
-  // We'll learn more about these options later
-  fieldComponents: {},
-  formComponents: {},
-})
+// const { useAppForm: useRampBuyForm } = createFormHook({
+//   fieldContext,
+//   formContext,
+//   // We'll learn more about these options later
+//   fieldComponents: {},
+//   formComponents: {},
+// })
 
 export const RampBuyForm = () => {
   const { t } = useTranslation()
-  const form = useRampBuyForm({
+  const form = useForm({
     defaultValues: DEFAULT_FORM_DATA,
     onSubmit: ({ value }) => {
       // eslint-disable-next-line no-console
       console.log(value)
     },
+    validators: {
+      onMount: schema,
+      onChange: schema,
+    },
   })
 
   const { currencies } = useRampBuyCurrencies()
+
+  const currency = useStore(form.store, (state) => state.values.currency)
+  const { tokens } = useRampBuyTokens(currency)
+
+  // const tokenId = useStore(form.store, (state) => state.values.tokenId)
+  // const token = useToken(tokenId)
 
   return (
     <form
@@ -65,9 +84,15 @@ export const RampBuyForm = () => {
               name="amount"
               children={(field) => (
                 <input
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.valueAsNumber)}
+                  type="number"
+                  className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
+                  value={field.state.value ?? ""}
+                  // onBlur={field.handleBlur}
+                  onChange={(e) =>
+                    field.handleChange(
+                      isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
+                    )
+                  }
                 />
               )}
             />
@@ -85,8 +110,21 @@ export const RampBuyForm = () => {
             />
           }
         />
-
-        {/* <RampFiatAmountInput /> */}
+        <RampNumberFieldContainer
+          input={null}
+          button={
+            <form.Field
+              name="tokenId"
+              children={(field) => (
+                <RampTokenPickerButton
+                  tokens={tokens}
+                  onSelect={(tokenId) => field.handleChange(tokenId)}
+                  value={field.state.value}
+                />
+              )}
+            />
+          }
+        />
         {/* <div className="flex justify-between">
           <div className="text-xs">{t("You're receiving (estimate)")}</div>
           {symbol && (
