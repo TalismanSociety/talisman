@@ -421,7 +421,10 @@ export const BondForm = () => {
   const { t } = useTranslation()
   const { account, accountPicker, token, payload, setStep, poolId, bondType } = useBondWizard()
 
-  const bondRowLabel = bondType === "bittensor" ? t("Validator") : t("Pool")
+  const isBittensor = bondType === "bittensor"
+
+  const bondRowLabel = useMemo(() => (isBittensor ? t("Validator") : t("Pool")), [isBittensor, t])
+  const yeldRowLabel = useMemo(() => (isBittensor ? t("APY") : t("APR")), [isBittensor, t])
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -460,11 +463,15 @@ export const BondForm = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 whitespace-nowrap leading-none">
-                  {t("APR")}
+                  {yeldRowLabel}
                   <InfoIcon />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>{t("Estimated Annual Percentage Rate (APR)")}</TooltipContent>
+              <TooltipContent>
+                {isBittensor
+                  ? t("Estimated Annual Percentage Yield (APY)")
+                  : t("Estimated Annual Percentage Rate (APR)")}
+              </TooltipContent>
             </Tooltip>
           </div>
           <div className={"overflow-hidden font-bold"}>
