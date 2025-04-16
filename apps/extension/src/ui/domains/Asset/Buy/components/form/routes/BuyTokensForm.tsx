@@ -19,7 +19,7 @@ export const BuyTokensForm = () => {
     supportedTokens,
     isBuyForm,
     isFormDisabled,
-    // close,
+    close,
     buySellForm: { watch },
     submit,
   } = useBuyTokensWizard()
@@ -45,7 +45,7 @@ export const BuyTokensForm = () => {
   )
 
   return (
-    <BuyTokensLayout title={t("Buy/Sell")} withBackLink>
+    <BuyTokensLayout withBuySellToggle title={t("Buy/Sell")} onBackClick={close}>
       <form
         className="text-body-secondary flex h-full w-full max-w-[47rem] flex-col px-10 pb-10"
         onSubmit={submit}

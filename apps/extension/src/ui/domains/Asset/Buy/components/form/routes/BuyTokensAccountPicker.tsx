@@ -62,7 +62,7 @@ export const BuyTokensAccountPicker = () => {
   )
 
   return (
-    <BuyTokensLayout title={t("Select account")} withBackLink>
+    <BuyTokensLayout title={t("Select account")} onBackClick={() => setRoute("mainForm")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput onChange={handleSearch} placeholder={t("Search by account name")} />

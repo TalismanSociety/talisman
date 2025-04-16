@@ -12,8 +12,9 @@ import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts, useRemoteConfig } from "@ui/state"
 
+// import { useBuyCurrencyCodes } from "../Ramp/useRampCurrencies"
+import { useGetRampCurrencies } from "../Ramp/useRampOnRampCurrencies"
 import { useBuyTokensModal } from "./hooks/useBuyTokensModal"
-import { useGetRampCurrencies } from "./hooks/useGetRampCurrencies"
 import { useGetRampQuote } from "./hooks/useGetRampQuote"
 import { useSupportedTokens } from "./hooks/useSupportedTokens"
 import { FormData, FormRoute } from "./types"
@@ -45,6 +46,9 @@ const useBuyTokensWizardProvider = () => {
   const [debouncedTokenAmount, setDebouncedTokenAmount] = useDebouncedState("", 300)
   const accounts = useAccounts("owned")
   const { balanceTotalPerAccount } = usePortfolioAccounts()
+
+  // // WIP
+  // useBuyCurrencyCodes()
 
   const {
     rampConfig: { rampBasePath, rampApiKey },

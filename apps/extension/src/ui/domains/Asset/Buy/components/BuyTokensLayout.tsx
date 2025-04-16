@@ -2,27 +2,32 @@ import { ChevronLeftIcon } from "@talismn/icons"
 import { FC, ReactNode } from "react"
 import { IconButton } from "talisman-ui"
 
-import { useBuyTokensWizard } from "../useBuyTokensWizard"
 import { BuyTokensOptionSwitch } from "./form/BuyTokensOptionSwitch"
 
 type BuyTokensLayoutProps = {
   title?: ReactNode
-  withBackLink?: boolean
+  withBuySellToggle?: boolean
+  onBackClick?: () => void
   children?: ReactNode
 }
 
-export const BuyTokensLayout: FC<BuyTokensLayoutProps> = ({ title, children, withBackLink }) => {
-  const { close, route, setRoute } = useBuyTokensWizard()
-  const handleClick = () => {
-    route === "mainForm" ? close() : setRoute("mainForm")
-  }
+export const BuyTokensLayout: FC<BuyTokensLayoutProps> = ({
+  title,
+  withBuySellToggle,
+  children,
+  onBackClick,
+}) => {
+  // const { close, route, setRoute } = useBuyTokensWizard()
+  // const handleClick = () => {
+  //   route === "mainForm" ? close() : setRoute("mainForm")
+  // }
 
   return (
     <div id="buy-tokens-modal" className="relative flex h-full w-full flex-col">
       <div className="flex items-center justify-between px-10">
         <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center">
-          {withBackLink && (
-            <IconButton onClick={handleClick}>
+          {onBackClick && (
+            <IconButton onClick={onBackClick}>
               <ChevronLeftIcon />
             </IconButton>
           )}
@@ -31,7 +36,7 @@ export const BuyTokensLayout: FC<BuyTokensLayoutProps> = ({ title, children, wit
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {route === "mainForm" && <BuyTokensOptionSwitch />}
+          {withBuySellToggle && <BuyTokensOptionSwitch />}
         </div>
       </div>
       <div className="w-full grow overflow-hidden">{children}</div>

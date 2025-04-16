@@ -12,6 +12,7 @@
     "@floating-ui/react": "0.26.25",
     "@headlessui/react": "2.1.10",
     "@hookform/resolvers": "3.9.0",
+    "@iconify/react": "^5.2.1",
     "@ledgerhq/hw-app-eth": "6.40.2",
     "@ledgerhq/hw-transport": "6.31.4",
     "@ledgerhq/hw-transport-webhid": "^6.30.0",
@@ -49,6 +50,7 @@
     "@talismn/siws": "^0.0.19",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
+    "@tanstack/react-form": "^1.4.0",
     "@tanstack/react-query": "5.59.16",
     "@tanstack/react-virtual": "^3.11.1",
     "@types/blueimp-md5": "2.18.2",
@@ -114,7 +116,8 @@
     "typescript": "^5.6.3",
     "url-join": "^5.0.0",
     "viem": "^2.21.34",
-    "yup": "1.4.0"
+    "yup": "1.4.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",

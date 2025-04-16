@@ -1,82 +1,99 @@
+import { Icon } from "@iconify/react"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { classNames, isNotNil } from "@talismn/util"
+import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
-import { RampCurrency } from "../../../types"
-import { useBuyTokensWizard } from "../../../useBuyTokensWizard"
-import { currencyInfo } from "../../../utils/currencyInfo"
+import { getRampCurrencyInfo, RampCurrencyInfo } from "../../../../Ramp/currencyInfo"
 import { BuyTokensLayout } from "../../BuyTokensLayout"
 
-export const BuyTokensFiatPicker = () => {
-  const [filteredCurrency, setFilteredCurrency] = useState<RampCurrency[]>([])
+export const BuyTokensFiatPicker: FC<{
+  currencyCodes: string[]
+  selected?: string
+  onSelect: (currencyCode: string) => void
+}> = ({ currencyCodes, selected, onSelect }) => {
   const { t } = useTranslation()
+  const [search, setSearch] = useState("")
 
-  const {
-    buySellForm: { watch, setValue },
-    supportedRampCurrencies,
-    setRoute,
-  } = useBuyTokensWizard()
-
-  const [fiatCurrency, { minPurchaseAmount }] = watch(["fiatCurrency", "rampTokenAsset"])
-
-  useEffect(() => {
-    // selected currency first
-    const sortedCurrencies = supportedRampCurrencies.sort((a, b) => {
-      // Sort by selected currency
-      if (a.fiatCurrency === fiatCurrency) return -1
-      if (b.fiatCurrency === fiatCurrency) return 1
-      // Then sort alphabetically
-      return a.fiatCurrency.localeCompare(b.fiatCurrency)
-    })
-
-    setFilteredCurrency(sortedCurrencies)
-  }, [fiatCurrency, supportedRampCurrencies])
-
-  const handleSearch = useCallback(
-    (value: string) => {
-      const filteredCurrencies = supportedRampCurrencies.filter(
-        (currency) =>
-          !value ||
-          currency.name.toLowerCase().includes(value.toLowerCase()) ||
-          currency.fiatCurrency.toLowerCase().includes(value.toLowerCase()),
-      )
-      setFilteredCurrency(filteredCurrencies)
-    },
-    [supportedRampCurrencies],
+  const allCurrencies = useMemo(
+    () => currencyCodes.concat().sort().map(getRampCurrencyInfo).filter(isNotNil),
+    [currencyCodes],
   )
 
-  const handleFiatCurrencySelect = useMemo(
-    () => (fiatCurrency: RampCurrency | null) => {
-      const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
+  const currencies = useMemo(() => {
+    const ls = search.toLowerCase()
+    return allCurrencies.filter(
+      (currency) =>
+        currency.code.toLowerCase().includes(ls) ||
+        currency.currencyName.toLowerCase().includes(ls),
+    )
+  }, [allCurrencies, search])
 
-      setValue("fiatCurrency", newFiatCurrency, { shouldValidate: true })
-      setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0, { shouldValidate: true })
+  // const [filteredCurrency, setFilteredCurrency] = useState<RampCurrency[]>([])
+  // const { t } = useTranslation()
 
-      setRoute("mainForm")
-    },
-    [minPurchaseAmount, setRoute, setValue],
-  )
+  // const {
+  //   buySellForm: { watch, setValue },
+  //   supportedRampCurrencies,
+  //   setRoute,
+  // } = useBuyTokensWizard()
+
+  // const [fiatCurrency, { minPurchaseAmount }] = watch(["fiatCurrency", "rampTokenAsset"])
+
+  // useEffect(() => {
+  //   // selected currency first
+  //   const sortedCurrencies = supportedRampCurrencies.sort((a, b) => {
+  //     // Sort by selected currency
+  //     if (a.fiatCurrency === fiatCurrency) return -1
+  //     if (b.fiatCurrency === fiatCurrency) return 1
+  //     // Then sort alphabetically
+  //     return a.fiatCurrency.localeCompare(b.fiatCurrency)
+  //   })
+
+  //   setFilteredCurrency(sortedCurrencies)
+  // }, [fiatCurrency, supportedRampCurrencies])
+
+  // const handleSearch = useCallback(
+  //   (value: string) => {
+  //     const filteredCurrencies = supportedRampCurrencies.filter(
+  //       (currency) =>
+  //         !value ||
+  //         currency.name.toLowerCase().includes(value.toLowerCase()) ||
+  //         currency.fiatCurrency.toLowerCase().includes(value.toLowerCase()),
+  //     )
+  //     setFilteredCurrency(filteredCurrencies)
+  //   },
+  //   [supportedRampCurrencies],
+  // )
+
+  // const handleFiatCurrencySelect = useMemo(
+  //   () => (fiatCurrency: RampCurrency | null) => {
+  //     const newFiatCurrency = fiatCurrency?.fiatCurrency ?? ""
+
+  //     setValue("fiatCurrency", newFiatCurrency, { shouldValidate: true })
+  //     setValue("rampTokenAsset.minPurchaseAmount", minPurchaseAmount ?? 0, { shouldValidate: true })
+
+  //     setRoute("mainForm")
+  //   },
+  //   [minPurchaseAmount, setRoute, setValue],
+  // )
 
   return (
-    <BuyTokensLayout withBackLink title={t("Select currency")}>
+    <BuyTokensLayout title={t("Select currency")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-          <SearchInput
-            onChange={handleSearch}
-            placeholder={t("Search by currency name or symbol")}
-          />
+          <SearchInput onChange={setSearch} placeholder={t("Search by currency name or symbol")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {filteredCurrency.map((item) => (
-            <FiatCurrencyItem
-              item={item}
-              key={item.fiatCurrency}
-              onClick={() => handleFiatCurrencySelect(item)}
-              selected={fiatCurrency === item.fiatCurrency}
+          {currencies.map((currency) => (
+            <CurrencyButtonRow
+              currency={currency}
+              key={currency.code}
+              onClick={() => onSelect(currency.code)}
+              selected={selected === currency.code}
             />
           ))}
         </ScrollContainer>
@@ -85,22 +102,13 @@ export const BuyTokensFiatPicker = () => {
   )
 }
 
-type FiatCurrencyItemProps = {
-  item: RampCurrency
+const CurrencyButtonRow: FC<{
+  currency: RampCurrencyInfo
   onClick: () => void
   onClear?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   selected: boolean
   className?: string
-}
-
-const FiatCurrencyItem = ({
-  item,
-  selected,
-  className,
-  onClick,
-  onClear,
-}: FiatCurrencyItemProps) => {
-  const fiatCurrencyIfo = currencyInfo[item.fiatCurrency ?? ""]
+}> = ({ currency, selected, className, onClick, onClear }) => {
   return (
     <button
       type="button"
@@ -115,18 +123,19 @@ const FiatCurrencyItem = ({
     >
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
-          <img
+          <Icon icon={currency.icon} className="size-14" />
+          {/* <img
             src={`https://assets.ramp.network/flags/${fiatCurrencyIfo.countryCode}.svg`}
             alt={item.fiatCurrency}
             className="h-[28px] w-[28px] rounded-full"
-          />
+          /> */}
         </div>
         <div className="min-w-0 text-[16px]">
           <div className="flex items-center">
-            <div className="text-white">{item.fiatCurrency}</div>
+            <div className="text-white">{currency.code}</div>
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
-          <div className="text-tiny truncate">{item.name}</div>
+          <div className="text-tiny truncate">{currency.currencyName}</div>
         </div>
         {onClear && (
           <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>

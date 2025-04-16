@@ -70,7 +70,7 @@ export const BuyTokensTokenPicker = () => {
   )
 
   return (
-    <BuyTokensLayout title={t("Select a token")} withBackLink>
+    <BuyTokensLayout title={t("Select a token")}>
       <ScrollContainer className="border-grey-700 scrollable h-full w-full grow overflow-x-hidden">
         <TokenPicker
           ownedOnly

@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next"
 
+import { currencyInfo } from "../../../Ramp/currencyInfo"
 import { RampCurrency } from "../../types"
 import { useBuyTokensWizard } from "../../useBuyTokensWizard"
-import { currencyInfo } from "../../utils/currencyInfo"
 import { BuyTokensButton } from "./BuyTokensButton"
 
 const RenderFiatCurrencyItem = ({ item }: { item: RampCurrency | undefined }) => {

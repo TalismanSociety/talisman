@@ -6,6 +6,7 @@ import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportP
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
+import { RampModal } from "@ui/domains/Asset/Ramp/RampModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
@@ -41,6 +42,7 @@ export const DashboardNotificationsAndModals = () => {
       {/* below components can be rendered from anywhere */}
       <BackupWarningModal />
       <BuyTokensModal />
+      <RampModal />
       <AccountRenameModal />
       <AccountExportModal />
       <AccountExportPrivateKeyModal />
