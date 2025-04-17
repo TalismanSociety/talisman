@@ -57,7 +57,9 @@ export const useBondButton = ({
         remoteConfig.stakingPools[token.chain.id]?.[0] ||
         remoteConfig.nominationPools[token.chain.id]?.[0]
 
-      if (!poolId) return [null, false]
+      const isStakingEnabled = !!remoteConfig.stakingPools[token.chain.id]
+
+      if (!poolId && !isStakingEnabled) return [null, false]
 
       // if a watch-only or solo-staking account is selected, array will be empty
       if (!sorted.length) return [null, false]
