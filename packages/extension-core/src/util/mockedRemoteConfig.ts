@@ -69,7 +69,7 @@ cere = [1]
 analog-timechain = [1]
 
 [stakingPools]
-bittensor = ["5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh"]
+bittensor = []
 bittensor-testnet = ['5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT']
 
 [documentation]
