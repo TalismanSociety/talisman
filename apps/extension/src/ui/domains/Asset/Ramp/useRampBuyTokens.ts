@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { useRemoteConfig, useTokensMap } from "@ui/state"
 
 import { useCoinbaseBuyOptions } from "./coinbase/useCoinbaseBuyOptions"
-import { useRampBuyAssetsByCurrency } from "./onramp/useRampBuyAssetsByCurrency"
+import { useRampTokensRamp } from "./onramp/useRampTokensRamp"
 
 const getDotNativeTokenId = (chainId: string) => [chainId, "substrate-native"].join("-")
 const getEvmNativeTokenId = (evmNetworkId: string) => [evmNetworkId, "evm-native"].join("-")
@@ -42,7 +42,7 @@ const useBuyTokensRamp = (currency: string | undefined) => {
   const remoteConfig = useRemoteConfig()
   const talismanTokens = useTokensMap({ activeOnly: false, includeTestnets: false })
 
-  const { data, isLoading, error } = useRampBuyAssetsByCurrency(currency)
+  const { data, isLoading, error } = useRampTokensRamp(currency)
 
   const tokens = useMemo<Token[] | undefined>(() => {
     // if (!currency|| isLoading || error) return undefined
@@ -51,7 +51,8 @@ const useBuyTokensRamp = (currency: string | undefined) => {
       .map((asset) => {
         const networkId = remoteConfig.rampNetworks[asset.chain]
         if (!networkId) return null
-        if (asset.type === "ERC20") return talismanTokens[getErc20TokenId(networkId, asset.address)]
+        if (asset.type === "ERC20")
+          return talismanTokens[getErc20TokenId(networkId, asset.address ?? "")]
         if (asset.type === "NATIVE")
           return (
             talismanTokens[getEvmNativeTokenId(networkId)] ??

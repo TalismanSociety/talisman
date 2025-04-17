@@ -23,6 +23,6 @@ export const RampLayout: FC<{
       </div>
       {<div className="flex items-center gap-2">{topRight}</div>}
     </div>
-    <div className="w-full grow overflow-hidden">{children}</div>
+    <div className="w-full grow overflow-hidden">{children} </div>
   </div>
 )

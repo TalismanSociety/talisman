@@ -46,7 +46,7 @@ const fetchRampQuote = async ({
       },
     )
     if (!response.ok) {
-      throw new Error(response.statusText)
+      throw new Error(`${response.status} - ${response.statusText}`)
     }
     return await response.json()
   } catch (cause) {

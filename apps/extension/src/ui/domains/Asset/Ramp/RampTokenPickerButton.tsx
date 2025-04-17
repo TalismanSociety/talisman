@@ -1,5 +1,6 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
+import { TokenRatesList } from "@talismn/token-rates"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
@@ -10,10 +11,11 @@ import { TokenLogo } from "../TokenLogo"
 import { RampTokenPicker } from "./RampTokenPicker"
 
 export const RampTokenPickerButton: FC<{
-  value?: TokenId
-  tokens?: Token[]
+  value: TokenId | undefined
+  tokens: Token[] | undefined
+  tokenRates: TokenRatesList | null | undefined
   onSelect: (tokenId: string) => void
-}> = ({ value, tokens, onSelect }) => {
+}> = ({ value, tokens, tokenRates, onSelect }) => {
   const [selected, setSelected] = useState(value)
   const { open, close, isOpen } = useOpenClose()
 
@@ -52,6 +54,7 @@ export const RampTokenPickerButton: FC<{
         <RampTokenPicker
           selected={selected}
           tokens={tokens}
+          tokenRates={tokenRates}
           onClose={close}
           onSelect={handleSelect}
         />

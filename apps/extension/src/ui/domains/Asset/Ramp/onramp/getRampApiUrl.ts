@@ -1,10 +1,9 @@
-import { DEBUG } from "extension-shared"
 import urlJoin from "url-join"
 
 import { remoteConfig$ } from "@ui/state"
 
 // should only be used when debugging, it allows simulating being in another country
-const DEBUG_IP = "8.8.8.8" // null
+//const DEBUG_IP = "8.8.8.8" // null
 
 export const getRampApiUrl = async (path: string) => {
   const remoreConfig = await remoteConfig$.getValue()
@@ -12,8 +11,9 @@ export const getRampApiUrl = async (path: string) => {
 
   const url = new URL(urlJoin(baseApiUrl, path))
 
-  const userIp = DEBUG && DEBUG_IP
-  if (userIp) url.searchParams.set("userIp", userIp)
+  //const userIp = DEBUG && DEBUG_IP
+  url.searchParams.set("hostApiKey", remoreConfig.rampConfig.rampApiKey)
+  //if (userIp) url.searchParams.set("userIp", userIp)
 
   return url.toString()
 }

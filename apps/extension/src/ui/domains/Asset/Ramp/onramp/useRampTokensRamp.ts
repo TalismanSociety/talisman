@@ -1,13 +1,11 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 
-import { RampCurrencyWithAssets } from "../../Buy/types"
 import { getRampApiUrl } from "./getRampApiUrl"
+import { RampHostAssetsConfig } from "./types"
 
 // note: currencyCode must be upper case
-const fetchRampOnrampAssetsByCurrency = async (
-  currencyCode: string,
-): Promise<RampCurrencyWithAssets> => {
+const fetchRampAssets = async (currencyCode: string): Promise<RampHostAssetsConfig> => {
   const apiUrl = await getRampApiUrl(`/assets?currencyCode=${currencyCode.toUpperCase()}`)
 
   const response = await fetch(apiUrl)
@@ -19,12 +17,12 @@ const fetchRampOnrampAssetsByCurrency = async (
   return await response.json()
 }
 
-export const useRampBuyAssetsByCurrency = (currencyCode: string | undefined) => {
+export const useRampTokensRamp = (currencyCode: string | undefined) => {
   return useQuery({
-    queryKey: ["useRampBuyAssetsByCurrency", currencyCode],
+    queryKey: ["useRampTokensRamp", currencyCode],
     queryFn: () => {
       if (!currencyCode) return null
-      return fetchRampOnrampAssetsByCurrency(currencyCode)
+      return fetchRampAssets(currencyCode)
     },
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,

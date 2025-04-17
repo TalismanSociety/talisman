@@ -1,10 +1,9 @@
 import { Chain, EvmNetwork, Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
-import { fetchTokenRates, TokenRates } from "@talismn/token-rates"
+import { TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { keyBy, range } from "lodash"
+import { range } from "lodash"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -24,17 +23,16 @@ type TokenDisplay = Token & {
 export const RampTokenPicker: FC<{
   /** if undefined, component assumes currencies are loading */
   tokens: Token[] | undefined
+  tokenRates: TokenRatesList | undefined | null
   selected?: string
   onSelect: (tokenId: string) => void
   onClose: () => void
-}> = ({ tokens, selected, onClose, onSelect }) => {
+}> = ({ tokens, tokenRates, selected, onClose, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
   const evmNetworksMap = useEvmNetworksMap()
   const dotNetworksMap = useChainsMap()
-
-  const { data: allTokenRates } = useSpecificTokenRates(tokens)
 
   const tokensWithNetwork = useMemo<TokenDisplay[] | undefined>(
     () =>
@@ -42,10 +40,10 @@ export const RampTokenPicker: FC<{
         ?.map((t) => ({
           ...t,
           network: evmNetworksMap[t.evmNetwork?.id ?? ""] ?? dotNetworksMap[t.chain?.id ?? ""],
-          rates: allTokenRates?.[t.id],
+          rates: tokenRates?.[t.id],
         }))
         .filter((t) => !!t.network),
-    [allTokenRates, dotNetworksMap, evmNetworksMap, tokens],
+    [tokenRates, dotNetworksMap, evmNetworksMap, tokens],
   )
 
   const sortedTokens = useMemo(
@@ -203,19 +201,4 @@ const TokenButtonRowSkeleton: FC = () => {
       </div>
     </div>
   )
-}
-
-const useSpecificTokenRates = (tokens: Token[] | undefined) => {
-  const selectedCurrency = useSelectedCurrency()
-
-  return useQuery({
-    queryKey: ["useSpecificTokenRates", tokens?.map((t) => t.id).join("::")],
-    queryFn: () => {
-      if (!tokens?.length) return null
-      const tokensMap = keyBy(tokens, (t) => t.id)
-      return fetchTokenRates(tokensMap, [selectedCurrency])
-    },
-    enabled: !!tokens,
-    refetchOnWindowFocus: false,
-  })
 }

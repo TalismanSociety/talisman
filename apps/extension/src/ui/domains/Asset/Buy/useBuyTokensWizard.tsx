@@ -6,8 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useRampBuyAssetsByCurrency } from "@ui/domains/Asset/Ramp/onramp/useRampBuyAssetsByCurrency"
 import { useGetRampOfframpAssetsByCurrency } from "@ui/domains/Asset/Ramp/onramp/useRampSellAssetsByCurrency"
+import { useRampTokensRamp } from "@ui/domains/Asset/Ramp/onramp/useRampTokensRamp"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts, useRemoteConfig } from "@ui/state"
@@ -141,7 +141,7 @@ const useBuyTokensWizardProvider = () => {
     [isBuyForm, rampCurrencies],
   )
 
-  const { data: rampCurrencyWithOffRampAssets } = useRampBuyAssetsByCurrency(
+  const { data: rampCurrencyWithOffRampAssets } = useRampTokensRamp(
     fiatCurrency,
     //   {
     //   currencyCode: fiatCurrency,
@@ -230,7 +230,8 @@ const useBuyTokensWizardProvider = () => {
   )
 
   const { allSupportedTokens, ethereumTokens, substrateTokens } = useSupportedTokens({
-    rampAssets: rampAvailableCurrencies?.assets ?? [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rampAssets: (rampAvailableCurrencies?.assets as any) ?? [],
   })
 
   const supportedTokens = useMemo(() => {
