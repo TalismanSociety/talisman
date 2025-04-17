@@ -1,11 +1,12 @@
 import { Chain, EvmNetwork, Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { range } from "lodash"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useChainsMap, useEvmNetworksMap } from "@ui/state"
 
@@ -68,18 +69,62 @@ export const RampTokenPicker: FC<{
           <SearchInput onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {!tokens && range(0, 10).map((i) => <TokenButtonRowSkeleton key={i} />)}
-          {filteredTokens?.map((token) => (
-            <TokenButtonRow
-              token={token}
-              key={token.id}
-              onClick={() => onSelect(token.id)}
-              selected={selected === token.id}
-            />
-          ))}
+          {!filteredTokens && range(0, 10).map((i) => <TokenButtonRowSkeleton key={i} />)}
+          {!!filteredTokens && <TokensList tokens={filteredTokens} onSelect={onSelect} />}
         </ScrollContainer>
       </div>
     </RampLayout>
+  )
+}
+
+const TokensList: FC<{
+  tokens: TokenDisplay[]
+  selected?: string
+  onSelect: (tokenId: string) => void
+}> = ({ tokens, selected, onSelect }) => {
+  const refContainer = useScrollContainer()
+
+  const virtualizer = useVirtualizer({
+    count: tokens.length,
+    estimateSize: () => 58,
+    overscan: 5,
+    getScrollElement: () => refContainer.current,
+  })
+
+  if (!tokens.length) return null
+
+  return (
+    <div>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const token = tokens[item.index]
+          if (!token) return null
+
+          return (
+            <div
+              key={item.key}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start}px)`,
+              }}
+            >
+              <TokenButtonRow
+                key={item.key}
+                selected={token.id === selected}
+                token={token}
+                onClick={() => onSelect(token.id)}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
