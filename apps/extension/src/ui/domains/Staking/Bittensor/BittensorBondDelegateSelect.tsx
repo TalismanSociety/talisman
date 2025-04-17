@@ -52,7 +52,7 @@ export const BittensorBondDelegateSelect = () => {
       !combinedValidatorsDataLoading &&
       !sortedDelegators.length
     ) {
-      setSortedDelegators(sortBondOptions(combinedValidatorsData, "name"))
+      setSortedDelegators(sortBondOptions(combinedValidatorsData, "totalStaked"))
     }
   }, [
     combinedValidatorsData,
