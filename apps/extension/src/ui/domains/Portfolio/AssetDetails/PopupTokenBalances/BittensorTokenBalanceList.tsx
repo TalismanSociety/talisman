@@ -105,7 +105,6 @@ export const BittensorTokenBalanceList = ({
       assetPriceInfo={assetPriceInfo}
       networkType={rowNetworkType}
       shouldDisplayActionBtns={isChainIfo}
-      shouldDisplayStakeBtn={isChainIfo || isRootStake}
     >
       {groupedStakesByNetuid?.map((row, i, rows) => {
         const { meta: { dynamicInfo = {} } = {}, title } = row

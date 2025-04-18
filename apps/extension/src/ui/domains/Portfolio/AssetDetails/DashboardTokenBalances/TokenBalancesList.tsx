@@ -32,7 +32,6 @@ type TokenBalancesListProps = {
   children: ReactNode
   symbol: string
   shouldDisplayActionBtns?: boolean
-  shouldDisplayStakeBtn?: boolean // TODO: This prop should be removed once dTao stake is implemented
   shouldDisplayTotalAvailableBalance?: boolean
 }
 
@@ -51,7 +50,6 @@ export const TokenBalancesList = ({
   children,
   symbol,
   shouldDisplayActionBtns = true,
-  shouldDisplayStakeBtn = true,
   shouldDisplayTotalAvailableBalance = true,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
@@ -109,7 +107,7 @@ export const TokenBalancesList = ({
           />
         </div>
         <div className="flex items-center justify-end">
-          {tokenId && shouldDisplayStakeBtn && (
+          {tokenId && (
             <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
               <BondButton tokenId={tokenId} balances={balances} />
             </div>
