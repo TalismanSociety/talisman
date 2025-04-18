@@ -1,9 +1,17 @@
+import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { TokenRatesList } from "@talismn/token-rates"
+import { classNames, isAddressEqual } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Account, getAccountGenesisHash } from "extension-core"
+import {
+  Account,
+  BalanceFormatter,
+  BalanceLoadingStatus,
+  Balances,
+  getAccountGenesisHash,
+} from "extension-core"
 import { HexString } from "polkadot-api"
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
@@ -12,17 +20,40 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { useSelectedCurrency } from "@ui/state"
 
+import { Fiat } from "../Fiat"
+import Tokens from "../Tokens"
 import { RampLayout } from "./RampLayout"
+
+export type RampAccountPickerBalancesDisplayMode = "transferable" | "total"
 
 export const RampAccountPicker: FC<{
   accounts: Account[] | undefined
+  token: Token | null | undefined
+  balances: Balances | null | undefined
+  tokenRates: TokenRatesList | null | undefined
+  balancesDisplayMode?: RampAccountPickerBalancesDisplayMode
+  balancesLoadingStatus: BalanceLoadingStatus
+
   /** Used to format addresses */
   genesisHash: HexString | null | undefined
   selected: string | undefined
+
   onSelect: (address: string) => void
   onClose: () => void
-}> = ({ accounts, genesisHash, selected, onClose, onSelect }) => {
+}> = ({
+  accounts,
+  token,
+  balances,
+  tokenRates,
+  balancesDisplayMode = "total",
+  balancesLoadingStatus,
+  genesisHash,
+  selected,
+  onClose,
+  onSelect,
+}) => {
   const { t } = useTranslation()
   const [, setSearch] = useState("")
 
@@ -40,9 +71,14 @@ export const RampAccountPicker: FC<{
           ) : (
             <AccountsList
               accounts={accounts}
+              token={token}
+              balances={balances}
+              tokenRates={tokenRates}
+              balancesDisplayMode={balancesDisplayMode}
+              balancesLoadingStatus={balancesLoadingStatus}
               genesisHash={genesisHash}
-              onSelect={onSelect}
               selected={selected}
+              onSelect={onSelect}
             />
           )}
         </ScrollContainer>
@@ -53,11 +89,26 @@ export const RampAccountPicker: FC<{
 
 const AccountsList: FC<{
   accounts: Account[]
+  token: Token | null | undefined
+  balances: Balances | null | undefined
+  tokenRates: TokenRatesList | null | undefined
+  balancesDisplayMode: RampAccountPickerBalancesDisplayMode
+  balancesLoadingStatus: BalanceLoadingStatus
   /** Used to format addresses */
   genesisHash: HexString | null | undefined
   selected: string | undefined
   onSelect: (address: string) => void
-}> = ({ accounts, genesisHash, selected, onSelect }) => {
+}> = ({
+  accounts,
+  token,
+  balances,
+  tokenRates,
+  balancesDisplayMode,
+  balancesLoadingStatus,
+  genesisHash,
+  selected,
+  onSelect,
+}) => {
   const refContainer = useScrollContainer()
 
   const virtualizer = useVirtualizer({
@@ -94,6 +145,11 @@ const AccountsList: FC<{
                 key={item.key}
                 isSelected={account.address === selected}
                 account={account}
+                token={token}
+                balances={balances}
+                tokenRates={tokenRates}
+                balancesDisplayMode={balancesDisplayMode}
+                balancesLoadingStatus={balancesLoadingStatus}
                 genesisHash={genesisHash}
                 onClick={() => onSelect(account.address)}
               />
@@ -107,11 +163,26 @@ const AccountsList: FC<{
 
 const AccountButtonRow: FC<{
   account: Account
+  token: Token | null | undefined
+  balances: Balances | null | undefined
+  tokenRates: TokenRatesList | null | undefined
+  balancesDisplayMode: RampAccountPickerBalancesDisplayMode
+  balancesLoadingStatus: BalanceLoadingStatus
   /** Used to format addresses */
   genesisHash: HexString | null | undefined
   isSelected: boolean
   onClick: () => void
-}> = ({ account, genesisHash, isSelected, onClick }) => {
+}> = ({
+  account,
+  token,
+  tokenRates,
+  balances,
+  balancesDisplayMode,
+  balancesLoadingStatus,
+  genesisHash,
+  isSelected,
+  onClick,
+}) => {
   const address = useFormattedAddress(account?.address, genesisHash)
 
   return (
@@ -120,7 +191,7 @@ const AccountButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
         isSelected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
       )}
@@ -131,28 +202,73 @@ const AccountButtonRow: FC<{
         className="!text-xl"
       />
       <div className="flex grow items-center justify-between overflow-hidden">
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="truncate">
-              {account.name ?? (
-                <Address address={address} startCharCount={6} endCharCount={6} noTooltip />
-              )}
-            </div>
-            <AccountTypeIcon type={account.type} className="text-primary" />
+        <div className="flex grow flex-col space-y-2 overflow-hidden">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="truncate">{account.name}</div>
+            <AccountTypeIcon type={account.type} className="text-primary shrink-0" />
           </div>
-          <Address className="text-body-secondary text-xs" address={address} />
+          <Address
+            className="text-body-secondary text-xs"
+            address={address}
+            genesisHash={genesisHash}
+            startCharCount={8}
+            endCharCount={8}
+          />
         </div>
         {isSelected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
-      {/* {(showBalances || showTotalBalance) && (
-        <AccountTokenBalance
-          token={token}
-          balance={account.balance}
-          total={account.total}
-          showTotalBalance={showTotalBalance}
-          showBalances={showBalances}
-        />
-      )} */}
+      <AccountTokenBalance
+        address={account.address}
+        token={token}
+        balances={balances}
+        tokenRates={tokenRates}
+        displayMode={balancesDisplayMode}
+        loadingStatus={balancesLoadingStatus}
+      />
     </button>
+  )
+}
+
+const AccountTokenBalance: FC<{
+  address: string
+  token: Token | null | undefined
+  tokenRates: TokenRatesList | null | undefined
+  balances: Balances | null | undefined
+  displayMode: RampAccountPickerBalancesDisplayMode
+  loadingStatus: BalanceLoadingStatus
+}> = ({ address, token, tokenRates, balances, displayMode, loadingStatus }) => {
+  const currency = useSelectedCurrency()
+
+  const balance = useMemo(() => {
+    if (!token || !balances) return null
+
+    const bal = balances.find((b) => b.tokenId === token.id && isAddressEqual(b.address, address))
+    if (!bal) return null
+
+    return new BalanceFormatter(bal.sum.planck[displayMode], token.decimals, tokenRates?.[token.id])
+  }, [address, balances, displayMode, token, tokenRates])
+
+  if (!balance || !token) return null
+
+  return (
+    <div
+      className={classNames(
+        "space-y-2 whitespace-nowrap text-right text-sm",
+        loadingStatus !== "live" && "animate-pulse",
+      )}
+    >
+      <div>
+        <Tokens
+          amount={balance?.tokens}
+          decimals={token.decimals}
+          symbol={token.symbol}
+          isBalance
+          noCountUp
+        />
+      </div>
+      <div className="text-body-secondary text-xs">
+        <Fiat amount={balance?.fiat(currency)} isBalance noCountUp />
+      </div>
+    </div>
   )
 }

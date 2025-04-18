@@ -5,7 +5,7 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
-import { useEvmNetwork } from "@ui/state"
+import { useChain, useEvmNetwork } from "@ui/state"
 
 import { TokenLogo } from "../TokenLogo"
 import { RampTokenPicker } from "./RampTokenPicker"
@@ -65,7 +65,7 @@ export const RampTokenPickerButton: FC<{
 
 const TokenContent: FC<{ token: Token }> = ({ token }) => {
   const evmNetwork = useEvmNetwork(token.evmNetwork?.id)
-  const dotNetwork = useEvmNetwork(token.chain?.id)
+  const dotNetwork = useChain(token.chain?.id)
 
   return (
     <div className="flex items-center gap-4 truncate text-left">
@@ -74,7 +74,7 @@ const TokenContent: FC<{ token: Token }> = ({ token }) => {
       </div>
       <div className="min-w-0 text-[16px]">
         <div className="text-white">{token.symbol}</div>
-        <div className="text-tiny truncate">{evmNetwork?.name ?? dotNetwork?.name}</div>
+        <div className="text-tiny truncate">{evmNetwork?.name ?? dotNetwork?.name ?? null}</div>
       </div>
     </div>
   )

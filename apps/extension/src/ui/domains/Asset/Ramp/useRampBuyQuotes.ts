@@ -10,9 +10,15 @@ import { useRemoteConfig, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
-import { CoinbaseBuyOptionsRequestInput, CoinbaseBuyQuoteResponse } from "./coinbase/types"
+import { getCoinbaseBuyUrl } from "./coinbase/helpers"
+import {
+  CoinbaseBuyOptionsRequestInput,
+  CoinbaseBuyQuoteResponse,
+  RampProvider,
+} from "./coinbase/types"
 import { useCoinbaseBuyOptions } from "./coinbase/useCoinbaseBuyOptions"
 import { getRampApiUrl } from "./onramp/getRampApiUrl"
+import { getRampBuyUrl } from "./onramp/helpers"
 import { RampQuoteResult } from "./onramp/types"
 import { useRampTokensRamp } from "./onramp/useRampTokensRamp"
 
@@ -22,10 +28,15 @@ export type BuyQuoteConfig = {
   amount: number
 }
 
-export type BuyQuote = {
-  provider: "coinbase" | "ramp"
+export type RampBuyQuote = {
   amountOut: string
   fee: number
+  getRedirectUrl: (address: string) => string | Promise<string> // TODO remove string ?
+}
+
+export type RampBuyQuoteQuery = {
+  provider: RampProvider
+  quote: UseQueryResult<RampBuyQuote | null, Error>
 }
 
 const getRampTokenType = (type: Token["type"]) => {
@@ -105,12 +116,7 @@ export const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
   }, [coinbaseBuyOptions?.purchase_currencies, token])
 }
 
-export type RampBuyQuotes = {
-  ramp: UseQueryResult<BuyQuote | null, Error>
-  coinbase: UseQueryResult<BuyQuote | null, Error>
-}
-
-export const useRampBuyQuotes = (config: BuyQuoteConfig | null): RampBuyQuotes => {
+export const useRampBuyQuotes = (config: BuyQuoteConfig | null) => {
   const rampCryptoAssetSymbol = useRampBuyCryptoAssetSymbol(config?.currencyCode, config?.tokenId)
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
   const token = useToken(config?.tokenId)
@@ -123,14 +129,17 @@ export const useRampBuyQuotes = (config: BuyQuoteConfig | null): RampBuyQuotes =
           config && token && rampCryptoAssetSymbol
             ? fetchRampBuyQuote(config.currencyCode, rampCryptoAssetSymbol, config.amount)
             : null,
-        select: (data: RampQuoteResult | null): BuyQuote | null =>
-          data?.CARD_PAYMENT
+        select: (data: RampQuoteResult | null): RampBuyQuote | null =>
+          data?.CARD_PAYMENT && config && token
             ? {
-                provider: "ramp",
+                // provider: "ramp",
                 fee: data.CARD_PAYMENT.appliedFee,
                 amountOut: data.CARD_PAYMENT.cryptoAmount,
+                getRedirectUrl: (address: string) =>
+                  getRampBuyUrl(config.currencyCode, config.amount, token.symbol, address),
               }
             : null,
+        retry: false,
       },
       {
         queryKey: ["coinbaseBuyQuote", config, coinbaseToken],
@@ -138,20 +147,37 @@ export const useRampBuyQuotes = (config: BuyQuoteConfig | null): RampBuyQuotes =
           config && token && coinbaseToken
             ? fetchCoinbaseBuyQuote(config.currencyCode, config.amount, coinbaseToken)
             : null,
-        select: (data: CoinbaseBuyQuoteResponse | null): BuyQuote | null => {
-          return data && token
+        select: (data: CoinbaseBuyQuoteResponse | null): RampBuyQuote | null => {
+          return data && token && config && coinbaseToken
             ? {
-                provider: "coinbase",
+                // provider: "coinbase",
                 fee: Number(data.coinbase_fee.value) + Number(data.network_fee.value),
                 amountOut: tokensToPlanck(data.purchase_amount.value, token.decimals),
+                getRedirectUrl: (address: string) =>
+                  getCoinbaseBuyUrl(
+                    data.payment_total.currency,
+                    data.payment_total.value,
+                    coinbaseToken.purchaseCurrency,
+                    coinbaseToken.purchaseNetwork,
+                    data.quote_id,
+                    data.purchase_amount.value,
+                    address,
+                  ),
               }
             : null
         },
+        retry: false,
       },
     ],
   })
 
-  return { ramp: queries[0], coinbase: queries[1] }
+  return useMemo<RampBuyQuoteQuery[]>(
+    () => [
+      { provider: "ramp", quote: queries[0] },
+      { provider: "coinbase", quote: queries[1] },
+    ],
+    [queries],
+  )
 }
 
 const fetchCoinbaseBuyQuote = async (
@@ -225,6 +251,29 @@ const fetchRampBuyQuote = async (
       throw new Error("Unavailable")
     }
   }
+
+  // const params = new URLSearchParams({
+  //   hostApiKey: rampApiKey,
+  //   hostLogoUrl: TALISMAN_LOGO_URL,
+  //   defaultFlow: "ONRAMP",
+  //   enabledFlows: "ONRAMP,OFFRAMP",
+  //   swapAsset: `${rampTokenAsset.chain}_${rampTokenAsset.symbol}`,
+  //   userAddress: formattedAddress,
+  //   fiatCurrency: fiatCurrency,
+  //   hostAppName: "Talisman",
+  // })
+
+  // // Dynamically add the amount parameter based on the dirtyAmountField
+  // if (dirtyAmountField === "fiatAmount") {
+  //   params.append("fiatValue", fiatAmount.toString())
+  // } else {
+  //   params.append(
+  //     "swapAmount",
+  //     tokensToPlanck(tokenAmount.toString(), rampTokenAsset.decimals).toString(),
+  //   )
+  // }
+
+  // const url = `${rampBasePath}/?${params.toString()}`
 
   return await response.json()
 }

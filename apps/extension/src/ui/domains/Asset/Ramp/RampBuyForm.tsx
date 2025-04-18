@@ -1,20 +1,26 @@
 /* eslint-disable react/no-children-prop */
 import { TokenId } from "@talismn/chaindata-provider"
+import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
 import { classNames, formatPrice, planckToTokens } from "@talismn/util"
-import { useField, useForm, useStore } from "@tanstack/react-form"
+import { useForm, useStore } from "@tanstack/react-form"
 import { UseQueryResult } from "@tanstack/react-query"
-import { BalanceFormatter } from "extension-core"
+import { BalanceFormatter, isAccountCompatibleWithChain, isAccountEthereum } from "extension-core"
+import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
+import { log } from "extension-shared"
 import { capitalize } from "lodash"
-import { FC, ReactNode, useEffect, useMemo, useRef } from "react"
+import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 import { z } from "zod"
 
+import { notify } from "@talisman/components/Notifications"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { useSelectedCurrency, useToken } from "@ui/state"
+import { useAccounts, useChain, useSelectedCurrency, useToken } from "@ui/state"
+import { isEvmToken } from "@ui/util/isEvmToken"
+import { isSubToken } from "@ui/util/isSubToken"
 
 import { Fiat } from "../Fiat"
 import Tokens from "../Tokens"
@@ -25,7 +31,12 @@ import { RampAccountPickerButton } from "./RampAccountPickerButton"
 import { RampCurrencyPickerButton } from "./RampCurrencyPickerButton"
 import { RampTokenPickerButton } from "./RampTokenPickerButton"
 import { useRampBuyCurrencies } from "./useRampBuyCurrencies"
-import { BuyQuote, BuyQuoteConfig, RampBuyQuotes, useRampBuyQuotes } from "./useRampBuyQuotes"
+import {
+  BuyQuoteConfig,
+  RampBuyQuote,
+  RampBuyQuoteQuery,
+  useRampBuyQuotes,
+} from "./useRampBuyQuotes"
 import { useRampBuyTokens } from "./useRampBuyTokens"
 
 const PROVIDER_LOGOS = {
@@ -37,31 +48,61 @@ const schema = z.object({
   currencyCode: z.string().nonempty(),
   tokenId: z.string().nonempty(),
   amount: z.number().gt(0),
+  provider: z.enum(["coinbase", "ramp"]),
+  account: z.string().nonempty(),
 })
 
-type BuyFormData = {
-  currencyCode?: string
-  tokenId?: TokenId
-  amount?: number
-  provider?: RampProvider
-  account?: string
-}
+type FormData = z.infer<typeof schema>
+
+// {
+//   currencyCode?: string
+//   tokenId?: TokenId
+//   amount?: number
+//   provider?: RampProvider
+//   account?: string
+// }
 
 // TODO clear it up
-const DEFAULT_FORM_DATA: BuyFormData = {
+const DEFAULT_FORM_DATA: Partial<FormData> = {
   currencyCode: "USD",
   //tokenId: "1-evm-native",
   tokenId: "polkadot-substrate-native",
   amount: 100,
 }
 
+const redirectToProvider = async (formData: FormData, quote: RampBuyQuote) => {
+  let address = formData.account
+
+  const token = await chaindataProvider.tokenById(formData.tokenId)
+  if (token?.chain?.id) {
+    const chain = await chaindataProvider.chainById(token.chain.id)
+    if (typeof chain?.prefix === "number") address = encodeAddressSs58(address, chain.prefix)
+  }
+
+  const url = await quote.getRedirectUrl(address)
+
+  window.open(url, "_blank", "noopener noreferrer")
+}
+
 export const RampBuyForm = () => {
   const { t } = useTranslation()
+  const [quote, setQuote] = useState<RampBuyQuote | null>(null)
+
   const form = useForm({
     defaultValues: DEFAULT_FORM_DATA,
-    onSubmit: ({ value }) => {
-      // eslint-disable-next-line no-console
-      console.log(value)
+    onSubmit: async ({ value }) => {
+      try {
+        if (!quote) throw new Error("No quote")
+        const formData = schema.parse(value)
+        await redirectToProvider(formData, quote)
+      } catch (err) {
+        log.error("Failed to submit", err)
+        notify({
+          type: "error",
+          title: t("Error"),
+          subtitle: (err as Error)?.message,
+        })
+      }
     },
     validators: {
       onMount: schema,
@@ -69,10 +110,8 @@ export const RampBuyForm = () => {
     },
   })
 
-  const { currencies } = useRampBuyCurrencies()
-
   const formData = useStore(form.store, (state) => state.values)
-
+  const { currencies } = useRampBuyCurrencies()
   const { tokens } = useRampBuyTokens(formData.currencyCode)
   const { data: tokenRates, isLoading: isLoadingTokenRates } = useSpecificTokenRates(tokens)
 
@@ -82,44 +121,48 @@ export const RampBuyForm = () => {
   })
 
   const quotes = useRampBuyQuotes(quoteConfig)
+  const token = useToken(formData.tokenId)
+  const chain = useChain(token?.chain?.id)
+  const allAccounts = useAccounts()
 
+  const accounts = useMemo(
+    () =>
+      allAccounts.filter((account) => {
+        if (isEvmToken(token)) return isAccountEthereum(account)
+        if (isSubToken(token) && chain) return isAccountCompatibleWithChain(chain, account)
+        return false
+      }),
+    [allAccounts, chain, token],
+  )
+
+  // clear provider choice if the token or currency change
   useEffect(() => {
     form.resetField("provider")
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quoteConfig?.tokenId, formData.currencyCode])
 
-  const providerField = useField({
-    form,
-    name: "provider",
-  })
+    // @dev: make sure quoteConfig?.tokenId, formData.currencyCode are dependencies in the array below
+  }, [quoteConfig?.tokenId, formData.currencyCode, form])
+
+  // select best provider once quotes are ready
   useEffect(() => {
-    if (!providerField.state.value && !quotes.coinbase.isLoading && !quotes.ramp.isLoading) {
-      if (quotes.coinbase.data?.amountOut && quotes.ramp.data?.amountOut)
-        providerField.setValue(
-          quotes.coinbase.data.amountOut > quotes.ramp.data.amountOut ? "coinbase" : "ramp",
-        )
-      if (quotes.coinbase.data?.amountOut) providerField.setValue("coinbase")
-      if (quotes.ramp.data?.amountOut) providerField.setValue("ramp")
+    if (!formData.provider && quotes.every((q) => !q.quote.isLoading)) {
+      const bestQuote = quotes
+        .filter((q) => q.quote.data?.amountOut)
+        .sort((a, b) => Number(b.quote.data!.amountOut) - Number(a.quote.data!.amountOut))[0]
+      if (bestQuote) form.setFieldValue("provider", bestQuote.provider) //providerField.setValue(bestQuote.provider)
     }
-    // if(!formData.!quotes.coinbase.isLoading || !quotes.ramp.isLoading) {
-    //   setIsBuyForm(false)
-    // }
-  }, [
-    providerField,
-    quotes.coinbase.data,
-    quotes.coinbase.isLoading,
-    quotes.ramp.data,
-    quotes.ramp.isLoading,
-  ])
+  }, [form, formData.provider, quotes])
 
-  // const token = useToken(formData.tokenId)
+  // clear account if not compatible with token
+  useEffect(() => {
+    // `accounts` contain only compatible accounts
+    if (formData.account && !accounts.some((a) => isAddressEqual(a.address, formData.account!)))
+      form.resetField("account")
+  }, [accounts, form, formData.account])
 
-  // const platform = useMemo<Platform | null>(() => {
-  //   if (!token || !providerField.state.value) return null
-  //   if (isEvmToken(token)) return "ethereum"
-  //   if (isSubToken(token)) return "polkadot"
-  //   return null
-  // }, [token, providerField.state.value])
+  useEffect(() => {
+    const providerQuote = quotes.find((q) => q.provider === formData.provider)
+    setQuote(providerQuote?.quote?.data ?? null)
+  }, [formData.provider, quotes])
 
   return (
     <form
@@ -134,83 +177,85 @@ export const RampBuyForm = () => {
         <div className="px-10 pb-10">
           <div className="flex size-full shrink-0 flex-col gap-6">
             <FieldSet label={t("Select Assets")}>
-              <div className="space-y-4">
-                <div className="leading-paragraph text-xs">{t("You Pay")}</div>
-                <RampNumberFieldContainer
-                  input={
-                    <form.Field
-                      name="amount"
-                      children={(field) => (
-                        <input
-                          type="number"
-                          className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
-                          value={field.state.value ?? ""}
-                          onBlur={field.handleBlur}
-                          onChange={(e) =>
-                            field.handleChange(
-                              isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
-                            )
-                          }
-                        />
-                      )}
-                    />
-                  }
-                  button={
-                    <form.Field
-                      name="currencyCode"
-                      children={(field) => (
-                        <RampCurrencyPickerButton
-                          currencies={currencies}
-                          onSelect={(currency) => field.handleChange(currency)}
-                          value={field.state.value}
-                        />
-                      )}
-                    />
-                  }
-                />
-              </div>
-              <div className="space-y-4">
-                <div className="flex w-full justify-between">
-                  <div className="leading-paragraph text-xs">
-                    {t("You're receiving (estimate)")}
-                  </div>
-                  <div className="leading-paragraph text-xs">
-                    <TokenPrice
-                      tokenId={quoteConfig?.tokenId}
-                      tokenRates={tokenRates}
-                      isLoading={isLoadingTokenRates}
-                    />
-                  </div>
-                </div>
-                <RampNumberFieldContainer
-                  input={
-                    <form.Field
-                      name="provider"
-                      children={(field) => (
-                        <div className="text-md text-body w-full overflow-hidden truncate pl-2 font-bold">
-                          <AmountOut
-                            provider={field.state.value}
-                            quotes={quotes}
-                            tokenId={quoteConfig?.tokenId}
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div className="leading-paragraph text-xs">{t("You Pay")}</div>
+                  <RampNumberFieldContainer
+                    input={
+                      <form.Field
+                        name="amount"
+                        children={(field) => (
+                          <input
+                            type="number"
+                            className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
+                            value={field.state.value ?? ""}
+                            onBlur={field.handleBlur}
+                            onChange={(e) =>
+                              field.handleChange(
+                                isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
+                              )
+                            }
                           />
-                        </div>
-                      )}
-                    />
-                  }
-                  button={
-                    <form.Field
-                      name="tokenId"
-                      children={(field) => (
-                        <RampTokenPickerButton
-                          tokens={tokens}
-                          tokenRates={tokenRates}
-                          onSelect={(tokenId) => field.handleChange(tokenId)}
-                          value={field.state.value}
-                        />
-                      )}
-                    />
-                  }
-                />
+                        )}
+                      />
+                    }
+                    button={
+                      <form.Field
+                        name="currencyCode"
+                        children={(field) => (
+                          <RampCurrencyPickerButton
+                            currencies={currencies}
+                            onSelect={(currency) => field.handleChange(currency)}
+                            value={field.state.value}
+                          />
+                        )}
+                      />
+                    }
+                  />
+                </div>
+                <div className="space-y-4">
+                  <div className="flex w-full justify-between">
+                    <div className="leading-paragraph text-xs">
+                      {t("You're receiving (estimate)")}
+                    </div>
+                    <div className="leading-paragraph text-xs">
+                      <TokenPrice
+                        tokenId={quoteConfig?.tokenId}
+                        tokenRates={tokenRates}
+                        isLoading={isLoadingTokenRates}
+                      />
+                    </div>
+                  </div>
+                  <RampNumberFieldContainer
+                    input={
+                      <form.Field
+                        name="provider"
+                        children={(field) => (
+                          <div className="text-md text-body w-full overflow-hidden truncate pl-2 font-bold">
+                            <AmountOut
+                              provider={field.state.value}
+                              quotes={quotes}
+                              tokenId={quoteConfig?.tokenId}
+                            />
+                          </div>
+                        )}
+                      />
+                    }
+                    button={
+                      <form.Field
+                        name="tokenId"
+                        children={(field) => (
+                          <RampTokenPickerButton
+                            tokens={tokens}
+                            tokenRates={tokenRates}
+                            onSelect={(tokenId) => field.handleChange(tokenId)}
+                            value={field.state.value}
+                          />
+                        )}
+                      />
+                    }
+                  />
+                </div>
               </div>
             </FieldSet>
 
@@ -232,11 +277,14 @@ export const RampBuyForm = () => {
             )}
 
             {!!formData.provider && !!formData.tokenId && (
-              <FieldSet label={t("Select Receiver Account")}>
+              <FieldSet label={t("Select Receiver")}>
                 <form.Field
                   name="account"
                   children={(field) => (
                     <RampAccountPickerButton
+                      accounts={accounts}
+                      tokenRates={tokenRates}
+                      balancesDisplayMode="total"
                       tokenId={formData.tokenId!}
                       selected={field.state.value}
                       onSelect={(address) => field.handleChange(address)}
@@ -250,8 +298,10 @@ export const RampBuyForm = () => {
       </ScrollContainer>
       <div className="shrink-0 px-10 pb-10">
         <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
+          selector={(state) =>
+            [state.canSubmit, state.isSubmitting, state.values.provider] as const
+          }
+          children={([canSubmit, isSubmitting, provider]) => (
             <Button
               type="submit"
               className="w-full"
@@ -260,7 +310,9 @@ export const RampBuyForm = () => {
               disabled={!canSubmit}
               processing={isSubmitting}
             >
-              {t("Continue to Buy")}
+              {provider
+                ? t("Continue to {{provider}}", { provider: capitalize(provider) })
+                : t("Continue to Buy")}
             </Button>
           )}
         />
@@ -303,21 +355,26 @@ const ProviderLabel: FC<{ provider: RampProvider }> = ({ provider }) => {
 }
 
 const AmountOut: FC<{
-  quotes: RampBuyQuotes
+  quotes: RampBuyQuoteQuery[]
   provider: RampProvider | undefined
   tokenId: TokenId | undefined
 }> = ({ quotes, provider, tokenId }) => {
   const token = useToken(tokenId)
+  const quote = useMemo(
+    () => quotes.find((q) => q.provider === provider)?.quote,
+    [quotes, provider],
+  )
 
-  if (!provider || !token) return null
-  if (quotes[provider].isLoading)
+  if (!quote || !token) return null
+
+  if (quote.isLoading)
     return (
       <span className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">0.00001</span>
     )
 
-  if (!quotes[provider].data?.amountOut) return null
+  if (!quote.data?.amountOut) return null
 
-  return planckToTokens(quotes[provider].data?.amountOut, token.decimals)
+  return planckToTokens(quote.data?.amountOut, token.decimals)
 }
 
 const TokenPrice: FC<{
@@ -368,31 +425,23 @@ const RampNumberFieldContainer: FC<{
 const Providers: FC<{
   quoteConfig: BuyQuoteConfig
   selected: RampProvider | undefined
-  quotes: {
-    ramp: UseQueryResult<BuyQuote | null, Error>
-    coinbase: UseQueryResult<BuyQuote | null, Error>
-  }
+  quotes: RampBuyQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
   onSelect: (provider: "ramp" | "coinbase") => void
 }> = ({ quoteConfig, tokenRates, selected, quotes, onSelect }) => {
   return (
     <div className="flex flex-col gap-6">
-      <ProviderButton
-        quoteConfig={quoteConfig}
-        tokenRates={tokenRates}
-        provider="ramp"
-        isSelected={selected === "ramp"}
-        query={quotes.ramp}
-        onClick={() => onSelect("ramp")}
-      />
-      <ProviderButton
-        quoteConfig={quoteConfig}
-        tokenRates={tokenRates}
-        provider="coinbase"
-        isSelected={selected === "coinbase"}
-        query={quotes.coinbase}
-        onClick={() => onSelect("coinbase")}
-      />
+      {quotes.map((q) => (
+        <ProviderButton
+          key={q.provider}
+          quoteConfig={quoteConfig}
+          tokenRates={tokenRates}
+          provider={q.provider}
+          isSelected={selected === q.provider}
+          query={q.quote}
+          onClick={() => onSelect(q.provider)}
+        />
+      ))}
     </div>
   )
 }
@@ -416,7 +465,7 @@ const ProviderButton: FC<{
   tokenRates: TokenRatesList | null | undefined
   provider: RampProvider
   isSelected: boolean
-  query: UseQueryResult<BuyQuote | null, Error>
+  query: UseQueryResult<RampBuyQuote | null, Error>
   onClick: () => void
 }> = ({
   quoteConfig: { tokenId, currencyCode, amount: amountIn },
