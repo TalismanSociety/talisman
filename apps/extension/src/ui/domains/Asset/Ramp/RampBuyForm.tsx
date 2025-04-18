@@ -6,7 +6,8 @@ import { classNames, formatPrice, planckToTokens } from "@talismn/util"
 import { useField, useForm, useStore } from "@tanstack/react-form"
 import { UseQueryResult } from "@tanstack/react-query"
 import { BalanceFormatter } from "extension-core"
-import { FC, ReactNode, useEffect, useMemo } from "react"
+import { capitalize } from "lodash"
+import { FC, ReactNode, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 import { z } from "zod"
@@ -17,12 +18,20 @@ import { useSelectedCurrency, useToken } from "@ui/state"
 
 import { Fiat } from "../Fiat"
 import Tokens from "../Tokens"
+import logoCoinbase from "./assets/logo-coinbase.svg?url"
+import logoRamp from "./assets/logo-ramp.svg?url"
 import { RampProvider } from "./coinbase/types"
+import { RampAccountPickerButton } from "./RampAccountPickerButton"
 import { RampCurrencyPickerButton } from "./RampCurrencyPickerButton"
 import { RampTokenPickerButton } from "./RampTokenPickerButton"
 import { useRampBuyCurrencies } from "./useRampBuyCurrencies"
 import { BuyQuote, BuyQuoteConfig, RampBuyQuotes, useRampBuyQuotes } from "./useRampBuyQuotes"
 import { useRampBuyTokens } from "./useRampBuyTokens"
+
+const PROVIDER_LOGOS = {
+  coinbase: logoCoinbase,
+  ramp: logoRamp,
+}
 
 const schema = z.object({
   currencyCode: z.string().nonempty(),
@@ -40,20 +49,11 @@ type BuyFormData = {
 
 // TODO clear it up
 const DEFAULT_FORM_DATA: BuyFormData = {
-  // currencyCode: "BOB",
-  // tokenId: "1-evm-native",
-  // amount: 100,
+  currencyCode: "USD",
+  //tokenId: "1-evm-native",
+  tokenId: "polkadot-substrate-native",
+  amount: 100,
 }
-
-// export const { fieldContext, formContext, useFieldContext } = createFormHookContexts()
-
-// const { useAppForm: useRampBuyForm } = createFormHook({
-//   fieldContext,
-//   formContext,
-//   // We'll learn more about these options later
-//   fieldComponents: {},
-//   formComponents: {},
-// })
 
 export const RampBuyForm = () => {
   const { t } = useTranslation()
@@ -81,20 +81,7 @@ export const RampBuyForm = () => {
     return tokenId && amount && currencyCode ? { currencyCode, amount, tokenId } : null
   })
 
-  // const quoteConfig = useMemo<BuyQuoteConfig | null>(() => {
-  //   const { currencyCode, amount, tokenId } = formData
-  //   return tokenId && amount && currencyCode ? { currencyCode, amount, tokenId } : null
-  // }, [formData])
-
   const quotes = useRampBuyQuotes(quoteConfig)
-  // const token = useToken(formData.tokenId)
-  // const price = useMemo(
-  //   () => (token ? new BalanceFormatter("1", token.decimals, tokenRates?.[token.id]) : null),
-  //   [token, tokenRates],
-  // )
-
-  // const tokenId = useStore(form.store, (state) => state.values.tokenId)
-  // const token = useToken(tokenId)
 
   useEffect(() => {
     form.resetField("provider")
@@ -125,6 +112,15 @@ export const RampBuyForm = () => {
     quotes.ramp.isLoading,
   ])
 
+  // const token = useToken(formData.tokenId)
+
+  // const platform = useMemo<Platform | null>(() => {
+  //   if (!token || !providerField.state.value) return null
+  //   if (isEvmToken(token)) return "ethereum"
+  //   if (isSubToken(token)) return "polkadot"
+  //   return null
+  // }, [token, providerField.state.value])
+
   return (
     <form
       className="text-body-secondary flex size-full flex-col overflow-hidden"
@@ -135,123 +131,121 @@ export const RampBuyForm = () => {
       }}
     >
       <ScrollContainer className="w-full grow">
-        <div className="flex size-full shrink-0 flex-col gap-6 px-10">
-          <div className="bg-grey-900 space-y-6 rounded border-0 p-6">
-            <div className="text-body leading-paragraph text-sm">{t("Select Assets")}</div>
-            <div className="space-y-4">
-              <div className="leading-paragraph text-xs">{t("You Pay")}</div>
-              <RampNumberFieldContainer
-                input={
-                  <form.Field
-                    name="amount"
-                    children={(field) => (
-                      <input
-                        type="number"
-                        className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
-                        value={field.state.value ?? ""}
-                        onBlur={field.handleBlur}
-                        onChange={(e) =>
-                          field.handleChange(
-                            isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
-                          )
-                        }
-                      />
-                    )}
-                  />
-                }
-                button={
-                  <form.Field
-                    name="currencyCode"
-                    children={(field) => (
-                      <RampCurrencyPickerButton
-                        currencies={currencies}
-                        onSelect={(currency) => field.handleChange(currency)}
-                        value={field.state.value}
-                      />
-                    )}
-                  />
-                }
-              />
-            </div>
-            <div className="space-y-4">
-              <div className="flex w-full justify-between">
-                <div className="leading-paragraph text-xs">{t("You're receiving (estimate)")}</div>
-                <div className="leading-paragraph text-xs">
-                  <TokenPrice
-                    tokenId={quoteConfig?.tokenId}
-                    tokenRates={tokenRates}
-                    isLoading={isLoadingTokenRates}
-                  />
-                </div>
-              </div>
-              <RampNumberFieldContainer
-                input={
-                  <form.Field
-                    name="provider"
-                    children={(field) => (
-                      <div className="text-md text-body w-full overflow-hidden truncate pl-2 font-bold">
-                        <AmountOut
-                          provider={field.state.value}
-                          quotes={quotes}
-                          tokenId={quoteConfig?.tokenId}
+        <div className="px-10 pb-10">
+          <div className="flex size-full shrink-0 flex-col gap-6">
+            <FieldSet label={t("Select Assets")}>
+              <div className="space-y-4">
+                <div className="leading-paragraph text-xs">{t("You Pay")}</div>
+                <RampNumberFieldContainer
+                  input={
+                    <form.Field
+                      name="amount"
+                      children={(field) => (
+                        <input
+                          type="number"
+                          className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
+                          value={field.state.value ?? ""}
+                          onBlur={field.handleBlur}
+                          onChange={(e) =>
+                            field.handleChange(
+                              isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
+                            )
+                          }
                         />
-                      </div>
-                    )}
-                  />
-                }
-                button={
-                  <form.Field
-                    name="tokenId"
-                    children={(field) => (
-                      <RampTokenPickerButton
-                        tokens={tokens}
-                        tokenRates={tokenRates}
-                        onSelect={(tokenId) => field.handleChange(tokenId)}
-                        value={field.state.value}
-                      />
-                    )}
-                  />
-                }
-              />
-            </div>
+                      )}
+                    />
+                  }
+                  button={
+                    <form.Field
+                      name="currencyCode"
+                      children={(field) => (
+                        <RampCurrencyPickerButton
+                          currencies={currencies}
+                          onSelect={(currency) => field.handleChange(currency)}
+                          value={field.state.value}
+                        />
+                      )}
+                    />
+                  }
+                />
+              </div>
+              <div className="space-y-4">
+                <div className="flex w-full justify-between">
+                  <div className="leading-paragraph text-xs">
+                    {t("You're receiving (estimate)")}
+                  </div>
+                  <div className="leading-paragraph text-xs">
+                    <TokenPrice
+                      tokenId={quoteConfig?.tokenId}
+                      tokenRates={tokenRates}
+                      isLoading={isLoadingTokenRates}
+                    />
+                  </div>
+                </div>
+                <RampNumberFieldContainer
+                  input={
+                    <form.Field
+                      name="provider"
+                      children={(field) => (
+                        <div className="text-md text-body w-full overflow-hidden truncate pl-2 font-bold">
+                          <AmountOut
+                            provider={field.state.value}
+                            quotes={quotes}
+                            tokenId={quoteConfig?.tokenId}
+                          />
+                        </div>
+                      )}
+                    />
+                  }
+                  button={
+                    <form.Field
+                      name="tokenId"
+                      children={(field) => (
+                        <RampTokenPickerButton
+                          tokens={tokens}
+                          tokenRates={tokenRates}
+                          onSelect={(tokenId) => field.handleChange(tokenId)}
+                          value={field.state.value}
+                        />
+                      )}
+                    />
+                  }
+                />
+              </div>
+            </FieldSet>
 
-            {/* <div className="flex justify-between">
-            <div className="text-xs">{t("You're receiving (estimate)")}</div>
-            {symbol && (
-              <div className="text-xs">{`1 ${symbol} ≈ ${truncateToSignificantDigits(tokenRateByCurrency ?? 0)} ${fiatCurrency || "$"}`}</div>
+            {quoteConfig && (
+              <FieldSet label={t("Choose Provider")}>
+                <form.Field
+                  name="provider"
+                  children={(field) => (
+                    <Providers
+                      selected={field.state.value}
+                      tokenRates={tokenRates}
+                      quoteConfig={quoteConfig}
+                      quotes={quotes}
+                      onSelect={(p) => field.handleChange(p)}
+                    />
+                  )}
+                />
+              </FieldSet>
+            )}
+
+            {!!formData.provider && !!formData.tokenId && (
+              <FieldSet label={t("Select Receiver Account")}>
+                <form.Field
+                  name="account"
+                  children={(field) => (
+                    <RampAccountPickerButton
+                      tokenId={formData.tokenId!}
+                      selected={field.state.value}
+                      onSelect={(address) => field.handleChange(address)}
+                    />
+                  )}
+                />
+              </FieldSet>
             )}
           </div>
-          <RampTokenAmountInput /> */}
-          </div>
-
-          {quoteConfig && (
-            <div className="bg-grey-900 space-y-6 rounded border-0 p-6">
-              <div className="text-body leading-paragraph text-sm">{t("Choose Provider")}</div>
-              <form.Field
-                name="provider"
-                children={(field) => (
-                  <Providers
-                    selected={field.state.value}
-                    tokenRates={tokenRates}
-                    quoteConfig={quoteConfig}
-                    quotes={quotes}
-                    onSelect={(p) => field.handleChange(p)}
-                  />
-                )}
-              />
-            </div>
-          )}
-
-          <div className="bg-grey-900 space-y-6 rounded border-0 p-6">
-            <div className="flex gap-4">
-              <div className="font-bold text-white">{t("Step 2")}</div>
-              <div>{t("Select account")}</div>
-            </div>
-            <div className="text-xs">{t("Deposit Account")}</div>
-            {/* <RampAccountSelect /> */}
-          </div>
-
-          <div className="shrink-0"></div>
         </div>
       </ScrollContainer>
       <div className="shrink-0 px-10 pb-10">
@@ -266,12 +260,45 @@ export const RampBuyForm = () => {
               disabled={!canSubmit}
               processing={isSubmitting}
             >
-              {t("Continue to Ramp")}
+              {t("Continue to Buy")}
             </Button>
           )}
         />
       </div>
     </form>
+  )
+}
+
+const FieldSet: FC<{ label: ReactNode; children: ReactNode }> = ({ label, children }) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [])
+
+  return (
+    <div ref={ref} className="bg-grey-900 space-y-6 rounded border-0 p-6">
+      <div className="text-body leading-paragraph text-sm">{label}</div>
+      <div>{children}</div>
+    </div>
+  )
+}
+
+const ProviderLabel: FC<{ provider: RampProvider }> = ({ provider }) => {
+  return (
+    <span className="text-body-secondary inline-flex items-center gap-2 text-xs">
+      <span
+        className={classNames(
+          "inline-block size-8 rounded-full",
+          provider === "ramp" && "bg-white p-1", // figma didnt use an svg, wrap the official one to make it look as expected
+        )}
+      >
+        <img src={PROVIDER_LOGOS[provider]} alt="" className="size-full" />
+      </span>
+      <span>{capitalize(provider)}</span>
+    </span>
   )
 }
 
@@ -425,7 +452,9 @@ const ProviderButton: FC<{
             <div className="bg-body-disabled rounded-xs text-tiny animate-pulse">$1987.47</div>
           </div>
           <div>
-            <div className="bg-body-disabled rounded-xs animate-pulse text-xs">Ramp</div>
+            <div className="text-xs">
+              <ProviderLabel provider={provider} />
+            </div>
           </div>
         </div>
         <div className="text-tiny flex gap-8">
@@ -444,7 +473,9 @@ const ProviderButton: FC<{
             <div className="text-sm font-bold">{error?.message ?? "Unavailable"}</div>
             <div className="text-tiny"></div>
           </div>
-          <div className="text-xs">{provider}</div>
+          <div className="text-xs">
+            <ProviderLabel provider={provider} />
+          </div>
         </div>
         <div className="text-tiny flex gap-8">
           <div></div>
@@ -478,7 +509,9 @@ const ProviderButton: FC<{
             <Fiat amount={amount?.fiat(selectedCurrency)} noCountUp />
           </div>
         </div>
-        <div className="text-body-secondary text-xs">{provider}</div>
+        <div className="text-body-secondary text-xs">
+          <ProviderLabel provider={provider} />
+        </div>
       </div>
       <div className="text-tiny flex gap-8">
         <div>

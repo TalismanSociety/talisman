@@ -61,8 +61,17 @@ export const RampCurrencyPicker: FC<{
           <SearchInput onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {!currencies && range(0, 10).map((i) => <CurrencyButtonRowSkeleton key={i} />)}
-          {isIconsReady &&
+          {!isIconsReady || !filteredCurrencies
+            ? range(0, 10).map((i) => <CurrencyButtonRowSkeleton key={i} />)
+            : filteredCurrencies?.map((currency) => (
+                <CurrencyButtonRow
+                  currency={currency}
+                  key={currency.code}
+                  onClick={() => onSelect(currency.code)}
+                  selected={selected === currency.code}
+                />
+              ))}
+          {/* {isIconsReady &&
             filteredCurrencies?.map((currency) => (
               <CurrencyButtonRow
                 currency={currency}
@@ -70,7 +79,7 @@ export const RampCurrencyPicker: FC<{
                 onClick={() => onSelect(currency.code)}
                 selected={selected === currency.code}
               />
-            ))}
+            ))} */}
         </ScrollContainer>
       </div>
     </RampLayout>
