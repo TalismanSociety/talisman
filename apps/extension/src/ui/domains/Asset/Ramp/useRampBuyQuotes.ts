@@ -7,6 +7,8 @@ import { useMemo } from "react"
 import urlJoin from "url-join"
 
 import { useRemoteConfig, useToken } from "@ui/state"
+import { isEvmToken } from "@ui/util/isEvmToken"
+import { isSubToken } from "@ui/util/isSubToken"
 
 import { CoinbaseBuyOptionsRequestInput, CoinbaseBuyQuoteResponse } from "./coinbase/types"
 import { useCoinbaseBuyOptions } from "./coinbase/useCoinbaseBuyOptions"
@@ -83,13 +85,21 @@ export const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
 
     const item = coinbaseBuyOptions?.purchase_currencies
       .flatMap((c) => c.networks.map((n) => ({ id: c.id, symbol: c.symbol, ...n })))
-      .find(
-        (n) =>
-          n.chain_id === (token.evmNetwork?.id ?? token.chain?.id) &&
-          ((token.type === "evm-erc20" &&
-            token.contractAddress.toLowerCase() === n.contract_address.toLowerCase()) ||
-            (token.type === "evm-native" && !n.contract_address)),
-      )
+      .find((n) => {
+        if (isEvmToken(token) && n.chain_id === token.evmNetwork?.id) {
+          if (
+            token.type === "evm-erc20" &&
+            token.contractAddress.toLowerCase() === n.contract_address.toLowerCase()
+          )
+            return true
+          if (token.type === "evm-native" && !n.contract_address) return true
+        }
+
+        if (isSubToken(token) && n.name === token.chain?.id && n.symbol === token.symbol)
+          return true
+
+        return false
+      })
 
     return item ? { purchaseCurrency: item.id, purchaseNetwork: item.name } : null
   }, [coinbaseBuyOptions?.purchase_currencies, token])
