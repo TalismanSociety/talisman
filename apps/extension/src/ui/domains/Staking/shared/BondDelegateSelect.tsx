@@ -5,7 +5,7 @@ import { Button } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
 
-import { useBondWizard } from "../Bond/useBondWizard"
+import { useBondWizard } from "../Bond/hooks/useBondWizard"
 import { BondOption as BondOptionType } from "../hooks/bittensor/types"
 import { BondOption, BondOptionSkeleton } from "./BondOption"
 

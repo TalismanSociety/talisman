@@ -1,7 +1,7 @@
 import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 
-import { useBondWizard } from "../Bond/useBondWizard"
+import { useBondWizard } from "../Bond/hooks/useBondWizard"
 import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
 
 type BittensorDelegatorNameButtonProps = {

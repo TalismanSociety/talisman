@@ -12,8 +12,8 @@ import { BittensorBondDelegateSelect } from "../Bittensor/BittensorBondDelegateS
 import { BondFollowUp } from "./BondFollowUp"
 import { BondForm } from "./BondForm"
 import { BondReview } from "./BondReview"
-import { useBondModal } from "./useBondModal"
-import { useBondWizard } from "./useBondWizard"
+import { useBondModal } from "./hooks/useBondModal"
+import { useBondWizard } from "./hooks/useBondWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()

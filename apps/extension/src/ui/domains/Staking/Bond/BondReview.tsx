@@ -8,7 +8,7 @@ import { BondPoolName } from "../shared/BondPoolName"
 import { StakingAccountDisplay } from "../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
-import { useBondWizard } from "./useBondWizard"
+import { useBondWizard } from "./hooks/useBondWizard"
 
 export const BondReview = () => {
   const { t } = useTranslation()

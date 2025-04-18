@@ -5,7 +5,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useBondButton } from "./useBondButton"
+import { useBondButton } from "./hooks/useBondButton"
 
 export const BondButton: FC<{ tokenId: TokenId; balances: Balances }> = ({ tokenId, balances }) => {
   const { t } = useTranslation()

@@ -33,7 +33,7 @@ import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { BondAccountPicker } from "./BondAccountPicker"
 import { BondAccountPillButton } from "./BondAccountPillButton"
-import { useBondWizard } from "./useBondWizard"
+import { useBondWizard } from "./hooks/useBondWizard"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()

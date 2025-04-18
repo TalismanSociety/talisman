@@ -11,8 +11,8 @@ import { useAccounts, useChain } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { BondAccountsList } from "./BondAccountsList"
-import { useBondModal } from "./useBondModal"
-import { useBondWizard } from "./useBondWizard"
+import { useBondModal } from "./hooks/useBondModal"
+import { useBondWizard } from "./hooks/useBondWizard"
 
 export const BondAccountPicker = () => {
   const { t } = useTranslation()
