@@ -10,7 +10,7 @@ import { BalanceFormatter, isAccountCompatibleWithChain, isAccountEthereum } fro
 import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
 import { log } from "extension-shared"
 import { capitalize } from "lodash"
-import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { FC, ReactNode, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 import { z } from "zod"
@@ -62,7 +62,7 @@ type FormData = z.infer<typeof schema>
 //   account?: string
 // }
 
-// TODO clear it up
+// @dev: use only when debugging
 const DEFAULT_FORM_DATA: Partial<FormData> = {
   currencyCode: "USD",
   //tokenId: "1-evm-native",
@@ -86,14 +86,17 @@ const redirectToProvider = async (formData: FormData, quote: RampBuyQuote) => {
 
 export const RampBuyForm = () => {
   const { t } = useTranslation()
-  const [quote, setQuote] = useState<RampBuyQuote | null>(null)
+
+  const refQuote = useRef<RampBuyQuote | null>(null)
 
   const form = useForm({
     defaultValues: DEFAULT_FORM_DATA,
     onSubmit: async ({ value }) => {
       try {
+        const quote = refQuote.current
         if (!quote) throw new Error("No quote")
         const formData = schema.parse(value)
+
         await redirectToProvider(formData, quote)
       } catch (err) {
         log.error("Failed to submit", err)
@@ -159,9 +162,10 @@ export const RampBuyForm = () => {
       form.resetField("account")
   }, [accounts, form, formData.account])
 
+  // store the current quote as ref so that submit function can access it, without generating re-renders
   useEffect(() => {
     const providerQuote = quotes.find((q) => q.provider === formData.provider)
-    setQuote(providerQuote?.quote?.data ?? null)
+    refQuote.current = providerQuote?.quote?.data ?? null
   }, [formData.provider, quotes])
 
   return (

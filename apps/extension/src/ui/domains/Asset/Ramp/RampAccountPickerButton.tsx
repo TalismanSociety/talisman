@@ -110,7 +110,7 @@ const AccountButtonContent: FC<{
         />
       </div>
       <div className="leading-paragraph flex grow flex-col overflow-hidden">
-        <div className="text-body flex items-center gap-2 overflow-hidden font-bold">
+        <div className="text-body flex items-center gap-2 overflow-hidden">
           <div className="grow truncate">{account.name}</div>
           <AccountTypeIcon className="text-primary shrink-0" type={account.type} />
         </div>
