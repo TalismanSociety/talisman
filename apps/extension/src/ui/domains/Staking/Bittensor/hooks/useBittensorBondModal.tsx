@@ -4,10 +4,10 @@ import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import { useResetNomPoolBondWizard } from "./useBittensorBondWizard"
+import { useResetBittensorBondWizard } from "./useBittensorBondWizard"
 
 export const useBittensorBondModal = () => {
-  const reset = useResetNomPoolBondWizard()
+  const reset = useResetBittensorBondWizard()
 
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("BittensorBondModal")
 

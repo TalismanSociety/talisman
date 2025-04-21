@@ -12,7 +12,7 @@ import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/st
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { useGetStakeInfo } from "../../shared/useGetStakeInfo"
+import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 type WizardStep = "form" | "review" | "follow-up" | "select"
 
@@ -20,7 +20,7 @@ type WizardState = {
   step: WizardStep
   address: Address | null
   tokenId: TokenId | null
-  poolId: number | string | null
+  poolId: number | string | null // rename to delegateHotkey
   plancks: bigint | null
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
@@ -70,7 +70,7 @@ const useInnerOpenClose = (key: "isAccountPickerOpen") => {
   return { isOpen, setIsOpen, open, close, toggle }
 }
 
-export const useResetNomPoolBondWizard = () => {
+export const useResetBittensorBondWizard = () => {
   const reset = useCallback(
     (init: Pick<WizardState, "address" | "tokenId" | "poolId" | "step">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
@@ -105,13 +105,9 @@ export const useBittensorBondWizard = () => {
     feeEstimate,
     errorFeeEstimate,
     isLoadingFeeEstimate,
-    bondType,
     currentPoolId,
-    hasJoinedNomPool,
     minJoinBond,
-    isSoloStaking,
-    poolState,
-  } = useGetStakeInfo({
+  } = useGetBittensorStakeInfo({
     sapi,
     address,
     poolId,
@@ -179,7 +175,7 @@ export const useBittensorBondWizard = () => {
      */
     if (!!currentPoolId && currentPoolId !== poolId && isDefaultOption)
       setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
-  }, [bondType, currentPoolId, isDefaultOption, poolId, step, tokenId])
+  }, [currentPoolId, isDefaultOption, poolId, step, tokenId])
 
   const setStep = useCallback(
     (step: WizardStep) => {
@@ -194,10 +190,10 @@ export const useBittensorBondWizard = () => {
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
-      genericEvent(`${bondType} Bond`, { tokenId, isBondExtra: hasJoinedNomPool })
+      genericEvent("Bittensor Bond", { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, hasJoinedNomPool, tokenId, bondType],
+    [genericEvent, tokenId],
   )
 
   const maxPlancks = useMemo(() => {
@@ -207,13 +203,6 @@ export const useBittensorBondWizard = () => {
   }, [balance, existentialDeposit, feeEstimate])
 
   const inputErrorMessage = useMemo(() => {
-    if (isSoloStaking)
-      return t("Account has an open validator staking position, please unbond first")
-
-    if (!currentPoolId && poolState?.isFull) return t("This nomination pool is full")
-    if (!currentPoolId && poolState && !poolState.isOpen)
-      return t("This nomination pool is not open")
-
     if (!formatter || typeof minJoinBond !== "bigint") return null
 
     if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
@@ -247,7 +236,7 @@ export const useBittensorBondWizard = () => {
         "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
       )
 
-    if (!hasJoinedNomPool && formatter.planck < minJoinBond)
+    if (formatter.planck < minJoinBond)
       return t("Minimum bond is {{amount}} {{symbol}}", {
         amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
         symbol: token?.symbol,
@@ -255,16 +244,12 @@ export const useBittensorBondWizard = () => {
 
     return null
   }, [
-    isSoloStaking,
     t,
-    currentPoolId,
-    poolState,
     formatter,
     minJoinBond,
     balance,
     feeEstimate,
     existentialDeposit?.planck,
-    hasJoinedNomPool,
     token?.decimals,
     token?.symbol,
   ])
@@ -283,7 +268,6 @@ export const useBittensorBondWizard = () => {
     feeToken,
     maxPlancks,
     inputErrorMessage,
-    bondType,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,

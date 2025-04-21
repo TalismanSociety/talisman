@@ -32,6 +32,7 @@ type StakeInfo = {
   currentPoolId: string | number | undefined | null
 }
 
+// TODO: Remove all bittensor code
 export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakeInfo) => {
   const { data: minJoinBond } = useGetMinJoinBond(chainId)
 
