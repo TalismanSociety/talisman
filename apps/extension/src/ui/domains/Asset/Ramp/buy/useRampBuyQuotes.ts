@@ -36,7 +36,7 @@ export type RampBuyQuote = {
 
 export type RampBuyQuoteQuery = {
   provider: RampProvider
-  quote: UseQueryResult<RampBuyQuote | null, Error>
+  query: UseQueryResult<RampBuyQuote | null, Error>
 }
 
 const getRampTokenType = (type: Token["type"]) => {
@@ -173,8 +173,8 @@ export const useRampBuyQuotes = (config: RampBuyQuoteOptions | null) => {
 
   return useMemo<RampBuyQuoteQuery[]>(
     () => [
-      { provider: "ramp", quote: queries[0] },
-      { provider: "coinbase", quote: queries[1] },
+      { provider: "ramp", query: queries[0] },
+      { provider: "coinbase", query: queries[1] },
     ],
     [queries],
   )

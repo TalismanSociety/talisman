@@ -240,21 +240,21 @@ const AmountOut: FC<{
   tokenId: TokenId | undefined
 }> = ({ quotes, provider, tokenId }) => {
   const token = useToken(tokenId)
-  const quote = useMemo(
-    () => quotes.find((q) => q.provider === provider)?.quote,
+  const query = useMemo(
+    () => quotes.find((q) => q.provider === provider)?.query,
     [quotes, provider],
   )
 
-  if (!quote || !token) return null
+  if (!query || !token) return null
 
-  if (quote.isLoading)
+  if (query.isLoading)
     return (
       <span className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">0.00001</span>
     )
 
-  if (!quote.data?.amountOut) return null
+  if (!query.data?.amountOut) return null
 
-  return planckToTokens(quote.data?.amountOut, token.decimals)
+  return planckToTokens(query.data?.amountOut, token.decimals)
 }
 
 const TokenPrice: FC<{
@@ -318,7 +318,7 @@ const Providers: FC<{
           tokenRates={tokenRates}
           provider={q.provider}
           isSelected={selected === q.provider}
-          query={q.quote}
+          query={q.query}
           onClick={() => onSelect(q.provider)}
         />
       ))}

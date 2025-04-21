@@ -110,10 +110,10 @@ export const useRampBuyForm = () => {
 
   // select best provider once quotes are ready
   useEffect(() => {
-    if (!formData.provider && quotes.every((q) => !q.quote.isLoading)) {
+    if (!formData.provider && quotes.every((q) => !q.query.isLoading)) {
       const bestQuote = quotes
-        .filter((q) => q.quote.data?.amountOut)
-        .sort((a, b) => Number(b.quote.data!.amountOut) - Number(a.quote.data!.amountOut))[0]
+        .filter((q) => q.query.data?.amountOut)
+        .sort((a, b) => Number(b.query.data!.amountOut) - Number(a.query.data!.amountOut))[0]
       if (bestQuote) form.setFieldValue("provider", bestQuote.provider) //providerField.setValue(bestQuote.provider)
     }
   }, [form, formData.provider, quotes])
@@ -128,7 +128,7 @@ export const useRampBuyForm = () => {
   // store the current quote as ref so that submit function can access it, without generating re-renders
   useEffect(() => {
     const providerQuote = quotes.find((q) => q.provider === formData.provider)
-    refQuote.current = providerQuote?.quote?.data ?? null
+    refQuote.current = providerQuote?.query?.data ?? null
   }, [formData.provider, quotes])
 
   return {
