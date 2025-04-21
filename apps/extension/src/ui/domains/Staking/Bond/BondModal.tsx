@@ -6,9 +6,9 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { BittensorBondDelegateSelect } from "../Bittensor/BittensorBondDelegateSelect"
+import { ModalContent } from "../shared/ModalContent"
 import { BondFollowUp } from "./BondFollowUp"
 import { BondForm } from "./BondForm"
 import { BondReview } from "./BondReview"
@@ -62,10 +62,11 @@ const ModalHeader = () => {
   )
 }
 
-const ModalContent = () => {
+const ModalBody = () => {
   const { step } = useBondWizard()
 
   switch (step) {
+    // TODO: remove select from switch case and bondWizard hook step
     case "select":
       return <BittensorBondDelegateSelect />
     case "form":
@@ -77,28 +78,13 @@ const ModalContent = () => {
   }
 }
 
-const Content = () => (
-  <div
-    id="StakingModalDialog" // acts as containerId for sub modals
-    className={classNames(
-      "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
-      !IS_POPUP && "border-grey-850 rounded border",
-    )}
-  >
-    <ModalHeader />
-    <div className="grow p-12 pt-0">
-      <ModalContent />
-    </div>
-  </div>
-)
-
 export const BondModal = () => {
   const { isOpen, close } = useBondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="NomPoolBondModal" />}>
-        <Content />
+        <ModalContent ModalHeader={ModalHeader} ModalBody={ModalBody} />
       </Suspense>
     </Modal>
   )

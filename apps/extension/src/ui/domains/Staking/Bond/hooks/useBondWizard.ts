@@ -14,6 +14,8 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useGetStakeInfo } from "../../shared/useGetStakeInfo"
 
+// TODO: Remove all Bittensor related code
+
 type WizardStep = "form" | "review" | "follow-up" | "select"
 
 type WizardState = {

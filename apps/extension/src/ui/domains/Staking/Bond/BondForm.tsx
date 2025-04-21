@@ -35,6 +35,8 @@ import { BondAccountPicker } from "./BondAccountPicker"
 import { BondAccountPillButton } from "./BondAccountPillButton"
 import { useBondWizard } from "./hooks/useBondWizard"
 
+// TODO: Cleanup Bittensor related code
+
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
 

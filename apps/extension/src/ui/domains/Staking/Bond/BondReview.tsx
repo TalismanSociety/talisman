@@ -10,6 +10,7 @@ import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { useBondWizard } from "./hooks/useBondWizard"
 
+// TODO: Remove all Bittensor related code
 export const BondReview = () => {
   const { t } = useTranslation()
   const { token, formatter, account, onSubmitted, payload, txMetadata, poolId } = useBondWizard()

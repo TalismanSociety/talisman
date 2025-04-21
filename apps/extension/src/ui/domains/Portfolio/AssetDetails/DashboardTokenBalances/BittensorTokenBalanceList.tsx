@@ -135,7 +135,6 @@ export const BittensorTokenBalanceList = ({
       status={status}
       symbol={symbol}
       shouldDisplayActionBtns={isChainIfo}
-      shouldDisplayStakeBtn={isChainIfo || isRootStake}
       shouldDisplayTotalAvailableBalance={isChainIfo}
     >
       {groupedStakesByNetuid?.map((row, i, rows) => {
