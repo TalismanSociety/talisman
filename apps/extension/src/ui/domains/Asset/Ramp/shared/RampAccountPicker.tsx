@@ -11,8 +11,9 @@ import {
   getAccountGenesisHash,
 } from "extension-core"
 import { HexString } from "polkadot-api"
-import { FC, useMemo, useState } from "react"
+import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -59,11 +60,18 @@ export const RampAccountPicker: FC<{
 
   // TODO sort and filter
 
+  // once drawer is open, focus on the search input
+  const refSearchInput = useRef<HTMLInputElement>(null)
+  const transitionStatus = useOpenCloseStatus()
+  useEffect(() => {
+    if (transitionStatus === "open") refSearchInput.current?.focus()
+  }, [transitionStatus])
+
   return (
     <RampLayout onBackClick={onClose} title={t("Select an account")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-          <SearchInput onChange={setSearch} placeholder={t("Search")} />
+          <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
           {!accounts?.length ? (

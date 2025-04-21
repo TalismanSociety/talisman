@@ -1,7 +1,9 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { classNames } from "@talismn/util"
-import { FC, MouseEventHandler, ReactNode, Suspense, useCallback } from "react"
+import { FC, MouseEventHandler, ReactNode, Suspense, useCallback, useState } from "react"
 import { createPortal } from "react-dom"
+
+import { OpenCloseStatus, OpenCloseStatusProvider } from "../utils/useOpenCloseStatus"
 
 type ModalProps = {
   children: ReactNode
@@ -20,6 +22,8 @@ export const Modal: FC<ModalProps> = ({
   children,
   onDismiss,
 }) => {
+  const [status, setStatus] = useState<OpenCloseStatus>("closed")
+
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (!onDismiss) return
@@ -70,8 +74,14 @@ export const Modal: FC<ModalProps> = ({
           leave="ease-in duration-200"
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
+          beforeEnter={() => setStatus("opening")}
+          afterEnter={() => setStatus("open")}
+          beforeLeave={() => setStatus("closing")}
+          afterLeave={() => setStatus("closed")}
         >
-          <Suspense fallback={null}>{children}</Suspense>
+          <OpenCloseStatusProvider status={status}>
+            <Suspense fallback={null}>{children}</Suspense>
+          </OpenCloseStatusProvider>
         </TransitionChild>
       </div>
     </Transition>,

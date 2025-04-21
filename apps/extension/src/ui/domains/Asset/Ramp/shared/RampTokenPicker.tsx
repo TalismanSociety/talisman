@@ -6,6 +6,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { range } from "lodash"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -76,11 +77,18 @@ export const RampTokenPicker: FC<{
     refContainer.current.scrollTo(0, 0)
   }, [search, filteredTokens])
 
+  // once drawer is open, focus on the search input
+  const refSearchInput = useRef<HTMLInputElement>(null)
+  const transitionStatus = useOpenCloseStatus()
+  useEffect(() => {
+    if (transitionStatus === "open") refSearchInput.current?.focus()
+  }, [transitionStatus])
+
   return (
     <RampLayout onBackClick={onClose} title={t("Select a token")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-          <SearchInput onChange={setSearch} placeholder={t("Search")} />
+          <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer
           ref={refContainer}
