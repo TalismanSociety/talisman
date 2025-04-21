@@ -1,4 +1,5 @@
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
+import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import { isAccountCompatibleWithChain, isAccountEthereum } from "extension-core"
 import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
@@ -14,8 +15,9 @@ import { useAccounts, useChain, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
+import { RampBuyQuote, RampBuyQuoteSuccess } from "./types"
 import { useRampBuyCurrencies } from "./useRampBuyCurrencies"
-import { RampBuyQuote, useRampBuyQuotes } from "./useRampBuyQuotes"
+import { useRampBuyQuotes } from "./useRampBuyQuotes"
 import { useRampBuyTokens } from "./useRampBuyTokens"
 
 const schema = z.object({
@@ -53,7 +55,7 @@ export const useRampBuyForm = () => {
     onSubmit: async ({ value }) => {
       try {
         const quote = refQuote.current
-        if (!quote) throw new Error("No quote")
+        if (!quote || quote.type === "error") throw new Error("No quote")
         const formData = schema.parse(value)
 
         await redirectToProvider(formData, quote)
@@ -111,9 +113,14 @@ export const useRampBuyForm = () => {
   // select best provider once quotes are ready
   useEffect(() => {
     if (!formData.provider && quotes.every((q) => !q.query.isLoading)) {
+      const getAmountOut = (q: RampBuyQuote | null | undefined) =>
+        q?.type === "success" ? q.amountOut : null
+
       const bestQuote = quotes
-        .filter((q) => q.query.data?.amountOut)
-        .sort((a, b) => Number(b.query.data!.amountOut) - Number(a.query.data!.amountOut))[0]
+        .map((q) => ({ provider: q.provider, amountOut: getAmountOut(q.query.data) }))
+        .filter((q) => isTruthy(q.amountOut))
+        .sort((a, b) => Number(b.amountOut ?? 0) - Number(a.amountOut ?? 0))[0]
+
       if (bestQuote) form.setFieldValue("provider", bestQuote.provider) //providerField.setValue(bestQuote.provider)
     }
   }, [form, formData.provider, quotes])
@@ -131,6 +138,18 @@ export const useRampBuyForm = () => {
     refQuote.current = providerQuote?.query?.data ?? null
   }, [formData.provider, quotes])
 
+  // useEffect(() => {
+  //   console.log(
+  //     "[ramp] quotes",
+  //     quotes.map((q) => ({
+  //       provider: q.provider,
+  //       data: q.query.data,
+  //       error: q.query.error,
+  //       isLoading: q.query.isLoading,
+  //     })),
+  //   )
+  // }, [quotes])
+
   return {
     form,
     currencies,
@@ -144,7 +163,7 @@ export const useRampBuyForm = () => {
   }
 }
 
-const redirectToProvider = async (formData: FormData, quote: RampBuyQuote) => {
+const redirectToProvider = async (formData: FormData, quote: RampBuyQuoteSuccess) => {
   let address = formData.account
 
   const token = await chaindataProvider.tokenById(formData.tokenId)

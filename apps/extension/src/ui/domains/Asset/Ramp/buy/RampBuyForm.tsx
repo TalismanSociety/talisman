@@ -17,12 +17,12 @@ import { Fiat } from "../../Fiat"
 import Tokens from "../../Tokens"
 import logoCoinbase from "../assets/logo-coinbase.svg?url"
 import logoRamp from "../assets/logo-ramp.svg?url"
-import { RampProvider } from "../coinbase/types"
 import { RampAccountPickerButton } from "../shared/RampAccountPickerButton"
 import { RampCurrencyPickerButton } from "../shared/RampCurrencyPickerButton"
 import { RampTokenPickerButton } from "../shared/RampTokenPickerButton"
+import { RampProvider } from "../shared/types"
+import { RampBuyQuote, RampBuyQuoteOptions, RampBuyQuoteQuery } from "./types"
 import { useRampBuyForm } from "./useRampBuyForm"
-import { RampBuyQuote, RampBuyQuoteOptions, RampBuyQuoteQuery } from "./useRampBuyQuotes"
 
 const PROVIDER_LOGOS = {
   coinbase: logoCoinbase,
@@ -252,7 +252,7 @@ const AmountOut: FC<{
       <span className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">0.00001</span>
     )
 
-  if (!query.data?.amountOut) return null
+  if (query.data?.type === "error" || !query.data?.amountOut) return null
 
   return planckToTokens(query.data?.amountOut, token.decimals)
 }
@@ -346,12 +346,12 @@ const ProviderButton: FC<{
   const token = useToken(tokenId)
 
   const amount = useMemo(() => {
-    if (!data || !token) return null
-    return new BalanceFormatter(data?.amountOut, token?.decimals, tokenRates?.[token.id])
+    if (!data || !token || data.type === "error") return null
+    return new BalanceFormatter(data.amountOut, token?.decimals, tokenRates?.[token.id])
   }, [data, token, tokenRates])
 
   const price = useMemo(() => {
-    if (!data || !token) return null
+    if (!data || !token || data.type === "error") return null
     const price = getTokenPrice(amountIn - data.fee, BigInt(data.amountOut), token.decimals)
     return formatPrice(price, currencyCode, true)
   }, [amountIn, currencyCode, data, token])
@@ -380,13 +380,15 @@ const ProviderButton: FC<{
     )
 
   // TODO
-  if (error || !data)
+  if (error || !data || data.type === "error")
     return (
       <div className="border-grey-700 leading-paragraph text-body-secondary flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left">
         <div className="flex justify-between">
           <div className="flex flex-col gap-2">
-            <div className="text-sm font-bold">{error?.message ?? "Unavailable"}</div>
-            <div className="text-tiny"></div>
+            <div className="text-sm">
+              {error?.message ?? (data?.type === "error" && data.message) ?? "Unavailable"}
+            </div>
+            <div className="text-tiny">{(data?.type === "error" && data.description) ?? null}</div>
           </div>
           <div className="text-xs">
             <ProviderLabel provider={provider} />
@@ -432,10 +434,11 @@ const ProviderButton: FC<{
         <div>
           1 {token?.symbol} ≈ {price}
         </div>
-        <div>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {t("Fee")} {formatPrice(data?.fee ?? 0, currencyCode, true)}
-        </div>
+        {data.type === "success" && (
+          <div>
+            {t("Fee")} {formatPrice(data.fee, currencyCode, true)}
+          </div>
+        )}
       </div>
     </button>
   )

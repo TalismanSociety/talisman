@@ -29,5 +29,3 @@ export type CoinbaseBuyQuoteResponse = {
   }
   quote_id: string
 }
-
-export type RampProvider = "coinbase" | "ramp"

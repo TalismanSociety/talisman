@@ -9,7 +9,7 @@ type CoinbaseBuyConfigPaymentMethodId =
   | "APPLE_PAY"
   | "ACH_BANK_ACCOUNT"
 
-type CoinbaseBuyOptionsPaymentCurrency = {
+export type CoinbaseBuyOptionsPaymentCurrency = {
   /** Currency code */
   id: string
   limits: [
@@ -40,7 +40,7 @@ type CoinbaseBuyOptionsTokenNetwork = {
 
 type CoinbaseBuyOptionsPurchaseCurrency = CoinbaseBuyOptionsToken
 
-type CoinbaseBuyOptionsResponse = {
+export type CoinbaseBuyOptions = {
   payment_currencies: CoinbaseBuyOptionsPaymentCurrency[]
   purchase_currencies: CoinbaseBuyOptionsPurchaseCurrency[]
 }
@@ -48,7 +48,7 @@ type CoinbaseBuyOptionsResponse = {
 export const useCoinbaseBuyOptions = () => {
   return useQuery({
     queryKey: ["useRampCoinbaseBuyOptions"],
-    queryFn: async (): Promise<CoinbaseBuyOptionsResponse> => {
+    queryFn: async (): Promise<CoinbaseBuyOptions> => {
       const res = await fetch(urlJoin(COINBASE_API_BASE_PATH, "/buy/options"))
       if (!res.ok) throw new Error("Failed to fetch coinbase buy config")
       return await res.json()

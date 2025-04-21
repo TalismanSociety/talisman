@@ -1,0 +1,167 @@
+import { formatPrice, tokensToPlanck } from "@talismn/util"
+import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { COINBASE_API_BASE_PATH, log } from "extension-shared"
+import { useMemo } from "react"
+import urlJoin from "url-join"
+
+import { useToken } from "@ui/state"
+import { isEvmToken } from "@ui/util/isEvmToken"
+import { isSubToken } from "@ui/util/isSubToken"
+
+import { getCoinbaseBuyUrl } from "../coinbase/helpers"
+import { CoinbaseBuyOptionsRequestInput, CoinbaseBuyQuoteResponse } from "../coinbase/types"
+import { CoinbaseBuyOptions, useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { RampBuyQuote, RampBuyQuoteError, RampBuyQuoteOptions } from "./types"
+
+export const useRampBuyQuoteCoinbase = (
+  config: RampBuyQuoteOptions | null,
+): UseQueryResult<RampBuyQuote | null, Error> => {
+  const token = useToken(config?.tokenId)
+  const { data: options } = useCoinbaseBuyOptions()
+  const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
+
+  const inputError = useMemo<RampBuyQuoteError | null>(() => {
+    if (!config || !options) return null
+
+    const getInputErrorDescription = (
+      config: RampBuyQuoteOptions,
+      coinbaseOpts: CoinbaseBuyOptions,
+    ) => {
+      const limit = coinbaseOpts.payment_currencies
+        .find((c) => c.id === config.currencyCode)
+        ?.limits.find((l) => l.id === "CARD")
+      if (!limit) return `Currency ${config.currencyCode} is not available`
+
+      if (config.amount < Number(limit.min))
+        return `Minimum purchase is ${formatPrice(Number(limit.min), config.currencyCode, true)}`
+      if (config.amount > Number(limit.max))
+        return `Maximum purchase is ${formatPrice(Number(limit.max), config.currencyCode, true)}`
+      return null
+    }
+
+    const description = getInputErrorDescription(config, options)
+
+    return description
+      ? {
+          type: "error",
+          message: "Unavailable",
+          description,
+        }
+      : null
+  }, [config, options])
+
+  return useQuery({
+    queryKey: ["useRampBuyQuoteCoinbase", config, coinbaseToken, inputError],
+    queryFn: () => {
+      if (!config || !token || !coinbaseToken) return null
+      if (inputError) return inputError
+      return fetchCoinbaseBuyQuote(config.currencyCode, config.amount, coinbaseToken)
+    },
+    select: (res: FetchCoinbaseBuyQuoteResult | null): RampBuyQuote | null => {
+      if (!res) return null
+      if (res.type === "error") return res
+      return res.data && token && config && coinbaseToken
+        ? {
+            type: "success",
+            fee: Number(res.data.coinbase_fee.value) + Number(res.data.network_fee.value),
+            amountOut: tokensToPlanck(res.data.purchase_amount.value, token.decimals),
+            getRedirectUrl: (address: string) =>
+              getCoinbaseBuyUrl(
+                res.data.payment_total.currency,
+                res.data.payment_total.value,
+                coinbaseToken.purchaseCurrency,
+                coinbaseToken.purchaseNetwork,
+                res.data.quote_id,
+                res.data.purchase_amount.value,
+                address,
+              ),
+          }
+        : null
+    },
+    retry: false,
+  })
+}
+
+type CoinbaseTokenSpecs = { purchaseCurrency: string; purchaseNetwork: string }
+
+const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
+  const { data: coinbaseBuyOptions } = useCoinbaseBuyOptions()
+  const token = useToken(tokenId)
+
+  return useMemo<CoinbaseTokenSpecs | null>(() => {
+    if (!token) return null
+
+    const item = coinbaseBuyOptions?.purchase_currencies
+      .flatMap((c) => c.networks.map((n) => ({ id: c.id, symbol: c.symbol, ...n })))
+      .find((n) => {
+        if (isEvmToken(token) && n.chain_id === token.evmNetwork?.id) {
+          if (
+            token.type === "evm-erc20" &&
+            token.contractAddress.toLowerCase() === n.contract_address.toLowerCase()
+          )
+            return true
+          if (token.type === "evm-native" && !n.contract_address) return true
+        }
+
+        if (isSubToken(token) && n.name === token.chain?.id && n.symbol === token.symbol)
+          return true
+
+        return false
+      })
+
+    return item ? { purchaseCurrency: item.id, purchaseNetwork: item.name } : null
+  }, [coinbaseBuyOptions?.purchase_currencies, token])
+}
+
+type FetchCoinbaseBuyQuoteResult =
+  | { type: "success"; data: CoinbaseBuyQuoteResponse }
+  | RampBuyQuoteError
+
+const fetchCoinbaseBuyQuote = async (
+  currencyCode: string,
+  amountIn: number,
+  coinbaseToken: CoinbaseTokenSpecs,
+): Promise<FetchCoinbaseBuyQuoteResult> => {
+  const body: CoinbaseBuyOptionsRequestInput = {
+    paymentCurrency: currencyCode,
+    paymentMethod: "CARD",
+    paymentAmount: amountIn.toString(),
+    ...coinbaseToken,
+  }
+
+  const response = await fetch(urlJoin(COINBASE_API_BASE_PATH, "/buy/quote"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    log.error("[ramp] Coinbase quote error", response.status, response.statusText)
+    try {
+      const error = await response.json()
+      log.error("[ramp] Coinbase quote error", error)
+      return getCoinbaseQuoteError(error)
+    } catch (err) {
+      return { type: "error", message: "Unavailable" }
+    }
+  }
+
+  const data: CoinbaseBuyQuoteResponse = await response.json()
+  return { type: "success", data }
+}
+
+const getCoinbaseQuoteError = (error: { code: number; message: string }): RampBuyQuoteError => {
+  // switch (error.code) {
+  // case 3: invalidAmount
+  //   default:
+  //     return error.message
+  // }
+
+  return {
+    type: "error",
+    message: "Unavailable",
+    description: error.message,
+  }
+}
