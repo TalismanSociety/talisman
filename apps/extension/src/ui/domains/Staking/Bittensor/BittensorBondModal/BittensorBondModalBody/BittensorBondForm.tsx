@@ -30,9 +30,9 @@ import { BondAccountPillButton } from "../../../Bond/BondAccountPillButton"
 import { STAKING_APR_UNAVAILABLE } from "../../../helpers"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useStakingAPR } from "../../../hooks/nomPools/useStakingAPR"
-import { BondPoolName } from "../../../shared/BondPoolName"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { BittensorDelegatorNameButton } from "../../BittensorDelegatorNameButton"
 import { useBittensorBondWizard } from "./../../hooks/useBittensorBondWizard"
 
 // TODO: Cleanup all non Bittensor related code
@@ -399,13 +399,8 @@ const FeeEstimate = () => {
 
 export const BittensorBondForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, setStep, poolId, bondType } =
+  const { account, accountPicker, token, payload, poolId, setStep, setAddress } =
     useBittensorBondWizard()
-
-  const isBittensor = bondType === "bittensor"
-
-  const bondRowLabel = useMemo(() => (isBittensor ? t("Validator") : t("Pool")), [isBittensor, t])
-  const yeldRowLabel = useMemo(() => (isBittensor ? t("APY") : t("APR")), [isBittensor, t])
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -434,9 +429,9 @@ export const BittensorBondForm = () => {
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
         <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{bondRowLabel}</div>
+          <div className="whitespace-nowrap">{t("Validator")}</div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <BittensorDelegatorNameButton poolId={poolId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">
@@ -444,15 +439,11 @@ export const BittensorBondForm = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 whitespace-nowrap leading-none">
-                  {yeldRowLabel}
+                  {t("APY")}
                   <InfoIcon />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                {isBittensor
-                  ? t("Estimated Annual Percentage Yield (APY)")
-                  : t("Estimated Annual Percentage Rate (APR)")}
-              </TooltipContent>
+              <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
             </Tooltip>
           </div>
           <div className={"overflow-hidden font-bold"}>
@@ -477,7 +468,13 @@ export const BittensorBondForm = () => {
         {t("Review")}
       </Button>
 
-      <BondAccountPicker />
+      <BondAccountPicker
+        isOpen={accountPicker.isOpen}
+        account={account}
+        token={token}
+        handleClose={accountPicker.close}
+        setAddress={setAddress}
+      />
     </div>
   )
 }

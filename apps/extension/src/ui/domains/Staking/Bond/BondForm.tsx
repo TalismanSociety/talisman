@@ -399,7 +399,8 @@ const FeeEstimate = () => {
 
 export const BondForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, setStep, poolId, bondType } = useBondWizard()
+  const { account, accountPicker, token, payload, poolId, bondType, setStep, setAddress } =
+    useBondWizard()
 
   const isBittensor = bondType === "bittensor"
 
@@ -476,7 +477,13 @@ export const BondForm = () => {
         {t("Review")}
       </Button>
 
-      <BondAccountPicker />
+      <BondAccountPicker
+        isOpen={accountPicker.isOpen}
+        account={account}
+        token={token}
+        handleClose={accountPicker.close}
+        setAddress={setAddress}
+      />
     </div>
   )
 }

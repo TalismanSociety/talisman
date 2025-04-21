@@ -3,6 +3,7 @@ import { ChainId } from "extension-core"
 import { BittensorDelegatorNameButton } from "../Bittensor/BittensorDelegatorNameButton"
 import { NominationPoolName } from "../NominationPools/NominationPoolName"
 
+// TODO: Remove Bittensor code
 export const BondPoolName = ({
   poolId,
   chainId,
