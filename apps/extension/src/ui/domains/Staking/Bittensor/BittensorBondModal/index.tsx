@@ -3,8 +3,10 @@ import { Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
+import { ModalContent } from "../../shared/ModalContent"
+import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { BittensorBondModalBody } from "./BittensorBondModalBody"
-import { useBittensorBondModal } from "./hooks/useBittensorBondModal"
+import { BittensorModalHeader } from "./BittensorModalHeader"
 
 export const BittensorBondModal = () => {
   const { isOpen, close } = useBittensorBondModal()
@@ -12,7 +14,7 @@ export const BittensorBondModal = () => {
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="BittensorBondModal" />}>
-        <BittensorBondModalBody />
+        <ModalContent ModalHeader={BittensorModalHeader} ModalBody={BittensorBondModalBody} />
       </Suspense>
     </Modal>
   )
