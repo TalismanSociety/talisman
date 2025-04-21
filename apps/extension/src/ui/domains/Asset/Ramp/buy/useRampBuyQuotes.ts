@@ -10,17 +10,17 @@ import { useRemoteConfig, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
-import { getCoinbaseBuyUrl } from "./coinbase/helpers"
+import { getCoinbaseBuyUrl } from "../coinbase/helpers"
 import {
   CoinbaseBuyOptionsRequestInput,
   CoinbaseBuyQuoteResponse,
   RampProvider,
-} from "./coinbase/types"
-import { useCoinbaseBuyOptions } from "./coinbase/useCoinbaseBuyOptions"
-import { getRampApiUrl } from "./onramp/getRampApiUrl"
-import { getRampBuyUrl } from "./onramp/helpers"
-import { RampQuoteResult } from "./onramp/types"
-import { useRampTokensRamp } from "./onramp/useRampTokensRamp"
+} from "../coinbase/types"
+import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { getRampApiUrl } from "../onramp/getRampApiUrl"
+import { getRampBuyUrl } from "../onramp/helpers"
+import { RampQuoteResult } from "../onramp/types"
+import { useRampTokensRamp } from "../onramp/useRampTokensRamp"
 
 export type BuyQuoteConfig = {
   currencyCode: string

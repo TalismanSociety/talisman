@@ -10,8 +10,9 @@ import { BalanceFormatter, isAccountCompatibleWithChain, isAccountEthereum } fro
 import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
 import { log } from "extension-shared"
 import { capitalize } from "lodash"
-import { FC, ReactNode, useEffect, useMemo, useRef } from "react"
+import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useDebounce } from "react-use"
 import { Button } from "talisman-ui"
 import { z } from "zod"
 
@@ -22,14 +23,14 @@ import { useAccounts, useChain, useSelectedCurrency, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
-import { Fiat } from "../Fiat"
-import Tokens from "../Tokens"
-import logoCoinbase from "./assets/logo-coinbase.svg?url"
-import logoRamp from "./assets/logo-ramp.svg?url"
-import { RampProvider } from "./coinbase/types"
-import { RampAccountPickerButton } from "./RampAccountPickerButton"
-import { RampCurrencyPickerButton } from "./RampCurrencyPickerButton"
-import { RampTokenPickerButton } from "./RampTokenPickerButton"
+import { Fiat } from "../../Fiat"
+import Tokens from "../../Tokens"
+import logoCoinbase from "../assets/logo-coinbase.svg?url"
+import logoRamp from "../assets/logo-ramp.svg?url"
+import { RampProvider } from "../coinbase/types"
+import { RampAccountPickerButton } from "../shared/RampAccountPickerButton"
+import { RampCurrencyPickerButton } from "../shared/RampCurrencyPickerButton"
+import { RampTokenPickerButton } from "../shared/RampTokenPickerButton"
 import { useRampBuyCurrencies } from "./useRampBuyCurrencies"
 import {
   BuyQuoteConfig,
@@ -118,12 +119,16 @@ export const RampBuyForm = () => {
   const { tokens } = useRampBuyTokens(formData.currencyCode)
   const { data: tokenRates, isLoading: isLoadingTokenRates } = useSpecificTokenRates(tokens)
 
-  const quoteConfig = useStore(form.store, (state) => {
-    const { currencyCode, amount, tokenId } = state.values
-    return tokenId && amount && currencyCode ? { currencyCode, amount, tokenId } : null
-  })
+  const [amount, setAmount] = useState<number | undefined>()
+  useDebounce(() => setAmount(formData.amount), 250, [formData.amount])
+
+  const quoteConfig = useMemo(() => {
+    if (!amount || !formData.currencyCode || !formData.tokenId) return null
+    return { currencyCode: formData.currencyCode, amount, tokenId: formData.tokenId }
+  }, [amount, formData.currencyCode, formData.tokenId])
 
   const quotes = useRampBuyQuotes(quoteConfig)
+
   const token = useToken(formData.tokenId)
   const chain = useChain(token?.chain?.id)
   const allAccounts = useAccounts()
@@ -450,20 +455,6 @@ const Providers: FC<{
   )
 }
 
-/**
- * @param fiatIn amount of fiat in
- * @param tokenOut amount of tokens that matches the fiatIn argument
- * @param decimals decimals of the token
- *
- * @returns the amount of fiat that it would cost to buy one token
- */
-const getTokenPrice = (fiatIn: number, tokenOut: bigint, decimals: number): number => {
-  if (tokenOut === 0n) throw new Error("tokenOut cannot be zero")
-
-  const tokenOutInDecimal = Number(tokenOut) / Math.pow(10, decimals)
-  return fiatIn / tokenOutInDecimal
-}
-
 const ProviderButton: FC<{
   quoteConfig: BuyQuoteConfig
   tokenRates: TokenRatesList | null | undefined
@@ -577,4 +568,18 @@ const ProviderButton: FC<{
       </div>
     </button>
   )
+}
+
+/**
+ * @param fiatIn amount of fiat in
+ * @param tokenOut amount of tokens that matches the fiatIn argument
+ * @param decimals decimals of the token
+ *
+ * @returns the amount of fiat that it would cost to buy one token
+ */
+const getTokenPrice = (fiatIn: number, tokenOut: bigint, decimals: number): number => {
+  if (tokenOut === 0n) throw new Error("tokenOut cannot be zero")
+
+  const tokenOutInDecimal = Number(tokenOut) / Math.pow(10, decimals)
+  return fiatIn / tokenOutInDecimal
 }

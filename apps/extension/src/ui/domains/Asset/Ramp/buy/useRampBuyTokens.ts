@@ -4,8 +4,8 @@ import { useMemo } from "react"
 
 import { useRemoteConfig, useTokensMap } from "@ui/state"
 
-import { useCoinbaseBuyOptions } from "./coinbase/useCoinbaseBuyOptions"
-import { useRampTokensRamp } from "./onramp/useRampTokensRamp"
+import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { useRampTokensRamp } from "../onramp/useRampTokensRamp"
 
 const getDotNativeTokenId = (chainId: string) => [chainId, "substrate-native"].join("-")
 const getEvmNativeTokenId = (evmNetworkId: string) => [evmNetworkId, "evm-native"].join("-")

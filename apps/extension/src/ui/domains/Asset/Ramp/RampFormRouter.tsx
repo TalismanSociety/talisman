@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next"
 
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 
-import { RampBuyForm } from "./RampBuyForm"
-import { RampLayout } from "./RampLayout"
+import { RampBuyForm } from "./buy/RampBuyForm"
+import { RampLayout } from "./shared/RampLayout"
 import { useRampModal } from "./useRampModal"
 
 type FormMode = "buy" | "sell"

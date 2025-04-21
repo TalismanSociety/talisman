@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
-import { getRampCurrencyInfo, RampCurrencyInfo } from "../../../../Ramp/currencyInfo"
+import { getRampCurrencyInfo, RampCurrencyInfo } from "../../../../Ramp/shared/currencyInfo"
 import { BuyTokensLayout } from "../../BuyTokensLayout"
 
 export const BuyTokensFiatPicker: FC<{

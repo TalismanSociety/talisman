@@ -1,9 +1,9 @@
 import { isNotNil } from "@talismn/util"
 import { useMemo } from "react"
 
-import { useCoinbaseBuyOptions } from "./coinbase/useCoinbaseBuyOptions"
-import { getRampCurrencyInfo } from "./currencyInfo"
-import { useGetRampCurrencies } from "./onramp/useRampOnRampCurrencies"
+import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { useGetRampCurrencies } from "../onramp/useRampOnRampCurrencies"
+import { getRampCurrencyInfo } from "../shared/currencyInfo"
 
 // type CoinbaseBuyConfigPaymentMethodId =
 //   | "CARD"

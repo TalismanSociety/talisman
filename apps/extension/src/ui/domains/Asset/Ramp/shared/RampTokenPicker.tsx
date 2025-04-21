@@ -11,8 +11,8 @@ import { ScrollContainer, useScrollContainer } from "@talisman/components/Scroll
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useChainsMap, useEvmNetworksMap, useSelectedCurrency } from "@ui/state"
 
-import { Fiat } from "../Fiat"
-import { TokenLogo } from "../TokenLogo"
+import { Fiat } from "../../Fiat"
+import { TokenLogo } from "../../TokenLogo"
 import { RampLayout } from "./RampLayout"
 
 type TokenDisplay = Token & {

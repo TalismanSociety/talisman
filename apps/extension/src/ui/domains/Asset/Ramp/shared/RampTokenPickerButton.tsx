@@ -7,7 +7,7 @@ import { Drawer, useOpenClose } from "talisman-ui"
 
 import { useChain, useEvmNetwork } from "@ui/state"
 
-import { TokenLogo } from "../TokenLogo"
+import { TokenLogo } from "../../TokenLogo"
 import { RampTokenPicker } from "./RampTokenPicker"
 
 export const RampTokenPickerButton: FC<{

@@ -22,8 +22,8 @@ import { Address } from "@ui/domains/Account/Address"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
 
-import { Fiat } from "../Fiat"
-import Tokens from "../Tokens"
+import { Fiat } from "../../Fiat"
+import Tokens from "../../Tokens"
 import { RampLayout } from "./RampLayout"
 
 export type RampAccountPickerBalancesDisplayMode = "transferable" | "total"

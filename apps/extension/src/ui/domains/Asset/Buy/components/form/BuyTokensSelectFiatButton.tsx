@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 
-import { currencyInfo } from "../../../Ramp/currencyInfo"
+import { currencyInfo } from "../../../Ramp/shared/currencyInfo"
 import { RampCurrency } from "../../types"
 import { useBuyTokensWizard } from "../../useBuyTokensWizard"
 import { BuyTokensButton } from "./BuyTokensButton"
