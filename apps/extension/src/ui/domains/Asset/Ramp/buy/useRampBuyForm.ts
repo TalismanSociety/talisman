@@ -80,12 +80,12 @@ export const useRampBuyForm = () => {
   const [amount, setAmount] = useState<number | undefined>()
   useDebounce(() => setAmount(formData.amount), 250, [formData.amount])
 
-  const quoteConfig = useMemo(() => {
+  const quoteOpts = useMemo(() => {
     if (!amount || !formData.currencyCode || !formData.tokenId) return null
     return { currencyCode: formData.currencyCode, amount, tokenId: formData.tokenId }
   }, [amount, formData.currencyCode, formData.tokenId])
 
-  const quotes = useRampBuyQuotes(quoteConfig)
+  const quotes = useRampBuyQuotes(quoteOpts)
 
   const token = useToken(formData.tokenId)
   const chain = useChain(token?.chain?.id)
@@ -105,8 +105,8 @@ export const useRampBuyForm = () => {
   useEffect(() => {
     form.resetField("provider")
 
-    // @dev: make sure quoteConfig?.tokenId, formData.currencyCode are dependencies in the array below
-  }, [quoteConfig?.tokenId, formData.currencyCode, form])
+    // @dev: make sure quoteOpts?.tokenId, formData.currencyCode are dependencies in the array below
+  }, [quoteOpts?.tokenId, formData.currencyCode, form])
 
   // select best provider once quotes are ready
   useEffect(() => {
@@ -136,7 +136,7 @@ export const useRampBuyForm = () => {
     currencies,
     tokenRates,
     isLoadingTokenRates,
-    quoteConfig,
+    quoteOpts,
     quotes,
     tokens,
     formData,

@@ -22,7 +22,7 @@ import { getRampBuyUrl } from "../onramp/helpers"
 import { RampQuoteResult } from "../onramp/types"
 import { useRampTokensRamp } from "../onramp/useRampTokensRamp"
 
-export type BuyQuoteConfig = {
+export type RampBuyQuoteOptions = {
   currencyCode: string
   tokenId: string
   amount: number
@@ -116,7 +116,7 @@ export const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
   }, [coinbaseBuyOptions?.purchase_currencies, token])
 }
 
-export const useRampBuyQuotes = (config: BuyQuoteConfig | null) => {
+export const useRampBuyQuotes = (config: RampBuyQuoteOptions | null) => {
   const rampCryptoAssetSymbol = useRampBuyCryptoAssetSymbol(config?.currencyCode, config?.tokenId)
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
   const token = useToken(config?.tokenId)

@@ -22,52 +22,12 @@ import { RampAccountPickerButton } from "../shared/RampAccountPickerButton"
 import { RampCurrencyPickerButton } from "../shared/RampCurrencyPickerButton"
 import { RampTokenPickerButton } from "../shared/RampTokenPickerButton"
 import { useRampBuyForm } from "./useRampBuyForm"
-import { BuyQuoteConfig, RampBuyQuote, RampBuyQuoteQuery } from "./useRampBuyQuotes"
+import { RampBuyQuote, RampBuyQuoteOptions, RampBuyQuoteQuery } from "./useRampBuyQuotes"
 
 const PROVIDER_LOGOS = {
   coinbase: logoCoinbase,
   ramp: logoRamp,
 }
-
-// const schema = z.object({
-//   currencyCode: z.string().nonempty(),
-//   tokenId: z.string().nonempty(),
-//   amount: z.number().gt(0),
-//   provider: z.enum(["coinbase", "ramp"]),
-//   account: z.string().nonempty(),
-// })
-
-// type FormData = z.infer<typeof schema>
-
-// // {
-// //   currencyCode?: string
-// //   tokenId?: TokenId
-// //   amount?: number
-// //   provider?: RampProvider
-// //   account?: string
-// // }
-
-// // @dev: use only when debugging
-// const DEFAULT_FORM_DATA: Partial<FormData> = {
-//   currencyCode: "USD",
-//   //tokenId: "1-evm-native",
-//   tokenId: "polkadot-substrate-native",
-//   amount: 100,
-// }
-
-// const redirectToProvider = async (formData: FormData, quote: RampBuyQuote) => {
-//   let address = formData.account
-
-//   const token = await chaindataProvider.tokenById(formData.tokenId)
-//   if (token?.chain?.id) {
-//     const chain = await chaindataProvider.chainById(token.chain.id)
-//     if (typeof chain?.prefix === "number") address = encodeAddressSs58(address, chain.prefix)
-//   }
-
-//   const url = await quote.getRedirectUrl(address)
-
-//   window.open(url, "_blank", "noopener noreferrer")
-// }
 
 export const RampBuyForm = () => {
   const { t } = useTranslation()
@@ -78,7 +38,7 @@ export const RampBuyForm = () => {
     currencies,
     tokenRates,
     isLoadingTokenRates,
-    quoteConfig,
+    quoteOpts,
     quotes,
     tokens,
     accounts,
@@ -140,7 +100,7 @@ export const RampBuyForm = () => {
                     </div>
                     <div className="leading-paragraph text-xs">
                       <TokenPrice
-                        tokenId={quoteConfig?.tokenId}
+                        tokenId={quoteOpts?.tokenId}
                         tokenRates={tokenRates}
                         isLoading={isLoadingTokenRates}
                       />
@@ -155,7 +115,7 @@ export const RampBuyForm = () => {
                             <AmountOut
                               provider={field.state.value}
                               quotes={quotes}
-                              tokenId={quoteConfig?.tokenId}
+                              tokenId={quoteOpts?.tokenId}
                             />
                           </div>
                         )}
@@ -179,7 +139,7 @@ export const RampBuyForm = () => {
               </div>
             </FieldSet>
 
-            {quoteConfig && (
+            {quoteOpts && (
               <FieldSet label={t("Choose Provider")}>
                 <form.Field
                   name="provider"
@@ -187,7 +147,7 @@ export const RampBuyForm = () => {
                     <Providers
                       selected={field.state.value}
                       tokenRates={tokenRates}
-                      quoteConfig={quoteConfig}
+                      quoteConfig={quoteOpts}
                       quotes={quotes}
                       onSelect={(p) => field.handleChange(p)}
                     />
@@ -343,7 +303,7 @@ const RampNumberFieldContainer: FC<{
 )
 
 const Providers: FC<{
-  quoteConfig: BuyQuoteConfig
+  quoteConfig: RampBuyQuoteOptions
   selected: RampProvider | undefined
   quotes: RampBuyQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
@@ -367,7 +327,7 @@ const Providers: FC<{
 }
 
 const ProviderButton: FC<{
-  quoteConfig: BuyQuoteConfig
+  quoteConfig: RampBuyQuoteOptions
   tokenRates: TokenRatesList | null | undefined
   provider: RampProvider
   isSelected: boolean
