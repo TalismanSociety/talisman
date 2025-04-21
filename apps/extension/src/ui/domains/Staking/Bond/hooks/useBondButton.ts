@@ -6,6 +6,7 @@ import { MouseEventHandler, useCallback, useMemo } from "react"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
+import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
 import { useBondModal } from "./useBondModal"
 
 export const useBondButton = ({
@@ -21,6 +22,7 @@ export const useBondButton = ({
   const token = useToken(tokenId)
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
+  const { open: handleOpenBittensorModal } = useBittensorBondModal()
 
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
@@ -96,13 +98,16 @@ export const useBondButton = ({
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       if (!openArgs) return
-
       e.stopPropagation()
 
-      open(openArgs)
+      if (token?.chain?.id === "bittensor") {
+        handleOpenBittensorModal(openArgs)
+      } else {
+        open(openArgs)
+      }
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [genericEvent, open, openArgs],
+    [genericEvent, open, openArgs, handleOpenBittensorModal, token?.chain?.id],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }
