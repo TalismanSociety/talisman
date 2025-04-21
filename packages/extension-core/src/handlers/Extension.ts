@@ -129,10 +129,16 @@ export default class Extension extends ExtensionHandler {
         // short circuit if we've already sent a "wallet upgraded" event for this version
         if (lastWalletUpgradedEvent === process.env.VERSION) return
 
+        // make sure we create a new report for this version of the wallet, not re-use one we created last version
+        await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
+
         await spawnTaskToCreateNewReport({
+          // don't refresh balances in the background, just send the existing db cache
+          refreshBalances: false,
+
           // the primary purpose of the "wallet upgraded" event is to submit the opt-in general report.
-          // `wait: true` lets us wait for the report to be created before we submit the event.
-          wait: true,
+          // `waitForReportCreated: true` lets us wait for the report to be created before we submit the event.
+          waitForReportCreated: true,
         })
 
         await talismanAnalytics.capture("wallet upgraded")
