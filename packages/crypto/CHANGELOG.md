@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 0.1.2
+
+### Patch Changes
+
+- e2c56bd: feat: use `crypto.subtle` instead of `@noble/hashes` for pbkdf2 inside of `entropyToSeed` for increased key derivation performance on mobile
+
 ## 0.1.1
 
 ### Patch Changes
