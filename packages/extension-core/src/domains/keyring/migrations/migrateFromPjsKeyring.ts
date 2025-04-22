@@ -92,13 +92,19 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
      */
 
     for (const oldPair of oldPairs) {
-      const origin = oldPair.meta.origin as LegacyAccountOrigin
+      const origin = oldPair.meta.origin as string
 
       try {
         // skip if already migrated in a previous attempt
         if (await keyringStore.getAccount(oldPair.address)) continue
 
         switch (origin) {
+          // very old origins that somehow still exist in some users keyrings
+          case "ROOT":
+          case "SEED":
+          case "SEED_STORED":
+          case "DERIVED":
+          case "JSON":
           case LegacyAccountOrigin.Talisman: {
             const curve = pjsKeypairTypeToCurve(oldPair.type)
             const name = oldPair.meta.name ?? `Keypair ${oldPair.address}`
