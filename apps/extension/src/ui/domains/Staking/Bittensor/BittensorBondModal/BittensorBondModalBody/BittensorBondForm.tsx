@@ -32,7 +32,7 @@ import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/use
 import { useStakingAPR } from "../../../hooks/nomPools/useStakingAPR"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
-import { BittensorDelegatorNameButton } from "../../BittensorDelegatorNameButton"
+import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
 import { useBittensorBondWizard } from "./../../hooks/useBittensorBondWizard"
 
 // TODO: Cleanup all non Bittensor related code

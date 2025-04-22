@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 
-import { BondOption } from "../hooks/bittensor/types"
-import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
-import { BondDelegateSelect } from "../shared/BondDelegateSelect"
+import { BondOption } from "../../../hooks/bittensor/types"
+import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { BondDelegateSelect } from "../../../shared/BondDelegateSelect"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 

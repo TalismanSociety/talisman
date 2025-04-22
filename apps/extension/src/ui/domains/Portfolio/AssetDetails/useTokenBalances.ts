@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { sortBigBy } from "@talisman/util/bigHelper"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"

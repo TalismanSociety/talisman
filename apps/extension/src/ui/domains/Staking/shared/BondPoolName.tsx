@@ -1,6 +1,6 @@
 import { ChainId } from "extension-core"
 
-import { BittensorDelegatorNameButton } from "../Bittensor/BittensorDelegatorNameButton"
+import { BittensorDelegatorNameButton } from "../Bittensor/BittensorBondModal/BittensorDelegatorNameButton"
 import { NominationPoolName } from "../NominationPools/NominationPoolName"
 
 // TODO: Remove Bittensor code

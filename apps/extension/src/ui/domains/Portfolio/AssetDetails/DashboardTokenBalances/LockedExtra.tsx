@@ -5,7 +5,7 @@ import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"

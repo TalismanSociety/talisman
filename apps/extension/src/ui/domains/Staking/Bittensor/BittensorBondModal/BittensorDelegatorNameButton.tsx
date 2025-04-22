@@ -1,8 +1,8 @@
 import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 
-import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
-import { useBittensorBondWizard } from "./hooks/useBittensorBondWizard"
+import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 type BittensorDelegatorNameButtonProps = {
   poolId: string | number | undefined | null

@@ -7,7 +7,7 @@ import { IconButton, Modal } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 
-import { BittensorBondDelegateSelect } from "../Bittensor/BittensorBondDelegateSelect"
+import { BittensorBondDelegateSelect } from "../Bittensor/BittensorBondModal/BittensorBondModalBody/BittensorBondDelegateSelect"
 import { ModalContent } from "../shared/ModalContent"
 import { BondFollowUp } from "./BondFollowUp"
 import { BondForm } from "./BondForm"

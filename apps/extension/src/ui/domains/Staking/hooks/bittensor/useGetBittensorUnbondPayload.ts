@@ -1,7 +1,7 @@
 import { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 
-import { ROOT_NETUID } from "../../Bittensor/constants"
+import { ROOT_NETUID } from "../../Bittensor/utils/constants"
 
 type GetBittensorUnbondPayload = {
   sapi: ScaleApi | undefined | null

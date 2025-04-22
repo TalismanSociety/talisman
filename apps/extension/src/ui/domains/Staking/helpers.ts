@@ -4,7 +4,7 @@ import { isNotNil } from "@talismn/util"
 import { range } from "lodash"
 import { Binary } from "polkadot-api"
 
-import { ROOT_NETUID } from "./Bittensor/constants"
+import { ROOT_NETUID } from "./Bittensor/utils/constants"
 
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n

@@ -1,5 +1,5 @@
-import { BittensorBondDelegateSelect } from "../../BittensorBondDelegateSelect"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { BittensorBondDelegateSelect } from "./BittensorBondDelegateSelect"
 import { BittensorBondFollowUp } from "./BittensorBondFollowUp"
 import { BittensorBondForm } from "./BittensorBondForm"
 import { BittensorBondReview } from "./BittensorBondReview"
