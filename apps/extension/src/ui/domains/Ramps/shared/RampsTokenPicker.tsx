@@ -94,8 +94,9 @@ export const RampsTokenPicker: FC<{
           ref={refContainer}
           className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t"
         >
-          {!filteredTokens && range(0, 10).map((i) => <TokenButtonRowSkeleton key={i} />)}
-          {!!filteredTokens && (
+          {!filteredTokens ? (
+            range(0, 10).map((i) => <TokenButtonRowSkeleton key={i} />)
+          ) : (
             <TokensList tokens={filteredTokens} onSelect={onSelect} selected={selected} />
           )}
         </ScrollContainer>
@@ -109,6 +110,7 @@ const TokensList: FC<{
   selected?: string
   onSelect: (tokenId: string) => void
 }> = ({ tokens, selected, onSelect }) => {
+  const { t } = useTranslation()
   const refContainer = useScrollContainer()
 
   const virtualizer = useVirtualizer({
@@ -118,7 +120,12 @@ const TokensList: FC<{
     getScrollElement: () => refContainer.current,
   })
 
-  if (!tokens.length) return null
+  if (!tokens.length)
+    return (
+      <div className="text-body-secondary p-12 text-center text-base">
+        {t("No tokens match your search")}
+      </div>
+    )
 
   return (
     <div>

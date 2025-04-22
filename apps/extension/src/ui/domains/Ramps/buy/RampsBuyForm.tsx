@@ -19,6 +19,7 @@ import logoCoinbase from "../assets/logo-coinbase.svg?url"
 import logoRamp from "../assets/logo-ramp.svg?url"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
+import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampProvider } from "../shared/types"
 import { RampsBuyQuote, RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
@@ -44,6 +45,8 @@ export const RampsBuyForm = () => {
     accounts,
   } = useRampsBuyForm()
 
+  const refInput = useRef<HTMLInputElement>(null)
+
   return (
     <form
       className="text-body-secondary flex size-full flex-col overflow-hidden"
@@ -60,12 +63,14 @@ export const RampsBuyForm = () => {
               <div className="space-y-6">
                 <div className="space-y-4">
                   <div className="leading-paragraph text-xs">{t("You Pay")}</div>
-                  <RampNumberFieldContainer
+                  <RampsNumberFieldContainer
+                    withFocusWithin
                     input={
                       <form.Field
                         name="amount"
                         children={(field) => (
                           <input
+                            ref={refInput}
                             type="number"
                             className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
                             value={field.state.value ?? ""}
@@ -85,7 +90,10 @@ export const RampsBuyForm = () => {
                         children={(field) => (
                           <RampsCurrencyPickerButton
                             currencies={currencies}
-                            onSelect={(currency) => field.handleChange(currency)}
+                            onSelect={(currency) => {
+                              field.handleChange(currency)
+                              refInput.current?.focus()
+                            }}
                             value={field.state.value}
                           />
                         )}
@@ -106,7 +114,7 @@ export const RampsBuyForm = () => {
                       />
                     </div>
                   </div>
-                  <RampNumberFieldContainer
+                  <RampsNumberFieldContainer
                     input={
                       <form.Field
                         name="provider"
@@ -287,24 +295,6 @@ const TokenPrice: FC<{
     </span>
   )
 }
-
-const RampNumberFieldContainer: FC<{
-  input: ReactNode
-  button: ReactNode
-  withFocusWithin?: boolean
-}> = ({ input, button, withFocusWithin }) => (
-  <div className="w-full overflow-hidden">
-    <div
-      className={classNames(
-        "border-grey-750 bg-black-secondary flex h-[5.5rem] w-full justify-between overflow-hidden rounded-[12px] border-[1px] p-3 pl-8",
-        withFocusWithin && "focus-within:border-body-secondary",
-      )}
-    >
-      <div className="flex grow flex-col justify-center truncate">{input}</div>
-      <div className="shrink-0">{button}</div>
-    </div>
-  </div>
-)
 
 const Providers: FC<{
   quoteConfig: RampsBuyQuoteOptions

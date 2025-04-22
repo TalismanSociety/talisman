@@ -36,7 +36,7 @@ export const RampsCurrencyPickerButton: FC<{
         type="button"
         onClick={handleOpen}
         className={
-          "border-grey-750 bg-grey-800 hover:bg-grey-750 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-4 py-3"
+          "border-grey-750 bg-grey-800 focus-visible:border-grey-600 hover:bg-grey-750 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3"
         }
       >
         {currency ? <CurrencyContent currency={currency} /> : <EmptyContent />}

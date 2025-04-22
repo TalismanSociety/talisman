@@ -40,10 +40,10 @@ type FormData = z.infer<typeof schema>
 
 // @dev: use only when debugging
 const DEFAULT_FORM_DATA: Partial<FormData> = {
-  // currencyCode: "USD",
-  // //tokenId: "1-evm-native",
-  // tokenId: "polkadot-substrate-native",
-  // amount: 100,
+  currencyCode: "USD",
+  //tokenId: "1-evm-native",
+  tokenId: "polkadot-substrate-native",
+  amount: 100,
 }
 
 export const useRampsBuyForm = () => {

@@ -1,12 +1,13 @@
 import { Icon, loadIcons } from "@iconify/react"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { range } from "lodash"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenCloseStatus } from "talisman-ui"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
 import { RampsCurrencyInfo } from "./currencyInfo"
@@ -69,28 +70,75 @@ export const RampsCurrencyPicker: FC<{
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {!isIconsReady || !filteredCurrencies
-            ? range(0, 10).map((i) => <CurrencyButtonRowSkeleton key={i} />)
-            : filteredCurrencies?.map((currency) => (
-                <CurrencyButtonRow
-                  currency={currency}
-                  key={currency.code}
-                  onClick={() => onSelect(currency.code)}
-                  selected={selected === currency.code}
-                />
-              ))}
-          {/* {isIconsReady &&
-            filteredCurrencies?.map((currency) => (
-              <CurrencyButtonRow
-                currency={currency}
-                key={currency.code}
-                onClick={() => onSelect(currency.code)}
-                selected={selected === currency.code}
-              />
-            ))} */}
+          {!isIconsReady || !filteredCurrencies ? (
+            range(0, 10).map((i) => <CurrencyButtonRowSkeleton key={i} />)
+          ) : (
+            <CurrenciesList
+              currencies={filteredCurrencies}
+              onSelect={onSelect}
+              selected={selected}
+            />
+          )}
         </ScrollContainer>
       </div>
     </RampsLayout>
+  )
+}
+
+const CurrenciesList: FC<{
+  currencies: RampsCurrencyInfo[]
+  selected?: string
+  onSelect: (currencyCode: string) => void
+}> = ({ currencies, selected, onSelect }) => {
+  const { t } = useTranslation()
+  const refContainer = useScrollContainer()
+
+  const virtualizer = useVirtualizer({
+    count: currencies.length,
+    estimateSize: () => 58,
+    overscan: 5,
+    getScrollElement: () => refContainer.current,
+  })
+
+  if (!currencies.length)
+    return (
+      <div className="text-body-secondary p-12 text-center text-base">
+        {t("No currencies match your search")}
+      </div>
+    )
+
+  return (
+    <div>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const currency = currencies[item.index]
+          if (!currency) return null
+
+          return (
+            <div
+              key={item.key}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start}px)`,
+              }}
+            >
+              <CurrencyButtonRow
+                key={item.key}
+                selected={currency.code === selected}
+                currency={currency}
+                onClick={() => onSelect(currency.code)}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 

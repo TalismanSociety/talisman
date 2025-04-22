@@ -30,7 +30,7 @@ import { RampsLayout } from "./RampsLayout"
 export type RampAccountPickerBalancesDisplayMode = "transferable" | "total"
 
 export const RampsAccountPicker: FC<{
-  accounts: Account[] | undefined
+  accounts: Account[]
   token: Token | null | undefined
   balances: Balances | null | undefined
   tokenRates: TokenRatesList | null | undefined
@@ -56,9 +56,25 @@ export const RampsAccountPicker: FC<{
   onSelect,
 }) => {
   const { t } = useTranslation()
-  const [, setSearch] = useState("")
+  const [search, setSearch] = useState("")
 
-  // TODO sort and filter
+  // snapshot on mount so entries dont move when selection changes
+  const [sortedAccounts] = useState(() =>
+    accounts.concat().sort((a1, a2) => {
+      if (a1.address === selected) return -1
+      if (a2.address === selected) return 1
+
+      return a1.name.localeCompare(a2.name)
+    }),
+  )
+
+  const filteredAccounts = useMemo(() => {
+    const ls = search.toLowerCase()
+    return sortedAccounts.filter(
+      (account) =>
+        account.address.toLowerCase().includes(ls) || account.name.toLowerCase().includes(ls),
+    )
+  }, [search, sortedAccounts])
 
   // once drawer is open, focus on the search input
   const refSearchInput = useRef<HTMLInputElement>(null)
@@ -74,11 +90,9 @@ export const RampsAccountPicker: FC<{
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {!accounts?.length ? (
-            <div>no comp account</div>
-          ) : (
+          {
             <AccountsList
-              accounts={accounts}
+              accounts={filteredAccounts}
               token={token}
               balances={balances}
               tokenRates={tokenRates}
@@ -88,7 +102,7 @@ export const RampsAccountPicker: FC<{
               selected={selected}
               onSelect={onSelect}
             />
-          )}
+          }
         </ScrollContainer>
       </div>
     </RampsLayout>
@@ -117,16 +131,22 @@ const AccountsList: FC<{
   selected,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const refContainer = useScrollContainer()
 
   const virtualizer = useVirtualizer({
-    count: accounts.length,
+    count: accounts?.length ?? 0,
     estimateSize: () => 58,
     overscan: 5,
     getScrollElement: () => refContainer.current,
   })
 
-  if (!accounts.length) return null
+  if (!accounts?.length)
+    return (
+      <div className="text-body-secondary p-12 text-center text-base">
+        {t("No accounts match your search")}
+      </div>
+    )
 
   return (
     <div>
