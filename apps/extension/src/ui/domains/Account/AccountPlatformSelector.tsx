@@ -64,7 +64,7 @@ export const AccountPlatformSelector = ({
         icon={<EthereumCircleLogo />}
         title={t("Ethereum")}
         subtitle={
-          <div className="line-clamp-2">
+          <div className="line-clamp-2" data-testid="account-platform-selector-ethereum">
             {t("Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains")}
           </div>
         }
@@ -78,7 +78,7 @@ export const AccountPlatformSelector = ({
         icon={<PolkadotCircleLogo />}
         title={t("Polkadot")}
         subtitle={
-          <div className="line-clamp-2">
+          <div className="line-clamp-2" data-testid="account-platform-selector-polkadot">
             {t("Relay Chain, Asset Hub, Bittensor, and most Polkadot chains")}
           </div>
         }

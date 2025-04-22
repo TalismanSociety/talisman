@@ -129,8 +129,15 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
 
       <PopupFooter>
         <div className="grid w-full grid-cols-2 gap-12">
-          <Button onClick={reject}>{t("Reject")}</Button>
-          <Button primary onClick={authorise} disabled={connected.length <= 0}>
+          <Button onClick={reject} data-testid="connection-reject-button">
+            {t("Reject")}
+          </Button>
+          <Button
+            primary
+            onClick={authorise}
+            disabled={connected.length <= 0}
+            data-testid="connection-connect-button"
+          >
             {t("Connect")} {connected.length > 0 && connected.length}
           </Button>
         </div>

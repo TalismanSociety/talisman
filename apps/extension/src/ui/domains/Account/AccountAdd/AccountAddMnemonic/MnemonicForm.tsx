@@ -307,6 +307,7 @@ export const AccountAddMnemonicForm = () => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
+            data-testid="account-add-mnemonic-import-button"
           >
             {t("Import")}
           </Button>

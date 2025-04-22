@@ -188,6 +188,7 @@ export const PasswordPage = () => {
               className={classNames(!isValid && "opacity-70")}
               disabled={!isValid}
               processing={isSubmitting}
+              data-testid="onboarding-password-confirm-button"
             >
               {t("Continue")}
             </Button>
