@@ -10,6 +10,7 @@ import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useChainsMap, useEvmNetworksMap, useSelectedCurrency } from "@ui/state"
@@ -183,12 +184,18 @@ const TokenButtonRow: FC<{
         <div className="size-16 shrink-0">
           <TokenLogo tokenId={token.id} className="size-16 shrink-0" />
         </div>
-        <div className="min-w-0 grow text-[16px]">
+        <div className="flex min-w-0 grow flex-col gap-1 text-[16px]">
           <div className="flex items-center">
             <div className="text-white">{token.symbol}</div>
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
-          <div className="text-tiny truncate">{token.network.name}</div>
+          <div className="flex w-full items-center gap-2 overflow-hidden truncate text-xs">
+            <ChainLogo
+              id={token.evmNetwork?.id ?? token.chain?.id}
+              className="inline-block shrink-0"
+            />
+            <div className="text-body-secondary grow truncate">{token.network.name}</div>
+          </div>
         </div>
         <div className="text-body-secondary truncate text-sm">
           <Fiat amount={token.rates?.[selectedCurrency]?.price} noCountUp />
