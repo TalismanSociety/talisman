@@ -42,7 +42,7 @@ interface RampAssetInfo {
   networkFee: number
 }
 
-export interface RampQuoteResult {
+export interface RampBuyQuoteResult {
   asset: RampAssetInfo
   [RampPaymentMethodName.MANUAL_BANK_TRANSFER]: QuoteResultForPaymentMethod
   [RampPaymentMethodName.AUTO_BANK_TRANSFER]: QuoteResultForPaymentMethod
@@ -67,6 +67,29 @@ export interface QuoteResultForPaymentMethod {
   fiatCurrency: string // three-letter currency code
   cryptoAmount: string // number-string, in wei or token units
   fiatValue: number // total value the user pays for the purchase, in fiatCurrency
+  baseRampFee: number // base Ramp Network fee before any modifications, in fiatCurrency
+  appliedFee: number // final fee the user pays (included in fiatValue), in fiatCurrency
+  hostFeeCut?: number
+}
+export interface RampSellQuoteResult {
+  asset: RampAssetInfo
+  [PayoutMethodName.AMERICAN_BANK_TRANSFER]: QuoteResultForPayoutMethod
+  [PayoutMethodName.CARD]: QuoteResultForPayoutMethod
+  [PayoutMethodName.SEPA]: QuoteResultForPayoutMethod
+  [PayoutMethodName.SPEI]: QuoteResultForPayoutMethod
+}
+
+enum PayoutMethodName {
+  AMERICAN_BANK_TRANSFER = "AMERICAN_BANK_TRANSFER",
+  CARD = "CARD",
+  SEPA = "SEPA",
+  SPEI = "SPEI",
+}
+
+interface QuoteResultForPayoutMethod {
+  fiatCurrency: string // three-letter currency code
+  cryptoAmount: string // number-string, in wei or token units
+  fiatValue: number // total fiat value the user receives for the transaction, in fiatCurrency
   baseRampFee: number // base Ramp Network fee before any modifications, in fiatCurrency
   appliedFee: number // final fee the user pays (included in fiatValue), in fiatCurrency
   hostFeeCut?: number

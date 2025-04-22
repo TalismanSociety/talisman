@@ -1,26 +1,43 @@
-import { Token } from "@talismn/chaindata-provider"
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
-import { RemoteConfigStoreData } from "extension-core"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 
-import { useRemoteConfig, useToken } from "@ui/state"
+import { useToken } from "@ui/state"
 
 import { getRampApiUrl } from "../ramp/getRampApiUrl"
 import { getRampBuyUrl } from "../ramp/helpers"
-import { RampQuoteResult } from "../ramp/types"
-import { useRampTokensRamp } from "../ramp/useRampTokensRamp"
+import { RampBuyQuoteResult } from "../ramp/types"
+import { RampCryptoAsset, useRampCryptoAsset } from "../ramp/useRampCryptoAsset"
+import { useRampCurrencies } from "../ramp/useRampCurrencies"
 import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
 
 export const useRampsBuyQuoteRamp = (
   config: RampsBuyQuoteOptions | null,
 ): UseQueryResult<RampsBuyQuote | null, Error> => {
   const token = useToken(config?.tokenId)
-  const rampCryptoAsset = useRampBuyCryptoAsset(config?.currencyCode, config?.tokenId)
+  const rampCryptoAsset = useRampCryptoAsset(config?.currencyCode, config?.tokenId, "buy")
+  const { data: currencies } = useRampCurrencies()
 
   const inputError = useMemo<RampsBuyQuoteError | null>(() => {
-    if (!config || !rampCryptoAsset) return null
+    if (!config || !currencies) return null
+
+    const currency = currencies.find(
+      (c) => c.fiatCurrency === config.currencyCode && c.onrampAvailable,
+    )
+    if (!currency)
+      return {
+        type: "error",
+        message: "Unavailable",
+        description: `Currency ${config.currencyCode} is not available yet.`,
+      }
+
+    if (!rampCryptoAsset)
+      return {
+        type: "error",
+        message: "Unavailable",
+        description: `Asset ${token?.symbol} is not available yet.`,
+      }
 
     const getInputErrorDescription = (config: RampsBuyQuoteOptions, asset: RampCryptoAsset) => {
       if (typeof asset.min === "number" && config.amount < asset.min)
@@ -39,13 +56,13 @@ export const useRampsBuyQuoteRamp = (
           description,
         }
       : null
-  }, [config, rampCryptoAsset])
+  }, [config, currencies, rampCryptoAsset, token?.symbol])
 
   return useQuery({
     queryKey: ["useRampsBuyQuoteRamp", config, rampCryptoAsset, inputError],
     queryFn: () => {
-      if (!config || !token || !rampCryptoAsset) return null
       if (inputError) return inputError
+      if (!config || !token || !rampCryptoAsset) return null
       return fetchRampBuyQuote(config.currencyCode, rampCryptoAsset.id, config.amount)
     },
     select: (res: FetchRampBuyQuoteResult | null): RampsBuyQuote | null => {
@@ -65,67 +82,67 @@ export const useRampsBuyQuoteRamp = (
   })
 }
 
-// TODO helpers ?
-const getRampTokenType = (type: Token["type"]) => {
-  switch (type) {
-    case "evm-erc20":
-      return "ERC20"
-    case "substrate-native":
-    case "evm-native":
-      return "NATIVE"
-    default:
-      return null
-  }
-}
+// // TODO helpers ?
+// const getRampTokenType = (type: Token["type"]) => {
+//   switch (type) {
+//     case "evm-erc20":
+//       return "ERC20"
+//     case "substrate-native":
+//     case "evm-native":
+//       return "NATIVE"
+//     default:
+//       return null
+//   }
+// }
 
-// TODO helpers ?
-const getRampChainId = (remoteConfig: RemoteConfigStoreData, talismanNetworkId: string) => {
-  const entry = Object.entries(remoteConfig.rampNetworks).find(
-    ([, talismanId]) => talismanId === talismanNetworkId,
-  )
-  return entry ? entry[0] : undefined
-}
+// // TODO helpers ?
+// const getRampChainId = (remoteConfig: RemoteConfigStoreData, talismanNetworkId: string) => {
+//   const entry = Object.entries(remoteConfig.rampNetworks).find(
+//     ([, talismanId]) => talismanId === talismanNetworkId,
+//   )
+//   return entry ? entry[0] : undefined
+// }
 
-type RampCryptoAsset = {
-  id: string
-  min: number | null
-  max: number | null
-}
+// type RampCryptoAsset = {
+//   id: string
+//   min: number | null
+//   max: number | null
+// }
 
-const useRampBuyCryptoAsset = (
-  currencyCode: string | undefined,
-  tokenId: string | undefined,
-): RampCryptoAsset | null => {
-  const { data: rampAssets } = useRampTokensRamp(currencyCode)
-  const token = useToken(tokenId)
-  const remoteConfig = useRemoteConfig()
+// const useRampBuyCryptoAsset = (
+//   currencyCode: string | undefined,
+//   tokenId: string | undefined,
+// ): RampCryptoAsset | null => {
+//   const { data: rampAssets } = useRampTokens(currencyCode, "buy")
+//   const token = useToken(tokenId)
+//   const remoteConfig = useRemoteConfig()
 
-  return useMemo(() => {
-    if (!token) return null
-    const type = getRampTokenType(token.type)
-    const chainId = getRampChainId(remoteConfig, token.evmNetwork?.id ?? token.chain?.id ?? "")
+//   return useMemo(() => {
+//     if (!token) return null
+//     const type = getRampTokenType(token.type)
+//     const chainId = getRampChainId(remoteConfig, token.evmNetwork?.id ?? token.chain?.id ?? "")
 
-    if (!type || !chainId) return null
+//     if (!type || !chainId) return null
 
-    const asset = rampAssets?.assets.find(
-      (a) =>
-        a.chain === chainId &&
-        a.type === type &&
-        (token.type !== "evm-erc20" ||
-          a.address?.toLowerCase() === token.contractAddress.toLowerCase()),
-    )
+//     const asset = rampAssets?.assets.find(
+//       (a) =>
+//         a.chain === chainId &&
+//         a.type === type &&
+//         (token.type !== "evm-erc20" ||
+//           a.address?.toLowerCase() === token.contractAddress.toLowerCase()),
+//     )
 
-    return asset
-      ? {
-          id: `${asset.chain}_${asset.symbol}`,
-          min: asset.minPurchaseAmount === -1 ? null : asset.minPurchaseAmount,
-          max: asset.maxPurchaseAmount === -1 ? null : asset.maxPurchaseAmount,
-        }
-      : null
-  }, [rampAssets?.assets, remoteConfig, token])
-}
+//     return asset
+//       ? {
+//           id: `${asset.chain}_${asset.symbol}`,
+//           min: asset.minPurchaseAmount === -1 ? null : asset.minPurchaseAmount,
+//           max: asset.maxPurchaseAmount === -1 ? null : asset.maxPurchaseAmount,
+//         }
+//       : null
+//   }, [rampAssets?.assets, remoteConfig, token])
+// }
 
-type FetchRampBuyQuoteResult = { type: "success"; data: RampQuoteResult } | RampsBuyQuoteError
+type FetchRampBuyQuoteResult = { type: "success"; data: RampBuyQuoteResult } | RampsBuyQuoteError
 
 const fetchRampBuyQuote = async (
   currencyCode: string,
@@ -157,7 +174,7 @@ const fetchRampBuyQuote = async (
     }
   }
 
-  const data: RampQuoteResult = await response.json()
+  const data: RampBuyQuoteResult = await response.json()
   return { type: "success", data }
 }
 

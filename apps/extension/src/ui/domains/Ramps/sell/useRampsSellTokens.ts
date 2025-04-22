@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 import { useRemoteConfig, useTokensMap } from "@ui/state"
 
-import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { useCoinbaseSellOptions } from "../coinbase/useCoinbaseSellOptions"
 import { useRampTokens } from "../ramp/useRampTokens"
 
 const getDotNativeTokenId = (chainId: string) => [chainId, "substrate-native"].join("-")
@@ -12,13 +12,13 @@ const getEvmNativeTokenId = (evmNetworkId: string) => [evmNetworkId, "evm-native
 const getErc20TokenId = (evmNetworkId: string, contractAddress: string) =>
   [evmNetworkId, "evm-erc20", contractAddress.toLowerCase()].join("-")
 
-const useBuyTokensCoinbase = () => {
-  const { data: coinbaseBuyOptions, isLoading, error } = useCoinbaseBuyOptions()
+const useSellTokensCoinbase = () => {
+  const { data: coinbaseBuyOptions, isLoading, error } = useCoinbaseSellOptions()
 
   const talismanTokens = useTokensMap({ activeOnly: false, includeTestnets: false })
 
   const tokens = useMemo<Token[] | undefined>(() => {
-    return coinbaseBuyOptions?.purchase_currencies
+    return coinbaseBuyOptions?.sell_currencies
       .flatMap((c) => c.networks)
       .map((n) => {
         if (n.chain_id && n.chain_id !== "0") {
@@ -31,16 +31,16 @@ const useBuyTokensCoinbase = () => {
         return talismanTokens[getDotNativeTokenId(n.name)] // should work only with polkadot and kusama
       })
       .filter(isNotNil)
-  }, [coinbaseBuyOptions?.purchase_currencies, talismanTokens])
+  }, [coinbaseBuyOptions?.sell_currencies, talismanTokens])
 
   return { tokens, isLoading, error }
 }
 
-const useBuyTokensRamp = (currency: string | undefined) => {
+const useSellTokensRamp = (currency: string | undefined) => {
   const remoteConfig = useRemoteConfig()
   const talismanTokens = useTokensMap({ activeOnly: false, includeTestnets: false })
 
-  const { data, isLoading, error } = useRampTokens(currency, "buy")
+  const { data, isLoading, error } = useRampTokens(currency, "sell")
 
   const tokens = useMemo<Token[] | undefined>(() => {
     return data?.assets
@@ -62,18 +62,18 @@ const useBuyTokensRamp = (currency: string | undefined) => {
   return { tokens, isLoading, error }
 }
 
-export const useRampsBuyTokens = (currency: string | undefined) => {
+export const useRampsSellTokens = (currency: string | undefined) => {
   const {
     tokens: coinbaseTokens = [],
     isLoading: isLoadingCoinbaseTokens,
     error: errorCoinbaseTokens,
-  } = useBuyTokensCoinbase()
+  } = useSellTokensCoinbase()
 
   const {
     tokens: rampTokens = [],
     isLoading: isLoadingRampTokens,
     error: errorRampTokens,
-  } = useBuyTokensRamp(currency)
+  } = useSellTokensRamp(currency)
 
   const tokens = useMemo(() => {
     return Object.values(

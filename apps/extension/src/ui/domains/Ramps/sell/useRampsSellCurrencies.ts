@@ -1,34 +1,34 @@
 import { isNotNil } from "@talismn/util"
 import { useMemo } from "react"
 
-import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { useCoinbaseSellOptions } from "../coinbase/useCoinbaseSellOptions"
 import { useRampCurrencies } from "../ramp/useRampCurrencies"
 import { getRampsCurrency } from "../shared/currencies"
 
-type CoinbaseBuyCurrency = {
+type CoinbaseSellCurrency = {
   id: string
   min: string
   max: string
 }
 
-const useBuyCoinbaseCurrencies = () => {
-  const { data: coinbaseBuyOptions, ...rest } = useCoinbaseBuyOptions()
+const useCoinbaseSellCurrencies = () => {
+  const { data: coinbaseSellOptions, ...rest } = useCoinbaseSellOptions()
 
   const data = useMemo(() => {
-    if (coinbaseBuyOptions === undefined) return undefined
+    if (coinbaseSellOptions === undefined) return undefined
 
-    return coinbaseBuyOptions.payment_currencies
-      .map((curr): CoinbaseBuyCurrency | null => {
-        const cardLimit = curr.limits.find((limit) => limit.id === "CARD")
+    return coinbaseSellOptions.cashout_currencies
+      .map((curr): CoinbaseSellCurrency | null => {
+        const cardLimit = curr.limits.find((limit) => limit.id === "CRYPTO_ACCOUNT")
         return cardLimit ? { id: curr.id, min: cardLimit.min, max: cardLimit.max } : null
       })
       .filter(isNotNil)
-  }, [coinbaseBuyOptions])
+  }, [coinbaseSellOptions])
 
   return { data, ...rest }
 }
 
-export const useRampsBuyCurrencies = () => {
+export const useRampsSellCurrencies = () => {
   const {
     data: rampCurrencies,
     isLoading: isLoadingOnRampCurrencies,
@@ -39,13 +39,13 @@ export const useRampsBuyCurrencies = () => {
     data: coinbaseCurrencies,
     isLoading: isLoadingCoinbaseCurrencies,
     error: errorCoinbaseCurrencies,
-  } = useBuyCoinbaseCurrencies()
+  } = useCoinbaseSellCurrencies()
 
   const currencies = useMemo(() => {
     if (isLoadingCoinbaseCurrencies || isLoadingOnRampCurrencies) return undefined
     return [
       ...new Set([
-        ...(rampCurrencies?.filter((c) => c.onrampAvailable).map((c) => c.fiatCurrency) ?? []),
+        ...(rampCurrencies?.filter((c) => c.offrampAvailable).map((c) => c.fiatCurrency) ?? []),
         ...(coinbaseCurrencies?.map((c) => c.id) ?? []),
       ]),
     ]

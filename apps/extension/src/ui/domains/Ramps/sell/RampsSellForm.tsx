@@ -1,10 +1,8 @@
 /* eslint-disable react/no-children-prop */
-import { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
-import { classNames, formatPrice, planckToTokens } from "@talismn/util"
+import { classNames, formatPrice } from "@talismn/util"
 import { UseQueryResult } from "@tanstack/react-query"
-import { BalanceFormatter } from "extension-core"
 import { capitalize } from "lodash"
 import { FC, ReactNode, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,7 +10,6 @@ import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency, useToken } from "@ui/state"
 
 import logoCoinbase from "../assets/logo-coinbase.svg?url"
@@ -22,15 +19,15 @@ import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampProvider } from "../shared/types"
-import { RampsBuyQuote, RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
-import { useRampsBuyForm } from "./useRampsBuyForm"
+import { RampsSellQuote, RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
+import { useRampsSellForm } from "./useRampsSellForm"
 
 const PROVIDER_LOGOS = {
   coinbase: logoCoinbase,
   ramp: logoRamp,
 }
 
-export const RampsBuyForm = () => {
+export const RampsSellForm = () => {
   const { t } = useTranslation()
 
   const {
@@ -43,7 +40,7 @@ export const RampsBuyForm = () => {
     quotes,
     tokens,
     accounts,
-  } = useRampsBuyForm()
+  } = useRampsSellForm()
 
   const refInput = useRef<HTMLInputElement>(null)
 
@@ -86,12 +83,13 @@ export const RampsBuyForm = () => {
                     }
                     button={
                       <form.Field
-                        name="currencyCode"
+                        name="tokenId"
                         children={(field) => (
-                          <RampsCurrencyPickerButton
-                            currencies={currencies}
-                            onSelect={(currency) => {
-                              field.handleChange(currency)
+                          <RampsTokenPickerButton
+                            tokens={tokens}
+                            tokenRates={tokenRates}
+                            onSelect={(tokenId) => {
+                              field.handleChange(tokenId)
                               refInput.current?.focus()
                             }}
                             value={field.state.value}
@@ -123,7 +121,7 @@ export const RampsBuyForm = () => {
                             <AmountOut
                               provider={field.state.value}
                               quotes={quotes}
-                              tokenId={quoteOpts?.tokenId}
+                              currencyCode={quoteOpts?.currencyCode}
                             />
                           </div>
                         )}
@@ -131,12 +129,11 @@ export const RampsBuyForm = () => {
                     }
                     button={
                       <form.Field
-                        name="tokenId"
+                        name="currencyCode"
                         children={(field) => (
-                          <RampsTokenPickerButton
-                            tokens={tokens}
-                            tokenRates={tokenRates}
-                            onSelect={(tokenId) => field.handleChange(tokenId)}
+                          <RampsCurrencyPickerButton
+                            currencies={currencies}
+                            onSelect={(currency) => field.handleChange(currency)}
                             value={field.state.value}
                           />
                         )}
@@ -200,7 +197,7 @@ export const RampsBuyForm = () => {
             >
               {provider
                 ? t("Continue to {{provider}}", { provider: capitalize(provider) })
-                : t("Continue to Buy")}
+                : t("Continue to Sell")}
             </Button>
           )}
         />
@@ -243,17 +240,17 @@ const ProviderLabel: FC<{ provider: RampProvider }> = ({ provider }) => {
 }
 
 const AmountOut: FC<{
-  quotes: RampsBuyQuoteQuery[]
+  quotes: RampsSellQuoteQuery[]
   provider: RampProvider | undefined
-  tokenId: TokenId | undefined
-}> = ({ quotes, provider, tokenId }) => {
-  const token = useToken(tokenId)
+  currencyCode: string | undefined
+}> = ({ quotes, provider, currencyCode }) => {
+  // const token = useToken(tokenId)
   const query = useMemo(
     () => quotes.find((q) => q.provider === provider)?.query,
     [quotes, provider],
   )
 
-  if (!query || !token) return null
+  if (!query || !currencyCode) return null
 
   if (query.isLoading)
     return (
@@ -262,7 +259,7 @@ const AmountOut: FC<{
 
   if (query.data?.type === "error" || !query.data?.amountOut) return null
 
-  return planckToTokens(query.data?.amountOut, token.decimals)
+  return <>{formatPrice(Number(query.data.amountOut), currencyCode, false)}</>
 }
 
 const TokenPrice: FC<{
@@ -297,9 +294,9 @@ const TokenPrice: FC<{
 }
 
 const Providers: FC<{
-  quoteConfig: RampsBuyQuoteOptions
+  quoteConfig: RampsSellQuoteOptions
   selected: RampProvider | undefined
-  quotes: RampsBuyQuoteQuery[]
+  quotes: RampsSellQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
   onSelect: (provider: "ramp" | "coinbase") => void
 }> = ({ quoteConfig, tokenRates, selected, quotes, onSelect }) => {
@@ -321,34 +318,35 @@ const Providers: FC<{
 }
 
 const ProviderButton: FC<{
-  quoteConfig: RampsBuyQuoteOptions
+  quoteConfig: RampsSellQuoteOptions
   tokenRates: TokenRatesList | null | undefined
   provider: RampProvider
   isSelected: boolean
-  query: UseQueryResult<RampsBuyQuote | null, Error>
+  query: UseQueryResult<RampsSellQuote | null, Error>
   onClick: () => void
 }> = ({
-  quoteConfig: { tokenId, currencyCode, amount: amountIn },
-  tokenRates,
+  quoteConfig: { tokenId, currencyCode },
+  // tokenRates,
   provider,
   isSelected,
   query: { data, isLoading, error },
   onClick,
 }) => {
   const { t } = useTranslation()
-  const selectedCurrency = useSelectedCurrency()
+  // const selectedCurrency = useSelectedCurrency()
   const token = useToken(tokenId)
 
-  const amount = useMemo(() => {
-    if (!data || !token || data.type === "error") return null
-    return new BalanceFormatter(data.amountOut, token?.decimals, tokenRates?.[token.id])
-  }, [data, token, tokenRates])
+  // const amount = useMemo(() => {
+  //   if (!data || !token || data.type === "error") return null
+  //   return new BalanceFormatter(data.amountOut, token?.decimals, tokenRates?.[token.id])
+  // }, [data, token, tokenRates])
 
-  const price = useMemo(() => {
-    if (!data || !token || data.type === "error") return null
-    const price = getTokenPrice(amountIn - data.fee, BigInt(data.amountOut), token.decimals)
-    return formatPrice(price, currencyCode, true)
-  }, [amountIn, currencyCode, data, token])
+  // const price = useMemo(() => {
+  //   if (!data || !token || data.type === "error") return null
+  //   return "TODO"
+  //   // const price = getTokenPrice(amountIn - data.fee, BigInt(data.amountOut), token.decimals)
+  //   // return formatPrice(price, currencyCode, true)
+  // }, [amountIn, currencyCode, data, token])
 
   if (isLoading)
     return (
@@ -408,16 +406,17 @@ const ProviderButton: FC<{
       <div className="flex justify-between">
         <div className="flex flex-col gap-2">
           <div className="text-sm font-bold">
-            <Tokens
+            {formatPrice(data.amountOut, currencyCode, true)}
+            {/* <Tokens
               decimals={token?.decimals}
               amount={amount?.tokens}
               symbol={token?.symbol}
               isBalance
-            />
+            /> */}
           </div>
-          <div className="text-body-secondary text-tiny">
+          {/* <div className="text-body-secondary text-tiny">
             <Fiat amount={amount?.fiat(selectedCurrency)} noCountUp />
-          </div>
+          </div> */}
         </div>
         <div className="text-body-secondary text-xs">
           <ProviderLabel provider={provider} />
@@ -425,7 +424,7 @@ const ProviderButton: FC<{
       </div>
       <div className="text-tiny flex gap-8">
         <div>
-          1 {token?.symbol} ≈ {price}
+          1 {token?.symbol} ≈ {formatPrice(data.tokenPrice, currencyCode, true)}
         </div>
         {data.type === "success" && (
           <div>
@@ -435,18 +434,4 @@ const ProviderButton: FC<{
       </div>
     </button>
   )
-}
-
-/**
- * @param fiatIn amount of fiat in
- * @param tokenOut amount of tokens that matches the fiatIn argument
- * @param decimals decimals of the token
- *
- * @returns the amount of fiat that it would cost to buy one token
- */
-const getTokenPrice = (fiatIn: number, tokenOut: bigint, decimals: number): number => {
-  if (tokenOut === 0n) throw new Error("tokenOut cannot be zero")
-
-  const tokenOutInDecimal = Number(tokenOut) / Math.pow(10, decimals)
-  return fiatIn / tokenOutInDecimal
 }

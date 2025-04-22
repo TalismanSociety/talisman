@@ -4,12 +4,12 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
-import { RampsCurrencyInfo } from "./currencyInfo"
+import { RampsCurrency } from "./currencies"
 import { RampsCurrencyPicker } from "./RampsCurrencyPicker"
 
 export const RampsCurrencyPickerButton: FC<{
   value?: string
-  currencies?: RampsCurrencyInfo[]
+  currencies?: RampsCurrency[]
   onSelect: (currency: string) => void
 }> = ({ value, currencies, onSelect }) => {
   const [selected, setSelected] = useState(value)
@@ -58,14 +58,14 @@ export const RampsCurrencyPickerButton: FC<{
   )
 }
 
-const CurrencyContent: FC<{ currency: RampsCurrencyInfo }> = ({ currency }) => (
+const CurrencyContent: FC<{ currency: RampsCurrency }> = ({ currency }) => (
   <div className="flex items-center gap-4 truncate text-left">
     <div className="bg-body-disabled size-14 shrink-0 rounded-full">
       <Icon icon={currency.icon} className="size-14" />
     </div>
     <div className="min-w-0 text-[16px]">
       <div className="text-white">{currency.code}</div>
-      <div className="text-tiny truncate">{currency.currencyName}</div>
+      <div className="text-tiny truncate">{currency.name}</div>
     </div>
   </div>
 )

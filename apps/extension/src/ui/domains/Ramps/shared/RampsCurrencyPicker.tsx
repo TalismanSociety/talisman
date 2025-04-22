@@ -10,12 +10,12 @@ import { useOpenCloseStatus } from "talisman-ui"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
-import { RampsCurrencyInfo } from "./currencyInfo"
+import { RampsCurrency } from "./currencies"
 import { RampsLayout } from "./RampsLayout"
 
 export const RampsCurrencyPicker: FC<{
   /** if undefined, component assumes currencies are loading */
-  currencies: RampsCurrencyInfo[] | undefined
+  currencies: RampsCurrency[] | undefined
   selected?: string
   onSelect: (currencyCode: string) => void
   onClose: () => void
@@ -29,7 +29,7 @@ export const RampsCurrencyPicker: FC<{
         if (c1.code === selected) return -1
         if (c2.code === selected) return 1
 
-        return c1.currencyName.localeCompare(c2.currencyName)
+        return c1.name.localeCompare(c2.name)
       }),
     [currencies, selected],
   )
@@ -38,8 +38,7 @@ export const RampsCurrencyPicker: FC<{
     const ls = search.toLowerCase()
     return sortedCurrencies?.filter(
       (currency) =>
-        currency.code.toLowerCase().includes(ls) ||
-        currency.currencyName.toLowerCase().includes(ls),
+        currency.code.toLowerCase().includes(ls) || currency.name.toLowerCase().includes(ls),
     )
   }, [sortedCurrencies, search])
 
@@ -86,7 +85,7 @@ export const RampsCurrencyPicker: FC<{
 }
 
 const CurrenciesList: FC<{
-  currencies: RampsCurrencyInfo[]
+  currencies: RampsCurrency[]
   selected?: string
   onSelect: (currencyCode: string) => void
 }> = ({ currencies, selected, onSelect }) => {
@@ -143,7 +142,7 @@ const CurrenciesList: FC<{
 }
 
 const CurrencyButtonRow: FC<{
-  currency: RampsCurrencyInfo
+  currency: RampsCurrency
   onClick: () => void
   selected: boolean
 }> = ({ currency, selected, onClick }) => {
@@ -166,7 +165,7 @@ const CurrencyButtonRow: FC<{
             <div className="text-white">{currency.code}</div>
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
-          <div className="text-tiny truncate">{currency.currencyName}</div>
+          <div className="text-tiny truncate">{currency.name}</div>
         </div>
       </div>
     </button>

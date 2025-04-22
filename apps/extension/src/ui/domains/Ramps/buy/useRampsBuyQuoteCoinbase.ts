@@ -9,8 +9,12 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
 import { getCoinbaseBuyUrl } from "../coinbase/helpers"
-import { CoinbaseBuyOptionsRequestInput, CoinbaseBuyQuoteResponse } from "../coinbase/types"
-import { CoinbaseBuyOptions, useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import {
+  CoinbaseBuyOptions,
+  CoinbaseBuyQuoteRequest,
+  CoinbaseBuyQuoteResponse,
+} from "../coinbase/types"
+import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
 import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
 
 export const useRampsBuyQuoteCoinbase = (
@@ -19,9 +23,24 @@ export const useRampsBuyQuoteCoinbase = (
   const token = useToken(config?.tokenId)
   const { data: options } = useCoinbaseBuyOptions()
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
+  // console.log("[ramps] useRampsBuyQuoteCoinbase", coinbaseToken)
 
   const inputError = useMemo<RampsBuyQuoteError | null>(() => {
     if (!config || !options) return null
+
+    if (!options.payment_currencies.length)
+      return {
+        type: "error",
+        message: "Unavailable",
+        description: "This service is not available in your region yet.",
+      }
+
+    if (!coinbaseToken)
+      return {
+        type: "error",
+        message: "Unavailable",
+        description: `Asset ${token?.symbol} is not available yet.`,
+      }
 
     const getInputErrorDescription = (
       config: RampsBuyQuoteOptions,
@@ -30,7 +49,7 @@ export const useRampsBuyQuoteCoinbase = (
       const limit = coinbaseOpts.payment_currencies
         .find((c) => c.id === config.currencyCode)
         ?.limits.find((l) => l.id === "CARD")
-      if (!limit) return `Currency ${config.currencyCode} is not available`
+      if (!limit) return `Currency ${config.currencyCode} is not available yet.`
 
       if (config.amount < Number(limit.min))
         return `Minimum purchase is ${formatPrice(Number(limit.min), config.currencyCode, true)}`
@@ -48,13 +67,13 @@ export const useRampsBuyQuoteCoinbase = (
           description,
         }
       : null
-  }, [config, options])
+  }, [coinbaseToken, config, options, token?.symbol])
 
   return useQuery({
     queryKey: ["useRampsBuyQuoteCoinbase", config, coinbaseToken, inputError],
     queryFn: () => {
-      if (!config || !token || !coinbaseToken) return null
       if (inputError) return inputError
+      if (!config || !token || !coinbaseToken) return null
       return fetchCoinbaseBuyQuote(config.currencyCode, config.amount, coinbaseToken)
     },
     select: (res: FetchCoinbaseBuyQuoteResult | null): RampsBuyQuote | null => {
@@ -109,8 +128,15 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
         return false
       })
 
+    // console.log("[ramps] useCoinbaseTokenSpecs")
+    // console.log("[ramps] useCoinbaseTokenSpecs", {
+    //   //coinbaseBuyOptions,
+    //   token,
+    //   item: coinbaseBuyOptions?.purchase_currencies.find((c) => c.id === item?.id),
+    // })
+
     return item ? { purchaseCurrency: item.id, purchaseNetwork: item.name } : null
-  }, [coinbaseBuyOptions?.purchase_currencies, token])
+  }, [coinbaseBuyOptions, token])
 }
 
 type FetchCoinbaseBuyQuoteResult =
@@ -122,7 +148,7 @@ const fetchCoinbaseBuyQuote = async (
   amountIn: number,
   coinbaseToken: CoinbaseTokenSpecs,
 ): Promise<FetchCoinbaseBuyQuoteResult> => {
-  const body: CoinbaseBuyOptionsRequestInput = {
+  const body: CoinbaseBuyQuoteRequest = {
     paymentCurrency: currencyCode,
     paymentMethod: "CARD",
     paymentAmount: amountIn.toString(),
@@ -138,7 +164,7 @@ const fetchCoinbaseBuyQuote = async (
   })
 
   if (!response.ok) {
-    log.error("[ramp] Coinbase quote error", response.status, response.statusText)
+    log.error("[ramp] Coinbase quote error", response.status, response.statusText, { body })
     try {
       const error = await response.json()
       log.error("[ramp] Coinbase quote error", error)
@@ -153,12 +179,6 @@ const fetchCoinbaseBuyQuote = async (
 }
 
 const getCoinbaseQuoteError = (error: { code: number; message: string }): RampsBuyQuoteError => {
-  // switch (error.code) {
-  // case 3: invalidAmount
-  //   default:
-  //     return error.message
-  // }
-
   return {
     type: "error",
     message: "Unavailable",
