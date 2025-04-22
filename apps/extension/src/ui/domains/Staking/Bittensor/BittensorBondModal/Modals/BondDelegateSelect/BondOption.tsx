@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state"
 
-import { BondOption as BondOptionType } from "../hooks/bittensor/types"
+import { BondOption as BondOptionType } from "../../../../hooks/bittensor/types"
 
 type BondDrawerProps = {
   option: BondOptionType

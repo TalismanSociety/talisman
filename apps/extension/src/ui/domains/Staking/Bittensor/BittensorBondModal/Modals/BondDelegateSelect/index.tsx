@@ -5,8 +5,8 @@ import { Button } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
 
-import { useBondWizard } from "../Bond/hooks/useBondWizard"
-import { BondOption as BondOptionType } from "../hooks/bittensor/types"
+import { BondOption as BondOptionType } from "../../../../hooks/bittensor/types"
+import { useBittensorBondWizard } from "../../../hooks/useBittensorBondWizard"
 import { BondOption, BondOptionSkeleton } from "./BondOption"
 
 export type SortMethod<T> = {
@@ -34,7 +34,7 @@ export const BondDelegateSelect = <T,>({
   tokenId,
   isError,
 }: BondDelegateSelectProps<T>) => {
-  const { setStep, setPoolId, poolId, setIsDefaultOption } = useBondWizard()
+  const { setStep, setPoolId, poolId, setIsDefaultOption } = useBittensorBondWizard()
   const { t } = useTranslation()
 
   const handleSelectPoolId = (poolId: number | string) => {
