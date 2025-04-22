@@ -99,7 +99,6 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
         if (await keyringStore.getAccount(oldPair.address)) continue
 
         switch (origin) {
-          // very old origins that somehow still exist in some users keyrings
           case "ROOT":
           case "SEED":
           case "SEED_STORED":
