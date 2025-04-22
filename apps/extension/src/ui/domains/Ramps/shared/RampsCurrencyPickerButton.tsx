@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
 import { RampsCurrencyInfo } from "./currencyInfo"
-import { RampsCurrencyPicker } from "./RampCurrencyPicker"
+import { RampsCurrencyPicker } from "./RampsCurrencyPicker"
 
 export const RampsCurrencyPickerButton: FC<{
   value?: string
@@ -36,7 +36,7 @@ export const RampsCurrencyPickerButton: FC<{
         type="button"
         onClick={handleOpen}
         className={
-          "border-grey-750 bg-grey-800 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-4 py-3"
+          "border-grey-750 bg-grey-800 hover:bg-grey-750 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-4 py-3"
         }
       >
         {currency ? <CurrencyContent currency={currency} /> : <EmptyContent />}
@@ -60,8 +60,8 @@ export const RampsCurrencyPickerButton: FC<{
 
 const CurrencyContent: FC<{ currency: RampsCurrencyInfo }> = ({ currency }) => (
   <div className="flex items-center gap-4 truncate text-left">
-    <div className="flex-shrink-0">
-      <Icon icon={currency.icon} className="size-14 shrink-0" />
+    <div className="bg-body-disabled size-14 shrink-0 rounded-full">
+      <Icon icon={currency.icon} className="size-14" />
     </div>
     <div className="min-w-0 text-[16px]">
       <div className="text-white">{currency.code}</div>

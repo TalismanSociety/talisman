@@ -291,14 +291,18 @@ const TokenPrice: FC<{
 const RampNumberFieldContainer: FC<{
   input: ReactNode
   button: ReactNode
-  errorMessage?: string
-}> = ({ input, button, errorMessage }) => (
+  withFocusWithin?: boolean
+}> = ({ input, button, withFocusWithin }) => (
   <div className="w-full overflow-hidden">
-    <div className="border-grey-750 bg-black-secondary flex h-[5.5rem] w-full justify-between overflow-hidden rounded-[12px] border-[1px] p-3 pl-8">
+    <div
+      className={classNames(
+        "border-grey-750 bg-black-secondary flex h-[5.5rem] w-full justify-between overflow-hidden rounded-[12px] border-[1px] p-3 pl-8",
+        withFocusWithin && "focus-within:border-body-secondary",
+      )}
+    >
       <div className="flex grow flex-col justify-center truncate">{input}</div>
       <div className="shrink-0">{button}</div>
     </div>
-    {errorMessage && <div className="text-tiny mt-1 text-red-500">{errorMessage}</div>}
   </div>
 )
 

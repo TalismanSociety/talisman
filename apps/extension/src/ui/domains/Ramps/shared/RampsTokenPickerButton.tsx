@@ -40,7 +40,7 @@ export const RampsTokenPickerButton: FC<{
         type="button"
         onClick={handleOpen}
         className={
-          "border-grey-750 bg-grey-800 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-4 py-3"
+          "border-grey-750 bg-grey-800 hover:bg-grey-750 flex h-full w-[14rem] items-center gap-4 rounded-[12px] px-4 py-3"
         }
       >
         {token ? <TokenContent token={token} /> : <EmptyContent />}
@@ -69,8 +69,8 @@ const TokenContent: FC<{ token: Token }> = ({ token }) => {
 
   return (
     <div className="flex items-center gap-4 truncate text-left">
-      <div className="flex-shrink-0">
-        <TokenLogo tokenId={token.id} className="size-14 shrink-0" />
+      <div className="bg-body-disabled size-14 shrink-0 rounded-full">
+        <TokenLogo tokenId={token.id} className="size-14" />
       </div>
       <div className="min-w-0 text-[16px]">
         <div className="text-white">{token.symbol}</div>
