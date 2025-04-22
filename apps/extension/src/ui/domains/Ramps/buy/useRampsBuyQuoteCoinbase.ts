@@ -11,20 +11,20 @@ import { isSubToken } from "@ui/util/isSubToken"
 import { getCoinbaseBuyUrl } from "../coinbase/helpers"
 import { CoinbaseBuyOptionsRequestInput, CoinbaseBuyQuoteResponse } from "../coinbase/types"
 import { CoinbaseBuyOptions, useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
-import { RampBuyQuote, RampBuyQuoteError, RampBuyQuoteOptions } from "./types"
+import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
 
-export const useRampBuyQuoteCoinbase = (
-  config: RampBuyQuoteOptions | null,
-): UseQueryResult<RampBuyQuote | null, Error> => {
+export const useRampsBuyQuoteCoinbase = (
+  config: RampsBuyQuoteOptions | null,
+): UseQueryResult<RampsBuyQuote | null, Error> => {
   const token = useToken(config?.tokenId)
   const { data: options } = useCoinbaseBuyOptions()
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
 
-  const inputError = useMemo<RampBuyQuoteError | null>(() => {
+  const inputError = useMemo<RampsBuyQuoteError | null>(() => {
     if (!config || !options) return null
 
     const getInputErrorDescription = (
-      config: RampBuyQuoteOptions,
+      config: RampsBuyQuoteOptions,
       coinbaseOpts: CoinbaseBuyOptions,
     ) => {
       const limit = coinbaseOpts.payment_currencies
@@ -51,13 +51,13 @@ export const useRampBuyQuoteCoinbase = (
   }, [config, options])
 
   return useQuery({
-    queryKey: ["useRampBuyQuoteCoinbase", config, coinbaseToken, inputError],
+    queryKey: ["useRampsBuyQuoteCoinbase", config, coinbaseToken, inputError],
     queryFn: () => {
       if (!config || !token || !coinbaseToken) return null
       if (inputError) return inputError
       return fetchCoinbaseBuyQuote(config.currencyCode, config.amount, coinbaseToken)
     },
-    select: (res: FetchCoinbaseBuyQuoteResult | null): RampBuyQuote | null => {
+    select: (res: FetchCoinbaseBuyQuoteResult | null): RampsBuyQuote | null => {
       if (!res) return null
       if (res.type === "error") return res
       return res.data && token && config && coinbaseToken
@@ -115,7 +115,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
 
 type FetchCoinbaseBuyQuoteResult =
   | { type: "success"; data: CoinbaseBuyQuoteResponse }
-  | RampBuyQuoteError
+  | RampsBuyQuoteError
 
 const fetchCoinbaseBuyQuote = async (
   currencyCode: string,
@@ -152,7 +152,7 @@ const fetchCoinbaseBuyQuote = async (
   return { type: "success", data }
 }
 
-const getCoinbaseQuoteError = (error: { code: number; message: string }): RampBuyQuoteError => {
+const getCoinbaseQuoteError = (error: { code: number; message: string }): RampsBuyQuoteError => {
   // switch (error.code) {
   // case 3: invalidAmount
   //   default:

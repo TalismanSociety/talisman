@@ -37,7 +37,7 @@ import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { AccountContextMenu } from "../Account/AccountContextMenu"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { FolderContextMenu } from "../Account/FolderContextMenu"
-import { useRampModal } from "../Asset/Ramp/useRampModal"
+import { useRampsModal } from "../Ramps/useRampsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }> = ({
@@ -235,7 +235,7 @@ const TopActions: FC = () => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   //const { open: openBuyTokensModal } = useBuyTokensModal()
-  const { open: openRampModal } = useRampModal()
+  const { open: openRampModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
 

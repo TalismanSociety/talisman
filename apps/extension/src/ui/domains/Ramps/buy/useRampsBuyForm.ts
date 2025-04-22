@@ -15,10 +15,10 @@ import { useAccounts, useChain, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
-import { RampBuyQuote, RampBuyQuoteSuccess } from "./types"
-import { useRampBuyCurrencies } from "./useRampBuyCurrencies"
-import { useRampBuyQuotes } from "./useRampBuyQuotes"
-import { useRampBuyTokens } from "./useRampBuyTokens"
+import { RampsBuyQuote, RampsBuyQuoteSuccess } from "./types"
+import { useRampsBuyCurrencies } from "./useRampsBuyCurrencies"
+import { useRampsBuyQuotes } from "./useRampsBuyQuotes"
+import { useRampsBuyTokens } from "./useRampsBuyTokens"
 
 const schema = z.object({
   currencyCode: z.string().nonempty(),
@@ -46,9 +46,9 @@ const DEFAULT_FORM_DATA: Partial<FormData> = {
   amount: 100,
 }
 
-export const useRampBuyForm = () => {
+export const useRampsBuyForm = () => {
   const { t } = useTranslation()
-  const refQuote = useRef<RampBuyQuote | null>(null)
+  const refQuote = useRef<RampsBuyQuote | null>(null)
 
   const form = useForm({
     defaultValues: DEFAULT_FORM_DATA,
@@ -75,8 +75,8 @@ export const useRampBuyForm = () => {
   })
 
   const formData = useStore(form.store, (state) => state.values)
-  const { currencies } = useRampBuyCurrencies()
-  const { tokens } = useRampBuyTokens(formData.currencyCode)
+  const { currencies } = useRampsBuyCurrencies()
+  const { tokens } = useRampsBuyTokens(formData.currencyCode)
   const { data: tokenRates, isLoading: isLoadingTokenRates } = useSpecificTokenRates(tokens)
 
   const [amount, setAmount] = useState<number | undefined>()
@@ -87,7 +87,7 @@ export const useRampBuyForm = () => {
     return { currencyCode: formData.currencyCode, amount, tokenId: formData.tokenId }
   }, [amount, formData.currencyCode, formData.tokenId])
 
-  const quotes = useRampBuyQuotes(quoteOpts)
+  const quotes = useRampsBuyQuotes(quoteOpts)
 
   const token = useToken(formData.tokenId)
   const chain = useChain(token?.chain?.id)
@@ -113,7 +113,7 @@ export const useRampBuyForm = () => {
   // select best provider once quotes are ready
   useEffect(() => {
     if (!formData.provider && quotes.every((q) => !q.query.isLoading)) {
-      const getAmountOut = (q: RampBuyQuote | null | undefined) =>
+      const getAmountOut = (q: RampsBuyQuote | null | undefined) =>
         q?.type === "success" ? q.amountOut : null
 
       const bestQuote = quotes
@@ -163,7 +163,7 @@ export const useRampBuyForm = () => {
   }
 }
 
-const redirectToProvider = async (formData: FormData, quote: RampBuyQuoteSuccess) => {
+const redirectToProvider = async (formData: FormData, quote: RampsBuyQuoteSuccess) => {
   let address = formData.account
 
   const token = await chaindataProvider.tokenById(formData.tokenId)

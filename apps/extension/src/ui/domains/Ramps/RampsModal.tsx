@@ -1,14 +1,12 @@
 import { classNames } from "@talismn/util"
 import { Modal } from "talisman-ui"
 
-import { RampFormRouter } from "./RampFormRouter"
-// import { BuyTokensWizard } from "./components/BuyTokensWizard"
-// import { useBuyTokensModal } from "./hooks/useBuyTokensModal"
-import { useRampModal } from "./useRampModal"
+import { RampsFormRouter } from "./RampsFormRouter"
+import { useRampsModal } from "./useRampsModal"
 
 // This control is injected directly in the layout of dashboard
-export const RampModal = () => {
-  const { isOpen, close } = useRampModal()
+export const RampsModal = () => {
+  const { isOpen, close } = useRampsModal()
 
   return (
     <Modal
@@ -21,7 +19,7 @@ export const RampModal = () => {
       containerId={window.location.pathname === "/popup.html" ? "main" : undefined}
     >
       <div id="ramp-container" className="relative size-full overflow-hidden">
-        <RampFormRouter />
+        <RampsFormRouter />
       </div>
     </Modal>
   )

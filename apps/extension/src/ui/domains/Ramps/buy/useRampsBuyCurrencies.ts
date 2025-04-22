@@ -2,62 +2,8 @@ import { isNotNil } from "@talismn/util"
 import { useMemo } from "react"
 
 import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
-import { useGetRampCurrencies } from "../onramp/useRampOnRampCurrencies"
+import { useRampCurrencies } from "../ramp/useRampCurrencies"
 import { getRampCurrencyInfo } from "../shared/currencyInfo"
-
-// type CoinbaseBuyConfigPaymentMethodId =
-//   | "CARD"
-//   | "CRYPTO_ACCOUNT"
-//   | "FIAT_WALLET"
-//   | "APPLE_PAY"
-//   | "ACH_BANK_ACCOUNT"
-
-// type CoinbaseBuyOptionsPaymentCurrency = {
-//   /** Currency code */
-//   id: string
-//   limits: [
-//     {
-//       id: CoinbaseBuyConfigPaymentMethodId
-//       max: string
-//       min: string
-//     },
-//   ]
-// }
-
-// type CoinbaseBuyOptionsToken = {
-//   id: string
-//   name: string
-//   symbol: string
-//   networks: CoinbaseBuyOptionsTokenNetwork[]
-//   icon_url: string
-// }
-
-// type CoinbaseBuyOptionsTokenNetwork = {
-//   name: string
-//   display_name: string
-//   /** Empty string if native */
-//   contract_address: string
-//   chain_id: string
-//   icon_url: string
-// }
-
-// type CoinbaseBuyOptionsPurchaseCurrency = CoinbaseBuyOptionsToken
-
-// type CoinbaseBuyOptionsResponse = {
-//   payment_currencies: CoinbaseBuyOptionsPaymentCurrency[]
-//   purchase_currencies: CoinbaseBuyOptionsPurchaseCurrency[]
-// }
-
-// const useBuyCoinbaseOptions = () => {
-//   return useQuery({
-//     queryKey: ["useBuyCoinbaseOptions"],
-//     queryFn: async (): Promise<CoinbaseBuyOptionsResponse> => {
-//       const res = await fetch(urlJoin(COINBASE_API_BASE_PATH, "/buy/options"))
-//       if (!res.ok) throw new Error("Failed to fetch coinbase buy config")
-//       return await res.json()
-//     },
-//   })
-// }
 
 type CoinbaseBuyCurrency = {
   id: string
@@ -82,12 +28,12 @@ const useBuyCoinbaseCurrencies = () => {
   return { data, ...rest }
 }
 
-export const useRampBuyCurrencies = () => {
+export const useRampsBuyCurrencies = () => {
   const {
     data: rampCurrencies,
     isLoading: isLoadingOnRampCurrencies,
     error: errorOnRampCurrencies,
-  } = useGetRampCurrencies()
+  } = useRampCurrencies()
 
   const {
     data: coinbaseCurrencies,

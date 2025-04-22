@@ -11,25 +11,25 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency, useToken } from "@ui/state"
 
-import { Fiat } from "../../Fiat"
-import Tokens from "../../Tokens"
 import logoCoinbase from "../assets/logo-coinbase.svg?url"
 import logoRamp from "../assets/logo-ramp.svg?url"
-import { RampAccountPickerButton } from "../shared/RampAccountPickerButton"
-import { RampCurrencyPickerButton } from "../shared/RampCurrencyPickerButton"
-import { RampTokenPickerButton } from "../shared/RampTokenPickerButton"
+import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
+import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
+import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampProvider } from "../shared/types"
-import { RampBuyQuote, RampBuyQuoteOptions, RampBuyQuoteQuery } from "./types"
-import { useRampBuyForm } from "./useRampBuyForm"
+import { RampsBuyQuote, RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
+import { useRampsBuyForm } from "./useRampsBuyForm"
 
 const PROVIDER_LOGOS = {
   coinbase: logoCoinbase,
   ramp: logoRamp,
 }
 
-export const RampBuyForm = () => {
+export const RampsBuyForm = () => {
   const { t } = useTranslation()
 
   const {
@@ -42,7 +42,7 @@ export const RampBuyForm = () => {
     quotes,
     tokens,
     accounts,
-  } = useRampBuyForm()
+  } = useRampsBuyForm()
 
   return (
     <form
@@ -83,7 +83,7 @@ export const RampBuyForm = () => {
                       <form.Field
                         name="currencyCode"
                         children={(field) => (
-                          <RampCurrencyPickerButton
+                          <RampsCurrencyPickerButton
                             currencies={currencies}
                             onSelect={(currency) => field.handleChange(currency)}
                             value={field.state.value}
@@ -125,7 +125,7 @@ export const RampBuyForm = () => {
                       <form.Field
                         name="tokenId"
                         children={(field) => (
-                          <RampTokenPickerButton
+                          <RampsTokenPickerButton
                             tokens={tokens}
                             tokenRates={tokenRates}
                             onSelect={(tokenId) => field.handleChange(tokenId)}
@@ -161,7 +161,7 @@ export const RampBuyForm = () => {
                 <form.Field
                   name="account"
                   children={(field) => (
-                    <RampAccountPickerButton
+                    <RampsAccountPickerButton
                       accounts={accounts}
                       tokenRates={tokenRates}
                       balancesDisplayMode="total"
@@ -235,7 +235,7 @@ const ProviderLabel: FC<{ provider: RampProvider }> = ({ provider }) => {
 }
 
 const AmountOut: FC<{
-  quotes: RampBuyQuoteQuery[]
+  quotes: RampsBuyQuoteQuery[]
   provider: RampProvider | undefined
   tokenId: TokenId | undefined
 }> = ({ quotes, provider, tokenId }) => {
@@ -303,9 +303,9 @@ const RampNumberFieldContainer: FC<{
 )
 
 const Providers: FC<{
-  quoteConfig: RampBuyQuoteOptions
+  quoteConfig: RampsBuyQuoteOptions
   selected: RampProvider | undefined
-  quotes: RampBuyQuoteQuery[]
+  quotes: RampsBuyQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
   onSelect: (provider: "ramp" | "coinbase") => void
 }> = ({ quoteConfig, tokenRates, selected, quotes, onSelect }) => {
@@ -327,11 +327,11 @@ const Providers: FC<{
 }
 
 const ProviderButton: FC<{
-  quoteConfig: RampBuyQuoteOptions
+  quoteConfig: RampsBuyQuoteOptions
   tokenRates: TokenRatesList | null | undefined
   provider: RampProvider
   isSelected: boolean
-  query: UseQueryResult<RampBuyQuote | null, Error>
+  query: UseQueryResult<RampsBuyQuote | null, Error>
   onClick: () => void
 }> = ({
   quoteConfig: { tokenId, currencyCode, amount: amountIn },

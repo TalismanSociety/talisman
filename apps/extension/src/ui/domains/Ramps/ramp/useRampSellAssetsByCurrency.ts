@@ -1,8 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
+import { RampCurrencyWithAssets } from "@ui/domains/Asset/Buy/types"
 import { useRemoteConfig } from "@ui/state"
-
-import { RampCurrencyWithAssets } from "../../Buy/types"
 
 // note: currencyCode must be upper case
 const fetchRampOfframpAssetsByCurrency = async ({
@@ -26,7 +25,7 @@ const fetchRampOfframpAssetsByCurrency = async ({
   }
 }
 
-export const useGetRampOfframpAssetsByCurrency = ({
+export const useRampSellAssetsByCurrency = ({
   currencyCode,
   fiatAmount,
   tokenAmount,
@@ -43,7 +42,7 @@ export const useGetRampOfframpAssetsByCurrency = ({
     rampConfig: { rampApiBasePath },
   } = useRemoteConfig()
   return useQuery({
-    queryKey: ["useGetRampOfframpAssets", currencyCode, fiatAmount, tokenAmount, tokenId],
+    queryKey: ["useRampSellAssetsByCurrency", currencyCode, fiatAmount, tokenAmount, tokenId],
     queryFn: () => fetchRampOfframpAssetsByCurrency({ currencyCode, rampApiBasePath }),
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,

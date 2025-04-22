@@ -13,9 +13,9 @@ import { Address } from "@ui/domains/Account/Address"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useChain, useToken } from "@ui/state"
 
-import { RampAccountPicker, RampAccountPickerBalancesDisplayMode } from "./RampAccountPicker"
+import { RampAccountPickerBalancesDisplayMode, RampsAccountPicker } from "./RampsAccountPicker"
 
-export const RampAccountPickerButton: FC<{
+export const RampsAccountPickerButton: FC<{
   accounts: Account[]
   tokenId: string
   tokenRates: TokenRatesList | null | undefined
@@ -66,7 +66,7 @@ export const RampAccountPickerButton: FC<{
         anchor="right"
         className="size-full bg-black"
       >
-        <RampAccountPicker
+        <RampsAccountPicker
           token={token}
           accounts={accounts}
           tokenRates={tokenRates}

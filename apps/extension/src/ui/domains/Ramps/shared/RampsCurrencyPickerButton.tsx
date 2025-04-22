@@ -4,40 +4,12 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
-import { RampCurrencyInfo } from "./currencyInfo"
-import { RampCurrencyPicker } from "./RampCurrencyPicker"
+import { RampsCurrencyInfo } from "./currencyInfo"
+import { RampsCurrencyPicker } from "./RampCurrencyPicker"
 
-// const CurrencyButtonContent: FC<{ code: string }> = ({ code }) => {
-//   const currencyInfo = useCurrency
-
-//   return (
-//     <div className="flex items-center gap-4 truncate text-left">
-//       <div className="flex-shrink-0">
-//         <img
-//           src={`https://assets.ramp.network/flags/${fiatCurrencyIfo.countryCode}.svg`}
-//           alt={item.fiatCurrency}
-//           className="h-[28px] w-[28px] rounded-full"
-//         />
-//       </div>
-//       <div className="min-w-0 text-[16px]">
-//         <div className="flex items-center">
-//           <div className="text-white">{currency}</div>
-//           {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
-//         </div>
-//         <div className="text-tiny truncate">{currency.currencyName}</div>
-//       </div>
-//       {onClear && (
-//         <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
-//           <XIcon className="shrink-0 text-[1.2em]" />
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
-export const RampCurrencyPickerButton: FC<{
+export const RampsCurrencyPickerButton: FC<{
   value?: string
-  currencies?: RampCurrencyInfo[]
+  currencies?: RampsCurrencyInfo[]
   onSelect: (currency: string) => void
 }> = ({ value, currencies, onSelect }) => {
   const [selected, setSelected] = useState(value)
@@ -75,7 +47,7 @@ export const RampCurrencyPickerButton: FC<{
         containerId="ramp-container"
         className="size-full bg-black"
       >
-        <RampCurrencyPicker
+        <RampsCurrencyPicker
           selected={selected}
           currencies={currencies}
           onClose={close}
@@ -86,7 +58,7 @@ export const RampCurrencyPickerButton: FC<{
   )
 }
 
-const CurrencyContent: FC<{ currency: RampCurrencyInfo }> = ({ currency }) => (
+const CurrencyContent: FC<{ currency: RampsCurrencyInfo }> = ({ currency }) => (
   <div className="flex items-center gap-4 truncate text-left">
     <div className="flex-shrink-0">
       <Icon icon={currency.icon} className="size-14 shrink-0" />

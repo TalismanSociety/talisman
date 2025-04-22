@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { useRemoteConfig, useTokensMap } from "@ui/state"
 
 import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
-import { useRampTokensRamp } from "../onramp/useRampTokensRamp"
+import { useRampTokensRamp } from "../ramp/useRampTokensRamp"
 
 const getDotNativeTokenId = (chainId: string) => [chainId, "substrate-native"].join("-")
 const getEvmNativeTokenId = (evmNetworkId: string) => [evmNetworkId, "evm-native"].join("-")
@@ -18,8 +18,6 @@ const useBuyTokensCoinbase = () => {
   const talismanTokens = useTokensMap({ activeOnly: false, includeTestnets: false })
 
   const tokens = useMemo<Token[] | undefined>(() => {
-    // if (isLoading || error) return undefined
-
     return coinbaseBuyOptions?.purchase_currencies
       .flatMap((c) => c.networks)
       .map((n) => {
@@ -45,8 +43,6 @@ const useBuyTokensRamp = (currency: string | undefined) => {
   const { data, isLoading, error } = useRampTokensRamp(currency)
 
   const tokens = useMemo<Token[] | undefined>(() => {
-    // if (!currency|| isLoading || error) return undefined
-
     return data?.assets
       .map((asset) => {
         const networkId = remoteConfig.rampNetworks[asset.chain]
@@ -66,7 +62,7 @@ const useBuyTokensRamp = (currency: string | undefined) => {
   return { tokens, isLoading, error }
 }
 
-export const useRampBuyTokens = (currency: string | undefined) => {
+export const useRampsBuyTokens = (currency: string | undefined) => {
   const {
     tokens: coinbaseTokens = [],
     isLoading: isLoadingCoinbaseTokens,

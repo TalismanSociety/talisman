@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 
+import { RampCurrency } from "@ui/domains/Asset/Buy/types"
 import { useRemoteConfig } from "@ui/state"
-
-import { RampCurrency } from "../../Buy/types"
 
 const fetchRampCurrencies = async ({
   rampApiBasePath,
@@ -20,13 +19,13 @@ const fetchRampCurrencies = async ({
   }
 }
 
-export const useGetRampCurrencies = () => {
+export const useRampCurrencies = () => {
   const {
     rampConfig: { rampApiBasePath },
   } = useRemoteConfig()
 
   return useQuery({
-    queryKey: ["useGetRampCurrencies"],
+    queryKey: ["useRampCurrencies"],
     queryFn: () => fetchRampCurrencies({ rampApiBasePath }),
     staleTime: 1000 * 60 * 5,
   })

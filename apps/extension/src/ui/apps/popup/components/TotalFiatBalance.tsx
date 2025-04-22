@@ -17,8 +17,8 @@ import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useRampModal } from "@ui/domains/Asset/Ramp/useRampModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
@@ -164,7 +164,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   //const { open: openBuyTokensModal } = useBuyTokensModal()
-  const { open: openRampModal } = useRampModal()
+  const { open: openRampModal } = useRampsModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")

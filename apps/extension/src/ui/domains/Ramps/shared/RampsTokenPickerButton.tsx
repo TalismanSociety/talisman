@@ -5,12 +5,12 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useChain, useEvmNetwork } from "@ui/state"
 
-import { TokenLogo } from "../../TokenLogo"
-import { RampTokenPicker } from "./RampTokenPicker"
+import { RampsTokenPicker } from "./RampsTokenPicker"
 
-export const RampTokenPickerButton: FC<{
+export const RampsTokenPickerButton: FC<{
   value: TokenId | undefined
   tokens: Token[] | undefined
   tokenRates: TokenRatesList | null | undefined
@@ -51,7 +51,7 @@ export const RampTokenPickerButton: FC<{
         containerId="ramp-container"
         className="size-full bg-black"
       >
-        <RampTokenPicker
+        <RampsTokenPicker
           selected={selected}
           tokens={tokens}
           tokenRates={tokenRates}

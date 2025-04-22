@@ -10,18 +10,18 @@ import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useChainsMap, useEvmNetworksMap, useSelectedCurrency } from "@ui/state"
 
-import { Fiat } from "../../Fiat"
-import { TokenLogo } from "../../TokenLogo"
-import { RampLayout } from "./RampLayout"
+import { RampsLayout } from "./RampsLayout"
 
 type TokenDisplay = Token & {
   network: Chain | EvmNetwork
   rates?: TokenRates
 }
 
-export const RampTokenPicker: FC<{
+export const RampsTokenPicker: FC<{
   /** if undefined, component assumes currencies are loading */
   tokens: Token[] | undefined
   tokenRates: TokenRatesList | undefined | null
@@ -85,7 +85,7 @@ export const RampTokenPicker: FC<{
   }, [transitionStatus])
 
   return (
-    <RampLayout onBackClick={onClose} title={t("Select a token")}>
+    <RampsLayout onBackClick={onClose} title={t("Select a token")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
@@ -100,7 +100,7 @@ export const RampTokenPicker: FC<{
           )}
         </ScrollContainer>
       </div>
-    </RampLayout>
+    </RampsLayout>
   )
 }
 

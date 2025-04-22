@@ -7,22 +7,22 @@ import { useMemo } from "react"
 
 import { useRemoteConfig, useToken } from "@ui/state"
 
-import { getRampApiUrl } from "../onramp/getRampApiUrl"
-import { getRampBuyUrl } from "../onramp/helpers"
-import { RampQuoteResult } from "../onramp/types"
-import { useRampTokensRamp } from "../onramp/useRampTokensRamp"
-import { RampBuyQuote, RampBuyQuoteError, RampBuyQuoteOptions } from "./types"
+import { getRampApiUrl } from "../ramp/getRampApiUrl"
+import { getRampBuyUrl } from "../ramp/helpers"
+import { RampQuoteResult } from "../ramp/types"
+import { useRampTokensRamp } from "../ramp/useRampTokensRamp"
+import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
 
-export const useRampBuyQuoteRamp = (
-  config: RampBuyQuoteOptions | null,
-): UseQueryResult<RampBuyQuote | null, Error> => {
+export const useRampsBuyQuoteRamp = (
+  config: RampsBuyQuoteOptions | null,
+): UseQueryResult<RampsBuyQuote | null, Error> => {
   const token = useToken(config?.tokenId)
   const rampCryptoAsset = useRampBuyCryptoAsset(config?.currencyCode, config?.tokenId)
 
-  const inputError = useMemo<RampBuyQuoteError | null>(() => {
+  const inputError = useMemo<RampsBuyQuoteError | null>(() => {
     if (!config || !rampCryptoAsset) return null
 
-    const getInputErrorDescription = (config: RampBuyQuoteOptions, asset: RampCryptoAsset) => {
+    const getInputErrorDescription = (config: RampsBuyQuoteOptions, asset: RampCryptoAsset) => {
       if (typeof asset.min === "number" && config.amount < asset.min)
         return `Minimum purchase is ${formatPrice(asset.min, config.currencyCode, true)}`
       if (typeof asset.max === "number" && config.amount > asset.max)
@@ -42,13 +42,13 @@ export const useRampBuyQuoteRamp = (
   }, [config, rampCryptoAsset])
 
   return useQuery({
-    queryKey: ["useRampBuyQuoteRamp", config, rampCryptoAsset, inputError],
+    queryKey: ["useRampsBuyQuoteRamp", config, rampCryptoAsset, inputError],
     queryFn: () => {
       if (!config || !token || !rampCryptoAsset) return null
       if (inputError) return inputError
       return fetchRampBuyQuote(config.currencyCode, rampCryptoAsset.id, config.amount)
     },
-    select: (res: FetchRampBuyQuoteResult | null): RampBuyQuote | null => {
+    select: (res: FetchRampBuyQuoteResult | null): RampsBuyQuote | null => {
       if (!res) return null
       if (res.type === "error") return res
       return res.data.CARD_PAYMENT && config && token
@@ -125,7 +125,7 @@ const useRampBuyCryptoAsset = (
   }, [rampAssets?.assets, remoteConfig, token])
 }
 
-type FetchRampBuyQuoteResult = { type: "success"; data: RampQuoteResult } | RampBuyQuoteError
+type FetchRampBuyQuoteResult = { type: "success"; data: RampQuoteResult } | RampsBuyQuoteError
 
 const fetchRampBuyQuote = async (
   currencyCode: string,
@@ -161,7 +161,7 @@ const fetchRampBuyQuote = async (
   return { type: "success", data }
 }
 
-const getRampErrorMessage = (error: { code: string }): RampBuyQuoteError => {
+const getRampErrorMessage = (error: { code: string }): RampsBuyQuoteError => {
   const getDescription = (code: string) => {
     switch (code) {
       case "SWAP.VALIDATION.SWAP_VALUE_IS_ZERO":

@@ -9,12 +9,12 @@ import { useOpenCloseStatus } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
-import { RampCurrencyInfo } from "./currencyInfo"
-import { RampLayout } from "./RampLayout"
+import { RampsCurrencyInfo } from "./currencyInfo"
+import { RampsLayout } from "./RampsLayout"
 
-export const RampCurrencyPicker: FC<{
+export const RampsCurrencyPicker: FC<{
   /** if undefined, component assumes currencies are loading */
-  currencies: RampCurrencyInfo[] | undefined
+  currencies: RampsCurrencyInfo[] | undefined
   selected?: string
   onSelect: (currencyCode: string) => void
   onClose: () => void
@@ -63,7 +63,7 @@ export const RampCurrencyPicker: FC<{
   }, [transitionStatus])
 
   return (
-    <RampLayout onBackClick={onClose} title={t("Select a currency")}>
+    <RampsLayout onBackClick={onClose} title={t("Select a currency")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
@@ -90,12 +90,12 @@ export const RampCurrencyPicker: FC<{
             ))} */}
         </ScrollContainer>
       </div>
-    </RampLayout>
+    </RampsLayout>
   )
 }
 
 const CurrencyButtonRow: FC<{
-  currency: RampCurrencyInfo
+  currency: RampsCurrencyInfo
   onClick: () => void
   selected: boolean
 }> = ({ currency, selected, onClick }) => {

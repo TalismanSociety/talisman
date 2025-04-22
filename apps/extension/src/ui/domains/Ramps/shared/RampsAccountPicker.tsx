@@ -20,16 +20,16 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
 
-import { Fiat } from "../../Fiat"
-import Tokens from "../../Tokens"
-import { RampLayout } from "./RampLayout"
+import { RampsLayout } from "./RampsLayout"
 
 export type RampAccountPickerBalancesDisplayMode = "transferable" | "total"
 
-export const RampAccountPicker: FC<{
+export const RampsAccountPicker: FC<{
   accounts: Account[] | undefined
   token: Token | null | undefined
   balances: Balances | null | undefined
@@ -68,7 +68,7 @@ export const RampAccountPicker: FC<{
   }, [transitionStatus])
 
   return (
-    <RampLayout onBackClick={onClose} title={t("Select an account")}>
+    <RampsLayout onBackClick={onClose} title={t("Select an account")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
@@ -91,7 +91,7 @@ export const RampAccountPicker: FC<{
           )}
         </ScrollContainer>
       </div>
-    </RampLayout>
+    </RampsLayout>
   )
 }
 

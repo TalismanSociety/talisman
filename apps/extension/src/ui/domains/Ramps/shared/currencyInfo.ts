@@ -1,4 +1,4 @@
-type RampCurrencyInfos = {
+type RampsCurrencyInfos = {
   [key: string]: {
     countryCode: string
     currencyName: string
@@ -6,9 +6,9 @@ type RampCurrencyInfos = {
   }
 }
 
-export type RampCurrencyInfo = RampCurrencyInfos[keyof RampCurrencyInfos] & { code: string }
+export type RampsCurrencyInfo = RampsCurrencyInfos[keyof RampsCurrencyInfos] & { code: string }
 
-export const currencyInfo: RampCurrencyInfos = {
+export const currencyInfo: RampsCurrencyInfos = {
   ISK: { countryCode: "is", currencyName: "Icelandic Krona", icon: "circle-flags:is" },
   GEL: { countryCode: "ge", currencyName: "Georgian Lari", icon: "circle-flags:ge" },
   GBP: { countryCode: "gb", currencyName: "British Pound Sterling", icon: "circle-flags:gb" },
@@ -92,5 +92,5 @@ export const currencyInfo: RampCurrencyInfos = {
   ZWL: { countryCode: "zw", currencyName: "Zimbabwean Dollar", icon: "circle-flags:zw" },
 }
 
-export const getRampCurrencyInfo = (code: string): RampCurrencyInfo | null =>
+export const getRampCurrencyInfo = (code: string): RampsCurrencyInfo | null =>
   currencyInfo[code] ? { code, ...currencyInfo[code] } : null

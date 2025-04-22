@@ -2,7 +2,7 @@ import { ChevronLeftIcon } from "@talismn/icons"
 import { FC, ReactNode } from "react"
 import { IconButton } from "talisman-ui"
 
-export const RampLayout: FC<{
+export const RampsLayout: FC<{
   title?: ReactNode
   withBuySellToggle?: boolean
   onBackClick?: () => void

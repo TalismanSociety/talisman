@@ -3,24 +3,24 @@ import { useTranslation } from "react-i18next"
 
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 
-import { RampBuyForm } from "./buy/RampBuyForm"
-import { RampLayout } from "./shared/RampLayout"
-import { useRampModal } from "./useRampModal"
+import { RampsBuyForm } from "./buy/RampsBuyForm"
+import { RampsLayout } from "./shared/RampsLayout"
+import { useRampsModal } from "./useRampsModal"
 
 type FormMode = "buy" | "sell"
 
-export const RampFormRouter = () => {
-  const { close } = useRampModal()
+export const RampsFormRouter = () => {
+  const { close } = useRampsModal()
   const [mode, setMode] = useState<FormMode>("buy")
 
   return (
-    <RampLayout
+    <RampsLayout
       onBackClick={close}
       title={"Buy/Sell"}
       topRight={<FormModeSwitch mode={mode} onChange={setMode} />}
     >
-      {mode === "buy" && <RampBuyForm />}
-    </RampLayout>
+      {mode === "buy" && <RampsBuyForm />}
+    </RampsLayout>
   )
 }
 

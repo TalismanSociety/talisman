@@ -17,8 +17,8 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { RampModal } from "@ui/domains/Asset/Ramp/RampModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
@@ -93,7 +93,7 @@ const Popup = () => {
         <AccountExportPrivateKeyModal />
         <CopyAddressModal />
         {/* <BuyTokensModal /> */}
-        <RampModal />
+        <RampsModal />
         <ExplorerNetworkPickerModal />
         <BackupWarningDrawer />
         <LedgerPolkadotUpgradeAlertDrawer />

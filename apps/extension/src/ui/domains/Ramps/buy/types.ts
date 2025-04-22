@@ -2,28 +2,28 @@ import { UseQueryResult } from "@tanstack/react-query"
 
 import { RampProvider } from "../shared/types"
 
-export type RampBuyQuoteOptions = {
+export type RampsBuyQuoteOptions = {
   currencyCode: string
   tokenId: string
   amount: number
 }
 
-export type RampBuyQuoteError = {
+export type RampsBuyQuoteError = {
   type: "error"
   message: string
   description?: string
 }
 
-export type RampBuyQuoteSuccess = {
+export type RampsBuyQuoteSuccess = {
   type: "success"
   amountOut: string
   fee: number
   getRedirectUrl: (address: string) => string | Promise<string> // TODO remove string ?
 }
 
-export type RampBuyQuote = RampBuyQuoteError | RampBuyQuoteSuccess
+export type RampsBuyQuote = RampsBuyQuoteError | RampsBuyQuoteSuccess
 
-export type RampBuyQuoteQuery = {
+export type RampsBuyQuoteQuery = {
   provider: RampProvider
-  query: UseQueryResult<RampBuyQuote | null, Error>
+  query: UseQueryResult<RampsBuyQuote | null, Error>
 }
