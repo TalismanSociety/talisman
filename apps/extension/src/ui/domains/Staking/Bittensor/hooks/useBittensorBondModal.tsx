@@ -16,16 +16,19 @@ export const useBittensorBondModal = () => {
       address,
       tokenId,
       poolId,
+      isSelectStakeDrawerOpen = false,
     }: {
       address: Address
       tokenId: TokenId
       poolId: number | string
+      isSelectStakeDrawerOpen?: boolean
     }) => {
       reset({
         address,
         tokenId,
         poolId,
         step: "form",
+        isSelectStakeDrawerOpen,
       })
 
       innerOpen()

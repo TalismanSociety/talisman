@@ -101,7 +101,7 @@ export const useBondButton = ({
       e.stopPropagation()
 
       if (token?.chain?.id === "bittensor") {
-        handleOpenBittensorModal(openArgs)
+        handleOpenBittensorModal({ ...openArgs, isSelectStakeDrawerOpen: true })
       } else {
         open(openArgs)
       }

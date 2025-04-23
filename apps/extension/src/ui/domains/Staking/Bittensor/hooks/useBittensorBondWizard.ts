@@ -24,6 +24,7 @@ type WizardState = {
   plancks: bigint | null
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
+  isSelectStakeDrawerOpen: boolean
   hash: Hex | null
   isDefaultOption: boolean
 }
@@ -36,6 +37,7 @@ const DEFAULT_STATE: WizardState = {
   plancks: null,
   displayMode: "token",
   isAccountPickerOpen: false,
+  isSelectStakeDrawerOpen: false,
   hash: null,
   isDefaultOption: true,
 }
@@ -49,8 +51,10 @@ const setWizardState = (state: SetStateAction<WizardState>) => {
 
 const [useWizardState] = bind(wizardState$)
 
+type innerOpenCloseKey = "isAccountPickerOpen" | "isSelectStakeDrawerOpen"
+
 // TODO: this is meant to handle a pool picker too
-const useInnerOpenClose = (key: "isAccountPickerOpen") => {
+const useInnerOpenClose = (key: innerOpenCloseKey) => {
   const state = useWizardState()
   const isOpen = state[key]
 
@@ -72,8 +76,12 @@ const useInnerOpenClose = (key: "isAccountPickerOpen") => {
 
 export const useResetBittensorBondWizard = () => {
   const reset = useCallback(
-    (init: Pick<WizardState, "address" | "tokenId" | "poolId" | "step">) =>
-      setWizardState({ ...DEFAULT_STATE, ...init }),
+    (
+      init: Pick<
+        WizardState,
+        "address" | "tokenId" | "poolId" | "step" | "isSelectStakeDrawerOpen"
+      >,
+    ) => setWizardState({ ...DEFAULT_STATE, ...init }),
     [],
   )
 
@@ -94,6 +102,7 @@ export const useBittensorBondWizard = () => {
   const tokenRates = useTokenRates(tokenId)
   const existentialDeposit = useExistentialDeposit(token?.id)
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
+  const selectStakeDrawer = useInnerOpenClose("isSelectStakeDrawerOpen")
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
@@ -262,6 +271,7 @@ export const useBittensorBondWizard = () => {
     formatter,
     displayMode,
     accountPicker,
+    selectStakeDrawer,
     isFormValid,
     step,
     hash,
