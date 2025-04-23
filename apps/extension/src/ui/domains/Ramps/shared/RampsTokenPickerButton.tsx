@@ -1,6 +1,7 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
+import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
@@ -39,9 +40,11 @@ export const RampsTokenPickerButton: FC<{
       <button
         type="button"
         onClick={handleOpen}
-        className={
-          "border-grey-750 bg-grey-800 hover:bg-grey-750 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3"
-        }
+        disabled={!tokens}
+        className={classNames(
+          "border-grey-750 bg-grey-800 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3",
+          "enabled:hover:bg-grey-750 disabled:opacity-80 disabled:grayscale",
+        )}
       >
         {token ? <TokenContent token={token} /> : <EmptyContent />}
       </button>
