@@ -30,9 +30,11 @@ import { BondAccountPillButton } from "../../../Bond/BondAccountPillButton"
 import { STAKING_APR_UNAVAILABLE } from "../../../helpers"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useStakingAPR } from "../../../hooks/nomPools/useStakingAPR"
+import { MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
+import { SelectStakeDrawer } from "../Modals/SelectStakeDrawer"
 import { useBittensorBondWizard } from "./../../hooks/useBittensorBondWizard"
 
 // TODO: Cleanup all non Bittensor related code
@@ -399,7 +401,7 @@ const FeeEstimate = () => {
 
 export const BittensorBondForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, poolId, setStep, setAddress } =
+  const { account, accountPicker, token, payload, poolId, setStep, setAddress, selectStakeDrawer } =
     useBittensorBondWizard()
 
   return (
@@ -474,6 +476,11 @@ export const BittensorBondForm = () => {
         token={token}
         handleClose={accountPicker.close}
         setAddress={setAddress}
+      />
+      <SelectStakeDrawer
+        isOpen={selectStakeDrawer.isOpen}
+        onDismiss={selectStakeDrawer.close}
+        containerId={MODAL_CONTENT_CONTAINER_ID}
       />
     </div>
   )
