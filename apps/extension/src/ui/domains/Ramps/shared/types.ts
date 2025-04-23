@@ -1,6 +1,6 @@
 export type RampsMode = "buy" | "sell"
 
-export type RampsProvider = "coinbase" | "ramp"
+export type RampsProvider = "ramp" | "coinbase"
 
 export type RampsFormSharedData = {
   currencyCode?: string

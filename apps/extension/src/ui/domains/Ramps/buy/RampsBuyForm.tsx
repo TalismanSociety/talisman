@@ -2,7 +2,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
-import { classNames, formatPrice, planckToTokens } from "@talismn/util"
+import { planckToTokens } from "@talismn/util"
 import { UseQueryResult } from "@tanstack/react-query"
 import { BalanceFormatter } from "extension-core"
 import { capitalize } from "lodash"
@@ -15,21 +15,20 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency, useToken } from "@ui/state"
 
-import logoCoinbase from "../assets/logo-coinbase.svg?url"
-import logoRamp from "../assets/logo-ramp.svg?url"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsFieldSet } from "../shared/RampsFieldSet"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
+import {
+  RampsProviderButton,
+  RampsProviderButtonError,
+  RampsProviderButtonSkeleton,
+} from "../shared/RampsProviders"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
+import { RampsTokenPrice } from "../shared/RampsTokenPrice"
 import { RampsFormSharedData, RampsProvider } from "../shared/types"
 import { RampsBuyQuote, RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
 import { useRampsBuyForm } from "./useRampsBuyForm"
-
-const PROVIDER_LOGOS = {
-  coinbase: logoCoinbase,
-  ramp: logoRamp,
-}
 
 export const RampsBuyForm: FC<{
   defaults: RampsFormSharedData
@@ -117,7 +116,7 @@ export const RampsBuyForm: FC<{
                       {t("You're receiving (estimate)")}
                     </div>
                     <div className="leading-paragraph text-xs">
-                      <TokenPrice
+                      <RampsTokenPrice
                         tokenId={quoteOpts?.tokenId}
                         tokenRates={tokenRates}
                         isLoading={isLoadingTokenRates}
@@ -219,22 +218,6 @@ export const RampsBuyForm: FC<{
   )
 }
 
-const ProviderLabel: FC<{ provider: RampsProvider }> = ({ provider }) => {
-  return (
-    <span className="text-body-secondary inline-flex items-center gap-2 text-xs">
-      <span
-        className={classNames(
-          "inline-block size-8 rounded-full",
-          provider === "ramp" && "bg-white p-1", // figma didnt use an svg, wrap the official one to make it look as expected
-        )}
-      >
-        <img src={PROVIDER_LOGOS[provider]} alt="" className="size-full" />
-      </span>
-      <span>{capitalize(provider)}</span>
-    </span>
-  )
-}
-
 const AmountOut: FC<{
   quotes: RampsBuyQuoteQuery[]
   provider: RampsProvider | undefined
@@ -246,47 +229,18 @@ const AmountOut: FC<{
     [quotes, provider],
   )
 
-  if (!query || !token) return null
+  const value = useMemo(() => {
+    if (!query?.data || !token) return null
+    if (query?.data?.type === "error") return null
+    return planckToTokens(query.data.amountOut, token.decimals)
+  }, [query?.data, token])
 
-  if (query.isLoading)
+  if (query?.isLoading)
     return (
       <span className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">0.00001</span>
     )
 
-  if (query.data?.type === "error" || !query.data?.amountOut) return null
-
-  return planckToTokens(query.data?.amountOut, token.decimals)
-}
-
-const TokenPrice: FC<{
-  tokenId: string | null | undefined
-  tokenRates: TokenRatesList | null | undefined
-  isLoading: boolean
-}> = ({ tokenId, tokenRates, isLoading }) => {
-  const selectedCurrency = useSelectedCurrency()
-  const token = useToken(tokenId)
-  const price = useMemo(
-    () =>
-      tokenId && tokenRates?.[tokenId]
-        ? (tokenRates?.[tokenId]?.[selectedCurrency]?.price ?? null)
-        : null,
-    [selectedCurrency, tokenId, tokenRates],
-  )
-
-  if (tokenId && isLoading)
-    return (
-      <span className="rounded-xs text-body-disabled bg-body-disabled animate-pulse">
-        1 ETH = 1600.25 USD
-      </span>
-    )
-
-  if (!token || !price) return null
-
-  return (
-    <span className="text-body-disabled text-tiny">
-      1 {token?.symbol} ≈ <Fiat amount={price} forceCurrency={selectedCurrency} noCountUp />
-    </span>
-  )
+  return value
 }
 
 const Providers: FC<{
@@ -294,7 +248,7 @@ const Providers: FC<{
   selected: RampsProvider | undefined
   quotes: RampsBuyQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
-  onSelect: (provider: "ramp" | "coinbase") => void
+  onSelect: (provider: RampsProvider) => void
 }> = ({ quoteConfig, tokenRates, selected, quotes, onSelect }) => {
   return (
     <div className="flex flex-col gap-6">
@@ -339,94 +293,32 @@ const ProviderButton: FC<{
 
   const price = useMemo(() => {
     if (!data || !token || data.type === "error") return null
-    const price = getTokenPrice(amountIn - data.fee, BigInt(data.amountOut), token.decimals)
-    return formatPrice(price, currencyCode, true)
-  }, [amountIn, currencyCode, data, token])
+    return getTokenPrice(amountIn - data.fee, BigInt(data.amountOut), token.decimals)
+  }, [amountIn, data, token])
 
-  if (isLoading)
-    return (
-      <div className="border-grey-700 leading-paragraph text-body-disabled flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left">
-        <div className="flex justify-between">
-          <div className="flex flex-col gap-2">
-            <div className="bg-body-disabled rounded-xs animate-pulse text-sm font-bold">
-              1.069518 ETH
-            </div>
-            <div className="bg-body-disabled rounded-xs text-tiny animate-pulse">$1987.47</div>
-          </div>
-          <div>
-            <div className="text-xs">
-              <ProviderLabel provider={provider} />
-            </div>
-          </div>
-        </div>
-        <div className="text-tiny flex gap-8">
-          <div className="bg-body-disabled rounded-xs animate-pulse">1 ETH ≈ $1810.13</div>
-          <div className="bg-body-disabled rounded-xs animate-pulse">Fee ~$0.00</div>
-        </div>
-      </div>
-    )
+  if (isLoading || !token) return <RampsProviderButtonSkeleton provider={provider} />
 
   if (error || !data || data.type === "error")
     return (
-      <div className="border-grey-700 leading-paragraph text-body-secondary flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left">
-        <div className="flex justify-between">
-          <div className="flex flex-col gap-2">
-            <div className="text-sm">
-              {error?.message ?? (data?.type === "error" && data.message) ?? "Unavailable"}
-            </div>
-            <div className="text-tiny">{(data?.type === "error" && data.description) ?? null}</div>
-          </div>
-          <div className="text-xs">
-            <ProviderLabel provider={provider} />
-          </div>
-        </div>
-        <div className="text-tiny flex gap-8">
-          <div></div>
-          <div></div>
-        </div>
-      </div>
+      <RampsProviderButtonError
+        provider={provider}
+        title={error?.message ?? (data?.type === "error" && data.message) ?? t("Unavailable")}
+        description={(data?.type === "error" && data.description) ?? null}
+      />
     )
 
   return (
-    <button
-      type="button"
-      className={classNames(
-        "bg-grey-900 leading-paragraph flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left",
-        isSelected
-          ? "border-body bg-grey-850 text-body"
-          : "border-grey-700 enabled:hover:bg-grey-850 enabled:hover:border-grey-500 text-body-secondary",
-      )}
+    <RampsProviderButton
+      provider={provider}
+      isSelected={isSelected}
       onClick={onClick}
-    >
-      <div className="flex justify-between">
-        <div className="flex flex-col gap-2">
-          <div className="text-sm font-bold">
-            <Tokens
-              decimals={token?.decimals}
-              amount={amount?.tokens}
-              symbol={token?.symbol}
-              isBalance
-            />
-          </div>
-          <div className="text-body-secondary text-tiny">
-            <Fiat amount={amount?.fiat(selectedCurrency)} noCountUp />
-          </div>
-        </div>
-        <div className="text-body-secondary text-xs">
-          <ProviderLabel provider={provider} />
-        </div>
-      </div>
-      <div className="text-tiny flex gap-8">
-        <div>
-          1 {token?.symbol} ≈ {price}
-        </div>
-        {data.type === "success" && (
-          <div>
-            {t("Fee")} {formatPrice(data.fee, currencyCode, true)}
-          </div>
-        )}
-      </div>
-    </button>
+      title={<Tokens decimals={token?.decimals} amount={amount?.tokens} symbol={token?.symbol} />}
+      subtitle={<Fiat amount={amount?.fiat(selectedCurrency)} noCountUp />}
+      tokenSymbol={token.symbol}
+      tokenPrice={price}
+      fee={data.fee}
+      currencyCode={currencyCode}
+    />
   )
 }
 
