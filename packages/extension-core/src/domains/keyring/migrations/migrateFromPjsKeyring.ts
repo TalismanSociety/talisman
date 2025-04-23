@@ -152,6 +152,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             break
           }
 
+          case "HARDWARE":
           case LegacyAccountOrigin.Ledger: {
             if (oldPair.type === "ethereum") {
               await keyringStore.addAccountExternal({
