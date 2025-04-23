@@ -85,7 +85,7 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
 
   const token = useToken(formData.tokenId)
   const chain = useChain(token?.chain?.id)
-  const allAccounts = useAccounts()
+  const allAccounts = useAccounts("portfolio")
 
   const accounts = useMemo(
     () =>

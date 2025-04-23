@@ -1,7 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronRightIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
-import { Account, getAccountGenesisHash } from "extension-core"
+import { Account, getAccountGenesisHash, isAccountOwned } from "extension-core"
 import { HexString } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -110,8 +110,8 @@ const AccountButtonContent: FC<{
         />
       </div>
       <div className="leading-paragraph flex grow flex-col overflow-hidden">
-        <div className="text-body flex items-center gap-2 overflow-hidden">
-          <div className="grow truncate">{account.name}</div>
+        <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+          <div className="truncate">{account.name}</div>
           <AccountTypeIcon className="text-primary shrink-0" type={account.type} />
         </div>
         <div className="text-tiny">
@@ -123,6 +123,11 @@ const AccountButtonContent: FC<{
           />
         </div>
       </div>
+      {!isAccountOwned(account) && (
+        <div className="text-alert-warn border-alert-warn rounded-xs bg-alert-warn/10 shrink-0 border px-3 py-2 text-xs">
+          {t("External")}
+        </div>
+      )}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { TokenRatesList } from "@talismn/token-rates"
 import { classNames, formatPrice } from "@talismn/util"
 import { UseQueryResult } from "@tanstack/react-query"
 import { capitalize } from "lodash"
-import { FC, ReactNode, useEffect, useMemo, useRef } from "react"
+import { FC, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
@@ -16,6 +16,7 @@ import logoCoinbase from "../assets/logo-coinbase.svg?url"
 import logoRamp from "../assets/logo-ramp.svg?url"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
+import { RampsFieldSet } from "../shared/RampsFieldSet"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampsFormSharedData, RampsProvider } from "../shared/types"
@@ -65,10 +66,10 @@ export const RampsSellForm: FC<{
       <ScrollContainer className="w-full grow">
         <div className="px-10 pb-10">
           <div className="flex size-full shrink-0 flex-col gap-6">
-            <FieldSet label={t("Select Assets")}>
+            <RampsFieldSet label={t("Assets")}>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <div className="leading-paragraph text-xs">{t("You Pay")}</div>
+                  <div className="leading-paragraph text-xs">{t("You send")}</div>
                   <RampsNumberFieldContainer
                     withFocusWithin
                     input={
@@ -151,10 +152,10 @@ export const RampsSellForm: FC<{
                   />
                 </div>
               </div>
-            </FieldSet>
+            </RampsFieldSet>
 
             {quoteOpts && (
-              <FieldSet label={t("Choose Provider")}>
+              <RampsFieldSet label={t("Provider")}>
                 <form.Field
                   name="provider"
                   children={(field) => (
@@ -167,11 +168,11 @@ export const RampsSellForm: FC<{
                     />
                   )}
                 />
-              </FieldSet>
+              </RampsFieldSet>
             )}
 
             {!!formData.provider && !!formData.tokenId && (
-              <FieldSet label={t("Select Receiver")}>
+              <RampsFieldSet label={t("Receiver")}>
                 <form.Field
                   name="account"
                   children={(field) => (
@@ -185,7 +186,7 @@ export const RampsSellForm: FC<{
                     />
                   )}
                 />
-              </FieldSet>
+              </RampsFieldSet>
             )}
           </div>
         </div>
@@ -212,23 +213,6 @@ export const RampsSellForm: FC<{
         />
       </div>
     </form>
-  )
-}
-
-const FieldSet: FC<{ label: ReactNode; children: ReactNode }> = ({ label, children }) => {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [])
-
-  return (
-    <div ref={ref} className="bg-grey-900 space-y-6 rounded border-0 p-6">
-      <div className="text-body leading-paragraph text-sm">{label}</div>
-      <div>{children}</div>
-    </div>
   )
 }
 
