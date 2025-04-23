@@ -1,4 +1,11 @@
-import { EyeIcon, LinkIcon, PolkadotVaultIcon, SignetIcon, UsbIcon } from "@talismn/icons"
+import {
+  EyeIcon,
+  LinkIcon,
+  PolkadotVaultIcon,
+  SignetIcon,
+  UsbIcon,
+  UsersIcon,
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountType } from "extension-core"
 import { FC, useMemo } from "react"
@@ -27,6 +34,7 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({
     if (["ledger-ethereum", "ledger-polkadot"].includes(type)) return [UsbIcon, t("Ledger account")]
     if (type === "polkadot-vault") return [PolkadotVaultIcon, t("Polkadot Vault account")]
     if (type === "watch-only") return [EyeIcon, t("Watched account")]
+    if (type === "contact") return [UsersIcon, t("Contact")]
     if (type === "signet")
       return [SignetIcon, t(`Signet Vault${signetUrl !== undefined ? `: ${signetUrl}` : ""}`)]
 
