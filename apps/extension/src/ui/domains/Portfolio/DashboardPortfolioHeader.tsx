@@ -234,8 +234,7 @@ const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  //const { open: openBuyTokensModal } = useBuyTokensModal()
-  const { open: openRampModal } = useRampsModal()
+  const { open: openRampsModal } = useRampsModal()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
 
@@ -295,10 +294,10 @@ const TopActions: FC = () => {
         canBuy
           ? {
               analyticsName: "Goto" as const,
-              analyticsAction: "Buy Crypto button",
+              analyticsAction: "open ramps",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => openRampModal(),
+              onClick: () => openRampsModal(),
               disabled: disableActions,
               disabledReason,
             }
@@ -314,7 +313,7 @@ const TopActions: FC = () => {
       selectedAddress,
       symbol,
       openCopyAddressModal,
-      openRampModal,
+      openRampsModal,
     ],
   )
 

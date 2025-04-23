@@ -141,18 +141,6 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
     if (defaultCurrency) form.setFieldValue("currencyCode", defaultCurrency.code)
   }, [currencies, form, formData.currencyCode, favCurrency])
 
-  // useEffect(() => {
-  //   console.log(
-  //     "[ramp] quotes",
-  //     quotes.map((q) => ({
-  //       provider: q.provider,
-  //       data: q.query.data,
-  //       error: q.query.error,
-  //       isLoading: q.query.isLoading,
-  //     })),
-  //   )
-  // }, [quotes])
-
   return {
     form,
     currencies,

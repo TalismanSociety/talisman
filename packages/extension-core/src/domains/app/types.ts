@@ -7,8 +7,10 @@ import { PostHogCaptureProperties } from "../analytics/types"
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
   rampConfig: RampConfig
+  /** @deprecated */
   rampSupportedTokenIds: Record<string, string>
   rampNetworks: Record<string, string> // maps a Ramp network ID to an EvmNetworkId or ChainId
+  /** @deprecated */
   buyTokens: {
     tokenIds: TokenId[]
   }

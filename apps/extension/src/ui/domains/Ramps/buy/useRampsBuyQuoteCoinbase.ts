@@ -23,7 +23,6 @@ export const useRampsBuyQuoteCoinbase = (
   const token = useToken(config?.tokenId)
   const { data: options } = useCoinbaseBuyOptions()
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
-  // console.log("[ramps] useRampsBuyQuoteCoinbase", coinbaseToken)
 
   const inputError = useMemo<RampsBuyQuoteError | null>(() => {
     if (!config || !options) return null
@@ -127,13 +126,6 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
 
         return false
       })
-
-    // console.log("[ramps] useCoinbaseTokenSpecs")
-    // console.log("[ramps] useCoinbaseTokenSpecs", {
-    //   //coinbaseBuyOptions,
-    //   token,
-    //   item: coinbaseBuyOptions?.purchase_currencies.find((c) => c.id === item?.id),
-    // })
 
     return item ? { purchaseCurrency: item.id, purchaseNetwork: item.name } : null
   }, [coinbaseBuyOptions, token])

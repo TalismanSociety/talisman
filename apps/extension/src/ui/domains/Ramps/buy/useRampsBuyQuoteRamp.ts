@@ -82,66 +82,6 @@ export const useRampsBuyQuoteRamp = (
   })
 }
 
-// // TODO helpers ?
-// const getRampTokenType = (type: Token["type"]) => {
-//   switch (type) {
-//     case "evm-erc20":
-//       return "ERC20"
-//     case "substrate-native":
-//     case "evm-native":
-//       return "NATIVE"
-//     default:
-//       return null
-//   }
-// }
-
-// // TODO helpers ?
-// const getRampChainId = (remoteConfig: RemoteConfigStoreData, talismanNetworkId: string) => {
-//   const entry = Object.entries(remoteConfig.rampNetworks).find(
-//     ([, talismanId]) => talismanId === talismanNetworkId,
-//   )
-//   return entry ? entry[0] : undefined
-// }
-
-// type RampCryptoAsset = {
-//   id: string
-//   min: number | null
-//   max: number | null
-// }
-
-// const useRampBuyCryptoAsset = (
-//   currencyCode: string | undefined,
-//   tokenId: string | undefined,
-// ): RampCryptoAsset | null => {
-//   const { data: rampAssets } = useRampTokens(currencyCode, "buy")
-//   const token = useToken(tokenId)
-//   const remoteConfig = useRemoteConfig()
-
-//   return useMemo(() => {
-//     if (!token) return null
-//     const type = getRampTokenType(token.type)
-//     const chainId = getRampChainId(remoteConfig, token.evmNetwork?.id ?? token.chain?.id ?? "")
-
-//     if (!type || !chainId) return null
-
-//     const asset = rampAssets?.assets.find(
-//       (a) =>
-//         a.chain === chainId &&
-//         a.type === type &&
-//         (token.type !== "evm-erc20" ||
-//           a.address?.toLowerCase() === token.contractAddress.toLowerCase()),
-//     )
-
-//     return asset
-//       ? {
-//           id: `${asset.chain}_${asset.symbol}`,
-//           min: asset.minPurchaseAmount === -1 ? null : asset.minPurchaseAmount,
-//           max: asset.maxPurchaseAmount === -1 ? null : asset.maxPurchaseAmount,
-//         }
-//       : null
-//   }, [rampAssets?.assets, remoteConfig, token])
-// }
-
 type FetchRampBuyQuoteResult = { type: "success"; data: RampBuyQuoteResult } | RampsBuyQuoteError
 
 const fetchRampBuyQuote = async (

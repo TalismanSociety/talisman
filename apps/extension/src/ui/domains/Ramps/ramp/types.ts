@@ -1,5 +1,12 @@
 import { Dictionary } from "lodash"
 
+export type RampCurrency = {
+  fiatCurrency: string
+  name: string
+  onrampAvailable: boolean
+  offrampAvailable: boolean
+}
+
 export interface RampHostAssetsConfig {
   assets: RampAssetInfo[]
   enabledFeatures?: string[]

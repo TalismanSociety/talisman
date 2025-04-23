@@ -83,7 +83,7 @@ export const currencies: RampsCurrencies = {
   TWD: { name: "New Taiwan Dollar", icon: "circle-flags:tw" },
   UGX: { name: "Ugandan Shilling", icon: "circle-flags:ug" },
   UZS: { name: "Uzbekistan Som", icon: "circle-flags:uz" },
-  XAF: { name: "Central African Cfa Franc", icon: "circle-flags:ga" }, // used in multi-country, use Gabon icon
+  XAF: { name: "Central African Cfa Franc", icon: "circle-flags:ga" }, // used in multiple countries, use Gabon icon
   XOF: { name: "West African Cfa Franc", icon: "circle-flags:bf" }, // used in multiple countries, use Burkina Faso icon
   YER: { name: "Yemeni Rial", icon: "circle-flags:ye" },
   ZMW: { name: "Zambian Kwacha", icon: "circle-flags:zm" },

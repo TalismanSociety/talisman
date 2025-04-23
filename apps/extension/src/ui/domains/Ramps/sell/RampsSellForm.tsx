@@ -1,7 +1,6 @@
 /* eslint-disable react/no-children-prop */
 import { ExternalLinkIcon } from "@talismn/icons"
 import { formatPrice } from "@talismn/util"
-import { UseQueryResult } from "@tanstack/react-query"
 import { capitalize } from "lodash"
 import { FC, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,15 +13,11 @@ import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsFieldSet } from "../shared/RampsFieldSet"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
-import {
-  RampsProviderButton,
-  RampsProviderButtonError,
-  RampsProviderButtonSkeleton,
-} from "../shared/RampsProviders"
+import { RampsProviderProps, RampsProviders } from "../shared/RampsProviders"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampsTokenPrice } from "../shared/RampsTokenPrice"
 import { RampsFormSharedData, RampsProvider } from "../shared/types"
-import { RampsSellQuote, RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
+import { RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
 import { useRampsSellForm } from "./useRampsSellForm"
 
 export const RampsSellForm: FC<{
@@ -239,66 +234,37 @@ const Providers: FC<{
   selected: RampsProvider | undefined
   quotes: RampsSellQuoteQuery[]
   onSelect: (provider: RampsProvider) => void
-}> = ({ quoteConfig, selected, quotes, onSelect }) => {
-  return (
-    <div className="flex flex-col gap-6">
-      {quotes.map((q) => (
-        <ProviderButton
-          key={q.provider}
-          quoteConfig={quoteConfig}
-          provider={q.provider}
-          isSelected={selected === q.provider}
-          query={q.query}
-          onClick={() => onSelect(q.provider)}
-        />
-      ))}
-    </div>
-  )
-}
-
-const ProviderButton: FC<{
-  quoteConfig: RampsSellQuoteOptions
-  provider: RampsProvider
-  isSelected: boolean
-  query: UseQueryResult<RampsSellQuote | null, Error>
-  onClick: () => void
-}> = ({
-  quoteConfig: { tokenId, currencyCode },
-  provider,
-  isSelected,
-  query: { data, isLoading, error },
-  onClick,
-}) => {
-  const { t } = useTranslation()
+}> = ({ quoteConfig: { tokenId, currencyCode }, selected, quotes, onSelect }) => {
   const token = useToken(tokenId)
 
-  const amountOut = useMemo(() => {
-    if (!data) return null
-    if (data.type === "error") return null
-    return formatPrice(data.amountOut, currencyCode, true)
-  }, [currencyCode, data])
+  const options = useMemo(() => {
+    return quotes.map(({ query, provider }): RampsProviderProps => {
+      if (query.isLoading || !token) return { type: "loading", provider }
 
-  if (isLoading || !token) return <RampsProviderButtonSkeleton provider={provider} />
+      if (query.error || !query.data || query.data.type === "error")
+        return {
+          type: "error",
+          provider,
+          title:
+            query.error?.message ??
+            (query.data?.type === "error" && query.data.message) ??
+            "Unavailable",
+          description: (query.data?.type === "error" && query.data.description) ?? null,
+        }
 
-  if (error || !data || data.type === "error")
-    return (
-      <RampsProviderButtonError
-        provider={provider}
-        title={error?.message ?? (data?.type === "error" && data.message) ?? t("Unavailable")}
-        description={(data?.type === "error" && data.description) ?? null}
-      />
-    )
+      const amountOut = formatPrice(query.data.amountOut, currencyCode, true)
 
-  return (
-    <RampsProviderButton
-      provider={provider}
-      isSelected={isSelected}
-      onClick={onClick}
-      title={amountOut}
-      tokenSymbol={token.symbol}
-      tokenPrice={data.tokenPrice}
-      fee={data.fee}
-      currencyCode={currencyCode}
-    />
-  )
+      return {
+        type: "available",
+        provider,
+        title: amountOut,
+        tokenSymbol: token.symbol,
+        tokenPrice: query.data.tokenPrice,
+        fee: query.data.fee,
+        currencyCode,
+      }
+    })
+  }, [currencyCode, quotes, token])
+
+  return <RampsProviders options={options} selected={selected} onSelect={onSelect} />
 }

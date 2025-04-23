@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
 import { FadeIn } from "@talisman/components/FadeIn"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
@@ -19,7 +19,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { open } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
-  const { open: openBuyTokensModal } = useBuyTokensModal()
+  const { open: openRampsModal } = useRampsModal()
 
   const handleCopy = useCallback(() => {
     open({
@@ -31,8 +31,9 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
-    openBuyTokensModal()
-  }, [openBuyTokensModal])
+    genericEvent("open ramps", { from: "asset details" })
+    openRampsModal()
+  }, [genericEvent, openRampsModal])
 
   return (
     <FadeIn>

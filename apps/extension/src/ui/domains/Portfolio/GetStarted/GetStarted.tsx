@@ -8,8 +8,8 @@ import { IconButton } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAccounts, useAppState } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
@@ -119,7 +119,7 @@ const useGetStarted = () => {
   const hasAccounts = useMemo(() => !!ownedAccounts.length, [ownedAccounts])
 
   const navigate = useNavigate()
-  const { open: openBuyTokensModal } = useBuyTokensModal()
+  const { open: openRamps } = useRampsModal()
   const { open: onCopyAddressModal } = useCopyAddressModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
@@ -157,10 +157,10 @@ const useGetStarted = () => {
   }, [onCopyAddressModal])
 
   const onBuyClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add funds" })
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "open ramps" })
 
-    openBuyTokensModal()
-  }, [openBuyTokensModal])
+    openRamps()
+  }, [openRamps])
 
   const onLearnMoreClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })

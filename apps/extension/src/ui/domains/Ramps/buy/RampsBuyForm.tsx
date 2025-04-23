@@ -3,7 +3,6 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
-import { UseQueryResult } from "@tanstack/react-query"
 import { BalanceFormatter } from "extension-core"
 import { capitalize } from "lodash"
 import { FC, useEffect, useMemo, useRef } from "react"
@@ -19,15 +18,11 @@ import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsFieldSet } from "../shared/RampsFieldSet"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
-import {
-  RampsProviderButton,
-  RampsProviderButtonError,
-  RampsProviderButtonSkeleton,
-} from "../shared/RampsProviders"
+import { RampsProviderProps, RampsProviders } from "../shared/RampsProviders"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampsTokenPrice } from "../shared/RampsTokenPrice"
 import { RampsFormSharedData, RampsProvider } from "../shared/types"
-import { RampsBuyQuote, RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
+import { RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
 import { useRampsBuyForm } from "./useRampsBuyForm"
 
 export const RampsBuyForm: FC<{
@@ -249,88 +244,70 @@ const Providers: FC<{
   quotes: RampsBuyQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
   onSelect: (provider: RampsProvider) => void
-}> = ({ quoteConfig, tokenRates, selected, quotes, onSelect }) => {
-  return (
-    <div className="flex flex-col gap-6">
-      {quotes.map((q) => (
-        <ProviderButton
-          key={q.provider}
-          quoteConfig={quoteConfig}
-          tokenRates={tokenRates}
-          provider={q.provider}
-          isSelected={selected === q.provider}
-          query={q.query}
-          onClick={() => onSelect(q.provider)}
-        />
-      ))}
-    </div>
-  )
-}
-
-const ProviderButton: FC<{
-  quoteConfig: RampsBuyQuoteOptions
-  tokenRates: TokenRatesList | null | undefined
-  provider: RampsProvider
-  isSelected: boolean
-  query: UseQueryResult<RampsBuyQuote | null, Error>
-  onClick: () => void
 }> = ({
-  quoteConfig: { tokenId, currencyCode, amount: amountIn },
+  quoteConfig: { tokenId, currencyCode, amount },
   tokenRates,
-  provider,
-  isSelected,
-  query: { data, isLoading, error },
-  onClick,
+  selected,
+  quotes,
+  onSelect,
 }) => {
-  const { t } = useTranslation()
-  const selectedCurrency = useSelectedCurrency()
   const token = useToken(tokenId)
+  const selectedCurrency = useSelectedCurrency()
 
-  const amount = useMemo(() => {
-    if (!data || !token || data.type === "error") return null
-    return new BalanceFormatter(data.amountOut, token?.decimals, tokenRates?.[token.id])
-  }, [data, token, tokenRates])
+  const options = useMemo(() => {
+    return quotes.map(({ query, provider }): RampsProviderProps => {
+      if (query.isLoading || !token) return { type: "loading", provider }
 
-  const price = useMemo(() => {
-    if (!data || !token || data.type === "error") return null
-    return getTokenPrice(amountIn - data.fee, BigInt(data.amountOut), token.decimals)
-  }, [amountIn, data, token])
+      if (query.error || !query.data || query.data.type === "error")
+        return {
+          type: "error",
+          provider,
+          title:
+            query.error?.message ??
+            (query.data?.type === "error" && query.data.message) ??
+            "Unavailable",
+          description: (query.data?.type === "error" && query.data.description) ?? null,
+        }
 
-  if (isLoading || !token) return <RampsProviderButtonSkeleton provider={provider} />
+      const amountOut = new BalanceFormatter(
+        query.data.amountOut,
+        token.decimals,
+        tokenRates?.[token.id],
+      )
 
-  if (error || !data || data.type === "error")
-    return (
-      <RampsProviderButtonError
-        provider={provider}
-        title={error?.message ?? (data?.type === "error" && data.message) ?? t("Unavailable")}
-        description={(data?.type === "error" && data.description) ?? null}
-      />
-    )
+      const tokenPrice = getTokenPrice(
+        amount - query.data.fee,
+        BigInt(query.data.amountOut),
+        token.decimals,
+      )
 
-  return (
-    <RampsProviderButton
-      provider={provider}
-      isSelected={isSelected}
-      onClick={onClick}
-      title={<Tokens decimals={token?.decimals} amount={amount?.tokens} symbol={token?.symbol} />}
-      subtitle={<Fiat amount={amount?.fiat(selectedCurrency)} noCountUp />}
-      tokenSymbol={token.symbol}
-      tokenPrice={price}
-      fee={data.fee}
-      currencyCode={currencyCode}
-    />
-  )
+      return {
+        type: "available",
+        provider,
+        title: <Tokens decimals={token.decimals} amount={amountOut.tokens} symbol={token.symbol} />,
+        subtitle: <Fiat amount={amountOut.fiat(selectedCurrency)} noCountUp />,
+        tokenSymbol: token.symbol,
+        tokenPrice,
+        fee: query.data.fee,
+        currencyCode,
+      }
+    })
+  }, [amount, currencyCode, quotes, selectedCurrency, token, tokenRates])
+
+  return <RampsProviders options={options} selected={selected} onSelect={onSelect} />
 }
 
 /**
+ * Calculates the price of a token in fiat based on a quote output
+ *
  * @param fiatIn amount of fiat in
  * @param tokenOut amount of tokens that matches the fiatIn argument
  * @param decimals decimals of the token
  *
  * @returns the amount of fiat that it would cost to buy one token
  */
-const getTokenPrice = (fiatIn: number, tokenOut: bigint, decimals: number): number => {
-  if (tokenOut === 0n) throw new Error("tokenOut cannot be zero")
+const getTokenPrice = (fiatIn: number, tokenOut: bigint, decimals: number): number | null => {
+  if (tokenOut === 0n) return null
 
   const tokenOutInDecimal = Number(tokenOut) / Math.pow(10, decimals)
   return fiatIn / tokenOutInDecimal

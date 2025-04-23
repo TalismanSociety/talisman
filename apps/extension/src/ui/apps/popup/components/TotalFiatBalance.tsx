@@ -163,8 +163,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  //const { open: openBuyTokensModal } = useBuyTokensModal()
-  const { open: openRampModal } = useRampsModal()
+  const { open: openRampsModal } = useRampsModal()
   const ownedAccounts = useAccounts("owned")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
@@ -213,10 +212,10 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         canBuy
           ? {
               analyticsName: "Goto" as const,
-              analyticsAction: "Buy Crypto button",
+              analyticsAction: "open ramps",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => openRampModal(),
+              onClick: () => openRampsModal(),
               disabled: disableActions,
               disabledReason,
             }
@@ -227,7 +226,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
       disableActions,
       disabledReason,
       handleSwapClick,
-      openRampModal,
+      openRampsModal,
       openCopyAddressModal,
       t,
     ],

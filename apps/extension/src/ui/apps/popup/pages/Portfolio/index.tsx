@@ -22,7 +22,6 @@ const PortfolioRoutes = () => (
       <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
       <Route path="nfts" element={<PortfolioAssets />} />
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-      {/* <Route path="ramp/*" element={<BuyTokensModal />} /> */}
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
     <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>

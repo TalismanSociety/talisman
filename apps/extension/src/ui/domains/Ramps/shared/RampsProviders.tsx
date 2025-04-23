@@ -7,17 +7,66 @@ import logoCoinbase from "../assets/logo-coinbase.svg?url"
 import logoRamp from "../assets/logo-ramp.svg?url"
 import { RampsProvider } from "./types"
 
-export const RampsProviderButton: FC<{
+type RampsProviderPropsLoading = { type: "loading"; provider: RampsProvider }
+
+type RampsProviderPropsError = {
+  type: "error"
   provider: RampsProvider
-  isSelected: boolean
+  title?: ReactNode
+  description?: ReactNode
+}
+
+type RampsProviderPropsAvailable = {
+  type: "available"
+  provider: RampsProvider
   title: ReactNode
   subtitle?: ReactNode
   currencyCode: string
   tokenSymbol: string
   tokenPrice: number | null
   fee: number
-  onClick: () => void
-}> = ({
+}
+
+export type RampsProviderProps =
+  | RampsProviderPropsLoading
+  | RampsProviderPropsError
+  | RampsProviderPropsAvailable
+
+export const RampsProviders: FC<{
+  options: RampsProviderProps[]
+  selected: RampsProvider | undefined
+  onSelect: (provider: RampsProvider) => void
+}> = ({ options, selected, onSelect }) => {
+  return (
+    <div className="flex flex-col gap-6">
+      {options.map((props) => (
+        <RampsProviderButton
+          key={props.provider}
+          {...props}
+          isSelected={selected === props.provider}
+          onClick={() => onSelect(props.provider)}
+        />
+      ))}
+    </div>
+  )
+}
+
+const RampsProviderButton: FC<RampsProviderProps & { onClick: () => void; isSelected: boolean }> = (
+  props,
+) => {
+  switch (props.type) {
+    case "loading":
+      return <RampsProviderButtonSkeleton {...props} />
+    case "error":
+      return <RampsProviderButtonError {...props} />
+    case "available":
+      return <RampsProviderButtonAvailable {...props} />
+  }
+}
+
+const RampsProviderButtonAvailable: FC<
+  RampsProviderPropsAvailable & { onClick: () => void; isSelected: boolean }
+> = ({
   provider,
   isSelected,
   title,
@@ -71,7 +120,7 @@ export const RampsProviderButton: FC<{
   )
 }
 
-export const RampsProviderButtonSkeleton: FC<{ provider: RampsProvider }> = ({ provider }) => (
+const RampsProviderButtonSkeleton: FC<RampsProviderPropsLoading> = ({ provider }) => (
   <div className="border-grey-700 leading-paragraph text-body-disabled flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left">
     <div className="flex justify-between">
       <div className="flex flex-col gap-2">
@@ -93,11 +142,11 @@ export const RampsProviderButtonSkeleton: FC<{ provider: RampsProvider }> = ({ p
   </div>
 )
 
-export const RampsProviderButtonError: FC<{
-  provider: RampsProvider
-  title?: ReactNode
-  description?: ReactNode
-}> = ({ provider, title, description }) => (
+const RampsProviderButtonError: FC<RampsProviderPropsError> = ({
+  provider,
+  title,
+  description,
+}) => (
   <div className="border-grey-700 leading-paragraph text-body-secondary flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left">
     <div className="flex justify-between">
       <div className="flex flex-col gap-2">

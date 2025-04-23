@@ -92,7 +92,6 @@ const Popup = () => {
         <AccountExportModal />
         <AccountExportPrivateKeyModal />
         <CopyAddressModal />
-        {/* <BuyTokensModal /> */}
         <RampsModal />
         <ExplorerNetworkPickerModal />
         <BackupWarningDrawer />

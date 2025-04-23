@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { RampCurrency } from "@ui/domains/Asset/Buy/types"
 import { useRemoteConfig } from "@ui/state"
+
+import { RampCurrency } from "./types"
 
 const fetchRampCurrencies = async ({
   rampApiBasePath,

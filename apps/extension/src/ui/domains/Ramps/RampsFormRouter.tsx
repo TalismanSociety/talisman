@@ -17,6 +17,8 @@ type FormDefaults = RampsFormSharedData & {
 
 const DEFAULT_FORM_VALUE: FormDefaults = {
   mode: "buy",
+  currencyCode: "USD",
+  tokenId: "1-evm-native",
 }
 
 export const RampsFormRouter = () => {
