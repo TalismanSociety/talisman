@@ -12,7 +12,7 @@ export const decodeScale = <T>(
   if (change === null) return null
 
   try {
-    return (scaleCoder?.dec(change) as T | undefined) ?? null
+    return (scaleCoder?.value?.dec(change) as T | undefined) ?? null
   } catch (cause) {
     log.warn(error ?? `Failed to decode ${change}`, cause)
     return null

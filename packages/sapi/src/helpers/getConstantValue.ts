@@ -1,5 +1,4 @@
-import { log } from "extension-shared"
-
+import log from "../log"
 import { Chain } from "./types"
 
 export const getConstantValue = <T>(chain: Chain, pallet: string, constant: string) => {

@@ -1,13 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
-import {
-  Account,
-  Chain,
-  getAccountGenesisHash,
-  isAccountOfType,
-  isAccountPortfolio,
-} from "extension-core"
+import { Account, Chain, isAccountCompatibleWithChain, isAccountPortfolio } from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -70,13 +64,15 @@ const UnknownAddressDrawer = ({
     <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
       <div className="bg-black-tertiary flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl p-12">
         <div className="flex flex-col gap-4 text-center">
-          <p className="font-bold text-white">{t("Sending to external address")}</p>
+          <p className="px-10 font-bold text-white">
+            {t("Sending to the wrong network will result in a loss of funds")}
+          </p>
           <p className="text-body-secondary text-sm">
             {t(
-              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network.",
+              "If you are sending to a centralized exchange, ensure this address is on the correct network.",
             )}
           </p>
-          <div className="flex items-center justify-between gap-8 text-xs">
+          <div className="mt-4 flex items-center justify-between gap-8 text-xs">
             <div className="text-body-secondary">{t("Selected Network")}</div>
             <div className="text-body flex items-center gap-4">
               <ChainLogo id={chain?.id} className="text-md" />
@@ -225,23 +221,13 @@ export const SendFundsRecipientPicker = () => {
       allAccounts
         .filter((account) => normalize(account.address) !== normalizedFrom)
         .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
+        .filter((account) => !chain || isAccountCompatibleWithChain(chain, account))
         .filter(
           (account) =>
             !search ||
             account.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address)),
-        )
-        .filter((account) => {
-          const genesisHash = getAccountGenesisHash(account)
-          return !genesisHash || genesisHash === chain?.genesisHash
-        })
-        .filter(
-          (account) =>
-            isFromEthereum ||
-            // do not send funds to ledger generic accounts on incompatible chains
-            chain?.hasCheckMetadataHash ||
-            !(isAccountOfType(account, "ledger-polkadot") && account.genesisHash),
         ),
     [
       allAccounts,
@@ -254,8 +240,7 @@ export const SendFundsRecipientPicker = () => {
       isNsLookup,
       nsLookup,
       normalizedNsLookup,
-      chain?.genesisHash,
-      chain?.hasCheckMetadataHash,
+      chain,
     ],
   )
 

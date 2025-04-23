@@ -74,10 +74,10 @@ export const BuyTokensTokenPicker = () => {
       <ScrollContainer className="border-grey-700 scrollable h-full w-full grow overflow-x-hidden">
         <TokenPicker
           ownedOnly
-          showEmptyBalances
           selected={id}
           onSelect={handleTokenSelect}
           tokenFilter={tokenFilter}
+          isRamp
         />
       </ScrollContainer>
     </BuyTokensLayout>

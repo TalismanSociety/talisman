@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { TAOSTATS_BASE_PATH } from "extension-shared"
 
-import { ValidatorsData } from "./types"
+import { type ValidatorsData } from "./types"
 
 const MAX_PAGE_SIZE = 100
 
@@ -9,7 +9,7 @@ const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<Valid
   try {
     const response = await (
       await fetch(
-        `${TAOSTATS_BASE_PATH}/api/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
+        `${TAOSTATS_BASE_PATH}/api/dtao/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
         {
           method: "GET",
           headers: {

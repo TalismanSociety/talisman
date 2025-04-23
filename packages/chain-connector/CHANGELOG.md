@@ -1,5 +1,41 @@
 # @talismn/chain-connector
 
+## 0.9.0
+
+### Patch Changes
+
+- e704203: add: isNotNil and isTruthy utilities
+- Updated dependencies [ae7f0ac]
+- Updated dependencies [e704203]
+- Updated dependencies [71f6dbd]
+  - @talismn/chaindata-provider@0.9.0
+  - @talismn/util@0.3.2
+  - @talismn/connection-meta@0.2.5
+
+## 0.8.4
+
+### Patch Changes
+
+- Updated dependencies [0357a93]
+  - @talismn/chaindata-provider@0.8.4
+  - @talismn/connection-meta@0.2.4
+
+## 0.8.3
+
+### Patch Changes
+
+- Updated dependencies [5f29d37]
+  - @talismn/chaindata-provider@0.8.3
+  - @talismn/connection-meta@0.2.3
+
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [bcf9520]
+  - @talismn/chaindata-provider@0.8.2
+  - @talismn/connection-meta@0.2.2
+
 ## 0.8.1
 
 ### Patch Changes

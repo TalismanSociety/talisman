@@ -2,7 +2,7 @@ import { bind } from "@react-rxjs/core"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
-import { isAddressEqual } from "@talismn/util"
+import { isAddressEqual, isTruthy } from "@talismn/util"
 import { Account, Balances } from "extension-core"
 import { t } from "i18next"
 import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
@@ -20,7 +20,6 @@ export type NetworkOption = {
   chainId?: ChainId
   evmNetworkId?: EvmNetworkId
   symbols?: string[] // use when searching network by token symbol
-  sortIndex: number | null
 }
 
 type PortfolioGlobalData = {
@@ -49,7 +48,7 @@ const getNetworkTokenSymbols = ({
     if (isEvmToken(token)) return token.evmNetwork?.id === evmNetworkId
     return true
   })
-  return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
+  return networkTokens.map(({ symbol }) => symbol).filter(isTruthy)
 }
 
 const getAccountsAddressEncoding = (accounts?: Account[]): AddressEncoding | undefined => {
@@ -74,15 +73,14 @@ const getNetworkOptions = ({
 }) => {
   // register all chains to account for hybrid chains, delete non-ethereum ones later if necessary
   // this ensures hybrid chain ids are consistent (substrate id should be the id, even if account only supports ethereum networks)
-  let result: NetworkOption[] = chains.map(({ id, name, sortIndex }) => ({
+  let result: NetworkOption[] = chains.map(({ id, name }) => ({
     id,
     chainId: id,
     name: name ?? t("Unknown chain"),
-    sortIndex,
   }))
 
   if (evmNetworks && (!addressEncoding || addressEncoding === "ethereum"))
-    evmNetworks.forEach(({ id, name, substrateChain, sortIndex }) => {
+    evmNetworks.forEach(({ id, name, substrateChain }) => {
       const existing = result.find(({ id }) => id === substrateChain?.id)
       if (existing) existing.evmNetworkId = id
       else
@@ -91,7 +89,6 @@ const getNetworkOptions = ({
           name: name ?? t("Unknown chain"),
           evmNetworkId: id,
           chainId: substrateChain?.id,
-          sortIndex,
         })
     })
 
@@ -122,9 +119,7 @@ const getNetworkOptions = ({
         (!!chainId && chainIdsWithBalances.has(chainId)) ||
         (!!evmNetworkId && evmNetworkIdsWithBalances.has(evmNetworkId)),
     )
-    .sort(
-      (a, b) => (a.sortIndex ?? Number.MAX_SAFE_INTEGER) - (b.sortIndex ?? Number.MAX_SAFE_INTEGER),
-    )
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
 }
 
 const getFilteredBalances = ({

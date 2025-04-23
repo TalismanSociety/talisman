@@ -1,5 +1,6 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { isTruthy } from "@talismn/util"
 import { Balances } from "extension-core"
 import { uniq } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
@@ -27,8 +28,8 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
     [balancesToDisplay.sum, currency],
   )
 
-  const tokenIds = useMemo(
-    () => uniq(balancesToDisplay.each.map((b) => b.token?.id)).filter(Boolean) as TokenId[],
+  const tokenIds = useMemo<TokenId[]>(
+    () => uniq(balancesToDisplay.each.map((b) => b.token?.id).filter(isTruthy)),
     [balancesToDisplay],
   )
 

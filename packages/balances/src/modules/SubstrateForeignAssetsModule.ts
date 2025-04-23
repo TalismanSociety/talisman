@@ -126,8 +126,8 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
           if (onChainId === undefined) continue
 
-          const assetStateKey = assetCoder.enc(onChainId)
-          const metadataStateKey = metadataCoder.enc(onChainId)
+          const assetStateKey = assetCoder.keys.enc(onChainId)
+          const metadataStateKey = metadataCoder.keys.enc(onChainId)
 
           type AssetResult = {
             accounts?: number
@@ -154,10 +154,12 @@ export const SubForeignAssetsModule: NewBalanceModule<
           const [assetsAsset, assetsMetadata] = await Promise.all([
             chainConnector
               .send(chainId, "state_getStorage", [assetStateKey])
-              .then((result) => (assetCoder.dec(result) as AssetResult | undefined) ?? null),
+              .then((result) => (assetCoder.value.dec(result) as AssetResult | undefined) ?? null),
             chainConnector
               .send(chainId, "state_getStorage", [metadataStateKey])
-              .then((result) => (metadataCoder.dec(result) as MetadataResult | undefined) ?? null),
+              .then(
+                (result) => (metadataCoder.value.dec(result) as MetadataResult | undefined) ?? null,
+              ),
           ])
 
           const existentialDeposit = assetsAsset?.min_balance?.toString?.() ?? "0"

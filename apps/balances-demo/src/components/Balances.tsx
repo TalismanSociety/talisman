@@ -19,7 +19,7 @@ export const Balances = () => {
         <div className="text-tiny font-bold">Available</div>
         <div className="text-tiny font-bold">Account</div>
       </>
-      {balances?.sorted.map((balance) => (
+      {balances?.each.map((balance) => (
         <Fragment key={balance.id}>
           <div
             className={classNames([

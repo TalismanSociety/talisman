@@ -1,6 +1,12 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 
-import { newTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
+import {
+  SUPPORTED_CURRENCIES,
+  TokenRateCurrency,
+  TokenRateData,
+  TokenRates,
+  TokenRatesList,
+} from "./types"
 
 export class TokenRatesError extends Error {
   response?: Response
@@ -10,28 +16,18 @@ export class TokenRatesError extends Error {
   }
 }
 
-// every currency in this list will be fetched from coingecko
-// comment out unused currencies to save some bandwidth!
-const coingeckoCurrencies = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
-
-export type CoingeckoConfig = {
+const ALL_CURRENCY_IDS = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
+export type CoinsApiConfig = {
   apiUrl: string
-  apiKeyName?: string
-  apiKeyValue?: string
 }
 
-// api returns a 414 error if the url is too long, max length is about 8100 characters
-// so use 7900 to be safe
-const MAX_COINGECKO_URL_LENGTH = 7900
-
-export const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
-  apiUrl: "https://api.coingecko.com",
+export const DEFAULT_COINAPI_CONFIG: CoinsApiConfig = {
+  apiUrl: "https://coins.talisman.xyz",
 }
-
-// export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}
 export async function fetchTokenRates(
   tokens: Record<TokenId, Token>,
-  config: CoingeckoConfig = DEFAULT_COINGECKO_CONFIG,
+  currencyIds: TokenRateCurrency[] = ALL_CURRENCY_IDS,
+  config: CoinsApiConfig = DEFAULT_COINAPI_CONFIG,
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
@@ -83,69 +79,23 @@ export async function fetchTokenRates(
   // skip network request if there is nothing for us to fetch
   if (coingeckoIds.length < 1) return {}
 
-  // construct a coingecko request, sort args to help proxies with caching
+  const response = await fetch(`${config.apiUrl}/token-rates`, {
+    method: "POST",
+    body: JSON.stringify({ coingeckoIds, currencyIds }),
+  })
 
-  const currenciesSerialized = coingeckoCurrencies.sort().join(",")
+  const rawTokenRates = await response.json()
 
-  const safelyGetCoingeckoUrls = (coingeckoIds: string[]): string[] => {
-    const idsSerialized = coingeckoIds.join(",")
-    const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}&include_market_cap=true&include_24hr_change=true`
-    if (queryUrl.length > MAX_COINGECKO_URL_LENGTH) {
-      const half = Math.floor(coingeckoIds.length / 2)
-      return [
-        ...safelyGetCoingeckoUrls(coingeckoIds.slice(0, half)),
-        ...safelyGetCoingeckoUrls(coingeckoIds.slice(half)),
-      ]
-    }
-    return [queryUrl]
-  }
-
-  // fetch the token prices from coingecko
-  // the response should be in the format:
-  // {
-  //   [coingeckoId]: {
-  //     [currency]: rate
-  //     [currency_24h_change]: percent
-  //     [currency_market_cap]: value
-  //   }
-  // }
-
-  const coingeckoHeaders = new Headers()
-  if (config.apiKeyName && config.apiKeyValue) {
-    coingeckoHeaders.set(config.apiKeyName, config.apiKeyValue)
-  }
-
-  const coingeckoPrices = await Promise.all(
-    safelyGetCoingeckoUrls(coingeckoIds).map(
-      async (queryUrl): Promise<Record<string, Record<string, number>>> =>
-        await fetch(queryUrl, { headers: coingeckoHeaders }).then((response) => {
-          if (response.status !== 200)
-            throw new TokenRatesError(`Failed to fetch token rates`, response)
-          return response.json()
-        }),
-    ),
-  ).then((responses): Record<string, Record<string, number>> => Object.assign({}, ...responses))
+  const tokenRates = parseTokenRatesFromApi(rawTokenRates, coingeckoIds, currencyIds)
 
   // build a TokenRatesList from the token prices result
   const ratesList: TokenRatesList = Object.fromEntries(
-    coingeckoIds.flatMap((coingeckoId) => {
-      const tokenIds = coingeckoIdToTokenIds[coingeckoId]
-      const rates = newTokenRates()
+    Object.entries(tokens).map(([tokenId, token]) => [
+      tokenId,
+      token.coingeckoId ? (tokenRates[token.coingeckoId] ?? null) : null,
+    ]),
+  ) as TokenRatesList
 
-      for (const currency of coingeckoCurrencies) {
-        if (coingeckoPrices[coingeckoId]?.[currency])
-          rates[currency] = {
-            price: coingeckoPrices[coingeckoId][currency],
-            marketCap: coingeckoPrices[coingeckoId][`${currency}_market_cap`],
-            change24h: coingeckoPrices[coingeckoId][`${currency}_24h_change`],
-          }
-      }
-
-      return tokenIds.map((tokenId) => [tokenId, rates])
-    }),
-  )
-
-  // return the TokenRatesList
   return ratesList
 }
 
@@ -153,3 +103,33 @@ export async function fetchTokenRates(
 // We can't import this directly from EvmErc20Module because this package doesn't depend on `@talismn/balances`
 const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
   `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
+
+// To save on bandwidth and work around response size limits, values are returned without json property names
+// (e.g. [[[12, 12332, 0.5]]] instead of { dot : {usd: { value: 12, marketCap: 12332, change24h: 0.5 }} })
+type RawTokenRates = [number | null, number | null, number | null][][]
+
+const parseTokenRatesFromApi = (
+  rawTokenRates: RawTokenRates,
+  coingeckoIds: string[],
+  currencyIds: TokenRateCurrency[],
+): TokenRatesList => {
+  return Object.fromEntries(
+    coingeckoIds.map((coingeckoId, idx) => {
+      const rates = rawTokenRates[idx]
+      if (!rates) return [coingeckoId, null]
+
+      return [
+        coingeckoId,
+        Object.fromEntries(
+          currencyIds.map((currencyId, idx) => {
+            const curRate = rates[idx]
+            if (!curRate) return [currencyId, null]
+
+            const [price, marketCap, change24h] = rates[idx]
+            return [currencyId, { price, marketCap, change24h } as TokenRateData]
+          }),
+        ) as TokenRates,
+      ]
+    }),
+  ) as TokenRatesList
+}

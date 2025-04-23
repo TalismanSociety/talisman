@@ -1,5 +1,4 @@
-import { log } from "extension-shared"
-
+import log from "../log"
 import { Chain } from "./types"
 
 export const getCallDocs = (chain: Chain, pallet: string, method: string): string | null => {

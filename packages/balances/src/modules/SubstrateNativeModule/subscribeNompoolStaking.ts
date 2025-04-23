@@ -1,7 +1,7 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
 import { Binary, decodeScale, encodeStateKey } from "@talismn/scale"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress, isNotNil } from "@talismn/util"
 import { combineLatest, map, scan, share, switchAll } from "rxjs"
 
 import type { SubNativeModule } from "./index"
@@ -425,7 +425,7 @@ export async function subscribeNompoolStaking(
               ],
             } as SubNativeBalance
           })
-          .filter(Boolean) as SubNativeBalance[]
+          .filter(isNotNil)
 
         if (balances.length > 0) callback(null, balances)
       },

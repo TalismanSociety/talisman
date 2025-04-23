@@ -9,6 +9,7 @@ type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 export type SortMethod = {
   label: string
   value: SortValue
+  isDisabled?: boolean
 }
 
 const sortMethods: SortMethod[] = [
@@ -51,7 +52,7 @@ export const BittensorBondDelegateSelect = () => {
       !combinedValidatorsDataLoading &&
       !sortedDelegators.length
     ) {
-      setSortedDelegators(sortBondOptions(combinedValidatorsData, "name"))
+      setSortedDelegators(sortBondOptions(combinedValidatorsData, "totalStaked"))
     }
   }, [
     combinedValidatorsData,

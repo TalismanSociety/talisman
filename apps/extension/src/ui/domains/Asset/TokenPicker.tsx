@@ -230,9 +230,9 @@ type TokensListProps = {
   address?: Address
   selected?: TokenId
   search?: string
-  showEmptyBalances?: boolean
   allowUntransferable?: boolean
   ownedOnly?: boolean
+  isRamp?: boolean
   tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
@@ -241,9 +241,9 @@ const TokensList: FC<TokensListProps> = ({
   address,
   selected,
   search,
-  showEmptyBalances,
   allowUntransferable,
   ownedOnly,
+  isRamp,
   tokenFilter = DEFAULT_FILTER,
   onSelect,
 }) => {
@@ -314,27 +314,10 @@ const TokensList: FC<TokensListProps> = ({
     tokenRatesMap,
   ])
 
-  const tokensWithBalances = useMemo<TokenData[]>(() => {
-    // wait until balances are loaded
-    if (!accountBalances.count) return []
-
-    // the each property spreads the array under the hood, reuse the result to optimize performance for many accounts
-    const arAccountBalances = accountBalances.each
-
-    const tokensWithPosBalance = accountCompatibleTokens
-      .map((t) => ({
-        ...t,
-        balances: arAccountBalances.filter((b) => b.tokenId === t.id),
-      }))
-      .filter((t) => showEmptyBalances || t.balances.some((bal) => bal.transferable.planck > 0n))
-      .map((t) => ({
-        ...t,
-        balances: new Balances(t.balances),
-      }))
-
-    // sort alphabetically by symbol + chain name
-    const results = sortBy(sortBy(tokensWithPosBalance, "chainName"), "token.symbol").sort(
-      (a, b) => {
+  // sort alphabetically by symbol + chain name
+  const sortTokens = useCallback(
+    (tokens: TokenData[]): TokenData[] =>
+      sortBy(sortBy(tokens, "chainName"), "token.symbol").sort((a, b) => {
         // transferable tokens first
         const isTransferableA = isTransferableToken(a.token)
         const isTransferableB = isTransferableToken(b.token)
@@ -365,18 +348,52 @@ const TokensList: FC<TokensListProps> = ({
 
         // keep alphabetical sort
         return 0
-      },
-    )
+      }),
+    [currency, selected],
+  )
 
-    return results
-  }, [accountBalances, accountCompatibleTokens, showEmptyBalances, selected, currency])
+  const tokensRamp = useMemo<TokenData[]>(() => {
+    // if is not ramp return empty array
+    if (!isRamp) return []
+    const arAccountBalances = accountBalances.each
+
+    const tokensWithBalance = accountCompatibleTokens.map((t) => ({
+      ...t,
+      balances: new Balances(arAccountBalances.filter((b) => b.tokenId === t.id)),
+    }))
+
+    return sortTokens(tokensWithBalance)
+  }, [accountBalances.each, accountCompatibleTokens, isRamp, sortTokens])
+
+  const tokensWithBalances = useMemo<TokenData[]>(() => {
+    // wait until balances are loaded, if isRamp return empty array
+    if (!accountBalances.count || isRamp) return []
+
+    // the each property spreads the array under the hood, reuse the result to optimize performance for many accounts
+    const arAccountBalances = accountBalances.each
+
+    const tokensWithPosBalance = accountCompatibleTokens
+      .map((t) => ({
+        ...t,
+        balances: arAccountBalances.filter((b) => b.tokenId === t.id),
+      }))
+      .filter((t) => t.balances.some((bal) => bal.transferable.planck > 0n))
+      .map((t) => ({
+        ...t,
+        balances: new Balances(t.balances),
+      }))
+
+    return sortTokens(tokensWithPosBalance)
+  }, [accountBalances.count, accountBalances.each, isRamp, accountCompatibleTokens, sortTokens])
 
   // apply user search
   const tokens = useMemo(() => {
-    if (!search) return tokensWithBalances
+    const tokenList = isRamp ? tokensRamp : tokensWithBalances
+
+    if (!search) return tokenList
 
     const ls = search?.toLowerCase()
-    return tokensWithBalances
+    return tokenList
       .filter(
         (t) =>
           !ls ||
@@ -390,7 +407,7 @@ const TokensList: FC<TokensListProps> = ({
         if (s1 !== ls && s2 === ls) return 1
         return 0
       })
-  }, [search, tokensWithBalances])
+  }, [isRamp, search, tokensRamp, tokensWithBalances])
 
   const handleTokenClick = useCallback(
     (tokenId: string) => {
@@ -401,7 +418,7 @@ const TokensList: FC<TokensListProps> = ({
 
   return (
     <div className="min-h-full">
-      {accountBalances.count ? (
+      {accountBalances.count || (isRamp && tokens.length > 0) ? (
         <>
           <TokenRows
             tokens={tokens}
@@ -441,10 +458,10 @@ type TokenPickerProps = {
   address?: string
   selected?: TokenId
   initialSearch?: string
-  showEmptyBalances?: boolean
   allowUntransferable?: boolean
   ownedOnly?: boolean
   className?: string
+  isRamp?: boolean
   tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
@@ -453,10 +470,10 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   address,
   selected,
   initialSearch = "",
-  showEmptyBalances,
   allowUntransferable,
   ownedOnly,
   className,
+  isRamp,
   tokenFilter,
   onSelect,
 }) => {
@@ -482,11 +499,11 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           address={address}
           selected={selected}
           search={deferredSearch}
-          showEmptyBalances={showEmptyBalances}
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}
           tokenFilter={tokenFilter}
           onSelect={onSelect}
+          isRamp={isRamp}
         />
       </ScrollContainer>
     </div>

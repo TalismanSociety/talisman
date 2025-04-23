@@ -1,5 +1,5 @@
+import { DecodedCall } from "@talismn/sapi"
 import { FC } from "react"
-import { DecodedCall } from "sapi"
 
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 

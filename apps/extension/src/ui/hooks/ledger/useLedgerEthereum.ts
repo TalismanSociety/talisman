@@ -1,7 +1,12 @@
 import { stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
-import { EthSignMessageMethod, getTransactionSerializable } from "extension-core"
+import { isAddressEqual } from "@talismn/crypto"
+import {
+  AccountLedgerEthereum,
+  EthSignMessageMethod,
+  getTransactionSerializable,
+} from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -50,11 +55,9 @@ export const useLedgerEthereum = () => {
       chainId: number,
       method: EthSignMessageMethod | "eth_sendTransaction",
       payload: unknown,
-      derivationPath: string,
+      account: AccountLedgerEthereum,
     ) => {
-      return withLedger((ledger) =>
-        signWithLedger(ledger, chainId, method, payload, derivationPath),
-      )
+      return withLedger((ledger) => signWithLedger(ledger, chainId, method, payload, account))
     },
     [withLedger],
   )
@@ -77,8 +80,16 @@ const signWithLedger = async (
   chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
   payload: unknown,
-  accountPath: string,
+  account: AccountLedgerEthereum,
 ): Promise<`0x${string}`> => {
+  const { address } = await ledger.getAddress(account.derivationPath, false)
+  if (!isAddressEqual(address, account.address))
+    throw getTalismanLedgerError(
+      t(
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
+      ),
+    )
+
   switch (method) {
     case "eth_signTypedData_v3":
     case "eth_signTypedData_v4": {
@@ -89,7 +100,7 @@ const signWithLedger = async (
         // see https://github.com/LedgerHQ/ledger-live/tree/develop/libs/ledgerjs/packages/hw-app-eth#signeip712message
 
         // eslint-disable-next-line no-var
-        var sig = await ledger.signEIP712Message(accountPath, jsonMessage)
+        var sig = await ledger.signEIP712Message(account.derivationPath, jsonMessage)
       } catch {
         // fallback for ledger Nano S
         const { domain, types, primaryType, message } = TypedDataUtils.sanitizeData(jsonMessage)
@@ -107,7 +118,7 @@ const signWithLedger = async (
         ).toString("hex")
 
         sig = await ledger.signEIP712HashedMessage(
-          accountPath,
+          account.derivationPath,
           domainSeparatorHex,
           hashStructMessageHex,
         )
@@ -120,7 +131,10 @@ const signWithLedger = async (
       // ensure that it is hex encoded
       const messageHex = isHex(payload) ? payload : Buffer.from(payload as string).toString("hex")
 
-      const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
+      const sig = await ledger.signPersonalMessage(
+        account.derivationPath,
+        stripHexPrefix(messageHex),
+      )
 
       return signatureToHex(toSignature(sig))
     }
@@ -130,7 +144,11 @@ const signWithLedger = async (
       const baseTx = getTransactionSerializable(txRequest, chainId)
       const serialized = serializeTransaction(baseTx)
 
-      const sig = await ledger.signTransaction(accountPath, stripHexPrefix(serialized), null)
+      const sig = await ledger.signTransaction(
+        account.derivationPath,
+        stripHexPrefix(serialized),
+        null,
+      )
 
       return serializeTransaction(baseTx, toSignature(sig))
     }

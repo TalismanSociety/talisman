@@ -1,5 +1,33 @@
 # @talismn/chaindata-provider
 
+## 0.9.0
+
+### Minor Changes
+
+- 71f6dbd: deprecate sortIndex properties
+
+### Patch Changes
+
+- ae7f0ac: generate init data
+
+## 0.8.4
+
+### Patch Changes
+
+- 0357a93: generate init data
+
+## 0.8.3
+
+### Patch Changes
+
+- 5f29d37: generate init data
+
+## 0.8.2
+
+### Patch Changes
+
+- bcf9520: generate init data
+
 ## 0.8.1
 
 ### Patch Changes

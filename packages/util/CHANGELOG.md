@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.3.2
+
+### Patch Changes
+
+- e704203: add: isNotNil and isTruthy utilities
+
 ## 0.3.1
 
 ### Patch Changes

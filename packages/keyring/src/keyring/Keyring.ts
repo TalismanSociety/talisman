@@ -286,7 +286,7 @@ export class Keyring {
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
-    const seed = entropyToSeed(entropy, curve)
+    const seed = await entropyToSeed(entropy, curve)
     const pair = deriveKeypair(seed, derivationPath, curve)
 
     if (this.getAccount(pair.address)) throw new Error("Account already exists")
@@ -357,7 +357,7 @@ export class Keyring {
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
-    const seed = entropyToSeed(entropy, curve)
+    const seed = await entropyToSeed(entropy, curve)
     const pair = deriveKeypair(seed, derivationPath, curve)
 
     return pair.address

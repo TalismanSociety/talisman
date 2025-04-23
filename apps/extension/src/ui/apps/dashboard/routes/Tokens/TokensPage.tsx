@@ -1,11 +1,11 @@
 import { EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
-import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
+import { InfoIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
 import sortBy from "lodash/sortBy"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
 import {
   Button,
   ContextMenu,
@@ -14,6 +14,9 @@ import {
   ContextMenuTrigger,
   Dropdown,
   Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "talisman-ui"
 import urlJoin from "url-join"
 
@@ -42,6 +45,18 @@ import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
+const NoticeTooltip: FC = () => {
+  const { t } = useTranslation("admin")
+
+  return (
+    <Tooltip>
+      <TooltipTrigger className="align-text-top">
+        <InfoIcon />
+      </TooltipTrigger>
+      <TooltipContent>{t("Tokens list is provided by Coingecko.")}</TooltipContent>
+    </Tooltip>
+  )
+}
 const CustomPill = () => {
   const { t } = useTranslation("admin")
 
@@ -131,17 +146,36 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
   )
 }
 
-const TokenRowContainer: FC<{ token: Token }> = ({ token }) => {
-  // there are lots of tokens so we should only render visible rows to prevent performance issues
-  const refContainer = useRef<HTMLDivElement>(null)
-  const intersection = useIntersection(refContainer, {
-    root: null,
-    rootMargin: "1000px",
+const VirtualizedRows: FC<{ tokens: Token[] }> = ({ tokens }) => {
+  const virtualizer = useVirtualizer({
+    count: tokens.length,
+    overscan: 6,
+    gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => document.getElementById("main"),
   })
 
   return (
-    <div ref={refContainer} className="h-28">
-      {intersection?.isIntersecting ? <TokenRow token={token} /> : null}
+    <div>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            <TokenRow token={tokens[item.index]} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -164,10 +198,7 @@ const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
         <div>{t("Network")}</div>
         <div className="pr-20 text-right">{t("Active")}</div>
       </div>
-
-      {tokens.map((token) => (
-        <TokenRowContainer key={token.id} token={token} />
-      ))}
+      <VirtualizedRows tokens={tokens} />
     </div>
   )
 }
@@ -244,7 +275,7 @@ const Content = () => {
   const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
   const tokens = useTokens({ activeOnly: false, includeTestnets })
   const activeTokens = useActiveTokensState()
-  const [isActiveOnly, setIsActiveOnly] = useState(false)
+  const [isActiveOnly, setIsActiveOnly] = useState(true)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
   const [isHidePools, setIsHidePools] = useState(false)
 
@@ -253,7 +284,10 @@ const Content = () => {
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
-    return [{ id: "ALL", name: "All networks" } as SimpleEvmNetwork, ...sortBy(evmNetworks, "name")]
+    return [
+      { id: "ALL", name: "All networks" } as SimpleEvmNetwork,
+      ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
+    ]
   }, [evmNetworks])
   const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
 
@@ -282,15 +316,6 @@ const Content = () => {
 
   const displayTokens = useMemo(() => {
     const lowerSearch = search.trim().toLowerCase()
-    const knownTokens = Object.keys(activeTokens) // ids of all tokens that were ever activated
-    if (!lowerSearch && evmNetworkId === "ALL")
-      return filteredTokens.filter(
-        (t) =>
-          t.isDefault ||
-          isCustomErc20Token(t) ||
-          isCustomUniswapV2Token(t) ||
-          knownTokens.includes(t.id),
-      )
 
     return filteredTokens.filter(
       (t) =>
@@ -301,7 +326,7 @@ const Content = () => {
         (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
         (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)),
     )
-  }, [activeTokens, evmNetworkId, filteredTokens, search])
+  }, [filteredTokens, search])
 
   const handleAddToken = useCallback(() => {
     sendAnalyticsEvent({
@@ -321,10 +346,9 @@ const Content = () => {
           title={t("Ethereum Tokens")}
           className="grow"
           text={
-            <Trans
-              t={t}
-              defaults="Enable, add or delete custom ERC20 tokens.<br/>Tokens list is provided by Coingecko."
-            />
+            <>
+              {t("Enable, add or delete custom ERC20 tokens.")} <NoticeTooltip />
+            </>
           }
         />
         <Button primary iconLeft={PlusIcon} small onClick={handleAddToken}>

@@ -132,13 +132,7 @@ export const getTalismanLedgerError = (
     case "App does not seem to be open": // locked but underlying app is eth
     case "Unknown Status Code: 28161": // just unlocked, didn't open kusama yet
     case "Unknown Status Code: 38913": // just unlocked, didn't open kusama yet
-      return new TalismanLedgerError(
-        "InvalidApp",
-        t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
-          appName: capitalize(appName),
-        }),
-        { cause },
-      )
+      return getOpenLedgerAppError(appName, cause)
 
     case "Unknown Status Code: 26628":
     case "Transaction rejected": // unplugged then retry while on lock screen
@@ -186,6 +180,16 @@ export const getTalismanLedgerError = (
   return new TalismanLedgerError("Unknown", cause.message ?? "Failed to connect to your Ledger", {
     cause,
   })
+}
+
+export const getOpenLedgerAppError = (appName: string, cause?: unknown) => {
+  return new TalismanLedgerError(
+    "InvalidApp",
+    t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
+      appName: capitalize(appName),
+    }),
+    { cause },
+  )
 }
 
 const getErrorFromCode = (code: number | undefined, appName: string, cause: unknown) => {

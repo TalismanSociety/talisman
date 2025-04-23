@@ -1,4 +1,5 @@
 import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
+import { isTruthy } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
@@ -69,7 +70,7 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
           "Failed to fetch tokenRates",
           retrying && `retrying in ${Math.round(retryTimeout / 1000)} seconds`,
           !retrying && `giving up (timer no longer needed)`,
-        ].filter(Boolean)
+        ].filter(isTruthy)
         log.error(messageParts.join(", "), error)
 
         if (abort.signal.aborted) return // don't schedule retry if aborted

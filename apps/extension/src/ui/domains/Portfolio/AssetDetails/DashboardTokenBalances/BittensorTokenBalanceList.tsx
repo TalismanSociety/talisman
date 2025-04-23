@@ -1,4 +1,7 @@
-import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import {
+  ONE_ALPHA_TOKEN,
+  SCALE_FACTOR,
+} from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
 import { TokenId } from "@talismn/chaindata-provider"
 import { type TokenRates } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
@@ -11,6 +14,7 @@ import { type CombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTa
 import { useSelectedCurrency } from "@ui/state"
 
 import { type BalanceSummary } from "../../useTokenBalancesSummary"
+import { calculateTaoFromAlphaStaked } from "../../utils/subtensor"
 import { type BalanceDetailRow } from "../useTokenBalances"
 import { AssetPercentageChange } from "./AssetPercentageChange"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
@@ -41,7 +45,13 @@ export const BittensorTokenBalanceList = ({
   const [fistGroupStake] = groupedStakesByNetuid ?? []
   const { chainOrNetwork, summary, token, detailRows, status, networkType } = tokenBalances
   const { subnetData, isError, isLoading, isFetchingNextPage } = combinedSubnetData
-  const { price_change_1_day, subnet_name } = subnetData[Number(listKey)] ?? {}
+  const {
+    price_change_1_day,
+    subnet_name,
+    alpha_in_pool,
+    total_tao,
+    symbol: subnetTokenSymbol,
+  } = subnetData[Number(listKey)] ?? {}
 
   // wait for data to load
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
@@ -50,7 +60,10 @@ export const BittensorTokenBalanceList = ({
   const {
     meta: {
       alphaToTaoRate,
-      dynamicInfo: { subnetIdentity: { subnetName } = {}, tokenSymbol } = {},
+      dynamicInfo: {
+        subnetIdentity: { subnetName = subnet_name } = {},
+        tokenSymbol = subnetTokenSymbol,
+      } = {},
     } = {},
   } = fistGroupStake
 
@@ -74,13 +87,25 @@ export const BittensorTokenBalanceList = ({
       }
     }, defaultSummary) ?? defaultSummary
 
-  const subnetListName = `${listKey} | ${subnetName || subnet_name} ${tokenSymbol || ""}`.trim()
+  const taoStatsRate = Math.trunc(
+    calculateTaoFromAlphaStaked({
+      alphaIn: Number(alpha_in_pool),
+      taoIn: Number(total_tao),
+      alphaStaked: Number(ONE_ALPHA_TOKEN.toString()),
+    }),
+  ).toString()
+
+  const subnetListName = `${listKey} | ${subnetName} ${tokenSymbol || ""}`.trim()
   const chainName = isRootStake || isChainIfo ? chainOrNetwork.name || "" : subnetListName
 
   const rowSummary = isChainIfo ? summary : groupSummary
   const symbol = isRootStake ? token.symbol : tokenSymbol
 
-  const formatter = new BalanceFormatter(BigInt(alphaToTaoRate || "0"), token?.decimals, tokenRates)
+  const formatter = new BalanceFormatter(
+    BigInt(Number(alphaToTaoRate) > 0 ? alphaToTaoRate : taoStatsRate),
+    token?.decimals,
+    tokenRates,
+  )
 
   const assetPriceInfo = !isRootStake && !isChainIfo && (
     <div className="flex items-center space-x-2">

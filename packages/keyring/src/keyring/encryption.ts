@@ -1,27 +1,21 @@
-// Derive a key generated with PBKDF2 that will be used for AES-GCM encryption
-const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey> => {
-  // Deriving 32-byte key using PBKDF2 with 100000 iterations and SHA-256
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(password),
-    "PBKDF2",
-    false,
-    ["deriveKey"],
-  )
+import { pbkdf2 } from "@talismn/crypto"
 
-  return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
+// Derive a key generated with PBKDF2 that will be used for AES-GCM encryption
+const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey> =>
+  // Deriving 32-byte key using PBKDF2 with 100,000 iterations and SHA-256
+  await crypto.subtle.importKey(
+    "raw",
+    await pbkdf2(
+      "SHA-256",
+      new TextEncoder().encode(password),
       salt,
-      iterations: 100000,
-      hash: "SHA-256",
-    },
-    keyMaterial,
+      100_000, // 100,000 iterations
+      32, // 32 bytes (32 * 8 == 256 bits)
+    ),
     { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"],
   )
-}
 
 export const encryptData = async (data: Uint8Array, password: string): Promise<string> => {
   try {

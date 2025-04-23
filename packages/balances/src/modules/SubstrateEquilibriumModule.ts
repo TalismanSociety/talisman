@@ -116,7 +116,7 @@ export const SubEquilibriumModule: NewBalanceModule<
       try {
         const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
         const assetsCoder = scaleBuilder.buildStorage("EqAssets", "Assets")
-        const stateKey = assetsCoder.enc()
+        const stateKey = assetsCoder.keys.enc()
 
         /** NOTE: Just a guideline, the RPC can return whatever it wants */
         type AssetsResult = Array<
@@ -138,7 +138,7 @@ export const SubEquilibriumModule: NewBalanceModule<
 
         const assetsResult = await chainConnector
           .send(chainId, "state_getStorage", [stateKey])
-          .then((result) => (assetsCoder.dec(result) as AssetsResult | undefined) ?? null)
+          .then((result) => (assetsCoder.value.dec(result) as AssetsResult | undefined) ?? null)
 
         const tokens = (Array.isArray(assetsResult) ? assetsResult : []).flatMap((asset) => {
           if (!asset) return []

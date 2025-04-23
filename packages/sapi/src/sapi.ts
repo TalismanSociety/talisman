@@ -83,8 +83,8 @@ export const getScaleApi = (
 
     getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload, chainInfo),
 
-    getRuntimeCallValue: (apiName: string, method: string, args: unknown[]) =>
-      getRuntimeCallResult(chain, apiName, method, args),
+    getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[]) =>
+      getRuntimeCallResult<T>(chain, apiName, method, args),
 
     getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(chain, payload),
 
@@ -93,8 +93,8 @@ export const getScaleApi = (
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(chain, pallet, method),
 
-    getDryRunCall: (from: string, decodedCall: DecodedCall<unknown>) =>
-      getDryRunCall(chain, from, decodedCall),
+    getDryRunCall: <T>(from: string, decodedCall: DecodedCall<unknown>) =>
+      getDryRunCall<T>(chain, from, decodedCall),
 
     isApiAvailable: (name: string, method: string) => isApiAvailable(chain, name, method),
   }

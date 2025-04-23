@@ -22,7 +22,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
   const { sign } = useLedgerEthereum()
 
@@ -33,7 +33,7 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     setIsSigning(true)
 
     try {
-      const signature = await sign(Number(evmNetworkId), method, payload, account.derivationPath)
+      const signature = await sign(Number(evmNetworkId), method, payload, account)
 
       // await so we can keep the spinning loader until popup closes
       await onSigned({ signature })

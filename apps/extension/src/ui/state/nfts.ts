@@ -69,7 +69,6 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
             id: evmNetwork.substrateChain?.id ?? evmNetwork.id,
             name: evmNetwork.name ?? `Network ${evmNetwork.id}`,
             evmNetworkId: evmNetwork.id,
-            sortIndex: evmNetwork.sortIndex,
           }
         })
     }),
