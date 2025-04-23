@@ -238,7 +238,6 @@ export const AmountEdit = () => {
     displayMode,
     toggleDisplayMode,
     inputErrorMessage,
-    stakeWarningMessage,
     maxPlancks,
     setPlancks,
   } = useBondWizard()
@@ -282,27 +281,6 @@ export const AmountEdit = () => {
             <div className="text-brand-orange line-clamp-2 text-center text-xs">
               {inputErrorMessage}
             </div>
-            {stakeWarningMessage && (
-              <div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="text-alert-warn flex items-center justify-center gap-1 whitespace-nowrap text-xs">
-                      <InfoIcon className="inline-block" /> {stakeWarningMessage}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="max-w-[26rem]">
-                      <div>
-                        {t(
-                          "The Bittensor network requires a wait period of 360 blocks since your last stake / unstake action.",
-                        )}
-                      </div>
-                      <div>{t("Please try again later.")}</div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
           </div>
         </>
       )}
@@ -421,7 +399,10 @@ export const BondForm = () => {
   const { t } = useTranslation()
   const { account, accountPicker, token, payload, setStep, poolId, bondType } = useBondWizard()
 
-  const bondRowLabel = bondType === "bittensor" ? t("Validator") : t("Pool")
+  const isBittensor = bondType === "bittensor"
+
+  const bondRowLabel = useMemo(() => (isBittensor ? t("Validator") : t("Pool")), [isBittensor, t])
+  const yeldRowLabel = useMemo(() => (isBittensor ? t("APY") : t("APR")), [isBittensor, t])
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -460,11 +441,15 @@ export const BondForm = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 whitespace-nowrap leading-none">
-                  {t("APR")}
+                  {yeldRowLabel}
                   <InfoIcon />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>{t("Estimated Annual Percentage Rate (APR)")}</TooltipContent>
+              <TooltipContent>
+                {isBittensor
+                  ? t("Estimated Annual Percentage Yield (APY)")
+                  : t("Estimated Annual Percentage Rate (APR)")}
+              </TooltipContent>
             </Tooltip>
           </div>
           <div className={"overflow-hidden font-bold"}>

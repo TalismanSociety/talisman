@@ -3,7 +3,6 @@ import { UseQueryResult } from "@tanstack/react-query"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { useMemo } from "react"
 
-import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
@@ -43,13 +42,6 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     plancks,
     minJoinBond,
     isEnabled: chainId === "bittensor",
-  })
-
-  const { canStake, isLoading: isCanStakeLoading } = useCanStakeBittensor({
-    sapi,
-    address,
-    hotkey: poolId,
-    chainId,
   })
 
   const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
@@ -136,7 +128,5 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
     minJoinBond,
     isSoloStaking,
     poolState,
-    canStake,
-    isCanStakeLoading,
   }
 }

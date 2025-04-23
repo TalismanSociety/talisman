@@ -20,11 +20,6 @@ type CurrentMigration = {
 }
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
-export type BlockNumberByDelegator = {
-  [delegator: string | number]: number
-}
-
-export type DelegatorsBlockNumberByAccount = Record<string, BlockNumberByDelegator>
 
 export type AppStoreData = {
   onboarded: OnboardedType
@@ -33,6 +28,7 @@ export type AppStoreData = {
   analyticsRequestShown: boolean
   analyticsReportCreatedAt?: number
   analyticsReport?: GeneralReport
+  lastWalletUpgradedEvent?: string
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   needsSpiritKeyUpdate: boolean
@@ -42,7 +38,6 @@ export type AppStoreData = {
   showLedgerPolkadotGenericMigrationAlert?: boolean
   hideManageAccountsWelcome?: boolean
   hideGetStarted?: boolean
-  bittensorUnbondBlockNumber: DelegatorsBlockNumberByAccount
   hideUnifiedAddressBanner?: boolean
 
   // represents a migration that is currently running
@@ -63,7 +58,6 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   needsSpiritKeyUpdate: false,
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
   showLedgerPolkadotGenericMigrationAlert: false,
-  bittensorUnbondBlockNumber: {},
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {

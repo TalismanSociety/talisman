@@ -347,9 +347,6 @@ export const chains = [
         url: "wss://kusama-rpc.dwellir.com",
       },
       {
-        url: "wss://kusama-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://kusama-rpc.publicnode.com",
       },
       {
@@ -372,6 +369,9 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io",
+      },
+      {
+        url: "wss://kusama-rpc-tn.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -555,7 +555,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 594,
+    sortIndex: 595,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -669,7 +669,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 595,
+    sortIndex: 596,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -703,9 +703,6 @@ export const chains = [
         url: "wss://bridge-hub-kusama-rpc.dwellir.com",
       },
       {
-        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://bridge-hub-kusama.dotters.network",
       },
       {
@@ -719,6 +716,9 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io/bridgehub",
+      },
+      {
+        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -743,7 +743,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 844,
+    sortIndex: 846,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -837,9 +837,6 @@ export const chains = [
         url: "wss://asset-hub-polkadot-rpc.dwellir.com",
       },
       {
-        url: "wss://statemint-rpc-tn.dwellir.com",
-      },
-      {
         url: "wss://polkadot-assethub-rpc.blockops.network/ws",
       },
       {
@@ -859,6 +856,9 @@ export const chains = [
       },
       {
         url: "wss://dot-rpc.stakeworld.io/assethub",
+      },
+      {
+        url: "wss://statemint-rpc-tn.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -1091,7 +1091,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 845,
+    sortIndex: 847,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,

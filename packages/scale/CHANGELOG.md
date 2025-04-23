@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 0.1.1
+
+### Patch Changes
+
+- c339aa7: feat: added support for constants and runtimeApis to compactMetadata
+
 ## 0.1.0
 
 ### Minor Changes

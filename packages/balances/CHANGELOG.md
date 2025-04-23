@@ -1,5 +1,29 @@
 # @talismn/balances
 
+## 0.9.0
+
+### Minor Changes
+
+- 71f6dbd: deprecate sortIndex properties
+
+### Patch Changes
+
+- c339aa7: feat: use papi for decoding bittensor runtime api types
+- e704203: add: isNotNil and isTruthy utilities
+- Updated dependencies [71f6dbd]
+- Updated dependencies [c339aa7]
+- Updated dependencies [ae7f0ac]
+- Updated dependencies [e704203]
+- Updated dependencies [c339aa7]
+- Updated dependencies [71f6dbd]
+  - @talismn/token-rates@2.0.0
+  - @talismn/sapi@0.0.2
+  - @talismn/chaindata-provider@0.9.0
+  - @talismn/chain-connector@0.9.0
+  - @talismn/util@0.3.2
+  - @talismn/scale@0.1.1
+  - @talismn/chain-connector-evm@0.9.0
+
 ## 0.8.2
 
 ### Patch Changes

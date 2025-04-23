@@ -1,5 +1,14 @@
 # @talismn/keyring
 
+## 0.1.3
+
+### Patch Changes
+
+- e2c56bd: feat: made `@talismn/keyring` compatible with `react-native-quick-crypto`
+- e2c56bd: feat: use `crypto.subtle` instead of `@noble/hashes` for pbkdf2 inside of `entropyToSeed` for increased key derivation performance on mobile
+- Updated dependencies [e2c56bd]
+  - @talismn/crypto@0.1.2
+
 ## 0.1.2
 
 ### Patch Changes

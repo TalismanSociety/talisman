@@ -1,5 +1,5 @@
 import { isAccountOwned } from "@talismn/keyring"
-import { isTalismanHostname, log } from "extension-shared"
+import { IS_FIREFOX, isTalismanHostname, log } from "extension-shared"
 import { distinctUntilKeyChanged } from "rxjs"
 
 import { db } from "../db"
@@ -24,6 +24,7 @@ import TokensHandler from "../domains/tokens/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
+import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "../types"
 import { Port, RequestIdOnly } from "../types/base"
@@ -114,6 +115,36 @@ export default class Extension extends ExtensionHandler {
 
     // hides the get started component has soon as the wallet owns funds
     hideGetStartedOnceFunded()
+
+    // if BUILD is not "dev", submit a "wallet upgraded" event to posthog
+    if (process.env.BUILD !== "dev") {
+      ;(async () => {
+        // don't send "wallet upgraded" event if analytics is disabled, or wallet is not onboarded
+        const allowTracking = await this.stores.settings.get("useAnalyticsTracking")
+        const onboarded = await this.stores.app.getIsOnboarded()
+        if (!allowTracking || !onboarded || IS_FIREFOX) return
+
+        const lastWalletUpgradedEvent = await this.stores.app.get("lastWalletUpgradedEvent")
+
+        // short circuit if we've already sent a "wallet upgraded" event for this version
+        if (lastWalletUpgradedEvent === process.env.VERSION) return
+
+        // make sure we create a new report for this version of the wallet, not re-use one we created last version
+        await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
+
+        await spawnTaskToCreateNewReport({
+          // don't refresh balances in the background, just send the existing db cache
+          refreshBalances: false,
+
+          // the primary purpose of the "wallet upgraded" event is to submit the opt-in general report.
+          // `waitForReportCreated: true` lets us wait for the report to be created before we submit the event.
+          waitForReportCreated: true,
+        })
+
+        await talismanAnalytics.capture("wallet upgraded")
+        await this.stores.app.set({ lastWalletUpgradedEvent: process.env.VERSION })
+      })()
+    }
   }
 
   private cleanup() {
