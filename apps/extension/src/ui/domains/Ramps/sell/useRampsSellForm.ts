@@ -15,6 +15,7 @@ import { useAccounts, useChain, useSelectedCurrency, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
+import { RampsFormSharedData } from "../shared/types"
 import { RampsSellQuote, RampsSellQuoteSuccess } from "./types"
 import { useRampsSellCurrencies } from "./useRampsSellCurrencies"
 import { useRampsSellQuotes } from "./useRampsSellQuotes"
@@ -30,29 +31,13 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-// {
-//   currencyCode?: string
-//   tokenId?: TokenId
-//   amount?: number
-//   provider?: RampProvider
-//   account?: string
-// }
-
-// @dev: use only when debugging
-const DEFAULT_FORM_DATA: Partial<FormData> = {
-  currencyCode: "USD",
-  tokenId: "1-evm-native",
-  //tokenId: "polkadot-substrate-native",
-  amount: 0.5,
-}
-
-export const useRampsSellForm = () => {
+export const useRampsSellForm = (defaults: RampsFormSharedData) => {
   const { t } = useTranslation()
   const favCurrency = useSelectedCurrency()
   const refQuote = useRef<RampsSellQuote | null>(null)
 
   const form = useForm({
-    defaultValues: DEFAULT_FORM_DATA,
+    defaultValues: defaults as Partial<FormData>,
     onSubmit: async ({ value }) => {
       try {
         const quote = refQuote.current

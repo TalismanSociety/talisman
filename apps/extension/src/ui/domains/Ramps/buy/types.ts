@@ -1,6 +1,6 @@
 import { UseQueryResult } from "@tanstack/react-query"
 
-import { RampProvider } from "../shared/types"
+import { RampsProvider } from "../shared/types"
 
 export type RampsBuyQuoteOptions = {
   currencyCode: string
@@ -24,6 +24,6 @@ export type RampsBuyQuoteSuccess = {
 export type RampsBuyQuote = RampsBuyQuoteError | RampsBuyQuoteSuccess
 
 export type RampsBuyQuoteQuery = {
-  provider: RampProvider
+  provider: RampsProvider
   query: UseQueryResult<RampsBuyQuote | null, Error>
 }

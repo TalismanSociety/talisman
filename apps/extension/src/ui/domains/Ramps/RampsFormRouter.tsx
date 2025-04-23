@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
@@ -6,22 +6,44 @@ import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { RampsBuyForm } from "./buy/RampsBuyForm"
 import { RampsSellForm } from "./sell/RampsSellForm"
 import { RampsLayout } from "./shared/RampsLayout"
+import { RampsFormSharedData } from "./shared/types"
 import { useRampsModal } from "./useRampsModal"
 
 type FormMode = "buy" | "sell"
 
+type FormDefaults = RampsFormSharedData & {
+  mode: FormMode
+}
+
+const DEFAULT_FORM_VALUE: FormDefaults = {
+  mode: "buy",
+}
+
 export const RampsFormRouter = () => {
+  const { t } = useTranslation()
   const { close } = useRampsModal()
-  const [mode, setMode] = useState<FormMode>("buy") // TODO switch to buy
+  const [defaults, setDefaults] = useState(DEFAULT_FORM_VALUE)
+
+  const handleChangeDefaults = useCallback((value: RampsFormSharedData) => {
+    setDefaults((prev) => ({ ...prev, ...value }))
+  }, [])
+
+  const handleChangeTab = useCallback((mode: FormMode) => {
+    setDefaults((prev) => ({ ...prev, mode }))
+  }, [])
 
   return (
     <RampsLayout
       onBackClick={close}
-      title={"Buy/Sell"}
-      topRight={<FormModeSwitch mode={mode} onChange={setMode} />}
+      title={t("Buy/Sell")}
+      topRight={<FormModeSwitch mode={defaults.mode} onChange={handleChangeTab} />}
     >
-      {mode === "buy" && <RampsBuyForm />}
-      {mode === "sell" && <RampsSellForm />}
+      {defaults.mode === "buy" && (
+        <RampsBuyForm defaults={defaults} onChange={handleChangeDefaults} />
+      )}
+      {defaults.mode === "sell" && (
+        <RampsSellForm defaults={defaults} onChange={handleChangeDefaults} />
+      )}
     </RampsLayout>
   )
 }
@@ -32,6 +54,13 @@ const FormModeSwitch: FC<{ mode: FormMode; onChange: (mode: FormMode) => void }>
 }) => {
   const { t } = useTranslation()
 
+  const handleChange = useCallback(
+    (value: FormMode) => {
+      if (value !== mode) onChange(value)
+    },
+    [mode, onChange],
+  )
+
   return (
     <OptionSwitch
       options={[
@@ -40,7 +69,7 @@ const FormModeSwitch: FC<{ mode: FormMode; onChange: (mode: FormMode) => void }>
       ]}
       className="bg-[#464646] text-xs text-white [&>div]:h-full"
       defaultOption={mode}
-      onChange={(option) => onChange(option)}
+      onChange={handleChange}
     />
   )
 }

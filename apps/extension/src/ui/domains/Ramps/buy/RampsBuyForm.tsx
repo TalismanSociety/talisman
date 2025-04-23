@@ -21,7 +21,7 @@ import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
-import { RampProvider } from "../shared/types"
+import { RampsFormSharedData, RampsProvider } from "../shared/types"
 import { RampsBuyQuote, RampsBuyQuoteOptions, RampsBuyQuoteQuery } from "./types"
 import { useRampsBuyForm } from "./useRampsBuyForm"
 
@@ -30,7 +30,10 @@ const PROVIDER_LOGOS = {
   ramp: logoRamp,
 }
 
-export const RampsBuyForm = () => {
+export const RampsBuyForm: FC<{
+  defaults: RampsFormSharedData
+  onChange: (val: RampsFormSharedData) => void
+}> = ({ defaults, onChange }) => {
   const { t } = useTranslation()
 
   const {
@@ -43,7 +46,13 @@ export const RampsBuyForm = () => {
     quotes,
     tokens,
     accounts,
-  } = useRampsBuyForm()
+  } = useRampsBuyForm(defaults)
+
+  useEffect(() => {
+    // update parent state so those values can be reused if switching tab
+    if (defaults.currencyCode !== formData.currencyCode || defaults.tokenId !== formData.tokenId)
+      onChange({ currencyCode: formData.currencyCode, tokenId: formData.tokenId })
+  }, [defaults.currencyCode, defaults.tokenId, formData.currencyCode, formData.tokenId, onChange])
 
   const refInput = useRef<HTMLInputElement>(null)
 
@@ -226,7 +235,7 @@ const FieldSet: FC<{ label: ReactNode; children: ReactNode }> = ({ label, childr
   )
 }
 
-const ProviderLabel: FC<{ provider: RampProvider }> = ({ provider }) => {
+const ProviderLabel: FC<{ provider: RampsProvider }> = ({ provider }) => {
   return (
     <span className="text-body-secondary inline-flex items-center gap-2 text-xs">
       <span
@@ -244,7 +253,7 @@ const ProviderLabel: FC<{ provider: RampProvider }> = ({ provider }) => {
 
 const AmountOut: FC<{
   quotes: RampsBuyQuoteQuery[]
-  provider: RampProvider | undefined
+  provider: RampsProvider | undefined
   tokenId: TokenId | undefined
 }> = ({ quotes, provider, tokenId }) => {
   const token = useToken(tokenId)
@@ -298,7 +307,7 @@ const TokenPrice: FC<{
 
 const Providers: FC<{
   quoteConfig: RampsBuyQuoteOptions
-  selected: RampProvider | undefined
+  selected: RampsProvider | undefined
   quotes: RampsBuyQuoteQuery[]
   tokenRates: TokenRatesList | null | undefined
   onSelect: (provider: "ramp" | "coinbase") => void
@@ -323,7 +332,7 @@ const Providers: FC<{
 const ProviderButton: FC<{
   quoteConfig: RampsBuyQuoteOptions
   tokenRates: TokenRatesList | null | undefined
-  provider: RampProvider
+  provider: RampsProvider
   isSelected: boolean
   query: UseQueryResult<RampsBuyQuote | null, Error>
   onClick: () => void
