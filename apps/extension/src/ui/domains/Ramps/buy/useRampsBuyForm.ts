@@ -1,17 +1,24 @@
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
-import { isAccountCompatibleWithChain, isAccountEthereum } from "extension-core"
+import {
+  activeChainsStore,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  isAccountCompatibleWithChain,
+  isAccountEthereum,
+} from "extension-core"
 import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
+import { firstValueFrom } from "rxjs"
 import { z } from "zod"
 
 import { notify } from "@talisman/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { useAccounts, useChain, useSelectedCurrency, useToken } from "@ui/state"
+import { getToken$, useAccounts, useChain, useSelectedCurrency, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -39,6 +46,18 @@ type FormData = z.infer<typeof schema>
 //   account?: string
 // }
 
+const ensureTokenEnabled = async (tokenId: string) => {
+  const token = await firstValueFrom(getToken$(tokenId))
+  if (!token) return
+
+  await activeTokensStore.setActive(tokenId, true)
+
+  if (isEvmToken(token) && token.evmNetwork?.id)
+    await activeEvmNetworksStore.setActive(token.evmNetwork.id, true)
+  else if (isSubToken(token) && token.chain?.id)
+    await activeChainsStore.setActive(token.chain.id, true)
+}
+
 export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const { t } = useTranslation()
   const favCurrency = useSelectedCurrency()
@@ -51,6 +70,8 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
         const quote = refQuote.current
         if (!quote || quote.type === "error") throw new Error("No quote")
         const formData = schema.parse(value)
+
+        await ensureTokenEnabled(formData.tokenId)
 
         await redirectToProvider(formData, quote)
       } catch (err) {
