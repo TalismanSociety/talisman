@@ -7,7 +7,7 @@ import { BalanceFormatter } from "extension-core"
 import { capitalize } from "lodash"
 import { FC, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -41,6 +41,10 @@ export const RampsBuyForm: FC<{
   }, [defaults.currencyCode, defaults.tokenId, formData.currencyCode, formData.tokenId, onChange])
 
   const refInput = useRef<HTMLInputElement>(null)
+  const transitionStatus = useOpenCloseStatus()
+  useEffect(() => {
+    if (transitionStatus === "open") refInput.current?.focus()
+  }, [transitionStatus])
 
   return (
     <form
@@ -70,6 +74,7 @@ export const RampsBuyForm: FC<{
                             className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
                             value={field.state.value ?? ""}
                             onBlur={field.handleBlur}
+                            placeholder="100"
                             onChange={(e) =>
                               field.handleChange(
                                 isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,

@@ -29,7 +29,6 @@ const DEFAULT_FORM_VALUE: FormDefaults = {
 
 export const RampsFormRouter = () => {
   const selectedCurrency = useSelectedCurrency()
-  const { t } = useTranslation()
   const { close } = useRampsModal()
 
   const [defaults, setDefaults] = useState(() => {
@@ -53,12 +52,8 @@ export const RampsFormRouter = () => {
 
   return (
     <div className="relative flex h-full w-full flex-col">
-      <div className="flex items-center justify-between gap-8 px-10">
-        <div className="text-body-secondary flex h-32 min-h-[6.4rem] grow items-center space-x-2">
-          <div className="flex items-center justify-between">
-            <div className="font-bold text-white">{t("Buy/Sell")}</div>
-          </div>
-        </div>
+      <div className="flex h-32 items-center justify-between gap-8 px-10">
+        <div className="invisible size-12 shrink-0"></div>
         <div className="flex items-center gap-2">
           <FormModeSwitch mode={defaults.mode} onChange={handleChangeTab} />
         </div>
