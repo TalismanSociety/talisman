@@ -4,7 +4,11 @@ import { useTranslation } from "react-i18next"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 
 import { RampsBuyForm } from "./buy/RampsBuyForm"
+import { useRampsBuyCurrencies } from "./buy/useRampsBuyCurrencies"
+import { useRampsBuyTokens } from "./buy/useRampsBuyTokens"
 import { RampsSellForm } from "./sell/RampsSellForm"
+import { useRampsSellCurrencies } from "./sell/useRampsSellCurrencies"
+import { useRampsSellTokens } from "./sell/useRampsSellTokens"
 import { RampsLayout } from "./shared/RampsLayout"
 import { RampsFormSharedData } from "./shared/types"
 import { useRampsModal } from "./useRampsModal"
@@ -25,6 +29,12 @@ export const RampsFormRouter = () => {
   const { t } = useTranslation()
   const { close } = useRampsModal()
   const [defaults, setDefaults] = useState(DEFAULT_FORM_VALUE)
+
+  // preload data for inputs, prevents waiting when switching tab
+  useRampsBuyCurrencies()
+  useRampsSellCurrencies()
+  useRampsBuyTokens(defaults.currencyCode)
+  useRampsSellTokens(defaults.currencyCode)
 
   const handleChangeDefaults = useCallback((value: RampsFormSharedData) => {
     setDefaults((prev) => ({ ...prev, ...value }))

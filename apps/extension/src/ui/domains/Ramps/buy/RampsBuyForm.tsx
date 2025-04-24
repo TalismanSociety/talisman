@@ -112,7 +112,7 @@ export const RampsBuyForm: FC<{
                     </div>
                     <div className="leading-paragraph text-xs">
                       <RampsTokenPrice
-                        tokenId={quoteOpts?.tokenId}
+                        tokenId={formData?.tokenId}
                         tokenRates={tokenRates}
                         isLoading={isLoadingTokenRates}
                       />

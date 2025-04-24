@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query"
 import { keyBy } from "lodash"
 import { useMemo } from "react"
 
-import { useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
 
 export const useSpecificTokenRates = (tokens: Token[] | undefined) => {
+  const enabledTokenRates = useTokenRatesMap()
   const selectedCurrency = useSelectedCurrency()
 
   const queryKey = useMemo(
@@ -22,11 +23,13 @@ export const useSpecificTokenRates = (tokens: Token[] | undefined) => {
   return useQuery({
     queryKey: ["useSpecificTokenRates", queryKey],
     queryFn: () => {
-      if (!tokens?.length) return null
+      if (!tokens?.length) return {}
       const tokensMap = keyBy(tokens, (t) => t.id)
       return fetchTokenRates(tokensMap, [selectedCurrency])
     },
+    // tokens that are enabled should already be loaded in memory
+    initialData: enabledTokenRates,
+    select: (tokenRates) => ({ ...enabledTokenRates, ...tokenRates }),
     enabled: !!tokens,
-    refetchOnWindowFocus: false,
   })
 }
