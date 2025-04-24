@@ -1,5 +1,5 @@
 import { Token } from "@talismn/chaindata-provider"
-import { fetchTokenRates } from "@talismn/token-rates"
+import { fetchTokenRates, TokenRatesList } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
 import { keyBy } from "lodash"
 import { useMemo } from "react"
@@ -29,7 +29,7 @@ export const useSpecificTokenRates = (tokens: Token[] | undefined) => {
     },
     // tokens that are enabled should already be loaded in memory
     initialData: enabledTokenRates,
-    select: (tokenRates) => ({ ...enabledTokenRates, ...tokenRates }),
+    select: (tokenRates): TokenRatesList => ({ ...enabledTokenRates, ...tokenRates }),
     enabled: !!tokens,
   })
 }
