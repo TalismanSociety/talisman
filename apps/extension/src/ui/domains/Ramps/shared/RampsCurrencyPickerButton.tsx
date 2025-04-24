@@ -5,18 +5,17 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
-import { RampsCurrency } from "./currencies"
+import { getRampsCurrency, RampsCurrency } from "./currencies"
 import { RampsCurrencyPicker } from "./RampsCurrencyPicker"
 
 export const RampsCurrencyPickerButton: FC<{
   value?: string
-  currencies?: RampsCurrency[]
   onSelect: (currency: string) => void
-}> = ({ value, currencies, onSelect }) => {
+}> = ({ value, onSelect }) => {
   const [selected, setSelected] = useState(value)
   const { open, close, isOpen } = useOpenClose()
 
-  const currency = useMemo(() => currencies?.find((c) => c.code === value), [value, currencies])
+  const currency = useMemo(() => (value ? getRampsCurrency(value) : null), [value])
 
   const handleOpen = useCallback(() => {
     setSelected(value)
@@ -36,7 +35,6 @@ export const RampsCurrencyPickerButton: FC<{
       <button
         type="button"
         onClick={handleOpen}
-        disabled={!currencies}
         className={classNames(
           "border-grey-750 bg-grey-800 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3",
           "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale",
@@ -50,12 +48,7 @@ export const RampsCurrencyPickerButton: FC<{
         containerId="ramp-container"
         className="size-full bg-black"
       >
-        <RampsCurrencyPicker
-          selected={selected}
-          currencies={currencies}
-          onClose={close}
-          onSelect={handleSelect}
-        />
+        <RampsCurrencyPicker selected={selected} onClose={close} onSelect={handleSelect} />
       </Drawer>
     </>
   )

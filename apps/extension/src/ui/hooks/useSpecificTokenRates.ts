@@ -1,12 +1,18 @@
 import { Token } from "@talismn/chaindata-provider"
-import { fetchTokenRates, TokenRatesList } from "@talismn/token-rates"
+import { fetchTokenRates, TokenRateCurrency } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
 import { keyBy } from "lodash"
 import { useMemo } from "react"
 
 import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
 
-export const useSpecificTokenRates = (tokens: Token[] | undefined) => {
+/**
+ * Fetches token rates for a specific set of tokens, even if they are not enabled.
+ */
+export const useSpecificTokenRates = (
+  tokens: Token[] | undefined,
+  currencyIds?: TokenRateCurrency[],
+) => {
   const enabledTokenRates = useTokenRatesMap()
   const selectedCurrency = useSelectedCurrency()
 
@@ -21,15 +27,13 @@ export const useSpecificTokenRates = (tokens: Token[] | undefined) => {
   )
 
   return useQuery({
-    queryKey: ["useSpecificTokenRates", queryKey],
+    queryKey: ["useSpecificTokenRates", queryKey, currencyIds],
     queryFn: () => {
       if (!tokens?.length) return {}
       const tokensMap = keyBy(tokens, (t) => t.id)
-      return fetchTokenRates(tokensMap, [selectedCurrency])
+      return fetchTokenRates(tokensMap, currencyIds ?? [selectedCurrency])
     },
-    // tokens that are enabled should already be loaded in memory
     initialData: enabledTokenRates,
-    select: (tokenRates): TokenRatesList => ({ ...enabledTokenRates, ...tokenRates }),
     enabled: !!tokens,
   })
 }

@@ -5,9 +5,7 @@ type RampsCurrencies = {
   }
 }
 
-export type RampsCurrency = RampsCurrencies[keyof RampsCurrencies] & { code: string }
-
-export const currencies: RampsCurrencies = {
+const RAMPS_CURRENCIES_MAP: RampsCurrencies = {
   ISK: { name: "Icelandic Krona", icon: "circle-flags:is" },
   GEL: { name: "Georgian Lari", icon: "circle-flags:ge" },
   GBP: { name: "British Pound Sterling", icon: "circle-flags:gb" },
@@ -90,5 +88,11 @@ export const currencies: RampsCurrencies = {
   ZWL: { name: "Zimbabwean Dollar", icon: "circle-flags:zw" },
 }
 
+export type RampsCurrency = RampsCurrencies[keyof RampsCurrencies] & { code: string }
+
+export const RAMPS_CURRENCIES: RampsCurrency[] = Object.entries(RAMPS_CURRENCIES_MAP).map(
+  ([code, data]) => ({ code, ...data }),
+)
+
 export const getRampsCurrency = (code: string): RampsCurrency | null =>
-  currencies[code] ? { code, ...currencies[code] } : null
+  RAMPS_CURRENCIES_MAP[code] ? { code, ...RAMPS_CURRENCIES_MAP[code] } : null

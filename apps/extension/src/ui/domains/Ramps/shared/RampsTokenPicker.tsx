@@ -13,7 +13,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useChainsMap, useEvmNetworksMap, useSelectedCurrency } from "@ui/state"
+import { useChainsMap, useEvmNetworksMap, useRemoteConfig, useSelectedCurrency } from "@ui/state"
 
 import { RampsLayout } from "./RampsLayout"
 
@@ -32,6 +32,7 @@ export const RampsTokenPicker: FC<{
 }> = ({ tokens, tokenRates, selected, onClose, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
+  const { rampsPinnedTokens: rampsPinnedTokenIds } = useRemoteConfig()
 
   const evmNetworksMap = useEvmNetworksMap()
   const dotNetworksMap = useChainsMap()
@@ -54,9 +55,16 @@ export const RampsTokenPicker: FC<{
         if (t1.id === selected) return -1
         if (t2.id === selected) return 1
 
-        return t1.symbol.localeCompare(t2.symbol)
+        const isPinnedT1 = rampsPinnedTokenIds?.includes(t1.id)
+        const isPinnedT2 = rampsPinnedTokenIds?.includes(t2.id)
+        if (isPinnedT1 && !isPinnedT2) return -1
+        if (!isPinnedT1 && isPinnedT2) return 1
+
+        return t1.symbol === t2.symbol
+          ? (t1.network.name ?? "").localeCompare(t2.network.name ?? "")
+          : t1.symbol.localeCompare(t2.symbol)
       }),
-    [selected, tokensWithNetwork],
+    [rampsPinnedTokenIds, selected, tokensWithNetwork],
   )
 
   const filteredTokens = useMemo(() => {

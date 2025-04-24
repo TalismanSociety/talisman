@@ -10,33 +10,31 @@ import { useOpenCloseStatus } from "talisman-ui"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 
-import { RampsCurrency } from "./currencies"
+import { RAMPS_CURRENCIES, RampsCurrency } from "./currencies"
 import { RampsLayout } from "./RampsLayout"
 
 export const RampsCurrencyPicker: FC<{
-  /** if undefined, component assumes currencies are loading */
-  currencies: RampsCurrency[] | undefined
   selected?: string
   onSelect: (currencyCode: string) => void
   onClose: () => void
-}> = ({ currencies, selected, onClose, onSelect }) => {
+}> = ({ selected, onClose, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
   const sortedCurrencies = useMemo(
     () =>
-      currencies?.concat().sort((c1, c2) => {
+      RAMPS_CURRENCIES.concat().sort((c1, c2) => {
         if (c1.code === selected) return -1
         if (c2.code === selected) return 1
 
         return c1.name.localeCompare(c2.name)
       }),
-    [currencies, selected],
+    [selected],
   )
 
   const filteredCurrencies = useMemo(() => {
     const ls = search.toLowerCase()
-    return sortedCurrencies?.filter(
+    return sortedCurrencies.filter(
       (currency) =>
         currency.code.toLowerCase().includes(ls) || currency.name.toLowerCase().includes(ls),
     )
@@ -45,15 +43,13 @@ export const RampsCurrencyPicker: FC<{
   // preload icons
   const [isIconsReady, setIsIconsReady] = useState(false)
   useEffect(() => {
-    if (!currencies) return
-
     loadIcons(
-      currencies.map((c) => c.icon),
+      RAMPS_CURRENCIES.map((c) => c.icon),
       () => {
         setIsIconsReady(true)
       },
     )
-  }, [currencies])
+  }, [])
 
   // once drawer is open, focus on the search input
   const refSearchInput = useRef<HTMLInputElement>(null)
@@ -69,7 +65,7 @@ export const RampsCurrencyPicker: FC<{
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {!isIconsReady || !filteredCurrencies ? (
+          {!isIconsReady ? (
             range(0, 10).map((i) => <CurrencyButtonRowSkeleton key={i} />)
           ) : (
             <CurrenciesList

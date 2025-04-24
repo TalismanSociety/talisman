@@ -8,7 +8,7 @@ export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags
   rampConfig: RampConfig
   rampNetworks: Record<string, string> // maps a Ramp network ID to an EvmNetworkId or ChainId
-
+  rampsPinnedTokens: TokenId[]
   coingecko: {
     apiUrl: string
     apiKeyName?: string

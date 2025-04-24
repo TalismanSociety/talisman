@@ -26,17 +26,8 @@ export const RampsSellForm: FC<{
 }> = ({ defaults, onChange }) => {
   const { t } = useTranslation()
 
-  const {
-    form,
-    formData,
-    currencies,
-    tokenRates,
-    isLoadingTokenRates,
-    quoteOpts,
-    quotes,
-    tokens,
-    accounts,
-  } = useRampsSellForm(defaults)
+  const { form, formData, tokenRates, isLoadingTokenRates, quoteOpts, quotes, tokens, accounts } =
+    useRampsSellForm(defaults)
 
   useEffect(() => {
     // update parent state so those values can be reused if switching tab
@@ -134,7 +125,6 @@ export const RampsSellForm: FC<{
                         name="currencyCode"
                         children={(field) => (
                           <RampsCurrencyPickerButton
-                            currencies={currencies}
                             onSelect={(currency) => field.handleChange(currency)}
                             value={field.state.value}
                           />

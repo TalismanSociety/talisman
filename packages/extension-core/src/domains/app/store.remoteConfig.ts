@@ -13,6 +13,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     rampApiKey: "",
   },
   rampNetworks: {},
+  rampsPinnedTokens: ["polkadot-substrate-native", "1-evm-native", "bittensor-substrate-native"],
   coingecko: {
     apiUrl: "https://api.coingecko.com",
   },
