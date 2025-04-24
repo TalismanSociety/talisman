@@ -11,12 +11,14 @@ export const getRampBuyUrl = async (
 ) => {
   const remoteConfig = await remoteConfig$.getValue()
 
+  // https://docs.ramp.network/configuration
   const params = new URLSearchParams({
     hostApiKey: remoteConfig.rampConfig.rampApiKey,
     hostLogoUrl: TALISMAN_LOGO_URL,
     defaultFlow: "ONRAMP",
     enabledFlows: "ONRAMP,OFFRAMP",
     hostAppName: "Talisman",
+    hideExitButton: "true",
 
     swapAsset: cryptoAssetSymbol,
     userAddress: address,
@@ -51,6 +53,7 @@ export const getRampSellUrl = async (
     defaultFlow: "ONRAMP",
     enabledFlows: "ONRAMP,OFFRAMP",
     hostAppName: "Talisman",
+    hideExitButton: "true",
 
     swapAsset: cryptoAssetSymbol,
     userAddress: address,

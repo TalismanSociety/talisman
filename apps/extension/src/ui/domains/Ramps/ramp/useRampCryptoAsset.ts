@@ -26,7 +26,7 @@ export const useRampCryptoAsset = (
 
   return useMemo(() => {
     if (!token || !currencyCode) return null
-    const type = getRampTokenType(token.type)
+    const type = getRampTokenType(token)
     const chainId = getRampChainId(remoteConfig, token.evmNetwork?.id ?? token.chain?.id ?? "")
 
     if (!type || !chainId) return null
@@ -36,7 +36,8 @@ export const useRampCryptoAsset = (
         a.chain === chainId &&
         a.type === type &&
         (token.type !== "evm-erc20" ||
-          a.address?.toLowerCase() === token.contractAddress.toLowerCase()),
+          a.address?.toLowerCase() === token.contractAddress.toLowerCase()) &&
+        (token.type !== "substrate-assets" || token.assetId === a.address),
     )
 
     return asset
@@ -51,19 +52,20 @@ export const useRampCryptoAsset = (
   }, [rampAssets?.assets, remoteConfig, token, currencyCode])
 }
 
-const getRampTokenType = (type: Token["type"]) => {
-  switch (type) {
+const getRampTokenType = (token: Token) => {
+  switch (token.type) {
     case "evm-erc20":
       return "ERC20"
     case "substrate-native":
     case "evm-native":
       return "NATIVE"
+    case "substrate-assets":
+      return token.chain.id === "polkadot-asset-hub" ? "DOT_AH" : null
     default:
       return null
   }
 }
 
-// TODO helpers ?
 const getRampChainId = (remoteConfig: RemoteConfigStoreData, talismanNetworkId: string) => {
   const entry = Object.entries(remoteConfig.rampNetworks).find(
     ([, talismanId]) => talismanId === talismanNetworkId,

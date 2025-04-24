@@ -83,7 +83,7 @@ export const useRampsSellQuoteRamp = (
       if (!res) return null
       if (res.type === "error") return res
 
-      return res.data.CARD && config && token
+      return res.data.CARD && config && rampCryptoAsset
         ? {
             type: "success",
             fee: res.data.CARD.appliedFee,
@@ -93,7 +93,7 @@ export const useRampsSellQuoteRamp = (
               getRampSellUrl(
                 config.currencyCode,
                 res.data.CARD.cryptoAmount,
-                token.symbol,
+                rampCryptoAsset.id,
                 address,
               ),
           }

@@ -76,13 +76,13 @@ export const useRampsBuyQuoteRamp = (
     select: (res: FetchRampBuyQuoteResult | null): RampsBuyQuote | null => {
       if (!res) return null
       if (res.type === "error") return res
-      return res.data.CARD_PAYMENT && config && token
+      return res.data.CARD_PAYMENT && config && rampCryptoAsset
         ? {
             type: "success",
             fee: res.data.CARD_PAYMENT.appliedFee,
             amountOut: res.data.CARD_PAYMENT.cryptoAmount,
             getRedirectUrl: (address: string) =>
-              getRampBuyUrl(config.currencyCode, config.amount, token.symbol, address),
+              getRampBuyUrl(config.currencyCode, config.amount, rampCryptoAsset.id, address),
           }
         : null
     },
