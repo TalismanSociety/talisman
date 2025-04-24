@@ -10,8 +10,8 @@ export const useRampsBuyQuotes = (config: RampsBuyQuoteOptions | null) => {
 
   return useMemo<RampsBuyQuoteQuery[]>(
     () => [
-      { provider: "ramp", query: queryRamp },
       { provider: "coinbase", query: queryCoinbase },
+      { provider: "ramp", query: queryRamp },
     ],
     [queryRamp, queryCoinbase],
   )
