@@ -2,13 +2,13 @@ import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
+import { useSelectedCurrency } from "@ui/state"
 
 import { RampsBuyForm } from "./buy/RampsBuyForm"
-import { useRampsBuyCurrencies } from "./buy/useRampsBuyCurrencies"
 import { useRampsBuyTokens } from "./buy/useRampsBuyTokens"
 import { RampsSellForm } from "./sell/RampsSellForm"
-import { useRampsSellCurrencies } from "./sell/useRampsSellCurrencies"
 import { useRampsSellTokens } from "./sell/useRampsSellTokens"
+import { getRampsCurrency } from "./shared/currencies"
 import { RampsLayout } from "./shared/RampsLayout"
 import { RampsFormSharedData } from "./shared/types"
 import { useRampsModal } from "./useRampsModal"
@@ -21,18 +21,24 @@ type FormDefaults = RampsFormSharedData & {
 
 const DEFAULT_FORM_VALUE: FormDefaults = {
   mode: "buy",
-  currencyCode: "USD",
-  tokenId: "1-evm-native",
+  // @dev: use this to prefill the form when debugging
+  // currencyCode: "USD",
+  // tokenId: "1-evm-native",
 }
 
 export const RampsFormRouter = () => {
+  const selectedCurrency = useSelectedCurrency()
   const { t } = useTranslation()
   const { close } = useRampsModal()
-  const [defaults, setDefaults] = useState(DEFAULT_FORM_VALUE)
+
+  const [defaults, setDefaults] = useState(() => {
+    if (DEFAULT_FORM_VALUE.currencyCode) return DEFAULT_FORM_VALUE
+    // if user's current currency exists in ramps currencies, set it as default
+    const currency = getRampsCurrency(selectedCurrency.toUpperCase())
+    return currency ? { ...DEFAULT_FORM_VALUE, currencyCode: currency.code } : DEFAULT_FORM_VALUE
+  })
 
   // preload data for inputs, prevents waiting when switching tab
-  useRampsBuyCurrencies()
-  useRampsSellCurrencies()
   useRampsBuyTokens(defaults.currencyCode)
   useRampsSellTokens(defaults.currencyCode)
 
