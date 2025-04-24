@@ -3,6 +3,7 @@ import { BittensorBondDelegateSelect } from "./BittensorBondDelegateSelect"
 import { BittensorBondFollowUp } from "./BittensorBondFollowUp"
 import { BittensorBondForm } from "./BittensorBondForm"
 import { BittensorBondReview } from "./BittensorBondReview"
+import { BittensorSubnetBondForm } from "./BittensorSubnetBondForm"
 
 export const BittensorBondModalBody = () => {
   const { step } = useBittensorBondWizard()
@@ -12,6 +13,8 @@ export const BittensorBondModalBody = () => {
       return <BittensorBondDelegateSelect />
     case "form":
       return <BittensorBondForm />
+    case "root-form":
+      return <BittensorSubnetBondForm />
     case "review":
       return <BittensorBondReview />
     case "follow-up":

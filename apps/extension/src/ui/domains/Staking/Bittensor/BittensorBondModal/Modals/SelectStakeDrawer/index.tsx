@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
+import { useBittensorBondWizard } from "../../../hooks/useBittensorBondWizard"
+
 type SelectStakeDrawer = {
   containerId: string | undefined
   isOpen: boolean
@@ -9,6 +11,8 @@ type SelectStakeDrawer = {
 
 export const SelectStakeDrawer = ({ isOpen, containerId, onDismiss }: SelectStakeDrawer) => {
   const { t } = useTranslation()
+  const { setStep } = useBittensorBondWizard()
+
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
       <div className="bg-grey-800 flex w-full flex-col items-center gap-4 rounded-t-xl p-12">
@@ -22,7 +26,7 @@ export const SelectStakeDrawer = ({ isOpen, containerId, onDismiss }: SelectStak
           <Button className="text-sm" onClick={onDismiss}>
             Root Staking
           </Button>
-          <Button className="text-sm" primary>
+          <Button className="text-sm" primary onClick={() => setStep("root-form")}>
             Subnet DTAO
           </Button>
         </div>
