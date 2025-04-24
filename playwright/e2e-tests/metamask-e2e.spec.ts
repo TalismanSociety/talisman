@@ -18,6 +18,6 @@ test("Access Metamask e2e DApp and connect wallet", async ({ addAccount, context
   await popup.setViewportSize({ width: 1280, height: 720 })
   await popup.getByRole("button", { name: ETH_ACC_NAME }).click()
   await popup.getByTestId("connection-connect-button").click()
-  //verify that the account is connected
+  //verify that the account is connected on metamask test dapp
   await expect(ethAccount.locator("#accounts")).toContainText(ETH_ACC_ADDRESS)
 })
