@@ -15,7 +15,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useChainsMap, useEvmNetworksMap, useRemoteConfig, useSelectedCurrency } from "@ui/state"
 
-import { RampsLayout } from "./RampsLayout"
+import { RampsPickerLayout } from "./RampsPickerLayout"
 
 type TokenDisplay = Token & {
   network: Chain | EvmNetwork
@@ -94,7 +94,7 @@ export const RampsTokenPicker: FC<{
   }, [transitionStatus])
 
   return (
-    <RampsLayout onBackClick={onClose} title={t("Select a token")}>
+    <RampsPickerLayout onBackClick={onClose} title={t("Select a token")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
@@ -110,7 +110,7 @@ export const RampsTokenPicker: FC<{
           )}
         </ScrollContainer>
       </div>
-    </RampsLayout>
+    </RampsPickerLayout>
   )
 }
 

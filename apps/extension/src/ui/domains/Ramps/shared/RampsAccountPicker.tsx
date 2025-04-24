@@ -25,7 +25,7 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
 
-import { RampsLayout } from "./RampsLayout"
+import { RampsPickerLayout } from "./RampsPickerLayout"
 
 export type RampAccountPickerBalancesDisplayMode = "transferable" | "total"
 
@@ -84,7 +84,7 @@ export const RampsAccountPicker: FC<{
   }, [transitionStatus])
 
   return (
-    <RampsLayout onBackClick={onClose} title={t("Select an account")}>
+    <RampsPickerLayout onBackClick={onClose} title={t("Select an account")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
@@ -105,7 +105,7 @@ export const RampsAccountPicker: FC<{
           }
         </ScrollContainer>
       </div>
-    </RampsLayout>
+    </RampsPickerLayout>
   )
 }
 

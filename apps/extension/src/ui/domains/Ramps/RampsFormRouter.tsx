@@ -1,5 +1,7 @@
+import { XIcon } from "@talismn/icons"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { IconButton } from "talisman-ui"
 
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { useSelectedCurrency } from "@ui/state"
@@ -9,7 +11,6 @@ import { useRampsBuyTokens } from "./buy/useRampsBuyTokens"
 import { RampsSellForm } from "./sell/RampsSellForm"
 import { useRampsSellTokens } from "./sell/useRampsSellTokens"
 import { getRampsCurrency } from "./shared/currencies"
-import { RampsLayout } from "./shared/RampsLayout"
 import { RampsFormSharedData } from "./shared/types"
 import { useRampsModal } from "./useRampsModal"
 
@@ -19,9 +20,9 @@ type FormDefaults = RampsFormSharedData & {
   mode: FormMode
 }
 
+// @dev: can use this to prefill the form when debugging
 const DEFAULT_FORM_VALUE: FormDefaults = {
   mode: "buy",
-  // @dev: use this to prefill the form when debugging
   // currencyCode: "USD",
   // tokenId: "1-evm-native",
 }
@@ -38,7 +39,7 @@ export const RampsFormRouter = () => {
     return currency ? { ...DEFAULT_FORM_VALUE, currencyCode: currency.code } : DEFAULT_FORM_VALUE
   })
 
-  // preload data for inputs, prevents waiting when switching tab
+  // preload tokens so they can be preselected, better UX when switching tab
   useRampsBuyTokens(defaults.currencyCode)
   useRampsSellTokens(defaults.currencyCode)
 
@@ -51,18 +52,29 @@ export const RampsFormRouter = () => {
   }, [])
 
   return (
-    <RampsLayout
-      onBackClick={close}
-      title={t("Buy/Sell")}
-      topRight={<FormModeSwitch mode={defaults.mode} onChange={handleChangeTab} />}
-    >
-      {defaults.mode === "buy" && (
-        <RampsBuyForm defaults={defaults} onChange={handleChangeDefaults} />
-      )}
-      {defaults.mode === "sell" && (
-        <RampsSellForm defaults={defaults} onChange={handleChangeDefaults} />
-      )}
-    </RampsLayout>
+    <div className="relative flex h-full w-full flex-col">
+      <div className="flex items-center justify-between gap-8 px-10">
+        <div className="text-body-secondary flex h-32 min-h-[6.4rem] grow items-center space-x-2">
+          <div className="flex items-center justify-between">
+            <div className="font-bold text-white">{t("Buy/Sell")}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <FormModeSwitch mode={defaults.mode} onChange={handleChangeTab} />
+        </div>
+        <IconButton onClick={close}>
+          <XIcon />
+        </IconButton>
+      </div>
+      <div className="w-full grow overflow-hidden">
+        {defaults.mode === "buy" && (
+          <RampsBuyForm defaults={defaults} onChange={handleChangeDefaults} />
+        )}
+        {defaults.mode === "sell" && (
+          <RampsSellForm defaults={defaults} onChange={handleChangeDefaults} />
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -74,6 +86,7 @@ const FormModeSwitch: FC<{ mode: FormMode; onChange: (mode: FormMode) => void }>
 
   const handleChange = useCallback(
     (value: FormMode) => {
+      // without this check we run into infinite loop
       if (value !== mode) onChange(value)
     },
     [mode, onChange],

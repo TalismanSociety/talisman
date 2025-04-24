@@ -11,7 +11,7 @@ import { ScrollContainer, useScrollContainer } from "@talisman/components/Scroll
 import { SearchInput } from "@talisman/components/SearchInput"
 
 import { RAMPS_CURRENCIES, RampsCurrency } from "./currencies"
-import { RampsLayout } from "./RampsLayout"
+import { RampsPickerLayout } from "./RampsPickerLayout"
 
 export const RampsCurrencyPicker: FC<{
   selected?: string
@@ -59,7 +59,7 @@ export const RampsCurrencyPicker: FC<{
   }, [transitionStatus])
 
   return (
-    <RampsLayout onBackClick={onClose} title={t("Select a currency")}>
+    <RampsPickerLayout onBackClick={onClose} title={t("Select a currency")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
@@ -76,7 +76,7 @@ export const RampsCurrencyPicker: FC<{
           )}
         </ScrollContainer>
       </div>
-    </RampsLayout>
+    </RampsPickerLayout>
   )
 }
 
