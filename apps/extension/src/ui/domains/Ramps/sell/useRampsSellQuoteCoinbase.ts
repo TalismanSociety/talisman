@@ -1,7 +1,9 @@
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import { COINBASE_API_BASE_PATH, log } from "extension-shared"
+import { t } from "i18next"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
 
 import { useToken } from "@ui/state"
@@ -20,6 +22,7 @@ import { RampsSellQuote, RampsSellQuoteError, RampsSellQuoteOptions } from "./ty
 export const useRampsSellQuoteCoinbase = (
   config: RampsSellQuoteOptions | null,
 ): UseQueryResult<RampsSellQuote | null, Error> => {
+  const { t } = useTranslation()
   const token = useToken(config?.tokenId)
   const { data: options } = useCoinbaseSellOptions()
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
@@ -31,13 +34,16 @@ export const useRampsSellQuoteCoinbase = (
     const limit = currency?.limits.find((l) => l.id === "FIAT_WALLET")
     if (!currency || !limit) return null
 
-    return `Cashout amount must be between ${formatPrice(Number(limit.min), currency.id, true)} and ${formatPrice(Number(limit.max), currency.id, true)}`
+    return t("Cashout amount must be between {{min}} and {{max}}", {
+      min: formatPrice(Number(limit.min), currency.id, true),
+      max: formatPrice(Number(limit.max), currency.id, true),
+    })
 
     // if (config.amount < Number(limit.min))
     //   return `Minimum sell is ${formatPrice(Number(limit.min), config.currencyCode, true)}`
     // if (config.amount > Number(limit.max))
     //   return `Maximum sell is ${formatPrice(Number(limit.max), config.currencyCode, true)}`
-  }, [config, options])
+  }, [config, options, t])
 
   const inputError = useMemo<RampsSellQuoteError | null>(() => {
     if (!config || !options) return null
@@ -45,15 +51,15 @@ export const useRampsSellQuoteCoinbase = (
     if (!options.cashout_currencies.length)
       return {
         type: "error",
-        message: "Unavailable",
-        description: "This service is not available in your region yet.",
+        message: t("Unavailable"),
+        description: t("This service is not available in your region yet."),
       }
 
     if (!coinbaseToken)
       return {
         type: "error",
-        message: "Unavailable",
-        description: `Asset ${token?.symbol} is not available yet.`,
+        message: t("Unavailable"),
+        description: t("Asset {{symbol}} is not available yet.", { symbol: token?.symbol ?? "" }),
       }
 
     const getInputErrorDescription = (
@@ -63,7 +69,7 @@ export const useRampsSellQuoteCoinbase = (
       const limit = coinbaseOpts.cashout_currencies
         .find((c) => c.id === config.currencyCode)
         ?.limits.find((l) => l.id === "FIAT_WALLET")
-      if (!limit) return `Currency ${config.currencyCode} is not available yet.`
+      if (!limit) return t("Currency {{currencyCode}} is not available yet.", config)
 
       // sadly we dont know the price of the token here, so we cant validate min/max up front
 
@@ -79,11 +85,11 @@ export const useRampsSellQuoteCoinbase = (
     return description
       ? {
           type: "error",
-          message: "Unavailable",
+          message: t("Unavailable"),
           description,
         }
       : null
-  }, [coinbaseToken, config, options, token?.symbol])
+  }, [coinbaseToken, config, options, t, token?.symbol])
 
   return useQuery({
     queryKey: ["useRampsSellQuoteCoinbase", config, coinbaseToken, inputError, minMaxAmount],
@@ -99,7 +105,6 @@ export const useRampsSellQuoteCoinbase = (
       )
     },
     select: (res: FetchCoinbaseSellQuoteResult | null): RampsSellQuote | null => {
-      //  console.log("[ramp] FetchCoinbaseSellQuoteResult", res)
       if (!res) return null
       if (res.type === "error") return res
       return res.data && token && config && coinbaseToken
@@ -190,7 +195,7 @@ const fetchCoinbaseSellQuote = async (
       log.error("[ramp] Coinbase quote error", error)
       return getCoinbaseQuoteError(error, minMaxAmount)
     } catch (err) {
-      return { type: "error", message: "Unavailable" }
+      return { type: "error", message: t("Unavailable") }
     }
   }
 
@@ -215,7 +220,7 @@ const getCoinbaseQuoteError = (
 
   return {
     type: "error",
-    message: "Unavailable",
+    message: t("Unavailable"),
     description: getDescription(),
   }
 }

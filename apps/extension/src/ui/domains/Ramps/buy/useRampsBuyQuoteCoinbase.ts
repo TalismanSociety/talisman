@@ -1,7 +1,9 @@
 import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import { COINBASE_API_BASE_PATH, log } from "extension-shared"
+import { t } from "i18next"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
 
 import { useToken } from "@ui/state"
@@ -20,6 +22,7 @@ import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types
 export const useRampsBuyQuoteCoinbase = (
   config: RampsBuyQuoteOptions | null,
 ): UseQueryResult<RampsBuyQuote | null, Error> => {
+  const { t } = useTranslation()
   const token = useToken(config?.tokenId)
   const { data: options } = useCoinbaseBuyOptions()
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
@@ -30,15 +33,15 @@ export const useRampsBuyQuoteCoinbase = (
     if (!options.payment_currencies.length)
       return {
         type: "error",
-        message: "Unavailable",
-        description: "This service is not available in your region yet.",
+        message: t("Unavailable"),
+        description: t("This service is not available in your region yet."),
       }
 
     if (!coinbaseToken)
       return {
         type: "error",
-        message: "Unavailable",
-        description: `Asset ${token?.symbol} is not available yet.`,
+        message: t("Unavailable"),
+        description: t("Asset {{symbol}} is not available yet.", { symbol: token?.symbol ?? "" }),
       }
 
     const getInputErrorDescription = (
@@ -48,12 +51,17 @@ export const useRampsBuyQuoteCoinbase = (
       const limit = coinbaseOpts.payment_currencies
         .find((c) => c.id === config.currencyCode)
         ?.limits.find((l) => l.id === "CARD")
-      if (!limit) return `Currency ${config.currencyCode} is not available yet.`
+      if (!limit) return t("Currency {{currencyCode}} is not available yet.", config)
 
       if (config.amount < Number(limit.min))
-        return `Minimum purchase is ${formatPrice(Number(limit.min), config.currencyCode, true)}`
+        return t("Minimum purchase is {{value}}", {
+          value: formatPrice(Number(limit.min), config.currencyCode, true),
+        })
       if (config.amount > Number(limit.max))
-        return `Maximum purchase is ${formatPrice(Number(limit.max), config.currencyCode, true)}`
+        return t("Maximum purchase is {{value}}", {
+          value: formatPrice(Number(limit.max), config.currencyCode, true),
+        })
+
       return null
     }
 
@@ -62,11 +70,11 @@ export const useRampsBuyQuoteCoinbase = (
     return description
       ? {
           type: "error",
-          message: "Unavailable",
+          message: t("Unavailable"),
           description,
         }
       : null
-  }, [coinbaseToken, config, options, token?.symbol])
+  }, [coinbaseToken, config, options, t, token?.symbol])
 
   return useQuery({
     queryKey: ["useRampsBuyQuoteCoinbase", config, coinbaseToken, inputError],
@@ -162,7 +170,7 @@ const fetchCoinbaseBuyQuote = async (
       log.error("[ramp] Coinbase quote error", error)
       return getCoinbaseQuoteError(error)
     } catch (err) {
-      return { type: "error", message: "Unavailable" }
+      return { type: "error", message: t("Unavailable") }
     }
   }
 
@@ -173,7 +181,7 @@ const fetchCoinbaseBuyQuote = async (
 const getCoinbaseQuoteError = (error: { code: number; message: string }): RampsBuyQuoteError => {
   return {
     type: "error",
-    message: "Unavailable",
+    message: t("Unavailable"),
     description: error.message,
   }
 }

@@ -1,7 +1,9 @@
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import { log } from "extension-shared"
+import { t } from "i18next"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useToken } from "@ui/state"
 
@@ -15,6 +17,7 @@ import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types
 export const useRampsBuyQuoteRamp = (
   config: RampsBuyQuoteOptions | null,
 ): UseQueryResult<RampsBuyQuote | null, Error> => {
+  const { t } = useTranslation()
   const token = useToken(config?.tokenId)
   const rampCryptoAsset = useRampCryptoAsset(config?.currencyCode, config?.tokenId, "buy")
   const { data: currencies } = useRampCurrencies()
@@ -28,22 +31,27 @@ export const useRampsBuyQuoteRamp = (
     if (!currency)
       return {
         type: "error",
-        message: "Unavailable",
-        description: `Currency ${config.currencyCode} is not available yet.`,
+        message: t("Unavailable"),
+        description: t("Currency {{currencyCode}} is not available yet.", config),
       }
 
     if (!rampCryptoAsset)
       return {
         type: "error",
-        message: "Unavailable",
-        description: `Asset ${token?.symbol} is not available yet.`,
+        message: t("Unavailable"),
+        description: t("Asset {{symbol}} is not available yet.", { symbol: token?.symbol ?? "" }),
       }
 
     const getInputErrorDescription = (config: RampsBuyQuoteOptions, asset: RampCryptoAsset) => {
       if (typeof asset.min === "number" && config.amount < asset.min)
-        return `Minimum purchase is ${formatPrice(asset.min, config.currencyCode, true)}`
+        return t("Minimum purchase is {{value}}", {
+          value: formatPrice(asset.min, config.currencyCode, true),
+        })
       if (typeof asset.max === "number" && config.amount > asset.max)
-        return `Maximum purchase is ${formatPrice(asset.max, config.currencyCode, true)}`
+        return t("Maximum purchase is {{value}}", {
+          value: formatPrice(asset.max, config.currencyCode, true),
+        })
+
       return null
     }
 
@@ -52,11 +60,11 @@ export const useRampsBuyQuoteRamp = (
     return description
       ? {
           type: "error",
-          message: "Unavailable",
+          message: t("Unavailable"),
           description,
         }
       : null
-  }, [config, currencies, rampCryptoAsset, token?.symbol])
+  }, [config, currencies, rampCryptoAsset, t, token?.symbol])
 
   return useQuery({
     queryKey: ["useRampsBuyQuoteRamp", config, rampCryptoAsset, inputError],
@@ -105,7 +113,12 @@ const fetchRampBuyQuote = async (
 
   if (!response.ok) {
     log.error("[ramp] Ramp quote error", response.status, response.statusText)
-    if (response.status === 403) return { type: "error", message: "Unavailable in your region" }
+    if (response.status === 403)
+      return {
+        type: "error",
+        message: t("Unavailable"),
+        description: t("This service is not available in your region yet."),
+      }
     try {
       const error = await response.json()
       return getRampErrorMessage(error)
@@ -122,7 +135,7 @@ const getRampErrorMessage = (error: { code: string }): RampsBuyQuoteError => {
   const getDescription = (code: string) => {
     switch (code) {
       case "SWAP.VALIDATION.SWAP_VALUE_IS_ZERO":
-        return "Insufficent amount"
+        return t("Insufficent amount")
       default:
         return undefined
     }
@@ -130,7 +143,7 @@ const getRampErrorMessage = (error: { code: string }): RampsBuyQuoteError => {
 
   return {
     type: "error",
-    message: "Unavailable",
+    message: t("Unavailable"),
     description: getDescription(error.code),
   }
 }
