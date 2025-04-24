@@ -12,6 +12,7 @@ import { getRampSellUrl } from "../ramp/helpers"
 import { RampSellQuoteResult } from "../ramp/types"
 import { RampCryptoAsset, useRampCryptoAsset } from "../ramp/useRampCryptoAsset"
 import { useRampCurrencies } from "../ramp/useRampCurrencies"
+import { useCountryCode } from "../shared/useCountryCode"
 import { RampsSellQuote, RampsSellQuoteError, RampsSellQuoteOptions } from "./types"
 
 export const useRampsSellQuoteRamp = (
@@ -21,6 +22,7 @@ export const useRampsSellQuoteRamp = (
   const token = useToken(config?.tokenId)
   const rampCryptoAsset = useRampCryptoAsset(config?.currencyCode, config?.tokenId, "sell")
   const { data: currencies } = useRampCurrencies()
+  const { data: countryInfo } = useCountryCode()
 
   const inputError = useMemo<RampsSellQuoteError | null>(() => {
     if (!config || !currencies) return null
@@ -95,6 +97,7 @@ export const useRampsSellQuoteRamp = (
                 res.data.CARD.cryptoAmount,
                 rampCryptoAsset.id,
                 address,
+                countryInfo?.countryCode ?? "",
               ),
           }
         : null

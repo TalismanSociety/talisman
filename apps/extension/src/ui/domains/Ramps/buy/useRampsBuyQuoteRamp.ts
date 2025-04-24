@@ -12,6 +12,7 @@ import { getRampBuyUrl } from "../ramp/helpers"
 import { RampBuyQuoteResult } from "../ramp/types"
 import { RampCryptoAsset, useRampCryptoAsset } from "../ramp/useRampCryptoAsset"
 import { useRampCurrencies } from "../ramp/useRampCurrencies"
+import { useCountryCode } from "../shared/useCountryCode"
 import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
 
 export const useRampsBuyQuoteRamp = (
@@ -21,6 +22,7 @@ export const useRampsBuyQuoteRamp = (
   const token = useToken(config?.tokenId)
   const rampCryptoAsset = useRampCryptoAsset(config?.currencyCode, config?.tokenId, "buy")
   const { data: currencies } = useRampCurrencies()
+  const { data: countryInfo } = useCountryCode()
 
   const inputError = useMemo<RampsBuyQuoteError | null>(() => {
     if (!config || !currencies) return null
@@ -82,7 +84,13 @@ export const useRampsBuyQuoteRamp = (
             fee: res.data.CARD_PAYMENT.appliedFee,
             amountOut: res.data.CARD_PAYMENT.cryptoAmount,
             getRedirectUrl: (address: string) =>
-              getRampBuyUrl(config.currencyCode, config.amount, rampCryptoAsset.id, address),
+              getRampBuyUrl(
+                config.currencyCode,
+                config.amount,
+                rampCryptoAsset.id,
+                address,
+                countryInfo?.countryCode ?? "",
+              ),
           }
         : null
     },

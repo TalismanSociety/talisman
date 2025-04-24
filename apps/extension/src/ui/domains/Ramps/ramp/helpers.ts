@@ -8,6 +8,7 @@ export const getRampBuyUrl = async (
   amount: number,
   cryptoAssetSymbol: string,
   address: string,
+  countryCode: string,
 ) => {
   const remoteConfig = await remoteConfig$.getValue()
 
@@ -20,21 +21,12 @@ export const getRampBuyUrl = async (
     hostAppName: "Talisman",
     hideExitButton: "true",
 
+    selectedCountryCode: countryCode,
     swapAsset: cryptoAssetSymbol,
     userAddress: address,
     fiatCurrency: currencyCode,
     fiatValue: amount.toString(),
   })
-
-  // // Dynamically add the amount parameter based on the dirtyAmountField
-  // if (dirtyAmountField === "fiatAmount") {
-  //   params.append("fiatValue", fiatAmount.toString())
-  // } else {
-  //   params.append(
-  //     "swapAmount",
-  //     tokensToPlanck(tokenAmount.toString(), rampTokenAsset.decimals).toString(),
-  //   )
-  // }
 
   return `${remoteConfig.rampConfig.rampBasePath}/?${params.toString()}`
 }
@@ -44,6 +36,7 @@ export const getRampSellUrl = async (
   plancks: string | bigint,
   address: string,
   currencyCode: string,
+  countryCode: string,
 ) => {
   const remoteConfig = await remoteConfig$.getValue()
 
@@ -55,6 +48,7 @@ export const getRampSellUrl = async (
     hostAppName: "Talisman",
     hideExitButton: "true",
 
+    selectedCountryCode: countryCode,
     swapAsset: cryptoAssetSymbol,
     userAddress: address,
     fiatCurrency: currencyCode,
