@@ -9,6 +9,7 @@ import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 
 import { RAMPS_CURRENCIES, RampsCurrency } from "./currencies"
 import { RampsPickerLayout } from "./RampsPickerLayout"
@@ -21,15 +22,29 @@ export const RampsCurrencyPicker: FC<{
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
+  const [favoriteCurrenciesRaw] = useFavoriteCurrencies()
+  const favoriteCurrenciesUpper = useMemo(() => {
+    // favorites are lower case
+    // ramps currencies are upper case
+    return favoriteCurrenciesRaw
+      .map((c) => c.toUpperCase())
+      .filter((fc) => RAMPS_CURRENCIES.find((rc) => rc.code === fc))
+  }, [favoriteCurrenciesRaw])
+
   const sortedCurrencies = useMemo(
     () =>
       RAMPS_CURRENCIES.concat().sort((c1, c2) => {
         if (c1.code === selected) return -1
         if (c2.code === selected) return 1
 
-        return c1.name.localeCompare(c2.name)
+        const isFav1 = favoriteCurrenciesUpper.includes(c1.code)
+        const isFav2 = favoriteCurrenciesUpper.includes(c2.code)
+        if (isFav1 && !isFav2) return -1
+        if (!isFav1 && isFav2) return 1
+
+        return c1.code.localeCompare(c2.code)
       }),
-    [selected],
+    [favoriteCurrenciesUpper, selected],
   )
 
   const filteredCurrencies = useMemo(() => {
