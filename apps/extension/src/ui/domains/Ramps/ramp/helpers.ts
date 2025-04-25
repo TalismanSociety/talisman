@@ -43,7 +43,7 @@ export const getRampSellUrl = async (
   const params = new URLSearchParams({
     hostApiKey: remoteConfig.rampConfig.rampApiKey,
     hostLogoUrl: TALISMAN_LOGO_URL,
-    defaultFlow: "ONRAMP",
+    defaultFlow: "OFFRAMP",
     enabledFlows: "ONRAMP,OFFRAMP",
     hostAppName: "Talisman",
     hideExitButton: "true",

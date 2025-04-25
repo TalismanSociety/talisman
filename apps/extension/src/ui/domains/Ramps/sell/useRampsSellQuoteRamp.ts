@@ -93,10 +93,10 @@ export const useRampsSellQuoteRamp = (
             tokenPrice: res.data.asset.price[config.currencyCode],
             getRedirectUrl: (address: string) =>
               getRampSellUrl(
-                config.currencyCode,
-                res.data.CARD.cryptoAmount,
                 rampCryptoAsset.id,
+                res.data.CARD.cryptoAmount,
                 address,
+                config.currencyCode,
                 countryInfo?.countryCode ?? "",
               ),
           }
