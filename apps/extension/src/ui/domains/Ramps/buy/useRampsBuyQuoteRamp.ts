@@ -12,8 +12,10 @@ import { getRampBuyUrl } from "../ramp/helpers"
 import { RampBuyQuoteResult } from "../ramp/types"
 import { RampCryptoAsset, useRampCryptoAsset } from "../ramp/useRampCryptoAsset"
 import { useRampCurrencies } from "../ramp/useRampCurrencies"
+import { getRampsQuoteError } from "../shared/getRampsQuoteError"
+import { RampsQuoteError } from "../shared/types"
 import { useCountryCode } from "../shared/useCountryCode"
-import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
+import { RampsBuyQuote, RampsBuyQuoteOptions } from "./types"
 
 export const useRampsBuyQuoteRamp = (
   config: RampsBuyQuoteOptions | null,
@@ -24,7 +26,7 @@ export const useRampsBuyQuoteRamp = (
   const { data: currencies } = useRampCurrencies()
   const { data: countryInfo } = useCountryCode()
 
-  const inputError = useMemo<RampsBuyQuoteError | null>(() => {
+  const inputError = useMemo<RampsQuoteError | null>(() => {
     if (!config || !currencies) return null
 
     const currency = currencies.find(
@@ -98,7 +100,7 @@ export const useRampsBuyQuoteRamp = (
   })
 }
 
-type FetchRampBuyQuoteResult = { type: "success"; data: RampBuyQuoteResult } | RampsBuyQuoteError
+type FetchRampBuyQuoteResult = { type: "success"; data: RampBuyQuoteResult } | RampsQuoteError
 
 const fetchRampBuyQuote = async (
   currencyCode: string,
@@ -121,37 +123,13 @@ const fetchRampBuyQuote = async (
 
   if (!response.ok) {
     log.error("[ramp] Ramp quote error", response.status, response.statusText)
-    if (response.status === 403)
-      return {
-        type: "error",
-        message: t("Unavailable"),
-        description: t("This service is not available in your region yet."),
-      }
-    try {
-      const error = await response.json()
-      return getRampErrorMessage(error)
-    } catch (err) {
-      return { type: "error", message: "Unavailable" }
-    }
+
+    const description =
+      response.status === 403 ? t("This service is not available in your region yet.") : undefined
+
+    return getRampsQuoteError(description)
   }
 
   const data: RampBuyQuoteResult = await response.json()
   return { type: "success", data }
-}
-
-const getRampErrorMessage = (error: { code: string }): RampsBuyQuoteError => {
-  const getDescription = (code: string) => {
-    switch (code) {
-      case "SWAP.VALIDATION.SWAP_VALUE_IS_ZERO":
-        return t("Insufficent amount")
-      default:
-        return undefined
-    }
-  }
-
-  return {
-    type: "error",
-    message: t("Unavailable"),
-    description: getDescription(error.code),
-  }
 }

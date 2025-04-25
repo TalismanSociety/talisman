@@ -246,6 +246,7 @@ const Providers: FC<{
   quotes,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const token = useToken(tokenId)
   const selectedCurrency = useSelectedCurrency()
 
@@ -260,7 +261,7 @@ const Providers: FC<{
           title:
             query.error?.message ??
             (query.data?.type === "error" && query.data.message) ??
-            "Unavailable",
+            t("Unavailable"),
           description: (query.data?.type === "error" && query.data.description) ?? null,
         }
 
@@ -287,7 +288,7 @@ const Providers: FC<{
         currencyCode,
       }
     })
-  }, [amount, currencyCode, quotes, selectedCurrency, token, tokenRates])
+  }, [amount, currencyCode, quotes, selectedCurrency, t, token, tokenRates])
 
   return <RampsProviders options={options} selected={selected} onSelect={onSelect} />
 }

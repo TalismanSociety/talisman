@@ -1,7 +1,6 @@
 import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
-import { COINBASE_API_BASE_PATH, log } from "extension-shared"
-import { t } from "i18next"
+import { COINBASE_API_BASE_PATH } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
@@ -17,7 +16,9 @@ import {
   CoinbaseBuyQuoteResponse,
 } from "../coinbase/types"
 import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
-import { RampsBuyQuote, RampsBuyQuoteError, RampsBuyQuoteOptions } from "./types"
+import { getRampsQuoteError } from "../shared/getRampsQuoteError"
+import { RampsQuoteError } from "../shared/types"
+import { RampsBuyQuote, RampsBuyQuoteOptions } from "./types"
 
 export const useRampsBuyQuoteCoinbase = (
   config: RampsBuyQuoteOptions | null,
@@ -27,7 +28,7 @@ export const useRampsBuyQuoteCoinbase = (
   const { data: options } = useCoinbaseBuyOptions()
   const coinbaseToken = useCoinbaseTokenSpecs(config?.tokenId)
 
-  const inputError = useMemo<RampsBuyQuoteError | null>(() => {
+  const inputError = useMemo<RampsQuoteError | null>(() => {
     if (!config || !options) return null
 
     if (!options.payment_currencies.length)
@@ -141,7 +142,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
 
 type FetchCoinbaseBuyQuoteResult =
   | { type: "success"; data: CoinbaseBuyQuoteResponse }
-  | RampsBuyQuoteError
+  | RampsQuoteError
 
 const fetchCoinbaseBuyQuote = async (
   currencyCode: string,
@@ -163,25 +164,8 @@ const fetchCoinbaseBuyQuote = async (
     body: JSON.stringify(body),
   })
 
-  if (!response.ok) {
-    log.error("[ramp] Coinbase quote error", response.status, response.statusText, { body })
-    try {
-      const error = await response.json()
-      log.error("[ramp] Coinbase quote error", error)
-      return getCoinbaseQuoteError(error)
-    } catch (err) {
-      return { type: "error", message: t("Unavailable") }
-    }
-  }
+  if (!response.ok) return getRampsQuoteError()
 
   const data: CoinbaseBuyQuoteResponse = await response.json()
   return { type: "success", data }
-}
-
-const getCoinbaseQuoteError = (error: { code: number; message: string }): RampsBuyQuoteError => {
-  return {
-    type: "error",
-    message: t("Unavailable"),
-    description: error.message,
-  }
 }

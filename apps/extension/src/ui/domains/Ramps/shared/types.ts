@@ -6,3 +6,9 @@ export type RampsFormSharedData = {
   currencyCode?: string
   tokenId?: string
 }
+
+export type RampsQuoteError = {
+  type: "error"
+  message: string
+  description?: string
+}

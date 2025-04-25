@@ -1,7 +1,6 @@
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import { COINBASE_API_BASE_PATH, log } from "extension-shared"
-import { t } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
@@ -17,7 +16,9 @@ import {
   CoinbaseSellQuoteResponse,
 } from "../coinbase/types"
 import { useCoinbaseSellOptions } from "../coinbase/useCoinbaseSellOptions"
-import { RampsSellQuote, RampsSellQuoteError, RampsSellQuoteOptions } from "./types"
+import { getRampsQuoteError } from "../shared/getRampsQuoteError"
+import { RampsQuoteError } from "../shared/types"
+import { RampsSellQuote, RampsSellQuoteOptions } from "./types"
 
 export const useRampsSellQuoteCoinbase = (
   config: RampsSellQuoteOptions | null,
@@ -38,14 +39,9 @@ export const useRampsSellQuoteCoinbase = (
       min: formatPrice(Number(limit.min), currency.id, true),
       max: formatPrice(Number(limit.max), currency.id, true),
     })
-
-    // if (config.amount < Number(limit.min))
-    //   return `Minimum sell is ${formatPrice(Number(limit.min), config.currencyCode, true)}`
-    // if (config.amount > Number(limit.max))
-    //   return `Maximum sell is ${formatPrice(Number(limit.max), config.currencyCode, true)}`
   }, [config, options, t])
 
-  const inputError = useMemo<RampsSellQuoteError | null>(() => {
+  const inputError = useMemo<RampsQuoteError | null>(() => {
     if (!config || !options) return null
 
     if (!options.cashout_currencies.length)
@@ -71,12 +67,6 @@ export const useRampsSellQuoteCoinbase = (
         ?.limits.find((l) => l.id === "FIAT_WALLET")
       if (!limit) return t("Currency {{currencyCode}} is not available yet.", config)
 
-      // sadly we dont know the price of the token here, so we cant validate min/max up front
-
-      // if (config.amount < Number(limit.min))
-      //   return `Minimum sell is ${formatPrice(Number(limit.min), config.currencyCode, true)}`
-      // if (config.amount > Number(limit.max))
-      //   return `Maximum sell is ${formatPrice(Number(limit.max), config.currencyCode, true)}`
       return null
     }
 
@@ -164,7 +154,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
 
 type FetchCoinbaseSellQuoteResult =
   | { type: "success"; data: CoinbaseSellQuoteResponse }
-  | RampsSellQuoteError
+  | RampsQuoteError
 
 const fetchCoinbaseSellQuote = async (
   currencyCode: string,
@@ -190,39 +180,15 @@ const fetchCoinbaseSellQuote = async (
 
   if (!response.ok) {
     log.error("[ramp] Coinbase quote error", response.status, response.statusText)
-    try {
-      const error = await response.json()
-      log.error("[ramp] Coinbase quote error", error)
-      return getCoinbaseQuoteError(error, minMaxAmount)
-    } catch (err) {
-      return { type: "error", message: t("Unavailable") }
-    }
+    const error = await response.json()
+    const description =
+      minMaxAmount && error.message.includes("purchase amount") ? minMaxAmount : undefined
+
+    return getRampsQuoteError(description)
   }
 
   const data: CoinbaseSellQuoteResponse = await response.json()
   return { type: "success", data }
-}
-
-const getCoinbaseQuoteError = (
-  error: { code: number; message: string },
-  minMaxAmount: string | null,
-): RampsSellQuoteError => {
-  const getDescription = () => {
-    if (minMaxAmount && error.message.includes("purchase amount")) return minMaxAmount
-
-    switch (error.message) {
-      case "ERROR_CODE_ASSET_NOT_TRADABLE":
-        return undefined
-      default:
-        return error.message
-    }
-  }
-
-  return {
-    type: "error",
-    message: t("Unavailable"),
-    description: getDescription(),
-  }
 }
 
 const formatTokens = (tokens: number, decimals: number): string => {
