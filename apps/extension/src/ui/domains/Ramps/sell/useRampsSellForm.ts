@@ -123,18 +123,6 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
     refQuote.current = providerQuote?.query?.data ?? null
   }, [formData.provider, quotes])
 
-  // useEffect(() => {
-  //   console.log(
-  //     "[ramp] quotes",
-  //     quotes.map((q) => ({
-  //       provider: q.provider,
-  //       data: q.query.data,
-  //       error: q.query.error,
-  //       isLoading: q.query.isLoading,
-  //     })),
-  //   )
-  // }, [quotes])
-
   return {
     form,
     currencies,

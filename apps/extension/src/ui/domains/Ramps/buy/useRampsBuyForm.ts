@@ -38,14 +38,6 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-// {
-//   currencyCode?: string
-//   tokenId?: TokenId
-//   amount?: number
-//   provider?: RampProvider
-//   account?: string
-// }
-
 export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const { t } = useTranslation()
   const refQuote = useRef<RampsBuyQuote | null>(null)
@@ -139,15 +131,6 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
     const providerQuote = quotes.find((q) => q.provider === formData.provider)
     refQuote.current = providerQuote?.query?.data ?? null
   }, [formData.provider, quotes])
-
-  // // preselect currency if favorite currency exists
-  // useEffect(() => {
-  //   if (formData.currencyCode) return
-  //   const defaultCurrency = currencies?.find(
-  //     (c) => c.code.toLowerCase() === favCurrency.toLowerCase(),
-  //   )
-  //   if (defaultCurrency) form.setFieldValue("currencyCode", defaultCurrency.code)
-  // }, [currencies, form, formData.currencyCode, favCurrency])
 
   return {
     form,
