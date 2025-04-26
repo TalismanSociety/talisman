@@ -1,12 +1,11 @@
 import { Token } from "@talismn/chaindata-provider"
-import { InfoIcon, SwapIcon } from "@talismn/icons"
+import { SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { Account } from "extension-core"
 import {
   ChangeEventHandler,
   FC,
   PropsWithChildren,
-  ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -14,28 +13,25 @@ import {
   useRef,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, PillButton } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
 
-import { currencyConfig } from "../../../../Asset/currencyConfig"
-import { Fiat } from "../../../../Asset/Fiat"
-import { TokenLogo } from "../../../../Asset/TokenLogo"
-import Tokens from "../../../../Asset/Tokens"
-import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
-import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
-import { BondAccountPillButton } from "../../../Bond/BondAccountPillButton"
-import { STAKING_APR_UNAVAILABLE } from "../../../helpers"
-import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
-import { useStakingAPR } from "../../../hooks/nomPools/useStakingAPR"
-import { MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
-import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
-import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
-import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
-import { SelectStakeDrawer } from "../Modals/SelectStakeDrawer"
-import { useBittensorBondWizard } from "./../../hooks/useBittensorBondWizard"
+import { currencyConfig } from "../../../Asset/currencyConfig"
+import { Fiat } from "../../../Asset/Fiat"
+import { TokenLogo } from "../../../Asset/TokenLogo"
+import Tokens from "../../../Asset/Tokens"
+import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
+import { BondAccountPicker } from "../../Bond/BondAccountPicker"
+import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
+import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
+import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
+import { StakingUnbondingPeriod } from "./../../shared/StakingUnbondingPeriod"
+import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
+import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
+import { SelectStakeDrawer } from "./Modals/SelectStakeDrawer"
 
 // TODO: Cleanup all non Bittensor related code
 
@@ -292,100 +288,6 @@ export const AmountEdit = () => {
   )
 }
 
-const StakeAprBase: FC<{
-  apr: number
-  isLoading: boolean
-  isError: boolean
-  error: Error | null
-}> = ({ apr, isLoading, isError, error }) => {
-  const { t } = useTranslation()
-  const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
-
-  if (isLoading)
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
-
-  if (isError) {
-    if (error?.message === STAKING_APR_UNAVAILABLE) return t("APR Unavailable")
-
-    return <div className="text-alert-warn">{t("Unable to fetch APR data")}</div>
-  }
-
-  return (
-    <span className={classNames(apr ? "text-alert-success" : "text-body-secondary")}>
-      <WithAprDocsLink>{display}</WithAprDocsLink>
-    </span>
-  )
-}
-
-const NomPoolStakeApr = () => {
-  const { token } = useBittensorBondWizard()
-  const { data, isLoading, isError, error } = useStakingAPR(token?.chain?.id)
-
-  return (
-    <StakeAprBase apr={Number(data ?? 0)} isLoading={isLoading} isError={isError} error={error} />
-  )
-}
-
-const BittensorStakeApr = () => {
-  const { poolId } = useBittensorBondWizard()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData()
-
-  const apr = useMemo(() => {
-    const validator = combinedValidatorsData.find((validator) => validator.poolId === poolId)
-    return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
-  }, [combinedValidatorsData, poolId])
-
-  return <StakeAprBase apr={apr} isLoading={isLoading} isError={isError} error={null} />
-}
-
-const AnalogTimechainStakeApr = () => {
-  return <StakeAprBase apr={0.55} isLoading={false} isError={false} error={null} />
-}
-
-const StakeApr = () => {
-  const { token } = useBittensorBondWizard()
-
-  switch (token?.chain?.id) {
-    case "bittensor":
-      return <BittensorStakeApr />
-    case "analog-timechain":
-      return <AnalogTimechainStakeApr />
-    default:
-      return <NomPoolStakeApr />
-  }
-}
-
-/**
- * For chains with a novel staking rewards mechanism, this component adds an info tooltip to the
- * calculated APR which links to the rewards docs for the chain.
- */
-const WithAprDocsLink = ({ children }: { children: ReactNode }) => {
-  const { t } = useTranslation()
-  const { token } = useBittensorBondWizard()
-
-  // return the APR
-  if (token?.chain?.id !== "analog-timechain") return children
-
-  // return the APR wrapped with a tooltip
-  return (
-    <div className="flex items-center gap-1">
-      {children}
-      <Tooltip>
-        <TooltipTrigger>
-          <a
-            href="https://docs.analog.one/documentation/analog-network/staking/rewards"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            <InfoIcon />
-          </a>
-        </TooltipTrigger>
-        <TooltipContent>{t("Learn more about Analog Timechain staking rewards")}</TooltipContent>
-      </Tooltip>
-    </div>
-  )
-}
-
 const FeeEstimate = () => {
   const { feeEstimate, feeToken, isLoadingFeeEstimate, errorFeeEstimate } = useBittensorBondWizard()
 
@@ -399,7 +301,11 @@ const FeeEstimate = () => {
   )
 }
 
-export const BittensorBondForm = () => {
+type BittensorBondFormBaseProps = {
+  BondTypeDetails: React.ComponentType
+}
+
+export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBaseProps) => {
   const { t } = useTranslation()
   const { account, accountPicker, token, payload, poolId, setStep, setAddress, selectStakeDrawer } =
     useBittensorBondWizard()
@@ -436,22 +342,7 @@ export const BittensorBondForm = () => {
             <BittensorDelegatorNameButton poolId={poolId} />
           </div>
         </div>
-        <div className="flex items-center justify-between gap-8">
-          <div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1 whitespace-nowrap leading-none">
-                  {t("APY")}
-                  <InfoIcon />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
-            </Tooltip>
-          </div>
-          <div className={"overflow-hidden font-bold"}>
-            <StakeApr />
-          </div>
-        </div>
+        <BondTypeDetails />
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
           <div className="text-body overflow-hidden">

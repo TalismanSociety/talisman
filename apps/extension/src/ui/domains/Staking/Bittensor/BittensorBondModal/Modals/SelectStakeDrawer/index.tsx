@@ -26,7 +26,14 @@ export const SelectStakeDrawer = ({ isOpen, containerId, onDismiss }: SelectStak
           <Button className="text-sm" onClick={onDismiss}>
             Root Staking
           </Button>
-          <Button className="text-sm" primary onClick={() => setStep("root-form")}>
+          <Button
+            className="text-sm"
+            primary
+            onClick={() => {
+              onDismiss()
+              setStep("root-form")
+            }}
+          >
             Subnet DTAO
           </Button>
         </div>

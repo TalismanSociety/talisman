@@ -1,3 +1,8 @@
+import { BittensorBondFormBase } from "../BittensorBondFormBase"
+
 export const BittensorSubnetBondForm = () => {
-  return <div>Apple pie</div>
+  const SubnetStakeDetails = () => {
+    return <div>Subnet deets</div>
+  }
+  return <BittensorBondFormBase BondTypeDetails={SubnetStakeDetails} />
 }
