@@ -18,7 +18,7 @@ import { z } from "zod"
 
 import { notify } from "@talisman/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { getToken$, useAccounts, useChain, useSelectedCurrency, useToken } from "@ui/state"
+import { getToken$, useAccounts, useChain, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -48,7 +48,6 @@ type FormData = z.infer<typeof schema>
 
 export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const { t } = useTranslation()
-  const favCurrency = useSelectedCurrency()
   const refQuote = useRef<RampsBuyQuote | null>(null)
 
   const form = useForm({
@@ -141,14 +140,14 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
     refQuote.current = providerQuote?.query?.data ?? null
   }, [formData.provider, quotes])
 
-  // preselect currency if favorite currency exists
-  useEffect(() => {
-    if (formData.currencyCode) return
-    const defaultCurrency = currencies?.find(
-      (c) => c.code.toLowerCase() === favCurrency.toLowerCase(),
-    )
-    if (defaultCurrency) form.setFieldValue("currencyCode", defaultCurrency.code)
-  }, [currencies, form, formData.currencyCode, favCurrency])
+  // // preselect currency if favorite currency exists
+  // useEffect(() => {
+  //   if (formData.currencyCode) return
+  //   const defaultCurrency = currencies?.find(
+  //     (c) => c.code.toLowerCase() === favCurrency.toLowerCase(),
+  //   )
+  //   if (defaultCurrency) form.setFieldValue("currencyCode", defaultCurrency.code)
+  // }, [currencies, form, formData.currencyCode, favCurrency])
 
   return {
     form,
