@@ -1,7 +1,5 @@
+import { COINBASE_PAY_URL, COINBASE_PROJECT_ID } from "extension-shared"
 import urlJoin from "url-join"
-
-const COINBASE_PROJECT_ID = "63080e24-dc8e-45d0-9618-467b8c222f9e"
-const COINBASE_PAY_URL = "https://pay.coinbase.com"
 
 // TODO check if it works
 export const getCoinbaseBuyUrl = (

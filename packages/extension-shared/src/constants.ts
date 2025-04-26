@@ -33,6 +33,8 @@ export const NFTS_API_KEY = process.env.NFTS_API_KEY
 export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nfts-api.talisman.xyz"
 export const TAOSTATS_BASE_PATH = process.env.TAOSTATS_BASE_PATH || "https://tsp.talisman.xyz"
 export const COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"
+export const COINBASE_PROJECT_ID = "63080e24-dc8e-45d0-9618-467b8c222f9e"
+export const COINBASE_PAY_URL = "https://pay.coinbase.com"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
