@@ -1,4 +1,4 @@
-import { ChevronLeftIcon } from "@talismn/icons"
+import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
 import { IconButton } from "talisman-ui"
@@ -17,7 +17,7 @@ export const RampsPickerLayout: FC<{
         </IconButton>
         <div className="grow text-center">{title}</div>
         <IconButton onClick={onCloseClick} className={classNames(!onCloseClick && "invisible")}>
-          <ChevronLeftIcon />
+          <XIcon />
         </IconButton>
       </div>
     </div>
