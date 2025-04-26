@@ -67,7 +67,7 @@ const getRampTokenType = (token: Token) => {
 }
 
 const getRampChainId = (remoteConfig: RemoteConfigStoreData, talismanNetworkId: string) => {
-  const entry = Object.entries(remoteConfig.rampNetworks).find(
+  const entry = Object.entries(remoteConfig.ramps.rampNetworks).find(
     ([, talismanId]) => talismanId === talismanNetworkId,
   )
   return entry ? entry[0] : undefined

@@ -1,8 +1,10 @@
-import { COINBASE_PAY_URL, COINBASE_PROJECT_ID } from "extension-shared"
+import { RAMPS_COINBASE_PAY_URL } from "extension-shared"
 import urlJoin from "url-join"
 
+import { remoteConfig$ } from "@ui/state"
+
 // TODO check if it works
-export const getCoinbaseBuyUrl = (
+export const getCoinbaseBuyUrl = async (
   currencyCode: string,
   amountIn: string,
   assetId: string,
@@ -11,8 +13,10 @@ export const getCoinbaseBuyUrl = (
   amountOut: string,
   address: string,
 ) => {
+  const remoteConfig = await remoteConfig$.getValue()
+
   const query = new URLSearchParams({
-    appId: COINBASE_PROJECT_ID,
+    appId: remoteConfig.ramps.coinbaseProjectId,
     defaultAsset: assetId,
     // defaultPaymentMethod: "CARD",
     presetFiatAmount: amountIn,
@@ -23,11 +27,11 @@ export const getCoinbaseBuyUrl = (
     destinationWallets: JSON.stringify([{ address, blockchains: [network] }]),
   })
 
-  return urlJoin(COINBASE_PAY_URL, `/buy/select-asset?${query}`)
+  return urlJoin(RAMPS_COINBASE_PAY_URL, `/buy/select-asset?${query}`)
 }
 
 // TODO check if it works
-export const getCoinbaseSellUrl = (
+export const getCoinbaseSellUrl = async (
   currencyCode: string,
   amountIn: string,
   assetId: string,
@@ -36,10 +40,10 @@ export const getCoinbaseSellUrl = (
   amountOut: string,
   address: string,
 ) => {
-  // TODO apparently
+  const remoteConfig = await remoteConfig$.getValue()
 
   const query = new URLSearchParams({
-    appId: COINBASE_PROJECT_ID,
+    appId: remoteConfig.ramps.coinbaseProjectId,
     addresses: JSON.stringify({ [address]: [network] }),
     assets: JSON.stringify([assetId]), // expects symbol instead?
     partnerUserId: "talisman", // TODO check if field is required
@@ -58,5 +62,5 @@ export const getCoinbaseSellUrl = (
     // destinationWallets: JSON.stringify([{ address, blockchains: [network] }]),
   })
 
-  return urlJoin(COINBASE_PAY_URL, `/sell/input?${query}`)
+  return urlJoin(RAMPS_COINBASE_PAY_URL, `/sell/input?${query}`)
 }

@@ -1,3 +1,5 @@
+import { RAMPS_RAMP_PAY_URL } from "extension-shared"
+
 import { remoteConfig$ } from "@ui/state"
 
 const TALISMAN_LOGO_URL =
@@ -14,7 +16,7 @@ export const getRampBuyUrl = async (
 
   // https://docs.ramp.network/configuration
   const params = new URLSearchParams({
-    hostApiKey: remoteConfig.rampConfig.rampApiKey,
+    hostApiKey: remoteConfig.ramps.rampApiKey,
     hostLogoUrl: TALISMAN_LOGO_URL,
     defaultFlow: "ONRAMP",
     enabledFlows: "ONRAMP,OFFRAMP",
@@ -28,7 +30,7 @@ export const getRampBuyUrl = async (
     fiatValue: amount.toString(),
   })
 
-  return `${remoteConfig.rampConfig.rampBasePath}/?${params.toString()}`
+  return `${RAMPS_RAMP_PAY_URL}/?${params.toString()}`
 }
 
 export const getRampSellUrl = async (
@@ -41,7 +43,7 @@ export const getRampSellUrl = async (
   const remoteConfig = await remoteConfig$.getValue()
 
   const params = new URLSearchParams({
-    hostApiKey: remoteConfig.rampConfig.rampApiKey,
+    hostApiKey: remoteConfig.ramps.rampApiKey,
     hostLogoUrl: TALISMAN_LOGO_URL,
     defaultFlow: "OFFRAMP",
     enabledFlows: "ONRAMP,OFFRAMP",
@@ -55,5 +57,5 @@ export const getRampSellUrl = async (
     swapAmount: plancks.toString(),
   })
 
-  return `${remoteConfig.rampConfig.rampBasePath}/?${params.toString()}`
+  return `${RAMPS_RAMP_PAY_URL}/?${params.toString()}`
 }

@@ -32,7 +32,7 @@ export const RampsTokenPicker: FC<{
 }> = ({ tokens, tokenRates, selected, onClose, onSelect }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
-  const { rampsPinnedTokens: rampsPinnedTokenIds } = useRemoteConfig()
+  const remoteConfig = useRemoteConfig()
 
   const evmNetworksMap = useEvmNetworksMap()
   const dotNetworksMap = useChainsMap()
@@ -55,8 +55,8 @@ export const RampsTokenPicker: FC<{
         if (t1.id === selected) return -1
         if (t2.id === selected) return 1
 
-        const isPinnedT1 = rampsPinnedTokenIds?.includes(t1.id)
-        const isPinnedT2 = rampsPinnedTokenIds?.includes(t2.id)
+        const isPinnedT1 = remoteConfig.ramps.pinnedTokens.includes(t1.id)
+        const isPinnedT2 = remoteConfig.ramps.pinnedTokens.includes(t2.id)
         if (isPinnedT1 && !isPinnedT2) return -1
         if (!isPinnedT1 && isPinnedT2) return 1
 
@@ -64,7 +64,7 @@ export const RampsTokenPicker: FC<{
           ? (t1.network.name ?? "").localeCompare(t2.network.name ?? "")
           : t1.symbol.localeCompare(t2.symbol)
       }),
-    [rampsPinnedTokenIds, selected, tokensWithNetwork],
+    [remoteConfig, selected, tokensWithNetwork],
   )
 
   const filteredTokens = useMemo(() => {

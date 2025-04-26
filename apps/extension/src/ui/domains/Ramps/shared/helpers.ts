@@ -30,7 +30,7 @@ export const getTokenFromRampAsset = (
   remoteConfig: RemoteConfigStoreData,
   tokens: TokenList,
 ) => {
-  const networkId = remoteConfig.rampNetworks[asset.chain]
+  const networkId = remoteConfig.ramps.rampNetworks[asset.chain]
   if (!networkId) return null
 
   if (asset.type === "ERC20") return tokens[getErc20TokenId(networkId, asset.address ?? "")]

@@ -1,6 +1,6 @@
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
-import { COINBASE_API_BASE_PATH, log } from "extension-shared"
+import { log, RAMPS_COINBASE_API_BASE_PATH } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
@@ -166,7 +166,7 @@ const fetchCoinbaseSellQuote = async (
     ...coinbaseToken,
   }
 
-  const response = await fetch(urlJoin(COINBASE_API_BASE_PATH, "/sell/quote"), {
+  const response = await fetch(urlJoin(RAMPS_COINBASE_API_BASE_PATH, "/sell/quote"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
