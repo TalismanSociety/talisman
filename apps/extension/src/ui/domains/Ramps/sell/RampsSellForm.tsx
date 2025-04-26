@@ -1,12 +1,16 @@
 /* eslint-disable react/no-children-prop */
 import { ExternalLinkIcon } from "@talismn/icons"
-import { formatPrice } from "@talismn/util"
+import { TokenRatesList } from "@talismn/token-rates"
+import { formatPrice, tokensToPlanck } from "@talismn/util"
+import { BalanceFormatter } from "extension-core"
 import { capitalize } from "lodash"
 import { FC, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import Tokens from "@ui/domains/Asset/Tokens"
+import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useToken } from "@ui/state"
 
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
@@ -159,14 +163,24 @@ export const RampsSellForm: FC<{
             )}
 
             {!!formData.provider && !!formData.tokenId && (
-              <RampsFieldSet label={t("Receiver")}>
+              <RampsFieldSet
+                label={t("Receiver")}
+                extra={
+                  <AccountBalance
+                    address={formData.account}
+                    tokenId={formData.tokenId}
+                    amount={formData.amount}
+                    tokenRates={tokenRates}
+                  />
+                }
+              >
                 <form.Field
                   name="account"
                   children={(field) => (
                     <RampsAccountPickerButton
                       accounts={accounts}
                       tokenRates={tokenRates}
-                      balancesDisplayMode="total"
+                      balancesDisplayMode="transferable"
                       tokenId={formData.tokenId!}
                       selected={field.state.value}
                       onSelect={(address) => field.handleChange(address)}
@@ -200,6 +214,63 @@ export const RampsSellForm: FC<{
         />
       </div>
     </form>
+  )
+}
+
+const AccountBalance: FC<{
+  address: string | undefined
+  tokenId: string | undefined
+  amount: number | undefined
+  tokenRates: TokenRatesList
+}> = ({ address, tokenId, amount, tokenRates }) => {
+  const { t } = useTranslation()
+  const balProps = useMemo<BalanceByParamsProps>(() => {
+    return address && tokenId
+      ? {
+          addressesAndTokens: { addresses: [address], tokenIds: [tokenId] },
+        }
+      : {}
+  }, [address, tokenId])
+
+  const { status, balances } = useBalancesByParams(balProps)
+
+  const token = useToken(tokenId)
+
+  const balance = useMemo(() => {
+    if (!token || status !== "live") return false
+    const bal = balances.find({ address, tokenId }).each[0]
+    if (!bal) return null
+    return new BalanceFormatter(bal.transferable.planck, token.decimals, tokenRates[token.id])
+  }, [address, balances, status, token, tokenId, tokenRates])
+
+  const isInsufficient = useMemo(() => {
+    if (!balance || !token || !amount) return false
+    const required = tokensToPlanck(amount.toString(), token.decimals)
+    return BigInt(required) > BigInt(balance.planck)
+  }, [amount, balance, token])
+
+  if (!address || !token) return null
+
+  if (!balance)
+    return (
+      <span className="bg-body-disabled text-body-disabled rounded-xs animate-pulse">
+        Bal: 0.0000 XXX
+      </span>
+    )
+
+  if (isInsufficient) return <span className="text-alert-warn">{t("Insufficient balance")}</span>
+
+  return (
+    <>
+      {t("Bal:")}{" "}
+      <Tokens
+        className="text-xs"
+        isBalance
+        amount={balance.tokens}
+        decimals={token.decimals}
+        symbol={token.symbol}
+      />
+    </>
   )
 }
 
