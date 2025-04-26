@@ -4,18 +4,19 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 // TODO: Remove all non Bittensor related code
 export const BittensorModalHeader = () => {
   const { t } = useTranslation()
-  const { step, setStep, token } = useBittensorBondWizard()
+  const { step, stakeType, setStep } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
 
-  const handleBackClick = useCallback(() => setStep("form"), [setStep])
+  const handleBackClick = useCallback(
+    () => setStep(stakeType === "root" ? "form" : "subnet-form"),
+    [setStep, stakeType],
+  )
 
   return (
     <div
@@ -31,20 +32,19 @@ export const BittensorModalHeader = () => {
         <ChevronLeftIcon />
       </IconButton>
       <div>
-        {step === "form" && <span className="text-body font-bold">{t("Staking")}</span>}
+        {step.includes("form") && <span className="text-body font-bold">{t("Staking")}</span>}
         {step === "review" && t("Confirm")}
-        {step === "select" && (
+        {step.includes("select") && (
           <div className="flex items-center gap-2 space-y-4">
             <IconButton onClick={handleBackClick}>
               <ChevronLeftIcon />
             </IconButton>
             <div>
-              <div className="font-bold text-white">{t("Select Validator")}</div>
+              <div className="font-bold text-white">
+                {step === "select" ? t("Select Validator") : t("Select Subnet")}
+              </div>
               <div className="flex items-center gap-2 text-xs">
-                <TokenLogo tokenId={token?.id ?? ""} className="text-md shrink-0" />
-                <div className="text-white">{token?.symbol}</div>
                 <div className="bg-body-disabled inline-block size-2 rounded-full" />
-                <div className="text-body-secondary">{t("Delegated Staking")}</div>
               </div>
             </div>
           </div>

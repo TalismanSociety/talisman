@@ -11,7 +11,7 @@ type SelectStakeDrawer = {
 
 export const SelectStakeDrawer = ({ isOpen, containerId, onDismiss }: SelectStakeDrawer) => {
   const { t } = useTranslation()
-  const { setStep } = useBittensorBondWizard()
+  const { setStep, setStakeType } = useBittensorBondWizard()
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
@@ -31,7 +31,8 @@ export const SelectStakeDrawer = ({ isOpen, containerId, onDismiss }: SelectStak
             primary
             onClick={() => {
               onDismiss()
-              setStep("root-form")
+              setStep("subnet-form")
+              setStakeType("subnet")
             }}
           >
             Subnet DTAO

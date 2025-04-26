@@ -14,7 +14,8 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
-type WizardStep = "form" | "root-form" | "review" | "follow-up" | "select" | "select-subnet"
+type WizardStep = "form" | "subnet-form" | "review" | "follow-up" | "select" | "select-subnet"
+type StakeType = "root" | "subnet"
 
 type WizardState = {
   step: WizardStep
@@ -27,6 +28,7 @@ type WizardState = {
   isSelectStakeDrawerOpen: boolean
   hash: Hex | null
   isDefaultOption: boolean
+  stakeType: StakeType
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -40,6 +42,7 @@ const DEFAULT_STATE: WizardState = {
   isSelectStakeDrawerOpen: false,
   hash: null,
   isDefaultOption: true,
+  stakeType: "root",
 }
 
 const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -92,7 +95,7 @@ export const useBittensorBondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { poolId, step, displayMode, hash, tokenId, address, plancks, isDefaultOption } =
+  const { poolId, step, stakeType, displayMode, hash, tokenId, address, plancks, isDefaultOption } =
     useWizardState()
 
   const balance = useBalance(address, tokenId)
@@ -155,6 +158,11 @@ export const useBittensorBondWizard = () => {
 
   const setIsDefaultOption = useCallback(
     (isDefaultOption: boolean) => setWizardState((prev) => ({ ...prev, isDefaultOption })),
+    [],
+  )
+
+  const setStakeType = useCallback(
+    (stakeType: StakeType) => setWizardState((prev) => ({ ...prev, stakeType })),
     [],
   )
 
@@ -287,12 +295,14 @@ export const useBittensorBondWizard = () => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
+    stakeType,
 
     setAddress,
     setTokenId,
     setPoolId,
     setPlancks,
     setStep,
+    setStakeType,
     setIsDefaultOption,
     toggleDisplayMode,
 
