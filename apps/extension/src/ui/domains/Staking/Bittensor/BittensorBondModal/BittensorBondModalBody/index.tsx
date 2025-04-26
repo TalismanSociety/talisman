@@ -9,12 +9,14 @@ export const BittensorBondModalBody = () => {
   const { step } = useBittensorBondWizard()
 
   switch (step) {
-    case "select":
-      return <BittensorBondDelegateSelect />
     case "form":
       return <BittensorRootBondForm />
     case "root-form":
       return <BittensorSubnetBondForm />
+    case "select":
+      return <BittensorBondDelegateSelect />
+    case "select-subnet":
+      return <div>Select subnet</div>
     case "review":
       return <BittensorBondReview />
     case "follow-up":

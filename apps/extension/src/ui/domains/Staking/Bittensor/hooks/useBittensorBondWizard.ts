@@ -14,7 +14,7 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
-type WizardStep = "form" | "root-form" | "review" | "follow-up" | "select"
+type WizardStep = "form" | "root-form" | "review" | "follow-up" | "select" | "select-subnet"
 
 type WizardState = {
   step: WizardStep

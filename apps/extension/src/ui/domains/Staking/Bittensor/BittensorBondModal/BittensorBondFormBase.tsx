@@ -337,7 +337,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
         <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Validator")}</div>
+          <div className="whitespace-nowrap">{t("Select Validator")}</div>
           <div className="text-body truncate">
             <BittensorDelegatorNameButton poolId={poolId} />
           </div>

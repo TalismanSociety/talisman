@@ -1,8 +1,7 @@
-import { SettingsIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { useMemo } from "react"
 
 import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
-import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
+import { BittensorSelectButton } from "./BittensorSelectButton"
 
 type BittensorDelegatorNameButtonProps = {
   poolId: string | number | undefined | null
@@ -13,31 +12,14 @@ export const BittensorDelegatorNameButton = ({ poolId }: BittensorDelegatorNameB
 
   const selectedPool = combinedValidatorsData.find((data) => data.poolId === poolId)
 
-  const { setStep, step } = useBittensorBondWizard()
-
   const defaultPoolName = "Bittensor Pool"
 
   const poolName = selectedPool?.name
 
-  if (isLoading)
-    return (
-      <div
-        className={
-          "text-grey-700 bg-grey-700 rounded-xs my-[0.45rem] h-[1.6rem] w-40 animate-pulse"
-        }
-      />
-    )
-
-  return (
-    <button
-      onClick={() => step === "form" && setStep("select")}
-      className={classNames(
-        "bg-pill flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
-        step !== "form" && "cursor-not-allowed",
-      )}
-    >
-      <SettingsIcon className="text-body-secondary" />
-      <div>{isError || !poolName ? defaultPoolName : poolName}</div>
-    </button>
+  const label = useMemo(
+    () => (isError || !poolName ? defaultPoolName : poolName),
+    [isError, poolName],
   )
+
+  return <BittensorSelectButton isLoading={isLoading} label={label} nextStep="select" />
 }
