@@ -8,7 +8,6 @@ import {
   db,
   EvmNetworkId,
   EvmWalletTransaction,
-  isAcalaEvmPlus,
   SubWalletTransaction,
   TransactionStatus,
   WalletTransaction,
@@ -301,7 +300,7 @@ const EvmTxActions: FC<{
       )}
     >
       <div className="relative">
-        {canReplace && !isAcalaEvmPlus(tx.evmNetworkId) && (
+        {canReplace && evmNetwork && !evmNetwork.preserveGasEstimate && (
           <>
             <Tooltip>
               <TooltipTrigger asChild>

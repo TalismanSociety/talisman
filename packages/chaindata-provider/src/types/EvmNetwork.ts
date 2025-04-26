@@ -22,6 +22,13 @@ export type EvmNetwork = {
   explorerUrl: string | null
   rpcs: Array<EthereumRpc> | null
   substrateChain: { id: ChainId } | null
+  /**
+   * indicates whether gasEstimates must be used as-is for txs to be valid
+   *
+   * PolkadotVM: https://contracts.polkadot.io/differences_to_eth
+   * Acala: https://evmdocs.acala.network/network/gas-parameters
+   */
+  preserveGasEstimate?: boolean
   feeType?: "legacy" | "eip-1559"
   l2FeeType?:
     | {
