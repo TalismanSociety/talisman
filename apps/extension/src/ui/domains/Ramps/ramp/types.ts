@@ -20,7 +20,7 @@ export interface RampHostAssetsConfig {
   maxFeePercent: number
 }
 
-interface RampAssetInfo {
+export interface RampAssetInfo {
   // Asset symbol, e.g. ETH, DAI, BTC
   symbol: string
   // Asset chain, e.g. ETH, POLKADOT, RONIN

@@ -2,45 +2,15 @@ import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 
-import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { useCoinbaseBuyCurrencies } from "../coinbase/useCoinbaseBuyCurrencies"
 import { useRampCurrencies } from "../ramp/useRampCurrencies"
 import { getRampsCurrency } from "../shared/currencies"
 
-type CoinbaseBuyCurrency = {
-  id: string
-  min: string
-  max: string
-}
-
-const useBuyCoinbaseCurrencies = () => {
-  const { data: coinbaseBuyOptions, ...rest } = useCoinbaseBuyOptions()
-
-  const data = useMemo(() => {
-    if (coinbaseBuyOptions === undefined) return undefined
-
-    return coinbaseBuyOptions.payment_currencies
-      .map((curr): CoinbaseBuyCurrency | null => {
-        const cardLimit = curr.limits.find((limit) => limit.id === "CARD")
-        return cardLimit ? { id: curr.id, min: cardLimit.min, max: cardLimit.max } : null
-      })
-      .filter(isNotNil)
-  }, [coinbaseBuyOptions])
-
-  return { data, ...rest }
-}
-
 export const useRampsBuyCurrencies = () => {
-  const {
-    data: rampCurrencies,
-    isLoading: isLoadingOnRampCurrencies,
-    error: errorOnRampCurrencies,
-  } = useRampCurrencies()
+  const { data: rampCurrencies, isLoading: isLoadingOnRampCurrencies } = useRampCurrencies()
 
-  const {
-    data: coinbaseCurrencies,
-    isLoading: isLoadingCoinbaseCurrencies,
-    error: errorCoinbaseCurrencies,
-  } = useBuyCoinbaseCurrencies()
+  const { data: coinbaseCurrencies, isLoading: isLoadingCoinbaseCurrencies } =
+    useCoinbaseBuyCurrencies()
 
   const currencies = useMemo(() => {
     if (isLoadingCoinbaseCurrencies || isLoadingOnRampCurrencies) return undefined
@@ -62,6 +32,5 @@ export const useRampsBuyCurrencies = () => {
   return {
     currencies,
     isLoading: isLoadingOnRampCurrencies || isLoadingCoinbaseCurrencies,
-    errors: errorOnRampCurrencies || errorCoinbaseCurrencies,
   }
 }

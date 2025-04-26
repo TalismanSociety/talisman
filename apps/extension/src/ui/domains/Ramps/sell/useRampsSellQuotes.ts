@@ -1,12 +1,12 @@
 import { useMemo } from "react"
 
+import { useCoinbaseSellQuote } from "../coinbase/useCoinbaseSellQuote"
+import { useRampSellQuote } from "../ramp/useRampSellQuote"
 import { RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
-import { useRampsSellQuoteCoinbase } from "./useRampsSellQuoteCoinbase"
-import { useRampsSellQuoteRamp } from "./useRampsSellQuoteRamp"
 
 export const useRampsSellQuotes = (config: RampsSellQuoteOptions | null) => {
-  const queryRamp = useRampsSellQuoteRamp(config)
-  const queryCoinbase = useRampsSellQuoteCoinbase(config)
+  const queryRamp = useRampSellQuote(config)
+  const queryCoinbase = useCoinbaseSellQuote(config)
 
   return useMemo<RampsSellQuoteQuery[]>(
     () => [

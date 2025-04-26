@@ -46,18 +46,6 @@ type FormData = z.infer<typeof schema>
 //   account?: string
 // }
 
-const ensureTokenEnabled = async (tokenId: string) => {
-  const token = await firstValueFrom(getToken$(tokenId))
-  if (!token) return
-
-  await activeTokensStore.setActive(tokenId, true)
-
-  if (isEvmToken(token) && token.evmNetwork?.id)
-    await activeEvmNetworksStore.setActive(token.evmNetwork.id, true)
-  else if (isSubToken(token) && token.chain?.id)
-    await activeChainsStore.setActive(token.chain.id, true)
-}
-
 export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const { t } = useTranslation()
   const favCurrency = useSelectedCurrency()
@@ -187,4 +175,16 @@ const redirectToProvider = async (formData: FormData, quote: RampsBuyQuoteSucces
   const url = await quote.getRedirectUrl(address)
 
   window.open(url, "_blank", "noopener noreferrer")
+}
+
+const ensureTokenEnabled = async (tokenId: string) => {
+  const token = await firstValueFrom(getToken$(tokenId))
+  if (!token) return
+
+  await activeTokensStore.setActive(tokenId, true)
+
+  if (isEvmToken(token) && token.evmNetwork?.id)
+    await activeEvmNetworksStore.setActive(token.evmNetwork.id, true)
+  else if (isSubToken(token) && token.chain?.id)
+    await activeChainsStore.setActive(token.chain.id, true)
 }

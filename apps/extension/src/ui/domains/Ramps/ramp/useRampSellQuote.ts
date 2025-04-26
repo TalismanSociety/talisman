@@ -1,4 +1,4 @@
-import { formatPrice } from "@talismn/util"
+import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { t } from "i18next"
@@ -7,22 +7,22 @@ import { useTranslation } from "react-i18next"
 
 import { useToken } from "@ui/state"
 
-import { getRampApiUrl } from "../ramp/getRampApiUrl"
-import { getRampBuyUrl } from "../ramp/helpers"
-import { RampBuyQuoteResult } from "../ramp/types"
-import { RampCryptoAsset, useRampCryptoAsset } from "../ramp/useRampCryptoAsset"
-import { useRampCurrencies } from "../ramp/useRampCurrencies"
+import { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsQuoteError } from "../shared/types"
 import { useCountryCode } from "../shared/useCountryCode"
-import { RampsBuyQuote, RampsBuyQuoteOptions } from "./types"
+import { getRampApiUrl } from "./getRampApiUrl"
+import { getRampSellUrl } from "./helpers"
+import { RampSellQuoteResult } from "./types"
+import { RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
+import { useRampCurrencies } from "./useRampCurrencies"
 
-export const useRampsBuyQuoteRamp = (
-  config: RampsBuyQuoteOptions | null,
-): UseQueryResult<RampsBuyQuote | null, Error> => {
+export const useRampSellQuote = (
+  config: RampsSellQuoteOptions | null,
+): UseQueryResult<RampsSellQuote | null, Error> => {
   const { t } = useTranslation()
   const token = useToken(config?.tokenId)
-  const rampCryptoAsset = useRampCryptoAsset(config?.currencyCode, config?.tokenId, "buy")
+  const rampCryptoAsset = useRampCryptoAsset(config?.currencyCode, config?.tokenId, "sell")
   const { data: currencies } = useRampCurrencies()
   const { data: countryInfo } = useCountryCode()
 
@@ -46,13 +46,15 @@ export const useRampsBuyQuoteRamp = (
         description: t("Asset {{symbol}} is not available yet.", { symbol: token?.symbol ?? "" }),
       }
 
-    const getInputErrorDescription = (config: RampsBuyQuoteOptions, asset: RampCryptoAsset) => {
-      if (typeof asset.min === "number" && config.amount < asset.min)
-        return t("Minimum purchase is {{value}}", {
+    const getInputErrorDescription = (config: RampsSellQuoteOptions, asset: RampCryptoAsset) => {
+      const fiatAmount = config.amount * asset.price
+
+      if (typeof asset.min === "number" && fiatAmount < asset.min)
+        return t("Minimum sell is {{value}}", {
           value: formatPrice(asset.min, config.currencyCode, true),
         })
-      if (typeof asset.max === "number" && config.amount > asset.max)
-        return t("Maximum purchase is {{value}}", {
+      if (typeof asset.max === "number" && fiatAmount > asset.max)
+        return t("Maximum sell is {{value}}", {
           value: formatPrice(asset.max, config.currencyCode, true),
         })
 
@@ -71,26 +73,32 @@ export const useRampsBuyQuoteRamp = (
   }, [config, currencies, rampCryptoAsset, t, token?.symbol])
 
   return useQuery({
-    queryKey: ["useRampsBuyQuoteRamp", config, rampCryptoAsset, inputError],
+    queryKey: ["useRampsSellQuoteRamp", config, rampCryptoAsset, inputError],
     queryFn: () => {
       if (inputError) return inputError
+
       if (!config || !token || !rampCryptoAsset) return null
-      return fetchRampBuyQuote(config.currencyCode, rampCryptoAsset.id, config.amount)
+
+      const planckIn = tokensToPlanck(config.amount.toString(), token.decimals)
+
+      return fetchRampSellQuote(config.currencyCode, rampCryptoAsset.id, planckIn)
     },
-    select: (res: FetchRampBuyQuoteResult | null): RampsBuyQuote | null => {
+    select: (res: FetchRampSellQuoteResult | null): RampsSellQuote | null => {
       if (!res) return null
       if (res.type === "error") return res
-      return res.data.CARD_PAYMENT && config && rampCryptoAsset
+
+      return res.data.CARD && config && rampCryptoAsset
         ? {
             type: "success",
-            fee: res.data.CARD_PAYMENT.appliedFee,
-            amountOut: res.data.CARD_PAYMENT.cryptoAmount,
+            fee: res.data.CARD.appliedFee,
+            amountOut: res.data.CARD.fiatValue,
+            tokenPrice: res.data.asset.price[config.currencyCode],
             getRedirectUrl: (address: string) =>
-              getRampBuyUrl(
-                config.currencyCode,
-                config.amount,
+              getRampSellUrl(
                 rampCryptoAsset.id,
+                res.data.CARD.cryptoAmount,
                 address,
+                config.currencyCode,
                 countryInfo?.countryCode ?? "",
               ),
           }
@@ -100,14 +108,14 @@ export const useRampsBuyQuoteRamp = (
   })
 }
 
-type FetchRampBuyQuoteResult = { type: "success"; data: RampBuyQuoteResult } | RampsQuoteError
+type FetchRampSellQuoteResult = { type: "success"; data: RampSellQuoteResult } | RampsQuoteError
 
-const fetchRampBuyQuote = async (
+const fetchRampSellQuote = async (
   currencyCode: string,
   cryptoAssetSymbol: string,
-  amount: number,
-): Promise<FetchRampBuyQuoteResult> => {
-  const url = await getRampApiUrl("/onramp/quote/all")
+  plancks: string,
+): Promise<FetchRampSellQuoteResult> => {
+  const url = await getRampApiUrl("/offramp/quote/all")
 
   const response = await fetch(url, {
     method: "POST",
@@ -117,19 +125,18 @@ const fetchRampBuyQuote = async (
     body: JSON.stringify({
       fiatCurrency: currencyCode,
       cryptoAssetSymbol,
-      fiatValue: amount,
+      cryptoAmount: plancks,
     }),
   })
 
   if (!response.ok) {
     log.error("[ramp] Ramp quote error", response.status, response.statusText)
-
     const description =
       response.status === 403 ? t("This service is not available in your region yet.") : undefined
 
     return getRampsQuoteError(description)
   }
 
-  const data: RampBuyQuoteResult = await response.json()
+  const data: RampSellQuoteResult = await response.json()
   return { type: "success", data }
 }

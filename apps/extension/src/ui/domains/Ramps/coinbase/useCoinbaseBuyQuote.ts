@@ -9,18 +9,14 @@ import { useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
-import { getCoinbaseBuyUrl } from "../coinbase/helpers"
-import {
-  CoinbaseBuyOptions,
-  CoinbaseBuyQuoteRequest,
-  CoinbaseBuyQuoteResponse,
-} from "../coinbase/types"
-import { useCoinbaseBuyOptions } from "../coinbase/useCoinbaseBuyOptions"
+import { RampsBuyQuote, RampsBuyQuoteOptions } from "../buy/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsQuoteError } from "../shared/types"
-import { RampsBuyQuote, RampsBuyQuoteOptions } from "./types"
+import { getCoinbaseBuyUrl } from "./helpers"
+import { CoinbaseBuyOptions, CoinbaseBuyQuoteRequest, CoinbaseBuyQuoteResponse } from "./types"
+import { useCoinbaseBuyOptions } from "./useCoinbaseBuyOptions"
 
-export const useRampsBuyQuoteCoinbase = (
+export const useCoinbaseBuyQuote = (
   config: RampsBuyQuoteOptions | null,
 ): UseQueryResult<RampsBuyQuote | null, Error> => {
   const { t } = useTranslation()

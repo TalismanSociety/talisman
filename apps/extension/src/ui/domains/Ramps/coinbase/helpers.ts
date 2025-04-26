@@ -3,6 +3,7 @@ import urlJoin from "url-join"
 const COINBASE_PROJECT_ID = "63080e24-dc8e-45d0-9618-467b8c222f9e"
 const COINBASE_PAY_URL = "https://pay.coinbase.com"
 
+// TODO check if it works
 export const getCoinbaseBuyUrl = (
   currencyCode: string,
   amountIn: string,
@@ -27,6 +28,7 @@ export const getCoinbaseBuyUrl = (
   return urlJoin(COINBASE_PAY_URL, `/buy/select-asset?${query}`)
 }
 
+// TODO check if it works
 export const getCoinbaseSellUrl = (
   currencyCode: string,
   amountIn: string,
