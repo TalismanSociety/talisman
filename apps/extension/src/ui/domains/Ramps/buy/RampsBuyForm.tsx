@@ -14,6 +14,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedCurrency, useToken } from "@ui/state"
 
+import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsFieldSet } from "../shared/RampsFieldSet"
@@ -246,24 +247,14 @@ const Providers: FC<{
   quotes,
   onSelect,
 }) => {
-  const { t } = useTranslation()
   const token = useToken(tokenId)
   const selectedCurrency = useSelectedCurrency()
 
   const options = useMemo(() => {
     return quotes.map(({ query, provider }): RampsProviderProps => {
       if (query.isLoading || !token) return { type: "loading", provider }
-
-      if (query.error || !query.data || query.data.type === "error")
-        return {
-          type: "error",
-          provider,
-          title:
-            query.error?.message ??
-            (query.data?.type === "error" && query.data.message) ??
-            t("Unavailable"),
-          description: (query.data?.type === "error" && query.data.description) ?? null,
-        }
+      if (query.error || !query.data) return { ...getRampsQuoteError(), provider }
+      if (query.data.type === "error") return { ...query.data, provider }
 
       const amountOut = new BalanceFormatter(
         query.data.amountOut,
@@ -288,7 +279,7 @@ const Providers: FC<{
         currencyCode,
       }
     })
-  }, [amount, currencyCode, quotes, selectedCurrency, t, token, tokenRates])
+  }, [amount, currencyCode, quotes, selectedCurrency, token, tokenRates])
 
   return <RampsProviders options={options} selected={selected} onSelect={onSelect} />
 }

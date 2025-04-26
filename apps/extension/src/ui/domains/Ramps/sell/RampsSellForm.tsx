@@ -9,6 +9,7 @@ import { Button, useOpenCloseStatus } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useToken } from "@ui/state"
 
+import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsFieldSet } from "../shared/RampsFieldSet"
@@ -235,17 +236,8 @@ const Providers: FC<{
   const options = useMemo(() => {
     return quotes.map(({ query, provider }): RampsProviderProps => {
       if (query.isLoading || !token) return { type: "loading", provider }
-
-      if (query.error || !query.data || query.data.type === "error")
-        return {
-          type: "error",
-          provider,
-          title:
-            query.error?.message ??
-            (query.data?.type === "error" && query.data.message) ??
-            "Unavailable",
-          description: (query.data?.type === "error" && query.data.description) ?? null,
-        }
+      if (query.error || !query.data) return { ...getRampsQuoteError(), provider }
+      if (query.data.type === "error") return { ...query.data, provider }
 
       const amountOut = formatPrice(query.data.amountOut, currencyCode, true)
 
