@@ -8,6 +8,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
+import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { UseTokenReturnType } from "@ui/state"
@@ -33,6 +34,7 @@ type TokenBalancesListProps = {
   symbol: string
   shouldDisplayActionBtns?: boolean
   shouldDisplayTotalAvailableBalance?: boolean
+  stakeType?: StakeType
 }
 
 export const TokenBalancesList = ({
@@ -51,6 +53,7 @@ export const TokenBalancesList = ({
   symbol,
   shouldDisplayActionBtns = true,
   shouldDisplayTotalAvailableBalance = true,
+  stakeType,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -109,7 +112,7 @@ export const TokenBalancesList = ({
         <div className="flex items-center justify-end">
           {tokenId && (
             <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
-              <BondButton tokenId={tokenId} balances={balances} />
+              <BondButton tokenId={tokenId} balances={balances} stakeType={stakeType} />
             </div>
           )}
           <AssetBalanceCellValue

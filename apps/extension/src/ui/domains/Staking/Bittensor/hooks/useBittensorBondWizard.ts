@@ -15,7 +15,7 @@ import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 type WizardStep = "form" | "subnet-form" | "review" | "follow-up" | "select" | "select-subnet"
-type StakeType = "root" | "subnet"
+export type StakeType = "root" | "subnet"
 
 type WizardState = {
   step: WizardStep
@@ -82,7 +82,7 @@ export const useResetBittensorBondWizard = () => {
     (
       init: Pick<
         WizardState,
-        "address" | "tokenId" | "poolId" | "step" | "isSelectStakeDrawerOpen"
+        "address" | "tokenId" | "poolId" | "step" | "isSelectStakeDrawerOpen" | "stakeType"
       >,
     ) => setWizardState({ ...DEFAULT_STATE, ...init }),
     [],

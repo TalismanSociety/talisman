@@ -7,14 +7,17 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
+import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
 import { useBondModal } from "./useBondModal"
 
 export const useBondButton = ({
   tokenId,
   balances,
+  stakeType,
 }: {
   tokenId: TokenId | null | undefined
   balances: Balances | null | undefined
+  stakeType?: StakeType
 }) => {
   const { genericEvent } = useAnalytics()
 
@@ -101,13 +104,13 @@ export const useBondButton = ({
       e.stopPropagation()
 
       if (token?.chain?.id === "bittensor") {
-        handleOpenBittensorModal({ ...openArgs, isSelectStakeDrawerOpen: true })
+        handleOpenBittensorModal({ ...openArgs, isSelectStakeDrawerOpen: stakeType === "root" })
       } else {
         open(openArgs)
       }
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [genericEvent, open, openArgs, handleOpenBittensorModal, token?.chain?.id],
+    [openArgs, token?.chain?.id, genericEvent, handleOpenBittensorModal, stakeType, open],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }

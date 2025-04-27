@@ -28,6 +28,7 @@ export const useBittensorBondModal = () => {
         tokenId,
         poolId,
         step: "form",
+        stakeType: "subnet",
         isSelectStakeDrawerOpen,
       })
 
