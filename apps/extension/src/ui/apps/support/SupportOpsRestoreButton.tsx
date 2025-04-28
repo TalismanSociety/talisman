@@ -2,27 +2,27 @@ import { UploadIcon } from "@talismn/icons"
 import { ChangeEventHandler, FC, useCallback, useState } from "react"
 import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
-import { RescueCtaButton } from "./RescueCtaButton"
-import { TalismanJsonBackup } from "./types"
+import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
+import { TalismanJsonBackup } from "./shared/types"
 
-export const RescueRestore = () => {
+export const SupportOpsRestoreButton = () => {
   const { isOpen, open, close } = useOpenClose()
 
   return (
     <>
-      <RescueCtaButton
+      <SupportOpsCtaButton
         title="Restore"
         description="Restore Talisman from a backup file"
         onClick={open}
       />
       <Modal isOpen={isOpen} onDismiss={close}>
-        <BackupModalDialog onClose={close} />
+        <RestoreModalDialog onClose={close} />
       </Modal>
     </>
   )
 }
 
-const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
+const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [state, setState] = useState<{ isInvalid?: boolean; backup?: TalismanJsonBackup }>(
     () => ({}),
   )
@@ -58,7 +58,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
           This will restore Talisman from a backup file.
         </p>
         <div className="bg-alert-warn/10 text-alert-warn flex items-center gap-8 rounded p-5 px-8">
-          <p>Existing data will be wiped, and replaced by the data from the backup file.</p>
+          <p>Existing data will be wiped, and replaced by the content of the backup file.</p>
         </div>
 
         <div className="border-grey-700 flex h-[7.4rem] flex-col justify-between rounded border p-5">

@@ -4,15 +4,15 @@ import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
 import downloadJson from "@talisman/util/downloadJson"
 
-import { RescueCtaButton } from "./RescueCtaButton"
-import { TalismanJsonBackup } from "./types"
+import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
+import { TalismanJsonBackup } from "./shared/types"
 
-export const RescueBackup = () => {
+export const SupportOpsBackup = () => {
   const { isOpen, open, close } = useOpenClose()
 
   return (
     <>
-      <RescueCtaButton
+      <SupportOpsCtaButton
         title="Backup"
         description="Export your Talisman data as a file"
         onClick={open}
@@ -31,13 +31,13 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will export all your Talisman data as a file, so you can restore it in another
-          browser.
+          browser. Make sure to store it safely.
         </p>
         <div className="bg-alert-warn/10 text-alert-warn flex items-center gap-8 rounded p-5 px-8">
           <p>
-            DO NOT provide this file to anyone, they would steal your funds.
+            DO NOT share this file with anyone.
             <br />
-            Talisman support would never ask for it.
+            Talisman support team will never ask for it.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-10">

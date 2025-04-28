@@ -91,7 +91,7 @@ export const WelcomePage = () => {
       <div className="my-[8rem] flex flex-col items-center justify-center gap-20">
         <div className="welcome-text flex select-none flex-col items-center gap-14 text-center xl:w-[76rem]">
           <div className="flex flex-col items-center gap-10 text-white xl:w-[65.2rem]">
-            <LogoWithRescueEntryPoint />
+            <LogoWithSupportPageRedirect />
             <div className="font-whyteInkTrap text-[8rem] leading-none tracking-tight lg:text-[12rem]">
               <Trans
                 t={t}
@@ -143,11 +143,11 @@ export const WelcomePage = () => {
   )
 }
 
-const LogoWithRescueEntryPoint = () => {
+const LogoWithSupportPageRedirect = () => {
   const [clickCount, setClickCount] = useState(0)
 
   const handleClick = useCallback(() => {
-    if (clickCount === 9) window.location.href = "rescue.html"
+    if (clickCount === 9) window.location.href = "support.html"
     else setClickCount((prev) => prev + 1)
   }, [clickCount])
 

@@ -1,6 +1,6 @@
 import { FC } from "react"
 
-export const RescueCtaButton: FC<{
+export const SupportOpsCtaButton: FC<{
   title: string
   description: string
   onClick: () => void

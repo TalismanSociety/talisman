@@ -21,7 +21,7 @@ const config = (env) => ({
     "popup": { import: path.join(srcDir, "index.popup.tsx") },
     "onboarding": { import: path.join(srcDir, "index.onboarding.tsx") },
     "dashboard": { import: path.join(srcDir, "index.dashboard.tsx") },
-    "rescue": { import: path.join(srcDir, "index.rescue.tsx") },
+    "support": { import: path.join(srcDir, "index.support.tsx") },
 
     // Wallet service worker pages
     "background": { import: path.join(srcDir, "background.ts"), dependOn: "vendor-background" },
@@ -215,7 +215,7 @@ const config = (env) => ({
       { title: "Talisman", entrypoint: "popup" },
       { title: "Talisman Wallet", entrypoint: "dashboard" },
       { title: "Unlock the Talisman", entrypoint: "onboarding" },
-      { title: "Rescue", entrypoint: "rescue" },
+      { title: "Support Operations", entrypoint: "support" },
     ].map(
       ({ title, entrypoint }) =>
         new HtmlWebpackPlugin({
