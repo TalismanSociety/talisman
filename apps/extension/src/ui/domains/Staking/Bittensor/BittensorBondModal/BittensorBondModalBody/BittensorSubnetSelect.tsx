@@ -1,18 +1,19 @@
 import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
-import { SearchInput } from "@talisman/components/SearchInput"
+import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { SubnetOption, SubnetOptionSkeleton } from "../SubnetOption"
 
-type SortValue = "uid" | "price" | "taoInPool" | "alphaInPool" | "emission"
+type SortValue = "netuid" | "price" | "total_tao" | "total_alpha"
+// | "emission"
 
 export type SortMethod = {
   label: string
@@ -21,11 +22,11 @@ export type SortMethod = {
 }
 
 const sortMethods: SortMethod[] = [
-  { label: "UID", value: "uid" },
-  { label: "Price", value: "price" },
-  { label: "Emission", value: "emission" },
-  { label: "TAO in Pool", value: "taoInPool" },
-  { label: "Alpha in Pool", value: "alphaInPool" },
+  { label: "UID", value: "netuid" },
+  // { label: "Price", value: "price" },
+  // { label: "Emission", value: "emission" },
+  { label: "TAO in Pool", value: "total_tao" },
+  { label: "Alpha in Pool", value: "total_alpha" },
 ]
 
 export const BittensorSubnetSelect = () => {
@@ -39,22 +40,62 @@ export const BittensorSubnetSelect = () => {
 
   const { subnetData, isError, isLoading } = useCombinedSubnetData()
 
-  useEffect(
-    () =>
-      setSortedOrFilteredSubnets(Object.values(subnetData).filter((subnet) => subnet.netuid !== 0)),
+  // removes rootnet from subnets
+  const subnets = useMemo(
+    () => Object.values(subnetData).filter((subnet) => subnet.netuid !== 0),
     [subnetData],
   )
 
-  const handleSearchChange = useCallback(
-    (input: string) => {
+  const sortSubnetOptions = useCallback((data: SubnetData[], sortBy: SortValue): SubnetData[] => {
+    const sorted = data.sort((a, b) => {
+      if (sortBy === "total_alpha" || sortBy === "total_tao") {
+        // Sort other fields in descending order
+        if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
+        if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return 1
+
+        return 0 // Keep them in the same place if equal
+      } else {
+        // Sort other fields in ascending order
+        if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return -1
+        if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return 1
+
+        return 0 // Keep them in the same place if equal
+      }
+    })
+
+    return sorted
+  }, [])
+
+  useEffect(() => {
+    const defaultFilteredSubnets: SubnetData[] = sortSubnetOptions(subnets, sortMethods[0].value)
+    setSortedOrFilteredSubnets(defaultFilteredSubnets)
+  }, [sortSubnetOptions, subnets])
+
+  const handleSortMethodChange = useCallback(
+    (method: SortMethod) => {
+      setSearch("") // clear search
+      setSelectedSortMethod(method)
+      setSortedOrFilteredSubnets(sortSubnetOptions(subnets, method.value))
+    },
+    [sortSubnetOptions, subnets],
+  )
+
+  const handleSearchClear = useCallback(() => {
+    setSearch("")
+    // restore selected sort method
+    const filteredSubnets: SubnetData[] = sortSubnetOptions(subnets, selectedSortMethod.value)
+    setSortedOrFilteredSubnets(filteredSubnets)
+  }, [selectedSortMethod.value, sortSubnetOptions, subnets])
+
+  const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      const input = e.target.value
       setSearch(input)
       if (!input) {
-        setSortedOrFilteredSubnets(
-          Object.values(subnetData).filter((subnet) => subnet.netuid !== 0),
-        )
+        handleSearchClear()
       } else {
         setSortedOrFilteredSubnets(
-          Object.values(subnetData).filter((subnet) => {
+          Object.values(subnets).filter((subnet) => {
             const { netuid, subnet_name, symbol } = subnet
             const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
             return subnetName.includes(input.toLowerCase())
@@ -62,49 +103,29 @@ export const BittensorSubnetSelect = () => {
         )
       }
     },
-    [subnetData],
+    [handleSearchClear, subnets],
   )
 
-  // const sortSubnetOptions = useCallback((data: SubnetData[], sortBy: SortValue): SubnetData[] => {
-  //   // const sorted = data.sort((a, b) => {
-  //   //   // Sort other fields in descending order
-  //   //   if (a[sortBy] > b[sortBy]) return -1
-  //   //   if (a[sortBy] < b[sortBy]) return 1
-  //   //   return 0 // Keep them in the same place if equal
-  //   // })
-  //   console.log({ sortBy })
-  //   const sorted = data
-
-  //   return sorted
-  // }, [])
-
-  const handleSortMethodChange = useCallback(
-    (method: SortMethod) => {
-      setSelectedSortMethod(method)
-      // setSortedOrFilteredSubnets((prev) => sortSubnetOptions(prev, method.value))
-    },
-    // [sortSubnetOptions],
-    [],
-  )
-
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     setStep("subnet-form")
     if (selectedNetuid) {
       setNetuid(selectedNetuid)
     }
-  }
+  }, [selectedNetuid, setNetuid, setStep])
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-8">
-      <SearchInput
+      <SearchInputControlled
         containerClassName={classNames(
           "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
           "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
           "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
         )}
         placeholder={t("Search for subnet name or number")}
+        value={search}
         onChange={handleSearchChange}
-        initialValue={search}
+        onClear={handleSearchClear}
+        isDisabled={isLoading || subnets.length === 0}
       />
       <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
         {sortMethods.map((method) => (
