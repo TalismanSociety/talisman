@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
@@ -31,7 +31,7 @@ const sortMethods: SortMethod[] = [
 export const BittensorSubnetSelect = () => {
   const [search, setSearch] = useState<string>("")
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
-  const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>([])
+  const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[]>([])
   const { setStep, setNetuid, netuid } = useBittensorBondWizard()
   const [selectedNetuid, setSelectedNetuid] = useState<number | null>(netuid)
 
@@ -40,13 +40,30 @@ export const BittensorSubnetSelect = () => {
   const { subnetData, isError, isLoading } = useCombinedSubnetData()
 
   useEffect(
-    () => setSortedSubnets(Object.values(subnetData).filter((subnet) => subnet.netuid !== 0)),
+    () =>
+      setSortedOrFilteredSubnets(Object.values(subnetData).filter((subnet) => subnet.netuid !== 0)),
     [subnetData],
   )
 
-  const onSearchChange = (input: string) => {
-    setSearch(input)
-  }
+  const handleSearchChange = useCallback(
+    (input: string) => {
+      setSearch(input)
+      if (!input) {
+        setSortedOrFilteredSubnets(
+          Object.values(subnetData).filter((subnet) => subnet.netuid !== 0),
+        )
+      } else {
+        setSortedOrFilteredSubnets(
+          Object.values(subnetData).filter((subnet) => {
+            const { netuid, subnet_name, symbol } = subnet
+            const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
+            return subnetName.includes(input.toLowerCase())
+          }),
+        )
+      }
+    },
+    [subnetData],
+  )
 
   // const sortSubnetOptions = useCallback((data: SubnetData[], sortBy: SortValue): SubnetData[] => {
   //   // const sorted = data.sort((a, b) => {
@@ -55,15 +72,20 @@ export const BittensorSubnetSelect = () => {
   //   //   if (a[sortBy] < b[sortBy]) return 1
   //   //   return 0 // Keep them in the same place if equal
   //   // })
+  //   console.log({ sortBy })
   //   const sorted = data
 
   //   return sorted
   // }, [])
 
-  const handleSortMethodChange = (method: SortMethod) => {
-    setSelectedSortMethod(method)
-    // setSortedSubnets((prev) => sortSubnetOptions(prev, method.value))
-  }
+  const handleSortMethodChange = useCallback(
+    (method: SortMethod) => {
+      setSelectedSortMethod(method)
+      // setSortedOrFilteredSubnets((prev) => sortSubnetOptions(prev, method.value))
+    },
+    // [sortSubnetOptions],
+    [],
+  )
 
   const handleSubmit = () => {
     setStep("subnet-form")
@@ -80,8 +102,8 @@ export const BittensorSubnetSelect = () => {
           "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
           "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
         )}
-        placeholder={t("Search account or folder")}
-        onChange={onSearchChange}
+        placeholder={t("Search for subnet name or number")}
+        onChange={handleSearchChange}
         initialValue={search}
       />
       <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
@@ -91,7 +113,7 @@ export const BittensorSubnetSelect = () => {
             onClick={() => !isLoading && !method.isDisabled && handleSortMethodChange(method)}
             className={classNames(
               "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
-              method.value === selectedSortMethod.value
+              method.value === selectedSortMethod.value && !search
                 ? "bg-primary-500 text-black"
                 : "bg-black-tertiary text-grey-400",
               (isLoading || method.isDisabled) && "cursor-not-allowed",
@@ -107,13 +129,13 @@ export const BittensorSubnetSelect = () => {
           <div>{t("24h change")}</div>
         </div>
         <ScrollContainer className="h-[29.5rem]" innerClassName="space-y-[0.8rem]">
-          {isLoading && sortedSubnets.length === 0
+          {isLoading && sortedOrFilteredSubnets.length === 0
             ? Array(6)
                 .fill(null)
                 .map((_, i) => {
                   return <SubnetOptionSkeleton key={i} />
                 })
-            : sortedSubnets.map((option) => (
+            : sortedOrFilteredSubnets.map((option) => (
                 <SubnetOption
                   key={option.netuid!}
                   option={option}
