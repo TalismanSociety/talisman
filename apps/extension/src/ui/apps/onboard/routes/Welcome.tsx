@@ -147,7 +147,7 @@ const LogoWithRescueEntryPoint = () => {
   const [clickCount, setClickCount] = useState(0)
 
   const handleClick = useCallback(() => {
-    if (clickCount === 10) window.location.href = "rescue.html"
+    if (clickCount === 9) window.location.href = "rescue.html"
     else setClickCount((prev) => prev + 1)
   }, [clickCount])
 

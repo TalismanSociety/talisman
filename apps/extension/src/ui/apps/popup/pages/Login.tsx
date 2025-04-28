@@ -258,7 +258,7 @@ const VersionInfo = () => {
   const [clickCount, setClickCount] = useState(0)
 
   const handleClick = useCallback(() => {
-    if (clickCount === 10) window.open("./rescue.html", "_blank")
+    if (clickCount === 9) window.open("./rescue.html", "_blank")
     else setClickCount((prev) => prev + 1)
   }, [clickCount])
 
