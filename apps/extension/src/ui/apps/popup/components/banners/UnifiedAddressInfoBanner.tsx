@@ -24,7 +24,7 @@ export const UnifiedAddressInfoBanner = () => {
     <div
       className={classNames(
         "relative z-0 overflow-hidden",
-        "text-tiny select-none rounded-sm px-8 py-6",
+        "text-tiny select-none rounded-sm px-6 py-4",
         "bg-gradient-to-r from-[#9F7998] to-[#EB5D93]",
       )}
     >

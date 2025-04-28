@@ -33,7 +33,7 @@ export const BackupReminderBanner = () => {
     <div
       className={classNames(
         "relative z-0 overflow-hidden",
-        "select-none rounded-sm p-6 text-xs",
+        "select-none rounded-sm p-6 py-4 text-xs",
         "border border-white",
       )}
     >

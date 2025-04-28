@@ -38,11 +38,14 @@ export type AppStoreData = {
   showLedgerPolkadotGenericMigrationAlert?: boolean
   hideManageAccountsWelcome?: boolean
   hideGetStarted?: boolean
+
+  // dismissed banners
   hideUnifiedAddressBanner?: boolean
+  hideAutonomysQuestBanner?: boolean
+  hideBackupReminderBanner?: boolean
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
-  hideBackupReminderBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -120,6 +123,7 @@ if (DEBUG) {
       hideManageAccountsWelcome: false,
       hideGetStarted: false,
       hideUnifiedAddressBanner: false,
+      hideAutonomysQuestBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {
