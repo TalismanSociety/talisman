@@ -21,7 +21,8 @@ type WizardState = {
   step: WizardStep
   address: Address | null
   tokenId: TokenId | null
-  poolId: number | string | null // rename to delegateHotkey
+  poolId: number | string | null // rename to delegateHotkey & type string | null
+  netuid: number | null
   plancks: bigint | null
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
@@ -35,7 +36,8 @@ const DEFAULT_STATE: WizardState = {
   step: "form",
   address: null,
   tokenId: null,
-  poolId: 12,
+  poolId: null,
+  netuid: null,
   plancks: null,
   displayMode: "token",
   isAccountPickerOpen: false,
@@ -95,8 +97,18 @@ export const useBittensorBondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { poolId, step, stakeType, displayMode, hash, tokenId, address, plancks, isDefaultOption } =
-    useWizardState()
+  const {
+    poolId,
+    netuid,
+    step,
+    stakeType,
+    displayMode,
+    hash,
+    tokenId,
+    address,
+    plancks,
+    isDefaultOption,
+  } = useWizardState()
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -148,6 +160,10 @@ export const useBittensorBondWizard = () => {
 
   const setPoolId = useCallback(
     (poolId: number | string) => setWizardState((prev) => ({ ...prev, poolId })),
+    [],
+  )
+  const setNetuid = useCallback(
+    (netuid: number) => setWizardState((prev) => ({ ...prev, netuid })),
     [],
   )
 
@@ -276,6 +292,7 @@ export const useBittensorBondWizard = () => {
     token,
     tokenRates,
     poolId,
+    netuid,
     formatter,
     displayMode,
     accountPicker,
@@ -299,6 +316,7 @@ export const useBittensorBondWizard = () => {
 
     setAddress,
     setTokenId,
+    setNetuid,
     setPoolId,
     setPlancks,
     setStep,

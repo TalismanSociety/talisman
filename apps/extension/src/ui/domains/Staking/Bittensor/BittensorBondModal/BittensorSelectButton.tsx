@@ -30,7 +30,7 @@ export const BittensorSelectButton = ({
       onClick={() => step.includes("form") && setStep(nextStep)}
       className={classNames(
         "bg-pill hover:bg-grey-700 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
-        step !== "form" && "cursor-not-allowed",
+        !step.includes("form") && "cursor-not-allowed",
       )}
     >
       <SettingsIcon className="text-body-secondary" />
