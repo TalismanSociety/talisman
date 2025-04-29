@@ -277,11 +277,11 @@ const isSameTreeItems = (oldTree: Tree | undefined, newTree: Tree | undefined) =
   return true
 }
 
-const isExistingTreeAccount = (validAddresses: string[]) => (item: TreeAccount) =>
+const isValidTreeAccount = (validAddresses: string[]) => (item: TreeAccount) =>
   validAddresses.some((address) => isAddressEqual(item.address, address))
 
 const cleanupTree = (items: TreeItem[], validAddresses: string[]): TreeItem[] => {
-  const filter = isExistingTreeAccount(validAddresses)
+  const filter = isValidTreeAccount(validAddresses)
 
   return items
     .map((item) => {
