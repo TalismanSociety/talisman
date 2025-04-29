@@ -95,7 +95,6 @@ export const useCoinbaseBuyQuote = (
                 coinbaseToken.purchaseCurrency,
                 coinbaseToken.purchaseNetwork,
                 res.data.quote_id,
-                res.data.purchase_amount.value,
                 address,
               ),
           }

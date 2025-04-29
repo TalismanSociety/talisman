@@ -107,7 +107,6 @@ export const useCoinbaseSellQuote = (
                 coinbaseToken.sellCurrency,
                 coinbaseToken.sellNetwork,
                 res.data.quote_id,
-                res.data.cashout_total.value,
                 address,
               ),
           }
