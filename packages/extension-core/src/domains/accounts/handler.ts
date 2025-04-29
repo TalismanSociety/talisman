@@ -17,7 +17,7 @@ import {
   Mnemonic,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
-import { combineLatest, map } from "rxjs"
+import { combineLatest, map, shareReplay } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -52,6 +52,7 @@ import { withSecretKey } from "../keyring/withSecretKey"
 import { formatSuri, sortAccounts } from "./helpers"
 import { cleanupCatalog } from "./helpers.catalog"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
+import { accountsCatalogStore } from "./store.catalog"
 
 // existing values for the method field, prior to keyring migration
 type AnalyticsAccountMethod =
@@ -62,6 +63,16 @@ type AnalyticsAccountMethod =
   | "qr"
   | "hardware"
   | "watched"
+
+const accountsCatalog$ = combineLatest([
+  accountsCatalogStore.observable,
+  keyringStore.accounts$.pipe(
+    map((accounts) => accounts.filter(isAccountNotContact).map((acc) => acc.address)),
+  ),
+]).pipe(
+  map(([catalog, addresses]) => cleanupCatalog(catalog, addresses)),
+  shareReplay({ bufferSize: 1, refCount: true }),
+)
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(
@@ -325,31 +336,7 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountsCatalogSubscribe(id: string, port: Port) {
-    return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(
-      id,
-      port,
-      // make sure the list of accounts in the catalog is updated when the keyring changes
-      combineLatest([
-        this.stores.accountsCatalog.observable,
-        keyringStore.accounts$.pipe(
-          map((accounts) => accounts.filter(isAccountNotContact).map((acc) => acc.address)),
-        ),
-      ]).pipe(map(([catalog, addresses]) => cleanupCatalog(catalog, addresses))),
-      // async ([addresses, catalog]: [Account[], Trees]): Promise<AccountsCatalogData> => {
-      //   // on first start-up, the store (loaded from localstorage) will be empty
-      //   //
-      //   // when this happens, instead of sending `{}` or `undefined` to the frontend,
-      //   // we'll send an empty catalog of the correct type `AccountsCatalogData`
-      //   if (Object.keys(catalog).length === 0) return emptyCatalog
-
-      //   return cleanupCatalog()
-
-      //   // if not, make sure catalog only include accounts that actually exist
-
-      //   // for(const tree of [clone.])
-      //   // Object.keys(catalog).length === 0 ? emptyCatalog : catalog,
-      // },
-    )
+    return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(id, port, accountsCatalog$)
   }
 
   private accountsCatalogRunActions(actions: RequestAccountsCatalogAction[]) {
