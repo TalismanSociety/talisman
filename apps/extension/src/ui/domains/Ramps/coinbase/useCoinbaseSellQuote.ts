@@ -1,5 +1,6 @@
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import BigNumber from "bignumber.js"
 import { log, RAMPS_COINBASE_API_BASE_PATH } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -161,7 +162,9 @@ const fetchCoinbaseSellQuote = async (
   const body: CoinbaseSellQuoteRequest = {
     cashoutCurrency: currencyCode,
     paymentMethod: "FIAT_WALLET",
-    sellAmount: formatTokens(amountIn, decimals), // dont send "1e-9" ^^
+    sellAmount: BigNumber(amountIn)
+      .decimalPlaces(decimals, BigNumber.ROUND_DOWN) // optional: rounding mode
+      .toString(10),
     ...coinbaseToken,
   }
 
@@ -184,14 +187,4 @@ const fetchCoinbaseSellQuote = async (
 
   const data: CoinbaseSellQuoteResponse = await response.json()
   return { type: "success", data }
-}
-
-const formatTokens = (tokens: number, decimals: number): string => {
-  const value = tokens.toFixed(decimals)
-  if (!value.includes(".")) return value // No decimal, return as-is
-
-  // trim trailing zeros
-  return value
-    .replace(/(\.\d*?[1-9])0+$/, "$1") // Remove trailing zeros
-    .replace(/\.0+$/, "") // Remove trailing .0 or .000...
 }
