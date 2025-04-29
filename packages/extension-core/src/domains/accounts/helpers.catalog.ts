@@ -202,7 +202,7 @@ const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undef
   let account = undefined
   const removeFromSet = (set: TreeItem[], address: string) => {
     const indexes = set.reduceRight((indexes, item, index) => {
-      if (item.type === "account" && isAddressEqual(item.address, address)) {
+      if (item.type === "account" && item.address === address) {
         account = item
         indexes.push(index)
       }
@@ -227,7 +227,7 @@ export const addAccount = (tree: Tree, address: string) => {
   const accountIsInTree = !!tree.find((item) =>
     item.type === "account"
       ? item.address === address
-      : item.tree.find((account) => isAddressEqual(account.address, address)),
+      : item.tree.find((account) => account.address === address),
   )
   if (accountIsInTree) return
 
