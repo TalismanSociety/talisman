@@ -7,8 +7,8 @@ import { getRampApiUrl } from "./getRampApiUrl"
 import { RampHostAssetsConfig } from "./types"
 import { useRampCurrencies } from "./useRampCurrencies"
 
-// note: currencyCode must be upper case
 const fetchRampAssets = async (
+  /** NOTE: currencyCode must be upper case */
   currencyCode: string,
   mode: RampsMode,
 ): Promise<RampHostAssetsConfig> => {
