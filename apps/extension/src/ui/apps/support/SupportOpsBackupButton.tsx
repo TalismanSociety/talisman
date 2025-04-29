@@ -1,5 +1,5 @@
 import { SaveIcon } from "@talismn/icons"
-import { FC } from "react"
+import { FC, useCallback } from "react"
 import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
 import downloadJson from "@talisman/util/downloadJson"
@@ -26,6 +26,11 @@ export const SupportOpsBackup = () => {
 }
 
 const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
+  const handleSave = useCallback(async () => {
+    await backupLocalStorage()
+    onClose()
+  }, [onClose])
+
   return (
     <ModalDialog title="Backup" className="w-[40rem]" onClose={onClose}>
       <div className="flex flex-col gap-10">
@@ -44,7 +49,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
         <div className="grid grid-cols-2 gap-10">
           <Button onClick={onClose}>Cancel</Button>
-          <Button primary icon={SaveIcon} onClick={backupLocalStorage}>
+          <Button primary icon={SaveIcon} onClick={handleSave}>
             Save
           </Button>
         </div>
