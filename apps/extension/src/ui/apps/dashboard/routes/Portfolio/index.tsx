@@ -6,6 +6,7 @@ import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfol
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
+import { useFeatureFlag } from "@ui/state"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
@@ -30,12 +31,16 @@ export const PortfolioRoutes = () => (
   </PortfolioContainer>
 )
 
-const PortfolioToolbar = () => (
-  <Routes>
-    <Route path="tokens" element={<PortfolioToolbarTokens />} />
-    <Route path="nfts" element={<PortfolioToolbarNfts />} />
-  </Routes>
-)
+const PortfolioToolbar = () => {
+  const showNfts = useFeatureFlag("NFTS")
+
+  return (
+    <Routes>
+      <Route path="tokens" element={<PortfolioToolbarTokens />} />
+      <Route path="nfts" element={!!showNfts && <PortfolioToolbarNfts />} />
+    </Routes>
+  )
+}
 
 const PortfolioHeader = () => (
   <Routes>
