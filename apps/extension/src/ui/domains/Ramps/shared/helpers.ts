@@ -15,7 +15,8 @@ const getDotSubstrateAssetTokenIdPrefix = (chainId: string, assetId: string) =>
   [chainId, "substrate-assets", assetId].join("-")
 
 export const getTokenFromCoinbaseAsset = (asset: CoinbaseTokenNetwork, tokens: TokenList) => {
-  if (asset.chain_id && asset.chain_id !== "0") {
+  // if positive integer, then it is an EVM chain id
+  if (/^[1-9]\d*$/.test(asset.chain_id)) {
     const tokenId = asset.contract_address
       ? getErc20TokenId(asset.chain_id, asset.contract_address)
       : getEvmNativeTokenId(asset.chain_id)
