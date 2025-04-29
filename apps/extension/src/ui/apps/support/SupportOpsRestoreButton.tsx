@@ -12,7 +12,7 @@ export const SupportOpsRestoreButton = () => {
     <>
       <SupportOpsCtaButton
         title="Restore"
-        description="Restore Talisman from a backup file"
+        description="Import your Talisman data from a backup file"
         onClick={open}
       />
       <Modal isOpen={isOpen} onDismiss={close}>
@@ -55,10 +55,10 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
     <ModalDialog title="Backup" className="w-[50rem]" onClose={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
-          This will restore Talisman from a backup file.
+          This will replace all existing Talisman data with the data from your backup file.
         </p>
-        <div className="bg-alert-warn/10 text-alert-warn flex items-center gap-8 rounded p-5 px-8">
-          <p>Existing data will be wiped, and replaced by the content of the backup file.</p>
+        <div className="bg-alert-warn/10 text-alert-warn flex items-center justify-center gap-8 rounded p-5 px-8 text-center text-sm">
+          <p>Warning: All existing data will be erased and replaced.</p>
         </div>
 
         <div className="border-grey-700 flex h-[7.4rem] flex-col justify-between rounded border p-5">
@@ -66,7 +66,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
             <input type="file" accept=".json,application/json" onChange={handleChange}></input>
           </div>
           {state.isInvalid && (
-            <div className="text-alert-warn">Selected file is not a Talisman backup</div>
+            <div className="text-alert-warn">Selected file is not a Talisman backup file.</div>
           )}
           {state.backup && <div className="text-body-secondary">Ready to restore</div>}
         </div>

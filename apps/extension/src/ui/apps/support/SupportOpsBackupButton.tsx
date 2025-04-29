@@ -14,7 +14,7 @@ export const SupportOpsBackup = () => {
     <>
       <SupportOpsCtaButton
         title="Backup"
-        description="Export your Talisman data as a file"
+        description="Export your Talisman data to a file"
         onClick={open}
       />
 
@@ -30,14 +30,16 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
     <ModalDialog title="Backup" className="w-[40rem]" onClose={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
-          This will export all your Talisman data as a file, so you can restore it in another
-          browser. Make sure to store it safely.
+          This will save all your Talisman data into a file, which you can use to restore your
+          Talisman on another browser.
+          <br />
+          Make sure to store this file securely.
         </p>
-        <div className="bg-alert-warn/10 text-alert-warn flex items-center gap-8 rounded p-5 px-8">
+        <div className="bg-alert-warn/10 text-alert-warn flex items-center justify-center gap-8 rounded p-5 px-8 text-center text-sm">
           <p>
-            DO NOT share this file with anyone.
+            <strong>DO NOT</strong> share your backup file with <strong>anyone</strong>.
             <br />
-            Talisman support team will never ask for it.
+            The Talisman support team will <strong>never</strong> ask for it.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-10">
