@@ -1,3 +1,4 @@
+import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
 import { classNames, planckToTokens } from "@talismn/util"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -8,25 +9,33 @@ import { useToken } from "@ui/state"
 type SubnetOptionProps = {
   option: SubnetData
   selectedNetuid: number | null | undefined
-  handleSelectSubnet: (subnetNetuid: number) => void
   tokenId: string
+  isSubnetsLoading: boolean
+  isSubnetsError: boolean
+  handleSelectSubnet: (subnetNetuid: number) => void
 }
 
 export const SubnetOption = ({
   option,
   selectedNetuid,
-  handleSelectSubnet,
   tokenId,
+  isSubnetsLoading,
+  isSubnetsError,
+  handleSelectSubnet,
 }: SubnetOptionProps) => {
   const token = useToken(tokenId)
   const isSelected = option.netuid === selectedNetuid
+
+  const formattedEmission =
+    (Number(BigInt(option?.emission || 0) * 100n) / Number(SCALE_FACTOR)).toFixed(2) + "%"
+  const emission = isSubnetsError ? "--" : formattedEmission
 
   return (
     <button
       key={option.netuid}
       onClick={() => handleSelectSubnet(option.netuid!)}
       className={classNames(
-        "bg-black-tertiary text-body-secondary border-black-tertiary flex w-full rounded-sm border-[1px] p-[12px] text-xs",
+        "bg-black-tertiary text-body-secondary border-black-tertiary flex w-full items-stretch rounded-sm border-[1px] p-[12px] text-xs",
         isSelected && "border-grey-400 text-grey-300",
       )}
     >
@@ -41,21 +50,27 @@ export const SubnetOption = ({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-4">
               <Tokens
-                amount={planckToTokens(option.total_tao, token?.decimals ?? 9)}
+                amount={planckToTokens(option.total_tao, token?.decimals ?? token?.decimals)}
                 symbol={token?.symbol}
               />
             </div>
             <div className="bg-body-disabled inline-block size-2 rounded-full" />
 
             <Tokens
-              amount={planckToTokens(option.total_alpha, token?.decimals ?? 9)}
+              amount={planckToTokens(option.total_alpha, token?.decimals ?? token?.decimals)}
               symbol={option.symbol}
             />
           </div>
         </div>
       </div>
-      {/* TODO: Add get subnets endpoint to calculate emissions */}
-      {/* <div className="flex min-h-full items-center justify-center bg-red-500">123%</div> */}
+
+      <div className="flex items-center justify-center pl-[0.75rem] text-sm">
+        {isSubnetsLoading ? (
+          <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[3.5rem] animate-pulse" />
+        ) : (
+          emission
+        )}
+      </div>
     </button>
   )
 }

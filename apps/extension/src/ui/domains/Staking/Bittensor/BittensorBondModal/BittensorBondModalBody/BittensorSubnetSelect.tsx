@@ -12,8 +12,7 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { SubnetOption, SubnetOptionSkeleton } from "../SubnetOption"
 
-type SortValue = "netuid" | "price" | "total_tao" | "total_alpha"
-// | "emission"
+type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
 export type SortMethod = {
   label: string
@@ -24,7 +23,7 @@ export type SortMethod = {
 const sortMethods: SortMethod[] = [
   { label: "UID", value: "netuid" },
   // { label: "Price", value: "price" },
-  // { label: "Emission", value: "emission" },
+  { label: "Emission", value: "emission" },
   { label: "TAO in Pool", value: "total_tao" },
   { label: "Alpha in Pool", value: "total_alpha" },
 ]
@@ -38,7 +37,8 @@ export const BittensorSubnetSelect = () => {
 
   const { t } = useTranslation()
 
-  const { subnetData, isError, isLoading } = useCombinedSubnetData()
+  const { subnetData, isError, isLoading, isSubnetsError, isSubnetsLoading } =
+    useCombinedSubnetData()
 
   // removes rootnet from subnets
   const subnets = useMemo(
@@ -47,8 +47,9 @@ export const BittensorSubnetSelect = () => {
   )
 
   const sortSubnetOptions = useCallback((data: SubnetData[], sortBy: SortValue): SubnetData[] => {
+    const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
     const sorted = data.sort((a, b) => {
-      if (sortBy === "total_alpha" || sortBy === "total_tao") {
+      if (descendingFilters.includes(sortBy)) {
         // Sort other fields in descending order
         if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
         if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return 1
@@ -163,6 +164,8 @@ export const BittensorSubnetSelect = () => {
                   selectedNetuid={selectedNetuid}
                   tokenId="bittensor-substrate-native"
                   handleSelectSubnet={setSelectedNetuid}
+                  isSubnetsLoading={isSubnetsLoading}
+                  isSubnetsError={isSubnetsError}
                 />
               ))}
           {isError && (
