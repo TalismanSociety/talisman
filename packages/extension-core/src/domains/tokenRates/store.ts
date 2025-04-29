@@ -10,6 +10,7 @@ import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
+import { settingsStore } from "../app/store.settings"
 import { activeTokensStore, filterActiveTokens } from "../tokens/store.activeTokens"
 
 // refresh token rates on subscription start if older than 1 minute
@@ -111,8 +112,9 @@ export class TokenRatesStore {
     this.#lastUpdateTokenIds = strTokenIds
 
     try {
-      const coingecko = await remoteConfigStore.get("coingecko")
-      const tokenRates = await fetchTokenRates(tokens, coingecko)
+      const coinsApiConfig = await remoteConfigStore.get("coinsApi")
+      const currencyIds = await settingsStore.get("selectableCurrencies")
+      const tokenRates = await fetchTokenRates(tokens, currencyIds, coinsApiConfig)
       const putTokenRates: DbTokenRates[] = Object.entries(tokenRates).map(([tokenId, rates]) => ({
         tokenId,
         rates,

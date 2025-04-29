@@ -1,4 +1,5 @@
 import { checkHost } from "@polkadot/phishing"
+import { isNotNil } from "@talismn/util"
 import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
@@ -77,7 +78,7 @@ export default class ParaverseProtector {
         "ready",
         () => {
           db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
-            ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
+            ;(persisted.filter(isNotNil) as ProtectorStorage[]).forEach(
               ({ source, compressedHostList, hostList, commitSha }) => {
                 const fullData = hostList
                   ? hostList

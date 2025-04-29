@@ -1,6 +1,6 @@
 import { PolkadotConstants } from "@polkadot-api/descriptors"
+import { ScaleApi } from "@talismn/sapi"
 import { capitalize } from "lodash"
-import { ScaleApi } from "sapi"
 
 export const getConvictionVotingTrackName = (sapi: ScaleApi, trackId: number): string | null => {
   const tracks = sapi.getConstant("Referenda", "Tracks") as PolkadotConstants["Referenda"]["Tracks"]

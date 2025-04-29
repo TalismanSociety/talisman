@@ -1,10 +1,10 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { Chain, Token } from "@talismn/chaindata-provider"
+import { getScaleApi } from "@talismn/sapi"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
-import { getScaleApi } from "sapi"
 
 import { api } from "@ui/api"
 import { useChainByGenesisHash, useToken } from "@ui/state"

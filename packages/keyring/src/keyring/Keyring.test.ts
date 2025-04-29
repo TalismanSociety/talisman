@@ -163,7 +163,7 @@ describe("keyring", () => {
 
 const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) => {
   const entropy = mnemonicToEntropy(MNEMONIC.mnemonic)
-  const seed = entropyToSeed(entropy, curve)
+  const seed = await entropyToSeed(entropy, curve)
   const pair = deriveKeypair(seed, derivationPath, curve)
 
   await keyring.addAccountKeypair(

@@ -450,7 +450,7 @@ export class EthHandler extends ExtensionHandler {
           isTestnet: network.isTestnet,
           isDefault: existingNetwork?.isDefault ?? false,
           forceScan: existingNetwork?.forceScan ?? false,
-          sortIndex: existingNetwork?.sortIndex ?? null,
+          sortIndex: null,
           name: network.name,
           themeColor: "#505050",
           logo: existingNetwork?.logo ?? null,

@@ -102,7 +102,7 @@ export const isAccountLedgerPolkadotLegacy = (
 
 export const getAccountGenesisHash = (account: Account | null | undefined) => {
   if (!account) return undefined
-  return "genesisHash" in account ? account.genesisHash : undefined
+  return "genesisHash" in account ? account.genesisHash || undefined : undefined
 }
 
 export const getAccountSignetUrl = (account: Account | null | undefined) => {

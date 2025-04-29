@@ -7,7 +7,7 @@ import {
   StoredBalanceJson,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
-import { Account, isAccountNotContact } from "@talismn/keyring"
+import { Account, getAccountGenesisHash, isAccountNotContact } from "@talismn/keyring"
 import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
 import { Dexie, liveQuery } from "dexie"
@@ -509,7 +509,8 @@ abstract class BalancePool {
   protected async setAccounts(accounts: Account[]) {
     const addresses = Object.fromEntries(
       accounts.map((account) => {
-        return [account.address, "genesisHash" in account ? [account.genesisHash!] : null]
+        const genesisHash = getAccountGenesisHash(account)
+        return [account.address, genesisHash ? [genesisHash!] : null]
       }),
     )
     this.addresses.next(addresses)

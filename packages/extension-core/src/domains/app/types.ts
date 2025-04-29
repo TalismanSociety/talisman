@@ -16,12 +16,16 @@ export type RemoteConfigStoreData = {
     apiKeyName?: string
     apiKeyValue?: string
   }
+  coinsApi?: {
+    apiUrl: string
+  }
   nominationPools: Record<ChainId, number[]>
   stakingPools: Record<ChainId, (number | string)[]>
   postHogUrl: string
   documentation: {
     unifiedAddressDocsUrl: string
   }
+  recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
 }
 
 export interface RequestOnboardCreatePassword {

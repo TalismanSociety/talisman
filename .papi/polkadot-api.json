@@ -4,19 +4,31 @@
   "entries": {
     "polkadot": {
       "wsUrl": "wss://polkadot-rpc.publicnode.com",
-      "metadata": ".papi/scale/polkadot.scale"
+      "metadata": ".papi/scale/polkadot.scale",
+      "genesis": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
     },
     "polkadotAssetHub": {
       "wsUrl": "wss://polkadot-asset-hub-rpc.polkadot.io",
-      "metadata": ".papi/scale/polkadot-asset-hub.scale"
+      "metadata": ".papi/scale/polkadot-asset-hub.scale",
+      "genesis": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f"
     },
     "hydration": {
       "wsUrl": "wss://hydration.ibp.network",
-      "metadata": ".papi/scale/hydration.scale"
+      "metadata": ".papi/scale/hydration.scale",
+      "genesis": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d"
     },
     "acala": {
       "wsUrl": "wss://acala-rpc.dwellir.com",
-      "metadata": ".papi/scale/acala.scale"
+      "metadata": ".papi/scale/acala.scale",
+      "genesis": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c"
+    },
+    "bittensor": {
+      "wsUrl": "wss://entrypoint-finney.opentensor.ai:443",
+      "metadata": ".papi/scale/bittensor.scale",
+      "genesis": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03"
     }
+  },
+  "options": {
+    "noDescriptorsPackage": true
   }
 }

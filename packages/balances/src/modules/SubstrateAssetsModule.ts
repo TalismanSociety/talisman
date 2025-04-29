@@ -151,10 +151,12 @@ export const SubAssetsModule: NewBalanceModule<
           const [assetsAsset, assetsMetadata] = await Promise.all([
             chainConnector
               .send(chainId, "state_getStorage", [assetStateKey])
-              .then((result) => (assetCoder.dec(result) as AssetResult | undefined) ?? null),
+              .then((result) => (assetCoder.value.dec(result) as AssetResult | undefined) ?? null),
             chainConnector
               .send(chainId, "state_getStorage", [metadataStateKey])
-              .then((result) => (metadataCoder.dec(result) as MetadataResult | undefined) ?? null),
+              .then(
+                (result) => (metadataCoder.value.dec(result) as MetadataResult | undefined) ?? null,
+              ),
           ])
 
           const existentialDeposit = assetsAsset?.min_balance?.toString?.() ?? "0"
@@ -409,7 +411,7 @@ type ScaleStorageCoder = ReturnType<ReturnType<typeof getDynamicBuilder>["buildS
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tryEncode = (scaleCoder: ScaleStorageCoder | undefined, ...args: any[]) => {
   try {
-    return scaleCoder?.enc?.(...args)
+    return scaleCoder?.keys?.enc?.(...args)
   } catch {
     return null
   }

@@ -1,5 +1,5 @@
 import { InfoIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames, encodeAnyAddress, isNotNil } from "@talismn/util"
 import { GenericeResponseAddress, SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Account, ChainId, isAccountLedgerPolkadotGeneric } from "extension-core"
 import { log } from "extension-shared"
@@ -139,10 +139,8 @@ const useLedgerSubstrateGenericAccounts = (
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const balanceDefs = useMemo<AccountImportDef[]>(
     () =>
-      withBalances && ledgerAccounts.filter(Boolean).length === itemsPerPage
-        ? ledgerAccounts
-            .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
-            .map((acc) => ({ address: acc.address, curve: "ed25519" }))
+      withBalances && ledgerAccounts.filter(isNotNil).length === itemsPerPage
+        ? ledgerAccounts.filter(isNotNil).map((acc) => ({ address: acc.address, curve: "ed25519" }))
         : [],
     [itemsPerPage, ledgerAccounts, withBalances],
   )

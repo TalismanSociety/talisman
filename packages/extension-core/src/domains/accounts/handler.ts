@@ -348,10 +348,10 @@ export default class AccountsHandler extends ExtensionHandler {
       const mnemonic = await keyringStore.getMnemonicText(mnemonicId, password)
 
       const suri = formatSuri(mnemonic, derivationPath)
-      return addressFromSuri(suri, curve)
+      return await addressFromSuri(suri, curve)
     } else {
       const { suri, curve } = lookup
-      return addressFromSuri(suri, curve)
+      return await addressFromSuri(suri, curve)
     }
   }
 

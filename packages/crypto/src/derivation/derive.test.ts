@@ -30,14 +30,14 @@ const getAddressFormatFromCurve = (curve: KeypairCurve): AddressEncoding => {
   }
 }
 
-const checkDerivedAddress = (
+const checkDerivedAddress = async (
   mnemonic: string,
   derivationPath: string,
   curve: KeypairCurve,
   address: string,
 ) => {
   const entropy = mnemonicToEntropy(mnemonic)
-  const seed = entropyToSeed(entropy, curve)
+  const seed = await entropyToSeed(entropy, curve)
   const secret = deriveKeypair(seed, derivationPath, curve)
   const format = getAddressFormatFromCurve(curve)
   expect(address).toEqual(addressFromPublicKey(secret.publicKey, format))

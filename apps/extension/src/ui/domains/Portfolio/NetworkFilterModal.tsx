@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isTruthy } from "@talismn/util"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -83,7 +83,7 @@ const NetworkFilterModalContent: FC<{
     const lowerSearch = search.toLowerCase()
     return networks.filter((network) => {
       const thisNetworkIds = [
-        ...new Set([network.id, network.evmNetworkId, network.chainId].filter(Boolean) as string[]),
+        ...new Set([network.id, network.evmNetworkId, network.chainId].filter(isTruthy)),
       ]
       return (
         thisNetworkIds.some((id) => networkIds.includes(id)) &&

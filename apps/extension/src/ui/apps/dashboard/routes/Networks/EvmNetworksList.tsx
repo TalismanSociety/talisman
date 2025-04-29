@@ -1,12 +1,16 @@
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "extension-core"
-import sortBy from "lodash/sortBy"
-import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import {
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+  SimpleEvmNetwork,
+} from "extension-core"
+import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -17,6 +21,7 @@ import {
   useBalances,
   useEvmNetworks,
   useIsBalanceInitializing,
+  useRemoteConfig,
   useSetting,
 } from "@ui/state"
 
@@ -120,14 +125,30 @@ const DeactivateNetworksModalContent: FC<{
   )
 }
 
-export const EvmNetworksList = ({ search }: { search?: string }) => {
+export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
+  activeOnly,
+  search,
+}) => {
   const { t } = useTranslation("admin")
 
   const [includeTestnets] = useSetting("useTestnets")
-  const evmNetworks = useEvmNetworks({
-    activeOnly: false,
-    includeTestnets,
-  })
+  const { recommendedNetworks } = useRemoteConfig()
+  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
+
+  const allSortedNetworks = useMemo(() => {
+    return evmNetworks.concat().sort((n1, n2) => {
+      const idx1 = recommendedNetworks?.indexOf(n1.id) ?? -1
+      const idx2 = recommendedNetworks?.indexOf(n2.id) ?? -1
+
+      if ([idx1, idx2].some((v) => v > -1)) {
+        if (idx1 === -1) return 1
+        if (idx2 === -1) return -1
+        return idx1 - idx2
+      }
+
+      return (n1.name ?? "").localeCompare(n2.name ?? "")
+    })
+  }, [evmNetworks, recommendedNetworks])
 
   const networksActiveState = useActiveEvmNetworksState()
 
@@ -135,12 +156,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     const lowerSearch = search?.toLowerCase() ?? ""
 
     const filter = (network: SimpleEvmNetwork) => {
-      if (!lowerSearch)
-        return (
-          network.isDefault ||
-          networksActiveState[network.id] !== undefined ||
-          isCustomEvmNetwork(network)
-        )
+      if (activeOnly && !isEvmNetworkActive(network, networksActiveState)) return false
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
@@ -148,7 +164,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
       )
     }
 
-    const filtered = evmNetworks.filter(filter)
+    const filtered = allSortedNetworks.filter(filter)
     const exactMatches = filtered.flatMap((network) =>
       lowerSearch.trim() === network.name?.toLowerCase().trim() ||
       lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
@@ -157,14 +173,13 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     )
 
     return [filtered, exactMatches] as const
-  }, [evmNetworks, networksActiveState, search])
+  }, [allSortedNetworks, networksActiveState, search, activeOnly])
 
+  // bump exact matches to the top of the list
   const sortedNetworks = useMemo(() => {
-    const byName = sortBy(filteredEvmNetworks, "name")
-    if (exactMatches.length < 1) return byName
+    if (exactMatches.length < 1) return filteredEvmNetworks
 
-    // put exact matches at the top of the list
-    return byName.sort((a, b) => {
+    return filteredEvmNetworks.sort((a, b) => {
       const aExactMatch = exactMatches.includes(a.id)
       const bExactMatch = exactMatches.includes(b.id)
       if (aExactMatch && !bExactMatch) return -1
@@ -172,13 +187,6 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
       return 0
     })
   }, [exactMatches, filteredEvmNetworks])
-
-  const handleNetworkActiveChanged = useCallback(
-    (network: SimpleEvmNetwork) => (enable: boolean) => {
-      activeEvmNetworksStore.setActive(network.id, enable)
-    },
-    [],
-  )
 
   const enableAll = useCallback(
     (enable = false) =>
@@ -192,7 +200,12 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
 
   const ocDeactivateAllModal = useOpenClose()
 
-  if (!sortedNetworks) return null
+  if (!sortedNetworks.length)
+    return (
+      <div className="text-body-secondary bg-grey-850 rounded-sm p-12 text-center">
+        {t("No networks found")}
+      </div>
+    )
 
   return (
     <div className="flex flex-col gap-4">
@@ -223,27 +236,60 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
           </Modal>
         </Suspense>
       </div>
-      {sortedNetworks.map((network) => (
-        <EvmNetworksListItem
-          key={network.id}
-          network={network}
-          isActive={isEvmNetworkActive(network, networksActiveState)}
-          onEnableChanged={handleNetworkActiveChanged(network)}
-        />
-      ))}
+      <VirtualizedRows networks={sortedNetworks} activeNetworksState={networksActiveState} />
     </div>
   )
 }
 
-const EvmNetworksListItem = ({
-  network,
-  isActive: isActive,
-  onEnableChanged,
-}: {
+const VirtualizedRows: FC<{
+  networks: SimpleEvmNetwork[]
+  activeNetworksState: ActiveEvmNetworks
+}> = ({ networks, activeNetworksState }) => {
+  const virtualizer = useVirtualizer({
+    count: networks.length,
+    overscan: 6,
+    gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => document.getElementById("main"),
+  })
+
+  return (
+    <div>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            <EvmNetworksRow
+              network={networks[item.index]}
+              activeNetworksState={activeNetworksState}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const EvmNetworksRow: FC<{
   network: SimpleEvmNetwork
-  isActive: boolean
-  onEnableChanged: (enable: boolean) => void
-}) => {
+  activeNetworksState: ActiveEvmNetworks
+}> = ({ network, activeNetworksState }) => {
+  const isActive = useMemo(
+    () => isEvmNetworkActive(network, activeNetworksState),
+    [activeNetworksState, network],
+  )
+
   const navigate = useNavigate()
   const handleNetworkClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -257,22 +303,15 @@ const EvmNetworksListItem = ({
     navigate(`./${network.id}`)
   }, [navigate, network.id])
 
-  // there are lots of networks so we should only render visible rows to prevent performance issues
-  const refContainer = useRef<HTMLDivElement>(null)
-  const intersection = useIntersection(refContainer, {
-    root: null,
-    rootMargin: "1000px",
-  })
-
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      onEnableChanged(e.target.checked)
+      activeEvmNetworksStore.setActive(network.id, e.target.checked)
     },
-    [onEnableChanged],
+    [network.id],
   )
 
-  const rowContent = intersection?.isIntersecting ? (
-    <>
+  return (
+    <div className="relative h-28">
       <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
         <ChainLogo className="rounded-full text-xl" id={network.id} />
         <div className="text-body truncate">{network.name}</div>
@@ -286,12 +325,6 @@ const EvmNetworksListItem = ({
         checked={isActive}
         onChange={handleEnableChanged}
       />
-    </>
-  ) : null
-
-  return (
-    <div ref={refContainer} className="relative h-28">
-      {rowContent}
     </div>
   )
 }

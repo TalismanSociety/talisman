@@ -1,7 +1,8 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { lazy, Suspense, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -104,24 +105,29 @@ const TotalAmountRow = () => {
 
 export const ExternalRecipientWarning = () => {
   const { t } = useTranslation("send-funds")
-  const { to } = useSendFunds()
+  const { to, chain, evmNetwork } = useSendFunds()
   const accounts = useAccounts("owned")
 
   const showWarning = useMemo(() => {
     if (!to || !accounts) return false
-    const encoded = encodeAnyAddress(to)
-    return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
+    return !accounts.some((account) => isAddressEqual(account.address, to))
   }, [accounts, to])
+
+  const networkName = useMemo(() => chain?.name ?? evmNetwork?.name, [chain, evmNetwork])
 
   if (!showWarning) return null
 
   return (
-    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-2 rounded-sm px-2 py-6 text-xs">
-      <AlertCircleIcon className="shrink-0 text-[1.4rem]" />
+    <div className="text-alert-warn bg-alert-warn/10 flex w-full items-center gap-4 rounded-sm p-4 text-xs">
+      <AlertCircleIcon className="shrink-0 text-[2rem]" />
       <div>
-        {t(
-          "You are sending to an external account. To prevent loss of funds, make sure you are sending on the right network.",
-        )}
+        <Trans
+          t={t}
+          components={{
+            Network: <span className="font-bold text-white">{networkName}</span>,
+          }}
+          i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
+        />
       </div>
     </div>
   )

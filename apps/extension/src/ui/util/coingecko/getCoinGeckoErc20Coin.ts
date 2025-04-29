@@ -1,3 +1,4 @@
+import { isTruthy } from "@talismn/util"
 import { fetchFromCoingecko } from "extension-core"
 import { log } from "extension-shared"
 
@@ -53,7 +54,7 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string) => {
 
   return (
     assetPlatformCache.data.find(({ id, chain_identifier }) =>
-      [id, chain_identifier?.toString()].filter(Boolean).includes(assetPlatformId),
+      [id, chain_identifier?.toString()].filter(isTruthy).includes(assetPlatformId),
     ) ?? null
   )
 }

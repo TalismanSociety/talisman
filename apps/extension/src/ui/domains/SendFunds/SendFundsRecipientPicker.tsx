@@ -64,13 +64,15 @@ const UnknownAddressDrawer = ({
     <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
       <div className="bg-black-tertiary flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl p-12">
         <div className="flex flex-col gap-4 text-center">
-          <p className="font-bold text-white">{t("Sending to external address")}</p>
+          <p className="px-10 font-bold text-white">
+            {t("Sending to the wrong network will result in a loss of funds")}
+          </p>
           <p className="text-body-secondary text-sm">
             {t(
-              "This address is not in your address book. In order to prevent loss of funds, ensure you're sending on the correct network.",
+              "If you are sending to a centralized exchange, ensure this address is on the correct network.",
             )}
           </p>
-          <div className="flex items-center justify-between gap-8 text-xs">
+          <div className="mt-4 flex items-center justify-between gap-8 text-xs">
             <div className="text-body-secondary">{t("Selected Network")}</div>
             <div className="text-body flex items-center gap-4">
               <ChainLogo id={chain?.id} className="text-md" />

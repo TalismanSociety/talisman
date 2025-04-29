@@ -1,12 +1,13 @@
+import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
 import { GenericExtrinsic } from "@polkadot/types"
 import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
+import { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Address, isJsonPayload, SubstrateSigningRequest } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo } from "react"
-import { DecodedCall, ScaleApi } from "sapi"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -55,6 +56,11 @@ const usePartialFee = (
   })
 }
 
+type DryRunResult = (
+  | typeof polkadot
+  | typeof polkadotAssetHub
+)["descriptors"]["apis"]["DryRunApi"]["dry_run_call"][1]
+
 const useDryRun = ({
   from,
   sapi,
@@ -69,7 +75,7 @@ const useDryRun = ({
     queryFn: async () => {
       if (!from || !sapi || !decodedCall) return null
 
-      return sapi.getDryRunCall(from, decodedCall)
+      return sapi.getDryRunCall<DryRunResult>(from, decodedCall)
     },
     refetchInterval: 10_000,
   })

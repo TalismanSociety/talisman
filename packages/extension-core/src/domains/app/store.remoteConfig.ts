@@ -59,6 +59,12 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
             config.coingecko.apiKeyValue = process.env.COINGECKO_API_KEY_VALUE
         }
 
+        // as per 2.8.0 we dont want this address to be the default validator anymore.
+        // versions prior to 2.8.0 expect a value there so GH config file cant be altered, we need to remove it at runtime
+        config.stakingPools["bittensor"] = config.stakingPools["bittensor"]?.filter(
+          (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
+        )
+
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
       } catch (err) {

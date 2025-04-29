@@ -1,5 +1,31 @@
 # @talismn/token-rates
 
+## 2.0.0
+
+### Major Changes
+
+- 71f6dbd: BREAKING: fetchTokenRates signature to specify currencies
+
+### Patch Changes
+
+- Updated dependencies [ae7f0ac]
+- Updated dependencies [71f6dbd]
+  - @talismn/chaindata-provider@0.9.0
+
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [0357a93]
+  - @talismn/chaindata-provider@0.8.4
+
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [5f29d37]
+  - @talismn/chaindata-provider@0.8.3
+
 ## 1.0.2
 
 ### Patch Changes

@@ -1,3 +1,4 @@
+import { isTruthy } from "@talismn/util"
 import { Transaction } from "dexie"
 import pako from "pako"
 
@@ -38,7 +39,7 @@ export const upgradeBalancesDataBlob = async (tx: Transaction) => {
 
       return stuffToKeep
     })
-    .filter(Boolean)
+    .filter(isTruthy)
 
   const output = pako.deflate(JSON.stringify(migratedData))
   // now write the compressed data back to the db and clear the old one

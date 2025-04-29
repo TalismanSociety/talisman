@@ -1,6 +1,6 @@
 import { getLookupFn } from "@polkadot-api/metadata-builders"
-import { log } from "extension-shared"
 
+import log from "../log"
 import { Chain } from "./types"
 
 export const getDispatchErrorMessage = (chain: Chain, err: unknown): string | null => {

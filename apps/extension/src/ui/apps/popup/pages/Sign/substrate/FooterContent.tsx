@@ -1,5 +1,6 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
+import { isTruthy } from "@talismn/util"
 import { uniq } from "lodash"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -190,12 +191,12 @@ const EstimatedFeesRow: FC = () => {
     useMemo(
       () => ({
         addressesAndTokens: {
-          addresses: [signingRequest?.account?.address ?? ""].filter(Boolean),
+          addresses: [signingRequest?.account?.address ?? ""].filter(isTruthy),
           tokenIds:
             deliveryFees
               ?.map((fee) => fee.tokenId)
               .concat(feeToken?.id ?? "")
-              .filter(Boolean) ?? [],
+              .filter(isTruthy) ?? [],
         },
       }),
       [deliveryFees, signingRequest?.account?.address, feeToken?.id],

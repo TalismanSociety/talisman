@@ -198,7 +198,15 @@ const checkAppAndDevice = async (account: AccountLedgerPolkadot, ledger: Substra
   if (ledger.cla !== app.cla) throw getOpenLedgerAppError(app.name)
 
   const { accountIndex, change, addressOffset } = getAccountSpecs(account)
-  const { address } = await ledger.getAddress(accountIndex, change, addressOffset)
+  const { address, error_message, return_code } = await ledger.getAddress(
+    accountIndex,
+    change,
+    addressOffset,
+  )
+
+  if (return_code !== LEDGER_SUCCESS_CODE)
+    throw getCustomNativeLedgerError(error_message, return_code)
+
   if (!isAddressEqual(address, account.address))
     throw getTalismanLedgerError(
       t(

@@ -141,17 +141,24 @@ export const SubNativeModule: NewBalanceModule<
       // compact metadata into miniMetadata
       //
 
-      compactMetadata(metadata, [
-        { pallet: "System", items: ["Account"] },
-        { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
-        { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
-        { pallet: "Staking", items: ["Ledger"] },
-        { pallet: "Crowdloan", items: ["Funds"] },
-        { pallet: "Paras", items: ["Parachains"] },
-        // TotalColdkeyStake is used until v.2.2.1, then it is replaced by StakingHotkeys+Stake
-        // Need to keep TotalColdkeyStake for a while so chaindata keeps including it in miniMetadatas, so it doesnt break old versions of the wallet
-        { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys", "Stake"] },
-      ])
+      compactMetadata(
+        metadata,
+        [
+          { pallet: "System", constants: ["Version", "SS58Prefix"], items: ["Account"] },
+          { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
+          { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
+          { pallet: "Staking", items: ["Ledger"] },
+          { pallet: "Crowdloan", items: ["Funds"] },
+          { pallet: "Paras", items: ["Parachains"] },
+          // TotalColdkeyStake is used until v.2.2.1, then it is replaced by StakingHotkeys+Stake
+          // Need to keep TotalColdkeyStake for a while so chaindata keeps including it in miniMetadatas, so it doesnt break old versions of the wallet
+          { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys", "Stake"] },
+        ],
+        [
+          { runtimeApi: "StakeInfoRuntimeApi", methods: ["get_stake_info_for_coldkey"] },
+          { runtimeApi: "SubnetInfoRuntimeApi", methods: ["get_dynamic_info"] },
+        ],
+      )
 
       const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
