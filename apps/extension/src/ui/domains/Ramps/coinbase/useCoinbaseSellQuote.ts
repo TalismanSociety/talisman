@@ -162,9 +162,7 @@ const fetchCoinbaseSellQuote = async (
   const body: CoinbaseSellQuoteRequest = {
     cashoutCurrency: currencyCode,
     paymentMethod: "FIAT_WALLET",
-    sellAmount: BigNumber(amountIn)
-      .decimalPlaces(decimals, BigNumber.ROUND_DOWN) // optional: rounding mode
-      .toString(10),
+    sellAmount: BigNumber(amountIn).decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString(10),
     ...coinbaseToken,
   }
 
