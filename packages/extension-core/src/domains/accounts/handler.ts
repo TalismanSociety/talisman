@@ -10,9 +10,14 @@ import {
   platformFromAddress,
   stringToBytes,
 } from "@talismn/crypto"
-import { AccountType, AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
+import {
+  AccountType,
+  AddAccountKeypairOptions,
+  isAccountNotContact,
+  Mnemonic,
+} from "@talismn/keyring"
 import { log } from "extension-shared"
-import { combineLatest } from "rxjs"
+import { combineLatest, map } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -45,8 +50,8 @@ import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { formatSuri, sortAccounts } from "./helpers"
+import { cleanupCatalog } from "./helpers.catalog"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
-import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 // existing values for the method field, prior to keyring migration
 type AnalyticsAccountMethod =
@@ -324,13 +329,26 @@ export default class AccountsHandler extends ExtensionHandler {
       id,
       port,
       // make sure the list of accounts in the catalog is updated when the keyring changes
-      combineLatest([keyringStore.accounts$, this.stores.accountsCatalog.observable]),
-      async ([, catalog]): Promise<AccountsCatalogData> =>
-        // on first start-up, the store (loaded from localstorage) will be empty
-        //
-        // when this happens, instead of sending `{}` or `undefined` to the frontend,
-        // we'll send an empty catalog of the correct type `AccountsCatalogData`
-        Object.keys(catalog).length === 0 ? emptyCatalog : catalog,
+      combineLatest([
+        this.stores.accountsCatalog.observable,
+        keyringStore.accounts$.pipe(
+          map((accounts) => accounts.filter(isAccountNotContact).map((acc) => acc.address)),
+        ),
+      ]).pipe(map(([catalog, addresses]) => cleanupCatalog(catalog, addresses))),
+      // async ([addresses, catalog]: [Account[], Trees]): Promise<AccountsCatalogData> => {
+      //   // on first start-up, the store (loaded from localstorage) will be empty
+      //   //
+      //   // when this happens, instead of sending `{}` or `undefined` to the frontend,
+      //   // we'll send an empty catalog of the correct type `AccountsCatalogData`
+      //   if (Object.keys(catalog).length === 0) return emptyCatalog
+
+      //   return cleanupCatalog()
+
+      //   // if not, make sure catalog only include accounts that actually exist
+
+      //   // for(const tree of [clone.])
+      //   // Object.keys(catalog).length === 0 ? emptyCatalog : catalog,
+      // },
     )
   }
 
