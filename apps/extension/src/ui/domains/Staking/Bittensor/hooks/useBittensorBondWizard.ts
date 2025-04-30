@@ -14,7 +14,13 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
-type WizardStep = "form" | "subnet-form" | "review" | "follow-up" | "select" | "select-subnet"
+export type WizardStep =
+  | "form"
+  | "subnet-form"
+  | "review"
+  | "follow-up"
+  | "select"
+  | "select-subnet"
 export type StakeType = "root" | "subnet"
 
 type WizardState = {
@@ -194,11 +200,12 @@ export const useBittensorBondWizard = () => {
       !!account &&
       !!token &&
       !!poolId &&
+      (stakeType === "root" ? true : !!netuid) &&
       !!formatter &&
       typeof minJoinBond === "bigint" &&
       plancks &&
       plancks > 0n,
-    [account, formatter, minJoinBond, plancks, poolId, token],
+    [account, formatter, minJoinBond, netuid, plancks, poolId, stakeType, token],
   )
 
   useEffect(() => {

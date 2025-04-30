@@ -13,7 +13,7 @@ import { useBondModal } from "./useBondModal"
 export const useBondButton = ({
   tokenId,
   balances,
-  stakeType,
+  stakeType = "root",
 }: {
   tokenId: TokenId | null | undefined
   balances: Balances | null | undefined
@@ -104,7 +104,12 @@ export const useBondButton = ({
       e.stopPropagation()
 
       if (token?.chain?.id === "bittensor") {
-        handleOpenBittensorModal({ ...openArgs, isSelectStakeDrawerOpen: stakeType === "root" })
+        handleOpenBittensorModal({
+          ...openArgs,
+          stakeType,
+          isSelectStakeDrawerOpen: stakeType === "root",
+          step: stakeType === "root" ? "form" : "subnet-form",
+        })
       } else {
         open(openArgs)
       }

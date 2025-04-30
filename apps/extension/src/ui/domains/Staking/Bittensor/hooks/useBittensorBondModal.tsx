@@ -4,6 +4,7 @@ import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
+import type { StakeType, WizardStep } from "./useBittensorBondWizard"
 import { useResetBittensorBondWizard } from "./useBittensorBondWizard"
 
 export const useBittensorBondModal = () => {
@@ -17,18 +18,22 @@ export const useBittensorBondModal = () => {
       tokenId,
       poolId,
       isSelectStakeDrawerOpen = false,
+      stakeType = "root",
+      step = "form",
     }: {
       address: Address
       tokenId: TokenId
       poolId: number | string
       isSelectStakeDrawerOpen?: boolean
+      stakeType?: StakeType
+      step?: WizardStep
     }) => {
       reset({
         address,
         tokenId,
         poolId,
-        step: "form",
-        stakeType: "subnet",
+        step,
+        stakeType,
         isSelectStakeDrawerOpen,
       })
 
