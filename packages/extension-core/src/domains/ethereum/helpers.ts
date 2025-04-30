@@ -285,12 +285,15 @@ export const getMaxFeePerGas = (
   maxPriorityFeePerGas: bigint,
   maxBlocksWait = 8,
   increase = true,
+  isBaseFeeIdle = false,
 ) => {
   let base = baseFeePerGas
 
   //baseFeePerGas can augment 12.5% per block
-  for (let i = 0; i < maxBlocksWait; i++)
-    base = (base * BigInt((1 + (increase ? 1 : -1) * FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000)) / 1000n
+  if (!isBaseFeeIdle)
+    for (let i = 0; i < maxBlocksWait; i++)
+      base =
+        (base * BigInt((1 + (increase ? 1 : -1) * FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000)) / 1000n
 
   return base + maxPriorityFeePerGas
 }
@@ -299,11 +302,11 @@ export const getGasSettingsEip1559 = (
   baseFee: bigint,
   maxPriorityFeePerGas: bigint,
   gas: bigint,
-  maxBlocksWait?: number,
+  isBaseFeeIdle?: boolean,
 ): EthGasSettingsEip1559 => ({
   type: "eip1559",
   maxPriorityFeePerGas,
-  maxFeePerGas: getMaxFeePerGas(baseFee, maxPriorityFeePerGas, maxBlocksWait),
+  maxFeePerGas: getMaxFeePerGas(baseFee, maxPriorityFeePerGas, 8, true, isBaseFeeIdle),
   gas,
 })
 
