@@ -75,13 +75,19 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         })
 
       // remove items that dont match any account
-      const keyringAddresses = validAccounts.map((a) => a.address)
-      const hasRemoved = !![trees.portfolio, trees.watched].filter(
-        (tree) =>
-          !!recGetAllAddresses(tree)
-            .filter((ta) => !keyringAddresses.some((ka) => isAddressEqual(ta, ka)))
-            .filter((ta) => removeAccount(tree, ta)).length,
-      ).length
+      const validAddresses = validAccounts.map((a) => a.address)
+      const hasRemoved = [trees.portfolio, trees.watched]
+        .map((tree) => {
+          const treeAddresses = recGetAllAddresses(tree)
+          const removeAddresses = treeAddresses.filter(
+            (ta) => !validAddresses.some((va) => isAddressEqual(ta, va)),
+          )
+          if (!removeAddresses.length) return false
+
+          removeAddresses.forEach((a) => removeAccount(tree, a))
+          return true
+        })
+        .some((hasRemoved) => hasRemoved)
 
       return hasAdded || hasRemoved
     })
