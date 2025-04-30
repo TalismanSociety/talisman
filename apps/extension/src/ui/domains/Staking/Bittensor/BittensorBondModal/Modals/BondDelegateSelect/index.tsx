@@ -1,4 +1,5 @@
 import { classNames } from "@talismn/util"
+import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
@@ -34,13 +35,24 @@ export const BondDelegateSelect = <T,>({
   tokenId,
   isError,
 }: BondDelegateSelectProps<T>) => {
-  const { setStep, setPoolId, poolId, setIsDefaultOption } = useBittensorBondWizard()
+  const { poolId, stakeType, setStep, setPoolId, setIsDefaultOption } = useBittensorBondWizard()
+  const [selectedPoolId, setSelectedPoolId] = useState<number | string | null>(poolId)
   const { t } = useTranslation()
 
-  const handleSelectPoolId = (poolId: number | string) => {
-    setPoolId(poolId)
-    setIsDefaultOption(false)
-  }
+  const handleSelectPoolId = useCallback(
+    (poolId: number | string) => {
+      setSelectedPoolId(poolId)
+    },
+    [setSelectedPoolId],
+  )
+
+  const handleSubmit = useCallback(() => {
+    if (selectedPoolId) {
+      setPoolId(selectedPoolId)
+      setIsDefaultOption(false)
+      setStep(stakeType === "root" ? "form" : "subnet-form")
+    }
+  }, [selectedPoolId, setIsDefaultOption, setPoolId, setStep, stakeType])
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-8">
@@ -71,25 +83,16 @@ export const BondDelegateSelect = <T,>({
             ? Array(6)
                 .fill(null)
                 .map((_, i) => {
-                  return (
-                    <>
-                      <BondOptionSkeleton key={i} isRecommended={i === 0} />
-                      {i === 0 && <div className="bg-grey-800 h-[1px]" />}
-                    </>
-                  )
+                  return <BondOptionSkeleton key={i} isRecommended={i === 0} />
                 })
-            : bondOptions.map((option, i) => (
-                <>
-                  <BondOption
-                    key={option.poolId}
-                    option={option}
-                    selectedPoolId={poolId}
-                    handleSelectPoolId={handleSelectPoolId}
-                    tokenId={tokenId}
-                  />
-                  {/* add a separator after the recommended it, which should be first */}
-                  {i === 0 && <div className="bg-grey-800 h-[1px]" />}
-                </>
+            : bondOptions.map((option) => (
+                <BondOption
+                  key={option.poolId}
+                  option={option}
+                  selectedPoolId={selectedPoolId}
+                  handleSelectPoolId={handleSelectPoolId}
+                  tokenId={tokenId}
+                />
               ))}
           {isError && (
             <div className="text-alert-error flex h-full items-center justify-center">
@@ -98,8 +101,13 @@ export const BondDelegateSelect = <T,>({
           )}
         </ScrollContainer>
       </div>
-      <Button primary className="mt-auto w-full" onClick={() => setStep("form")}>
-        {t("Continue")}
+      <Button
+        primary
+        className="mt-auto w-full"
+        onClick={handleSubmit}
+        disabled={!selectedPoolId || selectedPoolId === poolId}
+      >
+        {t("Select Validator")}
       </Button>
     </div>
   )

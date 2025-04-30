@@ -175,7 +175,12 @@ export const BittensorSubnetSelect = () => {
           )}
         </ScrollContainer>
       </div>
-      <Button primary className="mt-auto w-full" onClick={handleSubmit} disabled={!selectedNetuid}>
+      <Button
+        primary
+        className="mt-auto w-full"
+        onClick={handleSubmit}
+        disabled={!selectedNetuid || selectedNetuid === netuid}
+      >
         {t("Select Subnet")}
       </Button>
     </div>
