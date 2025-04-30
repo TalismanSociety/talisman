@@ -26,45 +26,41 @@ const ADDRESSES = [
   "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
 ]
 
-const getValidAddress = (index: number) => {
-  return ADDRESSES[index]
-}
-
 const getTestAccounts = (): Account[] =>
   [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => ({
     type: "keypair",
     curve: "ethereum",
     name: `Account ${i}`,
-    address: getValidAddress(i),
+    address: ADDRESSES[i],
     createdAt: timestamp + i,
   }))
 
 const toAddresses = (accounts: Account[]): string[] => accounts.map((account) => account.address)
 
 const getTestStartTree = (): Tree => [
-  { type: "account", address: getValidAddress(1) },
-  { type: "account", address: getValidAddress(2) },
+  { type: "account", address: ADDRESSES[1] },
+  { type: "account", address: ADDRESSES[2] },
   {
     type: "folder",
     id: "folder-1",
     name: "Folder 1",
     tree: [
-      { type: "account", address: getValidAddress(3) },
-      { type: "account", address: getValidAddress(4) },
+      { type: "account", address: ADDRESSES[3] },
+      { type: "account", address: ADDRESSES[4] },
     ],
   },
-  { type: "account", address: getValidAddress(5) },
-  { type: "account", address: getValidAddress(6) },
+  { type: "account", address: ADDRESSES[5] },
+  { type: "account", address: ADDRESSES[6] },
   {
     type: "folder",
     id: "folder-2",
     name: "Folder 2",
     tree: [
-      { type: "account", address: getValidAddress(7) },
-      { type: "account", address: getValidAddress(8) },
+      { type: "account", address: ADDRESSES[7] },
+      { type: "account", address: ADDRESSES[8] },
     ],
   },
-  { type: "account", address: getValidAddress(9) },
+  { type: "account", address: ADDRESSES[9] },
   {
     type: "folder",
     id: "empty-folder",
@@ -127,8 +123,8 @@ describe("accountsCatalogStore", () => {
   test("addAccount returns true if accounts were added, false if not", () => {
     const tree = getTestStartTree()
 
-    const newAccountStatus = addAccount(tree, getValidAddress(0))
-    const existingAccountStatus = addAccount(tree, getValidAddress(0))
+    const newAccountStatus = addAccount(tree, ADDRESSES[0])
+    const existingAccountStatus = addAccount(tree, ADDRESSES[0])
 
     expect(newAccountStatus).toBe(true)
     expect(existingAccountStatus).toBeFalsy()
@@ -140,25 +136,25 @@ describe("runActionOnTrees", () => {
     const tree = getTestStartTree()
     const actions: RequestAccountsCatalogAction[] = [
       // move account-1 to the end
-      { type: "moveAccount", tree: "portfolio", address: getValidAddress(1) },
+      { type: "moveAccount", tree: "portfolio", address: ADDRESSES[1] },
 
       // move account-2 into the end of folder-2
-      { type: "moveAccount", tree: "portfolio", address: getValidAddress(2), folderId: "folder-2" },
+      { type: "moveAccount", tree: "portfolio", address: ADDRESSES[2], folderId: "folder-2" },
 
       // move account-3 into the start of folder-2
       {
         type: "moveAccount",
         tree: "portfolio",
-        address: getValidAddress(3),
+        address: ADDRESSES[3],
         folderId: "folder-2",
-        beforeItem: { type: "account", address: getValidAddress(7) },
+        beforeItem: { type: "account", address: ADDRESSES[7] },
       },
 
       // move account-4 into the start of the tree
       {
         type: "moveAccount",
         tree: "portfolio",
-        address: getValidAddress(4),
+        address: ADDRESSES[4],
         beforeItem: { type: "folder", id: "folder-1" },
       },
 
@@ -166,8 +162,8 @@ describe("runActionOnTrees", () => {
       {
         type: "moveAccount",
         tree: "portfolio",
-        address: getValidAddress(5),
-        beforeItem: { type: "account", address: getValidAddress(1) },
+        address: ADDRESSES[5],
+        beforeItem: { type: "account", address: ADDRESSES[1] },
       },
     ]
 
@@ -175,34 +171,34 @@ describe("runActionOnTrees", () => {
     expect(status).toStrictEqual(true)
 
     const expectedResult = [
-      { type: "account", address: getValidAddress(4) },
+      { type: "account", address: ADDRESSES[4] },
       {
         type: "folder",
         id: "folder-1",
         name: "Folder 1",
         tree: [],
       },
-      { type: "account", address: getValidAddress(6) },
+      { type: "account", address: ADDRESSES[6] },
       {
         type: "folder",
         id: "folder-2",
         name: "Folder 2",
         tree: [
-          { type: "account", address: getValidAddress(3) },
-          { type: "account", address: getValidAddress(7) },
-          { type: "account", address: getValidAddress(8) },
-          { type: "account", address: getValidAddress(2) },
+          { type: "account", address: ADDRESSES[3] },
+          { type: "account", address: ADDRESSES[7] },
+          { type: "account", address: ADDRESSES[8] },
+          { type: "account", address: ADDRESSES[2] },
         ],
       },
-      { type: "account", address: getValidAddress(9) },
+      { type: "account", address: ADDRESSES[9] },
       {
         type: "folder",
         id: "empty-folder",
         name: "Empty folder",
         tree: [],
       },
-      { type: "account", address: getValidAddress(5) },
-      { type: "account", address: getValidAddress(1) },
+      { type: "account", address: ADDRESSES[5] },
+      { type: "account", address: ADDRESSES[1] },
     ]
 
     expect(tree).toStrictEqual(expectedResult)
@@ -255,7 +251,7 @@ describe("runActionOnTrees", () => {
         type: "moveFolder",
         tree: "portfolio",
         id: "folder-2",
-        beforeItem: { type: "account", address: getValidAddress(1) },
+        beforeItem: { type: "account", address: ADDRESSES[1] },
       },
     ]
 
@@ -268,15 +264,15 @@ describe("runActionOnTrees", () => {
         id: "folder-2",
         name: "Folder 2",
         tree: [
-          { type: "account", address: getValidAddress(7) },
-          { type: "account", address: getValidAddress(8) },
+          { type: "account", address: ADDRESSES[7] },
+          { type: "account", address: ADDRESSES[8] },
         ],
       },
-      { type: "account", address: getValidAddress(1) },
-      { type: "account", address: getValidAddress(2) },
-      { type: "account", address: getValidAddress(5) },
-      { type: "account", address: getValidAddress(6) },
-      { type: "account", address: getValidAddress(9) },
+      { type: "account", address: ADDRESSES[1] },
+      { type: "account", address: ADDRESSES[2] },
+      { type: "account", address: ADDRESSES[5] },
+      { type: "account", address: ADDRESSES[6] },
+      { type: "account", address: ADDRESSES[9] },
       {
         type: "folder",
         id: "empty-folder",
@@ -288,8 +284,8 @@ describe("runActionOnTrees", () => {
         id: "folder-1",
         name: "Folder 1",
         tree: [
-          { type: "account", address: getValidAddress(3) },
-          { type: "account", address: getValidAddress(4) },
+          { type: "account", address: ADDRESSES[3] },
+          { type: "account", address: ADDRESSES[4] },
         ],
       },
     ]
@@ -311,22 +307,22 @@ describe("runActionOnTrees", () => {
     expect(status).toStrictEqual(true)
 
     const expectedResult = [
-      { type: "account", address: getValidAddress(1) },
-      { type: "account", address: getValidAddress(2) },
-      { type: "account", address: getValidAddress(5) },
-      { type: "account", address: getValidAddress(6) },
+      { type: "account", address: ADDRESSES[1] },
+      { type: "account", address: ADDRESSES[2] },
+      { type: "account", address: ADDRESSES[5] },
+      { type: "account", address: ADDRESSES[6] },
       {
         type: "folder",
         id: "folder-2",
         name: "Folder 2",
         tree: [
-          { type: "account", address: getValidAddress(7) },
-          { type: "account", address: getValidAddress(8) },
+          { type: "account", address: ADDRESSES[7] },
+          { type: "account", address: ADDRESSES[8] },
         ],
       },
-      { type: "account", address: getValidAddress(9) },
-      { type: "account", address: getValidAddress(3) },
-      { type: "account", address: getValidAddress(4) },
+      { type: "account", address: ADDRESSES[9] },
+      { type: "account", address: ADDRESSES[3] },
+      { type: "account", address: ADDRESSES[4] },
     ]
 
     expect(tree).toStrictEqual(expectedResult)
