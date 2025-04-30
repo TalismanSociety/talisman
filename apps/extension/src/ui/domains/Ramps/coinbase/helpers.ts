@@ -21,7 +21,7 @@ export const getCoinbaseBuyUrl = async (
     fiatCurrency: currencyCode,
     quoteId,
     destinationWallets: JSON.stringify([{ address, blockchains: [network] }]),
-    redirect: chrome.runtime.getURL("dashboard.html"),
+    redirectUrl: chrome.runtime.getURL("dashboard.html"),
   })
 
   return urlJoin(RAMPS_COINBASE_PAY_URL, `/buy/select-asset?${query}`)
@@ -46,7 +46,7 @@ export const getCoinbaseSellUrl = async (
     presetCryptoAmount: amountIn,
     fiatCurrency: currencyCode,
     quoteId,
-    redirect: chrome.runtime.getURL("dashboard.html"),
+    redirectUrl: chrome.runtime.getURL("dashboard.html"),
   })
 
   return urlJoin(RAMPS_COINBASE_PAY_URL, `/v3/sell/input?${query}`)
