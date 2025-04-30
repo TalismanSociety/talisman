@@ -89,7 +89,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     chainId: "polkadot-asset-hub",
     symbol: "USDT",
     networkType: "substrate",
-    assetHubAssetId: 1984,
+    assetHubAssetId: "1984",
   },
   usdcdot: {
     id: "polkadot-asset-hub-substrate-assets-1337-usdc",
@@ -97,7 +97,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     chainId: "polkadot-asset-hub",
     symbol: "USDC",
     networkType: "substrate",
-    assetHubAssetId: 1337,
+    assetHubAssetId: "1337",
   },
   eth: {
     id: "1-evm-native",
@@ -706,12 +706,24 @@ export const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean
 
       const depositAmount = Decimal.fromUserInput(exchange.expected_amount, fromAsset.decimals)
 
-      const payload = await sapi.getExtrinsicPayload(
-        "Balances",
-        allowReap ? "transfer_allow_death" : "transfer_keep_alive",
-        { dest: MultiAddress.Id(exchange.address_from), value: depositAmount.planck },
-        { address: fromAddress },
-      )
+      const payload =
+        fromAsset.assetHubAssetId !== undefined
+          ? await sapi.getExtrinsicPayload(
+              "Assets",
+              allowReap ? "transfer" : "transfer_keep_alive",
+              {
+                assetId: fromAsset.assetHubAssetId,
+                dest: MultiAddress.Id(exchange.address_from),
+                value: depositAmount.planck,
+              },
+              { address: fromAddress },
+            )
+          : await sapi.getExtrinsicPayload(
+              "Balances",
+              allowReap ? "transfer_allow_death" : "transfer_keep_alive",
+              { dest: MultiAddress.Id(exchange.address_from), value: depositAmount.planck },
+              { address: fromAddress },
+            )
 
       return payload
     } catch (cause) {
@@ -773,9 +785,17 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   if (!polkadotApi) return null
   const fromAmount = get(fromAmountAtom)
 
-  const transfer =
-    polkadotApi.tx.balances["transferAllowDeath"] ?? polkadotApi.tx.balances["transfer"]
-  const transferTx = transfer(fromAddress, fromAmount.planck)
+  const transferTx =
+    fromAsset.assetHubAssetId !== undefined
+      ? (polkadotApi.tx.assets["transferAllowDeath"] ?? polkadotApi.tx.assets["transfer"])(
+          fromAsset.assetHubAssetId,
+          fromAddress,
+          fromAmount.planck,
+        )
+      : (polkadotApi.tx.balances["transferAllowDeath"] ?? polkadotApi.tx.balances["transfer"])(
+          fromAddress,
+          fromAmount.planck,
+        )
   const decimals = transferTx.registry.chainDecimals[0] ?? 10 // default to polkadot decimals 10
   const symbol = transferTx.registry.chainTokens[0] ?? "DOT" // default to polkadot symbol 'DOT'
   const paymentInfo = await transferTx.paymentInfo(fromAddress)

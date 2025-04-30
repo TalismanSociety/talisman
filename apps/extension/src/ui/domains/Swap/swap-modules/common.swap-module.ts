@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { Signer, SubmittableExtrinsic } from "@polkadot/api/types"
+import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import type { TransactionRequest } from "viem"
 import type { Chain as ViemChain } from "viem/chains"
-import { ApiPromise } from "@polkadot/api"
 import { isAddress as isSubstrateAddress } from "@polkadot/util-crypto"
 import { evmErc20TokenId, evmNativeTokenId, subNativeTokenId } from "@talismn/balances"
 import { isBitcoinAddress } from "@talismn/crypto/src/address/encoding/bitcoin"
@@ -52,7 +51,7 @@ export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtoc
   symbol: string
   chainId: number | string
   contractAddress?: string
-  assetHubAssetId?: number
+  assetHubAssetId?: string
   image?: string
   networkType: "evm" | "substrate" | "btc"
   /** protocol modules can store context here, like any special identifier */
@@ -287,80 +286,3 @@ export const saveAddressForQuest = async (
     body: JSON.stringify({ swapId, fromAddress, provider }),
   })
 }
-
-const handleTokenError = (tokenError: any) => {
-  switch (tokenError.type) {
-    case "FundsUnavailable":
-      return "Funds are unavailable."
-    case "OnlyProvider":
-      return "Account that must exist would die"
-    case "BelowMinimum":
-      return "Account cannot exist with the funds that would be given"
-    case "CannotCreate":
-      return "Account cannot be created"
-    case "UnknownAsset":
-      return "The asset in question is unknown"
-    case "Frozen":
-      return "Funds exist but are frozen"
-    case "Unsupported":
-      return "Operation is not supported by the asset"
-    case "CannotCreateHold":
-      return "Account cannot be created for recording amount on hold"
-    case "NotExpendable":
-      return "Account that is desired to remain would die"
-    case "Blocked":
-      return "Account cannot receive the assets"
-    default:
-      return tokenError.type
-  }
-}
-
-export const substrateSwapTransfer = async (
-  api: ApiPromise,
-  allowReap = false,
-  recipient: string,
-  sender: string,
-  amount: bigint | string,
-  signer: Signer,
-) =>
-  new Promise<{ id: string; ok: boolean; error?: string }>((resolve) => {
-    const transfer = allowReap
-      ? (api.tx.balances["transferAllowDeath"] ?? api.tx.balances["transfer"])
-      : api.tx.balances["transferKeepAlive"]
-    let unsub = () => {}
-    transfer(recipient, amount)
-      .signAndSend(
-        sender,
-        {
-          signer,
-          withSignedTransaction: true,
-        },
-        (res) => {
-          let id: string = res.txHash.toHex()
-          const blockNumber = (res as any).blockNumber.toNumber() as number
-          // if block blockNumber and txIndex exists, use them as id
-          if (blockNumber !== undefined && res.txIndex !== undefined)
-            id = `${blockNumber}-${res.txIndex}`
-
-          if (res.isError) {
-            const error = res.dispatchError?.isToken
-              ? handleTokenError(res.dispatchError.asToken)
-              : res.dispatchError?.asModule
-                ? res.dispatchError.asModule.registry
-                    .findMetaError(res.dispatchError.asModule)
-                    .docs.join("")
-                : "Unknown error."
-            resolve({ id, ok: false, error })
-            unsub()
-          }
-
-          if (res.status.isInBlock || res.status.isFinalized) {
-            resolve({ id, ok: true })
-            unsub()
-          }
-        },
-      )
-      .then((un) => {
-        unsub = un
-      })
-  })

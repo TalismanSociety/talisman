@@ -8,7 +8,7 @@ import { apiPromiseAtom } from "./apiPromiseAtom"
 
 export type UseSubstrateTokenProps = {
   chainId: string
-  assethubAssetId?: number
+  assethubAssetId?: string
 }
 
 export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
