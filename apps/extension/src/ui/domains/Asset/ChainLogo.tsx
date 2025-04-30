@@ -1,8 +1,9 @@
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
-import { FC, Suspense, useCallback, useEffect, useId, useMemo, useState } from "react"
+import { FC, Suspense, useMemo } from "react"
 
+import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useChain, useEvmNetwork } from "@ui/state"
 
 type ChainLogoBaseProps = {
@@ -13,40 +14,20 @@ type ChainLogoBaseProps = {
   className?: string
 }
 
-const getLogoUrl = (logo: string | null | undefined) => {
-  // if (logo)
-  //   return logo.replace("https://raw.githubusercontent.com/", "https://cdn.statically.io/gh/")
-  return logo ?? UNKNOWN_NETWORK_URL
-}
-
 export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) => {
-  const staticId = useId()
-  const [src, setSrc] = useState(() => getLogoUrl(logo))
-
-  // reset
-  useEffect(() => {
-    const newVal = getLogoUrl(logo)
-    if (newVal !== src) setSrc(newVal)
-  }, [logo, src])
-
-  const handleError = useCallback(() => setSrc(UNKNOWN_NETWORK_URL), [])
-
-  const imgClassName = useMemo(
-    () => classNames("relative block w-[1em] shrink-0 aspect-square", className),
-    [className],
-  )
+  const { src, onError } = useGithubImageUrl(logo, UNKNOWN_NETWORK_URL)
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
     <img
-      key={`${staticId}::${logo ?? id ?? "EMPTY"}`}
+      key={src}
       data-id={id}
       src={src}
-      className={imgClassName}
+      className={classNames("relative block aspect-square w-[1em] shrink-0", className)}
       alt=""
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in chain lists
-      onError={handleError}
+      onError={onError}
     />
   )
 }

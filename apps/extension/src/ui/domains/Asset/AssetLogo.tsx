@@ -2,8 +2,9 @@ import { evmErc20TokenId } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
-import { CSSProperties, FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { CSSProperties, FC, Suspense, useMemo } from "react"
 
+import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useToken } from "@ui/state"
 
 const isTalismanLogo = (url?: string | null) => {
@@ -23,37 +24,24 @@ type AssetLogoBaseProps = {
 }
 
 export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoBaseProps) => {
-  const [src, setSrc] = useState(() => url ?? UNKNOWN_TOKEN_URL)
-
-  // reset
-  useEffect(() => {
-    setSrc(url ?? UNKNOWN_TOKEN_URL)
-  }, [url])
-
-  const handleError = useCallback(() => setSrc(UNKNOWN_TOKEN_URL), [])
-
-  const imgClassName = useMemo(
-    () =>
-      classNames(
-        "relative block aspect-square w-[1em] shrink-0",
-        rounded && "rounded-full",
-        className,
-      ),
-    [className, rounded],
-  )
+  const { src, onError } = useGithubImageUrl(url, UNKNOWN_TOKEN_URL)
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
     <img
-      key={url ?? id ?? "EMPTY"}
+      key={src}
       data-id={id}
       src={src}
-      className={imgClassName}
+      className={classNames(
+        "relative block aspect-square w-[1em] shrink-0",
+        rounded && "rounded-full",
+        className,
+      )}
       style={style}
       alt=""
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in token pickers
-      onError={handleError}
+      onError={onError}
     />
   )
 }
