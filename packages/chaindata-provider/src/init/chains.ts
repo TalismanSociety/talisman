@@ -54,19 +54,19 @@ export const chains = [
         url: "wss://rpc-polkadot.luckyfriday.io",
       },
       {
-        url: "wss://polkadot.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot.rpc.permanence.io",
-      },
-      {
-        url: "wss://polkadot.public.curie.radiumblock.co/ws",
       },
       {
         url: "wss://rockx-dot.w3node.com/polka-public-dot/ws",
       },
       {
         url: "wss://dot-rpc.stakeworld.io",
+      },
+      {
+        url: "wss://polkadot.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://polkadot.public.curie.radiumblock.co/ws",
       },
       {
         url: "wss://polkadot.rpc.subquery.network/public/ws",
@@ -347,6 +347,9 @@ export const chains = [
         url: "wss://kusama-rpc.dwellir.com",
       },
       {
+        url: "wss://kusama-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://kusama-rpc.publicnode.com",
       },
       {
@@ -359,19 +362,16 @@ export const chains = [
         url: "wss://rpc-kusama.luckyfriday.io",
       },
       {
-        url: "wss://kusama.api.onfinality.io/public-ws",
-      },
-      {
-        url: "wss://kusama.public.curie.radiumblock.co/ws",
-      },
-      {
         url: "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
       },
       {
         url: "wss://ksm-rpc.stakeworld.io",
       },
       {
-        url: "wss://kusama-rpc-tn.dwellir.com",
+        url: "wss://kusama.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://kusama.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
@@ -410,11 +410,6 @@ export const chains = [
         id: "bitcountry-pioneer",
         paraId: 2096,
         name: "Pioneer",
-      },
-      {
-        id: "calamari",
-        paraId: 2084,
-        name: "Calamari",
       },
       {
         id: "crab",
@@ -555,7 +550,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 595,
+    sortIndex: 594,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -565,7 +560,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1004002",
+    specVersion: "1004003",
     nativeToken: {
       id: "kusama-asset-hub-substrate-native",
     },
@@ -669,7 +664,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 596,
+    sortIndex: 595,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -703,6 +698,9 @@ export const chains = [
         url: "wss://bridge-hub-kusama-rpc.dwellir.com",
       },
       {
+        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://bridge-hub-kusama.dotters.network",
       },
       {
@@ -716,9 +714,6 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io/bridgehub",
-      },
-      {
-        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -743,7 +738,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 846,
+    sortIndex: 845,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -837,6 +832,9 @@ export const chains = [
         url: "wss://asset-hub-polkadot-rpc.dwellir.com",
       },
       {
+        url: "wss://statemint-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://polkadot-assethub-rpc.blockops.network/ws",
       },
       {
@@ -846,19 +844,16 @@ export const chains = [
         url: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
       },
       {
-        url: "wss://statemint.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot-asset-hub-rpc.polkadot.io",
-      },
-      {
-        url: "wss://statemint.public.curie.radiumblock.co/ws",
       },
       {
         url: "wss://dot-rpc.stakeworld.io/assethub",
       },
       {
-        url: "wss://statemint-rpc-tn.dwellir.com",
+        url: "wss://statemint.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://statemint.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
@@ -1091,7 +1086,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 847,
+    sortIndex: 846,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,
@@ -1135,16 +1130,16 @@ export const chains = [
         url: "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
       },
       {
-        url: "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot-bridge-hub-rpc.polkadot.io",
       },
       {
-        url: "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
+        url: "wss://dot-rpc.stakeworld.io/bridgehub",
       },
       {
-        url: "wss://dot-rpc.stakeworld.io/bridgehub",
+        url: "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
