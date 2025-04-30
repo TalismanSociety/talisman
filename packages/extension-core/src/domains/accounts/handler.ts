@@ -10,14 +10,9 @@ import {
   platformFromAddress,
   stringToBytes,
 } from "@talismn/crypto"
-import {
-  AccountType,
-  AddAccountKeypairOptions,
-  isAccountNotContact,
-  Mnemonic,
-} from "@talismn/keyring"
+import { AccountType, AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
 import { log } from "extension-shared"
-import { combineLatest, map, shareReplay } from "rxjs"
+import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
@@ -50,9 +45,8 @@ import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { formatSuri, sortAccounts } from "./helpers"
-import { cleanupCatalog } from "./helpers.catalog"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
-import { accountsCatalogStore } from "./store.catalog"
+import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 // existing values for the method field, prior to keyring migration
 type AnalyticsAccountMethod =
@@ -63,16 +57,6 @@ type AnalyticsAccountMethod =
   | "qr"
   | "hardware"
   | "watched"
-
-const accountsCatalog$ = combineLatest([
-  accountsCatalogStore.observable,
-  keyringStore.accounts$.pipe(
-    map((accounts) => accounts.filter(isAccountNotContact).map((acc) => acc.address)),
-  ),
-]).pipe(
-  map(([catalog, addresses]) => cleanupCatalog(catalog, addresses)),
-  shareReplay({ bufferSize: 1, refCount: true }),
-)
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(
@@ -223,7 +207,7 @@ export default class AccountsHandler extends ExtensionHandler {
     this.stores.sites.forgetAccount(address)
 
     // remove from accounts catalog store (sorting, folders)
-    this.stores.accountsCatalog.removeAccounts([address])
+    this.stores.accountsCatalog.syncAccounts(await keyringStore.getAccounts())
 
     return true
   }
@@ -336,7 +320,18 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountsCatalogSubscribe(id: string, port: Port) {
-    return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(id, port, accountsCatalog$)
+    return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(
+      id,
+      port,
+      // make sure the list of accounts in the catalog is updated when the keyring changes
+      combineLatest([keyringStore.accounts$, this.stores.accountsCatalog.observable]),
+      async ([, catalog]): Promise<AccountsCatalogData> =>
+        // on first start-up, the store (loaded from localstorage) will be empty
+        //
+        // when this happens, instead of sending `{}` or `undefined` to the frontend,
+        // we'll send an empty catalog of the correct type `AccountsCatalogData`
+        Object.keys(catalog).length === 0 ? emptyCatalog : catalog,
+    )
   }
 
   private accountsCatalogRunActions(actions: RequestAccountsCatalogAction[]) {

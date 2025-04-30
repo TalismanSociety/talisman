@@ -1,5 +1,4 @@
-import { isAddressEqual } from "@talismn/crypto"
-import { isNotNil } from "@talismn/util"
+import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { DEBUG } from "extension-shared"
 import { v4 as uuidV4 } from "uuid"
 
@@ -192,7 +191,8 @@ export const folderFilter = (item: TreeItem): item is TreeFolder => item.type ==
 const findBeforeItemIndex = (tree: Tree, beforeItem: MoveBeforeTarget) => {
   const findBeforeItem =
     beforeItem.type === "account"
-      ? (item: TreeItem) => item.type === beforeItem.type && item.address === beforeItem.address
+      ? (item: TreeItem) =>
+          item.type === beforeItem.type && isAddressEqual(item.address, beforeItem.address)
       : (item: TreeItem) => item.type === beforeItem.type && item.id === beforeItem.id
   return tree.findIndex(findBeforeItem)
 }
@@ -202,7 +202,7 @@ const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undef
   let account = undefined
   const removeFromSet = (set: TreeItem[], address: string) => {
     const indexes = set.reduceRight((indexes, item, index) => {
-      if (item.type === "account" && item.address === address) {
+      if (item.type === "account" && isAddressEqual(item.address, address)) {
         account = item
         indexes.push(index)
       }
@@ -226,13 +226,13 @@ export const addAccount = (tree: Tree, address: string) => {
   // don't add account if it already exists
   const accountIsInTree = !!tree.find((item) =>
     item.type === "account"
-      ? item.address === address
-      : item.tree.find((account) => account.address === address),
+      ? isAddressEqual(item.address, address)
+      : item.tree.find((account) => isAddressEqual(account.address, address)),
   )
   if (accountIsInTree) return
 
   // insert account into tree
-  tree.push({ type: "account", address })
+  tree.push({ type: "account", address: normalizeAddress(address) })
 
   // inform the store that a change was made
   return true
@@ -240,17 +240,17 @@ export const addAccount = (tree: Tree, address: string) => {
 
 /** Removes an account (by address) from a tree */
 export const removeAccount = (tree: Tree, address: string) => {
-  if (removeAccountFromTree(tree, address) === undefined) return
+  if (removeAccountFromTree(tree, normalizeAddress(address)) === undefined) return
 
   // inform the store that a change was made
   return true
 }
 
-const recGetAllAddresses = (tree: TreeItem[] | undefined) => {
+export const recGetAllAddresses = (tree: TreeItem[] | undefined) => {
   return (
     tree?.reduce<string[]>((acc, item) => {
       if (item.type === "account") {
-        acc.push(item.address)
+        acc.push(normalizeAddress(item.address))
       } else {
         acc.push(...recGetAllAddresses(item.tree))
       }
@@ -276,28 +276,3 @@ const isSameTreeItems = (oldTree: Tree | undefined, newTree: Tree | undefined) =
 
   return true
 }
-
-const isValidTreeAccount = (validAddresses: string[]) => (item: TreeAccount) =>
-  validAddresses.some((address) => isAddressEqual(item.address, address))
-
-const cleanupTree = (items: TreeItem[], validAddresses: string[]): TreeItem[] => {
-  const filter = isValidTreeAccount(validAddresses)
-
-  return items
-    .map((item) => {
-      switch (item.type) {
-        case "account":
-          return filter(item) ? item : null
-        case "folder": {
-          const tree = item.tree.filter(filter)
-          return tree.length ? { ...item, tree } : null
-        }
-      }
-    })
-    .filter(isNotNil)
-}
-
-export const cleanupCatalog = (catalog: Trees, validAddresses: string[]): Trees => ({
-  portfolio: cleanupTree(catalog.portfolio, validAddresses),
-  watched: cleanupTree(catalog.watched, validAddresses),
-})

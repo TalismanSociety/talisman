@@ -1,8 +1,10 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
 
 import { StorageProvider } from "../../libs/Store"
 import {
   addAccount,
+  recGetAllAddresses,
   removeAccount,
   RequestAccountsCatalogAction,
   runActionsOnTrees,
@@ -51,10 +53,12 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    *
    * If all of the given accounts are already in the catalog, this method will noop.
    */
-  addAccounts = async (accounts: Account[]) =>
-    await this.withTrees((trees) =>
-      accounts
-        .filter(isAccountNotContact)
+  syncAccounts = async (accounts: Account[]) =>
+    await this.withTrees((trees) => {
+      const validAccounts = accounts.filter(isAccountNotContact)
+
+      // add missing accounts
+      const hasAdded = validAccounts
         .map((account) => {
           const [addTree, rmTree] = isAccountPortfolio(account)
             ? [trees.portfolio, trees.watched]
@@ -68,8 +72,19 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         .some((status) => {
           // if any accounts were added or removed, inform the store that a change was made
           return status === true
-        }),
-    )
+        })
+
+      // remove items that dont match any account
+      const keyringAddresses = validAccounts.map((a) => a.address)
+      const hasRemoved = !![trees.portfolio, trees.watched].filter(
+        (tree) =>
+          !!recGetAllAddresses(tree)
+            .filter((ta) => !keyringAddresses.some((ka) => isAddressEqual(ta, ka)))
+            .filter((ta) => removeAccount(tree, ta)).length,
+      ).length
+
+      return hasAdded || hasRemoved
+    })
 
   /**
    * This method should be called with any deleted addresses each time an account is removed from the keyring.
