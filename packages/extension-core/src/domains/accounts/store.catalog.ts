@@ -87,26 +87,6 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
     })
 
   /**
-   * This method should be called with any deleted addresses each time an account is removed from the keyring.
-   *
-   * This will ensure that the catalog and the keyring stay in sync.
-   */
-  removeAccounts = async (addresses: string[]) =>
-    await this.withTrees((trees) =>
-      addresses
-        .map((address) => {
-          const portfolioRemoved = removeAccount(trees.portfolio, address)
-          const watchedRemoved = removeAccount(trees.watched, address)
-
-          return portfolioRemoved || watchedRemoved
-        })
-        .some((status) => {
-          // if any accounts were removed, inform the store that a change was made
-          return status === true
-        }),
-    )
-
-  /**
    * A helper method on this store.
    *
    * Intended usage:

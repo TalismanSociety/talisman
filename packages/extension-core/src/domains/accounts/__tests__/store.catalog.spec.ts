@@ -93,18 +93,6 @@ describe("accountsCatalogStore", () => {
     expect(toAddresses(sortedAccounts)).toStrictEqual(toAddresses(getTestAccounts().reverse()))
   })
 
-  test("sorts removed accounts after added accounts", async () => {
-    await accountsCatalogStore.syncAccounts(getTestAccounts())
-    await accountsCatalogStore.removeAccounts(toAddresses(getTestAccounts().slice(0, 2)))
-
-    const sortedAccounts = getTestAccounts().slice()
-    await accountsCatalogStore.sortAccountsByCatalogOrder(sortedAccounts)
-
-    const expectedSortedAccounts = [...getTestAccounts().slice(2), ...getTestAccounts().slice(0, 2)]
-
-    expect(toAddresses(sortedAccounts)).toStrictEqual(toAddresses(expectedSortedAccounts))
-  })
-
   test("doesn't add duplicate accounts", async () => {
     await accountsCatalogStore.syncAccounts([...getTestAccounts(), ...getTestAccounts()])
     await accountsCatalogStore.syncAccounts([...getTestAccounts(), ...getTestAccounts()])
