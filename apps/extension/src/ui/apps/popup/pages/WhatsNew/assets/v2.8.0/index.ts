@@ -4,7 +4,7 @@ import content from "./content.md"
 const content280: WhatsNewVersionData = {
   "2.8.0": {
     content,
-    date: "March 2025",
+    date: "April 2025",
   },
 }
 
