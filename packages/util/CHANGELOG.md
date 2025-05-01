@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.4.0
+
+### Minor Changes
+
+- f33ab10: feat: format price signature
+
 ## 0.3.2
 
 ### Patch Changes

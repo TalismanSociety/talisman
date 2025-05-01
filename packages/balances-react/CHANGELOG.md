@@ -1,5 +1,22 @@
 # @talismn/balances-react
 
+## 0.9.1
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [6c25807]
+- Updated dependencies [ee16dc6]
+- Updated dependencies [a16afbc]
+- Updated dependencies [f33ab10]
+  - @talismn/chaindata-provider@0.10.0
+  - @talismn/chain-connector-evm@0.10.0
+  - @talismn/token-rates@2.0.1
+  - @talismn/balances@0.9.1
+  - @talismn/util@0.4.0
+  - @talismn/chain-connector@0.10.0
+  - @talismn/connection-meta@0.2.6
+
 ## 0.9.0
 
 ### Patch Changes

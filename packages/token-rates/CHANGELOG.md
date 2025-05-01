@@ -1,5 +1,14 @@
 # @talismn/token-rates
 
+## 2.0.1
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [6c25807]
+- Updated dependencies [ee16dc6]
+  - @talismn/chaindata-provider@0.10.0
+
 ## 2.0.0
 
 ### Major Changes
