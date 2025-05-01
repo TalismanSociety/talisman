@@ -13,10 +13,14 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
   Dropdown,
+  Modal,
+  ModalDialog,
+  PillButton,
   Toggle,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  useOpenClose,
 } from "talisman-ui"
 import urlJoin from "url-join"
 
@@ -337,6 +341,8 @@ const Content = () => {
     navigate("./add")
   }, [navigate])
 
+  const ocResetAllModal = useOpenClose()
+
   if (!filteredTokens) return null
 
   return (
@@ -374,6 +380,9 @@ const Content = () => {
       </div>
       <div className="h-4"></div>
       <div className="flex justify-end gap-4">
+        <div className="grow">
+          <PillButton onClick={() => ocResetAllModal.open()}>{t("Reset active states")}</PillButton>{" "}
+        </div>
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
         <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
         <TogglePill label={t("Enable pools")} checked={!isHidePools} onChange={toggleIsHidePools} />
@@ -381,6 +390,9 @@ const Content = () => {
       </div>
       <Spacer />
       <TokensTable tokens={displayTokens} />
+      <Modal isOpen={ocResetAllModal.isOpen} onDismiss={ocResetAllModal.close}>
+        <ResetStatesModalContent onClose={ocResetAllModal.close} />
+      </Modal>
     </>
   )
 }
@@ -390,3 +402,29 @@ export const TokensPage = () => (
     <Content />
   </DashboardLayout>
 )
+
+const ResetStatesModalContent: FC<{
+  onClose: () => void
+}> = ({ onClose }) => {
+  const { t } = useTranslation()
+
+  const handleClick = useCallback(async () => {
+    activeTokensStore.mutate(() => ({}))
+    onClose()
+  }, [onClose])
+
+  return (
+    <ModalDialog title={t("Reset tokens")} onClose={onClose}>
+      <div className="text-body-secondary mb-8 text-sm">
+        {t("This will reset active state of all tokens to their Talisman defaults.")}
+      </div>
+
+      <div className="mt-4 flex justify-end gap-8">
+        <Button onClick={onClose}>{t("Cancel")}</Button>
+        <Button primary onClick={handleClick}>
+          {t("Reset")}
+        </Button>
+      </div>
+    </ModalDialog>
+  )
+}
