@@ -89,7 +89,7 @@ export const NavigationDrawer: FC = () => {
       action: "Swap button",
     })
     canSwap
-      ? await api.dashboardOpen("/portfolio/tokens?swapTokens=open")
+      ? await api.popupOpen("#/portfolio?swapTokens=open")
       : window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
     window.close()
   }, [canSwap])
