@@ -1,14 +1,13 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { throwAfter } from "@talismn/util"
-import { log } from "extension-shared"
+import { ASSET_DISCOVERY_API_URL, log } from "extension-shared"
 import { groupBy } from "lodash"
 import urlJoin from "url-join"
 import { Client, ContractFunctionExecutionError, erc20Abi, getContract } from "viem"
 
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { remoteConfigStore } from "../app/store.remoteConfig"
 import { EvmAddress } from "../ethereum/types"
 import { assetDiscoveryStore } from "./store"
 
@@ -50,8 +49,7 @@ export const registerMissingTokens = async (addresses: string[]) => {
 
 const discoverTokensFromApi = async (addresses: string[]) => {
   try {
-    const { apiUrl } = await remoteConfigStore.get("assetDiscovery")
-    const url = urlJoin(apiUrl, "discover")
+    const url = urlJoin(ASSET_DISCOVERY_API_URL, "discover")
 
     const response = await fetch(url, { method: "POST", body: JSON.stringify({ addresses }) })
     if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)

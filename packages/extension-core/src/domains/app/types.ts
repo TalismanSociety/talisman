@@ -31,9 +31,6 @@ export type RemoteConfigStoreData = {
   documentation: {
     unifiedAddressDocsUrl: string
   }
-  assetDiscovery: {
-    apiUrl: string
-  }
   recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
 }
 
