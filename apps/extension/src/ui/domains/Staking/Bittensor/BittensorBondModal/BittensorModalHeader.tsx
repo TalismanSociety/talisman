@@ -27,13 +27,13 @@ export const BittensorModalHeader = () => {
     >
       <IconButton
         onClick={handleBackClick}
-        className={classNames(step === "review" ? "block" : "hidden")}
+        className={classNames(step.includes("review") ? "block" : "hidden")}
       >
         <ChevronLeftIcon />
       </IconButton>
       <div>
         {step.includes("form") && <span className="text-body font-bold">{t("Staking")}</span>}
-        {step === "review" && t("Confirm")}
+        {step.includes("review") && t("Confirm")}
         {step.includes("select") && (
           <div className="flex items-center gap-2 space-y-4">
             <IconButton onClick={handleBackClick}>

@@ -18,6 +18,7 @@ export type WizardStep =
   | "form"
   | "subnet-form"
   | "review"
+  | "subnet-review"
   | "follow-up"
   | "select"
   | "select-subnet"

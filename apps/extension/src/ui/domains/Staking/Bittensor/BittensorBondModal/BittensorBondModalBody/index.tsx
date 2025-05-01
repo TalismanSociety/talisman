@@ -4,6 +4,7 @@ import { BittensorBondFollowUp } from "./BittensorBondFollowUp"
 import { BittensorBondReview } from "./BittensorBondReview"
 import { BittensorRootBondForm } from "./BittensorRootBondForm"
 import { BittensorSubnetBondForm } from "./BittensorSubnetBondForm"
+import { BittensorSubnetBondReview } from "./BittensorSubnetBondReview"
 import { BittensorSubnetSelect } from "./BittensorSubnetSelect"
 
 export const BittensorBondModalBody = () => {
@@ -20,6 +21,8 @@ export const BittensorBondModalBody = () => {
       return <BittensorSubnetSelect />
     case "review":
       return <BittensorBondReview />
+    case "subnet-review":
+      return <BittensorSubnetBondReview />
     case "follow-up":
       return <BittensorBondFollowUp />
   }

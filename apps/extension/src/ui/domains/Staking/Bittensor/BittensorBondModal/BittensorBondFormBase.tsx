@@ -307,8 +307,17 @@ type BittensorBondFormBaseProps = {
 
 export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBaseProps) => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, poolId, setStep, setAddress, selectStakeDrawer } =
-    useBittensorBondWizard()
+  const {
+    account,
+    accountPicker,
+    token,
+    payload,
+    poolId,
+    setStep,
+    setAddress,
+    selectStakeDrawer,
+    stakeType,
+  } = useBittensorBondWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -357,7 +366,12 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         </div>
       </div>
 
-      <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
+      <Button
+        primary
+        fullWidth
+        disabled={!payload}
+        onClick={() => setStep(stakeType === "root" ? "review" : "subnet-review")}
+      >
         {t("Review")}
       </Button>
 

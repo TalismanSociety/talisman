@@ -55,7 +55,7 @@ export const BittensorBondReview = () => {
           <hr className="text-grey-800" />
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-          <div className="whitespace-nowrap">{t("Pool")} </div>
+          <div className="whitespace-nowrap">{t("Validator")} </div>
           <div className="text-body truncate">
             <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
