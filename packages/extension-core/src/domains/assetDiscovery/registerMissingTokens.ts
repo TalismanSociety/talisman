@@ -86,54 +86,54 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
 
         await Promise.all(
           assets.map(async (asset) => {
-            if (asset.type === "native") {
-              foundTokenIds.add(`${networkId}-evm-native`)
-              return
-            }
+            switch (asset.type) {
+              case "native": {
+                foundTokenIds.add(`${networkId}-evm-native`)
+                break
+              }
+              case "erc20": {
+                {
+                  const id = `${networkId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
+                  if (tokensById[id]) {
+                    foundTokenIds.add(id)
+                    return
+                  }
 
-            const id = `${networkId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
-            if (tokensById[id]) {
-              foundTokenIds.add(id)
-              return
-            }
+                  if (await assetDiscoveryStore.isInvalidErc20(networkId, asset.contractAddress))
+                    return
 
-            const lpTokenId = `${networkId}-evm-uniswapv2-${asset.contractAddress.toLowerCase()}`
-            if (tokensById[lpTokenId]) {
-              foundTokenIds.add(lpTokenId)
-              return
-            }
+                  try {
+                    const { decimals, symbol } = await Promise.race([
+                      getErc20Details(provider, asset.contractAddress),
+                      throwAfter(ERC20_DETAILS_TIMEOUT, "Timeout"),
+                    ])
 
-            if (await assetDiscoveryStore.isInvalidErc20(networkId, asset.contractAddress)) return
+                    log.debug("[AssetDiscovery] Adding discovered asset", symbol, id)
+                    await chaindataProvider.addCustomToken({
+                      id,
+                      type: "evm-erc20",
+                      isCustom: true,
+                      contractAddress: asset.contractAddress,
+                      evmNetwork: { id: networkId },
+                      isTestnet: network.isTestnet,
+                      symbol,
+                      decimals,
+                      logo: "",
+                    })
 
-            try {
-              const { decimals, symbol } = await Promise.race([
-                getErc20Details(provider, asset.contractAddress),
-                throwAfter(ERC20_DETAILS_TIMEOUT, "Timeout"),
-              ])
-
-              log.debug("[AssetDiscovery] Adding discovered asset", symbol, id)
-              await chaindataProvider.addCustomToken({
-                id,
-                type: "evm-erc20",
-                isCustom: true,
-                contractAddress: asset.contractAddress,
-                evmNetwork: { id: networkId },
-                isTestnet: network.isTestnet,
-                symbol,
-                decimals,
-                logo: "",
-              })
-
-              foundTokenIds.add(id)
-            } catch (err) {
-              log.warn("[AssetDiscovery] Failed to add discovered asset", id, { err })
-              // if a contract isnt a erc20, in some cases the promise wont resolve
-              // => consider that in case of Timeout, the contract is not an erc20
-              if (
-                err instanceof ContractFunctionExecutionError ||
-                (err as Error)?.message === "Timeout"
-              )
-                await assetDiscoveryStore.setInvalidErc20(networkId, asset.contractAddress)
+                    foundTokenIds.add(id)
+                  } catch (err) {
+                    log.warn("[AssetDiscovery] Failed to add discovered asset", id, { err })
+                    // if a contract isnt a erc20, in some cases the promise wont resolve
+                    // => consider that in case of Timeout, the contract is not an erc20
+                    if (
+                      err instanceof ContractFunctionExecutionError ||
+                      (err as Error)?.message === "Timeout"
+                    )
+                      await assetDiscoveryStore.setInvalidErc20(networkId, asset.contractAddress)
+                  }
+                }
+              }
             }
           }),
         )
