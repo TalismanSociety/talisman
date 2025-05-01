@@ -1,7 +1,7 @@
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { ChainId, IChaindataChainProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
-import { Deferred, sleep, throwAfter } from "@talismn/util"
+import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
 
 import log from "./log"
 import { Websocket } from "./Websocket"
@@ -435,7 +435,7 @@ export class ChainConnector {
         })
       : false
 
-    await Promise.race([ws.isReady, timer].filter(Boolean))
+    await Promise.race([ws.isReady, timer].filter(isTruthy))
   }
 
   /**

@@ -55,7 +55,7 @@ export class ChainsHandler extends ExtensionHandler {
         id: chain.id,
         isTestnet: chain.isTestnet,
         isDefault: false,
-        sortIndex: existingChain?.sortIndex ?? null,
+        sortIndex: null,
         genesisHash: chain.genesisHash,
         prefix: existingChain?.prefix ?? 42, // TODO: query this for custom chains
         name: chain.name,

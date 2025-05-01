@@ -1,6 +1,13 @@
 import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
 import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
+import {
+  BigMath,
+  isArrayOf,
+  isBigInt,
+  isTruthy,
+  NonFunctionProperties,
+  planckToTokens,
+} from "@talismn/util"
 import BigNumber from "bignumber.js"
 
 import log from "../log"
@@ -267,17 +274,9 @@ export class Balances {
     return [...this]
   }
 
-  /**
-   * Get an array of balances in this collection, sorted by chain sortIndex.
-   *
-   * @returns A sorted array of the balances in this collection.
-   */
+  /** @deprecated use each instead */
   get sorted() {
-    return [...this].sort(
-      (a, b) =>
-        ((a.chain || a.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER) -
-        ((b.chain || b.evmNetwork)?.sortIndex ?? Number.MAX_SAFE_INTEGER),
-    )
+    return this.each
   }
 
   /**
@@ -309,7 +308,7 @@ const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNe
 export const getBalanceId = (balance: BalanceJson) => {
   const { source, address, tokenId } = balance
   const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
-  return [source, address, locationId, tokenId].filter(Boolean).join("::")
+  return [source, address, locationId, tokenId].filter(isTruthy).join("::")
 }
 
 /**

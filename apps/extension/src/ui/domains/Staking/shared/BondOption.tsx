@@ -94,7 +94,9 @@ export const BondOption = ({
             option.isRecommended && !isSelected && "text-green opacity-50",
           ])}
         >
-          {option.apr ? `${(option.apr * 100).toFixed(2)}%` : "N/A"}
+          {option.validatorYield?.thirty_day_apy
+            ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
+            : "N/A"}
         </div>
       </div>
     </button>

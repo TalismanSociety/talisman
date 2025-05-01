@@ -1,9 +1,9 @@
 import { HydrationCalls, PolkadotCalls } from "@polkadot-api/descriptors"
+import { ScaleApi } from "@talismn/sapi"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { Address } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { ScaleApi } from "sapi"
 
 import { useChain, useToken } from "@ui/state"
 

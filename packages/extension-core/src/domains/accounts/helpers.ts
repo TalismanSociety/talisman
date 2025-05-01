@@ -5,7 +5,8 @@ import {
   Account,
   getAccountGenesisHash,
   isAccountEthereum,
-  isAccountNotContact,
+  isAccountLedgerPolkadotGeneric,
+  isAccountPolkadot,
 } from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
@@ -38,40 +39,49 @@ export const sortAccounts =
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
-    await accountsCatalogStore.addAccounts(sorted.filter(isAccountNotContact))
+    await accountsCatalogStore.syncAccounts(sorted)
     await accountsCatalogStore.sortAccountsByCatalogOrder(sorted)
 
     return sorted
   }
 
+const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
+  if (isAccountEthereum(account)) return "ethereum"
+  // some dapps pass only sr25519 as filter
+  if (isAccountPolkadot(account)) return "sr25519"
+  throw new Error("Unsupported account type")
+}
+
 export const getPjsInjectedAccount = (
   account: Account,
   options = { includePortalOnlyInfo: false },
-): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
-  address: account.address,
-  name: account.name,
-  type: getAccountKeypairType(account),
-  ...("genesisHash" in account && account.genesisHash ? { genesisHash: account.genesisHash } : {}),
-  ...(options.includePortalOnlyInfo
-    ? {
-        readonly: account.type === "watch-only",
-        partOfPortfolio: account.type === "watch-only" && account.isPortfolio,
-      }
-    : {}),
-})
+): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => {
+  const genesisHash = getAccountGenesisHash(account)
+  return {
+    address: account.address,
+    name: account.name,
+    type: getInjectedAccountType(account),
+    ...(genesisHash ? { genesisHash } : {}),
+    ...(options.includePortalOnlyInfo
+      ? {
+          readonly: account.type === "watch-only",
+          partOfPortfolio: account.type === "watch-only" && account.isPortfolio,
+        }
+      : {}),
+  }
+}
 
 export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
-  (accounts: Account[]) =>
-    accounts
+  (accounts: Account[]) => {
+    return accounts
       .filter(({ address }) => addresses.some((a) => isAddressEqual(a, address)))
-      .filter((acc) =>
-        anyType
-          ? true
-          : "curve" in acc
-            ? ["ed25519", "sr25519", "ecdsa", "ethereum"].includes(acc.curve) // from pjs's canDerive(type)
-            : false,
-      )
+      .filter((acc) => {
+        if (anyType) return true
+        const type = getAccountKeypairType(acc)
+        return ["ed25519", "sr25519", "ecdsa", "ethereum"].includes(type)
+      })
+  }
 
 export const getPublicAccounts = (
   accounts: Account[],
@@ -116,5 +126,6 @@ export const isCurveCompatibleWithChain = (
 export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
+  if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
   return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }

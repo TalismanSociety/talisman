@@ -6,8 +6,8 @@ import { PillButton } from "talisman-ui"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
-import { useBuyTokensModal } from "../Asset/Buy/hooks/useBuyTokensModal"
 import { useCopyAddressModal } from "../CopyAddress"
+import { useRampsModal } from "../Ramps/useRampsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 type NoTokensMessageProps = {
@@ -26,10 +26,11 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   }, [selectedAccount?.address, genericEvent, open])
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
-  const { open: openBuyCrypto } = useBuyTokensModal()
+  const { open: openRampsModal } = useRampsModal()
   const handleBuyCryptoClick = useCallback(() => {
-    openBuyCrypto()
-  }, [openBuyCrypto])
+    genericEvent("open ramps", { from: "NoTokensMessage" })
+    openRampsModal()
+  }, [genericEvent, openRampsModal])
 
   return (
     <div className="bg-field text-body-secondary flex flex-col items-center justify-center rounded py-36">

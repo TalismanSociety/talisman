@@ -7,7 +7,7 @@ import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useEvmNetworksMap, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
+import { useEvmNetworksMap, useFeatureFlag, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
 
 import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -15,6 +15,7 @@ import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { NftsUnavailable } from "./NftsUnavailable"
 
 const NoNftFound = () => {
   const { t } = useTranslation()
@@ -34,7 +35,12 @@ const NoNftFound = () => {
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
 }
 
-export const PopupNfts: FC<{ className?: string }> = () => {
+export const PopupNfts = () => {
+  const showNfts = useFeatureFlag("NFTS")
+  return showNfts ? <PopupNftsInner /> : <NftsUnavailable />
+}
+
+const PopupNftsInner = () => {
   const [viewMode] = useSetting("nftsViewMode")
   const [dialogNftId, setDialogNftId] = useState<string | null>(null)
 

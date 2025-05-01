@@ -7,7 +7,7 @@ import {
   RepeatIcon,
   SendIcon,
 } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,10 +15,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/hooks/useBuyTokensModal"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
@@ -163,15 +164,12 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openBuyTokensModal } = useBuyTokensModal()
+  const { open: openRampsModal } = useRampsModal()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
   const ownedAccounts = useAccounts("owned")
+  const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
-
-  const handleSwapClick = useCallback(() => {
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [])
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -179,11 +177,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
     return { disableActions, disabledReason }
   }, [disabled, ownedAccounts.length, t])
 
-  const topActions = useMemo(
+  const topActions = useMemo<ActionProps[]>(
     () =>
       [
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "Send Funds button",
           label: t("Send"),
           icon: SendIcon,
@@ -192,7 +190,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           disabledReason,
         },
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "open receive",
           label: t("Receive"),
           icon: ArrowDownIcon,
@@ -201,33 +199,39 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           disabledReason,
         },
         {
-          analyticsName: "Goto",
+          analyticsName: "Goto" as const,
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => handleSwapClick(),
+          onClick: canSwap
+            ? () => openSwapTokensModal()
+            : () => {
+                window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
+                if (IS_EMBEDDED_POPUP) window.close()
+              },
           disabled: disableActions,
           disabledReason,
         },
         canBuy
           ? {
-              analyticsName: "Goto",
-              analyticsAction: "Buy Crypto button",
+              analyticsName: "Goto" as const,
+              analyticsAction: "open ramps",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => openBuyTokensModal(),
+              onClick: () => openRampsModal(),
               disabled: disableActions,
               disabledReason,
             }
           : null,
-      ].filter(Boolean) as Array<ActionProps>,
+      ].filter(isNotNil),
     [
       canBuy,
+      canSwap,
       disableActions,
       disabledReason,
-      handleSwapClick,
-      openBuyTokensModal,
       openCopyAddressModal,
+      openRampsModal,
+      openSwapTokensModal,
       t,
     ],
   )

@@ -207,7 +207,7 @@ export default class AccountsHandler extends ExtensionHandler {
     this.stores.sites.forgetAccount(address)
 
     // remove from accounts catalog store (sorting, folders)
-    this.stores.accountsCatalog.removeAccounts([address])
+    this.stores.accountsCatalog.syncAccounts(await keyringStore.getAccounts())
 
     return true
   }
@@ -348,10 +348,10 @@ export default class AccountsHandler extends ExtensionHandler {
       const mnemonic = await keyringStore.getMnemonicText(mnemonicId, password)
 
       const suri = formatSuri(mnemonic, derivationPath)
-      return addressFromSuri(suri, curve)
+      return await addressFromSuri(suri, curve)
     } else {
       const { suri, curve } = lookup
-      return addressFromSuri(suri, curve)
+      return await addressFromSuri(suri, curve)
     }
   }
 

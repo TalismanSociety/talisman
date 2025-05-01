@@ -24,7 +24,7 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   const account = useAccountByAddress(payload?.address) as AccountLedgerPolkadot | null
   const { sign } = useLedgerSubstrateLegacy(account?.genesisHash)
 
-  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase({ payload })
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return

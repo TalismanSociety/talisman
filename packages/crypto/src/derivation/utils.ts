@@ -17,6 +17,9 @@ export const deriveKeypair = (seed: Uint8Array, derivationPath: string, curve: K
       return deriveEd25519(seed, derivationPath)
     case "ecdsa":
       return deriveEcdsa(seed, derivationPath)
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
+      throw new Error("deriveKeypair is not implemented for Bitcoin")
     case "ethereum":
       return deriveEthereum(seed, derivationPath)
     case "solana":
@@ -34,16 +37,19 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
       return getPublicKeySr25519(secretKey)
     case "ed25519":
       return getPublicKeyEd25519(secretKey)
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
+      throw new Error("getPublicKeyFromSecret is not implemented for Bitcoin")
     case "solana":
       return getPublicKeySolana(secretKey)
   }
 }
 
-export const addressFromSuri = (suri: string, type: KeypairCurve) => {
+export const addressFromSuri = async (suri: string, type: KeypairCurve) => {
   const { mnemonic, derivationPath, password } = parseSuri(suri)
 
   const entropy = mnemonicToEntropy(mnemonic)
-  const seed = entropyToSeed(entropy, type, password) // ~80ms
+  const seed = await entropyToSeed(entropy, type, password) // ~80ms
   const { secretKey } = deriveKeypair(seed, derivationPath, type)
   const publicKey = getPublicKeyFromSecret(secretKey, type)
   const encoding = addressEncodingFromCurve(type)
@@ -86,15 +92,17 @@ export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
     case "ed25519":
     case "sr25519":
     case "ecdsa":
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
     case "solana":
       throw new Error("Not implemented")
   }
 }
 
 // @dev: didn't find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
-export const isValidDerivationPath = (derivationPath: string, curve: KeypairCurve) => {
+export const isValidDerivationPath = async (derivationPath: string, curve: KeypairCurve) => {
   try {
-    deriveKeypair(getDevSeed(curve), derivationPath, curve)
+    deriveKeypair(await getDevSeed(curve), derivationPath, curve)
     return true
   } catch (err) {
     return false

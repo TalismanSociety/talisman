@@ -1,5 +1,5 @@
 import { TypeRegistry } from "@polkadot/types"
-import { Hash } from "@polkadot/types/interfaces"
+import { IU8a } from "@polkadot/types/types"
 import { assert } from "@polkadot/util"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
@@ -42,7 +42,7 @@ const getStorageKeyHash = (...names: string[]) => {
 
 const getExtrinsincResult = async (
   registry: TypeRegistry,
-  blockHash: Hash,
+  blockHash: IU8a,
   chainId: ChainId,
   extrinsicHash: string,
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
@@ -114,7 +114,7 @@ const watchExtrinsicStatus = async (
   extrinsicHash: string,
   cb: ExtrinsicStatusChangeHandler,
 ) => {
-  let foundInBlockHash: Hash
+  let foundInBlockHash: IU8a
   let timeout: NodeJS.Timeout | null = null
 
   // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times
@@ -255,7 +255,7 @@ export const watchSubstrateTransaction = async (
   signature: HexString,
   options: WatchTransactionOptions = {},
 ) => {
-  const { siteUrl, notifications, transferInfo = {} } = options
+  const { siteUrl, notifications, transferInfo = {}, txInfo } = options
   const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
   assert(chain.genesisHash === payload.genesisHash, "Genesis hash mismatch")
@@ -263,7 +263,7 @@ export const watchSubstrateTransaction = async (
   try {
     const hash = getExtrinsicHash(registry, payload, signature)
 
-    await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
+    await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo, txInfo })
 
     await watchExtrinsicStatus(
       chain.id,

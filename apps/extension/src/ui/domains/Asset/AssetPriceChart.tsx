@@ -1,7 +1,7 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames, formatPrice } from "@talismn/util"
+import { classNames, formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import ChartJs, { ActiveElement, ChartComponentLike, ChartEvent } from "chart.js/auto"
 import { fetchFromCoingecko } from "extension-core"
@@ -39,9 +39,9 @@ export const AssetPriceChart: FC<{
     if (!tokenRates) return []
 
     const tokens = uniq((tokensWithCoingeckoId || []).map((t) => t.coingeckoId))
-      .filter(Boolean)
+      .filter(isTruthy)
       .map((coingeckoId) => tokensWithCoingeckoId.find((t) => t.coingeckoId === coingeckoId))
-      .filter(Boolean) as Token[]
+      .filter(isNotNil)
 
     return tokens.sort((a, b) => {
       // sort by descending market cap

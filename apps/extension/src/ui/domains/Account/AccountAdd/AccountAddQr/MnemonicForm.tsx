@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { isTruthy } from "@talismn/util"
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -17,7 +18,7 @@ const cleanupMnemonic = (input = "") =>
     .trim()
     .toLowerCase()
     .split(/[\s\r\n]+/g) //split on whitespace or carriage return
-    .filter(Boolean) //remove empty strings
+    .filter(isTruthy) //remove empty strings
     .join(" ")
 
 const testValidMnemonic = async (val?: string) => {

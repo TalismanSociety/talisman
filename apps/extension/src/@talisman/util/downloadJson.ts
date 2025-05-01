@@ -4,7 +4,7 @@ type TJson = {
 }
 
 const downloadJson = (json: TJson, name = "talisman") => {
-  const blob = new Blob([JSON.stringify(json)], { type: "text/json" })
+  const blob = new Blob([JSON.stringify(json, null, 2)], { type: "text/json" })
   const link = document.createElement("a")
 
   link.download = `${name}.json`

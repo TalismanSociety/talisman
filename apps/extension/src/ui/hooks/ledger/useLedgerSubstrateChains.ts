@@ -1,3 +1,4 @@
+import { isNotNil } from "@talismn/util"
 import { Chain } from "extension-core"
 import { useMemo } from "react"
 
@@ -29,7 +30,7 @@ export const useLedgerSubstrateChains = () => {
           chain.hasCheckMetadataHash && CHAIN_ID_TO_LEDGER_APP_NAME[chain.id]
             ? AddSubstrateLedgerAppType.Migration
             : null,
-        ].filter(Boolean) as AddSubstrateLedgerAppType[],
+        ].filter(isNotNil),
       }))
       .sort((a, b) => (a?.name ?? "").localeCompare(b.name ?? ""))
       .sort((a, b) => {

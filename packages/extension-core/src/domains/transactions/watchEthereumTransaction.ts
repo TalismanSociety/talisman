@@ -22,7 +22,7 @@ export const watchEthereumTransaction = async (
   options: WatchTransactionOptions = {},
 ) => {
   try {
-    const { siteUrl, notifications, transferInfo = {} } = options
+    const { siteUrl, notifications, transferInfo = {}, txInfo } = options
     const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
     const ethereumNetwork = await chaindataProvider.evmNetworkById(evmNetworkId)
@@ -40,7 +40,7 @@ export const watchEthereumTransaction = async (
     if (withNotifications) await createNotification("submitted", networkName, txUrl)
 
     try {
-      await addEvmTransaction(evmNetworkId, hash, unsigned, { siteUrl, ...transferInfo })
+      await addEvmTransaction(evmNetworkId, hash, unsigned, { siteUrl, ...transferInfo, txInfo })
 
       // Observed on polygon network (tried multiple rpcs) that waitForTransactionReceipt throws TransactionNotFoundError & BlockNotFoundError randomly
       // so we retry as long as we don't get a receipt, with a timeout on our side

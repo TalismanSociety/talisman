@@ -1,6 +1,5 @@
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "extension-core"
 import { TFunction } from "i18next"
-import sortBy from "lodash/sortBy"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -36,7 +35,14 @@ export const usePortfolioNetworks = (ids: (ChainId | EvmNetworkId)[] | undefined
     [chains, evmNetworks, ids, t],
   )
 
-  const sorted = useMemo(() => sortBy(networks, ["label", "type"]), [networks])
+  const sorted = useMemo(
+    () =>
+      networks
+        .concat()
+        .sort((n1, n2) => n1.type?.localeCompare(n2.type ?? "") ?? 0)
+        .sort((n1, n2) => n1.label?.localeCompare(n2.label ?? "") ?? 0),
+    [networks],
+  )
 
   return { networks, sorted }
 }

@@ -3,6 +3,8 @@ import type { ChainId } from "@talismn/chaindata-provider"
 import type { TalismanMetadataDef } from "extension-shared"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 
+import { WalletTransactionInfo } from "../transactions"
+
 export type { TalismanMetadataDef } from "extension-shared"
 
 type SubstrateRequestSend = {
@@ -21,6 +23,7 @@ type SubstrateRequestChainMetadata = {
 type SubstrateRequestSubmit = {
   payload: SignerPayloadJSON
   signature?: HexString
+  txInfo?: WalletTransactionInfo
 }
 
 type SubstrateResponseSubmit = {

@@ -54,19 +54,19 @@ export const chains = [
         url: "wss://rpc-polkadot.luckyfriday.io",
       },
       {
-        url: "wss://polkadot.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot.rpc.permanence.io",
-      },
-      {
-        url: "wss://polkadot.public.curie.radiumblock.co/ws",
       },
       {
         url: "wss://rockx-dot.w3node.com/polka-public-dot/ws",
       },
       {
         url: "wss://dot-rpc.stakeworld.io",
+      },
+      {
+        url: "wss://polkadot.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://polkadot.public.curie.radiumblock.co/ws",
       },
       {
         url: "wss://polkadot.rpc.subquery.network/public/ws",
@@ -138,11 +138,6 @@ export const chains = [
         id: "frequency",
         paraId: 2091,
         name: "Frequency",
-      },
-      {
-        id: "geminis",
-        paraId: 2038,
-        name: "Geminis",
       },
       {
         id: "heima",
@@ -220,19 +215,14 @@ export const chains = [
         name: "Nodle",
       },
       {
-        id: "oak",
-        paraId: 2090,
-        name: "Oak",
-      },
-      {
-        id: "omnibtc",
-        paraId: 2053,
-        name: "OmniBTC",
-      },
-      {
         id: "parallel",
         paraId: 2012,
         name: "Parallel",
+      },
+      {
+        id: "peaq",
+        paraId: 3338,
+        name: "Peaq",
       },
       {
         id: "pendulum",
@@ -288,11 +278,6 @@ export const chains = [
         id: "sora-polkadot",
         paraId: 2025,
         name: "Sora",
-      },
-      {
-        id: "subdao",
-        paraId: 2018,
-        name: "SubDAO",
       },
       {
         id: "subsocial-polkadot",
@@ -377,16 +362,16 @@ export const chains = [
         url: "wss://rpc-kusama.luckyfriday.io",
       },
       {
-        url: "wss://kusama.api.onfinality.io/public-ws",
-      },
-      {
-        url: "wss://kusama.public.curie.radiumblock.co/ws",
-      },
-      {
         url: "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
       },
       {
         url: "wss://ksm-rpc.stakeworld.io",
+      },
+      {
+        url: "wss://kusama.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://kusama.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
@@ -427,11 +412,6 @@ export const chains = [
         name: "Pioneer",
       },
       {
-        id: "calamari",
-        paraId: 2084,
-        name: "Calamari",
-      },
-      {
         id: "crab",
         paraId: 2105,
         name: "Darwinia Crab",
@@ -445,11 +425,6 @@ export const chains = [
         id: "encointer",
         paraId: 1001,
         name: "Encointer",
-      },
-      {
-        id: "imbue",
-        paraId: 2121,
-        name: "Imbue",
       },
       {
         id: "integritee-kusama",
@@ -475,11 +450,6 @@ export const chains = [
         id: "kintsugi",
         paraId: 2092,
         name: "Kintsugi",
-      },
-      {
-        id: "kpron",
-        paraId: 2019,
-        name: "Kpron",
       },
       {
         id: "kreivo",
@@ -537,11 +507,6 @@ export const chains = [
         name: "Robonomics Kusama",
       },
       {
-        id: "sakura",
-        paraId: 2016,
-        name: "Sakura",
-      },
-      {
         id: "shadow-kusama",
         paraId: 2012,
         name: "Crust Shadow",
@@ -585,7 +550,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 582,
+    sortIndex: 594,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -595,7 +560,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1004002",
+    specVersion: "1004003",
     nativeToken: {
       id: "kusama-asset-hub-substrate-native",
     },
@@ -699,7 +664,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 583,
+    sortIndex: 595,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -773,7 +738,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 832,
+    sortIndex: 845,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -784,7 +749,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemint",
     specName: "statemint",
-    specVersion: "1004000",
+    specVersion: "1004002",
     nativeToken: {
       id: "polkadot-asset-hub-substrate-native",
     },
@@ -879,16 +844,16 @@ export const chains = [
         url: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
       },
       {
-        url: "wss://statemint.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot-asset-hub-rpc.polkadot.io",
       },
       {
-        url: "wss://statemint.public.curie.radiumblock.co/ws",
+        url: "wss://dot-rpc.stakeworld.io/assethub",
       },
       {
-        url: "wss://dot-rpc.stakeworld.io/assethub",
+        url: "wss://statemint.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://statemint.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
@@ -1121,7 +1086,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 833,
+    sortIndex: 846,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,
@@ -1165,16 +1130,16 @@ export const chains = [
         url: "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
       },
       {
-        url: "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot-bridge-hub-rpc.polkadot.io",
       },
       {
-        url: "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
+        url: "wss://dot-rpc.stakeworld.io/bridgehub",
       },
       {
-        url: "wss://dot-rpc.stakeworld.io/bridgehub",
+        url: "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
+      },
+      {
+        url: "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],

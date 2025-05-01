@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Balances } from "extension-core"
-import { FC, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
@@ -115,7 +115,6 @@ export const DashboardAssetsTable = () => {
 
 const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolBalances }) => {
   const [noCountUp, setNoCountUp] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -136,7 +135,7 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
   })
 
   return (
-    <div ref={ref}>
+    <div>
       <div
         className="relative w-full"
         style={{

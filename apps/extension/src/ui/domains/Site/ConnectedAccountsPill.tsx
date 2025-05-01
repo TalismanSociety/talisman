@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames, isAddressEqual, normalizeAddress } from "@talismn/util"
+import { classNames, isAddressEqual, isNotNil, normalizeAddress } from "@talismn/util"
 import { Account } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,11 +24,11 @@ export const ConnectedAccountsPill: FC = () => {
 
   const { count, label } = useMemo(() => {
     const { addresses = [], ethAddresses = [] } = site || {}
-    const connected = [
+    const connected: Account[] = [
       ...new Set([...addresses.map(normalizeAddress), ...ethAddresses.map(normalizeAddress)]),
     ]
       .map((a) => accounts.find(({ address }) => isAddressEqual(address, a)))
-      .filter(Boolean) as Account[]
+      .filter(isNotNil)
 
     if (connected.length === 0) return { count: 0, label: t("Not connected") }
 

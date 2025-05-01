@@ -21,7 +21,8 @@ import { IS_POPUP } from "@ui/util/constants"
 type Network = Chain | EvmNetwork
 
 const getNetworkId = (network: Network): string => {
-  return "genesisHash" in network && network.genesisHash ? network.genesisHash : network.id
+  const genesisHash = "genesisHash" in network ? network.genesisHash : undefined
+  return genesisHash || network.id
 }
 
 export const TxHistoryNetworkPicker: FC<{

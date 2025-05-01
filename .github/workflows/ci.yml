@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build papi descriptors
-        run: pnpm papi:generate
+        run: pnpm papi
       - name: Test
         run: pnpm preconstruct:dev && pnpm test
       - name: Extract short SHA + package version

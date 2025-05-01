@@ -9,14 +9,13 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
   getTotalFeesFromGasSettings,
-  isAcalaEvmPlus,
 } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useToken } from "@ui/state"
+import { useEvmNetwork, useToken } from "@ui/state"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { useFeePriorityOptionsUI } from "./common"
@@ -171,6 +170,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
   networkUsage,
   tokenId,
 }) => {
+  const network = useEvmNetwork(txDetails.evmNetworkId)
   const { t } = useTranslation("request")
   const handleSelect = useCallback(
     (priority: EthPriorityOptionName) => () => {
@@ -232,7 +232,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
             selected={priority === "recommended"}
           />
         )}
-        {!isAcalaEvmPlus(txDetails.evmNetworkId) && (
+        {network && !network.preserveGasEstimate && (
           <PriorityOption
             gasSettingsByPriority={gasSettingsByPriority}
             txDetails={txDetails}

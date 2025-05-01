@@ -63,6 +63,7 @@ import {
   Trees,
   UnsubscribeFn,
   ValidRequests,
+  WalletTransactionInfo,
   WalletTransactionTransferInfo,
   WatchAssetRequestId,
 } from "extension-core"
@@ -270,12 +271,14 @@ export default interface MessageTypes {
     evmNetworkId: EvmNetworkId,
     unsigned: TransactionRequest<string>,
     transferInfo?: WalletTransactionTransferInfo,
+    txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethSendSigned: (
     evmNetworkId: EvmNetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
     transferInfo?: WalletTransactionTransferInfo,
+    txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (
@@ -315,7 +318,11 @@ export default interface MessageTypes {
     params: unknown[],
     isCacheable?: boolean,
   ) => Promise<T>
-  subSubmit: (payload: SignerPayloadJSON, signature?: HexString) => Promise<{ hash: HexString }>
+  subSubmit: (
+    payload: SignerPayloadJSON,
+    signature?: HexString,
+    txInfo?: WalletTransactionInfo,
+  ) => Promise<{ hash: HexString }>
 
   // substrate chain metadata
   subChainMetadata: (

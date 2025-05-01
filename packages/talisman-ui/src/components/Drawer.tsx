@@ -1,7 +1,9 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { classNames } from "@talismn/util"
-import { FC, MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
+import { FC, MouseEventHandler, ReactNode, useCallback, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
+
+import { OpenCloseStatus, OpenCloseStatusProvider } from "../utils/useOpenCloseStatus"
 
 type DrawerAnchor = "top" | "right" | "bottom" | "left"
 
@@ -76,6 +78,8 @@ export const Drawer: FC<DrawerProps> = ({
   containerId,
   onDismiss,
 }) => {
+  const [status, setStatus] = useState<OpenCloseStatus>("closed")
+
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (!onDismiss) return
@@ -122,8 +126,12 @@ export const Drawer: FC<DrawerProps> = ({
         leave="transition-transform ease-in-out duration-300 transform"
         leaveFrom={leaveFrom}
         leaveTo={leaveTo}
+        beforeEnter={() => setStatus("opening")}
+        afterEnter={() => setStatus("open")}
+        beforeLeave={() => setStatus("closing")}
+        afterLeave={() => setStatus("closed")}
       >
-        {children}
+        <OpenCloseStatusProvider status={status}>{children}</OpenCloseStatusProvider>
       </TransitionChild>
     </Transition>,
     container,

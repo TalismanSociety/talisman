@@ -1,12 +1,11 @@
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeChainsStore, isChainActive } from "extension-core"
-import sortBy from "lodash/sortBy"
-import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { ActiveChains, activeChainsStore, isChainActive } from "extension-core"
+import { ChangeEventHandler, FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -17,6 +16,7 @@ import {
   useBalances,
   useChains,
   useIsBalanceInitializing,
+  useRemoteConfig,
   useSetting,
 } from "@ui/state"
 
@@ -115,41 +115,59 @@ const DeactivateNetworksModalContent: FC<{
   )
 }
 
-export const ChainsList = ({ search }: { search?: string }) => {
+export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
+  activeOnly,
+  search,
+}) => {
   const { t } = useTranslation("admin")
-  const [useTestnets] = useSetting("useTestnets")
-  const allChains = useChains()
+  const [includeTestnets] = useSetting("useTestnets")
+  const { recommendedNetworks } = useRemoteConfig()
   const networksActiveState = useActiveChainsState()
-  const chains = useMemo(
-    () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),
-    [allChains, useTestnets],
-  )
+  const chains = useChains({ activeOnly: false, includeTestnets })
+
+  const allSortedNetworks = useMemo(() => {
+    return chains.concat().sort((n1, n2) => {
+      const idx1 = recommendedNetworks?.indexOf(n1.id) ?? -1
+      const idx2 = recommendedNetworks?.indexOf(n2.id) ?? -1
+
+      if ([idx1, idx2].some((v) => v > -1)) {
+        if (idx1 === -1) return 1
+        if (idx2 === -1) return -1
+        return idx1 - idx2
+      }
+
+      return (n1.name ?? "").localeCompare(n2.name ?? "")
+    })
+  }, [chains, recommendedNetworks])
 
   const [filteredChains, exactMatches] = useMemo(() => {
-    if (search === undefined || search.length < 1) return [chains, [] as string[]] as const
-    const lowerSearch = search.toLowerCase()
+    const lowerSearch = search?.toLowerCase() ?? ""
 
-    const filter = (chain: Chain) =>
-      chain.name?.toLowerCase().includes(lowerSearch) ||
-      chain.nativeToken?.id.toLowerCase().includes(lowerSearch)
+    const filter = (network: Chain) => {
+      if (activeOnly && !isChainActive(network, networksActiveState)) return false
 
-    const filtered = chains.filter(filter)
-    const exactMatches = filtered.flatMap((chain) =>
-      lowerSearch.trim() === chain.name?.toLowerCase().trim() ||
-      lowerSearch.trim() === chain.nativeToken?.id.toLowerCase().trim()
-        ? [chain.id]
+      return (
+        network.name?.toLowerCase().includes(lowerSearch) ||
+        network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+      )
+    }
+
+    const filtered = allSortedNetworks.filter(filter)
+    const exactMatches = filtered.flatMap((network) =>
+      lowerSearch.trim() === network.name?.toLowerCase().trim() ||
+      lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
+        ? [network.id]
         : [],
     )
 
     return [filtered, exactMatches] as const
-  }, [chains, search])
+  }, [search, allSortedNetworks, activeOnly, networksActiveState])
 
   const sortedChains = useMemo(() => {
-    const byName = sortBy(filteredChains, "name")
-    if (exactMatches.length < 1) return byName
+    if (exactMatches.length < 1) return filteredChains
 
     // put exact matches at the top of the list
-    return byName.sort((a, b) => {
+    return filteredChains.sort((a, b) => {
       const aExactMatch = exactMatches.includes(a.id)
       const bExactMatch = exactMatches.includes(b.id)
       if (aExactMatch && !bExactMatch) return -1
@@ -157,13 +175,6 @@ export const ChainsList = ({ search }: { search?: string }) => {
       return 0
     })
   }, [exactMatches, filteredChains])
-
-  const handleNetworkActiveChanged = useCallback(
-    (network: Chain) => (enable: boolean) => {
-      activeChainsStore.setActive(network.id, enable)
-    },
-    [],
-  )
 
   const activateAll = useCallback(
     (activate = false) =>
@@ -175,7 +186,12 @@ export const ChainsList = ({ search }: { search?: string }) => {
 
   const ocDeactivateAllModal = useOpenClose()
 
-  if (!sortedChains) return null
+  if (!sortedChains.length)
+    return (
+      <div className="text-body-secondary bg-grey-850 rounded-sm p-12 text-center">
+        {t("No networks found")}
+      </div>
+    )
 
   return (
     <div className="flex flex-col gap-4">
@@ -207,27 +223,57 @@ export const ChainsList = ({ search }: { search?: string }) => {
           </Modal>
         </Suspense>
       </div>
-      {sortedChains.map((chain) => (
-        <ChainsListItem
-          key={chain.id}
-          chain={chain}
-          isActive={isChainActive(chain, networksActiveState)}
-          onEnableChanged={handleNetworkActiveChanged(chain)}
-        />
-      ))}
+      <VirtualizedRows networks={sortedChains} activeNetworksState={networksActiveState} />
     </div>
   )
 }
 
-const ChainsListItem = ({
-  chain,
-  isActive,
-  onEnableChanged,
-}: {
-  chain: Chain
-  isActive: boolean
-  onEnableChanged: (enable: boolean) => void
-}) => {
+const VirtualizedRows: FC<{
+  networks: Chain[]
+  activeNetworksState: ActiveChains
+}> = ({ networks, activeNetworksState }) => {
+  const virtualizer = useVirtualizer({
+    count: networks.length,
+    overscan: 6,
+    gap: 8,
+    estimateSize: () => 56,
+    getScrollElement: () => document.getElementById("main"),
+  })
+
+  return (
+    <div>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            key={item.key}
+            className="absolute left-0 top-0 w-full"
+            style={{
+              height: `${item.size}px`,
+              transform: `translateY(${item.start}px)`,
+            }}
+          >
+            <ChainRow network={networks[item.index]} activeNetworksState={activeNetworksState} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const ChainRow: FC<{
+  network: Chain
+  activeNetworksState: ActiveChains
+}> = ({ network: chain, activeNetworksState: activeChainsState }) => {
+  const isActive = useMemo(
+    () => isChainActive(chain, activeChainsState),
+    [activeChainsState, chain],
+  )
+
   const navigate = useNavigate()
   const handleChainClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -241,22 +287,15 @@ const ChainsListItem = ({
     navigate(`./${chain.id}`)
   }, [navigate, chain.id])
 
-  // there are lots of chains so we should only render visible rows to prevent performance issues
-  const refContainer = useRef<HTMLDivElement>(null)
-  const intersection = useIntersection(refContainer, {
-    root: null,
-    rootMargin: "1000px",
-  })
-
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      onEnableChanged(e.target.checked)
+      activeChainsStore.setActive(chain.id, e.target.checked)
     },
-    [onEnableChanged],
+    [chain.id],
   )
 
-  const rowContent = intersection?.isIntersecting ? (
-    <>
+  return (
+    <div className="relative h-28">
       <ListButton key={chain.id} role="button" onClick={handleChainClick}>
         <ChainLogo className="rounded-full text-xl" id={chain.id} />
         <div className="text-body truncate">{chain.name}</div>
@@ -270,12 +309,6 @@ const ChainsListItem = ({
         checked={isActive}
         onChange={handleEnableChanged}
       />
-    </>
-  ) : null
-
-  return (
-    <div ref={refContainer} className="relative h-28">
-      {rowContent}
     </div>
   )
 }

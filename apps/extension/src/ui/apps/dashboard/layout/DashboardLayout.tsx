@@ -1,5 +1,5 @@
 import { HistoryIcon, SettingsIcon, TalismanHandIcon, ZapIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isTruthy } from "@talismn/util"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -75,7 +75,7 @@ const NavButton: FC<{
 }> = ({ label, icon: Icon, route, className, onClick }) => {
   const location = useLocation()
   const routeMatch = useMemo(() => {
-    const matches = Array.isArray(route) ? route : ([route].filter(Boolean) as string[])
+    const matches = Array.isArray(route) ? route : [route].filter(isTruthy)
     return matches.some((route) => matchPath(route, location.pathname))
   }, [location.pathname, route])
 

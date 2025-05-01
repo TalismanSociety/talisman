@@ -1,3 +1,4 @@
+import { platformFromAddress } from "../platform"
 import { encodeAddressBase58 } from "./encoding/base58"
 import { detectAddressEncoding } from "./encoding/detectAddressEncoding"
 import { encodeAddressEthereum } from "./encoding/ethereum"
@@ -31,6 +32,10 @@ describe("address encoding", () => {
 
     expect(address).toEqual(ADDRESS)
   })
+
+  // NOTE: We don't have encodeAddress methods for bitcoin yet,
+  // for now we only support importing bitcoin addresses as watched addresses or contacts.
+  // it("Bitcoin", () => {})
 
   it("SS58 from ecdsa", () => {
     const PUBLIC_KEY = [
@@ -88,6 +93,33 @@ describe("detect address encoding", () => {
   it("Ethereum", () => {
     const ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     expect(detectAddressEncoding(ADDRESS)).toEqual("ethereum")
+  })
+
+  it("Bitcoin", () => {
+    // NOTE: Not currently used, but this is the keypair used to generate the following addresses.
+    // Might be helpful in the future when we add `encodeAddress` methods and tests for those methods for the bitcoin address formats.
+    // const [PRIVATE_KEY_HEX, PUBLIC_KEY_HEX] = [
+    //   "2eaceb10cdeb520727d3ff87a93d4660e20c3e751da47ceebcef38d0c038529b",
+    //   "04855fa9481dc45141d7e19f529b20eea6a09aaadd8d8576cb0476acf6a83c9d69d1d4fa8ff159a06f8d96cbe7ebd9f23be326b61cd31e7a05d74463c2679a898f",
+    // ]
+
+    const ADDRESS_BASE58_P2PKH_COMPRESSED = "1JqDUWVJEn9ggyBtz5B3wjfUwi9GmPmpRE"
+    const ADDRESS_BASE58_P2PKH_UNCOMPRESSED = "18ffGnNa7jeniftL9Dr7bHA66xAQEB8rDu"
+    const ADDRESS_BASE58_P2SH = "3Nyhyzp2wcEAfzErggF7nowWGBWsw7A2ud"
+    const ADDRESS_BECH32_P2WPKH_OR_P2WSH = "bc1qcwvgg743p4cadnrpf05emr554j0sj90jf29zj2"
+    const ADDRESS_BECH32M_P2TR = "bc1ps406jjqac3g5r4lpnaffkg8w56sf42ka3kzhdjcyw6k0d2pun45smawh72"
+
+    expect(detectAddressEncoding(ADDRESS_BASE58_P2PKH_COMPRESSED)).toEqual("base58check")
+    expect(detectAddressEncoding(ADDRESS_BASE58_P2PKH_UNCOMPRESSED)).toEqual("base58check")
+    expect(detectAddressEncoding(ADDRESS_BASE58_P2SH)).toEqual("base58check")
+    expect(detectAddressEncoding(ADDRESS_BECH32_P2WPKH_OR_P2WSH)).toEqual("bech32")
+    expect(detectAddressEncoding(ADDRESS_BECH32M_P2TR)).toEqual("bech32m")
+
+    expect(platformFromAddress(ADDRESS_BASE58_P2PKH_COMPRESSED)).toEqual("bitcoin")
+    expect(platformFromAddress(ADDRESS_BASE58_P2PKH_UNCOMPRESSED)).toEqual("bitcoin")
+    expect(platformFromAddress(ADDRESS_BASE58_P2SH)).toEqual("bitcoin")
+    expect(platformFromAddress(ADDRESS_BECH32_P2WPKH_OR_P2WSH)).toEqual("bitcoin")
+    expect(platformFromAddress(ADDRESS_BECH32M_P2TR)).toEqual("bitcoin")
   })
 
   it("Base58", () => {

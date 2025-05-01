@@ -1,0 +1,11 @@
+{
+  "name": "swaps-port",
+  "module": "src/index.ts",
+  "type": "module",
+  "dependencies": {
+    "jotai": "^2.12.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

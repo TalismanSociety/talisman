@@ -1,4 +1,5 @@
 import { KeypairCurve } from "@talismn/crypto"
+import { isNotNil } from "@talismn/util"
 import {
   formatSuri,
   getAccountGenesisHash,
@@ -67,12 +68,12 @@ const useDerivedAccounts = (
     }
   }, [itemsPerPage, mnemonic, name, pageIndex, curve])
 
-  const withBalances = useMemo(() => !!derivedAccounts.filter(Boolean).length, [derivedAccounts])
+  const withBalances = useMemo(() => !!derivedAccounts.filter(isNotNil).length, [derivedAccounts])
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const accountImportDefs = useMemo<AccountImportDef[]>(
     () =>
-      derivedAccounts.filter(Boolean).length === itemsPerPage
+      derivedAccounts.filter(isNotNil).length === itemsPerPage
         ? derivedAccounts
             .filter((acc): acc is DerivedFromMnemonicAccount & { curve: string } => !!acc?.curve)
             .map((acc) => ({ address: acc.address, curve: acc.curve }))

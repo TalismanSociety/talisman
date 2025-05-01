@@ -1,10 +1,8 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "extension-core"
-import { useMemo } from "react"
 
-import { CHAIN_INFO } from "@ui/domains/Staking/Bittensor/constants"
-import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/sortGroupedStakes"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useSortedGroupedStakes } from "@ui/domains/Staking/hooks/bittensor/dTao/useSortedGroupedStakes"
 import { useTokenRates } from "@ui/state"
 
 import { useTokenBalances } from "../useTokenBalances"
@@ -17,22 +15,13 @@ type TokenBalancesParams = {
 
 export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
   const tokenRates = useTokenRates(tokenId)
+  const { sortedGroupedStakes } = useSortedGroupedStakes({ tokenId, balances })
 
   const combinedSubnetData = useCombinedSubnetData()
   const tokenBalances = useTokenBalances({
     tokenId,
     balances,
   })
-
-  const groupedStakes = Object.groupBy(
-    tokenBalances.detailRows,
-    ({ meta }) => meta?.netuid ?? CHAIN_INFO,
-  )
-
-  const sortedGroupedStakes = useMemo(
-    () => sortGroupedStakes(groupedStakes, CHAIN_INFO),
-    [groupedStakes],
-  )
 
   return sortedGroupedStakes.map(([key, groupedStakesByNetuid]) => {
     if (!groupedStakesByNetuid) return null

@@ -111,8 +111,6 @@ export const useBondWizard = () => {
     minJoinBond,
     isSoloStaking,
     poolState,
-    canStake,
-    isCanStakeLoading,
   } = useGetStakeInfo({
     sapi,
     address,
@@ -208,11 +206,6 @@ export const useBondWizard = () => {
     return balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
   }, [balance, existentialDeposit, feeEstimate])
 
-  const stakeWarningMessage = useMemo(() => {
-    if (!canStake) return t("Stake/unstake currently paused")
-    return null
-  }, [canStake, t])
-
   const inputErrorMessage = useMemo(() => {
     if (isSoloStaking)
       return t("Account has an open validator staking position, please unbond first")
@@ -290,12 +283,11 @@ export const useBondWizard = () => {
     feeToken,
     maxPlancks,
     inputErrorMessage,
-    stakeWarningMessage,
     bondType,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,
-    isLoadingPayload: isLoadingPayload || isCanStakeLoading,
+    isLoadingPayload: isLoadingPayload,
     errorPayload,
 
     feeEstimate,

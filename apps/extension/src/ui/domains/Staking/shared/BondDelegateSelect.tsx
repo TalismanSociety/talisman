@@ -12,6 +12,7 @@ import { BondOption, BondOptionSkeleton } from "./BondOption"
 export type SortMethod<T> = {
   label: string
   value: T
+  isDisabled?: boolean
 }
 
 type BondDelegateSelectProps<T> = {
@@ -47,13 +48,13 @@ export const BondDelegateSelect = <T,>({
         {sortMethods.map((method) => (
           <button
             key={method.label}
-            onClick={() => !isLoading && handleSortMethodChange(method)}
+            onClick={() => !isLoading && !method.isDisabled && handleSortMethodChange(method)}
             className={classNames(
               "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
               method.value === selectedSortMethod.value
                 ? "bg-primary-500 text-black"
                 : "bg-black-tertiary text-grey-400",
-              isLoading && "cursor-not-allowed",
+              (isLoading || method.isDisabled) && "cursor-not-allowed",
             )}
           >
             {t(method.label)}
@@ -71,16 +72,15 @@ export const BondDelegateSelect = <T,>({
                 .fill(null)
                 .map((_, i) => {
                   return (
-                    <>
-                      <BondOptionSkeleton key={i} isRecommended={i === 0} />
+                    <div key={i}>
+                      <BondOptionSkeleton isRecommended={i === 0} />
                       {i === 0 && <div className="bg-grey-800 h-[1px]" />}
-                    </>
+                    </div>
                   )
                 })
             : bondOptions.map((option, i) => (
-                <>
+                <div key={option.poolId}>
                   <BondOption
-                    key={option.poolId}
                     option={option}
                     selectedPoolId={poolId}
                     handleSelectPoolId={handleSelectPoolId}
@@ -88,7 +88,7 @@ export const BondDelegateSelect = <T,>({
                   />
                   {/* add a separator after the recommended it, which should be first */}
                   {i === 0 && <div className="bg-grey-800 h-[1px]" />}
-                </>
+                </div>
               ))}
           {isError && (
             <div className="text-alert-error flex h-full items-center justify-center">

@@ -52,7 +52,10 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
         assert(
-          accounts.every((acc) => "genesisHash" in acc && acc.genesisHash === chain?.genesisHash),
+          accounts.every((acc) => {
+            const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
+            return !!genesisHash && genesisHash === chain?.genesisHash
+          }),
           "Chain mismatch",
         )
 

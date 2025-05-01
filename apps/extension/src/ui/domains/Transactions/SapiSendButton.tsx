@@ -1,6 +1,6 @@
-import { AlertCircleIcon } from "@talismn/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { toHex } from "@talismn/scale"
-import { AccountPolkadotVault, SignerPayloadJSON } from "extension-core"
+import { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
 import { FC, Suspense, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,8 +17,10 @@ import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 type SapiSendButtonProps = {
   containerId?: string
   label?: string
-  payload: SignerPayloadJSON
+  payload?: SignerPayloadJSON
   txMetadata?: Uint8Array
+  txInfo?: WalletTransactionInfo
+  loading?: boolean
   disabled?: boolean
   onSubmitted: (hash: Hex) => void
 }
@@ -27,6 +29,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   containerId,
   payload,
   txMetadata,
+  txInfo,
   onSubmitted,
 }) => {
   const [error, setError] = useState<string>()
@@ -35,6 +38,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
   const registry = useMemo(() => {
     if (!sapi) return undefined
+    if (!payload) return undefined
     return sapi.getTypeRegistry(payload)
   }, [payload, sapi])
 
@@ -44,7 +48,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature)
+        const { hash } = await sapi.submit(payload, signature, txInfo)
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
@@ -52,7 +56,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [onSubmitted, payload, sapi],
+    [onSubmitted, payload, sapi, txInfo],
   )
 
   return (
@@ -69,7 +73,12 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 }
 
-const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, onSubmitted }) => {
+const QrAccountSendButton: FC<SapiSendButtonProps> = ({
+  containerId,
+  payload,
+  txInfo,
+  onSubmitted,
+}) => {
   const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -80,7 +89,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, on
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature)
+        const { hash } = await sapi.submit(payload, signature, txInfo)
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
@@ -88,7 +97,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, on
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [onSubmitted, payload, sapi],
+    [onSubmitted, payload, sapi, txInfo],
   )
 
   if (!account) return null
@@ -98,7 +107,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({ containerId, payload, on
       <SubmitErrorDisplay error={error} />
       <QrSubstrate
         containerId={containerId ?? "main"}
-        genesisHash={payload.genesisHash}
+        genesisHash={payload?.genesisHash}
         payload={payload}
         account={account as AccountPolkadotVault}
         onSignature={handleSigned}
@@ -111,6 +120,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   label,
   payload,
   disabled,
+  txInfo,
   onSubmitted,
 }) => {
   const { t } = useTranslation()
@@ -123,9 +133,10 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
 
   const handleSubmitClick = useCallback(async () => {
     if (!sapi) return
+    if (!payload) return
     setState({ isSubmitting: true, error: null })
     try {
-      const { hash } = await sapi.submit(payload)
+      const { hash } = await sapi.submit(payload, undefined, txInfo)
       setState({ isSubmitting: false, error: null })
       onSubmitted(hash)
     } catch (err) {
@@ -133,7 +144,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setState({ isSubmitting: false, error: (err as any)?.message ?? "Failed to submit" })
     }
-  }, [onSubmitted, payload, sapi])
+  }, [onSubmitted, payload, sapi, txInfo])
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -152,6 +163,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
 }
 
 export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(props.payload?.address)
 
   const signMethod = useMemo(() => {
@@ -163,17 +175,26 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
       case "keypair":
         return "local"
       default:
-        throw new Error(`Unsupported account type '${account?.type}'`)
+        if (props.loading) return "loading"
+        return "unsupported"
     }
-  }, [account])
-
-  if (!account) return null
+  }, [account, props.loading])
 
   return (
     <Suspense fallback={<SuspenseTracker name="SapiSendButton" />}>
       {signMethod === "local" && <LocalAccountSendButton {...props} />}
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}
+      {signMethod === "loading" && (
+        <Button className="w-full" primary disabled>
+          <LoaderIcon className="animate-spin-slow text-lg" />
+        </Button>
+      )}
+      {signMethod === "unsupported" && (
+        <Button className="w-full" primary disabled>
+          {t("Unsupported account type: {{type}}", { type: account?.type })}
+        </Button>
+      )}
     </Suspense>
   )
 }
