@@ -29,7 +29,6 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
-import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import {
   useActiveTokensState,
@@ -37,7 +36,6 @@ import {
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
-  useSetting,
   useTokens,
 } from "@ui/state"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
@@ -269,8 +267,7 @@ const Content = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
-
-  const [includeTestnets] = useSetting("useTestnets")
+  const [includeTestnets, setIncludeTestnets] = useState(false)
   const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
   const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
   const tokens = useTokens({ activeOnly: false, includeTestnets })
@@ -282,6 +279,7 @@ const Content = () => {
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
   const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
+  const toggleShowTestnets = useCallback(() => setIncludeTestnets((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
     return [
@@ -377,7 +375,11 @@ const Content = () => {
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
         <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
         <TogglePill label={t("Enable pools")} checked={!isHidePools} onChange={toggleIsHidePools} />
-        <EnableTestnetPillButton className="h-16" />
+        <TogglePill
+          label={t("Show testnets")}
+          checked={includeTestnets}
+          onChange={toggleShowTestnets}
+        />
       </div>
       <Spacer />
       <TokensTable tokens={displayTokens} />

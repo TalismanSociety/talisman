@@ -115,7 +115,7 @@ class AssetDiscoveryScanner {
         debounceTime(500),
         map(([networksById, activeNetworks]) =>
           Object.keys(activeNetworks)
-            .filter((k) => !!activeNetworks[k] && networksById[k] && !networksById.isTestnet)
+            .filter((k) => !!activeNetworks[k] && networksById[k])
             .sort(),
         ),
         distinct((allActiveNetworkIds) => allActiveNetworkIds.join("")),

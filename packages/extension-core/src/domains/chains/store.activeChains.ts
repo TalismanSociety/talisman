@@ -29,5 +29,8 @@ class ActiveChainsStore extends StorageProvider<ActiveChains> {
 export const activeChainsStore = new ActiveChainsStore()
 
 export const isChainActive = (network: Chain | CustomChain, activeNetworks: ActiveChains) => {
-  return activeNetworks[network.id] ?? (isCustomChain(network) || network.isDefault)
+  return (
+    activeNetworks[network.id] ??
+    (isCustomChain(network) || (network.isDefault && !network.isTestnet))
+  )
 }

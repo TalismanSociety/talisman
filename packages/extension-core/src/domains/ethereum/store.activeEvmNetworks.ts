@@ -32,5 +32,8 @@ export const isEvmNetworkActive = (
   network: SimpleEvmNetwork,
   activeNetworks: ActiveEvmNetworks,
 ) => {
-  return activeNetworks[network.id] ?? (isCustomEvmNetwork(network) || network.isDefault)
+  return (
+    activeNetworks[network.id] ??
+    (isCustomEvmNetwork(network) || (network.isDefault && !network.isTestnet))
+  )
 }

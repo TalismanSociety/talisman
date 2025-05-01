@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useSetting, useTokensMap } from "@ui/state"
+import { useTokensMap } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -17,8 +17,7 @@ export const SendFundsTokenButton = ({
   shouldClose?: boolean
 }) => {
   const { selectedAccount } = usePortfolioNavigation()
-  const [includeTestnets] = useSetting("useTestnets")
-  const tokensMap = useTokensMap({ activeOnly: true, includeTestnets })
+  const tokensMap = useTokensMap({ activeOnly: true, includeTestnets: true })
   const token = isTransferableToken(tokensMap[tokenId]) ? tokensMap[tokenId] : undefined
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(

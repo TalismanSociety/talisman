@@ -17,7 +17,6 @@ import {
   useChains,
   useIsBalanceInitializing,
   useRemoteConfig,
-  useSetting,
 } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
@@ -26,13 +25,13 @@ import { CustomPill, TestnetPill } from "./Pills"
 type DeactivateMode = "all" | "unused"
 
 const DeactivateNetworksModalContent: FC<{
+  showTestnets: boolean
   onClose: () => void
-}> = ({ onClose }) => {
+}> = ({ showTestnets, onClose }) => {
   const { t } = useTranslation("admin")
   const isBalancesInitializing = useIsBalanceInitializing()
-  const [includeTestnets] = useSetting("useTestnets")
   const balances = useBalances("all")
-  const chains = useChains({ activeOnly: true, includeTestnets })
+  const chains = useChains({ activeOnly: true, includeTestnets: showTestnets })
 
   const [activeChainIds, unusedChainIds] = useMemo(() => {
     const networkIds = chains.map((chain) => chain.id)
@@ -115,15 +114,15 @@ const DeactivateNetworksModalContent: FC<{
   )
 }
 
-export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
+export const ChainsList: FC<{ activeOnly: boolean; showTestnets: boolean; search?: string }> = ({
   activeOnly,
+  showTestnets,
   search,
 }) => {
   const { t } = useTranslation("admin")
-  const [includeTestnets] = useSetting("useTestnets")
   const { recommendedNetworks } = useRemoteConfig()
   const networksActiveState = useActiveChainsState()
-  const chains = useChains({ activeOnly: false, includeTestnets })
+  const chains = useChains({ activeOnly: false, includeTestnets: showTestnets })
 
   const allSortedNetworks = useMemo(() => {
     return chains.concat().sort((n1, n2) => {
@@ -219,7 +218,10 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
 
         <Suspense fallback={<SuspenseTracker name="DeactivateAllModal" />}>
           <Modal isOpen={ocDeactivateAllModal.isOpen} onDismiss={ocDeactivateAllModal.close}>
-            <DeactivateNetworksModalContent onClose={ocDeactivateAllModal.close} />
+            <DeactivateNetworksModalContent
+              showTestnets={showTestnets}
+              onClose={ocDeactivateAllModal.close}
+            />
           </Modal>
         </Suspense>
       </div>

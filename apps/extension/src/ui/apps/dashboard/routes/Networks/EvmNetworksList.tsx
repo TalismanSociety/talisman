@@ -22,7 +22,6 @@ import {
   useEvmNetworks,
   useIsBalanceInitializing,
   useRemoteConfig,
-  useSetting,
 } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
@@ -31,14 +30,14 @@ import { CustomPill, TestnetPill } from "./Pills"
 type DeactivateMode = "all" | "unused"
 
 const DeactivateNetworksModalContent: FC<{
+  showTestnets: boolean
   onClose: () => void
-}> = ({ onClose }) => {
+}> = ({ showTestnets, onClose }) => {
   const { t } = useTranslation("admin")
   const isBalancesInitializing = useIsBalanceInitializing()
 
-  const [includeTestnets] = useSetting("useTestnets")
   const balances = useBalances("all")
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
 
   const [activeEvmNetworkIds, unusedEvmNetworkIds] = useMemo(() => {
     const networkIds = evmNetworks.map((chain) => chain.id)
@@ -125,15 +124,15 @@ const DeactivateNetworksModalContent: FC<{
   )
 }
 
-export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
-  activeOnly,
-  search,
-}) => {
+export const EvmNetworksList: FC<{
+  activeOnly: boolean
+  showTestnets: boolean
+  search?: string
+}> = ({ showTestnets, activeOnly, search }) => {
   const { t } = useTranslation("admin")
 
-  const [includeTestnets] = useSetting("useTestnets")
   const { recommendedNetworks } = useRemoteConfig()
-  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: showTestnets })
 
   const allSortedNetworks = useMemo(() => {
     return evmNetworks.concat().sort((n1, n2) => {
@@ -232,7 +231,10 @@ export const EvmNetworksList: FC<{ activeOnly: boolean; search?: string }> = ({
         </button>
         <Suspense fallback={<SuspenseTracker name="DeactivateAllModal" />}>
           <Modal isOpen={ocDeactivateAllModal.isOpen} onDismiss={ocDeactivateAllModal.close}>
-            <DeactivateNetworksModalContent onClose={ocDeactivateAllModal.close} />
+            <DeactivateNetworksModalContent
+              showTestnets={showTestnets}
+              onClose={ocDeactivateAllModal.close}
+            />
           </Modal>
         </Suspense>
       </div>

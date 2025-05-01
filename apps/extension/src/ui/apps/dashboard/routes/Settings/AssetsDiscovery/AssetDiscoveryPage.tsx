@@ -64,7 +64,6 @@ import {
   useEvmNetwork,
   useEvmNetworks,
   useEvmNetworksMap,
-  useSetting,
   useToken,
   useTokens,
   useTokensMap,
@@ -382,8 +381,7 @@ const Header: FC = () => {
   const { balances, accountsCount, networksCount, tokensCount, percent, isInProgress } =
     useAssetDiscoveryScanProgress()
 
-  const [includeTestnets] = useSetting("useTestnets")
-  const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets })
+  const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: true })
 
   const activeNetworks = useActiveEvmNetworksState()
   const recommendedNetworks = useMemo(() => {

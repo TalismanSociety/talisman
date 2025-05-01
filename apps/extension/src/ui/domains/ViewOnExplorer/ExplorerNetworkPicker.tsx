@@ -9,13 +9,7 @@ import urlJoin from "url-join"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import {
-  useAccountByAddress,
-  useBalances,
-  useChains,
-  useEvmNetworks,
-  useSettingValue,
-} from "@ui/state"
+import { useAccountByAddress, useBalances, useChains, useEvmNetworks } from "@ui/state"
 import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -29,7 +23,7 @@ type NetworkWithExplorer = {
 
 const useExplorerNetworks = (address: string, search: string): NetworkWithExplorer[] => {
   const account = useAccountByAddress(address)
-  const includeTestnets = useSettingValue("useTestnets")
+  const includeTestnets = true // TODO
   const chains = useChains({ activeOnly: true, includeTestnets })
   const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
   const balances = useBalances({ address })

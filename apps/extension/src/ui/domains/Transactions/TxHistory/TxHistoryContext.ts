@@ -10,16 +10,13 @@ import {
   useAccounts,
   useChains,
   useEvmNetworksMap,
-  useSettingValue,
   useTransactions,
 } from "@ui/state"
 
 const useTxHistoryProvider = () => {
-  const includeTestnets = useSettingValue("useTestnets")
-
   const accounts = useAccounts("owned")
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
-  const chains = useChains({ activeOnly: true, includeTestnets })
+  const evmNetworksMap = useEvmNetworksMap()
+  const chains = useChains()
   const chainsByGenesisHash = useMemo(
     () =>
       Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Partial<

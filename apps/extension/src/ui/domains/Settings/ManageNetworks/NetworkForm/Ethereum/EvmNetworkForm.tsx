@@ -36,7 +36,7 @@ import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
-import { useEvmNetwork, useEvmNetworks, useSetting, useToken } from "@ui/state"
+import { useEvmNetwork, useEvmNetworks, useToken } from "@ui/state"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -104,8 +104,6 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const existingToken = useToken(existingEvmNetwork?.nativeToken?.id)
 
   const evmNetworks = useEvmNetworks()
-
-  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
   const tEditMode = evmNetworkId ? t("Edit") : t("Add")
@@ -191,13 +189,12 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
         }
 
         await api.ethNetworkUpsert(requestData)
-        if (network.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets],
+    [tokenLogoUrl, onSubmitted],
   )
 
   // on edit screen, wait for existing network to be loaded

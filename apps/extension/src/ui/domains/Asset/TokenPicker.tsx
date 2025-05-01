@@ -19,7 +19,6 @@ import {
   useEvmNetworksMap,
   useIsBalanceInitializing,
   useSelectedCurrency,
-  useSetting,
   useTokenRatesMap,
   useTokens,
 } from "@ui/state"
@@ -251,11 +250,11 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
-  const [includeTestnets] = useSetting("useTestnets")
-  const chains = useChains({ activeOnly: true, includeTestnets })
-  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets })
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
-  const allTokens = useTokens({ activeOnly: true, includeTestnets })
+  // const [includeTestnets] = useSetting("useTestnets") // TODO ?
+  const chains = useChains({ activeOnly: true, includeTestnets: true })
+  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
+  const allTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
   const isBalancesInitializing = useIsBalanceInitializing()

@@ -6,7 +6,7 @@ import { IdenticonType } from "../accounts/types"
 
 export interface SettingsStoreData {
   useErrorTracking: boolean
-  useTestnets: boolean
+  // useTestnets: boolean
   identiconType: IdenticonType
   useAnalyticsTracking?: boolean // undefined during onboarding
   hideBalances: boolean
@@ -30,7 +30,7 @@ export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
 export const DEFAULT_SETTINGS: SettingsStoreData = {
   useErrorTracking: !IS_FIREFOX,
-  useTestnets: false,
+  // useTestnets: false,
   identiconType: "talisman-orb",
   useAnalyticsTracking: undefined, // undefined for onboarding
   hideBalances: false,
