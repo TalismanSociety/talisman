@@ -549,7 +549,7 @@ class AssetDiscoveryScanner {
         )
       }
 
-      await sleep(100) // pause to ensure local storage observables fires before we exit
+      await sleep(100) // pause to ensure local storage observables fires before we exit, to prevent unnecessary scans to be triggered (see watchEnabledNetworks up top)
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
         err,
