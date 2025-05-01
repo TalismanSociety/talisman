@@ -2,7 +2,7 @@ import { evmErc20TokenId } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
-import { CSSProperties, FC, Suspense, useMemo } from "react"
+import { CSSProperties, FC, Suspense, useId, useMemo } from "react"
 
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useToken } from "@ui/state"
@@ -24,12 +24,13 @@ type AssetLogoBaseProps = {
 }
 
 export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoBaseProps) => {
+  const rid = useId()
   const { src, onError } = useGithubImageUrl(url, UNKNOWN_TOKEN_URL)
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
     <img
-      key={src}
+      key={`${rid}::${src}`}
       data-id={id}
       src={src}
       className={classNames(

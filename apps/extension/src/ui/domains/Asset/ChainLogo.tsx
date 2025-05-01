@@ -1,7 +1,7 @@
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
-import { FC, Suspense, useMemo } from "react"
+import { FC, Suspense, useId, useMemo } from "react"
 
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useChain, useEvmNetwork } from "@ui/state"
@@ -15,12 +15,13 @@ type ChainLogoBaseProps = {
 }
 
 export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) => {
+  const rid = useId()
   const { src, onError } = useGithubImageUrl(logo, UNKNOWN_NETWORK_URL)
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
     <img
-      key={src}
+      key={`${rid}::${src}`}
       data-id={id}
       src={src}
       className={classNames("relative block aspect-square w-[1em] shrink-0", className)}
