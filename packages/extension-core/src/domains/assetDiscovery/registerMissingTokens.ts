@@ -1,3 +1,4 @@
+import { evmErc20TokenId, evmNativeTokenId } from "@talismn/balances"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { throwAfter } from "@talismn/util"
@@ -88,12 +89,12 @@ const ensureDiscoveredAssets = async (assets: DiscoveredAsset[]) => {
           assets.map(async (asset) => {
             switch (asset.type) {
               case "native": {
-                foundTokenIds.add(`${networkId}-evm-native`)
+                foundTokenIds.add(evmNativeTokenId(networkId))
                 break
               }
               case "erc20": {
                 {
-                  const id = `${networkId}-evm-erc20-${asset.contractAddress.toLowerCase()}`
+                  const id = evmErc20TokenId(networkId, asset.contractAddress.toLowerCase())
                   if (tokensById[id]) {
                     foundTokenIds.add(id)
                     return
