@@ -116,7 +116,7 @@ export class TokenRatesStore {
       const coinsApiConfig = await remoteConfigStore.get("coinsApi")
       const currencyIds = await settingsStore.get("selectableCurrencies")
 
-      // force usd to be included, because hiding small balances always expect it
+      // force usd to be included, because hide small balances feature requires it
       const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencyIds, "usd"])
 
       const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, coinsApiConfig)
