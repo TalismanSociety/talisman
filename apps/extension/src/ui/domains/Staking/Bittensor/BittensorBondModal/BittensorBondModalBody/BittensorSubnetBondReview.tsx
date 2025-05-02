@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import Tokens from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -15,8 +16,24 @@ import { BittensorSelectButton } from "../BittensorSelectButton"
 
 export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
-  const { token, formatter, account, onSubmitted, payload, txMetadata, poolId, netuid } =
-    useBittensorBondWizard()
+  const {
+    token,
+    formatter,
+    account,
+    payload,
+    txMetadata,
+    poolId,
+    netuid,
+    feeToken,
+
+    // alphaPrice,
+    taoToAlphaTalismanFee,
+    taoToAlphaConversionRate,
+    isDynamicInfoLoading,
+    isDynamicInfoError,
+    expectedAlphaWithSlippage,
+    onSubmitted,
+  } = useBittensorBondWizard()
   const { t } = useTranslation()
 
   const { isLoading, subnetData } = useCombinedSubnetData()
@@ -84,13 +101,25 @@ export const BittensorSubnetBondReview = () => {
 
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated amount")} </div>
-            <div>123 ABC</div>
+            {/* <div>{`${expectedAlphaWithSlippage} SN${netuid} ${subnet_name} ${symbol}`}</div> */}
+            <Tokens
+              amount={expectedAlphaWithSlippage}
+              decimals={token?.decimals}
+              symbol={`SN${netuid} ${subnet_name} ${symbol}`}
+            />
           </div>
         </div>
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Conversion Rate")} </div>
-            <div>123 ABC</div>
+            <div className="flex items-center gap-2">
+              <div>1 TAO =</div>
+              <Tokens
+                amount={taoToAlphaConversionRate}
+                decimals={token?.decimals}
+                symbol={symbol}
+              />
+            </div>
           </div>
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Slippage")} </div>
@@ -104,7 +133,13 @@ export const BittensorSubnetBondReview = () => {
           </div>
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Talisman Fee")} </div>
-            0.123 TAO
+            <StakingFeeEstimate
+              plancks={taoToAlphaTalismanFee}
+              tokenId={feeToken?.id}
+              isLoading={isDynamicInfoLoading}
+              error={isDynamicInfoError}
+              noCountUp
+            />
           </div>
         </div>
       </div>

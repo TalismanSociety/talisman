@@ -5,11 +5,13 @@ import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittens
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
 import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
+import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
 
 type GetStakeInfo = {
   sapi: ScaleApi | undefined | null
   address: string | null
   poolId: string | number | null | undefined
+  netuid: number | null
   plancks: bigint | null
   chainId: ChainId | undefined
 }
@@ -18,9 +20,23 @@ export const useGetBittensorStakeInfo = ({
   sapi,
   address,
   poolId,
+  netuid,
   plancks,
   chainId,
 }: GetStakeInfo) => {
+  const {
+    taoToAlphaSlippage,
+    taoToAlphaTalismanFee,
+    alphaPrice,
+    taoToAlphaConversionRate,
+    expectedAlphaWithSlippage,
+    isLoading: isDynamicInfoLoading,
+    isError: isDynamicInfoError,
+  } = useGetDynamicTaoStakeInfo({
+    netuid,
+    amount: plancks,
+    direction: "taoToAlpha",
+  })
   const { data: minJoinBond } = useGetMinJoinBond(chainId)
 
   const bittensorStakingPayload = useGetBittensorStakingPayload({
@@ -58,5 +74,13 @@ export const useGetBittensorStakeInfo = ({
     errorFeeEstimate,
     currentPoolId: hotkeys?.[0] ?? poolId,
     minJoinBond,
+
+    taoToAlphaSlippage,
+    taoToAlphaTalismanFee,
+    alphaPrice,
+    taoToAlphaConversionRate,
+    expectedAlphaWithSlippage,
+    isDynamicInfoLoading,
+    isDynamicInfoError,
   }
 }

@@ -138,10 +138,19 @@ export const useBittensorBondWizard = () => {
     isLoadingFeeEstimate,
     currentPoolId,
     minJoinBond,
+
+    taoToAlphaSlippage,
+    taoToAlphaTalismanFee,
+    alphaPrice,
+    taoToAlphaConversionRate,
+    expectedAlphaWithSlippage,
+    isDynamicInfoLoading,
+    isDynamicInfoError,
   } = useGetBittensorStakeInfo({
     sapi,
     address,
     poolId,
+    netuid,
     plancks,
     chainId: token?.chain?.id,
   })
@@ -312,7 +321,9 @@ export const useBittensorBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
 
+    // TODO: revert payload comment to include inputErrorMessage
     payload: !inputErrorMessage && isFormValid ? payload : null,
+    // payload: isFormValid ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
@@ -321,6 +332,14 @@ export const useBittensorBondWizard = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     stakeType,
+
+    taoToAlphaSlippage,
+    taoToAlphaTalismanFee,
+    alphaPrice,
+    isDynamicInfoLoading,
+    isDynamicInfoError,
+    taoToAlphaConversionRate,
+    expectedAlphaWithSlippage,
 
     setAddress,
     setTokenId,

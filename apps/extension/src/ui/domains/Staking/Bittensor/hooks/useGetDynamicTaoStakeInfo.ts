@@ -1,0 +1,129 @@
+// const TAO_DECIMALS = 10n ** 9n
+import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { useMemo } from "react"
+
+import { useGetSubnetMetagraphByNetuid } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"
+import { TALISMAN_FEE_BITTENSOR } from "../utils/constants"
+
+type GetDynamicTaoStakeInfoProps = {
+  netuid: number | null
+  amount: bigint | null
+  direction: "taoToAlpha" | "alphaToTao"
+}
+
+export const useGetDynamicTaoStakeInfo = ({
+  netuid,
+  // direction = "taoToAlpha",
+  amount,
+}: GetDynamicTaoStakeInfoProps) => {
+  const { data, isLoading, isError } = useGetSubnetMetagraphByNetuid({ netuid })
+
+  const { alpha_out, alpha_in, tao_in } = data ?? {}
+
+  const alphaPrice = useMemo(() => calculateAlphaPrice({ alpha_in, tao_in }), [alpha_in, tao_in])
+
+  const taoToAlphaSlippage = useMemo(
+    () => calculateSlippage({ alpha_out, tao_in, amount }),
+    [alpha_out, amount, tao_in],
+  )
+  const taoToAlphaTalismanFee = useMemo(
+    () => calculateFee({ amount, fee: TALISMAN_FEE_BITTENSOR }),
+    [amount],
+  )
+
+  // calculate the conversion rate of 1 Tao to alpha with zero slippage
+  const taoToAlphaConversionRate = useMemo(
+    () =>
+      calculateExpectedAlpha({
+        alphaPrice,
+        amount: 1,
+        slippage: 0,
+      }),
+    [alphaPrice],
+  )
+
+  const expectedAlphaWithSlippage = useMemo(
+    () =>
+      calculateExpectedAlpha({
+        alphaPrice,
+        amount: Number((amount ?? 0n) / SCALE_FACTOR),
+        slippage: taoToAlphaSlippage,
+      }),
+    [alphaPrice, amount, taoToAlphaSlippage],
+  )
+
+  return {
+    taoToAlphaSlippage,
+    taoToAlphaTalismanFee,
+    alphaPrice,
+    isLoading,
+    isError,
+    taoToAlphaConversionRate,
+    expectedAlphaWithSlippage,
+  }
+}
+
+const calculateSlippage = ({
+  alpha_out,
+  tao_in,
+  amount,
+}: {
+  alpha_out: bigint | undefined
+  tao_in: bigint | undefined
+  amount: bigint | null
+}): number => {
+  if (!alpha_out || !tao_in || !amount) return 0
+
+  // Compute k (constant product of the pool)
+  const k = alpha_out * tao_in
+
+  // Expected Alpha if no slippage (simple ratio)
+  const alphaExpected = (alpha_out * amount) / tao_in
+
+  // Actual Alpha received from the AMM formula
+  const taoPoolUpdated = tao_in + amount
+  const alphaActual = alpha_out - k / taoPoolUpdated
+
+  // Slippage calculation with 0.01 precision
+  const slippage = ((alphaExpected - alphaActual) * 10000n) / alphaExpected
+
+  return Number(slippage) / 100 // Convert to a number with 0.01 precision
+}
+
+const calculateFee = ({ amount, fee }: { amount: bigint | null; fee: number }): bigint => {
+  if (!amount) return 0n
+  if (fee < 0) {
+    throw new Error("Fee percentage cannot be negative")
+  }
+
+  return (amount * BigInt(Math.round(fee * 100))) / BigInt(10000)
+}
+
+// Alpha price is calculated by taoIn / alphaIn
+const calculateAlphaPrice = ({
+  alpha_in,
+  tao_in,
+}: {
+  alpha_in: bigint | undefined
+  tao_in: bigint | undefined
+}): number => {
+  if (!tao_in || !alpha_in) return 0
+  const result = Number(tao_in) / Number(alpha_in)
+
+  return result
+}
+
+const calculateExpectedAlpha = ({
+  alphaPrice,
+  amount,
+  slippage,
+}: {
+  alphaPrice: number
+  amount: number
+  slippage: number
+}): number => {
+  if (!amount || !alphaPrice) return 0
+  const expectedAlpha = (amount / alphaPrice) * (1 - slippage / 100)
+
+  return expectedAlpha
+}
