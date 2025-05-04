@@ -12,6 +12,7 @@ import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/st
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
+import { DEFAULT_USER_MAX_SLIPPAGE } from "../utils/constants"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 export type WizardStep =
@@ -34,9 +35,11 @@ type WizardState = {
   displayMode: "token" | "fiat"
   isAccountPickerOpen: boolean
   isSelectStakeDrawerOpen: boolean
+  isSlippageDrawerOpen: boolean
   hash: Hex | null
   isDefaultOption: boolean
   stakeType: StakeType
+  userMaxSlippage: number
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -49,9 +52,11 @@ const DEFAULT_STATE: WizardState = {
   displayMode: "token",
   isAccountPickerOpen: false,
   isSelectStakeDrawerOpen: false,
+  isSlippageDrawerOpen: false,
   hash: null,
   isDefaultOption: true,
   stakeType: "root",
+  userMaxSlippage: DEFAULT_USER_MAX_SLIPPAGE,
 }
 
 const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -63,7 +68,7 @@ const setWizardState = (state: SetStateAction<WizardState>) => {
 
 const [useWizardState] = bind(wizardState$)
 
-type innerOpenCloseKey = "isAccountPickerOpen" | "isSelectStakeDrawerOpen"
+type innerOpenCloseKey = "isAccountPickerOpen" | "isSelectStakeDrawerOpen" | "isSlippageDrawerOpen"
 
 // TODO: this is meant to handle a pool picker too
 const useInnerOpenClose = (key: innerOpenCloseKey) => {
@@ -115,6 +120,7 @@ export const useBittensorBondWizard = () => {
     address,
     plancks,
     isDefaultOption,
+    userMaxSlippage,
   } = useWizardState()
 
   const balance = useBalance(address, tokenId)
@@ -125,6 +131,7 @@ export const useBittensorBondWizard = () => {
   const existentialDeposit = useExistentialDeposit(token?.id)
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
   const selectStakeDrawer = useInnerOpenClose("isSelectStakeDrawerOpen")
+  const slippageDrawer = useInnerOpenClose("isSlippageDrawerOpen")
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
@@ -141,7 +148,6 @@ export const useBittensorBondWizard = () => {
 
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
-    alphaPrice,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
     isDynamicInfoLoading,
@@ -198,6 +204,11 @@ export const useBittensorBondWizard = () => {
     [],
   )
 
+  const setUserMaxSlippage = useCallback(
+    (userMaxSlippage: number) => setWizardState((prev) => ({ ...prev, userMaxSlippage })),
+    [],
+  )
+
   const toggleDisplayMode = useCallback(() => {
     setWizardState((prev) => ({
       ...prev,
@@ -216,6 +227,11 @@ export const useBittensorBondWizard = () => {
       plancks &&
       plancks > 0n,
     [account, formatter, minJoinBond, netuid, plancks, poolId, stakeType, token],
+  )
+
+  const isSlippageValid = useMemo(
+    () => userMaxSlippage >= taoToAlphaSlippage,
+    [taoToAlphaSlippage, userMaxSlippage],
   )
 
   useEffect(() => {
@@ -314,7 +330,9 @@ export const useBittensorBondWizard = () => {
     displayMode,
     accountPicker,
     selectStakeDrawer,
+    slippageDrawer,
     isFormValid,
+    isSlippageValid,
     step,
     hash,
     feeToken,
@@ -335,11 +353,11 @@ export const useBittensorBondWizard = () => {
 
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
-    alphaPrice,
     isDynamicInfoLoading,
     isDynamicInfoError,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
+    userMaxSlippage,
 
     setAddress,
     setTokenId,
@@ -350,6 +368,7 @@ export const useBittensorBondWizard = () => {
     setStakeType,
     setIsDefaultOption,
     toggleDisplayMode,
+    setUserMaxSlippage,
 
     onSubmitted,
   }

@@ -55,7 +55,6 @@ export const useGetDynamicTaoStakeInfo = ({
   return {
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
-    alphaPrice,
     isLoading,
     isError,
     taoToAlphaConversionRate,

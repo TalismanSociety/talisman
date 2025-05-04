@@ -1,4 +1,7 @@
 export const ROOT_NETUID = 0
+export const DEFAULT_USER_MAX_SLIPPAGE = 5.5
+export const HIGH_SLIPPAGE = 10
+export const VERY_HIGH_SLIPPAGE = 20
 
 export const CHAIN_INFO = "chainInfo"
 export const DTAO_LOGO =

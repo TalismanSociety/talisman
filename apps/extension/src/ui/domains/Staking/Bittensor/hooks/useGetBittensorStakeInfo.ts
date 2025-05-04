@@ -27,7 +27,6 @@ export const useGetBittensorStakeInfo = ({
   const {
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
-    alphaPrice,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
     isLoading: isDynamicInfoLoading,
@@ -77,7 +76,6 @@ export const useGetBittensorStakeInfo = ({
 
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
-    alphaPrice,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
     isDynamicInfoLoading,

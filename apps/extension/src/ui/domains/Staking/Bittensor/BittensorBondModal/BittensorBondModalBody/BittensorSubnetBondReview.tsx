@@ -1,3 +1,5 @@
+import { SettingsIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -12,7 +14,9 @@ import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../../utils/constants"
 import { BittensorSelectButton } from "../BittensorSelectButton"
+import { BittensorSlippageDrawer } from "../BittensorSlippageDrawer"
 
 export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
@@ -21,10 +25,14 @@ export const BittensorSubnetBondReview = () => {
     formatter,
     account,
     payload,
+    isSlippageValid,
     txMetadata,
     poolId,
     netuid,
     feeToken,
+    slippageDrawer,
+    taoToAlphaSlippage,
+    userMaxSlippage,
 
     // alphaPrice,
     taoToAlphaTalismanFee,
@@ -37,6 +45,8 @@ export const BittensorSubnetBondReview = () => {
   const { t } = useTranslation()
 
   const { isLoading, subnetData } = useCombinedSubnetData()
+
+  const { open } = slippageDrawer
 
   const { subnet_name, symbol } = subnetData?.[netuid || 0] ?? {}
 
@@ -99,9 +109,8 @@ export const BittensorSubnetBondReview = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-            <div className="whitespace-nowrap">{t("Estimated amount")} </div>
-            {/* <div>{`${expectedAlphaWithSlippage} SN${netuid} ${subnet_name} ${symbol}`}</div> */}
+          <div className="text-body flex items-center justify-between gap-8 pt-2 text-xs">
+            <div className="whitespace-nowrap">{t("Estimated amount")}</div>
             <Tokens
               amount={expectedAlphaWithSlippage}
               decimals={token?.decimals}
@@ -110,7 +119,7 @@ export const BittensorSubnetBondReview = () => {
           </div>
         </div>
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
-          <div className="flex items-center justify-between gap-8 pt-2 text-xs">
+          <div className="text-body flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Conversion Rate")} </div>
             <div className="flex items-center gap-2">
               <div>1 TAO =</div>
@@ -122,8 +131,27 @@ export const BittensorSubnetBondReview = () => {
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-            <div className="whitespace-nowrap">{t("Slippage")} </div>
-            <div>33%</div>
+            <div className="whitespace-nowrap">{t("Slippage")}</div>
+            <div
+              className={classNames(
+                "text-body flex items-center gap-2",
+                ((taoToAlphaSlippage >= HIGH_SLIPPAGE && taoToAlphaSlippage < VERY_HIGH_SLIPPAGE) ||
+                  !isSlippageValid) &&
+                  "text-orange-500",
+                taoToAlphaSlippage >= VERY_HIGH_SLIPPAGE && "text-red-500",
+              )}
+            >
+              <button
+                onClick={open}
+                className={
+                  "bg-pill hover:bg-grey-700 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light"
+                }
+              >
+                <SettingsIcon />
+                <div>{userMaxSlippage !== DEFAULT_USER_MAX_SLIPPAGE ? t("Custom") : t("Auto")}</div>
+              </button>
+              <div>{taoToAlphaSlippage}%</div>
+            </div>
           </div>
         </div>
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
@@ -151,9 +179,10 @@ export const BittensorSubnetBondReview = () => {
           payload={payload}
           onSubmitted={onSubmitted}
           txMetadata={txMetadata}
-          disabled={isDisabled}
+          disabled={isDisabled || !isSlippageValid}
         />
       )}
+      <BittensorSlippageDrawer />
     </div>
   )
 }
