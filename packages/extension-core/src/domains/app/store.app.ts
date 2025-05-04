@@ -36,6 +36,7 @@ export type AppStoreData = {
   isAssetDiscoveryScanPending?: boolean
   showLedgerPolkadotGenericMigrationAlert?: boolean
   hideManageAccountsWelcome?: boolean
+  hideBittensorSubnetStakeWarning?: boolean
   hideGetStarted?: boolean
   hideUnifiedAddressBanner?: boolean
 
@@ -117,6 +118,7 @@ if (DEBUG) {
       analyticsRequestShown: false,
       hideBackupWarningUntil: undefined,
       hideManageAccountsWelcome: false,
+      hideBittensorSubnetStakeWarning: false,
       hideGetStarted: false,
       hideUnifiedAddressBanner: false,
     })

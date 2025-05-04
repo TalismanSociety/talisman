@@ -36,6 +36,7 @@ type WizardState = {
   isAccountPickerOpen: boolean
   isSelectStakeDrawerOpen: boolean
   isSlippageDrawerOpen: boolean
+  isWarningDrawerOpen: boolean
   hash: Hex | null
   isDefaultOption: boolean
   stakeType: StakeType
@@ -53,6 +54,7 @@ const DEFAULT_STATE: WizardState = {
   isAccountPickerOpen: false,
   isSelectStakeDrawerOpen: false,
   isSlippageDrawerOpen: false,
+  isWarningDrawerOpen: false,
   hash: null,
   isDefaultOption: true,
   stakeType: "root",
@@ -68,7 +70,11 @@ const setWizardState = (state: SetStateAction<WizardState>) => {
 
 const [useWizardState] = bind(wizardState$)
 
-type innerOpenCloseKey = "isAccountPickerOpen" | "isSelectStakeDrawerOpen" | "isSlippageDrawerOpen"
+type innerOpenCloseKey =
+  | "isAccountPickerOpen"
+  | "isSelectStakeDrawerOpen"
+  | "isSlippageDrawerOpen"
+  | "isWarningDrawerOpen"
 
 // TODO: this is meant to handle a pool picker too
 const useInnerOpenClose = (key: innerOpenCloseKey) => {
@@ -132,6 +138,7 @@ export const useBittensorBondWizard = () => {
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
   const selectStakeDrawer = useInnerOpenClose("isSelectStakeDrawerOpen")
   const slippageDrawer = useInnerOpenClose("isSlippageDrawerOpen")
+  const warningDrawer = useInnerOpenClose("isWarningDrawerOpen")
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
@@ -331,6 +338,7 @@ export const useBittensorBondWizard = () => {
     accountPicker,
     selectStakeDrawer,
     slippageDrawer,
+    warningDrawer,
     isFormValid,
     isSlippageValid,
     step,

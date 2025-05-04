@@ -2,9 +2,11 @@ import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useAppState } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -17,9 +19,13 @@ import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../../utils/constants"
 import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../BittensorSlippageDrawer"
+import { BittensorWarningDrawer } from "../Modals/BittensorWarningDrawer"
 
 export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
+  const [hideWarning] = useAppState("hideBittensorSubnetStakeWarning")
+  const [hasAckWarning, setHasAckWarning] = useState<boolean>(hideWarning || false)
+
   const {
     token,
     formatter,
@@ -31,6 +37,7 @@ export const BittensorSubnetBondReview = () => {
     netuid,
     feeToken,
     slippageDrawer,
+    warningDrawer,
     taoToAlphaSlippage,
     userMaxSlippage,
 
@@ -47,6 +54,7 @@ export const BittensorSubnetBondReview = () => {
   const { isLoading, subnetData } = useCombinedSubnetData()
 
   const { open } = slippageDrawer
+  const { open: openWarningDrawer } = warningDrawer
 
   const { subnet_name, symbol } = subnetData?.[netuid || 0] ?? {}
 
@@ -172,17 +180,23 @@ export const BittensorSubnetBondReview = () => {
         </div>
       </div>
       <div className="grow"></div>
-      {payload && (
-        <SapiSendButton
-          containerId="StakingModalDialog"
-          label={t("Stake")}
-          payload={payload}
-          onSubmitted={onSubmitted}
-          txMetadata={txMetadata}
-          disabled={isDisabled || !isSlippageValid}
-        />
-      )}
+      {payload &&
+        (!hasAckWarning ? (
+          <Button primary onClick={openWarningDrawer}>
+            {t("Confirm")}
+          </Button>
+        ) : (
+          <SapiSendButton
+            containerId="StakingModalDialog"
+            label={t("Stake")}
+            payload={payload}
+            onSubmitted={onSubmitted}
+            txMetadata={txMetadata}
+            disabled={isDisabled || !isSlippageValid}
+          />
+        ))}
       <BittensorSlippageDrawer />
+      <BittensorWarningDrawer setHasAckWarning={setHasAckWarning} />
     </div>
   )
 }
