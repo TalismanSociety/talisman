@@ -5,6 +5,7 @@ import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittens
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
 import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
+import { type StakeType } from "./useBittensorBondWizard"
 import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
 
 type GetStakeInfo = {
@@ -14,6 +15,8 @@ type GetStakeInfo = {
   netuid: number | null
   plancks: bigint | null
   chainId: ChainId | undefined
+  stakeType: StakeType
+  userMaxSlippage: number
 }
 
 export const useGetBittensorStakeInfo = ({
@@ -23,18 +26,22 @@ export const useGetBittensorStakeInfo = ({
   netuid,
   plancks,
   chainId,
+  stakeType,
+  userMaxSlippage,
 }: GetStakeInfo) => {
   const {
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
+    alphaPriceWithSlippage,
     isLoading: isDynamicInfoLoading,
     isError: isDynamicInfoError,
   } = useGetDynamicTaoStakeInfo({
     netuid,
     amount: plancks,
     direction: "taoToAlpha",
+    userMaxSlippage,
   })
   const { data: minJoinBond } = useGetMinJoinBond(chainId)
 
@@ -45,6 +52,10 @@ export const useGetBittensorStakeInfo = ({
     plancks,
     minJoinBond,
     isEnabled: true,
+    stakeType,
+    alphaPriceWithSlippage,
+    netuid,
+    talismanFee: taoToAlphaTalismanFee,
   })
 
   const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })

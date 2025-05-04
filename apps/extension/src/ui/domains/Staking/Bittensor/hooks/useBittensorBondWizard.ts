@@ -166,6 +166,8 @@ export const useBittensorBondWizard = () => {
     netuid,
     plancks,
     chainId: token?.chain?.id,
+    stakeType,
+    userMaxSlippage,
   })
 
   // TODO rename to amountToStake

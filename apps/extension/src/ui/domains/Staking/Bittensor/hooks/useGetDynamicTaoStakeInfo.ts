@@ -9,18 +9,25 @@ type GetDynamicTaoStakeInfoProps = {
   netuid: number | null
   amount: bigint | null
   direction: "taoToAlpha" | "alphaToTao"
+  userMaxSlippage: number
 }
 
 export const useGetDynamicTaoStakeInfo = ({
   netuid,
   // direction = "taoToAlpha",
   amount,
+  userMaxSlippage,
 }: GetDynamicTaoStakeInfoProps) => {
   const { data, isLoading, isError } = useGetSubnetMetagraphByNetuid({ netuid })
 
   const { alpha_out, alpha_in, tao_in } = data ?? {}
 
   const alphaPrice = useMemo(() => calculateAlphaPrice({ alpha_in, tao_in }), [alpha_in, tao_in])
+
+  const alphaPriceWithSlippage = useMemo(
+    () => alphaPrice * (1 + userMaxSlippage / 100),
+    [alphaPrice, userMaxSlippage],
+  )
 
   const taoToAlphaSlippage = useMemo(
     () => calculateSlippage({ alpha_out, tao_in, amount }),
@@ -53,6 +60,7 @@ export const useGetDynamicTaoStakeInfo = ({
   )
 
   return {
+    alphaPriceWithSlippage,
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
     isLoading,
