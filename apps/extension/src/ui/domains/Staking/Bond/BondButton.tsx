@@ -8,13 +8,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { type StakeType } from "../Bittensor/hooks/useBittensorBondWizard"
 import { useBondButton } from "./hooks/useBondButton"
 
-export const BondButton: FC<{ tokenId: TokenId; balances: Balances; stakeType?: StakeType }> = ({
-  tokenId,
-  balances,
-  stakeType,
-}) => {
+export const BondButton: FC<{
+  tokenId: TokenId
+  balances: Balances
+  stakeType?: StakeType
+  netuid?: number
+}> = ({ tokenId, balances, stakeType, netuid }) => {
   const { t } = useTranslation()
-  const { onClick, isNomPoolStaking } = useBondButton({ tokenId, balances, stakeType })
+  const { onClick, isNomPoolStaking } = useBondButton({ tokenId, balances, stakeType, netuid })
 
   if (!onClick) return null
 

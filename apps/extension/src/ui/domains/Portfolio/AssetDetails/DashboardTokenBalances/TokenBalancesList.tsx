@@ -35,6 +35,7 @@ type TokenBalancesListProps = {
   shouldDisplayActionBtns?: boolean
   shouldDisplayTotalAvailableBalance?: boolean
   stakeType?: StakeType
+  netuid?: number
 }
 
 export const TokenBalancesList = ({
@@ -54,6 +55,7 @@ export const TokenBalancesList = ({
   shouldDisplayActionBtns = true,
   shouldDisplayTotalAvailableBalance = true,
   stakeType,
+  netuid,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -112,7 +114,12 @@ export const TokenBalancesList = ({
         <div className="flex items-center justify-end">
           {tokenId && (
             <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
-              <BondButton tokenId={tokenId} balances={balances} stakeType={stakeType} />
+              <BondButton
+                tokenId={tokenId}
+                balances={balances}
+                stakeType={stakeType}
+                netuid={netuid}
+              />
             </div>
           )}
           <AssetBalanceCellValue

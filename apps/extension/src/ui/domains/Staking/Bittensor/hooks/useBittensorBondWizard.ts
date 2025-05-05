@@ -102,7 +102,13 @@ export const useResetBittensorBondWizard = () => {
     (
       init: Pick<
         WizardState,
-        "address" | "tokenId" | "poolId" | "step" | "isSelectStakeDrawerOpen" | "stakeType"
+        | "address"
+        | "tokenId"
+        | "poolId"
+        | "step"
+        | "isSelectStakeDrawerOpen"
+        | "stakeType"
+        | "netuid"
       >,
     ) => setWizardState({ ...DEFAULT_STATE, ...init }),
     [],
@@ -349,9 +355,7 @@ export const useBittensorBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
 
-    // TODO: revert payload comment to include inputErrorMessage
     payload: !inputErrorMessage && isFormValid ? payload : null,
-    // payload: isFormValid ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,

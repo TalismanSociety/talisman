@@ -20,6 +20,7 @@ export const useBittensorBondModal = () => {
       isSelectStakeDrawerOpen = false,
       stakeType = "root",
       step = "form",
+      netuid = null,
     }: {
       address: Address
       tokenId: TokenId
@@ -27,6 +28,7 @@ export const useBittensorBondModal = () => {
       isSelectStakeDrawerOpen?: boolean
       stakeType?: StakeType
       step?: WizardStep
+      netuid: number | null | undefined
     }) => {
       reset({
         address,
@@ -35,6 +37,7 @@ export const useBittensorBondModal = () => {
         step,
         stakeType,
         isSelectStakeDrawerOpen,
+        netuid,
       })
 
       innerOpen()

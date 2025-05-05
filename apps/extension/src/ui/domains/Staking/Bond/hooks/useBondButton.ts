@@ -14,10 +14,12 @@ export const useBondButton = ({
   tokenId,
   balances,
   stakeType = "root",
+  netuid,
 }: {
   tokenId: TokenId | null | undefined
   balances: Balances | null | undefined
   stakeType?: StakeType
+  netuid?: number
 }) => {
   const { genericEvent } = useAnalytics()
 
@@ -109,13 +111,14 @@ export const useBondButton = ({
           stakeType,
           isSelectStakeDrawerOpen: stakeType === "root",
           step: stakeType === "root" ? "form" : "subnet-form",
+          netuid,
         })
       } else {
         open(openArgs)
       }
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [openArgs, token?.chain?.id, genericEvent, handleOpenBittensorModal, stakeType, open],
+    [openArgs, token?.chain?.id, genericEvent, handleOpenBittensorModal, stakeType, open, netuid],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }
