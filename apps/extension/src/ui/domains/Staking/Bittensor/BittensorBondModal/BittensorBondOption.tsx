@@ -5,16 +5,16 @@ import { useTranslation } from "react-i18next"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state"
 
-import { BondOption as BondOptionType } from "../../../../hooks/bittensor/types"
+import { BondOption as BondOptionType } from "../../hooks/bittensor/types"
 
-type BondDrawerProps = {
+type BittensorBondOptionProps = {
   option: BondOptionType
   selectedPoolId: number | string | null | undefined
   handleSelectPoolId: (poolId: number | string) => void
   tokenId: string
 }
 
-export const BondOptionSkeleton = ({ isRecommended }: { isRecommended?: boolean }) => {
+export const BittensorBondOptionSkeleton = ({ isRecommended }: { isRecommended?: boolean }) => {
   return (
     <div className="bg-black-tertiary border-black-tertiary flex h-[6.7rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
       <div className="flex w-full justify-between">
@@ -32,12 +32,12 @@ export const BondOptionSkeleton = ({ isRecommended }: { isRecommended?: boolean 
   )
 }
 
-export const BondOption = ({
+export const BittensorBondOption = ({
   option,
   selectedPoolId,
   handleSelectPoolId,
   tokenId,
-}: BondDrawerProps) => {
+}: BittensorBondOptionProps) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const isSelected = option.poolId === selectedPoolId

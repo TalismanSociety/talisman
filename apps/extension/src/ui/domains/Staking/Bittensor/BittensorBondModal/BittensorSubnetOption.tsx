@@ -6,7 +6,7 @@ import { AssetPercentageChange } from "@ui/domains/Portfolio/AssetDetails/Dashbo
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useToken } from "@ui/state"
 
-type SubnetOptionProps = {
+type BittensorSubnetOptionProps = {
   option: SubnetData
   selectedNetuid: number | null | undefined
   tokenId: string
@@ -15,14 +15,14 @@ type SubnetOptionProps = {
   handleSelectSubnet: (subnetNetuid: number) => void
 }
 
-export const SubnetOption = ({
+export const BittensorSubnetOption = ({
   option,
   selectedNetuid,
   tokenId,
   isSubnetsLoading,
   isSubnetsError,
   handleSelectSubnet,
-}: SubnetOptionProps) => {
+}: BittensorSubnetOptionProps) => {
   const token = useToken(tokenId)
   const isSelected = option.netuid === selectedNetuid
 
@@ -75,7 +75,7 @@ export const SubnetOption = ({
   )
 }
 
-export const SubnetOptionSkeleton = () => {
+export const BittensorSubnetOptionSkeleton = () => {
   return (
     <div className="bg-black-tertiary border-black-tertiary flex h-[6.7rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
       <div className="flex w-full justify-between">

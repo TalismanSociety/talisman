@@ -10,7 +10,7 @@ import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { SubnetOption, SubnetOptionSkeleton } from "../SubnetOption"
+import { BittensorSubnetOption, BittensorSubnetOptionSkeleton } from "../BittensorSubnetOption"
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
@@ -21,11 +21,11 @@ export type SortMethod = {
 }
 
 const sortMethods: SortMethod[] = [
-  { label: "UID", value: "netuid" },
-  // { label: "Price", value: "price" },
-  { label: "Emission", value: "emission" },
-  { label: "TAO in Pool", value: "total_tao" },
   { label: "Alpha in Pool", value: "total_alpha" },
+  { label: "TAO in Pool", value: "total_tao" },
+  { label: "UID", value: "netuid" },
+  { label: "Emission", value: "emission" },
+  // { label: "Price", value: "price" },
 ]
 
 export const BittensorSubnetSelect = () => {
@@ -148,17 +148,17 @@ export const BittensorSubnetSelect = () => {
       <div className="space-y-[8px]">
         <div className="text-body-disabled flex justify-between px-[10px] text-sm">
           <div>{t("Name")}</div>
-          <div>{t("24h change")}</div>
+          <div>{t("Emission")}</div>
         </div>
         <ScrollContainer className="h-[29.5rem]" innerClassName="space-y-[0.8rem]">
           {isLoading && sortedOrFilteredSubnets.length === 0
             ? Array(6)
                 .fill(null)
                 .map((_, i) => {
-                  return <SubnetOptionSkeleton key={i} />
+                  return <BittensorSubnetOptionSkeleton key={i} />
                 })
             : sortedOrFilteredSubnets.map((option) => (
-                <SubnetOption
+                <BittensorSubnetOption
                   key={option.netuid!}
                   option={option}
                   selectedNetuid={selectedNetuid}
