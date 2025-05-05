@@ -117,19 +117,20 @@ export const BittensorSubnetBondReview = () => {
             </div>
           </div>
 
-          <div className="text-body flex items-center justify-between gap-8 pt-2 text-xs">
+          <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated amount")}</div>
             <Tokens
               amount={expectedAlphaWithSlippage}
               decimals={token?.decimals}
               symbol={`SN${netuid} ${subnet_name} ${symbol}`}
+              className="text-body"
             />
           </div>
         </div>
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
-          <div className="text-body flex items-center justify-between gap-8 pt-2 text-xs">
+          <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Conversion Rate")} </div>
-            <div className="flex items-center gap-2">
+            <div className="text-body flex items-center gap-2">
               <div>1 TAO =</div>
               <Tokens
                 amount={taoToAlphaConversionRate}
