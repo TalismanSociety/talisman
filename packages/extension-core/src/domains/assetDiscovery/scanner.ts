@@ -30,7 +30,7 @@ import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.ac
 import { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
 import { activeTokensStore } from "../tokens/store.activeTokens"
-import { registerMissingTokens } from "./registerMissingTokens"
+import { fetchMissingTokens } from "./fetchMissingTokens"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
 
@@ -263,7 +263,7 @@ class AssetDiscoveryScanner {
 
       log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
 
-      const foundTokenIds = await registerMissingTokens(scope.addresses)
+      const foundTokenIds = await fetchMissingTokens(scope.addresses)
 
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
