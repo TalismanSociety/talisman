@@ -20,6 +20,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
+import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
@@ -97,6 +98,7 @@ const Popup = () => {
         <BackupWarningDrawer />
         <LedgerPolkadotUpgradeAlertDrawer />
         <BondModal />
+        <BittensorBondModal />
         <UnbondModal />
         <NomPoolWithdrawModal />
       </Suspense>

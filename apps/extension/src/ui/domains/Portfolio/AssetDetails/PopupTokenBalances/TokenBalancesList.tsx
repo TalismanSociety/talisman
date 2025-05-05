@@ -6,6 +6,7 @@ import { ReactNode, Suspense } from "react"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 
 import { CopyAddressButton } from "../CopyAddressIconButton"
@@ -23,7 +24,8 @@ type TokenBalancesListProps = {
   assetPriceInfo?: ReactNode
   children: ReactNode
   shouldDisplayActionBtns?: boolean
-  shouldDisplayStakeBtn?: boolean // TODO: This prop should be removed once dTao stake is implemented
+  stakeType?: StakeType
+  netuid?: number
 }
 
 export const TokenBalancesList = ({
@@ -37,7 +39,8 @@ export const TokenBalancesList = ({
   assetPriceInfo,
   children,
   shouldDisplayActionBtns = true,
-  shouldDisplayStakeBtn = true,
+  stakeType,
+  netuid,
 }: TokenBalancesListProps) => {
   return (
     <div className={classNames("text-body-secondary text-sm")}>
@@ -70,10 +73,15 @@ export const TokenBalancesList = ({
             {networkType && <div>{networkType}</div>}
           </div>
         </div>
-        {tokenId && shouldDisplayStakeBtn && (
+        {tokenId && (
           <div className="size-[3.8rem] shrink-0 empty:hidden">
             <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <BondButton tokenId={tokenId} balances={balances} />
+              <BondButton
+                tokenId={tokenId}
+                balances={balances}
+                stakeType={stakeType}
+                netuid={netuid}
+              />
             </Suspense>
           </div>
         )}

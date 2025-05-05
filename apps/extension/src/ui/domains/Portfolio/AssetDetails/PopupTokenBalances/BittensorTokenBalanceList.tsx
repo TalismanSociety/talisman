@@ -96,6 +96,8 @@ export const BittensorTokenBalanceList = ({
 
   return (
     <TokenBalancesList
+      stakeType={isRootStake || isChainIfo ? "root" : "subnet"}
+      netuid={Number(listKey)}
       tokenId={tokenId}
       tokenLogoUrl={!isChainIfo && !isRootStake ? DTAO_LOGO : undefined}
       balances={balances}
