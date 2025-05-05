@@ -53,9 +53,9 @@ export const useGetDynamicTaoStakeInfo = ({
     () =>
       calculateExpectedAlpha({
         alphaPrice,
-        amount: Number((amount ?? 0n) / SCALE_FACTOR),
+        amount: Number(amount ?? 0n),
         slippage: taoToAlphaSlippage,
-      }),
+      }) / Number(SCALE_FACTOR),
     [alphaPrice, amount, taoToAlphaSlippage],
   )
 
@@ -130,6 +130,7 @@ const calculateExpectedAlpha = ({
   slippage: number
 }): number => {
   if (!amount || !alphaPrice) return 0
+
   const expectedAlpha = (amount / alphaPrice) * (1 - slippage / 100)
 
   return expectedAlpha
