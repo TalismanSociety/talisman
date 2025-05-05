@@ -29,7 +29,7 @@ import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "./ChainLogo"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
-import Tokens from "./Tokens"
+import { Tokens } from "./Tokens"
 import { TokenTypePill } from "./TokenTypePill"
 
 type TokenRowProps = {
@@ -232,7 +232,8 @@ type TokensListProps = {
   search?: string
   allowUntransferable?: boolean
   ownedOnly?: boolean
-  isRamp?: boolean
+  showEmptyBalances?: boolean
+  isInitializing?: boolean
   tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
@@ -243,7 +244,8 @@ const TokensList: FC<TokensListProps> = ({
   search,
   allowUntransferable,
   ownedOnly,
-  isRamp,
+  showEmptyBalances,
+  isInitializing,
   tokenFilter = DEFAULT_FILTER,
   onSelect,
 }) => {
@@ -352,48 +354,34 @@ const TokensList: FC<TokensListProps> = ({
     [currency, selected],
   )
 
-  const tokensRamp = useMemo<TokenData[]>(() => {
-    // if is not ramp return empty array
-    if (!isRamp) return []
-    const arAccountBalances = accountBalances.each
-
-    const tokensWithBalance = accountCompatibleTokens.map((t) => ({
-      ...t,
-      balances: new Balances(arAccountBalances.filter((b) => b.tokenId === t.id)),
-    }))
-
-    return sortTokens(tokensWithBalance)
-  }, [accountBalances.each, accountCompatibleTokens, isRamp, sortTokens])
-
   const tokensWithBalances = useMemo<TokenData[]>(() => {
-    // wait until balances are loaded, if isRamp return empty array
-    if (!accountBalances.count || isRamp) return []
+    // wait until balances are loaded, unless showEmptyBalances is true
+    if (!showEmptyBalances && !accountBalances.count) return []
 
     // the each property spreads the array under the hood, reuse the result to optimize performance for many accounts
-    const arAccountBalances = accountBalances.each
+    const accountBalancesEach = accountBalances.each
 
-    const tokensWithPosBalance = accountCompatibleTokens
-      .map((t) => ({
-        ...t,
-        balances: arAccountBalances.filter((b) => b.tokenId === t.id),
-      }))
-      .filter((t) => t.balances.some((bal) => bal.transferable.planck > 0n))
-      .map((t) => ({
-        ...t,
-        balances: new Balances(t.balances),
-      }))
+    const tokensWithPosBalance = accountCompatibleTokens.map((t) => ({
+      ...t,
+      balances: new Balances(accountBalancesEach.filter((b) => b.tokenId === t.id)),
+    }))
 
-    return sortTokens(tokensWithPosBalance)
-  }, [accountBalances.count, accountBalances.each, isRamp, accountCompatibleTokens, sortTokens])
+    if (showEmptyBalances) return sortTokens(tokensWithPosBalance)
+    return sortTokens(tokensWithPosBalance.filter((t) => t.balances.sum.planck.transferable > 0n))
+  }, [
+    accountBalances.count,
+    accountBalances.each,
+    showEmptyBalances,
+    accountCompatibleTokens,
+    sortTokens,
+  ])
 
   // apply user search
   const tokens = useMemo(() => {
-    const tokenList = isRamp ? tokensRamp : tokensWithBalances
-
-    if (!search) return tokenList
+    if (!search) return tokensWithBalances
 
     const ls = search?.toLowerCase()
-    return tokenList
+    return tokensWithBalances
       .filter(
         (t) =>
           !ls ||
@@ -407,7 +395,7 @@ const TokensList: FC<TokensListProps> = ({
         if (s1 !== ls && s2 === ls) return 1
         return 0
       })
-  }, [isRamp, search, tokensRamp, tokensWithBalances])
+  }, [search, tokensWithBalances])
 
   const handleTokenClick = useCallback(
     (tokenId: string) => {
@@ -418,7 +406,7 @@ const TokensList: FC<TokensListProps> = ({
 
   return (
     <div className="min-h-full">
-      {accountBalances.count || (isRamp && tokens.length > 0) ? (
+      {(accountBalances.count || (showEmptyBalances && tokens.length > 0)) && !isInitializing ? (
         <>
           <TokenRows
             tokens={tokens}
@@ -433,7 +421,7 @@ const TokensList: FC<TokensListProps> = ({
             </div>
           )}
         </>
-      ) : isBalancesInitializing ? (
+      ) : isBalancesInitializing || isInitializing ? (
         <>
           <TokenRowSkeleton />
           <TokenRowSkeleton />
@@ -460,8 +448,9 @@ type TokenPickerProps = {
   initialSearch?: string
   allowUntransferable?: boolean
   ownedOnly?: boolean
+  isInitializing?: boolean
   className?: string
-  isRamp?: boolean
+  showEmptyBalances?: boolean
   tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
@@ -472,8 +461,9 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   initialSearch = "",
   allowUntransferable,
   ownedOnly,
+  isInitializing,
   className,
-  isRamp,
+  showEmptyBalances,
   tokenFilter,
   onSelect,
 }) => {
@@ -501,9 +491,10 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           search={deferredSearch}
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}
+          isInitializing={isInitializing}
           tokenFilter={tokenFilter}
           onSelect={onSelect}
-          isRamp={isRamp}
+          showEmptyBalances={showEmptyBalances}
         />
       </ScrollContainer>
     </div>

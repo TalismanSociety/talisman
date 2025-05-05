@@ -12,24 +12,28 @@ DSA	        Various	    Bitcoin (legacy), Openchain
 Schnorr	    secp521r1	Bitcoin (experimental/future), Ethereum 2.0 (potential use)
 */
 
+// NOTE: Each item is a combination of algorithm (e.g. ECDSA) and curve (e.g. secp256k1)
 export type KeypairCurve =
   | "ecdsa" // polkadot - ECDSA / secp256k1 - substrate derivation
   | "ed25519" // polkadot - EdDSA / Ed25519 - substrate derivation
-  | "sr25519" //polkadot - EdDSA / Sr25519 - substrate derivation
+  | "sr25519" // polkadot - EdDSA / Sr25519 - substrate derivation
   | "ethereum" // ethereum - ECDSA / secp256k1 - bip32 derivation
+  | "bitcoin-ed25519" // bitcoin - X / Ed25519
+  | "bitcoin-ecdsa" // bitcoin - ECDSA / secp256k1
   | "solana" // solana - EdDSA / Ed25519 - ed25519 derivation
 
 // SS58: polkadot-sdk (stands for Substrate Standard 58, expects a network specific prefix)
 // H160: ethereum
-// Base58: solana
 // Base58Check: p2pkh and p2sh addresses for bitcoin
 // Bech32: bitcoin (segwit)
+// Base58: solana
 export type AddressEncoding =
   | "ss58" // polkadot
   | "ethereum" // ethereum (h160 + ethereum specific checksum)
+  | "bech32m" // bitcoin (taproot, bc1p...)
+  | "bech32" // bitcoin (native segwit, bc1...)
+  | "base58check" // bitcoin (legacy p2pkh (original format, 1...) and p2sh (wrapped segwit, 3...))
   | "base58" // solana
-// | "Base58Check" // p2pkh and p2sh addresses for bitcoin
-// | "Bech32"; // bitcoin (segwit)
 
 export type Keypair = {
   type: KeypairCurve
@@ -38,4 +42,4 @@ export type Keypair = {
   address: string
 }
 
-export type Platform = "ethereum" | "polkadot" | "solana"
+export type Platform = "ethereum" | "polkadot" | "bitcoin" | "solana"

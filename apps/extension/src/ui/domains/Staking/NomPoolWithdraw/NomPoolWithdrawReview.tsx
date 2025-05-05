@@ -1,6 +1,5 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
@@ -82,19 +81,14 @@ export const NomPoolWithdrawReview = () => {
           <div>{errorMessage}</div>
         </div>
       )}
-      {payload ? (
-        <SapiSendButton
-          containerId="StakingModalDialog"
-          label={t("Withdraw")}
-          payload={payload}
-          onSubmitted={onSubmitted}
-          txMetadata={txMetadata}
-        />
-      ) : (
-        <Button disabled primary>
-          {t("Withdraw")}
-        </Button>
-      )}
+      <SapiSendButton
+        containerId="StakingModalDialog"
+        label={t("Withdraw")}
+        loading={!payload}
+        payload={payload ?? undefined}
+        onSubmitted={onSubmitted}
+        txMetadata={txMetadata}
+      />
     </div>
   )
 }

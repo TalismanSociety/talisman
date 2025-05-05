@@ -1,12 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import {
-  EvmWalletTransaction,
-  isAcalaEvmPlus,
-  SubWalletTransaction,
-  WalletTransaction,
-} from "extension-core"
+import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
@@ -31,6 +26,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation("send-funds")
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
+  const evmNetwork = useEvmNetwork(tx.networkType === "evm" ? tx.evmNetworkId : null)
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
@@ -45,8 +41,8 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     [gotoProgress, tx],
   )
 
-  if (tx.networkType === "evm" && isAcalaEvmPlus(tx.evmNetworkId)) return null
   if (tx.status !== "pending" || tx.networkType !== "evm") return null
+  if (evmNetwork?.preserveGasEstimate) return null
 
   return (
     <>

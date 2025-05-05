@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.1
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+
 ## 0.1.0
 
 ### Minor Changes

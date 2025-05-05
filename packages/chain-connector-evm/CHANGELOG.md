@@ -1,5 +1,26 @@
 # @talismn/chain-connector-evm
 
+## 0.10.0
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [6c25807]
+- Updated dependencies [ee16dc6]
+- Updated dependencies [f33ab10]
+  - @talismn/chaindata-provider@0.10.0
+  - @talismn/util@0.4.0
+
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [ae7f0ac]
+- Updated dependencies [e704203]
+- Updated dependencies [71f6dbd]
+  - @talismn/chaindata-provider@0.9.0
+  - @talismn/util@0.3.2
+
 ## 0.8.4
 
 ### Patch Changes

@@ -1,8 +1,10 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
 
 import { StorageProvider } from "../../libs/Store"
 import {
   addAccount,
+  recGetAllAddresses,
   removeAccount,
   RequestAccountsCatalogAction,
   runActionsOnTrees,
@@ -51,10 +53,12 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    *
    * If all of the given accounts are already in the catalog, this method will noop.
    */
-  addAccounts = async (accounts: Account[]) =>
-    await this.withTrees((trees) =>
-      accounts
-        .filter(isAccountNotContact)
+  syncAccounts = async (accounts: Account[]) =>
+    await this.withTrees((trees) => {
+      const validAccounts = accounts.filter(isAccountNotContact)
+
+      // add missing accounts
+      const hasAdded = validAccounts
         .map((account) => {
           const [addTree, rmTree] = isAccountPortfolio(account)
             ? [trees.portfolio, trees.watched]
@@ -68,28 +72,25 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         .some((status) => {
           // if any accounts were added or removed, inform the store that a change was made
           return status === true
-        }),
-    )
-
-  /**
-   * This method should be called with any deleted addresses each time an account is removed from the keyring.
-   *
-   * This will ensure that the catalog and the keyring stay in sync.
-   */
-  removeAccounts = async (addresses: string[]) =>
-    await this.withTrees((trees) =>
-      addresses
-        .map((address) => {
-          const portfolioRemoved = removeAccount(trees.portfolio, address)
-          const watchedRemoved = removeAccount(trees.watched, address)
-
-          return portfolioRemoved || watchedRemoved
         })
-        .some((status) => {
-          // if any accounts were removed, inform the store that a change was made
-          return status === true
-        }),
-    )
+
+      // remove items that dont match any account
+      const validAddresses = validAccounts.map((a) => a.address)
+      const hasRemoved = [trees.portfolio, trees.watched]
+        .map((tree) => {
+          const treeAddresses = recGetAllAddresses(tree)
+          const removeAddresses = treeAddresses.filter(
+            (ta) => !validAddresses.some((va) => isAddressEqual(ta, va)),
+          )
+          if (!removeAddresses.length) return false
+
+          removeAddresses.forEach((a) => removeAccount(tree, a))
+          return true
+        })
+        .some((hasRemoved) => hasRemoved)
+
+      return hasAdded || hasRemoved
+    })
 
   /**
    * A helper method on this store.

@@ -17,6 +17,7 @@ class ActiveChainsStore extends StorageProvider<ActiveChains> {
 
   async setActive(networkId: ChainId, active: boolean) {
     const activeNetworks = await this.get()
+    if (activeNetworks[networkId] === active) return
     await this.set({ ...activeNetworks, [networkId]: active })
   }
 

@@ -105,5 +105,3 @@ export const Tokens: FC<TokensProps> = ({
     </Component>
   )
 }
-
-export default Tokens

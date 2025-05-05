@@ -28,6 +28,7 @@ export type AppStoreData = {
   analyticsRequestShown: boolean
   analyticsReportCreatedAt?: number
   analyticsReport?: GeneralReport
+  lastWalletUpgradedEvent?: string
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   needsSpiritKeyUpdate: boolean
@@ -38,11 +39,14 @@ export type AppStoreData = {
   hideManageAccountsWelcome?: boolean
   hideBittensorSubnetStakeWarning?: boolean
   hideGetStarted?: boolean
+
+  // dismissed banners
   hideUnifiedAddressBanner?: boolean
+  hideAutonomysQuestBanner?: boolean
+  hideBackupReminderBanner?: boolean
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
-  hideBackupReminderBanner?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -121,6 +125,7 @@ if (DEBUG) {
       hideBittensorSubnetStakeWarning: false,
       hideGetStarted: false,
       hideUnifiedAddressBanner: false,
+      hideAutonomysQuestBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

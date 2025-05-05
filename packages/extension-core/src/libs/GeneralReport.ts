@@ -3,6 +3,7 @@ import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
 
+import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
@@ -31,8 +32,7 @@ let isBuildingReport = false
 // This should get sent at most once per 24 hours, whenever any other events get sent
 //
 export async function withGeneralReport(properties?: PostHogCaptureProperties) {
-  // If a report has been created but not yet submitted,
-  // this function will attach it to the pending event's properties
+  // if a report has been created but not yet submitted, this function will attach it to the pending event's properties
   const includeExistingReportInProperties = async () => {
     const analyticsReport = await appStore.get("analyticsReport")
     if (!analyticsReport) return
@@ -41,46 +41,72 @@ export async function withGeneralReport(properties?: PostHogCaptureProperties) {
     properties = { ...properties, $set: { ...(properties?.$set ?? {}), ...analyticsReport } }
   }
 
-  // If we've not created a report before, or if it has been REPORTING_PERIOD ms since we last created a report,
-  // this function will spawn an async task to create a new report in the background.
-  const spawnTaskToCreateNewReport = async () => {
-    const analyticsReportCreatedAt = await appStore.get("analyticsReportCreatedAt")
-
-    // if the wallet has already created a report, do nothing when the time since the last report is less than REPORTING_PERIOD
-    const hasCreatedReport = typeof analyticsReportCreatedAt === "number"
-    const timeSinceReportCreated = hasCreatedReport ? Date.now() - analyticsReportCreatedAt : 0
-    if (hasCreatedReport && timeSinceReportCreated < REPORTING_PERIOD) return
-
-    // if we're already creating a report (in response to an event which happened before this one)
-    // then don't try to build another one at the same time
-    if (isBuildingReport) return
-    isBuildingReport = true
-
-    // spawn async task (don't wait for it to complete before continuing)
-    ;(async () => {
-      try {
-        const analyticsReport = await getGeneralReport()
-
-        // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
-        if (analyticsReport === undefined) return
-
-        await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
-      } catch (cause) {
-        console.warn("Failed to build general report", { cause }) // eslint-disable-line no-console
-      } finally {
-        // set this flag back to false so we don't block the next report
-        isBuildingReport = false
-      }
-    })()
-  }
-
+  // if a report has already been created, include it in the event properties
   await includeExistingReportInProperties()
+
+  // if it has been at least REPORTING_PERIOD ms since the last report was created, create a new report
   await spawnTaskToCreateNewReport()
 
   return properties
 }
 
-async function getGeneralReport() {
+// If we've not created a report before, or if it has been REPORTING_PERIOD ms since we last created a report,
+// this function will spawn an async task to create a new report in the background.
+export const spawnTaskToCreateNewReport = async ({
+  refreshBalances = true,
+  waitForReportCreated,
+}: {
+  /**
+   * If true or unset, the user's portfolio balances will be fetched from the chain before creating the new report.
+   * If false, the existing balances cached will be used instead.
+   */
+  refreshBalances?: boolean
+  /** If `waitForReportCreated` is true, this function won't resolve until the report has been created */
+  waitForReportCreated?: boolean
+} = {}) => {
+  const analyticsReportCreatedAt = await appStore.get("analyticsReportCreatedAt")
+
+  // if the wallet has already created a report, do nothing when the time since the last report is less than REPORTING_PERIOD
+  const hasCreatedReport = typeof analyticsReportCreatedAt === "number"
+  const timeSinceReportCreated = hasCreatedReport ? Date.now() - analyticsReportCreatedAt : 0
+  if (hasCreatedReport && timeSinceReportCreated < REPORTING_PERIOD) return
+
+  // if we're already creating a report (in response to an event which happened before this one)
+  // then don't try to build another one at the same time
+  if (isBuildingReport) return
+  isBuildingReport = true
+
+  // spawn async task (don't wait for it to complete before continuing)
+  const reportComplete = (async () => {
+    try {
+      const analyticsReport = await getGeneralReport({ refreshBalances })
+
+      // don't include general report if user is onboarding/has analytics turned off/other short-circuit conditions
+      if (analyticsReport === undefined) return
+
+      await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
+    } catch (cause) {
+      const error = new Error("Failed to build general report", { cause })
+      console.warn(error) // eslint-disable-line no-console
+      sentry.captureException(error)
+    } finally {
+      // set this flag back to false so we don't block the next report
+      isBuildingReport = false
+    }
+  })()
+
+  if (waitForReportCreated) await reportComplete
+}
+
+async function getGeneralReport({
+  refreshBalances = true,
+}: {
+  /**
+   * If true or unset, the user's portfolio balances will be fetched from the chain before creating the new report.
+   * If false, the existing balances cached will be used instead.
+   */
+  refreshBalances?: boolean
+} = {}) {
   const [allowTracking, onboarded] = await Promise.all([
     settingsStore.get("useAnalyticsTracking"),
     appStore.getIsOnboarded(),
@@ -98,49 +124,56 @@ async function getGeneralReport() {
   const ownedAddresses = ownedAccounts.map((account) => account.address)
   const ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
+  // Don't create report if user doesn't have any accounts.
+  // Prevents us from overriding a previous report for users who have upgraded to the latest
+  // version of the wallet, but have not yet logged in to run the keyring migration.
+  if (ownedAccountsCount < 1) return
+
   const watchedAccounts = accounts.filter((acc) => !isAccountOwned(acc))
   const watchedAccountsCount = watchedAccounts.length
 
-  let disconnect!: () => void
-  try {
-    // create token balances / nft subscriptions, and wait for the pool to settle
-    // this ensures that we have up-to-date information for the report
-    const onDisconnected = new Promise<void>((resolve) => {
-      let hasDisconnected = false
-      disconnect = () => {
-        if (hasDisconnected) return
-        hasDisconnected = true
-        resolve()
-      }
-    })
+  if (refreshBalances) {
+    let disconnect!: () => void
+    try {
+      // create token balances / nft subscriptions, and wait for the pool to settle
+      // this ensures that we have up-to-date information for the report
+      const onDisconnected = new Promise<void>((resolve) => {
+        let hasDisconnected = false
+        disconnect = () => {
+          if (hasDisconnected) return
+          hasDisconnected = true
+          resolve()
+        }
+      })
 
-    let balancesLive = false
-    let nftsLive = false
+      let balancesLive = false
+      let nftsLive = false
 
-    // token balances
-    const subscriptionId = "ANALYTICS-GENERAL-REPORT"
-    balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
-      if (response.status !== "live") return
-      balancesLive = true
-      if (!nftsLive) return
+      // token balances
+      const subscriptionId = "ANALYTICS-GENERAL-REPORT"
+      balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
+        if (response.status !== "live") return
+        balancesLive = true
+        if (!nftsLive) return
+        disconnect()
+      })
+      // nfts
+      const unsubNfts = subscribeNfts((data) => {
+        if (data.status !== "loaded") return
+        nftsLive = true
+        if (!balancesLive) return
+        disconnect()
+      })
+      onDisconnected.then(() => unsubNfts())
+      // timeout (don't wait forever for all token balances and nfts to be live)
+      await sleep(30_000).then(disconnect)
+
+      // wait for live token balances & nfts, or timeout to complete
+      await onDisconnected
+    } finally {
+      // if anything throws, make sure we shut down all the subscriptions we opened
       disconnect()
-    })
-    // nfts
-    const unsubNfts = subscribeNfts((data) => {
-      if (data.status !== "loaded") return
-      nftsLive = true
-      if (!balancesLive) return
-      disconnect()
-    })
-    onDisconnected.then(() => unsubNfts())
-    // timeout (don't wait forever for all token balances and nfts to be live)
-    await sleep(30_000).then(disconnect)
-
-    // wait for live token balances & nfts, or timeout to complete
-    await onDisconnected
-  } finally {
-    // if anything throws, make sure we shut down all the subscriptions we opened
-    disconnect()
+    }
   }
 
   // account type breakdown
@@ -187,7 +220,7 @@ async function getGeneralReport() {
     throw error
   }
 
-  // balances top 20 tokens/networks
+  // balances top 100 tokens/networks
   const TOP_BALANCES_COUNT = 100
   // get balance list per chain/evmNetwork and token
   const balancesPerChainToken = groupBy(
@@ -204,21 +237,63 @@ async function getGeneralReport() {
   const sortedFiatSumPerChainToken = Object.values(balancesPerChainToken)
     .map((balances) => new Balances(balances, { chains, evmNetworks, tokens, tokenRates }))
     .map((balances) => ({
-      balance: balances.sum.fiat("usd").total,
+      totalBalance: balances.sum.fiat("usd").total,
+      transferableBalance: balances.sum.fiat("usd").transferable,
+      unavailableBalance: balances.sum.fiat("usd").unavailable,
       numAccounts: new Set(balances.each.map((b) => b.address)).size,
       chainId: balances.sorted[0].chainId ?? balances.sorted[0].evmNetworkId,
       tokenId: balances.sorted[0].tokenId,
       symbol: balances.sorted[0].token?.symbol,
     }))
-    .sort((a, b) => b.balance - a.balance)
+    .sort((a, b) => b.totalBalance - a.totalBalance)
 
   const totalFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").total)
+  const transferableFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").transferable)
+  const unavailableFiatValue = privacyRoundCurrency(balances.sum.fiat("usd").unavailable)
+
   const tokensBreakdown = sortedFiatSumPerChainToken
-    .filter((token, index) => token.balance > 1 || index < TOP_BALANCES_COUNT)
-    .map((token) => ({ ...token, balance: privacyRoundCurrency(token.balance) }))
+    .filter((token, index) => token.totalBalance > 1 || index < TOP_BALANCES_COUNT)
+    .map((token) => ({
+      ...token,
+      balance: privacyRoundCurrency(token.totalBalance),
+      totalBalance: privacyRoundCurrency(token.totalBalance),
+      transferableBalance: privacyRoundCurrency(token.transferableBalance),
+      unavailableBalance: privacyRoundCurrency(token.unavailableBalance),
+    }))
+
+  const unroundedEcosystemBreakdown = sortedFiatSumPerChainToken
+    .filter((token, index) => token.totalBalance > 1 || index < TOP_BALANCES_COUNT)
+    .reduce(
+      (acc, token) => {
+        if (!token.chainId) return acc
+
+        const eco = chains[token.chainId] ? acc.dot : evmNetworks[token.chainId] ? acc.eth : null
+        if (!eco) return acc
+
+        eco.totalBalance += token.totalBalance
+        eco.transferableBalance += token.transferableBalance
+        eco.unavailableBalance += token.unavailableBalance
+
+        return acc
+      },
+      {
+        dot: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
+        eth: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
+      },
+    )
+  const ecosystemBreakdown = Object.fromEntries(
+    Object.entries(unroundedEcosystemBreakdown).map(([eco, totals]) => [
+      eco,
+      {
+        totalBalance: privacyRoundCurrency(totals.totalBalance),
+        transferableBalance: privacyRoundCurrency(totals.transferableBalance),
+        unavailableBalance: privacyRoundCurrency(totals.unavailableBalance),
+      },
+    ]),
+  )
 
   const topChainTokens = sortedFiatSumPerChainToken
-    .filter(({ balance }) => balance > 0)
+    .filter(({ totalBalance }) => totalBalance > 0)
     .map(({ chainId, tokenId }) => ({ chainId, tokenId }))
     .slice(0, 5)
 
@@ -266,7 +341,10 @@ async function getGeneralReport() {
 
     // tokens
     totalFiatValue,
+    transferableFiatValue,
+    unavailableFiatValue,
     tokens: tokensBreakdown,
+    ecosystems: ecosystemBreakdown,
     topChainTokens,
     topToken,
     numTokens,

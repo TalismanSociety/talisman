@@ -19,6 +19,7 @@ export const getAccountKeypairType = (account: Account): KeypairType => {
       // it is not possible to determine the curve of a polkadot address, assume sr25519
       return isEthereumAddress(account.address) ? "ethereum" : "sr25519"
     default:
-      throw new Error("Unsupported account type")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw new Error(`Unsupported account type '${(account as any).type}'`)
   }
 }

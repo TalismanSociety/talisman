@@ -1,6 +1,6 @@
 import { AnyBalanceModule, defaultBalanceModules, Hydrate } from "@talismn/balances"
 import { ChainId, TokenId } from "@talismn/chaindata-provider"
-import { CoingeckoConfig, DEFAULT_COINGECKO_CONFIG } from "@talismn/token-rates"
+import { CoinsApiConfig, DEFAULT_COINSAPI_CONFIG } from "@talismn/token-rates"
 import { atom } from "jotai"
 
 export const balanceModuleCreatorsAtom =
@@ -8,16 +8,13 @@ export const balanceModuleCreatorsAtom =
 
 export const onfinalityApiKeyAtom = atom<string | undefined>(undefined)
 
-const innerCoingeckoConfigAtom = atom<CoingeckoConfig>(DEFAULT_COINGECKO_CONFIG)
-export const coingeckoConfigAtom = atom<CoingeckoConfig, [Partial<CoingeckoConfig>], void>(
-  (get) => get(innerCoingeckoConfigAtom),
-  (_get, set, options) => {
-    const apiUrl = options.apiUrl ?? DEFAULT_COINGECKO_CONFIG.apiUrl
-    const apiKeyName = options.apiKeyName ?? DEFAULT_COINGECKO_CONFIG.apiKeyName
-    const apiKeyValue = options.apiKeyValue ?? DEFAULT_COINGECKO_CONFIG.apiKeyValue
-
-    set(innerCoingeckoConfigAtom, { apiUrl, apiKeyName, apiKeyValue })
-  },
+const innerCoinsApiConfigAtom = atom<CoinsApiConfig>(DEFAULT_COINSAPI_CONFIG)
+export const coinsApiConfigAtom = atom<CoinsApiConfig, [Partial<CoinsApiConfig>], void>(
+  (get) => get(innerCoinsApiConfigAtom),
+  (_get, set, options) =>
+    set(innerCoinsApiConfigAtom, {
+      apiUrl: options.apiUrl ?? DEFAULT_COINSAPI_CONFIG.apiUrl,
+    }),
 )
 
 export const enableTestnetsAtom = atom<boolean>(false)

@@ -207,7 +207,7 @@ export default class AccountsHandler extends ExtensionHandler {
     this.stores.sites.forgetAccount(address)
 
     // remove from accounts catalog store (sorting, folders)
-    this.stores.accountsCatalog.removeAccounts([address])
+    this.stores.accountsCatalog.syncAccounts(await keyringStore.getAccounts())
 
     return true
   }

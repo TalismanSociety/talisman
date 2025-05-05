@@ -1,6 +1,5 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
@@ -89,19 +88,14 @@ export const UnbondReview = () => {
           <div>{errorMessage}</div>
         </div>
       )}
-      {payload ? (
-        <SapiSendButton
-          containerId="StakingModalDialog"
-          label={t("Unbond")}
-          payload={payload}
-          onSubmitted={onSubmitted}
-          txMetadata={txMetadata}
-        />
-      ) : (
-        <Button disabled primary>
-          {t("Unbond")}
-        </Button>
-      )}
+      <SapiSendButton
+        containerId="StakingModalDialog"
+        label={t("Unbond")}
+        loading={!payload}
+        payload={payload ?? undefined}
+        onSubmitted={onSubmitted}
+        txMetadata={txMetadata}
+      />
     </div>
   )
 }

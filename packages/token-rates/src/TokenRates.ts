@@ -16,18 +16,18 @@ export class TokenRatesError extends Error {
   }
 }
 
-const ALL_CURRENCY_IDS = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
+export const ALL_CURRENCY_IDS = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
 export type CoinsApiConfig = {
   apiUrl: string
 }
 
-export const DEFAULT_COINAPI_CONFIG: CoinsApiConfig = {
+export const DEFAULT_COINSAPI_CONFIG: CoinsApiConfig = {
   apiUrl: "https://coins.talisman.xyz",
 }
 export async function fetchTokenRates(
   tokens: Record<TokenId, Token>,
   currencyIds: TokenRateCurrency[] = ALL_CURRENCY_IDS,
-  config: CoinsApiConfig = DEFAULT_COINAPI_CONFIG,
+  config: CoinsApiConfig = DEFAULT_COINSAPI_CONFIG,
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)

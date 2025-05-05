@@ -46,9 +46,10 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
-import { BackupReminderBanner } from "../../components/BackupReminderBanner"
+import { AutonomysQuestBanner } from "../../components/banners/AutonomysQuestBanner"
+import { BackupReminderBanner } from "../../components/banners/BackupReminderBanner"
+import { UnifiedAddressInfoBanner } from "../../components/banners/UnifiedAddressInfoBanner"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
-import { UnifiedAddressInfoBanner } from "../../components/UnifiedAddressInfoBanner"
 
 const portfolioAccountsSearch$ = new BehaviorSubject("")
 
@@ -300,6 +301,7 @@ const Accounts = ({
       ) : (
         <>
           <AllAccountsHeader accounts={accounts} />
+          <AutonomysQuestBanner />
           <BackupReminderBanner />
           <NewFeaturesButton />
           <UnifiedAddressInfoBanner />

@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { SignerPayloadJSON } from "extension-core"
+import { SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 
 import PortMessageService from "@common/PortMessageService"
 
@@ -233,18 +233,20 @@ export const api: MessageTypes = {
     }),
 
   // eth related messages
-  ethSignAndSend: (evmNetworkId, unsigned, transferInfo) =>
+  ethSignAndSend: (evmNetworkId, unsigned, transferInfo, txInfo) =>
     messageService.sendMessage("pri(eth.signing.signAndSend)", {
       evmNetworkId,
       unsigned,
       transferInfo,
+      txInfo,
     }),
-  ethSendSigned: (evmNetworkId, unsigned, signed, transferInfo) =>
+  ethSendSigned: (evmNetworkId, unsigned, signed, transferInfo, txInfo) =>
     messageService.sendMessage("pri(eth.signing.sendSigned)", {
       evmNetworkId,
       unsigned,
       signed,
       transferInfo,
+      txInfo,
     }),
   ethApproveSign: (id) =>
     messageService.sendMessage("pri(eth.signing.approveSign)", {
@@ -299,10 +301,11 @@ export const api: MessageTypes = {
       params,
       isCacheable,
     }) as Promise<T>,
-  subSubmit: (payload: SignerPayloadJSON, signature?: HexString) =>
+  subSubmit: (payload: SignerPayloadJSON, signature?: HexString, txInfo?: WalletTransactionInfo) =>
     messageService.sendMessage("pri(substrate.rpc.submit)", {
       payload,
       signature,
+      txInfo,
     }),
   subChainMetadata: (genesisHash, specVersion, blockHash) =>
     messageService.sendMessage("pri(substrate.metadata.get)", {

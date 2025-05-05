@@ -13,6 +13,7 @@ import {
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
+import { sleep } from "@talismn/util"
 import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,6 +25,7 @@ import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
@@ -81,15 +83,21 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleSwapClick = useCallback(() => {
+  const canSwap = useFeatureFlag("SWAPS")
+  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const handleSwapClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
       action: "Swap button",
     })
-    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-    window.close()
-  }, [])
+
+    if (!canSwap) return window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"), window.close()
+
+    await openSwapTokensModal()
+    await sleep(150)
+    close()
+  }, [canSwap, close, openSwapTokensModal])
 
   const { allBackedUp } = useMnemonicBackup()
   const handleBackupClick = useCallback(() => {
@@ -165,7 +173,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
               <span className="flex items-center gap-2">
                 {t("Swap")}
-                <ExternalLinkIcon />
+                {!canSwap && <ExternalLinkIcon />}
               </span>
             </NavItem>
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>

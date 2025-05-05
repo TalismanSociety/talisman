@@ -6,7 +6,7 @@ import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
-import Tokens from "./Tokens"
+import { Tokens } from "./Tokens"
 
 type TokensAndFiatProps = {
   planck?: string | bigint

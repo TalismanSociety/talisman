@@ -155,9 +155,13 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
       <Suspense fallback={<SuspenseTracker name="Background" />}>
         <Background />
         <HideBalancesToggle />
+        <VersionInfo />
       </Suspense>
       <PopupContent
-        className={classNames("z-10 pt-32 text-center", isSubmitting && "animate-pulse")}
+        className={classNames(
+          "z-10 select-none pt-32 text-center",
+          isSubmitting && "animate-pulse",
+        )}
       >
         <div className="mt-[60px]">
           <HandMonoLogo className="inline-block text-[64px]" />
@@ -248,4 +252,23 @@ const useDevModeAutologin = ({
     autologinTriggered.current = true
     handleSubmit(submit)()
   }, [handleSubmit, passwordField, submit])
+}
+
+const VersionInfo = () => {
+  const [clickCount, setClickCount] = useState(0)
+
+  const handleClick = useCallback(() => {
+    if (clickCount === 9) window.open("./support.html", "_blank")
+    else setClickCount((prev) => prev + 1)
+  }, [clickCount])
+
+  return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div
+      onClick={handleClick}
+      className="bg-primary/10 text-primary/80 absolute left-10 top-10 z-20 flex h-14 select-none items-center justify-center rounded-full px-4 text-sm"
+    >
+      v{process.env.VERSION}
+    </div>
+  )
 }

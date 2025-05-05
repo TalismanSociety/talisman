@@ -1,5 +1,25 @@
 # @talismn/chaindata-provider
 
+## 0.10.0
+
+### Minor Changes
+
+- ee16dc6: feat: preserveGasEstimate on EvmNetwork
+
+### Patch Changes
+
+- 6c25807: generate init data
+
+## 0.9.0
+
+### Minor Changes
+
+- 71f6dbd: deprecate sortIndex properties
+
+### Patch Changes
+
+- ae7f0ac: generate init data
+
 ## 0.8.4
 
 ### Patch Changes

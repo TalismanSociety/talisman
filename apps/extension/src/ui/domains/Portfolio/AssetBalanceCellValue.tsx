@@ -7,7 +7,7 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
 import { Fiat } from "../Asset/Fiat"
-import Tokens from "../Asset/Tokens"
+import { Tokens } from "../Asset/Tokens"
 import { StaleBalancesIcon } from "./StaleBalancesIcon"
 
 type Props = {
