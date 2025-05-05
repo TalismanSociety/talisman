@@ -231,6 +231,7 @@ type TokensListProps = {
   search?: string
   allowUntransferable?: boolean
   ownedOnly?: boolean
+  activeOnly?: boolean
   showEmptyBalances?: boolean
   isInitializing?: boolean
   tokenFilter?: (token: Token) => boolean
@@ -243,6 +244,7 @@ const TokensList: FC<TokensListProps> = ({
   search,
   allowUntransferable,
   ownedOnly,
+  activeOnly = true,
   showEmptyBalances,
   isInitializing,
   tokenFilter = DEFAULT_FILTER,
@@ -250,10 +252,10 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
-  const chains = useChains({ activeOnly: true, includeTestnets: true })
-  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
-  const allTokens = useTokens({ activeOnly: true, includeTestnets: true })
+  const chains = useChains({ activeOnly, includeTestnets: true })
+  const chainsMap = useChainsMap({ activeOnly, includeTestnets: true })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly, includeTestnets: true })
+  const allTokens = useTokens({ activeOnly, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
   const isBalancesInitializing = useIsBalanceInitializing()
@@ -493,6 +495,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           tokenFilter={tokenFilter}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
+          activeOnly={!showEmptyBalances}
         />
       </ScrollContainer>
     </div>
