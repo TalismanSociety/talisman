@@ -1,15 +1,19 @@
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
-import { useBittensorBondWizard } from "../../../hooks/useBittensorBondWizard"
+import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 
-type SelectStakeDrawer = {
+type BittensorSelectStakeDrawerProps = {
   containerId: string | undefined
   isOpen: boolean
   onDismiss: () => void
 }
 
-export const SelectStakeDrawer = ({ isOpen, containerId, onDismiss }: SelectStakeDrawer) => {
+export const BittensorSelectStakeDrawer = ({
+  isOpen,
+  containerId,
+  onDismiss,
+}: BittensorSelectStakeDrawerProps) => {
   const { t } = useTranslation()
   const { setStep, setStakeType } = useBittensorBondWizard()
 

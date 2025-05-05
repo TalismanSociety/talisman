@@ -18,8 +18,8 @@ import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../../utils/constants"
 import { BittensorSelectButton } from "../BittensorSelectButton"
-import { BittensorSlippageDrawer } from "../BittensorSlippageDrawer"
-import { BittensorWarningDrawer } from "../Modals/BittensorWarningDrawer"
+import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
+import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
 
 export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)

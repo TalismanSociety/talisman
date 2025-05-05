@@ -11,9 +11,9 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
-import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
-import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../utils/constants"
+import { MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
+import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../../utils/constants"
 
 export const BittensorSlippageDrawer = () => {
   const { slippageDrawer, userMaxSlippage, setUserMaxSlippage } = useBittensorBondWizard()

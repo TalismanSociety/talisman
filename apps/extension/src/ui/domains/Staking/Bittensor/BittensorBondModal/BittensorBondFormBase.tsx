@@ -31,7 +31,7 @@ import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "./../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
-import { SelectStakeDrawer } from "./Modals/SelectStakeDrawer"
+import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
 // TODO: Cleanup all non Bittensor related code
 
@@ -382,7 +382,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         handleClose={accountPicker.close}
         setAddress={setAddress}
       />
-      <SelectStakeDrawer
+      <BittensorSelectStakeDrawer
         isOpen={selectStakeDrawer.isOpen}
         onDismiss={selectStakeDrawer.close}
         containerId={MODAL_CONTENT_CONTAINER_ID}
