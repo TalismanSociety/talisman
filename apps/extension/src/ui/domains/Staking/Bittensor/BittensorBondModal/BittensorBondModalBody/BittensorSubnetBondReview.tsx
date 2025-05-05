@@ -1,8 +1,8 @@
-import { SettingsIcon } from "@talismn/icons"
+import { InfoIcon, SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
@@ -168,7 +168,21 @@ export const BittensorSubnetBondReview = () => {
             <FeeEstimate />
           </div>
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-            <div className="whitespace-nowrap">{t("Talisman Fee")} </div>
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <div>{t("Talisman Fee")} </div>
+              <Tooltip>
+                <TooltipTrigger>
+                  <InfoIcon />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {t(
+                      "Stake transaction will revert if the price changes more than the allowed slippage percentage.",
+                    )}
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <StakingFeeEstimate
               plancks={taoToAlphaTalismanFee}
               tokenId={feeToken?.id}
