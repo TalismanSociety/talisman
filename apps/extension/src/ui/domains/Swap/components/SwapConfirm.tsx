@@ -42,7 +42,7 @@ export const SwapConfirm = ({
   const toNetwork = toAsset ? (chains[toAsset.chainId] ?? networks[toAsset.chainId]) : undefined
 
   return (
-    <div className="flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12 pb-44">
+    <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12">
       <h3 className="h-32 text-lg font-bold">{t("You are swapping")}</h3>
 
       <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded p-8">

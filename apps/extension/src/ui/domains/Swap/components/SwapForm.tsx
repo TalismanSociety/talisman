@@ -100,10 +100,10 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    // pb-52 is composed of:
-    //     pb-44 (the height of the `Review` button and its container)
+    // mb-52 is composed of:
+    //     mb-44 (the height of the `Review` button and its container)
     //   + pb-8  (an extra gap at the bottom of the `overflow-y-auto` scrollable view)
-    <div className="flex h-full w-full flex-col gap-8 overflow-y-auto px-12 pb-52">
+    <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
       <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded p-8">
         <h4 className="text-sm">{t("Select asset")}</h4>
 
