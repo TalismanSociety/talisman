@@ -40,6 +40,8 @@ import {
   useSetting,
   useTokens,
 } from "@ui/state"
+import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
+import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
@@ -53,6 +55,15 @@ const NoticeTooltip: FC = () => {
       </TooltipTrigger>
       <TooltipContent>{t("Tokens list is provided by Coingecko.")}</TooltipContent>
     </Tooltip>
+  )
+}
+const CustomPill = () => {
+  const { t } = useTranslation("admin")
+
+  return (
+    <div className="bg-primary/10 text-primary inline-block rounded p-4 py-2 text-xs font-light">
+      {t("Custom")}
+    </div>
   )
 }
 
@@ -93,6 +104,8 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
           <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
           <div className="truncate">{token.symbol}</div>
           <TokenTypePill type={token.type} />
+          {isCustomErc20Token(token) && <CustomPill />}
+          {isCustomUniswapV2Token(token) && <CustomPill />}
         </div>
         <div className="text-body flex items-center gap-4 overflow-hidden">
           <NetworkLogo ethChainId={network?.id} className="shrink-0 text-lg" />
@@ -263,9 +276,11 @@ const Content = () => {
   const tokens = useTokens({ activeOnly: false, includeTestnets })
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(true)
+  const [isCustomOnly, setIsCustomOnly] = useState(false)
   const [isHidePools, setIsHidePools] = useState(false)
 
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
+  const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
@@ -288,6 +303,7 @@ const Content = () => {
       .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
       .filter((t) => !!t.evmNetwork?.id && evmNetworksMap[t.evmNetwork.id])
       .filter((t) => !isActiveOnly || isTokenActive(t, activeTokens))
+      .filter((t) => !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t))
       .filter((t) => !isHidePools || !isUniswapV2Token(t))
       .filter((t) => evmNetworkId === "ALL" || t.evmNetwork?.id === evmNetworkId)
 
@@ -296,7 +312,7 @@ const Content = () => {
       (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
       (t) => t.symbol,
     )
-  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isHidePools, tokens])
+  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])
 
   const displayTokens = useMemo(() => {
     const lowerSearch = search.trim().toLowerCase()
@@ -359,6 +375,7 @@ const Content = () => {
       <div className="h-4"></div>
       <div className="flex justify-end gap-4">
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
+        <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
         <TogglePill label={t("Enable pools")} checked={!isHidePools} onChange={toggleIsHidePools} />
         <EnableTestnetPillButton className="h-16" />
       </div>
