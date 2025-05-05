@@ -3,8 +3,6 @@ import { UseQueryResult } from "@tanstack/react-query"
 import { ChainId, SignerPayloadJSON } from "extension-core"
 import { useMemo } from "react"
 
-import { useGetBittensorStakeHotkeys } from "../hooks/bittensor/useGetBittensorStakeHotkeys"
-import { useGetBittensorStakingPayload } from "../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
 import { useIsSoloStaking } from "../hooks/nomPools/useIsSoloStaking"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
@@ -32,20 +30,8 @@ type StakeInfo = {
   currentPoolId: string | number | undefined | null
 }
 
-// TODO: Remove all bittensor code
 export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakeInfo) => {
   const { data: minJoinBond } = useGetMinJoinBond(chainId)
-
-  const bittensorStakingPayload = useGetBittensorStakingPayload({
-    sapi,
-    address,
-    poolId,
-    plancks,
-    minJoinBond,
-    isEnabled: chainId === "bittensor",
-  })
-
-  const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
 
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
 
@@ -78,28 +64,12 @@ export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: Get
   const { data: poolState } = useNomPoolState(chainId, poolId)
 
   const stakeInfo: StakeInfo = useMemo(() => {
-    switch (chainId) {
-      case "bittensor":
-        return {
-          payloadInfo: bittensorStakingPayload,
-          bondType: "bittensor" as const,
-          currentPoolId: hotkeys?.[0] ?? poolId,
-        }
-      default:
-        return {
-          payloadInfo: nomPoolStakingPayload,
-          bondType: "nomPools" as const,
-          currentPoolId: currentNomPool?.pool_id,
-        }
+    return {
+      payloadInfo: nomPoolStakingPayload,
+      bondType: "nomPools" as const,
+      currentPoolId: currentNomPool?.pool_id,
     }
-  }, [
-    chainId,
-    bittensorStakingPayload,
-    nomPoolStakingPayload,
-    hotkeys,
-    poolId,
-    currentNomPool?.pool_id,
-  ])
+  }, [nomPoolStakingPayload, currentNomPool?.pool_id])
 
   const {
     data: payloadAndMetadata,
