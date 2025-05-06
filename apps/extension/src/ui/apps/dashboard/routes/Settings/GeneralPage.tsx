@@ -5,14 +5,12 @@ import {
   DollarSignIcon,
   EyeOffIcon,
   FlagIcon,
-  KeyIcon,
   RefreshCwIcon,
   ToolIcon,
   UserIcon,
 } from "@talismn/icons"
-import { SPIRIT_KEYS_DOCS_URL } from "extension-shared"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { useTranslation } from "react-i18next"
+import { Button, CtaButton, Toggle } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
@@ -20,7 +18,7 @@ import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
-import { useAppState, useSetting } from "@ui/state"
+import { useSetting } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -31,12 +29,10 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const [hideDust, setHideDust] = useSetting("hideDust")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
-  const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
   const [developerMode, setDeveloperMode] = useSetting("developerMode")
 
@@ -55,36 +51,6 @@ const Content = () => {
             </Button>
           </Setting>
         ) : null}
-        <Setting
-          iconLeft={KeyIcon}
-          title={t("Pre-release features")}
-          subtitle={
-            <Trans t={t}>
-              <a
-                className="text-grey-200 hover:text-body"
-                href={SPIRIT_KEYS_DOCS_URL}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                Spirit Key NFT
-              </a>{" "}
-              holders get special early access to new features
-            </Trans>
-          }
-        >
-          <Tooltip>
-            <TooltipTrigger>
-              <Toggle
-                disabled={!hasSpiritKey}
-                checked={hasSpiritKey && spiritClanFeatures}
-                onChange={(e) => setSpiritClanFeatures(e.target.checked)}
-              />
-            </TooltipTrigger>
-            {hasSpiritKey ? undefined : (
-              <TooltipContent>{t("You need a Spirit Key to enable this option")}</TooltipContent>
-            )}
-          </Tooltip>
-        </Setting>
         <Setting
           iconLeft={BellIcon}
           title={t("Allow notifications")}
