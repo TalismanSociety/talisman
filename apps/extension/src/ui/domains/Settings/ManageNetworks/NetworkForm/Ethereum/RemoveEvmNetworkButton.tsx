@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "extension-core"
+import { SimpleEvmNetwork } from "extension-core"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -8,9 +8,7 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 
-export const RemoveEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({
-  network,
-}) => {
+export const RemoveEvmNetworkButton: FC<{ network: SimpleEvmNetwork }> = ({ network }) => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()

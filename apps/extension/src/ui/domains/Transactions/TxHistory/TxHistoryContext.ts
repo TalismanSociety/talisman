@@ -1,6 +1,6 @@
 import { HexString } from "@polkadot/util/types"
 import { normalizeAddress } from "@talismn/util"
-import { Chain, EvmNetwork, EvmNetworkId, WalletTransaction } from "extension-core"
+import { Chain, EvmNetworkId, SimpleEvmNetwork, WalletTransaction } from "extension-core"
 import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
 
@@ -47,7 +47,7 @@ const useTxHistoryProvider = () => {
     )
       .filter((evmNetworkId): evmNetworkId is string => !!evmNetworkId)
       .map((evmNetworkId) => evmNetworksMap[evmNetworkId])
-      .filter<EvmNetwork>((n): n is EvmNetwork => !!n)
+      .filter<SimpleEvmNetwork>((n): n is SimpleEvmNetwork => !!n)
 
     const chains = uniq(
       accountTransactions?.map((tx) => (tx.networkType === "substrate" ? tx.genesisHash : null)),
@@ -59,7 +59,7 @@ const useTxHistoryProvider = () => {
     return [...evmNetworks, ...chains].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
   }, [encodedAddresses, allTransactions, chainsByGenesisHash, evmNetworksMap])
 
-  const network = useMemo<Chain | EvmNetwork | null>(
+  const network = useMemo<Chain | SimpleEvmNetwork | null>(
     () =>
       chainsByGenesisHash[(networkId ?? "") as HexString] ??
       evmNetworksMap[networkId ?? ""] ??

@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "extension-core"
+import { EvmAddress, SimpleEvmNetwork } from "extension-core"
 import { FC } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -7,7 +7,7 @@ import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { SignParamButton } from "./SignParamButton"
 
 type SignParamErc20TokenButtonProps = {
-  network: EvmNetwork | CustomEvmNetwork
+  network: SimpleEvmNetwork
   asset: { symbol?: string }
   address: string
   withIcon?: boolean

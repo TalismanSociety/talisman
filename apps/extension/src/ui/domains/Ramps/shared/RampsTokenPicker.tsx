@@ -1,4 +1,4 @@
-import { Chain, EvmNetwork, Token } from "@talismn/chaindata-provider"
+import { Chain, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
@@ -18,7 +18,7 @@ import { useChainsMap, useEvmNetworksMap, useRemoteConfig, useSelectedCurrency }
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
 type TokenDisplay = Token & {
-  network: Chain | EvmNetwork
+  network: Chain | SimpleEvmNetwork
   rates?: TokenRates
 }
 

@@ -1,10 +1,10 @@
-import { Chain, EvmNetwork } from "extension-core"
+import { Chain, SimpleEvmNetwork } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 
-export const SignNetworkLogo: FC<{ network: Chain | EvmNetwork | null | undefined }> = ({
+export const SignNetworkLogo: FC<{ network: Chain | SimpleEvmNetwork | null | undefined }> = ({
   network,
 }) => {
   if (!network) return null

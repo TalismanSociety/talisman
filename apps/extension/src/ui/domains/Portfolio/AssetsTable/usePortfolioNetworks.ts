@@ -1,4 +1,4 @@
-import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "extension-core"
+import { Chain, ChainId, EvmNetworkId, SimpleEvmNetwork } from "extension-core"
 import { TFunction } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,7 +16,7 @@ const getPortfolioNetwork = (
   t: TFunction,
   id: ChainId | EvmNetworkId,
   chains?: Chain[],
-  evmNetworks?: EvmNetwork[],
+  evmNetworks?: SimpleEvmNetwork[],
 ): PortfolioNetwork => {
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)

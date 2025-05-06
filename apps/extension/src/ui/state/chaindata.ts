@@ -5,7 +5,8 @@ import {
   ChainList,
   CustomChain,
   EvmNetworkId,
-  EvmNetworkList,
+  SimpleEvmNetwork,
+  SimpleEvmNetworkList,
   Token,
   TokenId,
   TokenList,
@@ -17,7 +18,6 @@ import {
   isChainActive,
   isEvmNetworkActive,
   isTokenActive,
-  SimpleEvmNetwork,
 } from "extension-core"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
@@ -61,14 +61,14 @@ const allChains$ = new Observable<AnyChain[]>((subscriber) => {
 
 const allEvmNetworksMap$ = allEvmNetworks$.pipe(
   map(
-    (evmNetworks) =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList,
+    (evmNetworks): SimpleEvmNetworkList =>
+      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
   ),
   shareReplay(1),
 )
 
 const allChainsMap$ = allChains$.pipe(
-  map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
+  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
   shareReplay(1),
 )
 
@@ -84,13 +84,13 @@ const allChainsWithoutTestnets$ = allChains$.pipe(
 
 const allEvmNetworksWithoutTestnetsMap$ = allEvmNetworksWithoutTestnets$.pipe(
   map(
-    (evmNetworks) =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList,
+    (evmNetworks): SimpleEvmNetworkList =>
+      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
   ),
   shareReplay(1),
 )
 const allChainsWithoutTestnetsMap$ = allChainsWithoutTestnets$.pipe(
-  map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
+  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
   shareReplay(1),
 )
 
@@ -111,14 +111,14 @@ const activeChainsWithTestnets$ = combineLatest([allChains$, activeChainsState$]
 
 const activeEvmNetworksWithTestnetsMap$ = activeEvmNetworksWithTestnets$.pipe(
   map(
-    (evmNetworks) =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList,
+    (evmNetworks): SimpleEvmNetworkList =>
+      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
   ),
   shareReplay(1),
 )
 
 const activeChainsWithTestnetsMap$ = activeChainsWithTestnets$.pipe(
-  map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
+  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
   shareReplay(1),
 )
 
@@ -134,14 +134,14 @@ const activeChainsWithoutTestnets$ = activeChainsWithTestnets$.pipe(
 
 const activeEvmNetworksWithoutTestnetsMap$ = activeEvmNetworksWithoutTestnets$.pipe(
   map(
-    (evmNetworks) =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList,
+    (evmNetworks): SimpleEvmNetworkList =>
+      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
   ),
   shareReplay(1),
 )
 
 const activeChainsWithoutTestnetsMap$ = activeChainsWithoutTestnets$.pipe(
-  map((chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList),
+  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
   shareReplay(1),
 )
 
@@ -181,12 +181,12 @@ export const [useChainsMap, getChainsMap$] = bind(
 export const [useChainsMapByGenesisHash, allChainsByGenesisHash$] = bind(
   allChains$.pipe(
     map(
-      (chains) =>
+      (chains): ChainList =>
         Object.fromEntries(
           chains
             .filter((network) => network.genesisHash)
             .map((network) => [network.genesisHash, network]),
-        ) as ChainList,
+        ),
     ),
   ),
 )
@@ -271,7 +271,7 @@ const activeTokensWithTestnets$ = combineLatest([
 )
 
 const activeTokensWithTestnetsMap$ = activeTokensWithTestnets$.pipe(
-  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList),
+  map((tokens): TokenList => Object.fromEntries(tokens.map((token) => [token.id, token]))),
   shareReplay(1),
 )
 
@@ -291,7 +291,7 @@ const activeTokensWithoutTestnets$ = combineLatest([
 )
 
 const activeTokensWithoutTestnetsMap$ = activeTokensWithoutTestnets$.pipe(
-  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList),
+  map((tokens): TokenList => Object.fromEntries(tokens.map((token) => [token.id, token]))),
   shareReplay(1),
 )
 
