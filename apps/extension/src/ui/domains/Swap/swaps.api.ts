@@ -38,7 +38,6 @@ import {
 } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { Decimal } from "./swaps-port/Decimal"
-import { knownEvmNetworksAtom } from "./swaps-port/knownEvmNetworksAtom"
 import { publicClientAtomFamily } from "./swaps-port/publicClientAtomFamily"
 import { remoteConfigAtom } from "./swaps-port/remoteConfigAtom"
 
@@ -61,16 +60,12 @@ const getTokensByChainId = async (
     Promise<SwappableAssetBaseType<Partial<Record<SupportedSwapProtocol, any>>>[]>
   >[],
 ) => {
-  const knownEvmTokens = await get(knownEvmNetworksAtom)
-  const otherKnownTokens = await get(atomWithObservable(() => getTokensMap$()))
+  const knownTokens = await get(atomWithObservable(() => getTokensMap$()))
   const tokens = (await Promise.all(allTokensSelector.map(get))).flat()
   return tokens.reduce(
     (acc, cur) => {
       const tokens = acc[cur.chainId.toString()] ?? {}
-      const tokenDetails =
-        knownEvmTokens[cur.chainId.toString()]?.tokens[cur.id] ??
-        otherKnownTokens[cur.id] ??
-        btcTokens[cur.id as "btc-native"]
+      const tokenDetails = knownTokens[cur.id] ?? btcTokens[cur.id as "btc-native"]
 
       const symbol = tokenDetails?.symbol ?? cur.symbol
       const decimals = tokenDetails?.decimals ?? cur.decimals

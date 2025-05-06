@@ -10,11 +10,10 @@ import { withAtomEffect } from "jotai-effect"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import { encodeFunctionData, erc20Abi, isAddress, publicActions, TransactionRequest } from "viem"
 
-import { getChains$, getTokensMap$ } from "@ui/state"
+import { getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
-import { knownEvmNetworksAtom } from "../swaps-port/knownEvmNetworksAtom"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
 import {
   BaseQuote,
@@ -741,8 +740,9 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
 
   if (fromAsset.networkType === "evm") {
     if (!isAddress(fromAddress)) return null // invalid ethereum address
-    const knownEvmNetworks = await get(knownEvmNetworksAtom)
+    const knownEvmNetworks = await get(atomWithObservable(() => getEvmNetworksMap$()))
     const network = knownEvmNetworks[fromAsset.chainId]
+    const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeToken?.id)))
     const evmChain = Object.values(supportedEvmChains).find(
       (c) => c.id.toString() === fromAsset.chainId.toString(),
     )
@@ -751,7 +751,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
       ? encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [fromAddress, 0n] })
       : undefined
 
-    if (network && evmChain) {
+    if (network && nativeToken && evmChain) {
       const client = await get(publicClientAtomFamily(network.id))
       if (!client) return null
       const gasPrice = await client.getGasPrice()
@@ -762,13 +762,10 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
         to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
         value: 0n,
       })
-      return {
-        name: "Est. Gas Fees",
-        tokenId: network.nativeToken.id,
-        amount: Decimal.fromPlanck(gasPrice * gasLimit, network.nativeToken.decimals, {
-          currency: network.nativeToken.symbol,
-        }),
-      }
+      const amount = Decimal.fromPlanck(gasPrice * gasLimit, nativeToken.decimals ?? 0, {
+        currency: nativeToken.symbol,
+      })
+      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
     }
 
     return null
