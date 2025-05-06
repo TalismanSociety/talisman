@@ -116,12 +116,10 @@ export const [useBalance, getBalance$] = bind(
     getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
 )
 
-type BalancesFilter = AccountCategory | BalanceQueryParams
-
-export const [useBalances, getBalances$] = bind((arg: BalancesFilter = "all") =>
-  typeof arg === "object" ? getBalancesByQuery$(arg) : getBalancesByCategory$(arg),
+export const [useBalances, getBalances$] = bind((category: AccountCategory = "all") =>
+  getBalancesByCategory$(category),
 )
 
 export const [useBalancesByAddress] = bind((address: Address | null | undefined) =>
-  getBalances$({ address }),
+  getBalancesByQuery$({ address }),
 )
