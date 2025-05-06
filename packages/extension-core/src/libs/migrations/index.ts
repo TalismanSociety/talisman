@@ -10,6 +10,7 @@ import {
   cleanBadContacts,
   hideGetStartedIfFunded,
   migrateAutoLockTimeoutToMinutes,
+  migrateEnabledTestnets,
 } from "../../domains/app/migrations"
 import {
   migrateAssetDiscoveryRollout,
@@ -36,6 +37,7 @@ export const migrations: Migrations = [
   migrateAnaliticsPurgePendingCaptures,
   migrateAssetDiscoveryV2,
   migrateFromPjsKeyring,
+  migrateEnabledTestnets,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:

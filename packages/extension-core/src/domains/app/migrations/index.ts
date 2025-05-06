@@ -4,9 +4,12 @@ import { log } from "extension-shared"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"
+import { chaindataProvider } from "../../../rpcs/chaindata"
 import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
 import { LegacyAccountOrigin } from "../../accounts/types"
 import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
+import { activeChainsStore } from "../../chains/store.activeChains"
+import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
 import { addressBookStore } from "../store.addressBook"
 import { appStore } from "../store.app"
 import { settingsStore } from "../store.settings"
@@ -93,4 +96,32 @@ const isOwnedAccountOrigin = (origin: LegacyAccountOrigin) => {
     default:
       return true
   }
+}
+
+export const migrateEnabledTestnets: Migration = {
+  forward: new MigrationFunction(async (_) => {
+    const legacySettingsStore = new StorageProvider<{ useTestnets: boolean }>("settings")
+    const useTestnets = await legacySettingsStore.get("useTestnets")
+
+    // if user doesn't have testnets enabled, reset active status for all testnets
+    if (!useTestnets) {
+      const [chains, evmNetworks] = await Promise.all([
+        chaindataProvider.chains(),
+        chaindataProvider.evmNetworks(),
+      ])
+
+      const chainTestnetIds = chains.filter((n) => n.isTestnet).map((n) => n.id)
+      await activeChainsStore.mutate((prev) =>
+        Object.fromEntries(Object.entries(prev).filter(([id]) => !chainTestnetIds.includes(id))),
+      )
+
+      const evmTestnetIds = evmNetworks.filter((n) => n.isTestnet).map((n) => n.id)
+      await activeEvmNetworksStore.mutate((prev) =>
+        Object.fromEntries(Object.entries(prev).filter(([id]) => !evmTestnetIds.includes(id))),
+      )
+    }
+
+    // delete setting
+    await legacySettingsStore.delete("useTestnets")
+  }),
 }
