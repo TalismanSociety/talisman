@@ -4,7 +4,7 @@ import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { isAccountEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
-import { log } from "extension-shared"
+import { DEBUG, log } from "extension-shared"
 import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
@@ -683,13 +683,13 @@ const getEvmTokenBalancesWithAggregator = async (
     getEvmTokenBalancesWithoutAggregator(client, otherBalanceDefs),
   ])
 
-  const resByIndex: Record<number, string> = Object.fromEntries(
+  const resByIndex = new Map<number, string>(
     erc20Balances
-      .map((res, i) => [i, String(res)])
-      .concat(otherBalances.map((res, i) => [i, String(res)])),
+      .map((res, i) => [erc20BalanceDefs[i].index, String(res)] as [number, string])
+      .concat(otherBalances.map((res, i) => [otherBalanceDefs[i].index, String(res)])),
   )
 
-  return indexedBalanceDefs.map((bd) => resByIndex[bd.index])
+  return balanceDefs.map((_bd, i) => resByIndex.get(i)!)
 }
 
 const getEvmTokenBalances = (
@@ -703,3 +703,20 @@ const getEvmTokenBalances = (
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
+
+// dev utility to reset active states of all chains and tokens
+if (DEBUG) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).resetActiveStates = async () => {
+    await Promise.all([
+      chrome.storage.local.remove("assetDiscovery"),
+      chrome.storage.local.set({
+        activeEvmNetworks: "{}",
+        activeTokens: "{}",
+        activeChains: "{}",
+      }),
+    ])
+
+    chrome.runtime.reload()
+  }
+}
