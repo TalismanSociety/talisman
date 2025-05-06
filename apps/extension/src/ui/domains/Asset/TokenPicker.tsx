@@ -250,7 +250,6 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
-  // const [includeTestnets] = useSetting("useTestnets") // TODO ?
   const chains = useChains({ activeOnly: true, includeTestnets: true })
   const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
   const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })

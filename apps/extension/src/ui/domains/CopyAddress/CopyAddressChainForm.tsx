@@ -146,7 +146,6 @@ const ChainFormatsList = ({ formats }: { formats: ChainFormat[] }) => (
 export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
-  //   const [includeTestnets] = useSetting("useTestnets") // TODO ?
   const chains = useChains({ activeOnly: false, includeTestnets: true })
   const { t } = useTranslation()
 
