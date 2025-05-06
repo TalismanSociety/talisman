@@ -381,7 +381,9 @@ const Content = () => {
       <div className="h-4"></div>
       <div className="flex justify-end gap-4">
         <div className="grow">
-          <PillButton onClick={() => ocResetAllModal.open()}>{t("Reset active states")}</PillButton>{" "}
+          <PillButton className="h-16" onClick={() => ocResetAllModal.open()}>
+            {t("Reset active states")}
+          </PillButton>{" "}
         </div>
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
         <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
