@@ -6,8 +6,8 @@ import { Token } from "@talismn/chaindata-provider"
 // ACA, BNC and KAR use native (orml won't work)
 // INTR, KINT and MGX use orml (native won't work)
 export const UNTRANSFERABLE_TOKENS = [
-  "bifrost-kusama-substrate-tokens-bnc",
-  "bifrost-polkadot-substrate-tokens-bnc",
+  "bifrost-kusama-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiAEIByAwiAL6tA", // BNC
+  "bifrost-polkadot-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiAEIByAwiAL6tA", // BNC
   "interlay-substrate-native",
   "kintsugi-substrate-native",
   "mangata-substrate-native",
