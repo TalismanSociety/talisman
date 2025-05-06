@@ -318,6 +318,10 @@ class AssetDiscoveryScanner {
 
       await assetDiscoveryStore.mutate((prev) => ({
         ...prev,
+        currentScanScope: {
+          ...(prev.currentScanScope ?? { addresses: scope.addresses }),
+          networkIds: networkIdsToScan,
+        },
         currentScanTokensCount: tokensToScan.length,
       }))
 
@@ -708,15 +712,12 @@ export const assetDiscoveryScanner = new AssetDiscoveryScanner()
 if (DEBUG) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(globalThis as any).resetActiveStates = async () => {
-    await Promise.all([
-      chrome.storage.local.remove("assetDiscovery"),
-      chrome.storage.local.set({
-        activeEvmNetworks: "{}",
-        activeTokens: "{}",
-        activeChains: "{}",
-      }),
-    ])
-
+    await chrome.storage.local.remove("assetDiscovery")
+    await chrome.storage.local.set({
+      activeEvmNetworks: "{}",
+      activeTokens: "{}",
+      activeChains: "{}",
+    })
     chrome.runtime.reload()
   }
 }
