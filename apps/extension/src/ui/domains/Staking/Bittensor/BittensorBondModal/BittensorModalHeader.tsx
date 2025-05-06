@@ -10,7 +10,7 @@ import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 // TODO: Remove all non Bittensor related code
 export const BittensorModalHeader = () => {
   const { t } = useTranslation()
-  const { step, stakeType, setStep } = useBittensorBondWizard()
+  const { step, stakeType, setStep, stakeDirection } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
 
   const handleBackClick = useCallback(
@@ -32,7 +32,11 @@ export const BittensorModalHeader = () => {
         <ChevronLeftIcon />
       </IconButton>
       <div>
-        {step.includes("form") && <span className="text-body font-bold">{t("Staking")}</span>}
+        {step.includes("form") && (
+          <span className="text-body font-bold">
+            {stakeDirection === "bond" ? t("Staking") : t("Unstake")}
+          </span>
+        )}
         {step.includes("review") && t("Confirm")}
         {step.includes("select") && (
           <div className="flex items-center gap-2 space-y-4">

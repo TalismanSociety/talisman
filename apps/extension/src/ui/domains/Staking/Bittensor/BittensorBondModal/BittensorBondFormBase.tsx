@@ -30,6 +30,7 @@ import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "./../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
+import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
@@ -317,6 +318,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     setAddress,
     selectStakeDrawer,
     stakeType,
+    stakeDirection,
   } = useBittensorBondWizard()
 
   return (
@@ -340,8 +342,16 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       <AmountEdit />
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
         <div className="flex items-center justify-between">
-          <div className="whitespace-nowrap">{t("Available Balance")}</div>
-          <div>{!!token && !!account && <AvailableBalance token={token} account={account} />}</div>
+          <div className="whitespace-nowrap">
+            {stakeDirection === "bond" ? t("Available Balance") : t("Available to unstake")}
+          </div>
+          {stakeDirection === "bond" ? (
+            <div>
+              {!!token && !!account && <AvailableBalance token={token} account={account} />}
+            </div>
+          ) : (
+            <BittensorAvailableToUnstake />
+          )}
         </div>
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">

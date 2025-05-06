@@ -17,7 +17,6 @@ export const UnbondButton: FC<{
   className?: string
   variant: "small" | "large"
   poolId: number | string | undefined
-  isExternalUnbond?: boolean
   isBittensorUnbond: boolean
 }> = ({ tokenId, address, className, variant, poolId, isBittensorUnbond, netuid }) => {
   const { t } = useTranslation()
@@ -42,7 +41,7 @@ export const UnbondButton: FC<{
         poolId: poolId || "",
         netuid: netuid,
         stakeDirection: "unbond",
-        stakeType: "subnet",
+        stakeType: netuid ? "subnet" : "root",
         step: netuid ? "subnet-form" : "form",
       })
       return

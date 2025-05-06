@@ -6,13 +6,14 @@ import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Hex } from "viem"
 
+import { useTokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/state"
+import { useAccountByAddress, useBalance, usePortfolio, useToken, useTokenRates } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { DEFAULT_USER_MAX_SLIPPAGE } from "../utils/constants"
+import { BITTENSOR_TOKEN_ID, DEFAULT_USER_MAX_SLIPPAGE } from "../utils/constants"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 export type WizardStep =
@@ -124,6 +125,12 @@ export const useResetBittensorBondWizard = () => {
 export const useBittensorBondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
+  const { allBalances } = usePortfolio()
+
+  const tokenBalances = useTokenBalances({
+    tokenId: BITTENSOR_TOKEN_ID,
+    balances: allBalances,
+  })
 
   const {
     poolId,
@@ -152,6 +159,14 @@ export const useBittensorBondWizard = () => {
   const warningDrawer = useInnerOpenClose("isWarningDrawerOpen")
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
+
+  const selectedStake = useMemo(
+    () =>
+      tokenBalances.detailRows.find(
+        ({ meta }) => meta?.hotkey === poolId && meta?.netuid === netuid,
+      ),
+    [netuid, poolId, tokenBalances.detailRows],
+  )
 
   const {
     payload,
@@ -259,9 +274,9 @@ export const useBittensorBondWizard = () => {
      * if user is already staking in pool, set poolId to that pool
      * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
      */
-    if (!!currentPoolId && currentPoolId !== poolId && isDefaultOption)
+    if (!!currentPoolId && currentPoolId !== poolId && isDefaultOption && stakeDirection === "bond")
       setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
-  }, [currentPoolId, isDefaultOption, poolId, step, tokenId])
+  }, [currentPoolId, isDefaultOption, poolId, stakeDirection, step, tokenId])
 
   const setStep = useCallback(
     (step: WizardStep) => {
@@ -283,10 +298,13 @@ export const useBittensorBondWizard = () => {
   )
 
   const maxPlancks = useMemo(() => {
+    if (stakeDirection === "unbond") {
+      return BigInt(selectedStake?.meta.amountStaked)
+    }
     if (!balance || !existentialDeposit || !feeEstimate) return null
     if (existentialDeposit.planck + feeEstimate * 11n > balance.transferable.planck) return null
     return balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
-  }, [balance, existentialDeposit, feeEstimate])
+  }, [balance, existentialDeposit, feeEstimate, selectedStake?.meta.amountStaked, stakeDirection])
 
   const inputErrorMessage = useMemo(() => {
     if (!formatter || typeof minJoinBond !== "bigint") return null
@@ -360,6 +378,7 @@ export const useBittensorBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
     stakeDirection,
+    selectedStake,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,

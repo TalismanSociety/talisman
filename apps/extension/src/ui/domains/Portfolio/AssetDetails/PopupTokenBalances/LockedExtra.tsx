@@ -6,7 +6,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
@@ -48,11 +47,6 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
     [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
   )
 
-  const isExternalUnbond = useMemo(
-    () => tokenId === "bittensor-substrate-native" && rowMeta.netuid !== ROOT_NETUID,
-    [rowMeta.netuid, tokenId],
-  )
-
   if (!rowAddress) return null
 
   return (
@@ -84,7 +78,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
           address={rowAddress}
           variant="small"
           poolId={rowMeta.poolId ?? rowMeta.hotkey}
-          isExternalUnbond={isExternalUnbond}
+          isBittensorUnbond={tokenId === "bittensor-substrate-native"}
         />
       ) : null}
     </>
