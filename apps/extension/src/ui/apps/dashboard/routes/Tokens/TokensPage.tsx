@@ -420,7 +420,7 @@ const ResetStatesModalContent: FC<{
   return (
     <ModalDialog title={t("Reset tokens")} onClose={onClose}>
       <div className="text-body-secondary mb-8 text-sm">
-        {t("This will reset active state of all tokens to their Talisman defaults.")}
+        {t("This will reset active state of all Ethereum tokens to their Talisman defaults.")}
       </div>
 
       <div className="mt-4 flex justify-end gap-8">

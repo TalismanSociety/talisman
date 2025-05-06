@@ -251,7 +251,7 @@ const ResetAllNetworksModalContent: FC<{
   return (
     <ModalDialog title={t("Reset Polkadot networks")} onClose={onClose}>
       <div className="text-body-secondary mb-8 text-sm">
-        {t("This will reset active state of all networks to their Talisman defaults.")}
+        {t("This will reset active state of all Polkadot networks to their Talisman defaults.")}
       </div>
 
       <div className="mt-4 flex justify-end gap-8">
