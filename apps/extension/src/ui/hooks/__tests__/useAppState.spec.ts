@@ -18,13 +18,6 @@ test("Can get hasBraveWarningBeenShown appState data", async () => {
   await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hasBraveWarningBeenShown))
 })
 
-test("Can get hasSpiritKey appState data", async () => {
-  const { result } = renderHook(() => useAppState("hasSpiritKey"), {
-    wrapper: TestWrapper,
-  })
-  await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hasSpiritKey))
-})
-
 test("Can get hideBackupWarningUntil appState data", async () => {
   const { result } = renderHook(() => useAppState("hideBackupWarningUntil"), {
     wrapper: TestWrapper,
@@ -37,13 +30,6 @@ test("Can get hideBraveWarning appState data", async () => {
     wrapper: TestWrapper,
   })
   await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hideBraveWarning))
-})
-
-test("Can get needsSpiritKeyUpdate appState data", async () => {
-  const { result } = renderHook(() => useAppState("needsSpiritKeyUpdate"), {
-    wrapper: TestWrapper,
-  })
-  await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.needsSpiritKeyUpdate))
 })
 
 test("Can get onboarded appState data", async () => {

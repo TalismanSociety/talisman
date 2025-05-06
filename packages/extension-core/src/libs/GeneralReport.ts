@@ -15,7 +15,6 @@ import { keyringStore } from "../domains/keyring/store"
 import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
-import { hasGhostsOfThePast } from "../util/hasGhostsOfThePast"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
@@ -306,10 +305,6 @@ async function getGeneralReport({
   //
   // nfts
   //
-
-  const hasGhosts = await hasGhostsOfThePast()
-  const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
-
   const ownedNfts = nftsStore$.value.nfts.filter((nft) =>
     nft.owners.some((o) => ownedAddressesLower.includes(o.address.toLowerCase())),
   )
@@ -353,7 +348,6 @@ async function getGeneralReport({
     nftsCount,
     nftsTotalValue,
     topNftCollections,
-    hasGhostsOfThePast: hasGhostsNft,
 
     // util
     lastGeneralReport: Math.trunc(Date.now() / 1000),
