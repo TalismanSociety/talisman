@@ -383,7 +383,7 @@ const Content = () => {
         <div className="grow">
           <PillButton className="h-16" onClick={() => ocResetAllModal.open()}>
             {t("Reset active states")}
-          </PillButton>{" "}
+          </PillButton>
         </div>
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
         <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
