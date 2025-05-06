@@ -6,7 +6,7 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Chain, EvmNetwork } from "extension-core"
+import { Chain, SimpleEvmNetwork } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -18,7 +18,7 @@ import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useChain, useChainByGenesisHash, useEvmNetwork } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-type Network = Chain | EvmNetwork
+type Network = Chain | SimpleEvmNetwork
 
 const getNetworkId = (network: Network): string => {
   const genesisHash = "genesisHash" in network ? network.genesisHash : undefined

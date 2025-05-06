@@ -2,6 +2,7 @@ import { BalancesConfig, BalancesMetadata, ChainId } from "./Chain"
 import { TokenId } from "./Token"
 
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork>
+export type SimpleEvmNetworkList = Record<EvmNetworkId, SimpleEvmNetwork>
 
 export type EvmNetworkId = string
 export type EvmNetwork = {

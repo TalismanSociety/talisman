@@ -1,4 +1,4 @@
-import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
+import { ChainList, SimpleEvmNetworkList, TokenList } from "@talismn/chaindata-provider"
 import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import {
   BigMath,
@@ -79,7 +79,7 @@ export type BalanceSource = BalanceJson["source"]
 /** TODO: Remove this in favour of a frontend-friendly `ChaindataProvider` */
 export type HydrateDb = Partial<{
   chains: ChainList
-  evmNetworks: EvmNetworkList
+  evmNetworks: SimpleEvmNetworkList
   tokens: TokenList
   tokenRates: TokenRatesList
 }>

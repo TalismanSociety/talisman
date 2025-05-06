@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
+import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
@@ -13,7 +13,7 @@ import { useChainByGenesisHash, useEvmNetwork, useTransaction } from "@ui/state"
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
 const getBlockExplorerUrl = (
-  network: EvmNetwork | undefined | null,
+  network: SimpleEvmNetwork | undefined | null,
   chain: Chain | undefined | null,
   hash: string,
 ) => {

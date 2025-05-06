@@ -1,5 +1,5 @@
 import { CustomEvmErc20Token } from "@talismn/balances"
-import { CustomEvmNetwork, EvmNetwork } from "extension-core"
+import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 
@@ -10,7 +10,7 @@ import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
 type CustomErc20TokenViewDetailsProps = {
   token: CustomEvmErc20Token
-  network: EvmNetwork | CustomEvmNetwork
+  network: SimpleEvmNetwork
 }
 
 export const CustomErc20TokenViewDetails = ({

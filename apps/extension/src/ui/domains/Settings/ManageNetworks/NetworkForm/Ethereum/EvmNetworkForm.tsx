@@ -1,11 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CustomSubNativeToken } from "@talismn/balances"
-import {
-  CustomEvmNetwork,
-  EvmNetwork,
-  EvmNetworkId,
-  isCustomEvmNetwork,
-} from "@talismn/chaindata-provider"
+import { EvmNetworkId, isCustomEvmNetwork, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -359,7 +354,7 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 }
 
 const evmNetworkToFormData = (
-  network?: EvmNetwork | CustomEvmNetwork,
+  network?: SimpleEvmNetwork,
   nativeToken?: CustomSubNativeToken,
 ): EvmNetworkFormData | undefined => {
   if (!network || !nativeToken) return undefined
@@ -369,7 +364,10 @@ const evmNetworkToFormData = (
     name: network.name ?? "",
     rpcs: network.rpcs ?? [],
     blockExplorerUrl:
-      network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
+      network.explorerUrl ??
+      ("explorerUrls" in network && Array.isArray(network.explorerUrls)
+        ? network.explorerUrls?.[0]
+        : undefined),
     isTestnet: !!network.isTestnet,
     tokenCoingeckoId: nativeToken.coingeckoId ?? "",
     tokenSymbol: nativeToken.symbol,
