@@ -24,6 +24,7 @@ export type WizardStep =
   | "select"
   | "select-subnet"
 export type StakeType = "root" | "subnet"
+export type StakeDirection = "bond" | "unbond"
 
 type WizardState = {
   step: WizardStep
@@ -40,6 +41,7 @@ type WizardState = {
   hash: Hex | null
   isDefaultOption: boolean
   stakeType: StakeType
+  stakeDirection: StakeDirection
   userMaxSlippage: number
 }
 
@@ -58,6 +60,7 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
   isDefaultOption: true,
   stakeType: "root",
+  stakeDirection: "bond",
   userMaxSlippage: DEFAULT_USER_MAX_SLIPPAGE,
 }
 
@@ -109,6 +112,7 @@ export const useResetBittensorBondWizard = () => {
         | "isSelectStakeDrawerOpen"
         | "stakeType"
         | "netuid"
+        | "stakeDirection"
       >,
     ) => setWizardState({ ...DEFAULT_STATE, ...init }),
     [],
@@ -133,6 +137,7 @@ export const useBittensorBondWizard = () => {
     plancks,
     isDefaultOption,
     userMaxSlippage,
+    stakeDirection,
   } = useWizardState()
 
   const balance = useBalance(address, tokenId)
@@ -354,6 +359,7 @@ export const useBittensorBondWizard = () => {
     feeToken,
     maxPlancks,
     inputErrorMessage,
+    stakeDirection,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,
