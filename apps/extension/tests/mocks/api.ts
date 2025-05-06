@@ -932,82 +932,88 @@ const polkadotChains: Chain[] = [
         id: "acala-substrate-native",
       },
       {
-        id: "acala-substrate-tokens-aseed",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiAIICqAygCIgC+7QA",
       },
       {
-        id: "acala-substrate-tokens-tap",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAsgIIAKIAvs0A",
       },
       {
-        id: "acala-substrate-tokens-lcdot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAyBLAjgVxQEwMICcB7Ad2wBtCBDAOxABoQA3SsjOeARgGYBfIA",
       },
       {
-        id: "acala-substrate-tokens-ldot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiADIAiA8kiAL5tA",
       },
       {
-        id: "acala-substrate-tokens-dot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiACIDySIAvi0A",
       },
       {
-        id: "acala-substrate-tokens-eqd",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54AOAXyA",
       },
       {
-        id: "acala-substrate-tokens-intr",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54AWAXyA",
       },
       {
-        id: "acala-substrate-tokens-weth",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54A2AXyA",
       },
       {
-        id: "acala-substrate-tokens-astr",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54AmAXyA",
       },
       {
-        id: "acala-substrate-tokens-pha",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BOAXyA",
       },
       {
-        id: "acala-substrate-tokens-para",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BGAXyA",
       },
       {
-        id: "acala-substrate-tokens-glmr",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54AGAXyA",
       },
       {
-        id: "acala-substrate-tokens-wbtc",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BWAXyA",
       },
       {
-        id: "acala-substrate-tokens-eq",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54B2AXyA",
       },
       {
-        id: "acala-substrate-tokens-ibtc",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BmAXyA",
       },
       {
-        id: "acala-substrate-tokens-pink",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BGAZgF8g",
       },
       {
-        id: "acala-substrate-tokens-tdot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIDKYCGAjANjAggZzxjAAUB7UzAFVIGsYA7EAGhADdVMBXOeABgF8gA",
       },
       {
-        id: "acala-substrate-tokens-usdcet",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcICiAnAxgJgAwgDQgDcBDAGwFc5EALGAD3i1qwHYATAMwE4A2VgRgDMAFj5E2fbgCMio1kIF8YGNAA4hbTsxWTMOuAF8gA",
       },
       {
-        id: "acala-substrate-tokens-ape",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcICiAnAxgJgAwgDQgDcBDAGwFc5EALGAD3i1oDMAWNAdgwGYYA2ARnZYAnABNhWJgA5hwrsLT8pAVgxNl-XjC7suolkqJSQAXyA",
       },
       {
-        id: "acala-substrate-tokens-dai",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcICiAnAxgJgAwgDQgDcBDAGwFc5EALGAD3i1oFYAWIgZgHYisBGNACacmAIwBsvMQLHsYWIuLGiAZsoEi+LdmiYYicAL5A",
       },
       {
-        id: "acala-substrate-tokens-lp-aseed-ldot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcICiAnAxgJgAwgDQgDcBDAGwFc5EALGAD3i1oFYiAWAEwDYi121WYAZhgsARgEYmAdnFSAZqyxSicmAE5pc5RlYZpADhABfIA",
       },
       {
-        id: "acala-substrate-tokens-lp-aseed-ibtc",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcICiAnAxgJgAwgDQgDcBDAGwFc5EALGAD3i1rQA4stmAWIgMwwwGYWAIwCsATmYj+ANgCMAdmYATMTNlK0IkUO5Ki05rOYgAvkA",
       },
       {
-        id: "acala-substrate-tokens-lp-aseed-lcdot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAiMAeBlAFgQwE5wBoQA3bAGwFc54BtUSWBEAFQHsBrGAOxCNMur1o1EAEEAquiQgAvjIJDGiNpx59yVBIpEAZJAHlmsmQF0ZQA",
       },
       {
-        id: "acala-substrate-tokens-lp-aca-aseed",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAiMAeBlAFgQwE5wBoQA3bAGwFc54BtUSWBEAFQHsBrGAOxCNMur1o1EAEEAquiQgAvjIJDGiAGKt8ASwDmXUQGddMMLxLkqCAMwyAujKA",
       },
       {
-        id: "acala-substrate-tokens-lp-dot-lcdot",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAiMAeBlAFgQwE5wBoQA3bAGwFc54BtUSWBEAFQHsBrGAOxCNMur1o1EAEEAquiQgAvjIJDGiADIBLAI4VVAEwDCuVgHdtZVth59yVBAEYAzDIC6MoA",
       },
       {
-        id: "acala-substrate-tokens-lp-aseed-intr",
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAiMAeBlAFgQwE5wBoQA3bAGwFc54BtUSWBEAFQHsBrGAOxCNMur1o1EAEEAwqJABfaQSGNEbTjz7kqCBSNEBVdEhnSAutKA",
+      },
+      {
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAiMAeBlAFgQwE5wBoQA3bAGwFc54BtUSWBEAFQHsBrGAOxCNMur1o1ZAHlmIAL6SCQxogAyASwCOFJQBMAwrlYB3DWVbYefclQQBGAMySAupKA",
+      },
+      {
+        id: "acala-substrate-tokens-N4IgLgngDgpiBcIAiMAeBlAFgQwE5wBoQA3bAGwFc54BtUSWBEAFQHsBrGAOxCNMur1o1EAEEAquiQgAvjIJDGiAGKt8ASwDmXUQGddMMLxLkqCACwyAujKA",
       },
     ],
     account: "*25519",
@@ -1198,6 +1204,81 @@ const polkadotChains: Chain[] = [
               ed: "3000000000000000",
               onChainId:
                 '{"type":"Erc20","value":"hex:0xf4c723e61709d90f89939c1852f516e373d418a8"}',
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              symbol: "DAI",
+              decimals: 18,
+              ed: "10000000000000000",
+              onChainId:
+                '{"type":"Erc20","value":"hex:0x54a37a01cd75b616d63e0ab665bffdb0143c52ae"}',
+              coingeckoId: "dai",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/dai.webp",
+            },
+            {
+              symbol: "WETH",
+              decimals: 18,
+              ed: "8500000000000",
+              onChainId:
+                '{"type":"Erc20","value":"hex:0x5a4d6acdc4e3e5ab15717f407afe957f7a242578"}',
+              coingeckoId: "weth",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/weth.webp",
+            },
+            {
+              symbol: "WBTC",
+              decimals: 8,
+              ed: "60",
+              onChainId:
+                '{"type":"Erc20","value":"hex:0xc80084af223c8b598536178d9361dc55bfda6818"}',
+              coingeckoId: "wrapped-bitcoin",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/wrapped-bitcoin.webp",
+            },
+            {
+              symbol: "lp aSEED-LDOT",
+              decimals: 12,
+              ed: "100000000000",
+              onChainId:
+                '{"type":"DexShare","value":[{"type":"Token","value":{"type":"AUSD"}},{"type":"Token","value":{"type":"LDOT"}}]}',
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              symbol: "lp aSEED-IBTC",
+              decimals: 12,
+              ed: "100000000000",
+              onChainId:
+                '{"type":"DexShare","value":[{"type":"Token","value":{"type":"AUSD"}},{"type":"ForeignAsset","value":3}]}',
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              symbol: "lp aSEED-lcDOT",
+              decimals: 12,
+              ed: "100000000000",
+              onChainId:
+                '{"type":"DexShare","value":[{"type":"Token","value":{"type":"AUSD"}},{"type":"LiquidCrowdloan","value":13}]}',
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              symbol: "lp ACA-aSEED",
+              decimals: 12,
+              ed: "100000000000",
+              onChainId:
+                '{"type":"DexShare","value":[{"type":"Token","value":{"type":"ACA"}},{"type":"Token","value":{"type":"AUSD"}}]}',
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              symbol: "lp DOT-lcDOT",
+              decimals: 10,
+              ed: "100000000",
+              onChainId:
+                '{"type":"DexShare","value":[{"type":"Token","value":{"type":"DOT"}},{"type":"LiquidCrowdloan","value":13}]}',
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+            {
+              symbol: "lp aSEED-INTR",
+              decimals: 12,
+              ed: "100000000000",
+              onChainId:
+                '{"type":"DexShare","value":[{"type":"Token","value":{"type":"AUSD"}},{"type":"ForeignAsset","value":4}]}',
               logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
             },
           ],
