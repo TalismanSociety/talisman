@@ -194,6 +194,8 @@ export const useBittensorBondWizard = () => {
     chainId: token?.chain?.id,
     stakeType,
     userMaxSlippage,
+    selectedStake,
+    stakeDirection,
   })
 
   // TODO rename to amountToStake
@@ -251,7 +253,7 @@ export const useBittensorBondWizard = () => {
     }))
   }, [])
 
-  const isFormValid = useMemo(
+  const isStakeFormValid = useMemo(
     () =>
       !!account &&
       !!token &&
@@ -262,6 +264,13 @@ export const useBittensorBondWizard = () => {
       plancks &&
       plancks > 0n,
     [account, formatter, minJoinBond, netuid, plancks, poolId, stakeType, token],
+  )
+
+  const isUnstakeFormValid = useMemo(() => plancks && plancks > 0n, [plancks])
+
+  const isFormValid = useMemo(
+    () => (stakeDirection === "bond" ? isStakeFormValid : isUnstakeFormValid),
+    [isStakeFormValid, isUnstakeFormValid, stakeDirection],
   )
 
   const isSlippageValid = useMemo(
@@ -297,16 +306,28 @@ export const useBittensorBondWizard = () => {
     [genericEvent, tokenId],
   )
 
+  const totalStakedPlancks = useMemo(
+    () => BigInt(selectedStake?.meta.amountStaked || 0),
+    [selectedStake?.meta.amountStaked],
+  )
+
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {
-      return BigInt(selectedStake?.meta.amountStaked)
+      return totalStakedPlancks
     }
     if (!balance || !existentialDeposit || !feeEstimate) return null
     if (existentialDeposit.planck + feeEstimate * 11n > balance.transferable.planck) return null
     return balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
-  }, [balance, existentialDeposit, feeEstimate, selectedStake?.meta.amountStaked, stakeDirection])
+  }, [balance, existentialDeposit, feeEstimate, stakeDirection, totalStakedPlancks])
 
-  const inputErrorMessage = useMemo(() => {
+  const newStakeTotal = useMemo(() => {
+    if (stakeDirection === "unbond") {
+      return totalStakedPlancks - (plancks || 0n)
+    }
+    return totalStakedPlancks + (plancks || 0n)
+  }, [plancks, stakeDirection, totalStakedPlancks])
+
+  const stakeInputErrorMessage = useMemo(() => {
     if (!formatter || typeof minJoinBond !== "bigint") return null
 
     if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
@@ -358,6 +379,39 @@ export const useBittensorBondWizard = () => {
     token?.symbol,
   ])
 
+  const unstakeInputErrorMessage = useMemo(() => {
+    if (
+      !!balance &&
+      !!feeEstimate &&
+      !!existentialDeposit?.planck &&
+      existentialDeposit.planck + feeEstimate > balance.transferable.planck
+    ) {
+      return t("Insufficient balance to cover fee and keep account alive")
+    }
+    if ((plancks || 0n) > totalStakedPlancks) {
+      return t("Insufficient balance")
+    }
+    if (newStakeTotal < (minJoinBond || 0n) && newStakeTotal !== 0n) {
+      return t("You must keep 0.1 TAO to continue staking")
+    }
+
+    return null
+  }, [
+    balance,
+    existentialDeposit?.planck,
+    feeEstimate,
+    minJoinBond,
+    plancks,
+    newStakeTotal,
+    t,
+    totalStakedPlancks,
+  ])
+
+  const inputErrorMessage = useMemo(
+    () => (stakeDirection === "bond" ? stakeInputErrorMessage : unstakeInputErrorMessage),
+    [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage],
+  )
+
   return {
     account,
     token,
@@ -379,6 +433,7 @@ export const useBittensorBondWizard = () => {
     inputErrorMessage,
     stakeDirection,
     selectedStake,
+    newStakeTotal,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,

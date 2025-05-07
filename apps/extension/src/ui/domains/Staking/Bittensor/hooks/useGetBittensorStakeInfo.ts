@@ -1,11 +1,15 @@
 import { ScaleApi } from "@talismn/sapi"
 import { ChainId } from "extension-core"
+import { useMemo } from "react"
+
+import { type BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 
 import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
+import { useGetBittensorUnbondPayload } from "../../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
 import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
-import { type StakeType } from "./useBittensorBondWizard"
+import { type StakeDirection, type StakeType } from "./useBittensorBondWizard"
 import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
 
 type GetStakeInfo = {
@@ -17,6 +21,8 @@ type GetStakeInfo = {
   chainId: ChainId | undefined
   stakeType: StakeType
   userMaxSlippage: number
+  selectedStake: BalanceDetailRow | undefined
+  stakeDirection: StakeDirection
 }
 
 export const useGetBittensorStakeInfo = ({
@@ -28,6 +34,7 @@ export const useGetBittensorStakeInfo = ({
   chainId,
   stakeType,
   userMaxSlippage,
+  stakeDirection,
 }: GetStakeInfo) => {
   const {
     taoToAlphaSlippage,
@@ -51,20 +58,33 @@ export const useGetBittensorStakeInfo = ({
     poolId,
     plancks,
     minJoinBond,
-    isEnabled: true,
+    isEnabled: stakeDirection === "bond",
     stakeType,
     alphaPriceWithSlippage,
     netuid,
     talismanFee: taoToAlphaTalismanFee,
   })
 
+  const bittensorUnbondPayload = useGetBittensorUnbondPayload({
+    sapi,
+    address,
+    hotkey: String(poolId),
+    isEnabled: stakeDirection === "unbond",
+    plancks,
+  })
+
   const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
+
+  const stakeActionPayload = useMemo(
+    () => (stakeDirection === "bond" ? bittensorStakingPayload : bittensorUnbondPayload),
+    [bittensorStakingPayload, bittensorUnbondPayload, stakeDirection],
+  )
 
   const {
     data: payloadAndMetadata,
     isLoading: isLoadingPayload,
     error: errorPayload,
-  } = bittensorStakingPayload
+  } = stakeActionPayload
 
   const { payload, txMetadata } = payloadAndMetadata || {}
 

@@ -6,7 +6,7 @@ import { ROOT_NETUID } from "../../Bittensor/utils/constants"
 type GetBittensorUnbondPayload = {
   sapi: ScaleApi | undefined | null
   isEnabled: boolean
-  address: string | undefined
+  address: string | undefined | null
   hotkey: string | number | undefined
   plancks: bigint | null | undefined
 }

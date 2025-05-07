@@ -1,5 +1,8 @@
+import { planckToTokens } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { Tokens } from "@ui/domains/Asset/Tokens"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -13,8 +16,17 @@ import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 // TODO: Remove all non Bittensor related code from this component
 export const BittensorBondReview = () => {
   const { t } = useTranslation()
-  const { token, formatter, account, onSubmitted, payload, txMetadata, poolId } =
-    useBittensorBondWizard()
+  const {
+    token,
+    formatter,
+    account,
+    onSubmitted,
+    payload,
+    txMetadata,
+    poolId,
+    stakeDirection,
+    newStakeTotal,
+  } = useBittensorBondWizard()
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -29,7 +41,9 @@ export const BittensorBondReview = () => {
 
   return (
     <div className="flex size-full flex-col">
-      <h2 className="mb-24 mt-8 text-center">{t("You are staking")}</h2>
+      <h2 className="mb-24 mt-8 text-center">
+        {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
+      </h2>
       <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
         <div className="flex items-center justify-between gap-8 pb-2">
           <div className="whitespace-nowrap">{t("Amount")} </div>
@@ -60,6 +74,15 @@ export const BittensorBondReview = () => {
             <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
+        <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+          <div className="whitespace-nowrap">{t("New staked total")} </div>
+          <div className="text-body truncate">
+            <Tokens
+              amount={planckToTokens(String(newStakeTotal), token?.decimals)}
+              symbol={token?.symbol}
+            />
+          </div>
+        </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
           <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
           <div className="text-body truncate">
@@ -77,7 +100,7 @@ export const BittensorBondReview = () => {
       {payload && (
         <SapiSendButton
           containerId="StakingModalDialog"
-          label={t("Stake")}
+          label={stakeDirection === "bond" ? t("Stake") : t("Unstake")}
           payload={payload}
           onSubmitted={onSubmitted}
           txMetadata={txMetadata}
