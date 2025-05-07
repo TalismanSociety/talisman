@@ -27,6 +27,7 @@ import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
 import { BondAccountPicker } from "../../Bond/BondAccountPicker"
 import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
+import { DTAO_LOGO, ROOT_NETUID } from "../utils/constants"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "./../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
@@ -97,24 +98,38 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, formatter } = useBittensorBondWizard()
+  const { token, formatter, stakeDirection, netuid } = useBittensorBondWizard()
+
+  const symbol = useMemo(() => {
+    if (stakeDirection === "unbond" && netuid !== ROOT_NETUID) {
+      return `SN${netuid}`
+    }
+    return token?.symbol
+  }, [netuid, stakeDirection, token?.symbol])
 
   if (!token) return null
 
   return (
     <DisplayContainer>
-      <Tokens
-        amount={formatter?.tokens ?? 0}
-        decimals={token.decimals}
-        symbol={token.symbol}
-        noCountUp
-      />
+      <Tokens amount={formatter?.tokens ?? 0} decimals={token.decimals} symbol={symbol} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenInput = () => {
-  const { token, formatter, setPlancks } = useBittensorBondWizard()
+  const { token, formatter, setPlancks, stakeDirection, netuid } = useBittensorBondWizard()
+
+  const isSubnetUnbond = useMemo(
+    () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
+    [netuid, stakeDirection],
+  )
+
+  const symbol = useMemo(() => {
+    if (isSubnetUnbond) {
+      return `SN${netuid}`
+    }
+    return token?.symbol
+  }, [isSubnetUnbond, netuid, token?.symbol])
 
   const defaultValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
 
@@ -161,8 +176,12 @@ const TokenInput = () => {
         onChange={handleChange}
       />
       <div className="text-body flex shrink-0 items-center gap-2 text-base font-normal">
-        <TokenLogo className="text-lg" tokenId={token?.id} />
-        <div>{token?.symbol}</div>
+        {isSubnetUnbond ? (
+          <TokenLogo className="text-lg" url={DTAO_LOGO} />
+        ) : (
+          <TokenLogo className="text-lg" tokenId={token?.id} />
+        )}
+        <div>{symbol}</div>
       </div>
     </div>
   )
@@ -320,7 +339,14 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     stakeType,
     stakeDirection,
     newStakeTotal,
+    netuid,
+    expectedTaoWithSlippage,
   } = useBittensorBondWizard()
+
+  const isSubnetUnbond = useMemo(
+    () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
+    [netuid, stakeDirection],
+  )
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -363,6 +389,14 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           </div>
         </div>
         <BondTypeDetails />
+        {isSubnetUnbond && (
+          <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+            <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
+            <div className="text-body truncate">
+              <Tokens amount={expectedTaoWithSlippage} symbol={token?.symbol} />
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("New staked total")} </div>
           <div className="text-body truncate">
@@ -372,18 +406,23 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             />
           </div>
         </div>
-        <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
-          <div className="text-body overflow-hidden">
-            <StakingUnbondingPeriod chainId={token?.chain?.id} />
-          </div>
-        </div>
-        <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
-          <div className="overflow-hidden">
-            <FeeEstimate />
-          </div>
-        </div>
+        {!isSubnetUnbond && (
+          <>
+            <div className="flex items-center justify-between gap-8">
+              <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
+              <div className="text-body overflow-hidden">
+                <StakingUnbondingPeriod chainId={token?.chain?.id} />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-8">
+              <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
+              <div className="overflow-hidden">
+                <FeeEstimate />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <Button

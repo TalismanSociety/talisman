@@ -38,7 +38,7 @@ export const BittensorSubnetBondReview = () => {
     feeToken,
     slippageDrawer,
     warningDrawer,
-    taoToAlphaSlippage,
+    slippage,
     userMaxSlippage,
 
     // alphaPrice,
@@ -144,10 +144,10 @@ export const BittensorSubnetBondReview = () => {
             <div
               className={classNames(
                 "text-body flex items-center gap-2",
-                ((taoToAlphaSlippage >= HIGH_SLIPPAGE && taoToAlphaSlippage < VERY_HIGH_SLIPPAGE) ||
+                ((slippage >= HIGH_SLIPPAGE && slippage < VERY_HIGH_SLIPPAGE) ||
                   !isSlippageValid) &&
                   "text-orange-500",
-                taoToAlphaSlippage >= VERY_HIGH_SLIPPAGE && "text-red-500",
+                slippage >= VERY_HIGH_SLIPPAGE && "text-red-500",
               )}
             >
               <button
@@ -159,7 +159,7 @@ export const BittensorSubnetBondReview = () => {
                 <SettingsIcon />
                 <div>{userMaxSlippage !== DEFAULT_USER_MAX_SLIPPAGE ? t("Custom") : t("Auto")}</div>
               </button>
-              <div>{taoToAlphaSlippage}%</div>
+              <div>{slippage}%</div>
             </div>
           </div>
         </div>

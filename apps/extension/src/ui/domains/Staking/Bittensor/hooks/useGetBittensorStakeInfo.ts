@@ -37,17 +37,19 @@ export const useGetBittensorStakeInfo = ({
   stakeDirection,
 }: GetStakeInfo) => {
   const {
-    taoToAlphaSlippage,
+    slippage,
     taoToAlphaTalismanFee,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
+    expectedTaoWithSlippage,
     alphaPriceWithSlippage,
+    taoAmountFromAlpha,
     isLoading: isDynamicInfoLoading,
     isError: isDynamicInfoError,
   } = useGetDynamicTaoStakeInfo({
     netuid,
     amount: plancks,
-    direction: "taoToAlpha",
+    direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
     userMaxSlippage,
   })
   const { data: minJoinBond } = useGetMinJoinBond(chainId)
@@ -105,10 +107,12 @@ export const useGetBittensorStakeInfo = ({
     currentPoolId: hotkeys?.[0] ?? poolId,
     minJoinBond,
 
-    taoToAlphaSlippage,
+    slippage,
     taoToAlphaTalismanFee,
     taoToAlphaConversionRate,
+    taoAmountFromAlpha,
     expectedAlphaWithSlippage,
+    expectedTaoWithSlippage,
     isDynamicInfoLoading,
     isDynamicInfoError,
   }

@@ -13,7 +13,7 @@ import { useAccountByAddress, useBalance, usePortfolio, useToken, useTokenRates 
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { BITTENSOR_TOKEN_ID, DEFAULT_USER_MAX_SLIPPAGE } from "../utils/constants"
+import { BITTENSOR_TOKEN_ID, DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 export type WizardStep =
@@ -179,10 +179,12 @@ export const useBittensorBondWizard = () => {
     currentPoolId,
     minJoinBond,
 
-    taoToAlphaSlippage,
+    slippage,
     taoToAlphaTalismanFee,
     taoToAlphaConversionRate,
+    taoAmountFromAlpha,
     expectedAlphaWithSlippage,
+    expectedTaoWithSlippage,
     isDynamicInfoLoading,
     isDynamicInfoError,
   } = useGetBittensorStakeInfo({
@@ -198,13 +200,22 @@ export const useBittensorBondWizard = () => {
     stakeDirection,
   })
 
+  const isSubnetUnbond = useMemo(
+    () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
+    [netuid, stakeDirection],
+  )
+
   // TODO rename to amountToStake
   const formatter = useMemo(
     () =>
       typeof plancks === "bigint"
-        ? new BalanceFormatter(plancks, token?.decimals, tokenRates)
+        ? new BalanceFormatter(
+            isSubnetUnbond ? BigInt(Math.round(taoAmountFromAlpha)) : plancks,
+            token?.decimals,
+            tokenRates,
+          )
         : null,
-    [plancks, token?.decimals, tokenRates],
+    [isSubnetUnbond, plancks, taoAmountFromAlpha, token?.decimals, tokenRates],
   )
 
   const setAddress = useCallback(
@@ -273,10 +284,7 @@ export const useBittensorBondWizard = () => {
     [isStakeFormValid, isUnstakeFormValid, stakeDirection],
   )
 
-  const isSlippageValid = useMemo(
-    () => userMaxSlippage >= taoToAlphaSlippage,
-    [taoToAlphaSlippage, userMaxSlippage],
-  )
+  const isSlippageValid = useMemo(() => userMaxSlippage >= slippage, [slippage, userMaxSlippage])
 
   useEffect(() => {
     /**
@@ -445,13 +453,15 @@ export const useBittensorBondWizard = () => {
     errorFeeEstimate,
     stakeType,
 
-    taoToAlphaSlippage,
+    slippage,
     taoToAlphaTalismanFee,
     isDynamicInfoLoading,
     isDynamicInfoError,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
+    expectedTaoWithSlippage,
     userMaxSlippage,
+    taoAmountFromAlpha,
 
     setAddress,
     setTokenId,

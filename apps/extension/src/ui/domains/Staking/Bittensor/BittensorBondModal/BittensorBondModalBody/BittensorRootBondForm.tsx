@@ -48,8 +48,11 @@ const BittensorStakeApr = () => {
 
 export const BittensorRootBondForm = () => {
   const { t } = useTranslation()
+  const { stakeDirection } = useBittensorBondWizard()
 
   const RootStakeDetails = () => {
+    if (stakeDirection === "unbond") return null
+
     return (
       <div className="flex items-center justify-between gap-8">
         <div>

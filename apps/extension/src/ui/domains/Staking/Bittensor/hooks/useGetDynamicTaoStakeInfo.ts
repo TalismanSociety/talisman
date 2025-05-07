@@ -14,7 +14,7 @@ type GetDynamicTaoStakeInfoProps = {
 
 export const useGetDynamicTaoStakeInfo = ({
   netuid,
-  // direction = "taoToAlpha",
+  direction,
   amount,
   userMaxSlippage,
 }: GetDynamicTaoStakeInfoProps) => {
@@ -24,6 +24,7 @@ export const useGetDynamicTaoStakeInfo = ({
 
   const alphaPrice = useMemo(() => calculateAlphaPrice({ alpha_in, tao_in }), [alpha_in, tao_in])
 
+  // used for add_stake_limit limit order price
   const alphaPriceWithSlippage = useMemo(
     () => alphaPrice * (1 + userMaxSlippage / 100),
     [alphaPrice, userMaxSlippage],
@@ -49,6 +50,7 @@ export const useGetDynamicTaoStakeInfo = ({
     [alphaPrice],
   )
 
+  // expected amount of Alpha tokens the user will get taking slippage into account
   const expectedAlphaWithSlippage = useMemo(
     () =>
       calculateExpectedAlpha({
@@ -59,6 +61,32 @@ export const useGetDynamicTaoStakeInfo = ({
     [alphaPrice, amount, taoToAlphaSlippage],
   )
 
+  const taoAmountFromAlpha = useMemo(
+    () =>
+      calculateTaoFromAlpha({
+        alphaPrice,
+        amount: Number(amount ?? 0n),
+      }),
+    [alphaPrice, amount],
+  )
+
+  const alphaToTaoSlippage = calculateSlippage({
+    alpha_out,
+    tao_in,
+    amount: BigInt(Math.round(taoAmountFromAlpha)),
+  })
+
+  // expected amount of TAO tokens the user will get taking slippage into account
+  const expectedTaoWithSlippage = useMemo(
+    () =>
+      calculateExpectedTao({
+        alphaPrice,
+        amount: Number(amount ?? 0n),
+        slippage: alphaToTaoSlippage,
+      }) / Number(SCALE_FACTOR),
+    [alphaPrice, alphaToTaoSlippage, amount],
+  )
+
   return {
     alphaPriceWithSlippage,
     taoToAlphaSlippage,
@@ -67,6 +95,9 @@ export const useGetDynamicTaoStakeInfo = ({
     isError,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
+    expectedTaoWithSlippage,
+    slippage: direction === "taoToAlpha" ? taoToAlphaSlippage : alphaToTaoSlippage,
+    taoAmountFromAlpha: taoAmountFromAlpha,
   }
 }
 
@@ -134,4 +165,32 @@ const calculateExpectedAlpha = ({
   const expectedAlpha = (amount / alphaPrice) * (1 - slippage / 100)
 
   return expectedAlpha
+}
+
+const calculateExpectedTao = ({
+  alphaPrice,
+  amount,
+  slippage,
+}: {
+  alphaPrice: number
+  amount: number
+  slippage: number
+}): number => {
+  if (!amount || !alphaPrice) return 0
+  const expectedTao = amount * alphaPrice * (1 - slippage / 100)
+
+  return expectedTao
+}
+
+const calculateTaoFromAlpha = ({
+  alphaPrice,
+  amount,
+}: {
+  alphaPrice: number
+  amount: number
+}): number => {
+  if (!amount || !alphaPrice) return 0
+  const expectedTao = amount * alphaPrice
+
+  return expectedTao
 }
