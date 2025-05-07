@@ -1,6 +1,6 @@
 import { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
-import { classNames, tokensToPlanck } from "@talismn/util"
+import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Account } from "extension-core"
 import {
   ChangeEventHandler,
@@ -319,6 +319,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     selectStakeDrawer,
     stakeType,
     stakeDirection,
+    newStakeTotal,
   } = useBittensorBondWizard()
 
   return (
@@ -362,6 +363,15 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           </div>
         </div>
         <BondTypeDetails />
+        <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+          <div className="whitespace-nowrap">{t("New staked total")} </div>
+          <div className="text-body truncate">
+            <Tokens
+              amount={planckToTokens(String(newStakeTotal), token?.decimals)}
+              symbol={token?.symbol}
+            />
+          </div>
+        </div>
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
           <div className="text-body overflow-hidden">
