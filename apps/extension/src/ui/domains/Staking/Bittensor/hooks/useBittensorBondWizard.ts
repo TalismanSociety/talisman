@@ -205,8 +205,7 @@ export const useBittensorBondWizard = () => {
     [netuid, stakeDirection],
   )
 
-  // TODO rename to amountToStake
-  const formatter = useMemo(
+  const amountToStake = useMemo(
     () =>
       typeof plancks === "bigint"
         ? new BalanceFormatter(
@@ -270,11 +269,11 @@ export const useBittensorBondWizard = () => {
       !!token &&
       !!poolId &&
       (stakeType === "root" ? true : !!netuid) &&
-      !!formatter &&
+      !!amountToStake &&
       typeof minJoinBond === "bigint" &&
       plancks &&
       plancks > 0n,
-    [account, formatter, minJoinBond, netuid, plancks, poolId, stakeType, token],
+    [account, amountToStake, minJoinBond, netuid, plancks, poolId, stakeType, token],
   )
 
   const isUnstakeFormValid = useMemo(() => plancks && plancks > 0n, [plancks])
@@ -336,16 +335,16 @@ export const useBittensorBondWizard = () => {
   }, [plancks, stakeDirection, totalStakedPlancks])
 
   const stakeInputErrorMessage = useMemo(() => {
-    if (!formatter || typeof minJoinBond !== "bigint") return null
+    if (!amountToStake || typeof minJoinBond !== "bigint") return null
 
-    if (!!balance && !!formatter.planck && formatter.planck > balance.transferable.planck)
+    if (!!balance && !!amountToStake.planck && amountToStake.planck > balance.transferable.planck)
       return t("Insufficient balance")
 
     if (
       !!balance &&
       !!feeEstimate &&
-      !!formatter.planck &&
-      formatter.planck + feeEstimate > balance.transferable.planck
+      !!amountToStake.planck &&
+      amountToStake.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee")
 
@@ -353,8 +352,8 @@ export const useBittensorBondWizard = () => {
       !!balance &&
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
-      !!formatter.planck &&
-      existentialDeposit.planck + formatter.planck + feeEstimate > balance.transferable.planck
+      !!amountToStake.planck &&
+      existentialDeposit.planck + amountToStake.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
 
@@ -362,14 +361,15 @@ export const useBittensorBondWizard = () => {
       !!balance &&
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
-      !!formatter.planck &&
-      existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
+      !!amountToStake.planck &&
+      existentialDeposit.planck + amountToStake.planck + feeEstimate * 10n >
+        balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
         "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
       )
 
-    if (formatter.planck < minJoinBond)
+    if (amountToStake.planck < minJoinBond)
       return t("Minimum bond is {{amount}} {{symbol}}", {
         amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
         symbol: token?.symbol,
@@ -378,7 +378,7 @@ export const useBittensorBondWizard = () => {
     return null
   }, [
     t,
-    formatter,
+    amountToStake,
     minJoinBond,
     balance,
     feeEstimate,
@@ -426,7 +426,7 @@ export const useBittensorBondWizard = () => {
     tokenRates,
     poolId,
     netuid,
-    formatter,
+    amountToStake,
     displayMode,
     accountPicker,
     selectStakeDrawer,

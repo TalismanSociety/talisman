@@ -86,19 +86,19 @@ const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
 
 const FiatDisplay = () => {
   const currency = useSelectedCurrency()
-  const { tokenRates, formatter } = useBittensorBondWizard()
+  const { tokenRates, amountToStake } = useBittensorBondWizard()
 
   if (!tokenRates) return null
 
   return (
     <DisplayContainer>
-      <Fiat amount={formatter?.fiat(currency) ?? 0} noCountUp />
+      <Fiat amount={amountToStake?.fiat(currency) ?? 0} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenDisplay = () => {
-  const { token, formatter, stakeDirection, netuid } = useBittensorBondWizard()
+  const { token, amountToStake, stakeDirection, netuid } = useBittensorBondWizard()
 
   const symbol = useMemo(() => {
     if (stakeDirection === "unbond" && netuid !== ROOT_NETUID) {
@@ -111,13 +111,18 @@ const TokenDisplay = () => {
 
   return (
     <DisplayContainer>
-      <Tokens amount={formatter?.tokens ?? 0} decimals={token.decimals} symbol={symbol} noCountUp />
+      <Tokens
+        amount={amountToStake?.tokens ?? 0}
+        decimals={token.decimals}
+        symbol={symbol}
+        noCountUp
+      />
     </DisplayContainer>
   )
 }
 
 const TokenInput = () => {
-  const { token, formatter, setPlancks, stakeDirection, netuid } = useBittensorBondWizard()
+  const { token, amountToStake, setPlancks, stakeDirection, netuid } = useBittensorBondWizard()
 
   const isSubnetUnbond = useMemo(
     () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
@@ -131,7 +136,7 @@ const TokenInput = () => {
     return token?.symbol
   }, [isSubnetUnbond, netuid, token?.symbol])
 
-  const defaultValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
+  const defaultValue = useMemo(() => amountToStake?.tokens ?? "", [amountToStake?.tokens])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -157,8 +162,8 @@ const TokenInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!formatter) refTokensInput.current?.focus()
-  }, [formatter, refTokensInput])
+    if (!amountToStake) refTokensInput.current?.focus()
+  }, [amountToStake, refTokensInput])
 
   // resize input to keep content centered
   useInputAutoWidth(refTokensInput)
@@ -188,13 +193,13 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, formatter, setPlancks } = useBittensorBondWizard()
+  const { token, tokenRates, amountToStake, setPlancks } = useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
-    const val = formatter?.fiat(currency) ?? ""
+    const val = amountToStake?.fiat(currency) ?? ""
     return val ? String(Number(val.toFixed(2))) : val
-  }, [currency, formatter])
+  }, [currency, amountToStake])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -222,8 +227,8 @@ const FiatInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!formatter) refFiatInput.current?.focus()
-  }, [formatter, refFiatInput])
+    if (!amountToStake) refFiatInput.current?.focus()
+  }, [amountToStake, refFiatInput])
 
   // resize input to keep content centered
   useInputAutoWidth(refFiatInput)

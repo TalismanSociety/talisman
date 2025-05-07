@@ -28,7 +28,7 @@ export const BittensorSubnetBondReview = () => {
 
   const {
     token,
-    formatter,
+    amountToStake,
     account,
     payload,
     isSlippageValid,
@@ -82,7 +82,7 @@ export const BittensorSubnetBondReview = () => {
               <TokensAndFiat
                 isBalance
                 tokenId={token?.id}
-                planck={formatter?.planck}
+                planck={amountToStake?.planck}
                 noCountUp
                 tokensClassName="text-body"
                 fiatClassName="text-body-secondary"
