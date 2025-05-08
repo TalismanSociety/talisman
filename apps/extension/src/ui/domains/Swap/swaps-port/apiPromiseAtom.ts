@@ -23,6 +23,7 @@ export const apiPromiseAtom = atomFamily((chainId?: string) =>
     // register effect to clean up ApiPromise when it's no longer in use
     get(cleanupApiPromiseEffect(chainId, apiPromise))
 
+    await apiPromise.isReady
     return apiPromise
   }),
 )
