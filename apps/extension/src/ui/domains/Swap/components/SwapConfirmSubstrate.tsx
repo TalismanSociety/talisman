@@ -102,9 +102,10 @@ export const SwapConfirmSubstrate = ({
       !fromAddress ||
       !toAddress ||
       insufficientBalance !== false ||
+      !sapi ||
       payloadLoadable.state === "loading"
     )
-  }, [fromAddress, insufficientBalance, isReady, toAddress, toAmount, payloadLoadable])
+  }, [fromAddress, insufficientBalance, isReady, payloadLoadable, sapi, toAddress, toAmount])
 
   const resetSwapForm = useSetAtom(resetSwapFormAtom)
   const { close: closeSwapTokensModal } = useSwapTokensModal()
@@ -137,15 +138,15 @@ export const SwapConfirmSubstrate = ({
         <SapiSendButton
           containerId="SwapTokensModalDialog"
           label={t("Confirm Swap")}
-          loading={!isReady || payloadLoadable.state === "loading"}
+          loading={!isReady || !sapi || payloadLoadable.state === "loading"}
           payload={
-            isReady && payloadLoadable.state === "hasData"
+            isReady && sapi && payloadLoadable.state === "hasData"
               ? payloadLoadable.data?.payload
               : undefined
           }
           txInfo={txInfo}
           txMetadata={
-            isReady && payloadLoadable.state === "hasData"
+            isReady && sapi && payloadLoadable.state === "hasData"
               ? payloadLoadable.data?.txMetadata
               : undefined
           }
