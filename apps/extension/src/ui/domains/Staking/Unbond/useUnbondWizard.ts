@@ -53,7 +53,7 @@ export const useUnbondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { address, step, hash, tokenId, poolId: unstakePoolId } = useWizardState()
+  const { address, step, hash, tokenId } = useWizardState()
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -79,7 +79,6 @@ export const useUnbondWizard = () => {
     sapi,
     chainId: token?.chain?.id,
     address: account?.address,
-    unstakePoolId,
   })
 
   const onSubmitted = useCallback(
