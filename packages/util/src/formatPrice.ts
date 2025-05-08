@@ -1,15 +1,11 @@
-export const formatPrice = (
-  price: number,
-  currency: string,
-  compact: boolean,
-  forceTickerAfter?: boolean,
-) => {
+export const formatPrice = (price: number, currency: string, compact: boolean) => {
   return Intl.NumberFormat(undefined, {
     style: "currency",
     currency,
-    currencyDisplay: forceTickerAfter ? "code" : currency === "usd" ? "narrowSymbol" : "symbol",
+    currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
+    minimumSignificantDigits: 3,
     maximumSignificantDigits: compact ? (price < 1 ? 3 : 4) : undefined,
     roundingPriority: compact ? "auto" : "morePrecision",
-    notation: compact && price >= 10_000 ? "compact" : "standard",
+    notation: compact ? "compact" : "standard",
   }).format(price)
 }
