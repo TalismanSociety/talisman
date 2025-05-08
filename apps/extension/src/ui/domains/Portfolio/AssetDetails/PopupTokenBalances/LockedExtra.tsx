@@ -13,13 +13,14 @@ import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
 type LockedExtraProps = {
+  netuid?: number
   tokenId: TokenId
   address?: string
   isLoading: boolean
   rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string; netuid?: number }
 }
 
-export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtraProps) => {
+export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: LockedExtraProps) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
   const { selectedAccount } = usePortfolioNavigation()
@@ -74,6 +75,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
         )
       ) : canUnbond ? (
         <UnbondButton
+          netuid={netuid}
           tokenId={tokenId}
           address={rowAddress}
           variant="small"

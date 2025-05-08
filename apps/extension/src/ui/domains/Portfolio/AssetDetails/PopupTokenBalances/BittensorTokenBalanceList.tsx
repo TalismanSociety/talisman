@@ -117,6 +117,7 @@ export const BittensorTokenBalanceList = ({
 
         return (
           <TokenBalancesDetailRow
+            netuid={Number(listKey)}
             key={row.key}
             row={row}
             isLastRow={rows.length === i + 1}
