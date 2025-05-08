@@ -429,7 +429,7 @@ export const chains = [
       {
         id: "integritee-kusama",
         paraId: 2015,
-        name: "Integritee",
+        name: "Integritee Kusama",
       },
       {
         id: "ipci",
@@ -474,7 +474,7 @@ export const chains = [
       {
         id: "kusama-coretime",
         paraId: 1005,
-        name: "Coretime",
+        name: "Kusama Coretime",
       },
       {
         id: "kusama-people",
@@ -550,7 +550,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 594,
+    sortIndex: 593,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -664,7 +664,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 595,
+    sortIndex: 594,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -1097,7 +1097,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-polkadot",
     specName: "bridge-hub-polkadot",
-    specVersion: "1004000",
+    specVersion: "1004003",
     nativeToken: {
       id: "polkadot-bridge-hub-substrate-native",
     },
