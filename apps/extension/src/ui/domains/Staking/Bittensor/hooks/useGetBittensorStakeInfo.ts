@@ -44,6 +44,7 @@ export const useGetBittensorStakeInfo = ({
     expectedTaoWithSlippage,
     alphaPriceWithSlippage,
     taoAmountFromAlpha,
+    minAlphaUnstake,
     isLoading: isDynamicInfoLoading,
     isError: isDynamicInfoError,
   } = useGetDynamicTaoStakeInfo({
@@ -106,6 +107,7 @@ export const useGetBittensorStakeInfo = ({
     errorFeeEstimate,
     currentPoolId: hotkeys?.[0] ?? poolId,
     minJoinBond,
+    minAlphaUnstake,
 
     slippage,
     taoToAlphaTalismanFee,

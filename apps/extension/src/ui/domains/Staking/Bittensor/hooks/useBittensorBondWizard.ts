@@ -1,5 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
+import { planckToTokens } from "@talismn/util"
 import { Address, BalanceFormatter } from "extension-core"
 import { SetStateAction, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -80,7 +81,6 @@ type innerOpenCloseKey =
   | "isSlippageDrawerOpen"
   | "isWarningDrawerOpen"
 
-// TODO: this is meant to handle a pool picker too
 const useInnerOpenClose = (key: innerOpenCloseKey) => {
   const state = useWizardState()
   const isOpen = state[key]
@@ -178,6 +178,7 @@ export const useBittensorBondWizard = () => {
     isLoadingFeeEstimate,
     currentPoolId,
     minJoinBond,
+    minAlphaUnstake,
 
     slippage,
     taoToAlphaTalismanFee,
@@ -399,20 +400,36 @@ export const useBittensorBondWizard = () => {
     if ((plancks || 0n) > totalStakedPlancks) {
       return t("Insufficient balance")
     }
-    if (newStakeTotal < (minJoinBond || 0n) && newStakeTotal !== 0n) {
+    if (newStakeTotal < (minJoinBond || 0n) && newStakeTotal !== 0n && !isSubnetUnbond) {
       return t("You must keep 0.1 TAO to continue staking")
+    }
+
+    if (
+      plancks &&
+      Number(planckToTokens(plancks?.toString(), token?.decimals)) < minAlphaUnstake &&
+      isSubnetUnbond
+    ) {
+      return t(
+        `Minimum unstake amount is ${minAlphaUnstake.toFixed(2)} ${
+          selectedStake?.meta?.dynamicInfo?.tokenSymbol
+        }`,
+      )
     }
 
     return null
   }, [
     balance,
-    existentialDeposit?.planck,
     feeEstimate,
-    minJoinBond,
+    existentialDeposit?.planck,
     plancks,
-    newStakeTotal,
-    t,
     totalStakedPlancks,
+    newStakeTotal,
+    minJoinBond,
+    isSubnetUnbond,
+    token?.decimals,
+    minAlphaUnstake,
+    t,
+    selectedStake?.meta?.dynamicInfo?.tokenSymbol,
   ])
 
   const inputErrorMessage = useMemo(
