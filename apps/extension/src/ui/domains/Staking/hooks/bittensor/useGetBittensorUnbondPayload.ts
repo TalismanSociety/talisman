@@ -95,8 +95,8 @@ export const useGetBittensorUnbondPayload = ({
   const tokenDecimals = 9
 
   const alphaPriceWithSlippagePlanks = useMemo(() => {
-    const planks = tokensToPlanck(String(alphaPriceWithSlippage), tokenDecimals)
-    const rounded = Math.round(parseFloat(planks))
+    const alphaPricePlancks = tokensToPlanck(String(alphaPriceWithSlippage), tokenDecimals)
+    const rounded = Math.round(parseFloat(alphaPricePlancks))
     return BigInt(rounded)
   }, [alphaPriceWithSlippage])
 

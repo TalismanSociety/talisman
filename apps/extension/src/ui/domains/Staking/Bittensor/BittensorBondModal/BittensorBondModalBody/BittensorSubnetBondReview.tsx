@@ -41,12 +41,12 @@ export const BittensorSubnetBondReview = () => {
     slippage,
     userMaxSlippage,
 
-    // alphaPrice,
     talismanFee,
     taoToAlphaConversionRate,
     isDynamicInfoLoading,
     isDynamicInfoError,
     expectedAlphaWithSlippage,
+    stakeDirection,
     onSubmitted,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
@@ -72,7 +72,9 @@ export const BittensorSubnetBondReview = () => {
 
   return (
     <div className="flex size-full flex-col">
-      <h2 className="mb-16 mt-6 text-center">{t("You are staking")}</h2>
+      <h2 className="mb-16 mt-6 text-center">
+        {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
+      </h2>
       <div className="space-y-[0.75rem]">
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
           <div className="flex items-center justify-between gap-8 pb-2">
@@ -203,7 +205,7 @@ export const BittensorSubnetBondReview = () => {
         ) : (
           <SapiSendButton
             containerId="StakingModalDialog"
-            label={t("Stake")}
+            label={stakeDirection === "bond" ? t("Stake") : t("Unstake")}
             payload={payload}
             onSubmitted={onSubmitted}
             txMetadata={txMetadata}

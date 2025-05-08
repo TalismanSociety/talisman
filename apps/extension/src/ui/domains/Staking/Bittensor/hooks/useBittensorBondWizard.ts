@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { TokenId } from "@talismn/chaindata-provider"
-import { planckToTokens } from "@talismn/util"
+import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Address, BalanceFormatter } from "extension-core"
 import { SetStateAction, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -206,6 +206,7 @@ export const useBittensorBondWizard = () => {
     [netuid, stakeDirection],
   )
 
+  // amountToStakeInTao
   const amountToStake = useMemo(
     () =>
       typeof plancks === "bigint"
@@ -217,6 +218,27 @@ export const useBittensorBondWizard = () => {
         : null,
     [isSubnetUnbond, plancks, taoAmountFromAlpha, token?.decimals, tokenRates],
   )
+
+  const amountToStakeAlpha = useMemo(
+    () =>
+      typeof plancks === "bigint"
+        ? new BalanceFormatter(plancks, token?.decimals, tokenRates)
+        : null,
+    [plancks, token?.decimals, tokenRates],
+  )
+
+  // estimatedAmountToStakeInTao includes slippage
+  const estimatedAmountToStake = useMemo(() => {
+    const expectedTaoWithSlippagePlancks =
+      tokensToPlanck(String(expectedTaoWithSlippage), token?.decimals) || "0"
+    return typeof plancks === "bigint"
+      ? new BalanceFormatter(
+          isSubnetUnbond ? BigInt(Math.round(parseFloat(expectedTaoWithSlippagePlancks))) : plancks,
+          token?.decimals,
+          tokenRates,
+        )
+      : null
+  }, [expectedTaoWithSlippage, isSubnetUnbond, plancks, token?.decimals, tokenRates])
 
   const setAddress = useCallback(
     (address: Address) => setWizardState((prev) => ({ ...prev, address })),
@@ -400,7 +422,12 @@ export const useBittensorBondWizard = () => {
     if ((plancks || 0n) > totalStakedPlancks) {
       return t("Insufficient balance")
     }
-    if (newStakeTotal < (minJoinBond || 0n) && newStakeTotal !== 0n && !isSubnetUnbond) {
+    if (
+      newStakeTotal < (minJoinBond || 0n) &&
+      newStakeTotal !== 0n &&
+      !isSubnetUnbond &&
+      (plancks || 0n) > 0n
+    ) {
       return t("You must keep 0.1 TAO to continue staking")
     }
 
@@ -410,7 +437,7 @@ export const useBittensorBondWizard = () => {
       isSubnetUnbond
     ) {
       return t(
-        `Minimum unstake amount is ${minAlphaUnstake.toFixed(2)} ${
+        `Minimum unstake amount is ${minAlphaUnstake.toFixed(4)} ${
           selectedStake?.meta?.dynamicInfo?.tokenSymbol
         }`,
       )
@@ -443,7 +470,10 @@ export const useBittensorBondWizard = () => {
     tokenRates,
     poolId,
     netuid,
+    plancks,
     amountToStake,
+    estimatedAmountToStake,
+    amountToStakeAlpha,
     displayMode,
     accountPicker,
     selectStakeDrawer,
@@ -459,6 +489,7 @@ export const useBittensorBondWizard = () => {
     stakeDirection,
     selectedStake,
     newStakeTotal,
+    isSubnetUnbond,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,

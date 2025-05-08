@@ -98,7 +98,12 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, amountToStake, stakeDirection, netuid } = useBittensorBondWizard()
+  const { token, stakeDirection, netuid, plancks } = useBittensorBondWizard()
+
+  const tokenPlancks = useMemo(
+    () => planckToTokens(String(plancks || 0n), token?.decimals),
+    [plancks, token?.decimals],
+  )
 
   const symbol = useMemo(() => {
     if (stakeDirection === "unbond" && netuid !== ROOT_NETUID) {
@@ -111,23 +116,14 @@ const TokenDisplay = () => {
 
   return (
     <DisplayContainer>
-      <Tokens
-        amount={amountToStake?.tokens ?? 0}
-        decimals={token.decimals}
-        symbol={symbol}
-        noCountUp
-      />
+      <Tokens amount={tokenPlancks} decimals={token.decimals} symbol={symbol} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenInput = () => {
-  const { token, amountToStake, setPlancks, stakeDirection, netuid } = useBittensorBondWizard()
-
-  const isSubnetUnbond = useMemo(
-    () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
-    [netuid, stakeDirection],
-  )
+  const { token, amountToStake, amountToStakeAlpha, isSubnetUnbond, setPlancks, netuid } =
+    useBittensorBondWizard()
 
   const symbol = useMemo(() => {
     if (isSubnetUnbond) {
@@ -136,14 +132,18 @@ const TokenInput = () => {
     return token?.symbol
   }, [isSubnetUnbond, netuid, token?.symbol])
 
-  const defaultValue = useMemo(() => amountToStake?.tokens ?? "", [amountToStake?.tokens])
+  const defaultValue = useMemo(
+    () => (isSubnetUnbond ? amountToStakeAlpha?.tokens : (amountToStake?.tokens ?? "")),
+    [amountToStake?.tokens, amountToStakeAlpha?.tokens, isSubnetUnbond],
+  )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token && e.target.value) {
+      if (token) {
         try {
           const plancks = tokensToPlanck(e.target.value, token.decimals)
+
           return setPlancks(BigInt(plancks))
         } catch (err) {
           // invalid input, ignore
@@ -175,8 +175,9 @@ const TokenInput = () => {
         ref={refTokensInput}
         type="text"
         inputMode="decimal"
-        defaultValue={defaultValue}
         placeholder="0"
+        step="any"
+        defaultValue={defaultValue}
         className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
         onChange={handleChange}
       />
@@ -193,7 +194,8 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, amountToStake, setPlancks } = useBittensorBondWizard()
+  const { token, tokenRates, amountToStake, setPlancks, isSubnetUnbond, taoToAlphaConversionRate } =
+    useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
@@ -206,7 +208,15 @@ const FiatInput = () => {
       if (token && tokenRates?.[currency]?.price && e.target.value) {
         try {
           const fiat = parseFloat(e.target.value)
-          const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(token.decimals / 3))
+          let tokens: string = (fiat / tokenRates[currency].price).toFixed(
+            Math.ceil(token.decimals / 3),
+          )
+
+          if (isSubnetUnbond) {
+            tokens = String(
+              (Number(tokens) * taoToAlphaConversionRate).toFixed(Math.ceil(token.decimals / 3)),
+            )
+          }
           const plancks = tokensToPlanck(tokens, token.decimals)
           return setPlancks(BigInt(plancks))
         } catch (err) {
@@ -217,7 +227,7 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [currency, setPlancks, token, tokenRates],
+    [currency, isSubnetUnbond, setPlancks, taoToAlphaConversionRate, token, tokenRates],
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -243,7 +253,8 @@ const FiatInput = () => {
       <input
         key="fiatInput"
         ref={refFiatInput}
-        type="text"
+        type="number"
+        inputMode="decimal"
         defaultValue={defaultValue}
         placeholder={"0.00"}
         className="text-body peer inline-block min-w-0 bg-transparent text-xl"
@@ -332,6 +343,7 @@ type BittensorBondFormBaseProps = {
 
 export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBaseProps) => {
   const { t } = useTranslation()
+  const currency = useSelectedCurrency()
   const {
     account,
     accountPicker,
@@ -346,6 +358,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     newStakeTotal,
     netuid,
     expectedTaoWithSlippage,
+    estimatedAmountToStake,
   } = useBittensorBondWizard()
 
   const isSubnetUnbond = useMemo(
@@ -397,8 +410,9 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         {isSubnetUnbond && (
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
-            <div className="text-body truncate">
+            <div className="text-body flex items-center gap-2 truncate">
               <Tokens amount={expectedTaoWithSlippage} symbol={token?.symbol} />
+              <Fiat amount={estimatedAmountToStake?.fiat(currency) ?? 0} noCountUp />
             </div>
           </div>
         )}
