@@ -1,5 +1,18 @@
 # @talismn/balances
 
+## 0.9.2
+
+### Patch Changes
+
+- 378bd5e: fix: allow multiple substrate-tokens to have the same symbol
+- b447fbf: chore: add SimpleEvmNetworkList
+- Updated dependencies [a9b71ff]
+- Updated dependencies [b447fbf]
+  - @talismn/chaindata-provider@0.10.1
+  - @talismn/chain-connector@0.10.1
+  - @talismn/chain-connector-evm@0.10.1
+  - @talismn/token-rates@2.0.2
+
 ## 0.9.1
 
 ### Patch Changes

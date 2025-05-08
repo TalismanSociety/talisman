@@ -1,5 +1,13 @@
 # @talismn/on-chain-id
 
+## 0.1.8
+
+### Patch Changes
+
+- Updated dependencies [378bd5e]
+- Updated dependencies [b447fbf]
+  - @talismn/balances@0.9.2
+
 ## 0.1.7
 
 ### Patch Changes

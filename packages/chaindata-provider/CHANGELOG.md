@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 0.10.1
+
+### Patch Changes
+
+- a9b71ff: generate init data
+- b447fbf: chore: add SimpleEvmNetworkList
+
 ## 0.10.0
 
 ### Minor Changes
