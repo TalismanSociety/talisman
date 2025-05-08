@@ -84,17 +84,15 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
               <div className="flex-1" />
             </div>
 
-            <div className="relative flex-1 overflow-y-scroll">
-              <TokenPicker
-                selected={selectedAsset?.id}
-                allowUntransferable
-                ownedOnly
-                isInitializing={!assets}
-                tokenFilter={(token) => assetIds?.includes(token.id) ?? false}
-                onSelect={(tokenId) => handleSelectAssetId(tokenId)}
-                showEmptyBalances
-              />
-            </div>
+            <TokenPicker
+              selected={selectedAsset?.id}
+              allowUntransferable
+              ownedOnly
+              isInitializing={!assets}
+              tokenFilter={(token) => assetIds?.includes(token.id) ?? false}
+              onSelect={(tokenId) => handleSelectAssetId(tokenId)}
+              showEmptyBalances
+            />
 
             {assetWithWarning && (
               <FadeIn>
