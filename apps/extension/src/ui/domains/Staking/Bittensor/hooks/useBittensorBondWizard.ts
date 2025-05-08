@@ -181,7 +181,7 @@ export const useBittensorBondWizard = () => {
     minAlphaUnstake,
 
     slippage,
-    taoToAlphaTalismanFee,
+    talismanFee,
     taoToAlphaConversionRate,
     taoAmountFromAlpha,
     expectedAlphaWithSlippage,
@@ -471,7 +471,7 @@ export const useBittensorBondWizard = () => {
     stakeType,
 
     slippage,
-    taoToAlphaTalismanFee,
+    talismanFee,
     isDynamicInfoLoading,
     isDynamicInfoError,
     taoToAlphaConversionRate,

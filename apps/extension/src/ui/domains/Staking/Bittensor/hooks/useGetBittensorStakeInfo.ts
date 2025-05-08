@@ -38,7 +38,7 @@ export const useGetBittensorStakeInfo = ({
 }: GetStakeInfo) => {
   const {
     slippage,
-    taoToAlphaTalismanFee,
+    talismanFee,
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
     expectedTaoWithSlippage,
@@ -65,7 +65,7 @@ export const useGetBittensorStakeInfo = ({
     stakeType,
     alphaPriceWithSlippage,
     netuid,
-    talismanFee: taoToAlphaTalismanFee,
+    talismanFee: talismanFee,
   })
 
   const bittensorUnbondPayload = useGetBittensorUnbondPayload({
@@ -74,6 +74,10 @@ export const useGetBittensorStakeInfo = ({
     hotkey: String(poolId),
     isEnabled: stakeDirection === "unbond",
     plancks,
+    stakeType,
+    alphaPriceWithSlippage,
+    talismanFee,
+    netuid,
   })
 
   const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
@@ -110,7 +114,7 @@ export const useGetBittensorStakeInfo = ({
     minAlphaUnstake,
 
     slippage,
-    taoToAlphaTalismanFee,
+    talismanFee,
     taoToAlphaConversionRate,
     taoAmountFromAlpha,
     expectedAlphaWithSlippage,

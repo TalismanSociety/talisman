@@ -22,13 +22,20 @@ export const useGetDynamicTaoStakeInfo = ({
   const { data, isLoading, isError } = useGetSubnetMetagraphByNetuid({ netuid })
   const { data: minStake } = useGetBittensorMinJoinBond({ chainId: "bittensor" })
 
+  const isTaoToAlpha = useMemo(() => direction === "taoToAlpha", [direction])
+
   const { alpha_out, alpha_in, tao_in } = data ?? {}
 
   const alphaPrice = useMemo(() => calculateAlphaPrice({ alpha_in, tao_in }), [alpha_in, tao_in])
 
   // used for add_stake_limit limit order price
-  const alphaPriceWithSlippage = useMemo(
+  const addAlphaPriceWithSlippage = useMemo(
     () => alphaPrice * (1 + userMaxSlippage / 100),
+    [alphaPrice, userMaxSlippage],
+  )
+
+  const removeAlphaPriceWithSlippage = useMemo(
+    () => alphaPrice * (1 - userMaxSlippage / 100),
     [alphaPrice, userMaxSlippage],
   )
 
@@ -36,6 +43,7 @@ export const useGetDynamicTaoStakeInfo = ({
     () => calculateSlippage({ alpha_out, tao_in, amount }),
     [alpha_out, amount, tao_in],
   )
+
   const taoToAlphaTalismanFee = useMemo(
     () => calculateFee({ amount, fee: TALISMAN_FEE_BITTENSOR }),
     [amount],
@@ -72,11 +80,24 @@ export const useGetDynamicTaoStakeInfo = ({
     [alphaPrice, amount],
   )
 
-  const alphaToTaoSlippage = calculateSlippage({
-    alpha_out,
-    tao_in,
-    amount: BigInt(Math.round(taoAmountFromAlpha)),
-  })
+  const alphaToTaoTalismanFee = useMemo(
+    () =>
+      calculateFee({
+        amount: BigInt(Math.round(taoAmountFromAlpha)),
+        fee: TALISMAN_FEE_BITTENSOR,
+      }),
+    [taoAmountFromAlpha],
+  )
+
+  const alphaToTaoSlippage = useMemo(
+    () =>
+      calculateSlippage({
+        alpha_out,
+        tao_in,
+        amount: BigInt(Math.round(taoAmountFromAlpha)),
+      }),
+    [alpha_out, taoAmountFromAlpha, tao_in],
+  )
 
   // expected amount of TAO tokens the user will get taking slippage into account
   const expectedTaoWithSlippage = useMemo(
@@ -100,7 +121,9 @@ export const useGetDynamicTaoStakeInfo = ({
   )
 
   return {
-    alphaPriceWithSlippage,
+    alphaPriceWithSlippage: isTaoToAlpha ? addAlphaPriceWithSlippage : removeAlphaPriceWithSlippage,
+    slippage: isTaoToAlpha ? taoToAlphaSlippage : alphaToTaoSlippage,
+    talismanFee: isTaoToAlpha ? taoToAlphaTalismanFee : alphaToTaoTalismanFee,
     taoToAlphaSlippage,
     taoToAlphaTalismanFee,
     isLoading,
@@ -108,7 +131,6 @@ export const useGetDynamicTaoStakeInfo = ({
     taoToAlphaConversionRate,
     expectedAlphaWithSlippage,
     expectedTaoWithSlippage,
-    slippage: direction === "taoToAlpha" ? taoToAlphaSlippage : alphaToTaoSlippage,
     taoAmountFromAlpha: taoAmountFromAlpha,
     minAlphaUnstake,
   }

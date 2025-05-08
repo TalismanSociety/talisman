@@ -42,7 +42,7 @@ export const BittensorSubnetBondReview = () => {
     userMaxSlippage,
 
     // alphaPrice,
-    taoToAlphaTalismanFee,
+    talismanFee,
     taoToAlphaConversionRate,
     isDynamicInfoLoading,
     isDynamicInfoError,
@@ -185,7 +185,7 @@ export const BittensorSubnetBondReview = () => {
               </Tooltip>
             </div>
             <StakingFeeEstimate
-              plancks={taoToAlphaTalismanFee}
+              plancks={talismanFee}
               tokenId={feeToken?.id}
               isLoading={isDynamicInfoLoading}
               error={isDynamicInfoError}
