@@ -25,12 +25,15 @@ jobs:
       run: pnpm papi
     - name: Build the Wallet
       run: pnpm run build:extension
-    - name: Setup Playwright (without full browser install)
-      uses: microsoft/playwright-github-action@v1
+    - name: Cache Playwright browsers
+      uses: actions/cache@v3
       with:
-        install-deps: false
-    - name: Install Playwright Browser - Chromium
-      run: pnpm exec playwright install chromium
+        path: ~/.cache/ms-playwright
+        key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          playwright-browsers-${{ runner.os }}-
+    - name: Install Playwright Browser - Chromium with system dependencies
+      run: pnpm exec playwright install --with-deps chromium
     - name: Install Xvfb
       run: sudo apt-get update && sudo apt-get install -y xvfb
     - name: Run Playwright tests with Xvfb
