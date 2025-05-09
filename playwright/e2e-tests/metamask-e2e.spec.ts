@@ -1,9 +1,9 @@
 import { ETH_ACC_ADDRESS, ETH_ACC_NAME } from "./constants"
 import { expect, test } from "./fixtures"
 
-test("Access Metamask e2e DApp and connect wallet", async ({ addAccount, context }) => {
+test("Access Metamask e2e DApp and connect wallet", async ({ importAccount, context }) => {
   //create an ethereum account for the test
-  const ethAccount = await addAccount({ type: "ethereum", name: ETH_ACC_NAME })
+  const ethAccount = await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
   await expect(ethAccount.getByTestId("sidebar-account-list")).toContainText(ETH_ACC_NAME)
   //access metamask test dapp
   await ethAccount.goto("https://metamask.github.io/test-dapp/")
