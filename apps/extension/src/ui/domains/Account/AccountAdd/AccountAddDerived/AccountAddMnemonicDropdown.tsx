@@ -70,7 +70,10 @@ export const AccountAddMnemonicDropdown: FC<{
       label={label ?? t("Recovery phrase")}
       propertyKey="value"
       renderItem={(o) => (
-        <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
+        <div
+          className="text-body-secondary flex w-full items-center gap-6 overflow-hidden"
+          data-testid="account-add-mnemonic-dropdown"
+        >
           <div className="bg-body/10 text-md rounded-full p-4">
             {o.value === "new" ? <PlusIcon /> : <SecretIcon />}
           </div>

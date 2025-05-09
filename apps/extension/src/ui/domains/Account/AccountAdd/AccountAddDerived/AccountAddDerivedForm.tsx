@@ -337,6 +337,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
+            data-testid="account-add-new-account-button"
           >
             {t("Create")}
           </Button>
