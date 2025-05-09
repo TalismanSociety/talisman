@@ -144,6 +144,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           marketCap: 29771.48035827377,
           change24h: -3.309408176133055,
         },
+        tao: null,
         dot: {
           price: 0.01146351,
           marketCap: 13053350.4089089,
@@ -249,6 +250,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           marketCap: 844268.3967884398,
           change24h: 0.3147547196030105,
         },
+        tao: null,
         dot: {
           price: 24.704724,
           marketCap: 370137151.7035932,
@@ -354,6 +356,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           marketCap: 844268.3967884398,
           change24h: 0.3147547196030105,
         },
+        tao: null,
         dot: {
           price: 24.704724,
           marketCap: 370137151.7035932,
@@ -459,6 +462,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           marketCap: 29771.48035827377,
           change24h: -3.309408176133055,
         },
+        tao: null,
         dot: {
           price: 0.01146351,
           marketCap: 13053350.4089089,
@@ -564,6 +568,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           marketCap: 29771.48035827377,
           change24h: -3.309408176133055,
         },
+        tao: null,
         dot: {
           price: 0.01146351,
           marketCap: 13053350.4089089,
@@ -669,6 +674,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           marketCap: 29771.48035827377,
           change24h: -3.309408176133055,
         },
+        tao: null,
         dot: {
           price: 0.01146351,
           marketCap: 13053350.4089089,
