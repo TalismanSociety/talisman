@@ -121,7 +121,8 @@ export async function fetchTokenRates(
       // get TOKEN<>USD rate
       const usdRate = rates?.[effectiveUsdIndex]?.[0]
       // calculate TOKEN<>TAO rate
-      const taoRate = usdRate !== null && taoUsdRate !== null ? usdRate / taoUsdRate : null
+      const taoRate =
+        usdRate !== null && taoUsdRate !== null && taoUsdRate !== 0 ? usdRate / taoUsdRate : null
 
       // insert at the correct location (based on the index of `tao` in `currencyIds`)
       rates?.splice(taoIndex, 0, [taoRate, null, null])
