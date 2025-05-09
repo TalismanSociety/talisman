@@ -9,7 +9,8 @@ export const test = base.extend<{
   context: BrowserContext
   extensionId: string
   onboardedPage: Page
-  addAccount: (opts: { type: AccountType; name?: string; mnemonic?: string }) => Promise<Page>
+  importAccount: (opts: { type: AccountType; name?: string; mnemonic?: string }) => Promise<Page>
+  addNewAccount: (opts: { type: AccountType; name?: string }) => Promise<Page>
 }>({
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, utilize) => {
@@ -21,6 +22,11 @@ export const test = base.extend<{
         `--load-extension=${pathToExtension}`,
       ],
     })
+
+    context.on("weberror", (err) => {
+      throw new Error("Failing test due to error in browser context: " + err.error())
+    })
+
     await utilize(context)
     // await context.close(); // Uncomment if needed
   },
@@ -35,6 +41,10 @@ export const test = base.extend<{
   //goes trough onboard flow and reach portfolio page using previsous browser context
   onboardedPage: async ({ context, extensionId }, utilize) => {
     const page = await context.newPage()
+
+    page.on("pageerror", (err) => {
+      throw new Error("Failing test due to error in browser page: " + err)
+    })
 
     await page.goto(`chrome-extension://${extensionId}/onboarding.html`)
     await page.waitForTimeout(1000)
@@ -54,8 +64,8 @@ export const test = base.extend<{
   },
 
   //add an account of the select type using both the Onboarded page and browser context which the exntenion is running
-  addAccount: async ({ onboardedPage, extensionId }, utilize) => {
-    const addAccount = async ({
+  importAccount: async ({ onboardedPage, extensionId }, utilize) => {
+    const importAccount = async ({
       type,
       name,
       mnemonic,
@@ -77,10 +87,48 @@ export const test = base.extend<{
       await page.getByPlaceholder("Enter your 12 or 24 word recovery phrase").fill(seed)
       await page.waitForTimeout(1000)
       await page.getByTestId("account-add-mnemonic-import-button").click()
+      await page.waitForTimeout(1000)
       return page
     }
 
-    await utilize(addAccount)
+    await utilize(importAccount)
+  },
+  addNewAccount: async ({ onboardedPage, extensionId }, utilize) => {
+    const addNewAccount = async ({
+      type,
+      name,
+    }: {
+      type: "ethereum" | "polkadot"
+      name?: string
+    }) => {
+      const page = onboardedPage
+      //resolver problema dos nomes de conta duplicados
+      const accName = name || constants.NEW_ACC_NAME + " " + Math.floor(Math.random() * 10) + 1
+
+      await page.goto(
+        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${type}`,
+      )
+      await page.getByPlaceholder("Choose a name").fill(accName)
+
+      const addAccountButton = page.getByTestId("account-add-new-account-button")
+      const mnemonicDropdown = page.getByTestId("account-add-mnemonic-dropdown")
+
+      if (await mnemonicDropdown.isVisible()) {
+        await mnemonicDropdown.click()
+        await page.locator('[role="option"]:has-text("Generate new recovery phrase")').click()
+        await addAccountButton.click()
+      } else {
+        await addAccountButton.click()
+      }
+
+      await page.getByTestId("mnemonic-acknowledge-button").click()
+      await page.waitForTimeout(1000)
+      await page.getByTestId("mnemonic-skip-verification-button").click()
+      await page.waitForTimeout(1000)
+      return page
+    }
+
+    await utilize(addNewAccount)
   },
 })
 export const expect = test.expect
