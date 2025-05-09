@@ -96,50 +96,11 @@ export default class Extension extends ExtensionHandler {
         })
     })
 
-    const dbIsReady = this.initDb()
+    this.initDb().then(this.onDbReady.bind(this))
     this.cleanup()
 
     // fetch config from github periodically
     this.stores.remoteConfig.init()
-
-    // keeps summary data tables for the popup home screen up to date
-    trackPopupSummaryData()
-
-    // hides the get started component has soon as the wallet owns funds
-    hideGetStartedOnceFunded()
-
-    // if BUILD is not "dev", submit a "wallet upgraded" event to posthog
-    if (process.env.BUILD !== "dev") {
-      ;(async () => {
-        // don't send "wallet upgraded" event if analytics is disabled, or wallet is not onboarded
-        const allowTracking = await this.stores.settings.get("useAnalyticsTracking")
-        const onboarded = await this.stores.app.getIsOnboarded()
-        if (!allowTracking || !onboarded || IS_FIREFOX) return
-
-        const lastWalletUpgradedEvent = await this.stores.app.get("lastWalletUpgradedEvent")
-
-        // short circuit if we've already sent a "wallet upgraded" event for this version
-        if (lastWalletUpgradedEvent === process.env.VERSION) return
-
-        // make sure the db is ready before we start building the report
-        await dbIsReady
-
-        // make sure we create a new report for this version of the wallet, not re-use one we created last version
-        await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
-
-        await spawnTaskToCreateNewReport({
-          // don't refresh balances in the background, just send the existing db cache
-          refreshBalances: false,
-
-          // the primary purpose of the "wallet upgraded" event is to submit the opt-in general report.
-          // `waitForReportCreated: true` lets us wait for the report to be created before we submit the event.
-          waitForReportCreated: true,
-        })
-
-        await talismanAnalytics.capture("wallet upgraded")
-        await this.stores.app.set({ lastWalletUpgradedEvent: process.env.VERSION })
-      })()
-    }
   }
 
   private cleanup() {
@@ -185,6 +146,44 @@ export default class Extension extends ExtensionHandler {
     updateTransactionsRestart()
 
     return isReady
+  }
+
+  private onDbReady() {
+    // keeps summary data tables for the popup home screen up to date
+    trackPopupSummaryData()
+
+    // hides the get started component has soon as the wallet owns funds
+    hideGetStartedOnceFunded()
+
+    // if BUILD is not "dev", submit a "wallet upgraded" event to posthog
+    if (process.env.BUILD !== "dev") {
+      ;(async () => {
+        // don't send "wallet upgraded" event if analytics is disabled, or wallet is not onboarded
+        const allowTracking = await this.stores.settings.get("useAnalyticsTracking")
+        const onboarded = await this.stores.app.getIsOnboarded()
+        if (!allowTracking || !onboarded || IS_FIREFOX) return
+
+        const lastWalletUpgradedEvent = await this.stores.app.get("lastWalletUpgradedEvent")
+
+        // short circuit if we've already sent a "wallet upgraded" event for this version
+        if (lastWalletUpgradedEvent === process.env.VERSION) return
+
+        // make sure we create a new report for this version of the wallet, not re-use one we created last version
+        await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
+
+        await spawnTaskToCreateNewReport({
+          // don't refresh balances in the background, just send the existing db cache
+          refreshBalances: false,
+
+          // the primary purpose of the "wallet upgraded" event is to submit the opt-in general report.
+          // `waitForReportCreated: true` lets us wait for the report to be created before we submit the event.
+          waitForReportCreated: true,
+        })
+
+        await talismanAnalytics.capture("wallet upgraded")
+        await this.stores.app.set({ lastWalletUpgradedEvent: process.env.VERSION })
+      })()
+    }
   }
 
   public async handle<TMessageType extends MessageTypes>(
