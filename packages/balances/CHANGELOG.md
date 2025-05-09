@@ -1,5 +1,17 @@
 # @talismn/balances
 
+## 0.9.3
+
+### Patch Changes
+
+- caa72c3: poll erc20 balances network by network
+- Updated dependencies [68f807a]
+  - @talismn/util@0.4.1
+  - @talismn/chain-connector@0.10.2
+  - @talismn/chain-connector-evm@0.10.2
+  - @talismn/chaindata-provider@0.10.2
+  - @talismn/token-rates@2.0.3
+
 ## 0.9.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.4.1
+
+### Patch Changes
+
+- 68f807a: improved formatPrice
+
 ## 0.4.0
 
 ### Minor Changes
