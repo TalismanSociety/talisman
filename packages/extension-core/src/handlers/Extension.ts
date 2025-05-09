@@ -96,7 +96,7 @@ export default class Extension extends ExtensionHandler {
         })
     })
 
-    this.initDb()
+    const dbIsReady = this.initDb()
     this.cleanup()
 
     // fetch config from github periodically
@@ -120,6 +120,9 @@ export default class Extension extends ExtensionHandler {
 
         // short circuit if we've already sent a "wallet upgraded" event for this version
         if (lastWalletUpgradedEvent === process.env.VERSION) return
+
+        // make sure the db is ready before we start building the report
+        await dbIsReady
 
         // make sure we create a new report for this version of the wallet, not re-use one we created last version
         await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
@@ -151,7 +154,7 @@ export default class Extension extends ExtensionHandler {
     ])
   }
 
-  private initDb() {
+  private initDb(): Promise<void> {
     // Forces database migrations to run on first start up
     // By accessing db.metadata we can be sure that dexie will:
     //   1. open a connection to the database
@@ -160,22 +163,28 @@ export default class Extension extends ExtensionHandler {
     //      (or re-use the connection when it's being accessed elsewhere in our code!)
     db.metadata.toArray()
 
-    db.on("ready", async () => {
-      // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
-      // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
-      // // if store has no chains yet, consider it's a fresh install or legacy version
-      // if ((await db.chains.count()) < 1) {
-      //
-      //   // delete old idb-managed metadata+metadataRpc db
-      //   indexedDB.deleteDatabase("talisman")
-      //
-      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider lib
-      //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
-      // }
-    })
+    const isReady = new Promise<void>((resolve) =>
+      db.on("ready", async () => {
+        // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
+        // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
+        // // if store has no chains yet, consider it's a fresh install or legacy version
+        // if ((await db.chains.count()) < 1) {
+        //
+        //   // delete old idb-managed metadata+metadataRpc db
+        //   indexedDB.deleteDatabase("talisman")
+        //
+        //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider lib
+        //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
+        // }
+
+        resolve()
+      }),
+    )
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
+
+    return isReady
   }
 
   public async handle<TMessageType extends MessageTypes>(
