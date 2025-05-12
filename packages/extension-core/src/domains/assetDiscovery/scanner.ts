@@ -264,6 +264,78 @@ class AssetDiscoveryScanner {
     }
   }
 
+  /** modifies the scope of next scan if necessary */
+  private async getEffectiveCurrentScanScope(): Promise<AssetDiscoveryScanScope | null> {
+    const scope = await assetDiscoveryStore.get("currentScanScope")
+    if (!scope) return null
+
+    if (!scope.withApi) return scope
+
+    const foundTokenIds = await fetchMissingTokens(scope.addresses)
+
+    const [allTokens, evmNetworks, activeTokens, activeNetworks] = await Promise.all([
+      chaindataProvider.tokens(),
+      chaindataProvider.evmNetworksById(),
+      activeTokensStore.get(),
+      activeEvmNetworksStore.get(),
+    ])
+
+    const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
+
+    // add all networks that contain an asset that was discovered and whose enabled status is not set yet
+    // key idea: dont scan mainnet (8K tokens) unless a new token is found on it
+    const additionalNetworkIds: string[] = foundTokenIds
+      .map((tokenId) => tokensMap[tokenId])
+      .filter((token) => {
+        if (!token || token.noDiscovery) return false
+
+        switch (token.type) {
+          case "evm-erc20":
+            return activeTokens[token.id] === undefined
+          case "evm-native":
+            return (
+              activeNetworks[token.evmNetwork.id] === undefined ||
+              activeTokens[token.id] === undefined
+            )
+          default:
+            return false
+        }
+      })
+      .map((t) => {
+        log.debug("[AssetDiscovery] Forcing scan because of", t.id)
+        return t.evmNetwork?.id
+      })
+      .filter((id): id is string => !!id)
+
+    const networkIdsToScan = [...new Set([...scope.networkIds, ...additionalNetworkIds])]
+
+    const tokensToScan = allTokens
+      .filter(isEvmToken)
+      .filter((t) => networkIdsToScan.includes(t.evmNetwork?.id ?? ""))
+      .filter((token) => {
+        const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+        if (!evmNetwork) return false
+        if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
+        if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
+        if (token.noDiscovery) return false
+        // scan only if token has never been enabled or disabled
+        return activeTokens[token.id] === undefined
+      })
+
+    await assetDiscoveryStore.mutate((prev) => ({
+      ...prev,
+      currentScanScope: {
+        ...(prev.currentScanScope ?? { addresses: scope.addresses }),
+        networkIds: networkIdsToScan,
+        withApi: false, // dot not call api again if scan is stopped then resumed
+      },
+      currentScanTokensCount: tokensToScan.length,
+    }))
+
+    // refresh scope and return
+    return await assetDiscoveryStore.get("currentScanScope")
+  }
+
   private async executeNextScan(): Promise<void> {
     if (this.#isBusy) return
     this.#isBusy = true
@@ -273,16 +345,14 @@ class AssetDiscoveryScanner {
     try {
       await this.dequeue()
 
-      const scope = await assetDiscoveryStore.get("currentScanScope")
+      const scope = await this.getEffectiveCurrentScanScope()
       if (!scope) return
 
       log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
 
-      const foundTokenIds = scope.withApi ? await fetchMissingTokens(scope.addresses) : []
-
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
-      const [allTokens, evmNetworks, activeTokens, activeNetworks] = await Promise.all([
+      const [allTokens, evmNetworks, activeTokens] = await Promise.all([
         chaindataProvider.tokens(),
         chaindataProvider.evmNetworksById(),
         activeTokensStore.get(),
@@ -291,36 +361,9 @@ class AssetDiscoveryScanner {
 
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
 
-      // add all networks that contain an asset that was discovered and whose enabled status is not set yet
-      // key idea: dont scan mainnet (8K tokens) unless a new token is found on it
-      const additionalNetworkIds: string[] = foundTokenIds
-        .map((tokenId) => tokensMap[tokenId])
-        .filter((token) => {
-          if (!token || token.noDiscovery) return false
-
-          switch (token.type) {
-            case "evm-erc20":
-              return activeTokens[token.id] === undefined
-            case "evm-native":
-              return (
-                activeNetworks[token.evmNetwork.id] === undefined ||
-                activeTokens[token.id] === undefined
-              )
-            default:
-              return false
-          }
-        })
-        .map((t) => {
-          log.debug("[AssetDiscovery] Forcing scan because of", t.id)
-          return t.evmNetwork?.id
-        })
-        .filter((id): id is string => !!id)
-
-      const networkIdsToScan = [...new Set([...scope.networkIds, ...additionalNetworkIds])]
-
       const tokensToScan = allTokens
         .filter(isEvmToken)
-        .filter((t) => networkIdsToScan.includes(t.evmNetwork?.id ?? ""))
+        .filter((t) => scope.networkIds.includes(t.evmNetwork?.id ?? ""))
         .filter((token) => {
           const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
           if (!evmNetwork) return false
@@ -330,16 +373,6 @@ class AssetDiscoveryScanner {
           // scan only if token has never been enabled or disabled
           return activeTokens[token.id] === undefined
         })
-
-      await assetDiscoveryStore.mutate((prev) => ({
-        ...prev,
-        currentScanScope: {
-          ...(prev.currentScanScope ?? { addresses: scope.addresses }),
-          networkIds: networkIdsToScan,
-          withApi: false, // dot not call api again if scan is stopped then resumed
-        },
-        currentScanTokensCount: tokensToScan.length,
-      }))
 
       const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
         tokensToScan,
@@ -353,12 +386,13 @@ class AssetDiscoveryScanner {
         "[AssetDiscovery] Starting scan: %d tokens, %d total checks",
         totalTokens,
         totalChecks,
-        { networkIdsToScan },
+        { networkIds: scope.networkIds },
       )
 
       const subScopeChange = assetDiscoveryStore.observable
         .pipe(distinctUntilKeyChanged("currentScanScope", isEqual), skip(1))
         .subscribe(() => {
+          log.debug("[AssetDiscovery] Scan cancelled due to currentScanScope change")
           abortController.abort()
           subScopeChange.unsubscribe()
         })
