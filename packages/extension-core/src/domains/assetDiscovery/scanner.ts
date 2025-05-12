@@ -135,7 +135,8 @@ class AssetDiscoveryScanner {
                 networkIds,
               })
 
-              await this.startScan({ networkIds, addresses, withApi: true })
+              // `withApi: false` because api always scans all networks, we dont need to call it again
+              await this.startScan({ networkIds, addresses, withApi: false })
             }
           }
 
