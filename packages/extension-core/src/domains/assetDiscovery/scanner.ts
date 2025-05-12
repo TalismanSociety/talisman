@@ -240,15 +240,24 @@ class AssetDiscoveryScanner {
 
         await db.assetDiscovery.clear()
 
-        await assetDiscoveryStore.mutate((state): AssetDiscoveryScanState => {
-          const [next, ...others] = state.queue ?? []
+        await assetDiscoveryStore.mutate((prev): AssetDiscoveryScanState => {
+          // merge queue
+          const queue = prev.queue ?? []
+          const mergedScope: AssetDiscoveryScanScope = {
+            addresses: uniq(queue.map((s) => s.addresses).flat()),
+            networkIds: uniq(queue.map((s) => s.networkIds).flat()),
+            withApi: queue.some((s) => s.withApi),
+          }
+          const currentScanScope =
+            mergedScope.networkIds.length && mergedScope.addresses.length ? mergedScope : null
+
           return {
-            ...state,
-            currentScanScope: next ?? null,
+            ...prev,
+            currentScanScope,
             currentScanProgressPercent: 0,
             currentScanTokensCount: 0,
             currentScanCursors: {},
-            queue: others,
+            queue: [],
           }
         })
       }
