@@ -12,6 +12,7 @@ export {
   isAccountLedgerPolkadotGeneric,
   isAccountLedgerPolkadotLegacy,
   isAccountBitcoin,
+  isAccountNotContact,
   getAccountGenesisHash,
   getAccountSignetUrl,
 } from "@talismn/keyring"
