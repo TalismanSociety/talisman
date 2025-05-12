@@ -1,6 +1,13 @@
 import { bind } from "@react-rxjs/core"
 import { normalizeAddress } from "@talismn/util"
-import { Account, isAccountOfType, isAccountOwned, isAccountPortfolio, Trees } from "extension-core"
+import {
+  Account,
+  isAccountNotContact,
+  isAccountOfType,
+  isAccountOwned,
+  isAccountPortfolio,
+  Trees,
+} from "extension-core"
 import { map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
@@ -42,7 +49,13 @@ export const [useAccountByAddress, getAccountByAddress$] = bind(
     ),
 )
 
-export type AccountCategory = "all" | "watched" | "owned" | "portfolio" | "signet"
+export type AccountCategory =
+  | "all"
+  | "watched"
+  | "owned"
+  | "portfolio"
+  | "signet"
+  | "all-except-contacts"
 
 export const [useAccounts, getAccountsByCategory$] = bind((category: AccountCategory = "all") =>
   accounts$.pipe(
@@ -56,6 +69,8 @@ export const [useAccounts, getAccountsByCategory$] = bind((category: AccountCate
           return accounts.filter(isAccountOwned)
         case "signet":
           return accounts.filter((acc) => isAccountOfType(acc, "signet"))
+        case "all-except-contacts":
+          return accounts.filter(isAccountNotContact)
         case "all":
           return accounts
       }
