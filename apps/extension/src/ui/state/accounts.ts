@@ -57,23 +57,24 @@ export type AccountCategory =
   | "signet"
   | "all-except-contacts"
 
-export const [useAccounts, getAccountsByCategory$] = bind((category: AccountCategory = "all") =>
-  accounts$.pipe(
-    map((accounts) => {
-      switch (category) {
-        case "portfolio":
-          return accounts.filter(isAccountPortfolio)
-        case "watched":
-          return accounts.filter((acc) => isAccountOfType(acc, "watch-only"))
-        case "owned":
-          return accounts.filter(isAccountOwned)
-        case "signet":
-          return accounts.filter((acc) => isAccountOfType(acc, "signet"))
-        case "all-except-contacts":
-          return accounts.filter(isAccountNotContact)
-        case "all":
-          return accounts
-      }
-    }),
-  ),
+export const [useAccounts, getAccountsByCategory$] = bind(
+  (category: AccountCategory = "all-except-contacts") =>
+    accounts$.pipe(
+      map((accounts) => {
+        switch (category) {
+          case "portfolio":
+            return accounts.filter(isAccountPortfolio)
+          case "watched":
+            return accounts.filter((acc) => isAccountOfType(acc, "watch-only"))
+          case "owned":
+            return accounts.filter(isAccountOwned)
+          case "signet":
+            return accounts.filter((acc) => isAccountOfType(acc, "signet"))
+          case "all-except-contacts":
+            return accounts.filter(isAccountNotContact)
+          case "all":
+            return accounts
+        }
+      }),
+    ),
 )
