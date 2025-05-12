@@ -2,7 +2,7 @@ import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi, erc20BalancesAggregatorAbi, EvmErc20Token } from "@talismn/balances"
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-import { isAccountEthereum } from "@talismn/keyring"
+import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
 import { DEBUG, log } from "extension-shared"
 import { isEqual, uniq } from "lodash"
@@ -77,7 +77,12 @@ class AssetDiscoveryScanner {
     // identify newly added accounts and scan those
     keyringStore.accounts$
       .pipe(
-        map((accounts) => accounts.map((account) => account.address).sort()),
+        map((accounts) =>
+          accounts
+            .filter(isAccountNotContact)
+            .map((account) => account.address)
+            .sort(),
+        ),
         distinct((addresses) => addresses.join("")),
       )
       .subscribe(async (allAddresses) => {
@@ -128,7 +133,7 @@ class AssetDiscoveryScanner {
 
             if (networkIds.length) {
               const accounts = await keyringStore.getAccounts()
-              const addresses = accounts.map((acc) => acc.address)
+              const addresses = accounts.filter(isAccountNotContact).map((acc) => acc.address)
 
               log.debug("[AssetDiscovery] New enabled networks detected, starting scan", {
                 addresses,
@@ -158,7 +163,7 @@ class AssetDiscoveryScanner {
       .subscribe(async () => {
         try {
           const accounts = await keyringStore.getAccounts()
-          const addresses = accounts.map((acc) => acc.address)
+          const addresses = accounts.filter(isAccountNotContact).map((acc) => acc.address)
           const networkIds = await getNetworkIdsToForceScan()
 
           if (!addresses.length || !networkIds.length) return
@@ -500,7 +505,10 @@ class AssetDiscoveryScanner {
 
     // addresses of all ethereum accounts
     const accounts = await keyringStore.getAccounts()
-    const addresses = accounts.filter(isAccountEthereum).map((acc) => acc.address)
+    const addresses = accounts
+      .filter(isAccountNotContact)
+      .filter(isAccountEthereum)
+      .map((acc) => acc.address)
 
     // all active evm networks
     const [evmNetworks, activeEvmNetworks] = await Promise.all([
