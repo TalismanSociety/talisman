@@ -92,6 +92,7 @@ export const watchEthereumTransaction = async (
           assetDiscoveryScanner.startScan({
             networkIds: [evmNetworkId],
             addresses: [unsigned.from],
+            withApi: false,
           })
       }
     } catch (err) {

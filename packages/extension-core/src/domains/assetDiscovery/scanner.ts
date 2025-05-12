@@ -95,7 +95,7 @@ class AssetDiscoveryScanner {
                 networkIds,
               })
 
-              await this.startScan({ networkIds, addresses })
+              await this.startScan({ networkIds, addresses, withApi: true })
             }
           }
 
@@ -135,7 +135,7 @@ class AssetDiscoveryScanner {
                 networkIds,
               })
 
-              await this.startScan({ networkIds, addresses })
+              await this.startScan({ networkIds, addresses, withApi: true })
             }
           }
 
@@ -164,7 +164,7 @@ class AssetDiscoveryScanner {
 
           // on wallet unlock, scan networks with forceScan:true
           // this helps discovery during growth campagins, where users are incentivized to send tokens from CEXs
-          await this.startScan({ addresses, networkIds })
+          await this.startScan({ addresses, networkIds, withApi: true })
         } catch (err) {
           log.error("[AssetDiscovery] Failed to start scan on unlock", { err })
         }
@@ -192,7 +192,7 @@ class AssetDiscoveryScanner {
     // add to queue
     await assetDiscoveryStore.mutate((state) => ({
       ...state,
-      queue: [...(state.queue ?? []), { addresses, networkIds }],
+      queue: [...(state.queue ?? []), { ...scope, addresses, networkIds }],
     }))
 
     // for front end calls, dequeue as part of this promise to keep UI in sync
@@ -263,7 +263,7 @@ class AssetDiscoveryScanner {
 
       log.debug("[AssetDiscovery] Scanner proceeding with scan", scope)
 
-      const foundTokenIds = await fetchMissingTokens(scope.addresses)
+      const foundTokenIds = scope.withApi ? await fetchMissingTokens(scope.addresses) : []
 
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
@@ -321,6 +321,7 @@ class AssetDiscoveryScanner {
         currentScanScope: {
           ...(prev.currentScanScope ?? { addresses: scope.addresses }),
           networkIds: networkIdsToScan,
+          withApi: false, // dot not call api again if scan is stopped then resumed
         },
         currentScanTokensCount: tokensToScan.length,
       }))
@@ -491,6 +492,7 @@ class AssetDiscoveryScanner {
     this.executeNextScan()
   }
 
+  /** Used bym migrations */
   public async startPendingScan(): Promise<void> {
     const isAssetDiscoveryScanPending = await appStore.get("isAssetDiscoveryScanPending")
     if (!isAssetDiscoveryScanPending) return
@@ -512,7 +514,7 @@ class AssetDiscoveryScanner {
     await appStore.set({ isAssetDiscoveryScanPending: false })
 
     // enqueue scan
-    await this.startScan({ networkIds, addresses })
+    await this.startScan({ networkIds, addresses, withApi: true })
   }
 
   private async enableDiscoveredTokens(): Promise<void> {

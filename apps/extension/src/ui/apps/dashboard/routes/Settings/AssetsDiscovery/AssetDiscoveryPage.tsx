@@ -402,6 +402,7 @@ const Header: FC = () => {
       await api.assetDiscoveryStartScan({
         networkIds: (all ? allNetworks : recommendedNetworks).map((n) => n.id),
         addresses,
+        withApi: true,
       })
       isInitializingScan$.next(false)
     },
