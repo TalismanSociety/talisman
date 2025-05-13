@@ -7,9 +7,9 @@ import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStak
 import { useIsSoloStaking } from "../hooks/nomPools/useIsSoloStaking"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
 import { useNomPoolsClaimPermission } from "../hooks/nomPools/useNomPoolsClaimPermission"
+import { useNomPoolsMinJoinBond } from "../hooks/nomPools/useNomPoolsMinJoinBond"
 import { useNomPoolState } from "../hooks/nomPools/useNomPoolState"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
-import { useGetMinJoinBond } from "./useGetMinJoinBond"
 
 type GetStakeInfo = {
   sapi: ScaleApi | undefined | null
@@ -31,7 +31,7 @@ type StakeInfo = {
 }
 
 export const useGetStakeInfo = ({ sapi, address, poolId, plancks, chainId }: GetStakeInfo) => {
-  const { data: minJoinBond } = useGetMinJoinBond(chainId)
+  const { data: minJoinBond } = useNomPoolsMinJoinBond({ chainId })
 
   const { data: claimPermission } = useNomPoolsClaimPermission(chainId, address)
 
