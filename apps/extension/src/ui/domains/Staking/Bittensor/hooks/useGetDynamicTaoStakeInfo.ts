@@ -3,7 +3,6 @@ import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModul
 import { useMemo } from "react"
 
 import { useGetSubnetMetagraphByNetuid } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"
-import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
 import { TALISMAN_FEE_BITTENSOR } from "../utils/constants"
 
 type GetDynamicTaoStakeInfoProps = {
@@ -11,6 +10,7 @@ type GetDynamicTaoStakeInfoProps = {
   amount: bigint | null
   direction: "taoToAlpha" | "alphaToTao"
   userMaxSlippage: number
+  minJoinBond: bigint | null | undefined
 }
 
 export const useGetDynamicTaoStakeInfo = ({
@@ -18,9 +18,9 @@ export const useGetDynamicTaoStakeInfo = ({
   direction,
   amount,
   userMaxSlippage,
+  minJoinBond,
 }: GetDynamicTaoStakeInfoProps) => {
   const { data, isLoading, isError } = useGetSubnetMetagraphByNetuid({ netuid })
-  const { data: minStake } = useGetBittensorMinJoinBond({ chainId: "bittensor" })
 
   const isTaoToAlpha = useMemo(() => direction === "taoToAlpha", [direction])
 
@@ -116,10 +116,10 @@ export const useGetDynamicTaoStakeInfo = ({
     () =>
       calculateExpectedAlpha({
         alphaPrice,
-        amount: Number(minStake || 0),
+        amount: Number(minJoinBond || 0),
         slippage: 0,
       }) / Number(SCALE_FACTOR),
-    [alphaPrice, minStake],
+    [alphaPrice, minJoinBond],
   )
 
   return {

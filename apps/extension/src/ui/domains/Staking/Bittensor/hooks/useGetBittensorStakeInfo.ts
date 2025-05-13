@@ -36,6 +36,8 @@ export const useGetBittensorStakeInfo = ({
   userMaxSlippage,
   stakeDirection,
 }: GetStakeInfo) => {
+  const { data: minJoinBond } = useGetBittensorMinJoinBond({ chainId, stakeType })
+
   const {
     slippage,
     talismanFee,
@@ -52,8 +54,8 @@ export const useGetBittensorStakeInfo = ({
     amount: plancks,
     direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
     userMaxSlippage,
+    minJoinBond,
   })
-  const { data: minJoinBond } = useGetBittensorMinJoinBond({ chainId, stakeType })
 
   const bittensorStakingPayload = useGetBittensorStakingPayload({
     sapi,
