@@ -16,7 +16,12 @@ import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../../utils/constants"
+import {
+  DEFAULT_USER_MAX_SLIPPAGE,
+  HIGH_SLIPPAGE,
+  TALISMAN_FEE_BITTENSOR,
+  VERY_HIGH_SLIPPAGE,
+} from "../../utils/constants"
 import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
@@ -179,9 +184,7 @@ export const BittensorSubnetBondReview = () => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                    {t(
-                      "Stake transaction will revert if the price changes more than the allowed slippage percentage.",
-                    )}
+                    {t(`Talisman applies a ${TALISMAN_FEE_BITTENSOR}% fee to each transaction.`)}
                   </span>
                 </TooltipContent>
               </Tooltip>
