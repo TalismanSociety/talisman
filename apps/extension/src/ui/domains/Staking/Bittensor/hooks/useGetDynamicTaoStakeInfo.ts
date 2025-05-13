@@ -28,8 +28,6 @@ export const useGetDynamicTaoStakeInfo = ({
 
   const alphaPrice = useMemo(() => calculateAlphaPrice({ alpha_in, tao_in }), [alpha_in, tao_in])
 
-  // console.log({ alphaPrice })
-
   // used for add_stake_limit limit order price
   const addAlphaPriceWithSlippage = useMemo(
     () => alphaPrice * (1 + userMaxSlippage / 100),
