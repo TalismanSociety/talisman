@@ -4,11 +4,11 @@ import { useMemo } from "react"
 
 import { type BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 
+import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetBittensorUnbondPayload } from "../../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
-import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
 import { type StakeDirection, type StakeType } from "./useBittensorBondWizard"
 import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
 
@@ -53,7 +53,7 @@ export const useGetBittensorStakeInfo = ({
     direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
     userMaxSlippage,
   })
-  const { data: minJoinBond } = useGetMinJoinBond(chainId)
+  const { data: minJoinBond } = useGetBittensorMinJoinBond({ chainId, stakeType })
 
   const bittensorStakingPayload = useGetBittensorStakingPayload({
     sapi,
