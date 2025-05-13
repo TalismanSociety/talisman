@@ -41,7 +41,12 @@ export const BittensorSubnetOption = ({
     >
       <div className="flex w-full flex-col gap-[10px]">
         <div className="flex w-full justify-between">
-          <div className={classNames("self-end text-sm font-bold", isSelected && "text-white")}>
+          <div
+            className={classNames(
+              "max-w-[22rem] self-end truncate text-sm font-bold",
+              isSelected && "text-white",
+            )}
+          >
             {option.netuid} | {option.subnet_name} {option.symbol}
           </div>
           <AssetPercentageChange priceChange={option.price_change_1_day} />
