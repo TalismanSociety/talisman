@@ -71,7 +71,7 @@ export const BittensorBondDelegateSelect = () => {
       !combinedValidatorsDataLoading &&
       !sortedDelegators.length
     ) {
-      setSortedDelegators(sortBondOptions(combinedValidatorsData, "name"))
+      setSortedDelegators(sortBondOptions(combinedValidatorsData, sortMethods[0].value))
     }
   }, [
     combinedValidatorsData,
