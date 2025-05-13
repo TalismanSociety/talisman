@@ -34,12 +34,19 @@ const getBittensorUnbondPayload = ({
 }: GetBittensorUnbondPayload) => {
   if (stakeType === "root") {
     return sapi.getExtrinsicPayload(
-      "SubtensorModule",
-      "remove_stake",
+      "Utility",
+      "batch_all",
       {
-        hotkey: hotkey,
-        netuid: ROOT_NETUID,
-        amount_unstaked: plancks,
+        calls: [
+          sapi.getDecodedCall("SubtensorModule", "remove_stake", {
+            hotkey: hotkey,
+            netuid: ROOT_NETUID,
+            amount_unstaked: plancks,
+          }),
+          sapi.getDecodedCall("System", "remark_with_event", {
+            remark: Binary.fromText("talisman-bittensor"),
+          }),
+        ],
       },
       { address },
     )
@@ -114,19 +121,19 @@ export const useGetBittensorUnbondPayload = ({
       talismanFee?.toString() ?? "0",
     ],
     queryFn: async () => {
-      if (!sapi || !address || !plancks || !hotkey) return null
+      if (!sapi || !address || !hotkey) return null
       return getBittensorUnbondPayload({
         sapi,
         address,
         hotkey,
         netuid,
-        plancks,
+        plancks: plancks ?? 0n,
         talismanFee,
         stakeType,
         alphaPriceWithSlippagePlanks,
       })
     },
 
-    enabled: !!sapi && !!address && !!plancks && isEnabled,
+    enabled: !!sapi && !!address && isEnabled,
   })
 }
