@@ -12,7 +12,7 @@ export const BittensorDelegatorNameButton = ({ poolId }: BittensorDelegatorNameB
 
   const selectedPool = combinedValidatorsData.find((data) => data.poolId === poolId)
 
-  const defaultPoolName = "Bittensor Pool"
+  const defaultPoolName = "Validator"
 
   const poolName = selectedPool?.name
 

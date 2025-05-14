@@ -14,6 +14,7 @@ import { useAccountByAddress, useBalance, usePortfolio, useToken, useTokenRates 
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
+import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSubnetData"
 import { BITTENSOR_TOKEN_ID, DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
@@ -125,6 +126,8 @@ export const useBittensorBondWizard = () => {
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolio()
 
+  const { subnetData } = useCombinedSubnetData()
+
   const tokenBalances = useTokenBalances({
     tokenId: BITTENSOR_TOKEN_ID,
     balances: allBalances,
@@ -157,6 +160,7 @@ export const useBittensorBondWizard = () => {
 
   const { data: sapi } = useScaleApi(token?.chain?.id)
 
+  // active stake position
   const selectedStake = useMemo(
     () =>
       tokenBalances.detailRows.find(
@@ -202,6 +206,9 @@ export const useBittensorBondWizard = () => {
     () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
     [netuid, stakeDirection],
   )
+
+  // currently selected subnet
+  const selectedSubnet = useMemo(() => subnetData?.[netuid || 0] ?? {}, [netuid, subnetData])
 
   // amountToStakeInTao
   const amountToStake = useMemo(
@@ -473,13 +480,6 @@ export const useBittensorBondWizard = () => {
     [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage],
   )
 
-  const alphaTokenSymbolWithSubnetDetails = useMemo(() => {
-    const {
-      meta: { dynamicInfo: { subnetIdentity: { subnet_name } = {}, tokenSymbol } = {} } = {},
-    } = selectedStake || {}
-    return `SN${netuid} ${subnet_name} ${tokenSymbol}`
-  }, [netuid, selectedStake])
-
   return {
     account,
     token,
@@ -504,7 +504,7 @@ export const useBittensorBondWizard = () => {
     inputErrorMessage,
     stakeDirection,
     selectedStake,
-    alphaTokenSymbolWithSubnetDetails,
+    selectedSubnet,
     newStakeTotal,
     isSubnetUnbond,
 

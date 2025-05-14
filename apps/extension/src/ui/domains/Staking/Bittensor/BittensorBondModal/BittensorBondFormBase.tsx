@@ -349,7 +349,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     token,
     payload,
     poolId,
-    alphaTokenSymbolWithSubnetDetails,
+    selectedSubnet,
     selectStakeDrawer,
     stakeType,
     stakeDirection,
@@ -421,7 +421,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           <div className="text-body truncate">
             <Tokens
               amount={planckToTokens(String(newStakeTotal), token?.decimals)}
-              symbol={stakeType === "root" ? token?.symbol : alphaTokenSymbolWithSubnetDetails}
+              symbol={stakeType === "root" ? token?.symbol : selectedSubnet.symbol}
             />
           </div>
         </div>

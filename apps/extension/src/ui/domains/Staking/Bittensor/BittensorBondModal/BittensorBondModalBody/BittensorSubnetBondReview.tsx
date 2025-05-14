@@ -40,6 +40,7 @@ export const BittensorSubnetBondReview = () => {
     txMetadata,
     poolId,
     netuid,
+    selectedSubnet,
     feeToken,
     slippageDrawer,
     warningDrawer,
@@ -56,12 +57,12 @@ export const BittensorSubnetBondReview = () => {
   } = useBittensorBondWizard()
   const { t } = useTranslation()
 
-  const { isLoading, subnetData } = useCombinedSubnetData()
+  const { isLoading } = useCombinedSubnetData()
 
   const { open } = slippageDrawer
   const { open: openWarningDrawer } = warningDrawer
 
-  const { subnet_name, symbol } = subnetData?.[netuid || 0] ?? {}
+  const { subnet_name, symbol } = selectedSubnet
 
   const selectedSubnetLabel = `${netuid} | ${subnet_name} ${symbol}`
   const label = netuid ? selectedSubnetLabel : "Subnet"
