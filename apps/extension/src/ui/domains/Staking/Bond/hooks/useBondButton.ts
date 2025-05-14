@@ -75,12 +75,16 @@ export const useBondButton = ({
       for (const balance of sorted.filter((b) => b.address === address)) {
         switch (token.chain.id) {
           case "bittensor": {
-            type SubtensorMeta = { hotkeys?: string[] } | undefined
+            type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
             const entry = balance.subtensor.find(
-              (b) => !!(b.meta as SubtensorMeta)?.hotkeys?.length,
+              (b) =>
+                !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
             )
+
             const meta = entry?.meta as SubtensorMeta
-            if (meta?.hotkeys?.[0]) return [{ tokenId, address, poolId: meta?.hotkeys[0] }, false]
+            if (meta?.hotkey) {
+              return [{ tokenId, address, poolId: meta?.hotkey, netuid }, true]
+            }
             break
           }
           default: {
@@ -100,7 +104,7 @@ export const useBondButton = ({
     }
 
     return [null, false]
-  }, [balances, remoteConfig, tokenId, token?.chain, token?.type, address, sorted])
+  }, [balances, remoteConfig, tokenId, token?.chain, token?.type, address, sorted, netuid])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {

@@ -41,7 +41,6 @@ type WizardState = {
   isSlippageDrawerOpen: boolean
   isWarningDrawerOpen: boolean
   hash: Hex | null
-  isDefaultOption: boolean
   stakeType: StakeType
   stakeDirection: StakeDirection
   userMaxSlippage: number
@@ -60,7 +59,6 @@ const DEFAULT_STATE: WizardState = {
   isSlippageDrawerOpen: false,
   isWarningDrawerOpen: false,
   hash: null,
-  isDefaultOption: true,
   stakeType: "root",
   stakeDirection: "bond",
   userMaxSlippage: DEFAULT_USER_MAX_SLIPPAGE,
@@ -142,7 +140,6 @@ export const useBittensorBondWizard = () => {
     tokenId,
     address,
     plancks,
-    isDefaultOption,
     userMaxSlippage,
     stakeDirection,
   } = useWizardState()
@@ -264,11 +261,6 @@ export const useBittensorBondWizard = () => {
     [],
   )
 
-  const setIsDefaultOption = useCallback(
-    (isDefaultOption: boolean) => setWizardState((prev) => ({ ...prev, isDefaultOption })),
-    [],
-  )
-
   const setStakeType = useCallback(
     (stakeType: StakeType) => setWizardState((prev) => ({ ...prev, stakeType })),
     [],
@@ -313,9 +305,10 @@ export const useBittensorBondWizard = () => {
      * if user is already staking in pool, set poolId to that pool
      * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
      */
-    if (!!currentPoolId && currentPoolId !== poolId && isDefaultOption && stakeDirection === "bond")
+    if (!!currentPoolId && !poolId && currentPoolId !== poolId && stakeDirection === "bond") {
       setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
-  }, [currentPoolId, isDefaultOption, poolId, stakeDirection, step, tokenId])
+    }
+  }, [currentPoolId, poolId, stakeDirection, step, tokenId])
 
   const setStep = useCallback(
     (step: WizardStep) => {
@@ -518,7 +511,6 @@ export const useBittensorBondWizard = () => {
     setPlancks,
     setStep,
     setStakeType,
-    setIsDefaultOption,
     toggleDisplayMode,
     setUserMaxSlippage,
 
