@@ -347,8 +347,24 @@ export const useBittensorBondWizard = () => {
     if (stakeDirection === "unbond") {
       return totalStakedPlancks - (plancks || 0n)
     }
+    if (stakeType === "subnet") {
+      const expectedAlphaWithSlippagePlancks = BigInt(
+        Math.round(
+          Number(tokensToPlanck(String(expectedAlphaWithSlippage), token?.decimals) || "0"),
+        ),
+      )
+
+      return totalStakedPlancks + (expectedAlphaWithSlippagePlancks || 0n)
+    }
     return totalStakedPlancks + (plancks || 0n)
-  }, [plancks, stakeDirection, totalStakedPlancks])
+  }, [
+    expectedAlphaWithSlippage,
+    plancks,
+    stakeDirection,
+    stakeType,
+    token?.decimals,
+    totalStakedPlancks,
+  ])
 
   const stakeInputErrorMessage = useMemo(() => {
     if (!amountToStake || typeof minJoinBond !== "bigint") return null
@@ -457,6 +473,13 @@ export const useBittensorBondWizard = () => {
     [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage],
   )
 
+  const alphaTokenSymbolWithSubnetDetails = useMemo(() => {
+    const {
+      meta: { dynamicInfo: { subnetIdentity: { subnet_name } = {}, tokenSymbol } = {} } = {},
+    } = selectedStake || {}
+    return `SN${netuid} ${subnet_name} ${tokenSymbol}`
+  }, [netuid, selectedStake])
+
   return {
     account,
     token,
@@ -481,6 +504,7 @@ export const useBittensorBondWizard = () => {
     inputErrorMessage,
     stakeDirection,
     selectedStake,
+    alphaTokenSymbolWithSubnetDetails,
     newStakeTotal,
     isSubnetUnbond,
 

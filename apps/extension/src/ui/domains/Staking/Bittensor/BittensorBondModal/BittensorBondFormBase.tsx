@@ -29,7 +29,6 @@ import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { DTAO_LOGO, ROOT_NETUID } from "../utils/constants"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
-import { StakingUnbondingPeriod } from "./../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
@@ -350,8 +349,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     token,
     payload,
     poolId,
-    setStep,
-    setAddress,
+    alphaTokenSymbolWithSubnetDetails,
     selectStakeDrawer,
     stakeType,
     stakeDirection,
@@ -359,6 +357,8 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     netuid,
     expectedTaoWithSlippage,
     estimatedAmountToStake,
+    setStep,
+    setAddress,
   } = useBittensorBondWizard()
 
   const isSubnetUnbond = useMemo(
@@ -421,19 +421,12 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           <div className="text-body truncate">
             <Tokens
               amount={planckToTokens(String(newStakeTotal), token?.decimals)}
-              symbol={token?.symbol}
+              symbol={stakeType === "root" ? token?.symbol : alphaTokenSymbolWithSubnetDetails}
             />
           </div>
         </div>
         {!isSubnetUnbond && (
           <>
-            <div className="flex items-center justify-between gap-8">
-              <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
-              <div className="text-body overflow-hidden">
-                <StakingUnbondingPeriod chainId={token?.chain?.id} />
-              </div>
-            </div>
-
             <div className="flex items-center justify-between gap-8">
               <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
               <div className="overflow-hidden">
