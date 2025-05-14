@@ -1,11 +1,12 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ZapIcon, ZapPlusIcon } from "@talismn/icons"
 import { Balances } from "extension-core"
-import { FC } from "react"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { type StakeType } from "../Bittensor/hooks/useBittensorBondWizard"
+import { ROOT_NETUID } from "../Bittensor/utils/constants"
 import { useBondButton } from "./hooks/useBondButton"
 
 export const BondButton: FC<{
@@ -17,6 +18,8 @@ export const BondButton: FC<{
   const { t } = useTranslation()
   const { onClick, isNomPoolStaking } = useBondButton({ tokenId, balances, stakeType, netuid })
 
+  const isBittensorIncreasePosition = useMemo(() => !!netuid || netuid === ROOT_NETUID, [netuid])
+
   if (!onClick) return null
 
   return (
@@ -27,7 +30,7 @@ export const BondButton: FC<{
           onClick={onClick}
           className="text-primary bg-primary/10 hover:bg-primary/20 flex size-[3.8rem] shrink-0 items-center justify-center rounded-full text-[2rem]"
         >
-          {isNomPoolStaking ? <ZapPlusIcon /> : <ZapIcon />}
+          {isNomPoolStaking || isBittensorIncreasePosition ? <ZapPlusIcon /> : <ZapIcon />}
         </button>
       </TooltipTrigger>
       <TooltipContent>{t("Stake")}</TooltipContent>
