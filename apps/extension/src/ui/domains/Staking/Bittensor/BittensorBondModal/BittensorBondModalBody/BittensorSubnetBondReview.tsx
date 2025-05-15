@@ -18,6 +18,7 @@ import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {
   DEFAULT_USER_MAX_SLIPPAGE,
+  DTAO_LOGO,
   HIGH_SLIPPAGE,
   TALISMAN_FEE_BITTENSOR,
   VERY_HIGH_SLIPPAGE,
@@ -46,13 +47,14 @@ export const BittensorSubnetBondReview = () => {
     warningDrawer,
     slippage,
     userMaxSlippage,
-
+    isSubnetUnbond,
     talismanFee,
     taoToAlphaConversionRate,
     isDynamicInfoLoading,
     isDynamicInfoError,
     expectedAlphaWithSlippage,
     stakeDirection,
+    amountToStakeAlpha,
     onSubmitted,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
@@ -64,7 +66,7 @@ export const BittensorSubnetBondReview = () => {
 
   const { subnet_name, symbol } = selectedSubnet
 
-  const selectedSubnetLabel = `${netuid} | ${subnet_name} ${symbol}`
+  const selectedSubnetLabel = `SN${netuid} ${subnet_name} ${symbol}`
   const label = netuid ? selectedSubnetLabel : "Subnet"
 
   useEffect(() => {
@@ -86,15 +88,28 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pb-2">
             <div className="whitespace-nowrap">{t("Amount")} </div>
             <div className="flex items-center gap-4 overflow-hidden">
-              <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
-              <TokensAndFiat
-                isBalance
-                tokenId={token?.id}
-                planck={amountToStake?.planck}
-                noCountUp
-                tokensClassName="text-body"
-                fiatClassName="text-body-secondary"
-              />
+              {isSubnetUnbond ? (
+                <>
+                  <TokenLogo url={DTAO_LOGO} className="shrink-0 text-lg" />
+                  <Tokens
+                    amount={amountToStakeAlpha?.tokens}
+                    symbol={selectedSubnetLabel}
+                    className="truncate"
+                  />
+                </>
+              ) : (
+                <>
+                  <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
+                  <TokensAndFiat
+                    isBalance
+                    tokenId={token?.id}
+                    planck={amountToStake?.planck}
+                    noCountUp
+                    tokensClassName="text-body"
+                    fiatClassName="text-body-secondary"
+                  />
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 pt-2">
@@ -131,7 +146,7 @@ export const BittensorSubnetBondReview = () => {
               amount={expectedAlphaWithSlippage}
               decimals={token?.decimals}
               symbol={`SN${netuid} ${subnet_name} ${symbol}`}
-              className="text-body"
+              className="text-body truncate"
             />
           </div>
         </div>

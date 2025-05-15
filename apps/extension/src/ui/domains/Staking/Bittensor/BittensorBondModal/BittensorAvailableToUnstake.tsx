@@ -32,7 +32,7 @@ export const BittensorAvailableToUnstake = () => {
 
   return (
     <div className="text-body flex items-center gap-2">
-      <Tokens amount={tokenBalance} symbol={symbol} />
+      <Tokens amount={tokenBalance} symbol={symbol} className="max-w-[15rem] truncate" />
       <Fiat amount={fiat} />
     </div>
   )

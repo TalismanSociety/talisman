@@ -14,7 +14,7 @@ export const BittensorSubnetBondForm = () => {
 
   const { subnet_name, symbol } = subnetData?.[netuid || 0] ?? {}
 
-  const selectedSubnetLabel = `${netuid} | ${subnet_name} ${symbol}`
+  const selectedSubnetLabel = `SN${netuid} ${subnet_name} ${symbol}`
   const label = netuid ? selectedSubnetLabel : "Subnet"
 
   const SubnetStakeDetails = () => {
