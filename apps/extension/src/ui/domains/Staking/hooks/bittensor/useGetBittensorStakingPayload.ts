@@ -77,5 +77,6 @@ export const useGetBittensorStakingPayload = ({
       return response
     },
     enabled: !!sapi && !!address && isEnabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
