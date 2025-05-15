@@ -34,21 +34,10 @@ import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
-// TODO: Cleanup all non Bittensor related code
-
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
 
   if (!token) return null
-
-  const stakeAssetLabel = () => {
-    switch (token.chain?.id) {
-      case "bittensor":
-        return t("Delegated Staking")
-      default:
-        return t("Pooled Staking")
-    }
-  }
 
   return (
     <div className="flex h-16 items-center gap-4 px-4">
@@ -56,7 +45,7 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
       <div className="flex items-center gap-2">
         <div className="text-body text-base">{token.symbol}</div>
         <div className="bg-body-disabled inline-block size-2 rounded-full"></div>
-        <div className="text-body-secondary text-sm">{stakeAssetLabel()}</div>
+        <div className="text-body-secondary text-sm">{t("Delegated Staking")}</div>
       </div>
     </div>
   )

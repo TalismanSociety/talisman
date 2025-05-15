@@ -19,7 +19,7 @@ type GetStakeInfo = {
   chainId: ChainId | undefined
 }
 
-type BondType = "bittensor" | "nomPools"
+type BondType = "nomPools"
 
 type StakeInfo = {
   payloadInfo: UseQueryResult<{

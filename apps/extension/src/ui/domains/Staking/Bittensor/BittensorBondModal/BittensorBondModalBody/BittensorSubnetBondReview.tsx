@@ -6,7 +6,6 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { NominationPoolName } from "@ui/domains/Staking/NominationPools/NominationPoolName"
 import { useAppState } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -23,6 +22,7 @@ import {
   TALISMAN_FEE_BITTENSOR,
   VERY_HIGH_SLIPPAGE,
 } from "../../utils/constants"
+import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
 import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
@@ -131,7 +131,7 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Validator")} </div>
             <div className="text-body truncate">
-              <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
+              <BittensorDelegatorNameButton poolId={poolId} />
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
