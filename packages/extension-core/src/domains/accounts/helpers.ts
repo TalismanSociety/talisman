@@ -84,7 +84,7 @@ export const filterAccountsByAddresses =
   }
 
 type GetPublicAccountsOptions = {
-  includeWatchedAccounts?: boolean
+  developerMode?: boolean
   includePortalOnlyInfo?: boolean
 }
 
@@ -92,12 +92,16 @@ export const getPublicAccounts = (
   accounts: Account[],
   filterFn: (accounts: Account[]) => Account[] = (accounts) => accounts,
   options: GetPublicAccountsOptions = {
-    includeWatchedAccounts: false,
+    developerMode: false,
     includePortalOnlyInfo: false,
   },
 ) =>
   filterFn(accounts)
-    .filter((a) => !!options.includeWatchedAccounts || !["watch-only", "contact"].includes(a.type))
+    .filter((a) => {
+      if (options.developerMode) return true
+      if (options.includePortalOnlyInfo) return a.type !== "contact"
+      return !["watch-only", "contact"].includes(a.type)
+    })
     .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)) // TODO apply catalog order ?
     .map((x) =>
       getPjsInjectedAccount(x, { includePortalOnlyInfo: !!options.includePortalOnlyInfo }),

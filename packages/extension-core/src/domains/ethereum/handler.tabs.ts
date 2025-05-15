@@ -170,7 +170,7 @@ export class EthTabsHandler extends TabsHandler {
       getPublicAccounts(
         await keyringStore.getAccounts(),
         filterAccountsByAddresses(site.ethAddresses),
-        { includeWatchedAccounts: await this.stores.settings.get("developerMode") },
+        { developerMode: await this.stores.settings.get("developerMode") },
       )
         .filter(({ type }) => type === "ethereum")
         // send as
