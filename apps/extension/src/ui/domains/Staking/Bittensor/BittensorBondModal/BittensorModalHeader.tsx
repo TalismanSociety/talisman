@@ -7,7 +7,6 @@ import { IconButton } from "talisman-ui"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
-// TODO: Remove all non Bittensor related code
 export const BittensorModalHeader = () => {
   const { t } = useTranslation()
   const { step, stakeType, setStep, stakeDirection } = useBittensorBondWizard()

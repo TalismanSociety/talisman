@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
-import { BondPoolName } from "../shared/BondPoolName"
+import { NominationPoolName } from "../NominationPools/NominationPoolName"
 import { StakingAccountDisplay } from "../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { useNomPoolWithdrawWizard } from "./useNomPoolWithdrawWizard"
@@ -58,7 +58,7 @@ export const NomPoolWithdrawReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">

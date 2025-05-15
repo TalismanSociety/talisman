@@ -28,7 +28,7 @@ import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { STAKING_APR_UNAVAILABLE } from "../helpers"
 import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useStakingAPR } from "../hooks/nomPools/useStakingAPR"
-import { BondPoolName } from "../shared/BondPoolName"
+import { NominationPoolName } from "../NominationPools/NominationPoolName"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { BondAccountPicker } from "./BondAccountPicker"
@@ -436,7 +436,7 @@ export const BondForm = () => {
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{bondRowLabel}</div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">
