@@ -33,9 +33,15 @@ export const useGetBittensorStakingPayload = ({
 }: GetBittensorStakingPayload) => {
   // use minJoinBond to get an accurate a 'fake fee estimate' if the amount is 0 or less than minJoinBond
   const amount = useMemo(
-    () => (!!minJoinBond && plancks && plancks >= minJoinBond ? plancks : minJoinBond),
+    () => (!!minJoinBond && plancks && plancks >= minJoinBond ? plancks : minJoinBond || 0n),
     [minJoinBond, plancks],
   )
+
+  // use a mocked hotkey to get a 'fake fee estimate' if the user has no delegator selected
+  const hotkey = useMemo(() => {
+    const MOCKED_HOTKEY = "5HK5tp6t2S59DywmHRWPBVJeJ86T61KjurYqeooqj8sREpeN"
+    return poolId || MOCKED_HOTKEY
+  }, [poolId])
 
   const tokenDecimals = 9
 
@@ -57,12 +63,12 @@ export const useGetBittensorStakingPayload = ({
       netuid,
     ],
     queryFn: async () => {
-      if (!sapi || !address || !poolId) return null
+      if (!sapi || !address) return null
       const response = getBittensorStakingPayload({
         sapi,
         address,
-        poolId,
-        amount: amount ?? 0n,
+        poolId: hotkey,
+        amount: amount,
         stakeType,
         alphaPriceWithSlippagePlanks,
         netuid,
@@ -70,6 +76,6 @@ export const useGetBittensorStakingPayload = ({
       })
       return response
     },
-    enabled: !!sapi && !!address && !!poolId && isEnabled,
+    enabled: !!sapi && !!address && isEnabled,
   })
 }
