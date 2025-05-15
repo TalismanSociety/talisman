@@ -55,6 +55,7 @@ export const BittensorSubnetBondReview = () => {
     expectedAlphaWithSlippage,
     stakeDirection,
     amountToStakeAlpha,
+    estimatedAmountToStake,
     onSubmitted,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
@@ -94,7 +95,7 @@ export const BittensorSubnetBondReview = () => {
                   <Tokens
                     amount={amountToStakeAlpha?.tokens}
                     symbol={selectedSubnetLabel}
-                    className="truncate"
+                    className="text-body truncate"
                   />
                 </>
               ) : (
@@ -142,12 +143,21 @@ export const BittensorSubnetBondReview = () => {
 
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated amount")}</div>
-            <Tokens
-              amount={expectedAlphaWithSlippage}
-              decimals={token?.decimals}
-              symbol={`SN${netuid} ${subnet_name} ${symbol}`}
-              className="text-body truncate"
-            />
+            {isSubnetUnbond ? (
+              <Tokens
+                amount={estimatedAmountToStake?.tokens}
+                decimals={token?.decimals}
+                symbol={token?.symbol}
+                className="text-body truncate"
+              />
+            ) : (
+              <Tokens
+                amount={expectedAlphaWithSlippage}
+                decimals={token?.decimals}
+                symbol={`SN${netuid} ${subnet_name} ${symbol}`}
+                className="text-body truncate"
+              />
+            )}
           </div>
         </div>
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
