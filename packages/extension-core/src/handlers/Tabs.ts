@@ -105,7 +105,7 @@ export default class Tabs extends TabsHandler {
     return getPublicAccounts(
       await keyringStore.getAccounts(),
       filterAccountsByAddresses(site.addresses, anyType),
-      { includeWatchedAccounts: developerMode || isTalismanUrl(site.url) },
+      { includeWatchedAccounts: developerMode, includePortalOnlyInfo: isTalismanUrl(site.url) },
     )
   }
 
