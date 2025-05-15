@@ -12,10 +12,11 @@ test("Access Metamask e2e DApp and connect wallet", async ({ importAccount, cont
     context.waitForEvent("page"),
     ethAccount.locator("#connectButton").click(),
   ])
+
   //interacts with wallet popup
   await popup.waitForTimeout(5000)
   await popup.bringToFront()
-  await popup.setViewportSize({ width: 1280, height: 720 })
+  await popup.setViewportSize({ width: 400, height: 600 })
   await popup.getByRole("button", { name: ETH_ACC_NAME }).click()
   await popup.getByTestId("connection-connect-button").click()
   //verify that the account is connected on metamask test dapp
