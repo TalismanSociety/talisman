@@ -13,7 +13,7 @@ import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
 export const ConnectedAccountsPill: FC = () => {
   const { t } = useTranslation()
   const currentSite = useCurrentSite()
-  const accounts = useAccounts()
+  const accounts = useAccounts("all")
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
@@ -74,10 +74,11 @@ export const ConnectedAccountsPill: FC = () => {
       >
         <div className="bg-grey-850 group-hover:bg-grey-800 flex h-full items-center gap-3 overflow-hidden rounded-full px-4">
           <ConnectedSiteIndicator status={count ? "connected" : "disconnected"} />
-          <div className="text-body truncate text-sm">{label}</div>
-          <div className="bg-grey-700 h-6 w-0.5 shrink-0"></div>
-          <div className="text-body-secondary truncate text-xs">{host}</div>
-          <div className="grow"></div>
+          <div className="flex grow items-center gap-3 truncate">
+            <div className="text-body max-w-[50%] shrink-0 truncate text-sm">{label}</div>
+            <div className="bg-grey-700 h-6 w-0.5 shrink-0"></div>
+            <div className="text-body-secondary grow text-left text-xs">{host}</div>
+          </div>
           <ChevronDownIcon className="shrink-0" />
         </div>
       </button>
