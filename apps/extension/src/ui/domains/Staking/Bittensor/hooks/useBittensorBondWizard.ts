@@ -347,8 +347,20 @@ export const useBittensorBondWizard = () => {
     }
     if (!balance || !existentialDeposit || !feeEstimate) return null
     if (existentialDeposit.planck + feeEstimate * 11n > balance.transferable.planck) return null
-    return balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
-  }, [balance, existentialDeposit, feeEstimate, stakeDirection, totalStakedPlancks])
+    const maxRootStake = balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
+    if (stakeType === "subnet") {
+      return maxRootStake - talismanFee
+    }
+    return maxRootStake
+  }, [
+    balance,
+    existentialDeposit,
+    feeEstimate,
+    stakeDirection,
+    stakeType,
+    talismanFee,
+    totalStakedPlancks,
+  ])
 
   const newStakeTotal = useMemo(() => {
     if (stakeDirection === "unbond") {
