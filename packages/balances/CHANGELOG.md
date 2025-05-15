@@ -1,5 +1,81 @@
 # @talismn/balances
 
+## 0.9.4
+
+### Patch Changes
+
+- Updated dependencies [794cd6c]
+- Updated dependencies [3177848]
+  - @talismn/chaindata-provider@0.10.3
+  - @talismn/token-rates@2.0.4
+  - @talismn/chain-connector@0.10.3
+  - @talismn/chain-connector-evm@0.10.3
+
+## 0.9.3
+
+### Patch Changes
+
+- caa72c3: poll erc20 balances network by network
+- Updated dependencies [68f807a]
+  - @talismn/util@0.4.1
+  - @talismn/chain-connector@0.10.2
+  - @talismn/chain-connector-evm@0.10.2
+  - @talismn/chaindata-provider@0.10.2
+  - @talismn/token-rates@2.0.3
+
+## 0.9.2
+
+### Patch Changes
+
+- 378bd5e: fix: allow multiple substrate-tokens to have the same symbol
+- b447fbf: chore: add SimpleEvmNetworkList
+- Updated dependencies [a9b71ff]
+- Updated dependencies [b447fbf]
+  - @talismn/chaindata-provider@0.10.1
+  - @talismn/chain-connector@0.10.1
+  - @talismn/chain-connector-evm@0.10.1
+  - @talismn/token-rates@2.0.2
+
+## 0.9.1
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [6c25807]
+- Updated dependencies [ee16dc6]
+- Updated dependencies [a16afbc]
+- Updated dependencies [f33ab10]
+  - @talismn/chaindata-provider@0.10.0
+  - @talismn/chain-connector-evm@0.10.0
+  - @talismn/token-rates@2.0.1
+  - @talismn/sapi@0.0.3
+  - @talismn/util@0.4.0
+  - @talismn/chain-connector@0.10.0
+
+## 0.9.0
+
+### Minor Changes
+
+- 71f6dbd: deprecate sortIndex properties
+
+### Patch Changes
+
+- c339aa7: feat: use papi for decoding bittensor runtime api types
+- e704203: add: isNotNil and isTruthy utilities
+- Updated dependencies [71f6dbd]
+- Updated dependencies [c339aa7]
+- Updated dependencies [ae7f0ac]
+- Updated dependencies [e704203]
+- Updated dependencies [c339aa7]
+- Updated dependencies [71f6dbd]
+  - @talismn/token-rates@2.0.0
+  - @talismn/sapi@0.0.2
+  - @talismn/chaindata-provider@0.9.0
+  - @talismn/chain-connector@0.9.0
+  - @talismn/util@0.3.2
+  - @talismn/scale@0.1.1
+  - @talismn/chain-connector-evm@0.9.0
+
 ## 0.8.2
 
 ### Patch Changes

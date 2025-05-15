@@ -73,7 +73,6 @@ export const QuickSettingsModal: FC = () => {
           <AutoLockRow />
           <HideBalancesRow />
           <HideSmallBalancesRow />
-          <ShowTestnetsRow />
         </div>
       </TransitionChild>
     </Transition>
@@ -191,21 +190,6 @@ const HideSmallBalancesRow = () => {
         variant="sm"
         defaultChecked={hideDust}
         onChange={(e) => setHideDust(e.target.checked)}
-      />
-    </SettingRow>
-  )
-}
-
-const ShowTestnetsRow = () => {
-  const { t } = useTranslation()
-  const [withTestnets, setWithTestnets] = useSetting("useTestnets")
-
-  return (
-    <SettingRow label={t("Show testnets")}>
-      <Toggle
-        variant="sm"
-        defaultChecked={withTestnets}
-        onChange={(e) => setWithTestnets(e.target.checked)}
       />
     </SettingRow>
   )

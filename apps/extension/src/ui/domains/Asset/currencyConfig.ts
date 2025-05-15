@@ -17,6 +17,7 @@ import nzdIcon from "./currencyIcons/nzd.svg?url"
 import phpIcon from "./currencyIcons/php.svg?url"
 import rubIcon from "./currencyIcons/rub.svg?url"
 import sgdIcon from "./currencyIcons/sgd.svg?url"
+import taoIcon from "./currencyIcons/tao.svg?url"
 import thbIcon from "./currencyIcons/thb.svg?url"
 import tryIcon from "./currencyIcons/try.svg?url"
 // import twdIcon from "./currencyIcons/twd.svg?url"
@@ -27,6 +28,7 @@ const currencyIcons: Record<TokenRateCurrency, string | undefined> = {
   btc: btcIcon,
   eth: ethIcon,
   dot: dotIcon,
+  tao: taoIcon,
 
   usd: usdIcon,
   cny: cnyIcon,

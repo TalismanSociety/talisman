@@ -23,7 +23,7 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { usePortfolio, useSetting } from "@ui/state"
+import { usePortfolio } from "@ui/state"
 
 const HeaderRow: FC<{
   token: Token | undefined
@@ -134,13 +134,12 @@ const TokenBreadcrumb: FC<{
 const usePortfolioAsset = () => {
   const { symbol } = useParams()
   const { allBalances } = usePortfolio()
-  const [isTestnet] = useSetting("useTestnets")
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-    () => allBalances.find((b) => b.token?.symbol === symbol && (!b.token?.isTestnet || isTestnet)),
-    [allBalances, isTestnet, symbol],
+    () => allBalances.find((b) => b.token?.symbol === symbol),
+    [allBalances, symbol],
   )
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)

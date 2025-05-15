@@ -1,10 +1,8 @@
 import { ScaleApi } from "@talismn/sapi"
 import { ChainId } from "extension-core"
 
-import { useCanStakeBittensor } from "../hooks/bittensor/useCanStakeBittensor"
 import { useGetBittensorStakeByHotKey } from "../hooks/bittensor/useGetBittensorStakeByHotKey"
 import { useGetBittensorUnbondPayload } from "../hooks/bittensor/useGetBittensorUnbondPayload"
-import { useUpsertBittensorUnbondBlockNumber } from "../hooks/bittensor/useUpsertBittensorUnbondBlockNumber"
 import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
 import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
@@ -47,16 +45,6 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     plancks: bittensorPlanks,
   })
 
-  const { mutate: upsertBittensorUnbondBlockNumber } = useUpsertBittensorUnbondBlockNumber()
-
-  const handleBittensorUnbondSuccess = (blockNumber: number) => {
-    upsertBittensorUnbondBlockNumber({
-      account: address,
-      delegator: unstakePoolId,
-      blockNumber,
-    })
-  }
-
   let payloadInfo
   let plancksToUnbond
   let poolId
@@ -91,13 +79,6 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload })
 
-  const { canStake, isLoading: isCanStakeLoading } = useCanStakeBittensor({
-    sapi,
-    address,
-    hotkey: poolId,
-    chainId,
-  })
-
   return {
     plancksToUnbond,
     pool,
@@ -110,8 +91,5 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     isLoadingFeeEstimate,
     errorFeeEstimate,
     unbondType,
-    canStake,
-    isCanStakeLoading,
-    handleSuccess: chainId === "bittensor" ? handleBittensorUnbondSuccess : () => {},
   }
 }

@@ -1,5 +1,5 @@
 import { EvmNativeToken } from "@talismn/balances"
-import { EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -21,7 +21,7 @@ const viemRequest =
   }
 
 export const getExtensionPublicClient = (
-  evmNetwork: EvmNetwork,
+  evmNetwork: SimpleEvmNetwork,
   nativeToken: EvmNativeToken,
 ): PublicClient => {
   const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`

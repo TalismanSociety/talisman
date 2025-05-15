@@ -13,7 +13,7 @@ import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { usePortfolio } from "@ui/state"
+import { useFeatureFlag, usePortfolio } from "@ui/state"
 
 import { PortfolioAssetsHeader } from "./shared/PortfolioAssetsHeader"
 
@@ -83,6 +83,7 @@ const MainContent: FC = () => {
 }
 
 export const PortfolioAssets = () => {
+  const showNfts = useFeatureFlag("NFTS")
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
 
@@ -92,7 +93,7 @@ export const PortfolioAssets = () => {
       <PortfolioTabs className="mt-4" />
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
         {!!matchTokens && <PortfolioToolbarTokens />}
-        {!!matchNfts && <PortfolioToolbarNfts />}
+        {!!matchNfts && !!showNfts && <PortfolioToolbarNfts />}
         <MainContent />
       </Suspense>
     </>

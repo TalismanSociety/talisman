@@ -25,19 +25,20 @@ import {
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
+import { FolderContextMenu } from "@ui/domains/Account/FolderContextMenu"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
-import { AccountContextMenu } from "../Account/AccountContextMenu"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { FolderContextMenu } from "../Account/FolderContextMenu"
-import { useBuyTokensModal } from "../Asset/Buy/hooks/useBuyTokensModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }> = ({
@@ -234,7 +235,9 @@ const TopActions: FC = () => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { open: openBuyTokensModal } = useBuyTokensModal()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { open: openRampsModal } = useRampsModal()
+  const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
 
@@ -286,18 +289,19 @@ const TopActions: FC = () => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"),
+          onClick: canSwap
+            ? () => openSwapTokensModal()
+            : () => window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"),
           disabled: disableActions,
           disabledReason,
         },
-
         canBuy
           ? {
               analyticsName: "Goto" as const,
-              analyticsAction: "Buy Crypto button",
+              analyticsAction: "open ramps",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => openBuyTokensModal(),
+              onClick: () => openRampsModal(),
               disabled: disableActions,
               disabledReason,
             }
@@ -309,11 +313,13 @@ const TopActions: FC = () => {
       disabledReason,
       selectedAccount,
       selectedAccounts.length,
+      canSwap,
       canBuy,
       selectedAddress,
       symbol,
       openCopyAddressModal,
-      openBuyTokensModal,
+      openSwapTokensModal,
+      openRampsModal,
     ],
   )
 

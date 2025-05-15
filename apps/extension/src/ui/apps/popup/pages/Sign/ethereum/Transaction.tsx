@@ -1,4 +1,4 @@
-import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { EthPriorityOptionName, EvmAddress } from "extension-core"
@@ -15,6 +15,7 @@ import {
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
@@ -31,59 +32,6 @@ import { SignNetworkLogo } from "../SignNetworkLogo"
 const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefined) => {
   const publicClient = usePublicClient(evmNetworkId)
   return useEthBalance(publicClient, address)
-}
-
-const FeeTooltip = ({
-  estimatedFee,
-  maxFee,
-  tokenId,
-  balance,
-}: {
-  estimatedFee: bigint | undefined
-  maxFee: bigint | undefined
-  tokenId: TokenId | undefined
-  balance: bigint | null | undefined
-}) => {
-  const { t } = useTranslation("request")
-
-  if (!estimatedFee && !maxFee) return null
-
-  return (
-    <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
-      <>
-        {!!estimatedFee && (
-          <div className="flex w-full justify-between gap-8">
-            <div>{t("Estimated Fee:")}</div>
-            <div>
-              <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
-            </div>
-          </div>
-        )}
-        {!!maxFee && (
-          <div className="flex w-full justify-between gap-8">
-            <div>{t("Max Fee:")}</div>
-            <div>
-              <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
-            </div>
-          </div>
-        )}
-        {balance !== undefined && (
-          <div className="flex w-full justify-between gap-8">
-            <div>{t("Balance:")}</div>
-            <div>
-              <TokensAndFiat
-                tokenId={tokenId}
-                planck={balance ?? 0n}
-                noTooltip
-                noCountUp
-                isBalance
-              />
-            </div>
-          </div>
-        )}
-      </>
-    </div>
-  )
 }
 
 export const EthSignTransactionRequest = () => {

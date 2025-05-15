@@ -1,5 +1,6 @@
 import {
   detectAddressEncoding,
+  isBitcoinAddress,
   isEthereumAddress,
   platformFromAddress,
   platformFromCurve,
@@ -52,6 +53,9 @@ const ACCOUNT_TYPES_POLKADOT = [
   "signet",
 ] as const
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_BITCOIN = ["contact", "watch-only"] as const
+
 export const isAccountExternal = (
   account: Account | null | undefined,
 ): account is AccountOfType<(typeof ACCOUNT_TYPES_EXTERNAL)[number]> => {
@@ -98,6 +102,13 @@ export const isAccountLedgerPolkadotLegacy = (
   account: Account | null | undefined,
 ): account is AccountLedgerPolkadot & { genesisHash: `0x${string}` } => {
   return isAccountOfType(account, "ledger-polkadot") && !!account.genesisHash
+}
+
+type AccountBitcoin = Extract<Account, { type: (typeof ACCOUNT_TYPES_BITCOIN)[number] }>
+export const isAccountBitcoin = (
+  account: Account | null | undefined,
+): account is AccountBitcoin => {
+  return !!account && isBitcoinAddress(account.address)
 }
 
 export const getAccountGenesisHash = (account: Account | null | undefined) => {

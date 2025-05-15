@@ -12,7 +12,7 @@ import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
-import { useChain, useSetting, useToken } from "@ui/state"
+import { useChain, useToken } from "@ui/state"
 
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
 import { EnableNetworkToggle } from "./EnableNetworkToggle"
@@ -46,8 +46,6 @@ export const SubNetworkForm = ({
   const chain = useChain(id)
   const token = useToken(chain?.nativeToken?.id)
 
-  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
-
   const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(nativeTokenCoingeckoId)
   const nativeTokenLogoUrl = useMemo(
     // existing icon has priority
@@ -70,13 +68,12 @@ export const SubNetworkForm = ({
       try {
         if (!requestData.rpcs.length) throw new Error(t("At least one RPC is required"))
         await api.chainUpsert(requestData)
-        if (data.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [nativeTokenLogoUrl, onSubmitted, setUseTestnets, t, useTestnets],
+    [nativeTokenLogoUrl, onSubmitted, t],
   )
 
   return (

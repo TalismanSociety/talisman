@@ -255,7 +255,7 @@ export const watchSubstrateTransaction = async (
   signature: HexString,
   options: WatchTransactionOptions = {},
 ) => {
-  const { siteUrl, notifications, transferInfo = {} } = options
+  const { siteUrl, notifications, transferInfo = {}, txInfo } = options
   const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
   assert(chain.genesisHash === payload.genesisHash, "Genesis hash mismatch")
@@ -263,7 +263,7 @@ export const watchSubstrateTransaction = async (
   try {
     const hash = getExtrinsicHash(registry, payload, signature)
 
-    await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
+    await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo, txInfo })
 
     await watchExtrinsicStatus(
       chain.id,

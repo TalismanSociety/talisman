@@ -6,7 +6,6 @@ import {
   getAccountGenesisHash,
   isAccountEthereum,
   isAccountLedgerPolkadotGeneric,
-  isAccountNotContact,
   isAccountPolkadot,
 } from "@talismn/keyring"
 
@@ -40,7 +39,7 @@ export const sortAccounts =
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
-    await accountsCatalogStore.addAccounts(sorted.filter(isAccountNotContact))
+    await accountsCatalogStore.syncAccounts(sorted)
     await accountsCatalogStore.sortAccountsByCatalogOrder(sorted)
 
     return sorted

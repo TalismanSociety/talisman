@@ -4,7 +4,7 @@ import { ReactNode, useEffect } from "react"
 
 import {
   balanceModuleCreatorsAtom,
-  coingeckoConfigAtom,
+  coinsApiConfigAtom,
   enabledChainsAtom,
   enabledTokensAtom,
   enableTestnetsAtom,
@@ -47,9 +47,7 @@ export type BalancesConfig = {
    */
   onfinalityApiKey?: string
 
-  coingeckoApiUrl?: string
-  coingeckoApiKeyName?: string
-  coingeckoApiKeyValue?: string
+  coinsApiUrl?: string
 
   /** Enables balances fetching for tokens on testnet chains. */
   withTestnets?: boolean
@@ -110,9 +108,7 @@ export const BalancesProvider = ({
   balanceModules,
   onfinalityApiKey,
 
-  coingeckoApiUrl,
-  coingeckoApiKeyName,
-  coingeckoApiKeyValue,
+  coinsApiUrl,
 
   withTestnets,
   enabledChains,
@@ -130,14 +126,10 @@ export const BalancesProvider = ({
     setOnfinalityApiKey(onfinalityApiKey)
   }, [onfinalityApiKey, setOnfinalityApiKey])
 
-  const setCoingeckoConfig = useSetAtom(coingeckoConfigAtom)
+  const setCoinsApiConfig = useSetAtom(coinsApiConfigAtom)
   useEffect(() => {
-    setCoingeckoConfig({
-      apiUrl: coingeckoApiUrl,
-      apiKeyName: coingeckoApiKeyName,
-      apiKeyValue: coingeckoApiKeyValue,
-    })
-  }, [coingeckoApiKeyName, coingeckoApiKeyValue, coingeckoApiUrl, setCoingeckoConfig])
+    setCoinsApiConfig({ apiUrl: coinsApiUrl })
+  }, [coinsApiUrl, setCoinsApiConfig])
 
   const setEnableTestnets = useSetAtom(enableTestnetsAtom)
   useEffect(() => {

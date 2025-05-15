@@ -11,6 +11,8 @@ export type DiscoveredBalance = {
 export type AssetDiscoveryScanScope = {
   networkIds: (EvmNetworkId | ChainId)[]
   addresses: Address[]
+  /** indicates whether aad api should be called at the begining of the scan */
+  withApi: boolean
 }
 
 export interface AssetDiscoveryMessages {

@@ -19,15 +19,6 @@ import { extensionStores } from "./stores"
 
 jest.setTimeout(10_000)
 
-// Mock the hasSpiritKey module to return false
-jest.mock("../util/hasSpiritKey", () => {
-  return {
-    fetchHasSpiritKey: jest.fn().mockImplementation(async () => {
-      return false
-    }),
-  }
-})
-
 describe("Extension", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>

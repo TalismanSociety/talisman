@@ -7,14 +7,19 @@ import { RemoteConfigStoreData } from "./types"
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
-  rampConfig: {
-    rampBasePath: "",
-    rampApiBasePath: "",
-    rampApiKey: "",
+  ramps: {
+    coinbaseProjectId: "63080e24-dc8e-45d0-9618-467b8c222f9e",
+    pinnedTokens: ["polkadot-substrate-native", "1-evm-native", "bittensor-substrate-native"],
+    rampApiKey: "5ga4dyv63auqe9t2ytrcz8jaaudmq4m2js8egzsh",
+    rampNetworks: {
+      POLKADOT: "polkadot",
+      ETH: "1",
+    },
   },
-  rampSupportedTokenIds: {},
-  buyTokens: {
-    tokenIds: [],
+  swaps: {
+    questApi: "",
+    simpleswapApiKey: "",
+    curatedTokens: [],
   },
   coingecko: {
     apiUrl: "https://api.coingecko.com",
@@ -36,6 +41,9 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     unifiedAddressDocsUrl:
       "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
   },
+  // coinsApi: {
+  //   apiUrl: "http://localhost:8787",
+  // },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -58,6 +66,12 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
           if (process.env.COINGECKO_API_KEY_VALUE)
             config.coingecko.apiKeyValue = process.env.COINGECKO_API_KEY_VALUE
         }
+
+        // as per 2.8.0 we dont want this address to be the default validator anymore.
+        // versions prior to 2.8.0 expect a value there so GH config file cant be altered, we need to remove it at runtime
+        config.stakingPools["bittensor"] = config.stakingPools["bittensor"]?.filter(
+          (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
+        )
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))

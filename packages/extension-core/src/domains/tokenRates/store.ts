@@ -1,7 +1,8 @@
 import { TokenList } from "@talismn/chaindata-provider"
-import { DbTokenRates, fetchTokenRates } from "@talismn/token-rates"
+import { DbTokenRates, fetchTokenRates, TokenRateCurrency } from "@talismn/token-rates"
 import { Subscription } from "dexie"
 import { log } from "extension-shared"
+import { uniq } from "lodash"
 import debounce from "lodash/debounce"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
@@ -114,7 +115,11 @@ export class TokenRatesStore {
     try {
       const coinsApiConfig = await remoteConfigStore.get("coinsApi")
       const currencyIds = await settingsStore.get("selectableCurrencies")
-      const tokenRates = await fetchTokenRates(tokens, currencyIds, coinsApiConfig)
+
+      // force usd to be included, because hide small balances feature requires it
+      const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencyIds, "usd"])
+
+      const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, coinsApiConfig)
       const putTokenRates: DbTokenRates[] = Object.entries(tokenRates).map(([tokenId, rates]) => ({
         tokenId,
         rates,

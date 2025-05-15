@@ -26,20 +26,12 @@ import { debugObservable } from "./util/debugObservable"
 const BALANCES_CHAINDATA_QUERY = { includeTestnets: true, activeOnly: true }
 
 export const [useBalancesHydrate, balancesHydrate$] = bind(
-  combineLatest([
-    getChainsMap$(BALANCES_CHAINDATA_QUERY),
-    getEvmNetworksMap$(BALANCES_CHAINDATA_QUERY),
-    getTokensMap$(BALANCES_CHAINDATA_QUERY),
-    tokenRatesMap$,
-  ]).pipe(
-    map(([chains, evmNetworks, tokens, tokenRates]) => ({
-      chains,
-      evmNetworks,
-      tokens,
-      tokenRates,
-    })),
-    debugObservable("balancesHydrate$"),
-  ),
+  combineLatest({
+    chains: getChainsMap$(BALANCES_CHAINDATA_QUERY),
+    evmNetworks: getEvmNetworksMap$(BALANCES_CHAINDATA_QUERY),
+    tokens: getTokensMap$(BALANCES_CHAINDATA_QUERY),
+    tokenRates: tokenRatesMap$,
+  }).pipe(debugObservable("balancesHydrate$")),
 )
 
 // Reading this atom triggers the balances backend subscription
@@ -116,12 +108,10 @@ export const [useBalance, getBalance$] = bind(
     getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
 )
 
-type BalancesFilter = AccountCategory | BalanceQueryParams
-
-export const [useBalances, getBalances$] = bind((arg: BalancesFilter = "all") =>
-  typeof arg === "object" ? getBalancesByQuery$(arg) : getBalancesByCategory$(arg),
+export const [useBalances, getBalances$] = bind((category: AccountCategory = "all") =>
+  getBalancesByCategory$(category),
 )
 
 export const [useBalancesByAddress] = bind((address: Address | null | undefined) =>
-  getBalances$({ address }),
+  getBalancesByQuery$({ address }),
 )

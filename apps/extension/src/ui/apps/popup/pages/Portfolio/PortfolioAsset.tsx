@@ -14,7 +14,7 @@ import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useBalances, usePortfolio, useSelectedCurrency, useSetting } from "@ui/state"
+import { useBalances, usePortfolio, useSelectedCurrency } from "@ui/state"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -62,7 +62,6 @@ export const PortfolioAsset = () => {
   const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
-  const [withTestnets] = useSetting("useTestnets")
 
   const accountBalances = useMemo(
     () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
@@ -72,13 +71,8 @@ export const PortfolioAsset = () => {
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-    () =>
-      accountBalances.find(
-        (b) =>
-          b.token?.symbol === symbol &&
-          (!b.token?.isTestnet || b.token?.isTestnet === withTestnets),
-      ),
-    [accountBalances, symbol, withTestnets],
+    () => accountBalances.find((b) => b.token?.symbol === symbol),
+    [accountBalances, symbol],
   )
 
   useEffect(() => {

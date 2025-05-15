@@ -7,7 +7,7 @@ import { Button, Drawer } from "talisman-ui"
 import { useToken } from "@ui/state"
 import { isSubToken } from "@ui/util/isSubToken"
 
-import Tokens from "../../Asset/Tokens"
+import { Tokens } from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
 
 type ForfeitDetailsProps = {

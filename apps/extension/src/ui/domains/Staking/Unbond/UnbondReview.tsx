@@ -1,6 +1,5 @@
-import { AlertCircleIcon, InfoIcon } from "@talismn/icons"
+import { AlertCircleIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
@@ -25,7 +24,6 @@ export const UnbondReview = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     errorMessage,
-    stakeWarningMessage,
     poolId,
   } = useUnbondWizard()
 
@@ -90,40 +88,14 @@ export const UnbondReview = () => {
           <div>{errorMessage}</div>
         </div>
       )}
-      {stakeWarningMessage && (
-        <div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="bg-grey-900 text-alert-warn my-8 flex w-full items-center justify-center gap-5 rounded-sm px-5 py-6 text-xs">
-                <InfoIcon className="inline-block" /> {stakeWarningMessage}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="max-w-[26rem]">
-                <div>
-                  {t(
-                    "The Bittensor network requires a wait period of 360 blocks since your last stake / unstake action.",
-                  )}
-                </div>
-                <div>{t("Please try again later.")}</div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      )}
-      {payload ? (
-        <SapiSendButton
-          containerId="StakingModalDialog"
-          label={t("Unbond")}
-          payload={payload}
-          onSubmitted={onSubmitted}
-          txMetadata={txMetadata}
-        />
-      ) : (
-        <Button disabled primary>
-          {t("Unbond")}
-        </Button>
-      )}
+      <SapiSendButton
+        containerId="StakingModalDialog"
+        label={t("Unbond")}
+        loading={!payload}
+        payload={payload ?? undefined}
+        onSubmitted={onSubmitted}
+        txMetadata={txMetadata}
+      />
     </div>
   )
 }

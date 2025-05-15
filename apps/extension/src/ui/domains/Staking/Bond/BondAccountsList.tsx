@@ -13,7 +13,7 @@ import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
 import { Address } from "../../Account/Address"
 import { Fiat } from "../../Asset/Fiat"
-import Tokens from "../../Asset/Tokens"
+import { Tokens } from "../../Asset/Tokens"
 
 export type NomPoolBondAccount = {
   address: string

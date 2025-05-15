@@ -1,11 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { CustomSubNativeToken } from "@talismn/balances"
-import {
-  CustomEvmNetwork,
-  EvmNetwork,
-  EvmNetworkId,
-  isCustomEvmNetwork,
-} from "@talismn/chaindata-provider"
+import { EvmNetworkId, isCustomEvmNetwork, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -36,7 +31,7 @@ import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
-import { useEvmNetwork, useEvmNetworks, useSetting, useToken } from "@ui/state"
+import { useEvmNetwork, useEvmNetworks, useToken } from "@ui/state"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -104,8 +99,6 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const existingToken = useToken(existingEvmNetwork?.nativeToken?.id)
 
   const evmNetworks = useEvmNetworks()
-
-  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
   const tEditMode = evmNetworkId ? t("Edit") : t("Add")
@@ -191,13 +184,12 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
         }
 
         await api.ethNetworkUpsert(requestData)
-        if (network.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets],
+    [tokenLogoUrl, onSubmitted],
   )
 
   // on edit screen, wait for existing network to be loaded
@@ -362,7 +354,7 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 }
 
 const evmNetworkToFormData = (
-  network?: EvmNetwork | CustomEvmNetwork,
+  network?: SimpleEvmNetwork,
   nativeToken?: CustomSubNativeToken,
 ): EvmNetworkFormData | undefined => {
   if (!network || !nativeToken) return undefined
@@ -372,7 +364,10 @@ const evmNetworkToFormData = (
     name: network.name ?? "",
     rpcs: network.rpcs ?? [],
     blockExplorerUrl:
-      network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
+      network.explorerUrl ??
+      ("explorerUrls" in network && Array.isArray(network.explorerUrls)
+        ? network.explorerUrls?.[0]
+        : undefined),
     isTestnet: !!network.isTestnet,
     tokenCoingeckoId: nativeToken.coingeckoId ?? "",
     tokenSymbol: nativeToken.symbol,

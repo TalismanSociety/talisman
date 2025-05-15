@@ -4,6 +4,7 @@ export const SUPPORTED_CURRENCIES = {
   btc: { name: "Bitcoin", symbol: "₿" },
   eth: { name: "Ethereum", symbol: "Ξ" },
   dot: { name: "Polkadot", symbol: "D" },
+  tao: { name: "Bittensor", symbol: "τ" },
 
   usd: { name: "US Dollar", symbol: "$" },
   cny: { name: "Chinese Yuan", symbol: "¥" },
@@ -36,6 +37,7 @@ export const newTokenRates = (): TokenRates => ({
   btc: null,
   eth: null,
   dot: null,
+  tao: null,
 
   usd: null,
   cny: null,

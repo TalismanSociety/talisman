@@ -1,5 +1,23 @@
 # @talismn/util
 
+## 0.4.1
+
+### Patch Changes
+
+- 68f807a: improved formatPrice
+
+## 0.4.0
+
+### Minor Changes
+
+- f33ab10: feat: format price signature
+
+## 0.3.2
+
+### Patch Changes
+
+- e704203: add: isNotNil and isTruthy utilities
+
 ## 0.3.1
 
 ### Patch Changes

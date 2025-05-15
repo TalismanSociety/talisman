@@ -17,6 +17,9 @@ export const deriveKeypair = (seed: Uint8Array, derivationPath: string, curve: K
       return deriveEd25519(seed, derivationPath)
     case "ecdsa":
       return deriveEcdsa(seed, derivationPath)
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
+      throw new Error("deriveKeypair is not implemented for Bitcoin")
     case "ethereum":
       return deriveEthereum(seed, derivationPath)
     case "solana":
@@ -34,6 +37,9 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
       return getPublicKeySr25519(secretKey)
     case "ed25519":
       return getPublicKeyEd25519(secretKey)
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
+      throw new Error("getPublicKeyFromSecret is not implemented for Bitcoin")
     case "solana":
       return getPublicKeySolana(secretKey)
   }
@@ -86,6 +92,8 @@ export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
     case "ed25519":
     case "sr25519":
     case "ecdsa":
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
     case "solana":
       throw new Error("Not implemented")
   }

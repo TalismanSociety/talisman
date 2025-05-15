@@ -77,5 +77,6 @@ export const evmNetworks = [
     balancesMetadata: [],
     isDefault: true,
     forceScan: false,
+    preserveGasEstimate: false,
   },
 ]

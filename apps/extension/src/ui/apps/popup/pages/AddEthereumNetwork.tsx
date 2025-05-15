@@ -1,4 +1,4 @@
-import { EvmNetwork } from "@talismn/chaindata-provider"
+import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { GlobeIcon, InfoIcon } from "@talismn/icons"
 import { KnownRequestIdOnly } from "extension-core"
 import { log } from "extension-shared"
@@ -23,7 +23,7 @@ const SettingsSourceSelector: FC<{
   source: SettingsSource
   onChange: (src: SettingsSource) => void
   network: AddEthereumChainParameter
-  knownNetwork: EvmNetwork
+  knownNetwork: SimpleEvmNetwork
 }> = ({ source, onChange, network, knownNetwork }) => {
   const { t } = useTranslation("request")
   const knownNativeToken = useToken(knownNetwork.nativeToken?.id)

@@ -7,6 +7,8 @@ import { Address, AddressesByChain } from "../../types/base"
 export { Balances, Balance, BalanceFormatter, filterMirrorTokens } from "@talismn/balances"
 export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
 
+export type BalanceLoadingStatus = "initialising" | "loading" | "cached" | "live"
+
 export interface RequestBalance {
   chainId?: ChainId
   evmNetworkId?: EvmNetworkId
@@ -16,7 +18,7 @@ export interface RequestBalance {
 
 export type BalanceSubscriptionResponse = {
   data: BalanceJson[]
-  status: "cached" | "initialising" | "live"
+  status: BalanceLoadingStatus
 }
 
 export type AddressesAndEvmNetwork = {

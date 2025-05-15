@@ -1,5 +1,47 @@
 # @talismn/on-chain-id
 
+## 0.1.10
+
+### Patch Changes
+
+- @talismn/balances@0.9.4
+
+## 0.1.9
+
+### Patch Changes
+
+- Updated dependencies [caa72c3]
+- Updated dependencies [68f807a]
+  - @talismn/balances@0.9.3
+  - @talismn/util@0.4.1
+
+## 0.1.8
+
+### Patch Changes
+
+- Updated dependencies [378bd5e]
+- Updated dependencies [b447fbf]
+  - @talismn/balances@0.9.2
+
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [a16afbc]
+- Updated dependencies [f33ab10]
+  - @talismn/balances@0.9.1
+  - @talismn/util@0.4.0
+
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [c339aa7]
+- Updated dependencies [e704203]
+- Updated dependencies [71f6dbd]
+  - @talismn/balances@0.9.0
+  - @talismn/util@0.3.2
+
 ## 0.1.5
 
 ### Patch Changes

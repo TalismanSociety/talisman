@@ -109,7 +109,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
             )
 
           default:
-            throw new Error("Unsupported account type")
+            throw new Error(`Unsupported account type '${account.type}'`)
         }
       })()}
     </>

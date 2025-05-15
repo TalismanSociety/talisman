@@ -1,4 +1,4 @@
-import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork } from "@talismn/chaindata-provider"
+import { Chain, CustomChain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,7 +18,7 @@ export const useFormatNetworkName = () => {
   const [t] = useTranslation()
 
   return useCallback(
-    (chain?: Chain | CustomChain | null, evmNetwork?: EvmNetwork | CustomEvmNetwork | null) =>
+    (chain?: Chain | CustomChain | null, evmNetwork?: SimpleEvmNetwork | null) =>
       chain?.name
         ? `${chain.name}${chain.evmNetworks?.length > 0 ? ` (${t("Polkadot")})` : ""}`
         : evmNetwork

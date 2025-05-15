@@ -17,7 +17,6 @@ import {
   useAuthorisedSites,
   useEvmNetwork,
   useEvmNetworks,
-  useSetting,
 } from "@ui/state"
 
 import { NetworkLogo } from "./NetworkLogo"
@@ -49,7 +48,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
   const currentNetwork = useEvmNetwork(initialNetworkId)
   const [isTestnet] = useState(() => !!currentNetwork?.isTestnet)
-  const [settingUseTestnets, setUseTestnets] = useSetting("useTestnets")
+  const [settingUseTestnets, setUseTestnets] = useState(isTestnet)
 
   // show testnets only if initial network was a testnet when opening the drawer, or if testnets are enabled in settings
   const showTestnets = useMemo(

@@ -16,18 +16,18 @@ export class TokenRatesError extends Error {
   }
 }
 
-const ALL_CURRENCY_IDS = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
+export const ALL_CURRENCY_IDS = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
 export type CoinsApiConfig = {
   apiUrl: string
 }
 
-export const DEFAULT_COINAPI_CONFIG: CoinsApiConfig = {
+export const DEFAULT_COINSAPI_CONFIG: CoinsApiConfig = {
   apiUrl: "https://coins.talisman.xyz",
 }
 export async function fetchTokenRates(
   tokens: Record<TokenId, Token>,
   currencyIds: TokenRateCurrency[] = ALL_CURRENCY_IDS,
-  config: CoinsApiConfig = DEFAULT_COINAPI_CONFIG,
+  config: CoinsApiConfig = DEFAULT_COINSAPI_CONFIG,
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
@@ -79,12 +79,55 @@ export async function fetchTokenRates(
   // skip network request if there is nothing for us to fetch
   if (coingeckoIds.length < 1) return {}
 
+  // If `currencyIds` includes `tao`, we need to always fetch the `bittensor` coingeckoId and the `usd` currency,
+  // we can use these to calculate the currency rate for TAO relative to all other tokens.
+  //
+  // We support showing balances in TAO just like we support BTC/ETH/DOT, but coingecko doesn't support TAO as a vs currency rate.
+  // We can macgyver our own TOKEN<>TAO rate by combining the TOKEN<>USD data with the TAO<>USD data.
+  const hasVsTao = currencyIds.includes("tao")
+  const [effectiveCoingeckoIds, effectiveCurrencyIds] = hasVsTao
+    ? [
+        [...new Set(coingeckoIds).add("bittensor")],
+        [
+          ...new Set(
+            // don't request `tao` from coingecko (we calculate it from `usd`)
+            currencyIds.filter((c) => c !== "tao"),
+          )
+            // always include `usd` (so we can calculate `tao`)
+            .add("usd"),
+        ],
+      ]
+    : [coingeckoIds, currencyIds]
+
   const response = await fetch(`${config.apiUrl}/token-rates`, {
     method: "POST",
-    body: JSON.stringify({ coingeckoIds, currencyIds }),
+    body: JSON.stringify({
+      coingeckoIds: effectiveCoingeckoIds,
+      currencyIds: effectiveCurrencyIds,
+    }),
   })
 
-  const rawTokenRates = await response.json()
+  const rawTokenRates: RawTokenRates = await response.json()
+
+  if (hasVsTao) {
+    // calculate the TAO<>USD rate
+    const effectiveTaoIndex = effectiveCoingeckoIds.indexOf("bittensor")
+    const effectiveUsdIndex = effectiveCurrencyIds.indexOf("usd")
+    const taoUsdRate = rawTokenRates[effectiveTaoIndex]?.[effectiveUsdIndex]?.[0]
+
+    // insert TOKEN<>TAO rate (calculated based on TAO<>USD rate and TOKEN<>USD rate) into each TOKEN
+    const taoIndex = currencyIds.indexOf("tao")
+    rawTokenRates.forEach((rates) => {
+      // get TOKEN<>USD rate
+      const usdRate = rates?.[effectiveUsdIndex]?.[0]
+      // calculate TOKEN<>TAO rate
+      const taoRate =
+        usdRate !== null && taoUsdRate !== null && taoUsdRate !== 0 ? usdRate / taoUsdRate : null
+
+      // insert at the correct location (based on the index of `tao` in `currencyIds`)
+      rates?.splice(taoIndex, 0, [taoRate, null, null])
+    })
+  }
 
   const tokenRates = parseTokenRatesFromApi(rawTokenRates, coingeckoIds, currencyIds)
 

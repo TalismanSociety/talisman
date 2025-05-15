@@ -1,18 +1,17 @@
 import { bind } from "@react-rxjs/core"
 import { HydrateDb } from "@talismn/balances"
-import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { Chain, ChainId, EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { isAddressEqual, isTruthy } from "@talismn/util"
 import { Account, Balances } from "extension-core"
 import { t } from "i18next"
-import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from "rxjs"
+import { BehaviorSubject, combineLatest, map, shareReplay } from "rxjs"
 
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"
 import { getChains$, getEvmNetworks$, getTokens$ } from "./chaindata"
-import { getSettingValue$ } from "./settings"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
@@ -25,7 +24,7 @@ export type NetworkOption = {
 type PortfolioGlobalData = {
   chains: Chain[]
   tokens: Token[]
-  evmNetworks: EvmNetwork[]
+  evmNetworks: SimpleEvmNetwork[]
   hydrate: HydrateDb
   allBalances: Balances
   portfolioBalances: Balances
@@ -67,7 +66,7 @@ const getNetworkOptions = ({
 }: {
   tokens: Token[]
   chains: Chain[]
-  evmNetworks: EvmNetwork[]
+  evmNetworks: SimpleEvmNetwork[]
   addressEncoding?: AddressEncoding
   balances?: Balances
 }) => {
@@ -168,52 +167,26 @@ export const portfolioSearch$ = new BehaviorSubject<string>("")
 
 const setSearch = (search: string) => portfolioSearch$.next(search)
 
-export const [usePortfolioGlobalData, portfolioGlobalData$] = bind(
-  getSettingValue$("useTestnets").pipe(
-    switchMap((includeTestnets) =>
-      combineLatest([
-        getChains$({ activeOnly: true, includeTestnets }),
-        getEvmNetworks$({ activeOnly: true, includeTestnets }),
-        getTokens$({ activeOnly: true, includeTestnets }),
-        balancesHydrate$,
-        getBalances$("all"),
-        getBalances$("portfolio"),
-        isBalanceInitialising$,
-      ]).pipe(
-        map(
-          ([
-            chains,
-            evmNetworks,
-            tokens,
-            hydrate,
-            allBalances,
-            portfolioBalances,
-            isInitialising,
-          ]) =>
-            ({
-              chains,
-              evmNetworks,
-              tokens,
-              hydrate,
-              allBalances,
-              portfolioBalances,
-              isInitialising,
-              isProvisioned: true,
-            }) as PortfolioGlobalData,
-        ),
-      ),
-    ),
-  ),
+export const [usePortfolioGlobalData, portfolioGlobalData$] = bind<PortfolioGlobalData>(
+  combineLatest({
+    chains: getChains$({ activeOnly: true, includeTestnets: true }),
+    evmNetworks: getEvmNetworks$({ activeOnly: true, includeTestnets: true }),
+    tokens: getTokens$({ activeOnly: true, includeTestnets: true }),
+    hydrate: balancesHydrate$,
+    allBalances: getBalances$("all"),
+    portfolioBalances: getBalances$("portfolio"),
+    isInitialising: isBalanceInitialising$,
+  }).pipe(map((data): PortfolioGlobalData => ({ ...data, isProvisioned: true }))),
   {
     chains: [],
-    tokens: [],
     evmNetworks: [],
+    tokens: [],
     hydrate: {},
     allBalances: new Balances([]),
     portfolioBalances: new Balances([]),
-    isProvisioned: false,
     isInitialising: false,
-  } as PortfolioGlobalData,
+    isProvisioned: false,
+  },
 )
 
 const portfolioForSelectedNetwork$ = combineLatest([

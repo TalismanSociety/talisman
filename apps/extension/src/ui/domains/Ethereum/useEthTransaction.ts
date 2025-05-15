@@ -14,7 +14,6 @@ import {
   getGasSettingsEip1559,
   getHumanReadableErrorMessage,
   getTotalFeesFromGasSettings,
-  isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
 } from "extension-core"
@@ -337,9 +336,10 @@ const useGasSettings = ({
     )
       return undefined
 
-    const gas = isAcalaEvmPlus(evmNetworkId ?? "")
-      ? estimatedGas // use the gas estimation provided by the chain, it is encoding specific values
-      : getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
+    const gas =
+      !evmNetwork || evmNetwork.preserveGasEstimate
+        ? estimatedGas // use the gas estimation provided by the chain, it is encoding specific values
+        : getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
       hasEip1559Support,
@@ -371,22 +371,31 @@ const useGasSettings = ({
         if (mapMaxPriority.high === 0n) mapMaxPriority.high = 1n
       }
 
-      const low = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.low, gas)
-      const medium = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.medium, gas)
-      const high = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.high, gas)
+      const low = getGasSettingsEip1559(
+        baseFeePerGas,
+        mapMaxPriority.low,
+        gas,
+        feeHistoryAnalysis.isBaseFeeIdle,
+      )
+      const medium = getGasSettingsEip1559(
+        baseFeePerGas,
+        mapMaxPriority.medium,
+        gas,
+        feeHistoryAnalysis.isBaseFeeIdle,
+      )
+      const high = getGasSettingsEip1559(
+        baseFeePerGas,
+        mapMaxPriority.high,
+        gas,
+        feeHistoryAnalysis.isBaseFeeIdle,
+      )
 
       const custom: EthGasSettingsEip1559 =
         customSettings?.type === "eip1559"
           ? customSettings
           : suggestedSettings?.type === "eip1559"
             ? suggestedSettings
-            : {
-                ...low,
-                // if network is idle, it makes sense to use baseFee as max base fee
-                maxFeePerGas: feeHistoryAnalysis.isBaseFeeIdle
-                  ? baseFeePerGas + low.maxPriorityFeePerGas
-                  : low.maxFeePerGas,
-              }
+            : low
 
       return {
         type: "eip1559",
@@ -435,7 +444,7 @@ const useGasSettings = ({
     customSettings,
     feeHistoryAnalysis,
     baseFeePerGas,
-    evmNetwork?.l2FeeType?.type,
+    evmNetwork,
   ])
 
   const gasSettings = useMemo(() => {
@@ -601,6 +610,40 @@ export const useEthTransaction = (
     () => tx && isDecoding && !txDetails && !error,
     [tx, isDecoding, txDetails, error],
   )
+
+  // @dev temporarily uncomment when troubleshooting
+
+  // useEffect(() => {
+  //   console.log("useEthTransaction", {
+  //     request,
+  //     evmNetworkId,
+  //     tx,
+  //     decodedTx,
+  //     hasEip1559Support,
+  //     nonce,
+  //     gasPrice,
+  //     networkUsage,
+  //     baseFeePerGas,
+  //     blockGasLimit,
+  //     feeHistoryAnalysis,
+  //     estimatedGas,
+  //     transaction,
+  //   })
+  // }, [
+  //   baseFeePerGas,
+  //   blockGasLimit,
+  //   decodedTx,
+  //   estimatedGas,
+  //   evmNetworkId,
+  //   feeHistoryAnalysis,
+  //   gasPrice,
+  //   hasEip1559Support,
+  //   networkUsage,
+  //   nonce,
+  //   request,
+  //   tx,
+  //   transaction,
+  // ])
 
   return {
     decodedTx,

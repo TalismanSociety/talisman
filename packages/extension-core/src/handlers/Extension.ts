@@ -1,6 +1,5 @@
 import { isAccountOwned } from "@talismn/keyring"
-import { isTalismanHostname, log } from "extension-shared"
-import { distinctUntilKeyChanged } from "rxjs"
+import { IS_FIREFOX, isTalismanHostname } from "extension-shared"
 
 import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"
@@ -24,10 +23,10 @@ import TokensHandler from "../domains/tokens/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
+import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "../types"
 import { Port, RequestIdOnly } from "../types/base"
-import { fetchHasSpiritKey } from "../util/hasSpiritKey"
 import { ExtensionStore } from "./stores"
 import { unsubscribe } from "./subscriptions"
 
@@ -97,12 +96,6 @@ export default class Extension extends ExtensionHandler {
         })
     })
 
-    this.stores.app.observable
-      .pipe(distinctUntilKeyChanged("onboarded"))
-      .subscribe(({ onboarded }) => {
-        if (onboarded === "TRUE") this.checkSpiritKeyOwnership()
-      })
-
     this.initDb()
     this.cleanup()
 
@@ -114,6 +107,36 @@ export default class Extension extends ExtensionHandler {
 
     // hides the get started component has soon as the wallet owns funds
     hideGetStartedOnceFunded()
+
+    // if BUILD is not "dev", submit a "wallet upgraded" event to posthog
+    if (process.env.BUILD !== "dev") {
+      ;(async () => {
+        // don't send "wallet upgraded" event if analytics is disabled, or wallet is not onboarded
+        const allowTracking = await this.stores.settings.get("useAnalyticsTracking")
+        const onboarded = await this.stores.app.getIsOnboarded()
+        if (!allowTracking || !onboarded || IS_FIREFOX) return
+
+        const lastWalletUpgradedEvent = await this.stores.app.get("lastWalletUpgradedEvent")
+
+        // short circuit if we've already sent a "wallet upgraded" event for this version
+        if (lastWalletUpgradedEvent === process.env.VERSION) return
+
+        // make sure we create a new report for this version of the wallet, not re-use one we created last version
+        await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
+
+        await spawnTaskToCreateNewReport({
+          // don't refresh balances in the background, just send the existing db cache
+          refreshBalances: false,
+
+          // the primary purpose of the "wallet upgraded" event is to submit the opt-in general report.
+          // `waitForReportCreated: true` lets us wait for the report to be created before we submit the event.
+          waitForReportCreated: true,
+        })
+
+        await talismanAnalytics.capture("wallet upgraded")
+        await this.stores.app.set({ lastWalletUpgradedEvent: process.env.VERSION })
+      })()
+    }
   }
 
   private cleanup() {
@@ -153,40 +176,6 @@ export default class Extension extends ExtensionHandler {
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
-  }
-
-  private async checkSpiritKeyOwnership() {
-    try {
-      const hasSpiritKey = await fetchHasSpiritKey()
-      const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
-
-      if (currentSpiritKey !== hasSpiritKey) {
-        await this.stores.app.set({ hasSpiritKey, needsSpiritKeyUpdate: true })
-        await this.updateSpiritKeyOwnership(hasSpiritKey)
-      }
-    } catch (err) {
-      // ignore, don't update app store nor posthog property
-      log.error("Failed to check Spirit Key ownership", { err })
-    }
-
-    // in case reporting to posthog fails, set a timer so that every 5 min we will re-attempt
-    setInterval(async () => {
-      const { hasSpiritKey, needsSpiritKeyUpdate } = await this.stores.app.get()
-      if (needsSpiritKeyUpdate) await this.updateSpiritKeyOwnership(hasSpiritKey)
-    }, 300_000)
-  }
-
-  private async updateSpiritKeyOwnership(hasSpiritKey: boolean) {
-    try {
-      await talismanAnalytics.capture("Spirit Key ownership check", {
-        $set: { hasSpiritKey },
-      })
-    } catch (err) {
-      // ignore, don't update app store
-      log.error("Failed to update Spirit Key ownership", { err })
-      return
-    }
-    await this.stores.app.set({ needsSpiritKeyUpdate: false })
   }
 
   public async handle<TMessageType extends MessageTypes>(
