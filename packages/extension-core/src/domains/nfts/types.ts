@@ -113,6 +113,8 @@ export type NftCollection = {
   description: string
   iconUrl: string | null
   bannerUrl: string | null
+  itemsCount: number | null
+  ownersCount: number | null
 }
 
 export type FetchNftsRequest = { addresses: string[] }

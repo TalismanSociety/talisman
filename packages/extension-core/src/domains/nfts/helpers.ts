@@ -1,4 +1,4 @@
-import { isAccountEthereum } from "@talismn/keyring"
+import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
 import { firstValueFrom } from "rxjs"
 
 import { activeEvmNetworksObservable } from "../balances/pool"
@@ -8,6 +8,7 @@ import { NftCollection } from "./types"
 export const getNftsAccountsList = async () => {
   const accounts = await keyringStore.getAccounts()
   return accounts
+    .filter(isAccountNotContact)
     .filter(isAccountEthereum)
     .map(({ address }) => address)
     .sort()
