@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/crypto"
 import { NftData } from "extension-core"
-import { BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap } from "rxjs"
+import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 import {
@@ -49,10 +49,7 @@ const nftData$ = new Observable<NftData>((subscriber) => {
   return () => unsubscribe()
 }).pipe(debugObservable("nftData$"), shareReplay(1))
 
-const evmNetworks$ = getSettingValue$("useTestnets").pipe(
-  switchMap((includeTestnets) => getEvmNetworks$({ activeOnly: true, includeTestnets })),
-  shareReplay(1),
-)
+const evmNetworks$ = getEvmNetworks$({ activeOnly: true, includeTestnets: true })
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
   combineLatest([evmNetworks$, nftData$]).pipe(

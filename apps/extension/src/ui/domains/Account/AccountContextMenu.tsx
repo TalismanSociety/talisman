@@ -131,7 +131,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const canScanTokens = useMemo(() => isEthereumAddress(account?.address), [account])
   const scanTokensClick = useCallback(() => {
     if (!account) return
-    api.assetDiscoveryStartScan({ networkIds, addresses: [account.address] })
+    api.assetDiscoveryStartScan({ networkIds, addresses: [account.address], withApi: true })
     if (IS_POPUP) {
       api.dashboardOpen("/settings/networks-tokens/asset-discovery")
       if (IS_EMBEDDED_POPUP) window.close()

@@ -1,4 +1,9 @@
-import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
+import {
+  ALL_CURRENCY_IDS,
+  DbTokenRates,
+  fetchTokenRates,
+  db as tokenRatesDb,
+} from "@talismn/token-rates"
 import { isTruthy } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
@@ -9,7 +14,7 @@ import { map } from "rxjs"
 import log from "../log"
 import { dexieToRxjs } from "../util/dexieToRxjs"
 import { tokensByIdAtom } from "./chaindata"
-import { coingeckoConfigAtom } from "./config"
+import { coinsApiConfigAtom } from "./config"
 
 export const tokenRatesAtom = atom(async (get) => {
   // runs a timer to keep tokenRates up to date
@@ -31,7 +36,7 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
   const abort = new AbortController()
 
   // we have to get these synchronously so that jotai knows to restart our timer when they change
-  const coingeckoConfig = get(coingeckoConfigAtom)
+  const coinsApiConfig = get(coinsApiConfigAtom)
   const tokensByIdPromise = get(tokensByIdAtom)
 
   ;(async () => {
@@ -44,7 +49,7 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
     const hydrate = async () => {
       try {
         if (abort.signal.aborted) return // don't fetch if aborted
-        const tokenRates = await fetchTokenRates(tokensById, coingeckoConfig)
+        const tokenRates = await fetchTokenRates(tokensById, ALL_CURRENCY_IDS, coinsApiConfig)
         const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
           tokenId,
           rates,

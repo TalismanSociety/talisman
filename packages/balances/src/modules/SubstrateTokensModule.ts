@@ -19,6 +19,7 @@ import {
   getLookupFn,
   papiParse,
 } from "@talismn/scale"
+import { compressToEncodedURIComponent } from "lz-string"
 import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -40,8 +41,8 @@ const defaultPalletId = "Tokens"
 
 export type SubTokensToken = Extract<Token, { type: ModuleType }>
 
-export const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-tokens-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+export const subTokensTokenId = (chainId: ChainId, onChainId: string | number) =>
+  `${chainId}-substrate-tokens-${compressToEncodedURIComponent(String(onChainId))}`
 
 export type SubTokensChainMeta = {
   isTestnet: boolean
@@ -126,7 +127,7 @@ export const SubTokensModule: NewBalanceModule<
 
           if (onChainId === undefined) continue
 
-          const id = subTokensTokenId(chainId, symbol)
+          const id = subTokensTokenId(chainId, onChainId)
           const token: SubTokensToken = {
             id,
             type: "substrate-tokens",
@@ -142,7 +143,7 @@ export const SubTokensModule: NewBalanceModule<
 
           if (tokenConfig?.symbol) {
             token.symbol = tokenConfig?.symbol
-            token.id = subTokensTokenId(chainId, token.symbol)
+            token.id = subTokensTokenId(chainId, token.onChainId)
           }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName

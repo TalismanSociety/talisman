@@ -18,6 +18,7 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
 
   async setActive(tokenId: TokenId, enabled: boolean) {
     const activeTokens = await this.get()
+    if (activeTokens[tokenId] === enabled) return
     await this.set({ ...activeTokens, [tokenId]: enabled })
   }
 

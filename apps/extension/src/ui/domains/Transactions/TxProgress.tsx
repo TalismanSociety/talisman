@@ -1,12 +1,7 @@
 import { HexString } from "@polkadot/util/types"
-import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
+import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import {
-  EvmWalletTransaction,
-  isAcalaEvmPlus,
-  SubWalletTransaction,
-  WalletTransaction,
-} from "extension-core"
+import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
@@ -19,7 +14,7 @@ import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
 
 const getBlockExplorerUrl = (
-  network: EvmNetwork | undefined | null,
+  network: SimpleEvmNetwork | undefined | null,
   chain: Chain | undefined | null,
   hash: string,
 ) => {
@@ -46,7 +41,9 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     [gotoProgress, tx],
   )
 
-  if (tx.networkType === "evm" && isAcalaEvmPlus(tx.evmNetworkId)) return null
+  const evmNetwork = useEvmNetwork(tx.networkType === "evm" ? tx.evmNetworkId : null)
+
+  if (evmNetwork?.preserveGasEstimate) return null
   if (tx.status !== "pending" || tx.networkType !== "evm") return null
 
   return (

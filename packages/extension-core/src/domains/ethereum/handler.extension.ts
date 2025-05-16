@@ -141,6 +141,7 @@ export class EthHandler extends ExtensionHandler {
     unsigned,
     signed,
     transferInfo,
+    txInfo,
   }) => {
     assert(evmNetworkId, "chainId is not defined")
 
@@ -153,6 +154,7 @@ export class EthHandler extends ExtensionHandler {
       watchEthereumTransaction(evmNetworkId, hash, unsigned, {
         notifications: true,
         transferInfo,
+        txInfo,
       })
 
       talismanAnalytics.captureDelayed("send transaction", {
@@ -171,6 +173,7 @@ export class EthHandler extends ExtensionHandler {
     evmNetworkId,
     unsigned,
     transferInfo,
+    txInfo,
   }) => {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
@@ -195,6 +198,7 @@ export class EthHandler extends ExtensionHandler {
       watchEthereumTransaction(evmNetworkId, result.val, unsigned, {
         notifications: true,
         transferInfo,
+        txInfo,
       })
 
       talismanAnalytics.captureDelayed("send transaction", {

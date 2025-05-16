@@ -26,7 +26,7 @@
     "react-router-dom": "6.27.0",
     "react-use": "^17.5.1",
     "talisman-ui": "workspace:*",
-    "viem": "^2.21.34",
+    "viem": "^2.27.3",
     "wagmi": "^2.12.25"
   },
   "devDependencies": {

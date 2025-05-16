@@ -4,12 +4,13 @@ import {
 } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
 import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceFormatter, Balances } from "extension-core"
+import { groupBy } from "lodash"
 import { useMemo } from "react"
 
 import { useTokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 import { calculateTaoFromAlphaStaked } from "@ui/domains/Portfolio/utils/subtensor"
-import { CHAIN_INFO } from "@ui/domains/Staking/Bittensor/constants"
-import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/sortGroupedStakes"
+import { CHAIN_INFO } from "@ui/domains/Staking/Bittensor/utils/constants"
+import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/utils/sortGroupedStakes"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 import { useCombinedSubnetData } from "./useCombinedSubnetData"
@@ -64,10 +65,7 @@ export const useSortedGroupedStakes = ({ balances, tokenId }: SortedGroupedStake
       }
     })
 
-    const groupedStakes = Object.groupBy(
-      stakesWithFiatFallback,
-      ({ meta }) => meta?.netuid ?? CHAIN_INFO,
-    )
+    const groupedStakes = groupBy(stakesWithFiatFallback, ({ meta }) => meta?.netuid ?? CHAIN_INFO)
 
     return sortGroupedStakes(groupedStakes, CHAIN_INFO)
   }, [currency, subnetData, tokenBalances, tokenRates])

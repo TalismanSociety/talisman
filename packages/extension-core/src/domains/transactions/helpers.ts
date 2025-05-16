@@ -9,7 +9,7 @@ import { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
-import { TransactionStatus } from "./types"
+import { TransactionStatus, WalletTransactionInfo } from "./types"
 
 type AddTransactionOptions = {
   label?: string
@@ -17,6 +17,7 @@ type AddTransactionOptions = {
   tokenId?: string
   value?: string
   to?: Address
+  txInfo?: WalletTransactionInfo
 }
 
 const DEFAULT_OPTIONS: AddTransactionOptions = {
@@ -29,7 +30,10 @@ export const addEvmTransaction = async (
   unsigned: TransactionRequest<string>,
   options: AddTransactionOptions = {},
 ) => {
-  const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
+  const { siteUrl, label, tokenId, value, to, txInfo } = merge(
+    structuredClone(DEFAULT_OPTIONS),
+    options,
+  )
 
   try {
     if (!evmNetworkId || !unsigned.from || unsigned.nonce === undefined)
@@ -59,6 +63,7 @@ export const addEvmTransaction = async (
       tokenId,
       value,
       to,
+      txInfo,
       timestamp: Date.now(),
     })
   } catch (err) {
@@ -73,7 +78,10 @@ export const addSubstrateTransaction = async (
   payload: SignerPayloadJSON,
   options: AddTransactionOptions = {},
 ) => {
-  const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
+  const { siteUrl, label, tokenId, value, to, txInfo } = merge(
+    structuredClone(DEFAULT_OPTIONS),
+    options,
+  )
 
   try {
     if (!payload.genesisHash || !payload.nonce || !payload.address)
@@ -93,6 +101,7 @@ export const addSubstrateTransaction = async (
       tokenId,
       value,
       to,
+      txInfo,
       timestamp: Date.now(),
     })
   } catch (err) {

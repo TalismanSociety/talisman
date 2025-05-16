@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.0.3
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+
 ## 0.0.2
 
 ### Patch Changes

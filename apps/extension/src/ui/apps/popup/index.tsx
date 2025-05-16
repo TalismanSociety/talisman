@@ -17,12 +17,14 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
+import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
+import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
@@ -87,18 +89,20 @@ const Popup = () => {
         </Routes>
       </Suspense>
       <Suspense fallback={<SuspenseTracker name="Modals & alerts" />}>
-        <AccountRenameModal />
-        <AccountRemoveModal />
         <AccountExportModal />
         <AccountExportPrivateKeyModal />
-        <CopyAddressModal />
-        <BuyTokensModal />
-        <ExplorerNetworkPickerModal />
+        <AccountRemoveModal />
+        <AccountRenameModal />
         <BackupWarningDrawer />
-        <LedgerPolkadotUpgradeAlertDrawer />
         <BondModal />
-        <UnbondModal />
+        <BittensorBondModal />
+        <CopyAddressModal />
+        <ExplorerNetworkPickerModal />
+        <LedgerPolkadotUpgradeAlertDrawer />
         <NomPoolWithdrawModal />
+        <RampsModal />
+        <SwapTokensModal />
+        <UnbondModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

@@ -241,9 +241,10 @@ export const EvmErc20Module: NewBalanceModule<
 
               const { errors, results } = await fetchBalances(
                 chainConnectors.evm,
-                fetchesPerNetwork,
+                { [evmNetworkId]: fetchesPerNetwork[evmNetworkId] },
                 aggregators,
               )
+
               // handle errors first
               errors.forEach((error) => {
                 if (error instanceof EvmErc20BalanceError) {

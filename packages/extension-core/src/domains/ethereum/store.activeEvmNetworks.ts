@@ -16,6 +16,8 @@ class ActiveEvmNetworksStore extends StorageProvider<ActiveEvmNetworks> {
   }
 
   async setActive(networkId: EvmNetworkId, active: boolean) {
+    const activeNetworks = await this.get()
+    if (activeNetworks[networkId] === active) return
     return await this.mutate((activeEvmNetworks) => ({ ...activeEvmNetworks, [networkId]: active }))
   }
 
@@ -30,5 +32,8 @@ export const isEvmNetworkActive = (
   network: SimpleEvmNetwork,
   activeNetworks: ActiveEvmNetworks,
 ) => {
-  return activeNetworks[network.id] ?? (isCustomEvmNetwork(network) || network.isDefault)
+  return (
+    activeNetworks[network.id] ??
+    (isCustomEvmNetwork(network) || (network.isDefault && !network.isTestnet))
+  )
 }

@@ -4,7 +4,8 @@ import { isNotNil } from "@talismn/util"
 import { range } from "lodash"
 import { Binary } from "polkadot-api"
 
-import { ROOT_NETUID } from "./Bittensor/constants"
+import { type StakeType } from "./Bittensor/hooks/useBittensorBondWizard"
+import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./Bittensor/utils/constants"
 
 export const getStakingErasPerYear = (sapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
@@ -78,21 +79,54 @@ export const getBittensorStakingPayload = async ({
   address,
   poolId,
   amount,
+  stakeType,
+  alphaPriceWithSlippagePlanks,
+  netuid,
+  talismanFee,
 }: {
   sapi: ScaleApi
   address: string
   poolId: string | number
   amount: bigint
+  stakeType: StakeType
+  alphaPriceWithSlippagePlanks: bigint
+  netuid: number | null
+  talismanFee: bigint
 }) => {
+  if (stakeType === "root") {
+    return sapi.getExtrinsicPayload(
+      "Utility",
+      "batch_all",
+      {
+        calls: [
+          sapi.getDecodedCall("SubtensorModule", "add_stake", {
+            hotkey: poolId,
+            netuid: ROOT_NETUID,
+            amount_staked: amount,
+          }),
+          sapi.getDecodedCall("System", "remark_with_event", {
+            remark: Binary.fromText("talisman-bittensor"),
+          }),
+        ],
+      },
+      { address },
+    )
+  }
   return sapi.getExtrinsicPayload(
     "Utility",
     "batch_all",
     {
       calls: [
-        sapi.getDecodedCall("SubtensorModule", "add_stake", {
+        sapi.getDecodedCall("SubtensorModule", "add_stake_limit", {
           hotkey: poolId,
-          netuid: ROOT_NETUID,
+          netuid: netuid,
           amount_staked: amount,
+          limit_price: alphaPriceWithSlippagePlanks,
+          allow_partial: false,
+        }),
+        sapi.getDecodedCall("Balances", "transfer_keep_alive", {
+          dest: Enum("Id", TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR),
+          value: talismanFee,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
           remark: Binary.fromText("talisman-bittensor"),

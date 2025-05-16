@@ -1,5 +1,63 @@
 # @talismn/balances-react
 
+## 0.9.4
+
+### Patch Changes
+
+- Updated dependencies [794cd6c]
+- Updated dependencies [3177848]
+  - @talismn/chaindata-provider@0.10.3
+  - @talismn/token-rates@2.0.4
+  - @talismn/balances@0.9.4
+  - @talismn/chain-connector@0.10.3
+  - @talismn/chain-connector-evm@0.10.3
+  - @talismn/connection-meta@0.2.9
+
+## 0.9.3
+
+### Patch Changes
+
+- Updated dependencies [caa72c3]
+- Updated dependencies [68f807a]
+  - @talismn/balances@0.9.3
+  - @talismn/util@0.4.1
+  - @talismn/chain-connector@0.10.2
+  - @talismn/chain-connector-evm@0.10.2
+  - @talismn/chaindata-provider@0.10.2
+  - @talismn/connection-meta@0.2.8
+  - @talismn/token-rates@2.0.3
+
+## 0.9.2
+
+### Patch Changes
+
+- Updated dependencies [a9b71ff]
+- Updated dependencies [378bd5e]
+- Updated dependencies [b447fbf]
+  - @talismn/chaindata-provider@0.10.1
+  - @talismn/balances@0.9.2
+  - @talismn/chain-connector@0.10.1
+  - @talismn/chain-connector-evm@0.10.1
+  - @talismn/connection-meta@0.2.7
+  - @talismn/token-rates@2.0.2
+
+## 0.9.1
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [6c25807]
+- Updated dependencies [ee16dc6]
+- Updated dependencies [a16afbc]
+- Updated dependencies [f33ab10]
+  - @talismn/chaindata-provider@0.10.0
+  - @talismn/chain-connector-evm@0.10.0
+  - @talismn/token-rates@2.0.1
+  - @talismn/balances@0.9.1
+  - @talismn/util@0.4.0
+  - @talismn/chain-connector@0.10.0
+  - @talismn/connection-meta@0.2.6
+
 ## 0.9.0
 
 ### Patch Changes

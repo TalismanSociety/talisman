@@ -9,6 +9,9 @@ export const platformFromCurve = (curve: KeypairCurve): Platform => {
       return "polkadot"
     case "ethereum":
       return "ethereum"
+    case "bitcoin-ecdsa":
+    case "bitcoin-ed25519":
+      return "bitcoin"
     case "solana":
       return "solana"
   }
@@ -20,6 +23,10 @@ export const platformFromEncoding = (encoding: AddressEncoding): Platform => {
       return "polkadot"
     case "ethereum":
       return "ethereum"
+    case "bech32m":
+    case "bech32":
+    case "base58check":
+      return "bitcoin"
     case "base58":
       return "solana"
   }

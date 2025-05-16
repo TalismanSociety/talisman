@@ -12,7 +12,11 @@ import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { dismissTransaction, watchSubstrateTransaction } from "../transactions"
 
 export class SubHandler extends ExtensionHandler {
-  private submit: MessageHandler<"pri(substrate.rpc.submit)"> = async ({ payload, signature }) => {
+  private submit: MessageHandler<"pri(substrate.rpc.submit)"> = async ({
+    payload,
+    signature,
+    txInfo,
+  }) => {
     const chain = await chaindataProvider.chainByGenesisHash(payload.genesisHash)
     if (!chain) throw new Error(`Chain not found for genesis hash ${payload.genesisHash}`)
 
@@ -46,7 +50,7 @@ export class SubHandler extends ExtensionHandler {
       signature = result.unwrap()
     }
 
-    await watchSubstrateTransaction(chain, registry, payload, signature)
+    await watchSubstrateTransaction(chain, registry, payload, signature, { txInfo })
 
     const tx = registry.createType(
       "Extrinsic",

@@ -4,7 +4,7 @@ import { FC } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 
 type SignParamTokensDisplayProps = {
   tokenId: string | undefined

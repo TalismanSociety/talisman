@@ -1,5 +1,5 @@
 import { isEthereumAddress } from "@talismn/util"
-import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "extension-core"
+import { EvmAddress, SimpleEvmNetwork } from "extension-core"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -12,7 +12,7 @@ import { SignParamButton } from "./SignParamButton"
 
 type SignParamNetworkAddressButtonProps = {
   address: string
-  network: EvmNetwork | CustomEvmNetwork
+  network: SimpleEvmNetwork
   className?: string
   name?: string
 }

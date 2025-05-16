@@ -11,6 +11,7 @@ import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from "re
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
+import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 
 import type { UiTree, UiTreePosition } from "./types"
@@ -59,9 +60,9 @@ export const ManageAccountsList: FC<{
   }, [])
 
   const handleDragEnd = useCallback(
-    ({ active, over }: DragEndEvent) => {
+    async ({ active, over }: DragEndEvent) => {
       if (active.id && over?.data.current) {
-        setItems((items) => {
+        try {
           // reorder
           const newItems = moveTreeItem(
             items,
@@ -69,16 +70,23 @@ export const ManageAccountsList: FC<{
             over.data.current as UiTreePosition,
           )
           // asynchronously update backend
-          api.accountsCatalogRunActions([
+          await api.accountsCatalogRunActions([
             { type: "reorder", tree: treeName, items: uiTreeToDataTree(newItems) },
           ])
-          return newItems
-        })
+
+          setItems(newItems)
+        } catch (err) {
+          notify({
+            type: "error",
+            title: t("Error"),
+            subtitle: t("Failed to reorder"),
+          })
+        }
       }
 
       return setDraggedItemId(null)
     },
-    [treeName],
+    [items, t, treeName],
   )
 
   return (

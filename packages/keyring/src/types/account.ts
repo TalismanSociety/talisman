@@ -1,6 +1,6 @@
 import type { KeypairCurve } from "@talismn/crypto"
 
-export type AccountPlatform = "ethereum" | "polkadot" | "solana" // bitcoin, cardano, etc. defined which signer can be used and how addresses are derived
+export type AccountPlatform = "ethereum" | "polkadot" | "solana" | "bitcoin" // bitcoin, cardano, etc. defined which signer can be used and how addresses are derived
 
 export type AccountBase = {
   // address edge-cases:

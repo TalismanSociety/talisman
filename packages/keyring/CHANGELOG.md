@@ -1,5 +1,13 @@
 # @talismn/keyring
 
+## 0.1.4
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [a16afbc]
+  - @talismn/crypto@0.1.3
+
 ## 0.1.3
 
 ### Patch Changes

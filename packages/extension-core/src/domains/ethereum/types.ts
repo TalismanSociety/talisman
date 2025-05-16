@@ -12,7 +12,7 @@ import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
-import { WalletTransactionTransferInfo } from "../transactions"
+import { WalletTransactionInfo, WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
 
@@ -109,12 +109,14 @@ export type EthTxSignAndSend = {
   evmNetworkId: EvmNetworkId
   unsigned: TransactionRequest<string>
   transferInfo?: WalletTransactionTransferInfo
+  txInfo?: WalletTransactionInfo
 }
 export type EthTxSendSigned = {
   evmNetworkId: EvmNetworkId
   unsigned: TransactionRequest<string>
   signed: `0x${string}`
   transferInfo?: WalletTransactionTransferInfo
+  txInfo?: WalletTransactionInfo
 }
 
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {

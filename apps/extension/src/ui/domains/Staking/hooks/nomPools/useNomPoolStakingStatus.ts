@@ -9,9 +9,9 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBalances, useToken } from "@ui/state"
 
 import { getStakingEraDurationMs } from "../../helpers"
-import { useGetMinJoinBond } from "../../shared/useGetMinJoinBond"
 import { NomPoolMember } from "../../types"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
+import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 
 export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   const token = useToken(tokenId)
@@ -20,7 +20,9 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
 
   // dont get sapi if we dont have a poolId, it would fetch metadata for nothing
   const { data: sapi } = useScaleApi(poolId ? token?.chain?.id : null)
-  const { data: minJoinBond } = useGetMinJoinBond(poolId ? token?.chain?.id : null)
+  const { data: minJoinBond } = useNomPoolsMinJoinBond({
+    chainId: poolId ? token?.chain?.id : null,
+  })
   const { selectedAccount: account } = usePortfolioNavigation()
 
   const [balances, balancesKey] = useMemo(() => {

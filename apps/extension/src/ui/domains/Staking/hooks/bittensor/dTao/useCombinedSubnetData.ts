@@ -3,11 +3,13 @@ import { useEffect, useState } from "react"
 import { SubnetData } from "./types"
 import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
 import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
+import { useGetSubnets } from "./useGetInfiniteSubnets"
 
 export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
 
 export const useCombinedSubnetData = () => {
   const [subnetData, setSubnetData] = useState<Record<number, SubnetData>>({})
+  const { data: subnets, isLoading: isSubnetsLoading, isError: isSubnetsError } = useGetSubnets()
   const {
     data: subnetDescriptionsData,
     hasNextPage: hasSubnetDescriptionsNextPage,
@@ -56,8 +58,9 @@ export const useCombinedSubnetData = () => {
       (acc, desc) => {
         const netuid = Number(desc.netuid)
         const pool = pools.find((pool) => Number(pool.netuid) === netuid) || {}
+        const subnet = subnets?.find((subnet) => subnet.netuid === netuid)
 
-        acc[netuid] = { ...desc, ...pool }
+        acc[netuid] = { ...desc, ...pool, ...subnet }
         return acc
       },
       {} as Record<number, SubnetData>,
@@ -69,6 +72,7 @@ export const useCombinedSubnetData = () => {
     subnetDescriptionsData?.pages,
     subnetPoolsData,
     subnetPoolsData?.pages,
+    subnets,
   ])
 
   return {
@@ -76,5 +80,7 @@ export const useCombinedSubnetData = () => {
     isError: isSubnetDescriptionsError || isSubnetPoolsError,
     isLoading: isSubnetDescriptionsLoading || isSubnetPoolsLoading,
     isFetchingNextPage: isSubnetDescriptionsFetchingNextPage || isSubnetPoolsFetchingNextPage,
+    isSubnetsLoading,
+    isSubnetsError,
   }
 }

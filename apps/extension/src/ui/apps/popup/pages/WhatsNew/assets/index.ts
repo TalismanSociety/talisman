@@ -16,6 +16,7 @@ import content2300 from "./v2.3.0"
 import content2400 from "./v2.4.0"
 import content2500 from "./v2.5.0"
 import content2600 from "./v2.6.0"
+import content2800 from "./v2.8.0"
 
 export const latestUpdates: WhatsNewVersionData = {
   ...content1210,
@@ -35,4 +36,5 @@ export const latestUpdates: WhatsNewVersionData = {
   ...content2400,
   ...content2500,
   ...content2600,
+  ...content2800,
 }

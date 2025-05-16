@@ -13,14 +13,8 @@ import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import {
-  activeChainsState$,
-  activeEvmNetworksState$,
-  balancesHydrate$,
-  getSettingValue$,
-} from "@ui/state"
+import { activeChainsState$, activeEvmNetworksState$, balancesHydrate$ } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
@@ -47,12 +41,7 @@ const NoticeTooltip: FC = () => {
 }
 
 const [usePreload] = bind(
-  combineLatest([
-    getSettingValue$("useTestnets"),
-    balancesHydrate$,
-    activeChainsState$,
-    activeEvmNetworksState$,
-  ]),
+  combineLatest([balancesHydrate$, activeChainsState$, activeEvmNetworksState$]),
 )
 
 const Content = () => {
@@ -74,6 +63,7 @@ const Content = () => {
 
   const [search, setSearch] = useState("")
   const [activeOnly, setActiveOnly] = useState(false)
+  const [showTestnets, setShowTestnets] = useState(false)
 
   return (
     <>
@@ -109,7 +99,11 @@ const Content = () => {
           checked={activeOnly}
           onChange={() => setActiveOnly((prev) => !prev)}
         />
-        <EnableTestnetPillButton className="h-16" />
+        <TogglePill
+          label={t("Show testnets")}
+          checked={showTestnets}
+          onChange={() => setShowTestnets((prev) => !prev)}
+        />
       </div>
       <Spacer small />
       <div className="flex gap-4">
@@ -117,9 +111,9 @@ const Content = () => {
       </div>
       <Spacer small />
       {networksType === "polkadot" ? (
-        <ChainsList activeOnly={activeOnly} search={search} />
+        <ChainsList activeOnly={activeOnly} search={search} showTestnets={showTestnets} />
       ) : (
-        <EvmNetworksList activeOnly={activeOnly} search={search} />
+        <EvmNetworksList activeOnly={activeOnly} search={search} showTestnets={showTestnets} />
       )}
     </>
   )

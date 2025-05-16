@@ -17,7 +17,6 @@ import {
   useChains,
   useFeatureFlag,
   useRemoteConfig,
-  useSetting,
 } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -147,8 +146,7 @@ const ChainFormatsList = ({ formats }: { formats: ChainFormat[] }) => (
 export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
-  const [includeTestnets] = useSetting("useTestnets")
-  const chains = useChains({ activeOnly: false, includeTestnets })
+  const chains = useChains({ activeOnly: false, includeTestnets: true })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)

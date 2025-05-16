@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "extension-shared"
-import { FC, useCallback, useEffect } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -89,9 +89,9 @@ export const WelcomePage = () => {
   return (
     <OnboardLayout analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[54rem]">
       <div className="my-[8rem] flex flex-col items-center justify-center gap-20">
-        <div className="welcome-text flex flex-col items-center gap-14 text-center xl:w-[76rem]">
+        <div className="welcome-text flex select-none flex-col items-center gap-14 text-center xl:w-[76rem]">
           <div className="flex flex-col items-center gap-10 text-white xl:w-[65.2rem]">
-            <TalismanColouredHandWhiteTextLogo className="h-auto w-96" />
+            <LogoWithSupportPageRedirect />
             <div className="font-whyteInkTrap text-[8rem] leading-none tracking-tight lg:text-[12rem]">
               <Trans
                 t={t}
@@ -140,5 +140,21 @@ export const WelcomePage = () => {
         </div>
       </div>
     </OnboardLayout>
+  )
+}
+
+const LogoWithSupportPageRedirect = () => {
+  const [clickCount, setClickCount] = useState(0)
+
+  const handleClick = useCallback(() => {
+    if (clickCount === 9) window.location.href = "support.html"
+    else setClickCount((prev) => prev + 1)
+  }, [clickCount])
+
+  return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div onClick={handleClick}>
+      <TalismanColouredHandWhiteTextLogo className="h-auto w-96" />
+    </div>
   )
 }

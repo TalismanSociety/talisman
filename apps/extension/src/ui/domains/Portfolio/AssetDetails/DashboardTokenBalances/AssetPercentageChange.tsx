@@ -3,8 +3,8 @@ import { useMemo } from "react"
 
 type AssetPercentageChangeProps = {
   priceChange: string | null | undefined
-  isError: boolean
-  isLoading: boolean
+  isError?: boolean
+  isLoading?: boolean
 }
 
 export const AssetPercentageChange = ({

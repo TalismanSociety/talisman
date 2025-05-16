@@ -23,7 +23,7 @@ import { useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
-import Tokens from "../../Asset/Tokens"
+import { Tokens } from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
 import { useSendFundsInputNumber } from "../useSendFundsInputNumber"
 import { TokenPillButton } from "./TokenPillButton"

@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 0.1.3
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,8 +1,6 @@
 import { ScaleApi } from "@talismn/sapi"
 import { ChainId } from "extension-core"
 
-import { useGetBittensorStakeByHotKey } from "../hooks/bittensor/useGetBittensorStakeByHotKey"
-import { useGetBittensorUnbondPayload } from "../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
 import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
@@ -12,12 +10,9 @@ type GetUnbondInfo = {
   sapi: ScaleApi | undefined | null
   chainId: ChainId | undefined
   address: string | undefined
-  unstakePoolId: number | string | undefined
 }
 
-type UnbondType = "bittensor" | "nomPools"
-
-export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetUnbondInfo) => {
+export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   const { data: pool } = useNomPoolByMember(chainId, address)
   const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanksToUnbond({
     sapi,
@@ -31,45 +26,11 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     isEnabled: chainId !== "bittensor",
   })
 
-  const bittensorPlanks = useGetBittensorStakeByHotKey({
-    address,
-    hotkey: unstakePoolId,
-    isEnabled: chainId === "bittensor",
-  })
-
-  const bittensorUnbondPayload = useGetBittensorUnbondPayload({
-    sapi,
-    address,
-    hotkey: unstakePoolId,
-    isEnabled: chainId === "bittensor",
-    plancks: bittensorPlanks,
-  })
-
-  let payloadInfo
-  let plancksToUnbond
-  let poolId
-  let unbondType: UnbondType
-
-  switch (chainId) {
-    case "bittensor":
-      payloadInfo = bittensorUnbondPayload
-      plancksToUnbond = bittensorPlanks
-      poolId = unstakePoolId
-      unbondType = "bittensor"
-      break
-    default:
-      payloadInfo = nomPoolUnbondPayload
-      plancksToUnbond = nomPoolPlanksToUnbond
-      poolId = pool?.pool_id
-      unbondType = "bittensor"
-      break
-  }
-
   const {
     data: payloadAndMetadata,
     isLoading: isLoadingPayload,
     error: errorPayload,
-  } = payloadInfo || {}
+  } = nomPoolUnbondPayload || {}
 
   const { payload, txMetadata } = payloadAndMetadata || {}
 
@@ -80,9 +41,9 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
   } = useGetFeeEstimate({ sapi, payload })
 
   return {
-    plancksToUnbond,
+    plancksToUnbond: nomPoolPlanksToUnbond,
     pool,
-    poolId,
+    poolId: pool?.pool_id,
     payload,
     txMetadata,
     isLoadingPayload,
@@ -90,6 +51,6 @@ export const useGetUnbondInfo = ({ sapi, chainId, address, unstakePoolId }: GetU
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    unbondType,
+    unbondType: "nomPools",
   }
 }

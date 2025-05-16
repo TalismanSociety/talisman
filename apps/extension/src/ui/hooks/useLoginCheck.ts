@@ -4,11 +4,9 @@ import { combineLatest, map } from "rxjs"
 import { currentMigration$, isLoggedIn$, isOnboarded$ } from "@ui/state"
 
 export const [useLoginCheck] = bind(
-  combineLatest([isLoggedIn$, isOnboarded$, currentMigration$]).pipe(
-    map(([isLoggedIn, isOnboarded, currentMigration]) => ({
-      isLoggedIn,
-      isOnboarded,
-      isMigrating: !!currentMigration,
-    })),
-  ),
+  combineLatest({
+    isLoggedIn: isLoggedIn$,
+    isOnboarded: isOnboarded$,
+    isMigrating: currentMigration$.pipe(map((currentMigration) => !!currentMigration)),
+  }),
 )

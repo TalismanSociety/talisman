@@ -1,14 +1,17 @@
 import { useEffect } from "react"
 
 import { DashboardNfts } from "@ui/domains/Portfolio/Nfts/DashboardNfts"
+import { NftsUnavailable } from "@ui/domains/Portfolio/Nfts/NftsUnavailable"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useFeatureFlag } from "@ui/state"
 
 export const PortfolioNfts = () => {
+  const showNfts = useFeatureFlag("NFTS")
   const { pageOpenEvent } = useAnalytics()
 
   useEffect(() => {
     pageOpenEvent("portfolio NFTs")
   }, [pageOpenEvent])
 
-  return <DashboardNfts />
+  return showNfts ? <DashboardNfts /> : <NftsUnavailable />
 }

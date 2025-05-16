@@ -1,5 +1,30 @@
 # @talismn/chaindata-provider
 
+## 0.10.3
+
+### Patch Changes
+
+- 794cd6c: generate init data
+
+## 0.10.2
+
+## 0.10.1
+
+### Patch Changes
+
+- a9b71ff: generate init data
+- b447fbf: chore: add SimpleEvmNetworkList
+
+## 0.10.0
+
+### Minor Changes
+
+- ee16dc6: feat: preserveGasEstimate on EvmNetwork
+
+### Patch Changes
+
+- 6c25807: generate init data
+
 ## 0.9.0
 
 ### Minor Changes

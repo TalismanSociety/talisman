@@ -1,5 +1,36 @@
 # @talismn/token-rates
 
+## 2.0.4
+
+### Patch Changes
+
+- 3177848: feat: vs TAO currency
+- Updated dependencies [794cd6c]
+  - @talismn/chaindata-provider@0.10.3
+
+## 2.0.3
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.10.2
+
+## 2.0.2
+
+### Patch Changes
+
+- Updated dependencies [a9b71ff]
+- Updated dependencies [b447fbf]
+  - @talismn/chaindata-provider@0.10.1
+
+## 2.0.1
+
+### Patch Changes
+
+- a16afbc: fix: use new token-rates api
+- Updated dependencies [6c25807]
+- Updated dependencies [ee16dc6]
+  - @talismn/chaindata-provider@0.10.0
+
 ## 2.0.0
 
 ### Major Changes

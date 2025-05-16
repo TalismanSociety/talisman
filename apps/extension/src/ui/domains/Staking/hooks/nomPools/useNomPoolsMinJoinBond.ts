@@ -3,13 +3,7 @@ import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-export const useNomPoolsMinJoinBond = ({
-  chainId,
-  isEnabled,
-}: {
-  chainId: ChainId | null | undefined
-  isEnabled: boolean
-}) => {
+export const useNomPoolsMinJoinBond = ({ chainId }: { chainId: ChainId | null | undefined }) => {
   const { data: sapi } = useScaleApi(chainId)
 
   return useQuery({
@@ -18,6 +12,5 @@ export const useNomPoolsMinJoinBond = ({
       if (!sapi) return null
       return (await sapi.getStorage<bigint>("NominationPools", "MinJoinBond", [])) ?? 0n
     },
-    enabled: isEnabled && !!sapi,
   })
 }

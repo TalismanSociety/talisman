@@ -1,13 +1,13 @@
 import { BalanceFormatter } from "@talismn/balances"
+import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { CustomEvmNetwork, EvmNetwork } from "extension-core"
 import { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"
 
 type SignParamTokensButtonProps = {
-  network: EvmNetwork | CustomEvmNetwork
+  network: SimpleEvmNetwork
   address: string
   withIcon?: boolean
   tokenId: string | undefined

@@ -1,11 +1,10 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
-import { BondPoolName } from "../shared/BondPoolName"
+import { NominationPoolName } from "../NominationPools/NominationPoolName"
 import { StakingAccountDisplay } from "../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
@@ -60,7 +59,7 @@ export const UnbondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
@@ -89,19 +88,14 @@ export const UnbondReview = () => {
           <div>{errorMessage}</div>
         </div>
       )}
-      {payload ? (
-        <SapiSendButton
-          containerId="StakingModalDialog"
-          label={t("Unbond")}
-          payload={payload}
-          onSubmitted={onSubmitted}
-          txMetadata={txMetadata}
-        />
-      ) : (
-        <Button disabled primary>
-          {t("Unbond")}
-        </Button>
-      )}
+      <SapiSendButton
+        containerId="StakingModalDialog"
+        label={t("Unbond")}
+        loading={!payload}
+        payload={payload ?? undefined}
+        onSubmitted={onSubmitted}
+        txMetadata={txMetadata}
+      />
     </div>
   )
 }

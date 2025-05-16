@@ -32,7 +32,6 @@ import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
 import { isBackgroundPage } from "../../util/isBackgroundPage"
-import { settingsStore } from "../app/store.settings"
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { Chain } from "../chains/types"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
@@ -72,11 +71,9 @@ const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<stri
   activeStoreObservable: Observable<A>,
   isActiveFn: (item: T, activeMap: A) => boolean,
 ) => {
-  return combineLatest([dataObservable, activeStoreObservable, settingsStore.observable]).pipe(
-    map(([data, active, { useTestnets }]) => {
-      return data
-        .filter((item) => !!item && isActiveFn(item, active))
-        .filter((item) => (useTestnets ? true : !item.isTestnet))
+  return combineLatest([dataObservable, activeStoreObservable]).pipe(
+    map(([data, active]) => {
+      return data.filter((item) => !!item && isActiveFn(item, active))
     }),
   )
 }

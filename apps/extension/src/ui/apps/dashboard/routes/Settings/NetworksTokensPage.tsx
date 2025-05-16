@@ -4,20 +4,16 @@ import {
   GlobeIcon,
   ListIcon,
   PolkadotVaultIcon,
-  TerminalIcon,
 } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-import { CtaButton, Toggle } from "talisman-ui"
+import { CtaButton } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useSetting } from "@ui/state"
 
 const Content = () => {
   const { t } = useTranslation("admin")
-  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   return (
     <>
@@ -35,26 +31,6 @@ const Content = () => {
           to={`/settings/networks-tokens/asset-discovery`}
         />
         <div className="via-primary/10 my-4 h-0.5 bg-gradient-to-r from-transparent to-transparent"></div>
-        <Setting
-          iconLeft={TerminalIcon}
-          title={t("Enable testnets")}
-          subtitle={
-            <>
-              {t("Connect to test networks")}
-              <span> | </span>
-              <a
-                className="text-grey-200 hover:text-body"
-                href="https://paritytech.github.io/polkadot-testnet-faucet"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                {t("Faucets")}
-              </a>
-            </>
-          }
-        >
-          <Toggle checked={useTestnets} onChange={(e) => setUseTestnets(e.target.checked)} />
-        </Setting>
         <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}
