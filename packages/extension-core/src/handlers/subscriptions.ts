@@ -6,10 +6,14 @@
 import { DEBUG } from "extension-shared"
 import { Observable, Subscription } from "rxjs"
 
-import type { KnownSubscriptionDataTypes, MessageTypesWithSubscriptions } from "../types"
+import type {
+  KnownSubscriptionDataTypes,
+  MessageTypesWithSubscriptions,
+  UnsubscribeFn,
+} from "../types"
 import type { Port } from "../types/base"
 
-type Subscriptions = Record<string, Port>
+type Subscriptions = Record<string, { port: Port; unsubscribe?: UnsubscribeFn }>
 
 const subscriptions: Subscriptions = {} // return a subscription callback, that will send the data to the caller via the port
 
@@ -24,6 +28,7 @@ export function genericSubscription<TMessageType extends MessageTypesWithSubscri
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => cb(transformFn(data)))
+  subscriptions[id].unsubscribe = () => subscription.unsubscribe()
 
   port.onDisconnect.addListener((): void => {
     unsubscribe(id)
@@ -45,6 +50,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => transformFn(data).then(cb))
+  subscriptions[id].unsubscribe = () => subscription.unsubscribe()
 
   port.onDisconnect.addListener((): void => {
     unsubscribe(id)
@@ -54,12 +60,20 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
   return true
 }
 
-// return a subscription callback, that will send the data to the caller via the port
+/**
+ * Creates a frontend subscription that will be closed when the port disconnects
+ * ⚠️ Do not use this if you need a way to unsubscribe. use genericSubscription or genericAsyncSubscription instead.
+ *
+ * TODO: do not export this function.
+ *
+ * @param id id of the frontend request that initialized the subscription
+ * @param port port of the frontend request that initialized the subscription
+ */
 export function createSubscription<TMessageType extends MessageTypesWithSubscriptions>(
   id: string,
   port: Port,
 ): (data: KnownSubscriptionDataTypes<TMessageType>) => void {
-  subscriptions[id] = port
+  subscriptions[id] = { port }
   return (data): void => {
     if (subscriptions[id]) {
       try {
@@ -82,7 +96,13 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
 // clear a previous subscriber
 export function unsubscribe(id: string): void {
   // In the case that the subscription has already been closed, subscriptions[id] may not exist
-  if (subscriptions[id]) delete subscriptions[id]
+  if (subscriptions[id]) {
+    // delay just a little to prevent StrictMode from retriggering same subscriptions
+    const unsubscribeFn = subscriptions[id]?.unsubscribe
+    if (unsubscribeFn) setTimeout(unsubscribeFn, 200)
+
+    delete subscriptions[id]
+  }
 }
 
 export class ObservableSubscriptions {
