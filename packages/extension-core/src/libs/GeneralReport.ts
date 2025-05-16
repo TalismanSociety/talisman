@@ -13,7 +13,7 @@ import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
 import { Balances } from "../domains/balances/types"
 import { keyringStore } from "../domains/keyring/store"
-import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
+import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
@@ -145,25 +145,13 @@ async function getGeneralReport({
         }
       })
 
-      let balancesLive = false
-      let nftsLive = false
-
       // token balances
       const subscriptionId = "ANALYTICS-GENERAL-REPORT"
       balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
         if (response.status !== "live") return
-        balancesLive = true
-        if (!nftsLive) return
         disconnect()
       })
-      // nfts
-      const unsubNfts = subscribeNfts((data) => {
-        if (data.status !== "loaded") return
-        nftsLive = true
-        if (!balancesLive) return
-        disconnect()
-      })
-      onDisconnected.then(() => unsubNfts())
+
       // timeout (don't wait forever for all token balances and nfts to be live)
       await sleep(30_000).then(disconnect)
 
