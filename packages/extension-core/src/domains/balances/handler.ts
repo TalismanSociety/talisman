@@ -92,6 +92,14 @@ const getExternalBalances$ = (
     return new Observable<BalanceSubscriptionResponse>((subscriber) => {
       externalBalancePool = new ExternalBalancePool()
 
+      subscriber.next({
+        data: [],
+        status: "initialising",
+      })
+
+      // :jean:
+      const id = crypto.randomUUID()
+
       // :jean:
       let disconnect: () => void
       const onDisconnected = new Promise<void>((resolve) => {
@@ -102,11 +110,6 @@ const getExternalBalances$ = (
         flatAddressesByChains.some(isValidSubstrateAddress) ||
         addressesAndTokens.addresses.some(isValidSubstrateAddress)
 
-      subscriber.next({
-        data: [],
-        status: "initialising",
-      })
-
       // wait for chaindata to hydrate, then subscribe to the pool
       updateAndWaitForUpdatedChaindata({ updateSubstrateChains }).then(() => {
         externalBalancePool.setSubcriptionParameters({
@@ -114,9 +117,6 @@ const getExternalBalances$ = (
           addressesAndEvmNetworks,
           addressesAndTokens,
         })
-
-        // :jean:
-        const id = crypto.randomUUID()
 
         externalBalancePool.subscribe(id, onDisconnected, (balances) => {
           subscriber.next(balances)
