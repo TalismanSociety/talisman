@@ -46,8 +46,15 @@ const nftData$ = new Observable<NftData>((subscriber) => {
   const unsubscribe = api.nftsSubscribe((data) => {
     subscriber.next(data)
   })
-  return () => unsubscribe()
-}).pipe(debugObservable("nftData$"), shareReplay(1))
+  return () => {
+    unsubscribe()
+  }
+}).pipe(
+  debugObservable("nftData$"),
+  // backend subscription must be active only when this observable is subscribed
+  // => all bind() calls using this observable will need a default value or they will never unsubscribe
+  shareReplay({ refCount: true, bufferSize: 1 }),
+)
 
 const evmNetworks$ = getEvmNetworks$({ activeOnly: true, includeTestnets: true })
 
@@ -67,6 +74,7 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
         })
     }),
   ),
+  [],
 )
 
 export const [useNfts, nfts$] = bind(
@@ -241,30 +249,42 @@ export const [useNfts, nfts$] = bind(
       },
     ),
   ),
+  {
+    status: "loading",
+    nfts: [],
+    collections: [],
+    favoriteNftIds: [],
+    hiddenNftCollectionIds: [],
+    timestamp: 0,
+  } as NftData,
 )
 
-export const [useNft, nft$] = bind((id: string | null) =>
-  nfts$.pipe(
-    map(({ nfts, collections }) => {
-      if (!id) return null
+export const [useNft, nft$] = bind(
+  (id: string | null) =>
+    nfts$.pipe(
+      map(({ nfts, collections }) => {
+        if (!id) return null
 
-      const nft = nfts.find((nft) => nft.id === id)
-      if (!nft) return null
+        const nft = nfts.find((nft) => nft.id === id)
+        if (!nft) return null
 
-      const collection = collections.find((c) => c.id === nft.collectionId)
-      if (!collection) return null
+        const collection = collections.find((c) => c.id === nft.collectionId)
+        if (!collection) return null
 
-      return { nft, collection }
-    }),
-  ),
+        return { nft, collection }
+      }),
+    ),
+  null,
 )
 
-export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind((id: string) =>
-  nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
+export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind(
+  (id: string) => nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
+  false,
 )
 
-export const [useIsFavoriteNft, getIsFavoriteNft$] = bind((id: string) =>
-  nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
+export const [useIsFavoriteNft, getIsFavoriteNft$] = bind(
+  (id: string) => nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
+  false,
 )
 
 export const [useNftCollection, getNftCollection$] = bind(
@@ -275,4 +295,5 @@ export const [useNftCollection, getNftCollection$] = bind(
         nfts: allNfts.filter((nft) => nft.collectionId === collectionId) ?? [],
       })),
     ),
+  { collection: null, nfts: [] },
 )

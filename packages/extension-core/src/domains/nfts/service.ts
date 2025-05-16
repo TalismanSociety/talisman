@@ -1,145 +1,88 @@
+import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
 import { sleep } from "@talismn/util"
-import { log } from "extension-shared"
+import { DEBUG } from "extension-shared"
 import { isEqual } from "lodash"
-import { BehaviorSubject, combineLatest, distinctUntilChanged, map } from "rxjs"
+import { combineLatest, distinctUntilChanged, map, Observable, switchMap } from "rxjs"
 
+import { getCachedObservable$ } from "../../util/getCachedObservable"
+import { activeEvmNetworksObservable } from "../balances/pool"
+import { keyringStore } from "../keyring/store"
 import { fetchNfts } from "./fetchNfts"
 import { fetchRefreshNftMetadata } from "./fetchRefreshNftMetadata"
-import { getNftsAccountsList, getNftsNetworkIdsList } from "./helpers"
+import { getLoadable$, Loadable } from "./getLoadable"
 import { nftsStore$ } from "./store"
-import { NftData, NftLoadingStatus } from "./types"
+import { FetchNftsResponse, NftData } from "./types"
 
-let UPDATE_INTERVAL = 60 * 60 * 1000 // 1 hour
-const UPDATE_CHECK_INTERVAL = 10 * 1000 // 10 seconds
+const TEN_SECONDS = 60 * 1000
+const ONE_MINUTE = 60 * 1000
+const ONE_HOUR = 60 * ONE_MINUTE
 
-const status$ = new BehaviorSubject<NftLoadingStatus>("stale")
-const subscriptions$ = new BehaviorSubject<string[]>([])
-let watcher: Promise<() => void> | null = null
+// const UPDATE_CHECK_INTERVAL = TEN_SECONDS
+const DEFAULT_UPDATE_INTERVAL = DEBUG ? TEN_SECONDS : ONE_HOUR
 
-const addSubscription = () => {
-  const subId = crypto.randomUUID()
-  subscriptions$.next([...subscriptions$.value, subId])
-  return subId
-}
+const UPDATE_INTERVAL = DEFAULT_UPDATE_INTERVAL // can be changed based on context
 
-const removeSubscription = (subId: string) => {
-  subscriptions$.next(subscriptions$.value.filter((id) => id !== subId))
-}
+export const nfts$ = new Observable<NftData>((subscriber) => {
+  const addresses$ = keyringStore.accounts$.pipe(
+    map((accounts) =>
+      accounts
+        .filter(isAccountNotContact)
+        .filter(isAccountEthereum)
+        .map((a) => a.address)
+        .sort(),
+    ),
+    distinctUntilChanged<string[]>(isEqual),
+  )
 
-const updateData = async () => {
-  const [addresses, evmNetworkIds] = await Promise.all([
-    getNftsAccountsList(),
-    getNftsNetworkIdsList(),
-  ])
-  const { collections, nfts } = await fetchNfts(addresses)
+  const activeNetworkIds$ = activeEvmNetworksObservable.pipe(
+    map((networks) => networks.map((n) => n.id).sort()),
+    distinctUntilChanged<string[]>(isEqual),
+  )
 
-  nftsStore$.next({
-    ...nftsStore$.value,
-    accountsKey: addresses.join(","),
-    networksKey: evmNetworkIds.join(","),
-    nfts,
-    collections,
-    timestamp: Date.now(),
-  })
-}
+  const nftsData$ = addresses$.pipe(
+    switchMap((addresses) =>
+      getCachedObservable$(["nfts", ...addresses].join(":"), () =>
+        getLoadable$(() => fetchNfts(addresses), undefined, UPDATE_INTERVAL),
+      ),
+    ),
+    distinctUntilChanged<Loadable<FetchNftsResponse>>(isEqual),
+  )
 
-const watchData = async () => {
-  let stop = false
-  let errorsStreak = 0
+  const subUpdateStore = combineLatest([addresses$, nftsData$, activeNetworkIds$]).subscribe(
+    ([addresses, nftsData, evmNetworkIds]) => {
+      if (nftsData.status === "loaded")
+        nftsStore$.next({
+          ...nftsStore$.value,
+          accountsKey: addresses.join(","),
+          networksKey: evmNetworkIds.join(","),
+          ...nftsData.data,
+          timestamp: Date.now(),
+        })
+    },
+  )
 
-  // update every 1 hour
-  let promise: Promise<void> | null = null
-
-  const checkOrUpdate = async () => {
-    if (stop) return
-    if (promise) return
-
-    const [accounts, networkIds] = await Promise.all([
-      getNftsAccountsList(),
-      getNftsNetworkIdsList(),
-    ])
-
-    // ignore if a network has been removed, but refresh if one has been added
-    const prevNetworkIds = nftsStore$.value.networksKey.split(",")
-    const requiresUpdateNetwork = networkIds.some((id) => !prevNetworkIds.includes(id))
-
-    // ignore if an account has been removed, but refresh if one has been added
-    const prevAccounts = nftsStore$.value.accountsKey.split(",")
-    const requiresUpdateAccount = accounts.some((account) => !prevAccounts.includes(account))
-
-    const requiresUpdateTimestamp =
-      !nftsStore$.value.timestamp || Date.now() - nftsStore$.value.timestamp >= UPDATE_INTERVAL
-
-    if (!requiresUpdateAccount && !requiresUpdateTimestamp && !requiresUpdateNetwork) return
-
-    status$.next("loading")
-    promise = updateData()
-      .then(() => {
-        status$.next("loaded")
-        errorsStreak = 0
-      })
-      .catch(() => {
-        status$.next("stale")
-        errorsStreak++
-        if (errorsStreak >= 3) stop = true
-      })
-      .finally(() => {
-        promise = null
-      })
-  }
-
-  const interval = setInterval(checkOrUpdate, UPDATE_CHECK_INTERVAL)
-
-  checkOrUpdate()
-
-  const unsubscribe = () => {
-    watcher = null
-    stop = true
-    clearInterval(interval)
-  }
-
-  return unsubscribe
-}
-
-subscriptions$.subscribe(async (subIds) => {
-  if (subIds.length === 0 && watcher) {
-    try {
-      watcher.then((unsubscribe) => unsubscribe())
-    } catch (err) {
-      log.error("Error unsubscribing from nft data", { err })
-    }
-  } else if (subIds.length && !watcher) {
-    watcher = watchData()
-  }
-})
-
-const nftsState$ = combineLatest([nftsStore$, status$]).pipe(
-  map(([store, status]) => {
-    const { collections, nfts, timestamp, favoriteNftIds, hiddenNftCollectionIds } = store
-    const data: NftData = {
-      collections,
-      nfts,
-      timestamp,
-      status,
-      favoriteNftIds,
-      hiddenNftCollectionIds,
-    }
-    return data
-  }),
-)
-
-export const subscribeNfts = (callback: (data: NftData) => void) => {
-  const subscription = nftsState$.subscribe((next) => {
-    callback(next)
-  })
-
-  const id = addSubscription()
+  const subOutput = combineLatest([nftsStore$, nftsData$.pipe(map((loadable) => loadable.status))])
+    .pipe(
+      map(([store, status]) => {
+        const { collections, nfts, timestamp, favoriteNftIds, hiddenNftCollectionIds } = store
+        const data: NftData = {
+          collections,
+          nfts,
+          timestamp,
+          status,
+          favoriteNftIds,
+          hiddenNftCollectionIds,
+        }
+        return data
+      }),
+    )
+    .subscribe(subscriber)
 
   return () => {
-    removeSubscription(id)
-    subscription.unsubscribe()
+    subOutput.unsubscribe()
+    subUpdateStore.unsubscribe()
   }
-}
+})
 
 export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
   const hiddenNftCollectionIds = nftsStore$.value.hiddenNftCollectionIds.filter((cid) => cid !== id)
@@ -161,6 +104,7 @@ export const setFavoriteNft = (id: string, isFavorite: boolean) => {
   })
 }
 
+// TODO doesnt work yet
 export const refreshNftMetadata = async (id: string) => {
   const nft = nftsStore$.value.nfts.find((n) => n.id === id)
   if (!nft) return
@@ -169,20 +113,10 @@ export const refreshNftMetadata = async (id: string) => {
 
   await fetchRefreshNftMetadata(networkId, contract, tokenId)
 
-  // force an update after 10 seconds, might be lucky !
-  await sleep(10_000)
-  updateData()
+  // force an update after 15 seconds, might be lucky !
+  await sleep(15_000)
+  // updateData()
 
   // we don't know when the refresh will be done, lower the update interval to 10 minute for this session
-  UPDATE_INTERVAL = 60 * 1000
+  // UPDATE_INTERVAL = 60 * 1000
 }
-
-// reset the update interval to 1 hour, if we detect any changes
-nftsStore$
-  .pipe(
-    map(({ nfts, collections }) => ({ nfts, collections })),
-    distinctUntilChanged(isEqual),
-  )
-  .subscribe(() => {
-    UPDATE_INTERVAL = 60 * 60 * 1000
-  })
