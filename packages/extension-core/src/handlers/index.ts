@@ -35,6 +35,7 @@ const OBFUSCATED_PAYLOAD = "#OBFUSCATED#"
 
 // ignore the ones that generate too much spam, making it hard to debug other things
 const IGNORED_LOG_MESSAGES: MessageTypes[] = [
+  "pub(ping)",
   "pri(keepalive)",
   "pri(keepunlocked)",
   "pri(app.analyticsCapture)",
