@@ -38,6 +38,9 @@ const IGNORED_LOG_MESSAGES: MessageTypes[] = [
   "pri(keepalive)",
   "pri(keepunlocked)",
   "pri(app.analyticsCapture)",
+  "pub(talisman.rpc.byGenesisHash.subscribe)",
+  "pub(talisman.rpc.byGenesisHash.unsubscribe)",
+  "pub(talisman.rpc.byGenesisHash.send)",
 ]
 
 const formatFrom = (source: string) => {
