@@ -1,5 +1,5 @@
 import { isAccountPolkadot } from "@talismn/keyring"
-import { isValidSubstrateAddress } from "@talismn/util"
+import { getCachedObservable$, isValidSubstrateAddress } from "@talismn/util"
 import { Observable, of, shareReplay } from "rxjs"
 
 import {
@@ -11,7 +11,6 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { getCachedObservable$ } from "../../util/getCachedObservable"
 import { keyringStore } from "../keyring/store"
 import { balancePool, ExternalBalancePool } from "./pool"
 import {

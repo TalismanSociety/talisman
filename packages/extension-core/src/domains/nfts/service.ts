@@ -1,15 +1,13 @@
 import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
-import { sleep } from "@talismn/util"
+import { getQuery$, QueryResult, QueryStatus, sleep } from "@talismn/util"
 import { DEBUG } from "extension-shared"
 import { isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, Observable, switchMap } from "rxjs"
 
-import { getCachedObservable$ } from "../../util/getCachedObservable"
 import { activeEvmNetworksObservable } from "../balances/pool"
 import { keyringStore } from "../keyring/store"
 import { fetchNfts } from "./fetchNfts"
 import { fetchRefreshNftMetadata } from "./fetchRefreshNftMetadata"
-import { getLoadable$, Loadable, LoadableStatus } from "./getLoadable"
 import { nftsStore$ } from "./store"
 import { FetchNftsResponse, NftData } from "./types"
 
@@ -41,11 +39,13 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
 
   const nftsData$ = addresses$.pipe(
     switchMap((addresses) =>
-      getCachedObservable$(["nfts", ...addresses].join(":"), () =>
-        getLoadable$({ queryFn: () => fetchNfts(addresses), refreshInterval: UPDATE_INTERVAL }),
-      ),
+      getQuery$({
+        queryKey: ["nftsData$", ...addresses].join(":"),
+        queryFn: () => fetchNfts(addresses),
+        refreshInterval: UPDATE_INTERVAL,
+      }),
     ),
-    distinctUntilChanged<Loadable<FetchNftsResponse>>(isEqual),
+    distinctUntilChanged<QueryResult<FetchNftsResponse>>(isEqual),
   )
 
   const subUpdateStore = combineLatest([addresses$, nftsData$, activeNetworkIds$]).subscribe(
@@ -69,7 +69,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           collections,
           nfts,
           timestamp,
-          status: loadableStatusToNftStatus(status),
+          status: queryStatusToNftStatus(status),
           favoriteNftIds,
           hiddenNftCollectionIds,
         }
@@ -84,7 +84,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
   }
 })
 
-const loadableStatusToNftStatus = (status: LoadableStatus): NftData["status"] => {
+const queryStatusToNftStatus = (status: QueryStatus): NftData["status"] => {
   switch (status) {
     case "loading":
     case "loaded":
