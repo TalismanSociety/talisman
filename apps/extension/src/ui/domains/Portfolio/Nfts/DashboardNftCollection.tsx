@@ -60,10 +60,6 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   nft,
   onClick,
 }) => {
-  // const imageUrl = useMemo(() => {
-  //   return nft.previews.small ?? nft.imageUrl
-  // }, [nft.imageUrl, nft.previews.small])
-
   const isFavorite = useIsFavoriteNft(nft.id)
 
   return (
