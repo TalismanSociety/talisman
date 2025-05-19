@@ -19,18 +19,27 @@ export type SortMethod = {
   isDisabled?: boolean
 }
 
-const sortMethods: SortMethod[] = [
-  { label: "Total Staked", value: "totalStaked" },
-  { label: "Name", value: "name" },
-  { label: "N° of Stakers", value: "totalStakers" },
-  { label: "Rewards", value: "apr" },
-]
-
 export const BittensorBondDelegateSelect = () => {
   const { poolId, stakeType, setStep, setPoolId } = useBittensorBondWizard()
   const [selectedPoolId, setSelectedPoolId] = useState<number | string | null>(poolId)
-  const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
+
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
+
+  const sortMethods = useMemo(() => {
+    const methods: SortMethod[] = [
+      { label: "Total Staked", value: "totalStaked" },
+      { label: "Name", value: "name" },
+      { label: "N° of Stakers", value: "totalStakers" },
+    ]
+
+    if (stakeType === "root") {
+      methods.push({ label: "Rewards", value: "apr" })
+    }
+
+    return methods
+  }, [stakeType])
+
+  const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
 
   const { t } = useTranslation()
 
@@ -77,6 +86,7 @@ export const BittensorBondDelegateSelect = () => {
     combinedValidatorsData,
     combinedValidatorsDataLoading,
     sortBondOptions,
+    sortMethods,
     sortedDelegators.length,
   ])
 
