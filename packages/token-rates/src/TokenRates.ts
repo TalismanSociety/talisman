@@ -114,18 +114,27 @@ export async function fetchTokenRates(
     const effectiveTaoIndex = effectiveCoingeckoIds.indexOf("bittensor")
     const effectiveUsdIndex = effectiveCurrencyIds.indexOf("usd")
     const taoUsdRate = rawTokenRates[effectiveTaoIndex]?.[effectiveUsdIndex]?.[0]
+    const taoUsdChange24h = rawTokenRates[effectiveTaoIndex]?.[effectiveUsdIndex]?.[2]
 
     // insert TOKEN<>TAO rate (calculated based on TAO<>USD rate and TOKEN<>USD rate) into each TOKEN
     const taoIndex = currencyIds.indexOf("tao")
     rawTokenRates.forEach((rates) => {
       // get TOKEN<>USD rate
-      const usdRate = rates?.[effectiveUsdIndex]?.[0]
+      const tokenUsdRate = rates?.[effectiveUsdIndex]?.[0]
       // calculate TOKEN<>TAO rate
-      const taoRate =
-        usdRate !== null && taoUsdRate !== null && taoUsdRate !== 0 ? usdRate / taoUsdRate : null
+      const tokenTaoRate =
+        tokenUsdRate !== null && taoUsdRate !== null && taoUsdRate !== 0
+          ? tokenUsdRate / taoUsdRate
+          : null
+
+      const tokenUsdChange24h = rates?.[effectiveUsdIndex]?.[2]
+      const tokenTaoChange24h =
+        taoUsdChange24h !== null && tokenUsdChange24h !== null && taoUsdChange24h !== 0
+          ? (1 + tokenUsdChange24h) / (1 + taoUsdChange24h) - 1
+          : null
 
       // insert at the correct location (based on the index of `tao` in `currencyIds`)
-      rates?.splice(taoIndex, 0, [taoRate, null, null])
+      rates?.splice(taoIndex, 0, [tokenTaoRate, null, tokenTaoChange24h])
     })
   }
 
