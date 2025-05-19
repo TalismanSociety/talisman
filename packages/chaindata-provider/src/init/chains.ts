@@ -63,9 +63,6 @@ export const chains = [
         url: "wss://dot-rpc.stakeworld.io",
       },
       {
-        url: "wss://polkadot.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://polkadot.public.curie.radiumblock.co/ws",
       },
       {
@@ -368,9 +365,6 @@ export const chains = [
         url: "wss://ksm-rpc.stakeworld.io",
       },
       {
-        url: "wss://kusama.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://kusama.public.curie.radiumblock.co/ws",
       },
     ],
@@ -405,11 +399,6 @@ export const chains = [
         id: "bifrost-kusama",
         paraId: 2001,
         name: "Bifrost Kusama",
-      },
-      {
-        id: "bitcountry-pioneer",
-        paraId: 2096,
-        name: "Pioneer",
       },
       {
         id: "crab",
@@ -850,9 +839,6 @@ export const chains = [
         url: "wss://dot-rpc.stakeworld.io/assethub",
       },
       {
-        url: "wss://statemint.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://statemint.public.curie.radiumblock.co/ws",
       },
     ],
@@ -1134,9 +1120,6 @@ export const chains = [
       },
       {
         url: "wss://dot-rpc.stakeworld.io/bridgehub",
-      },
-      {
-        url: "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
       },
       {
         url: "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
