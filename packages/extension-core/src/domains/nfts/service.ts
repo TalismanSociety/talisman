@@ -1,5 +1,5 @@
 import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
-import { getQuery$, QueryResult, QueryStatus, sleep } from "@talismn/util"
+import { getQuery$, QueryResult, sleep } from "@talismn/util"
 import { DEBUG } from "extension-shared"
 import { isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, Observable, switchMap } from "rxjs"
@@ -66,10 +66,10 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
       map(([store, status]) => {
         const { collections, nfts, timestamp, favoriteNftIds, hiddenNftCollectionIds } = store
         const data: NftData = {
+          status: status === "error" ? "stale" : status,
           collections,
           nfts,
           timestamp,
-          status: queryStatusToNftStatus(status),
           favoriteNftIds,
           hiddenNftCollectionIds,
         }
@@ -83,16 +83,6 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     subUpdateStore.unsubscribe()
   }
 })
-
-const queryStatusToNftStatus = (status: QueryStatus): NftData["status"] => {
-  switch (status) {
-    case "loading":
-    case "loaded":
-      return status
-    case "error":
-      return "stale"
-  }
-}
 
 export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
   const hiddenNftCollectionIds = nftsStore$.value.hiddenNftCollectionIds.filter((cid) => cid !== id)
