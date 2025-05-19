@@ -9,7 +9,7 @@ import { activeEvmNetworksObservable } from "../balances/pool"
 import { keyringStore } from "../keyring/store"
 import { fetchNfts } from "./fetchNfts"
 import { fetchRefreshNftMetadata } from "./fetchRefreshNftMetadata"
-import { getLoadable$, Loadable } from "./getLoadable"
+import { getLoadable$, Loadable, LoadableStatus } from "./getLoadable"
 import { nftsStore$ } from "./store"
 import { FetchNftsResponse, NftData } from "./types"
 
@@ -42,7 +42,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
   const nftsData$ = addresses$.pipe(
     switchMap((addresses) =>
       getCachedObservable$(["nfts", ...addresses].join(":"), () =>
-        getLoadable$(() => fetchNfts(addresses), undefined, UPDATE_INTERVAL),
+        getLoadable$({ queryFn: () => fetchNfts(addresses), refreshInterval: UPDATE_INTERVAL }),
       ),
     ),
     distinctUntilChanged<Loadable<FetchNftsResponse>>(isEqual),
@@ -69,7 +69,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           collections,
           nfts,
           timestamp,
-          status,
+          status: loadableStatusToNftStatus(status),
           favoriteNftIds,
           hiddenNftCollectionIds,
         }
@@ -83,6 +83,16 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     subUpdateStore.unsubscribe()
   }
 })
+
+const loadableStatusToNftStatus = (status: LoadableStatus): NftData["status"] => {
+  switch (status) {
+    case "loading":
+    case "loaded":
+      return status
+    case "error":
+      return "stale"
+  }
+}
 
 export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
   const hiddenNftCollectionIds = nftsStore$.value.hiddenNftCollectionIds.filter((cid) => cid !== id)

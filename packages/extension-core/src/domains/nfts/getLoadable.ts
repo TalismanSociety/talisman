@@ -1,23 +1,28 @@
 import { isEqual } from "lodash"
 import { BehaviorSubject, distinctUntilChanged, Observable, shareReplay } from "rxjs"
 
-export type LoadableStatus = "loading" | "loaded" | "stale"
+export type LoadableStatus = "loading" | "loaded" | "error"
 
 export type Loadable<
   T,
-  S extends LoadableStatus = "loading" | "loaded" | "stale",
+  S extends LoadableStatus = "loading" | "loaded" | "error",
 > = S extends "loading"
   ? { status: "loading"; data: T | undefined; error: undefined }
   : S extends "loaded"
     ? { status: "loaded"; data: T; error: undefined }
-    : { status: "stale"; data: undefined; error: unknown }
+    : { status: "error"; data: undefined; error: unknown }
 
-export const getLoadable$ = <T>(
-  asyncFn: () => Promise<T>,
-  defaultValue?: T,
-  refreshInterval?: number,
-  // TODO implement abort signal
-): Observable<Loadable<T>> => {
+type GetLoadableProps<T> = {
+  queryFn: () => Promise<T>
+  defaultValue?: T
+  refreshInterval?: number
+}
+
+export const getLoadable$ = <T>({
+  queryFn,
+  defaultValue,
+  refreshInterval,
+}: GetLoadableProps<T>): Observable<Loadable<T>> => {
   return new Observable<Loadable<T>>((subscriber) => {
     const loadable$ = new BehaviorSubject<Loadable<T>>({
       status: "loading",
@@ -26,21 +31,19 @@ export const getLoadable$ = <T>(
     })
 
     // result subscription
-    const sub = loadable$.pipe(distinctUntilChanged<Loadable<T>>(isEqual)).subscribe((loadable) => {
-      subscriber.next(loadable)
-    })
+    const sub = loadable$.pipe(distinctUntilChanged<Loadable<T>>(isEqual)).subscribe(subscriber)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let timeout: any = null
 
     // fetch result subscription
     const run = () => {
-      asyncFn()
+      queryFn()
         .then((data) => {
           loadable$.next({ status: "loaded", data, error: undefined })
         })
         .catch((error) => {
-          loadable$.next({ status: "stale", data: undefined, error })
+          loadable$.next({ status: "error", data: undefined, error })
         })
         .finally(() => {
           if (refreshInterval) timeout = setTimeout(run, refreshInterval)
