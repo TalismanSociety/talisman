@@ -96,8 +96,6 @@ jobs:
         cache: pnpm
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-    - name: Build papi descriptors
-      run: pnpm papi
     - name: Download build artifact # download wallet that was built in the build job
       uses: actions/download-artifact@v4
       with:
