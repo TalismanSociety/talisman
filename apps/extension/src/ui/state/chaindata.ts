@@ -19,7 +19,7 @@ import {
   isEvmNetworkActive,
   isTokenActive,
 } from "extension-core"
-import { combineLatest, map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, of, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -200,6 +200,17 @@ export const [useEvmNetwork, getEvmNetwork$] = bind(
 
 export const [useChain, getChain$] = bind((chainId: ChainId | null | undefined) =>
   allChainsMap$.pipe(map((chainsMap) => (chainId && chainsMap[chainId ?? "#"]) || null)),
+)
+
+export const [useNetwork, getNetwork$] = bind(
+  (networkId: ChainId | EvmNetworkId | null | undefined) => {
+    if (!networkId) return of(null)
+    return combineLatest([allChainsMap$, allEvmNetworksMap$]).pipe(
+      map(
+        ([chainsMap, evmNetworksMap]) => evmNetworksMap[networkId] ?? chainsMap[networkId] ?? null,
+      ),
+    )
+  },
 )
 
 export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(

@@ -1,4 +1,4 @@
-import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
+import { isAccountNotContact } from "@talismn/keyring"
 import { getQuery$, QueryResult } from "@talismn/util"
 import { isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, Observable, switchMap } from "rxjs"
@@ -18,7 +18,6 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     map((accounts) =>
       accounts
         .filter(isAccountNotContact)
-        .filter(isAccountEthereum)
         .map((a) => a.address)
         .sort(),
     ),

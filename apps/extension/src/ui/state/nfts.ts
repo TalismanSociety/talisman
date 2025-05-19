@@ -11,7 +11,7 @@ import {
 } from "@ui/domains/Portfolio/Nfts/helpers"
 
 import { getAccountsByCategory$ } from "./accounts"
-import { getEvmNetworks$ } from "./chaindata"
+import { getChains$, getEvmNetworks$ } from "./chaindata"
 import { NetworkOption, portfolioSelectedAccounts$ } from "./portfolio"
 import { getSettingValue$ } from "./settings"
 import { debugObservable } from "./util/debugObservable"
@@ -57,13 +57,14 @@ const nftData$ = new Observable<NftData>((subscriber) => {
 )
 
 const evmNetworks$ = getEvmNetworks$({ activeOnly: true, includeTestnets: true })
+const chains$ = getChains$({ activeOnly: true, includeTestnets: true })
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
-  combineLatest([evmNetworks$, nftData$]).pipe(
-    map(([evmNetworks, { nfts }]) => {
+  combineLatest([evmNetworks$, chains$, nftData$]).pipe(
+    map(([evmNetworks, chains, { nfts }]) => {
       const networkIdsWithNfts = [...new Set(nfts.map((nft) => nft.networkId))]
 
-      return evmNetworks
+      const evmNetworkOptions = evmNetworks
         .filter((network) => networkIdsWithNfts.includes(network.id))
         .map<NetworkOption>((evmNetwork) => {
           return {
@@ -72,6 +73,17 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
             evmNetworkId: evmNetwork.id,
           }
         })
+
+      const chainOptions = chains
+        .filter((chain) => networkIdsWithNfts.includes(chain.id))
+        .map<NetworkOption>((chain) => {
+          return {
+            id: chain.id,
+            name: chain.name ?? `Chain ${chain.id}`,
+            evmNetworkId: chain.id,
+          }
+        })
+      return [...evmNetworkOptions, ...chainOptions]
     }),
   ),
   [],
@@ -113,7 +125,7 @@ export const [useNfts, nfts$] = bind(
 
         const networkIds = networkFilter
           ? [networkFilter.evmNetworkId]
-          : networks.map((n) => n.evmNetworkId)
+          : networks.map((n) => n.evmNetworkId ?? n.chainId)
 
         const nfts = allNfts
           // account filter

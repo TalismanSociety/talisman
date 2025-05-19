@@ -35,7 +35,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useEvmNetwork, useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNetwork, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -127,7 +127,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
 const getMarketPlaceLabel = (url: string) => {
   try {
     const parsed = new URL(url)
-    return parsed.hostname
+    return parsed.hostname.split(".").slice(-2).join(".")
   } catch (err) {
     return null
   }
@@ -138,7 +138,7 @@ const TabContentCollection: FC<{
   nft: Nft
 }> = ({ collection, nft }) => {
   const { t } = useTranslation()
-  const network = useEvmNetwork(nft.networkId)
+  const network = useNetwork(nft.networkId)
 
   const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
@@ -158,10 +158,14 @@ const TabContentCollection: FC<{
           <ChainLogo id={nft.networkId} className="text-md" />
           <div className="truncate">{network?.name}</div>
         </div>
-        <div className="text-body-secondary">{t("Contract")}</div>
-        <div className="text-right">
-          <NetworkAddress address={nft.contract} networkId={nft.networkId} />
-        </div>
+        {!!nft.contract && (
+          <>
+            <div className="text-body-secondary">{t("Contract")}</div>
+            <div className="text-right">
+              <NetworkAddress address={nft.contract} networkId={nft.networkId} />
+            </div>
+          </>
+        )}
         <div className="text-body-secondary">{t("Type")}</div>
         <div className="text-right">{nft.type ?? t("Unknown")}</div>
       </div>

@@ -35,9 +35,8 @@ const NoNftFound = () => {
 
 export const DashboardNfts: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
-  const data = useNfts()
-
   const [dialogNftId, setDialogNftId] = useState<string | null>(null)
+  const data = useNfts()
 
   return (
     <div>
