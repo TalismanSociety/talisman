@@ -123,13 +123,13 @@ export async function fetchTokenRates(
       const tokenUsdRate = rates?.[effectiveUsdIndex]?.[0]
       // calculate TOKEN<>TAO rate
       const tokenTaoRate =
-        tokenUsdRate !== null && taoUsdRate !== null && taoUsdRate !== 0
+        typeof tokenUsdRate === "number" && typeof taoUsdRate === "number" && taoUsdRate !== 0
           ? tokenUsdRate / taoUsdRate
           : null
 
       const tokenUsdChange24h = rates?.[effectiveUsdIndex]?.[2]
       const tokenTaoChange24h =
-        taoUsdChange24h !== null && tokenUsdChange24h !== null && taoUsdChange24h !== 0
+        typeof taoUsdChange24h === "number" && typeof tokenUsdChange24h === "number"
           ? (1 + tokenUsdChange24h) / (1 + taoUsdChange24h) - 1
           : null
 
