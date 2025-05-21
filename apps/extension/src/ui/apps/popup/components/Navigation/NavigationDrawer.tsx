@@ -26,7 +26,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
@@ -99,7 +99,7 @@ export const NavigationDrawer: FC = () => {
     close()
   }, [canSwap, close, openSwapTokensModal])
 
-  const { allBackedUp } = useMnemonicBackup()
+  const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,

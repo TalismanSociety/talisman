@@ -2,7 +2,7 @@ import { useMemo } from "react"
 
 import { useMnemonics } from "@ui/state"
 
-export const useMnemonicBackup = () => {
+export const useMnemonicsAllBackedUp = () => {
   const mnemonics = useMnemonics()
   const hasMnemonics = useMemo(() => mnemonics.length > 0, [mnemonics])
 
@@ -11,7 +11,5 @@ export const useMnemonicBackup = () => {
     [mnemonics, hasMnemonics],
   )
 
-  return {
-    allBackedUp,
-  }
+  return allBackedUp
 }

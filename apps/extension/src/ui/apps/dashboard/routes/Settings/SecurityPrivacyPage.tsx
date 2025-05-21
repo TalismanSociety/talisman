@@ -16,7 +16,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useFeatureFlag, useSetting } from "@ui/state"
 
 const Content = () => {
@@ -28,7 +28,7 @@ const Content = () => {
 
   const withRiskAnalysis = useFeatureFlag("RISK_ANALYSIS")
 
-  const { allBackedUp } = useMnemonicBackup()
+  const allBackedUp = useMnemonicsAllBackedUp()
 
   return (
     <>

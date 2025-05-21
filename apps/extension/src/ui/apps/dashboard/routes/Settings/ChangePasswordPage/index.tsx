@@ -13,7 +13,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"
 
@@ -26,7 +26,7 @@ type FormData = {
 const Content = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
-  const { allBackedUp } = useMnemonicBackup()
+  const allBackedUp = useMnemonicsAllBackedUp()
   const [progress, setProgress] = useState<ChangePasswordStatusUpdateType>()
 
   const schema = useMemo(
