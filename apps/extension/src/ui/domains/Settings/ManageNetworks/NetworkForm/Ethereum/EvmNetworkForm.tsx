@@ -291,6 +291,13 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
+          <div>
+            <Checkbox {...register("preserveGasEstimate")}>
+              <span className="text-body-secondary">
+                {t("Use exact gas estimates (required for PolkaVM networks)")}
+              </span>
+            </Checkbox>
+          </div>
           <EnableNetworkToggle evmNetworkId={evmNetworkId} />
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">
@@ -369,6 +376,7 @@ const evmNetworkToFormData = (
         ? network.explorerUrls?.[0]
         : undefined),
     isTestnet: !!network.isTestnet,
+    preserveGasEstimate: !!network.preserveGasEstimate,
     tokenCoingeckoId: nativeToken.coingeckoId ?? "",
     tokenSymbol: nativeToken.symbol,
     tokenDecimals: nativeToken.decimals,
