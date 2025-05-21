@@ -81,7 +81,6 @@ export const PopupAssetDetails: FC<{
         ))}
       </div>
       {symbol === "MON" && <MonadAnimation />}
-      <MonadAnimation />
     </FadeIn>
   )
 }
