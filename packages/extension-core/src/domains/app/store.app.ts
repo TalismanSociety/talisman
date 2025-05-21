@@ -41,14 +41,13 @@ export type AppStoreData = {
   // dismissed banners
   hideUnifiedAddressBanner?: boolean
   hideAutonomysQuestBanner?: boolean
-  hideBackupReminderBanner?: boolean
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
 }
 
 const ANALYTICS_VERSION = "1.5.0"
-const BACKUP_WARNING_SNOOZE = 60 * 60 * 24 * 3 * 10000 // 3 days
+const BACKUP_WARNING_SNOOZE = 60 * 60 * 24 * 3 * 1000 // 3 days
 
 export const DEFAULT_APP_STATE: AppStoreData = {
   onboarded: UNKNOWN,
