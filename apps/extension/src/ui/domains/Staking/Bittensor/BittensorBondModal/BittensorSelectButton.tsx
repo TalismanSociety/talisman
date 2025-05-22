@@ -6,20 +6,22 @@ import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 type BittensorSelectButtonProps = {
   isLoading?: boolean
+  isDisabled?: boolean
   label: string
   nextStep: "select" | "select-subnet"
 }
 
 export const BittensorSelectButton = ({
   isLoading,
+  isDisabled,
   label,
   nextStep,
 }: BittensorSelectButtonProps) => {
   const { setStep, step, stakeDirection } = useBittensorBondWizard()
 
-  const isDisabled = useMemo(
-    () => !step.includes("form") || stakeDirection === "unbond",
-    [stakeDirection, step],
+  const isBtnDisabled = useMemo(
+    () => isDisabled || !step.includes("form") || stakeDirection === "unbond",
+    [stakeDirection, step, isDisabled],
   )
 
   if (isLoading)
@@ -33,10 +35,10 @@ export const BittensorSelectButton = ({
 
   return (
     <button
-      onClick={() => !isDisabled && setStep(nextStep)}
+      onClick={() => !isBtnDisabled && setStep(nextStep)}
       className={classNames(
         "bg-pill hover:bg-grey-700 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
-        isDisabled && "cursor-not-allowed",
+        isBtnDisabled && "cursor-not-allowed",
       )}
     >
       <SettingsIcon className="text-body-secondary" />

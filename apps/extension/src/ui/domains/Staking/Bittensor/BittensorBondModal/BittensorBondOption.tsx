@@ -6,7 +6,6 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state"
 
 import { BondOption as BondOptionType } from "../../hooks/bittensor/types"
-import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 type BittensorBondOptionProps = {
   option: BondOptionType
@@ -39,7 +38,6 @@ export const BittensorBondOption = ({
   handleSelectPoolId,
   tokenId,
 }: BittensorBondOptionProps) => {
-  const { stakeType } = useBittensorBondWizard()
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const isSelected = option.poolId === selectedPoolId
@@ -91,18 +89,16 @@ export const BittensorBondOption = ({
             </div>
           )}
         </div>
-        {stakeType === "root" && (
-          <div
-            className={classNames("ml-auto", [
-              (option.isRecommended || isSelected) && "text-green",
-              option.isRecommended && !isSelected && "text-green opacity-50",
-            ])}
-          >
-            {option.validatorYield?.thirty_day_apy
-              ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
-              : "N/A"}
-          </div>
-        )}
+        <div
+          className={classNames("ml-auto", [
+            (option.isRecommended || isSelected) && "text-green",
+            option.isRecommended && !isSelected && "text-green opacity-50",
+          ])}
+        >
+          {option.validatorYield?.thirty_day_apy
+            ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
+            : "N/A"}
+        </div>
       </div>
     </button>
   )
