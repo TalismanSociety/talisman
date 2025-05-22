@@ -98,6 +98,12 @@ export const isAccountPolkadot = (
   return !!account && detectAddressEncoding(account.address) === "ss58"
 }
 
+export const isAccountLedgerPolkadot = (
+  account: Account | null | undefined,
+): account is AccountLedgerPolkadot => {
+  return isAccountOfType(account, "ledger-polkadot")
+}
+
 export const isAccountLedgerPolkadotGeneric = (
   account: Account | null | undefined,
 ): account is AccountLedgerPolkadot & { genesisHash: undefined } => {

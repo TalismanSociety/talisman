@@ -6,6 +6,7 @@ import {
   AddAccountExternalOptions,
   AddAccountKeypairOptions,
   AddMnemonicOptions,
+  isAccountLedgerPolkadot,
   Keyring,
   KeyringStorage,
   Mnemonic,
@@ -279,6 +280,19 @@ class KeyringStore {
       await chrome.storage.local.set({ [TALISMAN_KEYRING_LOCAL_STORAGE_KEY]: newJson })
 
       this.#json$.next(newJson)
+    })
+  }
+
+  public migrateLedgerPolkadotCurve(): Promise<void> {
+    return this.updateWithoutPassword((keyring) => {
+      const accountsToMigrate = keyring
+        .getAccounts()
+        .filter(isAccountLedgerPolkadot)
+        .filter((account) => !account.curve)
+      for (const account of accountsToMigrate) {
+        keyring.removeAccount(account.address)
+        keyring.addAccountExternal({ ...account, curve: "ed25519" })
+      }
     })
   }
 }
