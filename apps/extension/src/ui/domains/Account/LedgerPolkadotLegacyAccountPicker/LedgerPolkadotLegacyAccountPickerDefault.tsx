@@ -1,19 +1,80 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil, validateHexString } from "@talismn/util"
 import { Account, getAccountGenesisHash, isChainActive } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
-import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useActiveChainsState, useChain } from "@ui/state"
 
-import { LedgerAccountDefSubstrate } from "./AccountAdd/AccountAddLedger/context"
-import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
+import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
+import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
+import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
+import { LedgerPolkadotAccountPickerDef, LedgerPolkadotLegacyAccountPickerProps } from "./types"
+
+export const LedgerPolkadotLegacyAccountPickerDefault: FC<
+  LedgerPolkadotLegacyAccountPickerProps
+> = ({ chainId, onChange }) => {
+  const itemsPerPage = 5
+  const [pageIndex, setPageIndex] = useState(0)
+  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
+  const { accounts, withBalances, chain, connectionStatus } = useLedgerChainAccounts(
+    chainId,
+    selectedAccounts,
+    pageIndex,
+    itemsPerPage,
+  )
+
+  // useLedgerSubstrateAppByChain(chain)
+
+  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
+    const { accountIndex, address, addressOffset, genesisHash, name, app } =
+      acc as LedgerPolkadotAccountPickerDef
+    setSelectedAccounts((prev) =>
+      prev.some((pa) => pa.address === address)
+        ? prev.filter((pa) => pa.address !== address)
+        : prev.concat({
+            type: "ledger-polkadot",
+            name,
+            address,
+            app,
+            accountIndex,
+            addressOffset,
+            curve: "ed25519",
+            genesisHash: validateHexString(genesisHash as string),
+          }),
+    )
+  }, [])
+
+  useEffect(() => {
+    if (onChange) onChange(selectedAccounts)
+  }, [onChange, selectedAccounts])
+
+  const handlePageFirst = useCallback(() => setPageIndex(0), [])
+  const handlePagePrev = useCallback(() => setPageIndex((prev) => prev - 1), [])
+  const handlePageNext = useCallback(() => setPageIndex((prev) => prev + 1), [])
+
+  return (
+    <>
+      <div className="mb-8">
+        <LedgerConnectionStatus {...connectionStatus} />
+      </div>
+      <DerivedAccountPickerBase
+        accounts={accounts}
+        withBalances={withBalances}
+        addressPrefix={chain?.prefix}
+        canPageBack={pageIndex > 0}
+        onAccountClick={handleToggleAccount}
+        onPagerFirstClick={handlePageFirst}
+        onPagerPrevClick={handlePagePrev}
+        onPagerNextClick={handlePageNext}
+      />
+    </>
+  )
+}
 
 const useLedgerChainAccounts = (
   chainId: string,
@@ -37,9 +98,9 @@ const useLedgerChainAccounts = (
     message: t("Fetching account addresses..."),
   })
 
-  const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
-    ...Array(itemsPerPage),
-  ])
+  const [ledgerAccounts, setLedgerAccounts] = useState<
+    (LedgerPolkadotAccountPickerDef | undefined)[]
+  >([...Array(itemsPerPage)])
 
   const refIsBusy = useRef(false)
 
@@ -69,7 +130,7 @@ const useLedgerChainAccounts = (
       const skip = pageIndex * itemsPerPage
 
       try {
-        const newAccounts: (LedgerSubstrateAccount | undefined)[] = [...Array(itemsPerPage)]
+        const newAccounts: (LedgerPolkadotAccountPickerDef | undefined)[] = [...Array(itemsPerPage)]
         setLedgerAccounts([...newAccounts])
 
         for (let i = 0; i < itemsPerPage; i++) {
@@ -135,21 +196,19 @@ const useLedgerChainAccounts = (
   )
   const balances = useAccountImportBalances(balanceDefs)
 
-  const accounts: (LedgerSubstrateAccount | null)[] = useMemo(
+  const accounts: (LedgerPolkadotAccountPickerDef | null)[] = useMemo(
     () =>
       ledgerAccounts.map((acc) => {
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find(
           (wa) =>
-            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
+            isAddressEqual(wa.address, acc.address) &&
             acc.genesisHash === getAccountGenesisHash(wa),
         )
 
         const accountBalances = balances.balances.find(
-          (b) =>
-            convertAddress(b.address, null) === convertAddress(acc.address, null) &&
-            b.chainId === chain?.id,
+          (b) => isAddressEqual(b.address, acc.address) && b.chainId === chain?.id,
         )
 
         const isBalanceLoading =
@@ -188,73 +247,4 @@ const useLedgerChainAccounts = (
     withBalances,
     chain,
   }
-}
-
-type LedgerSubstrateAccountPickerProps = {
-  chainId: string
-  onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
-}
-
-type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrate
-
-export const LedgerSubstrateLegacyAccountPicker: FC<LedgerSubstrateAccountPickerProps> = ({
-  chainId,
-  onChange,
-}) => {
-  const itemsPerPage = 5
-  const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
-  const { accounts, withBalances, chain, connectionStatus } = useLedgerChainAccounts(
-    chainId,
-    selectedAccounts,
-    pageIndex,
-    itemsPerPage,
-  )
-
-  useLedgerSubstrateAppByChain(chain)
-
-  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { accountIndex, address, addressOffset, genesisHash, name, app } =
-      acc as LedgerSubstrateAccount
-    setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.address === address)
-        ? prev.filter((pa) => pa.address !== address)
-        : prev.concat({
-            type: "ledger-polkadot",
-            name,
-            address,
-            app,
-            accountIndex,
-            addressOffset,
-            curve: "ed25519",
-            genesisHash: validateHexString(genesisHash as string),
-          }),
-    )
-  }, [])
-
-  useEffect(() => {
-    if (onChange) onChange(selectedAccounts)
-  }, [onChange, selectedAccounts])
-
-  const handlePageFirst = useCallback(() => setPageIndex(0), [])
-  const handlePagePrev = useCallback(() => setPageIndex((prev) => prev - 1), [])
-  const handlePageNext = useCallback(() => setPageIndex((prev) => prev + 1), [])
-
-  return (
-    <>
-      <div className="mb-8">
-        <LedgerConnectionStatus {...connectionStatus} />
-      </div>
-      <DerivedAccountPickerBase
-        accounts={accounts}
-        withBalances={withBalances}
-        addressPrefix={chain?.prefix}
-        canPageBack={pageIndex > 0}
-        onAccountClick={handleToggleAccount}
-        onPagerFirstClick={handlePageFirst}
-        onPagerPrevClick={handlePagePrev}
-        onPagerNextClick={handlePageNext}
-      />
-    </>
-  )
 }
