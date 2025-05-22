@@ -6,6 +6,7 @@ import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   AccountLedgerPolkadot,
   isJsonPayload,
+  LedgerPolkadotCurve,
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "extension-core"
@@ -90,6 +91,53 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
   }
 }
 
+const getAddress = async (ledger: PolkadotGenericApp, path: string, curve: LedgerPolkadotCurve) => {
+  switch (curve) {
+    case "ed25519": {
+      const { address } = await ledger.getAddressEd25519(path, 42)
+      return address
+    }
+    case "ethereum": {
+      const { address } = await ledger.getAddressEcdsa(path)
+      return `0x${address}`
+    }
+  }
+}
+
+const signWithMetadata = (
+  ledger: PolkadotGenericApp,
+  curve: LedgerPolkadotCurve,
+  path: string,
+  txBlob: Buffer<ArrayBuffer>,
+  txMetadata: Buffer<ArrayBuffer>,
+) => {
+  switch (curve) {
+    case "ed25519":
+      return ledger.signWithMetadataEd25519(path, txBlob, txMetadata)
+    case "ethereum":
+      return ledger.signWithMetadataEcdsa(path, txBlob, txMetadata)
+  }
+}
+
+const signRawPayload = async (
+  ledger: PolkadotGenericApp,
+  curve: LedgerPolkadotCurve,
+  path: string,
+  txBlob: Buffer<ArrayBuffer>,
+) => {
+  switch (curve) {
+    case "ed25519": {
+      const { signature } = await ledger.signRawEd25519(path, txBlob)
+      // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
+      return signature.slice(1)
+    }
+    case "ethereum": {
+      const { signature } = await ledger.signRawEcdsa(path, txBlob)
+      return signature
+    }
+  }
+}
+
 const signPayload = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
@@ -112,7 +160,8 @@ const signPayload = async (
 
   // check correct address
   const path = getPolkadotLedgerDerivationPath({ ...account, legacyApp: app })
-  const { address } = await ledger.getAddress(path, 42)
+
+  const address = await getAddress(ledger, path, account.curve)
   if (!isAddressEqual(address, account.address))
     throw getTalismanLedgerError(
       t(
@@ -139,16 +188,15 @@ const signPayload = async (
     const blob = Buffer.from(unsigned.toU8a(true))
     const metadata = Buffer.from(hexToU8a(txMetadata))
 
-    const { signature } = await ledger.signWithMetadata(path, blob, metadata)
+    const { signature } = await signWithMetadata(ledger, account.curve, path, blob, metadata)
 
     return u8aToHex(new Uint8Array(signature))
   } else {
     // raw payload
     const unsigned = u8aWrapBytes(payload.data)
 
-    const { signature } = await ledger.signRaw(path, Buffer.from(unsigned))
+    const signature = await signRawPayload(ledger, account.curve, path, Buffer.from(unsigned))
 
-    // skip first byte (sig type) or signatureVerify fails, this seems specific to ed25519 signatures
-    return u8aToHex(new Uint8Array(signature.slice(1)))
+    return u8aToHex(new Uint8Array(signature))
   }
 }
