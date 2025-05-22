@@ -35,8 +35,8 @@ const StakeAprBase: FC<{
 }
 
 const BittensorStakeApr = () => {
-  const { poolId } = useBittensorBondWizard()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData()
+  const { poolId, netuid } = useBittensorBondWizard()
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
   const apr = useMemo(() => {
     const validator = combinedValidatorsData.find((validator) => validator.poolId === poolId)

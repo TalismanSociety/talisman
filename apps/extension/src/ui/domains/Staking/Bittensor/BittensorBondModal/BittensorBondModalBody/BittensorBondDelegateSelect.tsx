@@ -27,7 +27,7 @@ const sortMethods: SortMethod[] = [
 ]
 
 export const BittensorBondDelegateSelect = () => {
-  const { poolId, stakeType, setStep, setPoolId } = useBittensorBondWizard()
+  const { poolId, stakeType, netuid, setStep, setPoolId } = useBittensorBondWizard()
   const [selectedPoolId, setSelectedPoolId] = useState<number | string | null>(poolId)
 
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
@@ -40,7 +40,7 @@ export const BittensorBondDelegateSelect = () => {
     combinedValidatorsData,
     isLoading: combinedValidatorsDataLoading,
     isSupportedValidatorsError,
-  } = useCombinedBittensorValidatorsData()
+  } = useCombinedBittensorValidatorsData(netuid)
 
   const isLoading = useMemo(
     () => combinedValidatorsDataLoading && !sortedDelegators.length,

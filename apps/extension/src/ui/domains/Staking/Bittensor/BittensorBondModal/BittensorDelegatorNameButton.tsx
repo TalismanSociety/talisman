@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 
 import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 import { BittensorSelectButton } from "./BittensorSelectButton"
 
 type BittensorDelegatorNameButtonProps = {
@@ -12,7 +13,8 @@ export const BittensorDelegatorNameButton = ({
   poolId,
   isDisabled,
 }: BittensorDelegatorNameButtonProps) => {
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData()
+  const { netuid } = useBittensorBondWizard()
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
   const selectedPool = combinedValidatorsData.find((data) => data.poolId === poolId)
 

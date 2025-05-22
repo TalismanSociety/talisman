@@ -5,8 +5,10 @@ import { BondOption } from "./types"
 import { useGetBittensorInfiniteValidators } from "./useGetBittensorInfiniteValidators"
 import { useGetBittensorSupportedDelegates } from "./useGetBittensorSupportedDelegates"
 
-export const useCombinedBittensorValidatorsData = () => {
-  const { data: validatorsYieldData } = useGetInfiniteValidatorsYieldByNetuid({ netuid: 0 })
+export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
+  const { data: validatorsYieldData } = useGetInfiniteValidatorsYieldByNetuid({
+    netuid: netuid || 0,
+  })
   const {
     data: supportedDelegates,
     isLoading: isSupportedDelegatesLoading,
