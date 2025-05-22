@@ -1,5 +1,7 @@
 import type { KeypairCurve } from "@talismn/crypto"
 
+export type LedgerPolkadotCurve = "ed25519" | "ethereum"
+
 export type AccountPlatform = "ethereum" | "polkadot" | "solana" | "bitcoin" // bitcoin, cardano, etc. defined which signer can be used and how addresses are derived
 
 export type AccountBase = {
@@ -30,6 +32,7 @@ export type AccountWatchOnly = AccountBase & {
 
 export type AccountLedgerPolkadot = AccountBase & {
   type: "ledger-polkadot"
+  curve: LedgerPolkadotCurve // ed25519 or secp256k1
   app: string // polkadot for generic, other value for legacy or migration app. used to determine derivation path.
   accountIndex: number
   addressOffset: number

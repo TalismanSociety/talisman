@@ -41,7 +41,13 @@ const ACCOUNT_TYPES_EXTERNAL = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_ETHEREUM = ["contact", "watch-only", "keypair", "ledger-ethereum"] as const
+const ACCOUNT_TYPES_ETHEREUM = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-ethereum",
+  "ledger-polkadot",
+] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACCOUNT_TYPES_POLKADOT = [
@@ -80,7 +86,7 @@ type AccountEthereum = Extract<Account, { type: (typeof ACCOUNT_TYPES_ETHEREUM)[
 export const isAccountEthereum = (
   account: Account | null | undefined,
 ): account is AccountEthereum => {
-  return !!account && isEthereumAddress(account.address)
+  return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 
 type AccountPolkadot = Extract<Account, { type: (typeof ACCOUNT_TYPES_POLKADOT)[number] }> & {

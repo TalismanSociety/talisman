@@ -1,5 +1,5 @@
 import { isNotNil, validateHexString } from "@talismn/util"
-import { getAccountGenesisHash, isChainActive } from "extension-core"
+import { Account, getAccountGenesisHash, isChainActive } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -8,7 +8,7 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useActiveChainsState, useChain } from "@ui/state"
 
 import { LedgerAccountDefSubstrate } from "./AccountAdd/AccountAddLedger/context"
@@ -85,8 +85,10 @@ const useLedgerChainAccounts = (
           refAddressCache.current[cacheKey] = { address }
 
           newAccounts[i] = {
+            type: "ledger-polkadot",
+            curve: "ed25519",
             app: app.name,
-            genesisHash: chain.genesisHash as string,
+            genesisHash: chain.genesisHash as `0x${string}`,
             accountIndex,
             addressOffset,
             address,
@@ -94,7 +96,7 @@ const useLedgerChainAccounts = (
               appLabel: app.name,
               accountIndex: accountIndex + 1,
             }),
-          } as LedgerSubstrateAccount
+          }
 
           setLedgerAccounts([...newAccounts])
         }
@@ -119,14 +121,15 @@ const useLedgerChainAccounts = (
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const balanceDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo<Account[]>(
     () =>
       withBalances && ledgerAccounts.filter(isNotNil).length === itemsPerPage
-        ? ledgerAccounts.filter(isNotNil).map((acc) => ({
-            address: acc.address,
-            curve: "ed25519",
-            genesisHash: acc.genesisHash,
-          }))
+        ? ledgerAccounts.filter(isNotNil).map(
+            (acc): Account => ({
+              ...acc,
+              createdAt: 0,
+            }),
+          )
         : [],
     [withBalances, itemsPerPage, ledgerAccounts],
   )
@@ -223,6 +226,7 @@ export const LedgerSubstrateLegacyAccountPicker: FC<LedgerSubstrateAccountPicker
             app,
             accountIndex,
             addressOffset,
+            curve: "ed25519",
             genesisHash: validateHexString(genesisHash as string),
           }),
     )

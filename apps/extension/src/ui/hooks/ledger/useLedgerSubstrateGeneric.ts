@@ -65,17 +65,27 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
     [withLedger],
   )
 
-  const getAddress = useCallback(
+  const getAddressEd25519 = useCallback(
     (bip44path: string, ss58prefix = 42) => {
       return withLedger((ledger) => {
-        return ledger.getAddress(bip44path, ss58prefix, false)
+        return ledger.getAddressEd25519(bip44path, ss58prefix, false)
+      })
+    },
+    [withLedger],
+  )
+
+  const getAddressEcdsa = useCallback(
+    (bip44path: string) => {
+      return withLedger((ledger) => {
+        return ledger.getAddressEcdsa(bip44path, false)
       })
     },
     [withLedger],
   )
 
   return {
-    getAddress,
+    getAddressEd25519,
+    getAddressEcdsa,
     sign,
   }
 }

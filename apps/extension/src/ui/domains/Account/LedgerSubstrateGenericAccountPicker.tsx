@@ -1,7 +1,13 @@
+import { normalizeAddress } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress, isNotNil } from "@talismn/util"
 import { GenericeResponseAddress, SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { Account, ChainId, isAccountLedgerPolkadotGeneric } from "extension-core"
+import {
+  Account,
+  ChainId,
+  isAccountLedgerPolkadotGeneric,
+  LedgerPolkadotCurve,
+} from "extension-core"
 import { log } from "extension-shared"
 import {
   ChangeEventHandler,
@@ -20,7 +26,7 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useChain, useChains } from "@ui/state"
 
 import { Fiat } from "../Asset/Fiat"
@@ -31,10 +37,54 @@ import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
+const useGetLedgerAddress = (curve: LedgerPolkadotCurve, legacyApp?: SubstrateAppParams | null) => {
+  const { getAddressEcdsa, getAddressEd25519 } = useLedgerSubstrateGeneric({ legacyApp })
+
+  // derivation path => address cache, usefull when going back to previous page
+  const refAddressCache = useRef<Record<string, GenericeResponseAddress>>({})
+
+  const getAddress = useCallback(
+    async (accountIndex: number, addressOffset: number) => {
+      const derivationPath = getPolkadotLedgerDerivationPath({
+        accountIndex,
+        addressOffset,
+        legacyApp,
+      })
+      const prefix = legacyApp?.ss58_addr_type ?? 42
+      const cacheKey = `${curve}::${prefix}::${derivationPath}`
+
+      if (!refAddressCache.current[cacheKey]) {
+        switch (curve) {
+          case "ethereum":
+            refAddressCache.current[cacheKey] = await getAddressEcdsa(derivationPath)
+            break
+          case "ed25519":
+            refAddressCache.current[cacheKey] = await getAddressEd25519(derivationPath, prefix)
+            break
+        }
+      }
+
+      const result = refAddressCache.current[cacheKey]
+
+      switch (curve) {
+        case "ethereum":
+          return normalizeAddress(`0x${result.address}`)
+        case "ed25519":
+          return result.address
+      }
+    },
+    [curve, getAddressEcdsa, getAddressEd25519, legacyApp],
+  )
+
+  return { getAddress }
+}
+
 const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrate[],
   pageIndex: number,
   itemsPerPage: number,
+  curve: LedgerPolkadotCurve,
+  networkName: string,
   legacyApp?: SubstrateAppParams | null,
 ) => {
   const walletAccounts = useAccounts()
@@ -45,16 +95,10 @@ const useLedgerSubstrateGenericAccounts = (
   >([...Array(itemsPerPage)])
   const refIsBusy = useRef(false)
 
-  // derivation path => address cache, used when going back to previous page
-  const refAddressCache = useRef<Record<string, GenericeResponseAddress>>({})
-  useEffect(() => {
-    refAddressCache.current = {} // reset if app changes
-  }, [legacyApp])
+  const { getAddress } = useGetLedgerAddress(curve, legacyApp)
 
   const chains = useChains({ activeOnly: true, includeTestnets: false })
   const withBalances = useMemo(() => chains.some((chain) => chain.hasCheckMetadataHash), [chains])
-
-  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
 
   const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
     status: "connecting",
@@ -90,29 +134,22 @@ const useLedgerSubstrateGenericAccounts = (
           const accountIndex = skip + i
           const addressOffset = 0
 
-          const path = getPolkadotLedgerDerivationPath({
-            accountIndex,
-            addressOffset,
-            legacyApp: legacyApp,
-          })
-
-          const genericAddress =
-            refAddressCache.current[path] ??
-            (await getAddress(path, legacyApp?.ss58_addr_type ?? 42))
+          const address = await getAddress(accountIndex, addressOffset)
           if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
-          if (!genericAddress) throw new Error("Unable to get address")
-          refAddressCache.current[path] = genericAddress
+          if (!address) throw new Error("Unable to get address")
 
           newAccounts[i] = {
-            app: legacyApp?.name,
+            type: "ledger-polkadot",
+            address,
+            curve,
+            app: legacyApp?.name ?? "Polkadot",
             accountIndex,
             addressOffset,
-            address: genericAddress.address,
-            name: t("Ledger {{appName}} {{accountIndex}}", {
-              appName: legacyApp?.name ?? "Polkadot",
+            name: t("Ledger {{networkName}} {{accountIndex}}", {
+              networkName,
               accountIndex: accountIndex + 1,
             }),
-          } as LedgerSubstrateGenericAccount
+          }
 
           setLedgerAccounts([...newAccounts])
         }
@@ -133,14 +170,14 @@ const useLedgerSubstrateGenericAccounts = (
         refIsBusy.current = false
       }
     },
-    [t, itemsPerPage, legacyApp, getAddress],
+    [t, itemsPerPage, legacyApp, curve, networkName, getAddress],
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const balanceDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo(
     () =>
       withBalances && ledgerAccounts.filter(isNotNil).length === itemsPerPage
-        ? ledgerAccounts.filter(isNotNil).map((acc) => ({ address: acc.address, curve: "ed25519" }))
+        ? ledgerAccounts.filter(isNotNil).map((acc): Account => ({ ...acc, createdAt: Date.now() }))
         : [],
     [itemsPerPage, ledgerAccounts, withBalances],
   )
@@ -151,6 +188,7 @@ const useLedgerSubstrateGenericAccounts = (
       ledgerAccounts.map((acc) => {
         if (!acc) return null
 
+        // TODO normalize
         const address = convertAddress(acc.address, null)
         const existingAccount = walletAccounts?.find(
           (wa) => convertAddress(wa.address, null) === address,
@@ -198,6 +236,12 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
   app,
   chainId,
 }) => {
+  const chain = useChain(chainId)
+  const curve: LedgerPolkadotCurve = useMemo(
+    () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
+    [chain],
+  )
+
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
@@ -205,25 +249,31 @@ const LedgerSubstrateGenericAccountPickerDefault: FC<LedgerSubstrateGenericAccou
     selectedAccounts,
     pageIndex,
     itemsPerPage,
+    curve,
+    chain?.name ?? "Polkadot",
     app,
   )
-  const chain = useChain(chainId)
 
-  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { address, name, accountIndex, addressOffset, app } = acc as LedgerSubstrateGenericAccount
-    setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.address === address)
-        ? prev.filter((pa) => pa.address !== address)
-        : prev.concat({
-            type: "ledger-polkadot",
-            address,
-            name,
-            app,
-            accountIndex,
-            addressOffset,
-          }),
-    )
-  }, [])
+  const handleToggleAccount = useCallback(
+    (acc: DerivedAccountBase) => {
+      const { address, name, accountIndex, addressOffset, app } =
+        acc as LedgerSubstrateGenericAccount
+      setSelectedAccounts((prev) =>
+        prev.some((pa) => pa.address === address)
+          ? prev.filter((pa) => pa.address !== address)
+          : prev.concat({
+              type: "ledger-polkadot",
+              address,
+              curve,
+              name,
+              app,
+              accountIndex,
+              addressOffset,
+            }),
+      )
+    },
+    [curve],
+  )
 
   useEffect(() => {
     if (onChange) onChange(selectedAccounts)
@@ -256,6 +306,7 @@ type CustomAccountDetails = { accountIndex: number; addressOffset: number; name:
 
 const getNextAccountDetails = (
   accounts: Account[],
+  networkName: string,
   app: SubstrateAppParams | null | undefined,
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
@@ -274,7 +325,7 @@ const getNextAccountDetails = (
   return {
     accountIndex: nextAccountIndex,
     addressOffset: 0,
-    name: `Custom Ledger ${app?.name ? `Migration ${app.name}` : "Polkadot"} ${
+    name: `Custom Ledger ${app?.name ? `Migration ${networkName}` : networkName} ${
       nextAccountIndex + 1
     }`,
   }
@@ -282,10 +333,11 @@ const getNextAccountDetails = (
 
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
+  curve: LedgerPolkadotCurve,
   legacyApp: SubstrateAppParams | null | undefined,
 ) => {
   const { t } = useTranslation()
-  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
+  const { getAddress } = useGetLedgerAddress(curve, legacyApp)
 
   const refIsBusy = useRef(false)
 
@@ -317,15 +369,9 @@ const useLedgerAccountAddress = (
 
     try {
       const { accountIndex, addressOffset } = account
-      const path = getPolkadotLedgerDerivationPath({
-        accountIndex,
-        addressOffset,
-        legacyApp: legacyApp,
-      })
+      const address = await getAddress(accountIndex, addressOffset)
 
-      const res = await getAddress(path, legacyApp?.ss58_addr_type ?? 42)
-
-      setState((prev) => ({ ...prev, address: res.address }))
+      setState((prev) => ({ ...prev, address }))
       setConnectionStatus({
         status: "ready",
         message: t("Ledger is ready."),
@@ -343,7 +389,7 @@ const useLedgerAccountAddress = (
     } finally {
       refIsBusy.current = false
     }
-  }, [account, state.account, state.address, t, legacyApp, getAddress])
+  }, [account, state.account, state.address, t, getAddress])
 
   useEffect(() => {
     loadAccountInfo()
@@ -364,9 +410,14 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
 }) => {
   const { t } = useTranslation()
   const chain = useChain(chainId)
+  const curve: LedgerPolkadotCurve = useMemo(
+    () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
+    [chain],
+  )
+
   const walletAccounts = useAccounts()
   const [accountDetails, setAccountDetails] = useState<CustomAccountDetails>(() =>
-    getNextAccountDetails(walletAccounts, app),
+    getNextAccountDetails(walletAccounts, chain?.name ?? "Polkadot", app),
   )
 
   const handleAccountIndexChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -381,20 +432,25 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
     setAccountDetails((prev) => ({ ...prev, name: e.target.value }))
   }, [])
 
-  const { address, connectionStatus } = useLedgerAccountAddress(accountDetails, app)
+  const { address, connectionStatus } = useLedgerAccountAddress(accountDetails, curve, app)
 
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const accountImportDefs = useMemo<Account[]>(
     () =>
       address
         ? [
             {
+              type: "ledger-polkadot",
+              name: "",
               address,
-              curve: "ed25519",
-              genesisHash: null,
+              curve,
+              accountIndex: accountDetails.accountIndex,
+              addressOffset: accountDetails.addressOffset,
+              app: app?.name ?? "Polkadot",
+              createdAt: Date.now(),
             },
           ]
         : [],
-    [address],
+    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve],
   )
 
   const balances = useAccountImportBalances(accountImportDefs)
@@ -407,11 +463,20 @@ const LedgerSubstrateGenericAccountPickerCustom: FC<LedgerSubstrateGenericAccoun
       app: app?.name ?? "Polkadot",
       ...accountDetails,
       address,
+      curve,
       balances: balances.balances.find((b) => convertAddress(b.address, null) === address),
       isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
       connected: !!walletAccounts.find((wa) => convertAddress(wa.address, null) === address),
     }
-  }, [accountDetails, address, app?.name, balances.balances, balances.status, walletAccounts])
+  }, [
+    accountDetails,
+    address,
+    app?.name,
+    balances.balances,
+    balances.status,
+    curve,
+    walletAccounts,
+  ])
 
   useEffect(() => {
     if (onChange) onChange(accountDef ? [accountDef] : [])

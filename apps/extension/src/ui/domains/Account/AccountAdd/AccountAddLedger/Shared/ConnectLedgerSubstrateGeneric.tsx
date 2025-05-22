@@ -12,12 +12,12 @@ export const ConnectLedgerSubstrateGeneric: FC<{
   legacyAppName?: string | null
 }> = ({ onReadyChanged, className, legacyAppName }) => {
   const legacyApp = useLedgerSubstrateAppByName(legacyAppName)
-  const { getAddress } = useLedgerSubstrateGeneric({ legacyApp })
+  const { getAddressEd25519 } = useLedgerSubstrateGeneric({ legacyApp })
 
   const isReadyCheck = useCallback(() => {
     const derivationPath = getPolkadotLedgerDerivationPath({ legacyApp })
-    return getAddress(derivationPath)
-  }, [getAddress, legacyApp])
+    return getAddressEd25519(derivationPath)
+  }, [getAddressEd25519, legacyApp])
 
   return (
     <ConnectLedgerBase

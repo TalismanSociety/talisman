@@ -6,13 +6,13 @@ import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkad
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
-import { LegacyAccountOrigin } from "extension-core"
+import { Account, LegacyAccountOrigin } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useChains } from "@ui/state"
 
 export type JsonImportAccount = {
@@ -57,9 +57,17 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 
 const useAccountsBalances = (pairs: KeyringPair[] = []) => {
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accounts = useMemo<AccountImportDef[]>(
+  const accounts = useMemo<Account[]>(
     () =>
-      pairs.map((p) => ({ address: p.address, curve: p.type, genesisHash: p.meta?.genesisHash })),
+      pairs.map(
+        (p): Account => ({
+          type: "keypair",
+          address: p.address,
+          curve: p.type,
+          name: p.meta.name ?? "",
+          createdAt: Date.now(),
+        }),
+      ),
     [pairs],
   )
   const allBalances = useAccountImportBalances(accounts)

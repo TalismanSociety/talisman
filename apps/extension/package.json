@@ -66,7 +66,7 @@
     "@types/react-highlight": "^0.12.8",
     "@types/uuid": "^10.0.0",
     "@types/webextension-polyfill": "0.12.1",
-    "@zondax/ledger-substrate": "1.0.0",
+    "@zondax/ledger-substrate": "1.1.2",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "anylogger": "^1.0.11",

@@ -1,6 +1,6 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import { Chain } from "@talismn/chaindata-provider"
-import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
+import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { isAddressEqual, isEthereumAddress, KeypairCurve } from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,
@@ -137,8 +137,25 @@ export const isCurveCompatibleWithChain = (
 }
 
 export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
+  if (account.type === "ledger-ethereum") return false
+
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
-  return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+  return isEthereumAddress(account.address)
+    ? chain.account === "secp256k1"
+    : chain.account !== "secp256k1"
+}
+
+export const isAccountCompatibleWithEvmNetwork = (account: Account) => {
+  return isAccountEthereum(account)
+}
+
+export const isAccountCompatibleWithNetwork = (
+  network: SimpleEvmNetwork | Chain,
+  account: Account,
+) => {
+  return /^\d+$/.test(network.id)
+    ? isAccountCompatibleWithEvmNetwork(account)
+    : isAccountCompatibleWithChain(network as Chain, account)
 }
