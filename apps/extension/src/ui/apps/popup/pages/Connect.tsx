@@ -1,5 +1,5 @@
 import { InfoIcon } from "@talismn/icons"
-import { Account, isAccountEthereum, KnownRequestIdOnly, ProviderType } from "extension-core"
+import { Account, isAccountEVM, KnownRequestIdOnly, ProviderType } from "extension-core"
 import capitalize from "lodash/capitalize"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -191,7 +191,7 @@ export const ConnectEth: ConnectComponent = ({
   const { t } = useTranslation("request")
 
   const ethAccounts = useMemo(() => {
-    return accounts.filter(isAccountEthereum)
+    return accounts.filter(isAccountEVM)
   }, [accounts])
 
   return (

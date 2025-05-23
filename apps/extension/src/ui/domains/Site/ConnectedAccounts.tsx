@@ -1,5 +1,5 @@
 import { isAddressEqual } from "@talismn/util"
-import { Account, AuthorizedSite, isAccountEthereum } from "extension-core"
+import { Account, AuthorizedSite, isAccountEVM } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -49,7 +49,7 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const activeAccounts = useMemo(
     () =>
       accounts
-        .filter(isAccountEthereum)
+        .filter(isAccountEVM)
         .map((acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [Account, boolean]),
     [accounts, site?.ethAddresses],
   )
