@@ -47,7 +47,7 @@ export type AppStoreData = {
 }
 
 const ANALYTICS_VERSION = "1.5.0"
-const BACKUP_WARNING_SNOOZE = 60 * 60 * 24 * 3 * 1000 // 3 days
+const BACKUP_WARNING_SNOOZE = 1000 * 60 * 60 * 24 * 3 // 1000ms x 60 x 60 x 24 x 3 == 3 days in milliseconds
 
 export const DEFAULT_APP_STATE: AppStoreData = {
   onboarded: UNKNOWN,
