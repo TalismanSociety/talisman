@@ -1,5 +1,6 @@
 import type { BrowserContext, Page } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
+import { xxhashAsHex } from "@polkadot/util-crypto"
 
 import * as constants from "./constants"
 
@@ -101,8 +102,13 @@ export const test = base.extend<{
       name?: string
     }) => {
       const page = onboardedPage
-      // duplicated numbers could be a problem
-      const accName = name || constants.NEW_ACC_NAME + " " + Math.floor(Math.random() * 10) + 1
+      // randomize the name of the account if not provided
+      const suffixLength = 6
+      const getRandomChars = xxhashAsHex(crypto.getRandomValues(new Uint8Array(16))).slice(
+        "0x".length,
+        suffixLength,
+      )
+      const accName = name || constants.NEW_ACC_NAME + " " + `(${getRandomChars})`
 
       await page.goto(
         `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${type}`,
