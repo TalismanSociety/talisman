@@ -28,9 +28,8 @@ export const test = base.extend<{
     })
 
     await utilize(context)
-    // await context.close(); // Uncomment if needed
   },
-  //get the extension id
+  // get the extension id
   extensionId: async ({ context }, utilize) => {
     let [background] = context.serviceWorkers()
     if (!background) background = await context.waitForEvent("serviceworker")
@@ -38,7 +37,7 @@ export const test = base.extend<{
     const extensionId = background.url().split("/")[2]
     await utilize(extensionId)
   },
-  //goes trough onboard flow and reach portfolio page using previsous browser context
+  // goes trough onboard flow and reach portfolio page using previsous browser context
   onboardedPage: async ({ context, extensionId }, utilize) => {
     const page = await context.newPage()
 
@@ -63,7 +62,7 @@ export const test = base.extend<{
     await utilize(page)
   },
 
-  //add an account of the select type using both the Onboarded page and browser context which the exntenion is running
+  // add an account of the select type using both the Onboarded page and browser context which the exntenion is running
   importAccount: async ({ onboardedPage, extensionId }, utilize) => {
     const importAccount = async ({
       type,
@@ -102,7 +101,7 @@ export const test = base.extend<{
       name?: string
     }) => {
       const page = onboardedPage
-      //resolver problema dos nomes de conta duplicados
+      // duplicated numbers could be a problem
       const accName = name || constants.NEW_ACC_NAME + " " + Math.floor(Math.random() * 10) + 1
 
       await page.goto(

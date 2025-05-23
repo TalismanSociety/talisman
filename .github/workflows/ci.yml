@@ -79,7 +79,7 @@ jobs:
           retention-days: 5
 
   # This job will use the files from the build job to run Playwright tests
-  playwright:
+  Playwright:
     needs: build
     timeout-minutes: 15
     runs-on: ubuntu-latest
