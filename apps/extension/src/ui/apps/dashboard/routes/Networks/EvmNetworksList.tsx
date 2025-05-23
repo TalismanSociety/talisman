@@ -28,13 +28,12 @@ import { CustomPill, TestnetPill } from "./Pills"
 
 export const EvmNetworksList: FC<{
   activeOnly: boolean
-  showTestnets: boolean
   search?: string
-}> = ({ showTestnets, activeOnly, search }) => {
+}> = ({ activeOnly, search }) => {
   const { t } = useTranslation("admin")
 
   const { recommendedNetworks } = useRemoteConfig()
-  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: showTestnets })
+  const evmNetworks = useEvmNetworks()
 
   const allSortedNetworks = useMemo(() => {
     return evmNetworks.concat().sort((n1, n2) => {
@@ -46,6 +45,9 @@ export const EvmNetworksList: FC<{
         if (idx2 === -1) return -1
         return idx1 - idx2
       }
+
+      if (n1.isTestnet && !n2.isTestnet) return 1
+      if (!n1.isTestnet && n2.isTestnet) return -1
 
       return (n1.name ?? "").localeCompare(n2.name ?? "")
     })
@@ -135,16 +137,10 @@ export const EvmNetworksList: FC<{
           <ResetAllNetworksModalContent onClose={ocResetAllModal.close} />
         </Modal>
         <Modal isOpen={ocActivateAllModal.isOpen} onDismiss={ocActivateAllModal.close}>
-          <ActivateNetworksModalContent
-            showTestnets={showTestnets}
-            onClose={ocActivateAllModal.close}
-          />
+          <ActivateNetworksModalContent onClose={ocActivateAllModal.close} />
         </Modal>
         <Modal isOpen={ocDeactivateAllModal.isOpen} onDismiss={ocDeactivateAllModal.close}>
-          <DeactivateNetworksModalContent
-            showTestnets={showTestnets}
-            onClose={ocDeactivateAllModal.close}
-          />
+          <DeactivateNetworksModalContent onClose={ocDeactivateAllModal.close} />
         </Modal>
       </div>
       <VirtualizedRows networks={sortedNetworks} activeNetworksState={networksActiveState} />
@@ -269,21 +265,19 @@ const ResetAllNetworksModalContent: FC<{
 type ActivateMode = "recommended" | "all"
 
 const ActivateNetworksModalContent: FC<{
-  showTestnets: boolean
   onClose: () => void
-}> = ({ showTestnets, onClose }) => {
+}> = ({ onClose }) => {
   const { t } = useTranslation("admin")
 
-  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: showTestnets })
+  const evmNetworks = useEvmNetworks()
   const activeNetworks = useActiveEvmNetworksState()
 
   const recommendedNetworkIds = useMemo(() => {
-    // all networks that are either default or have an enabled token
     return evmNetworks
-      .filter((n) => n.isDefault && (!n.isTestnet || showTestnets))
+      .filter((n) => n.isDefault)
       .filter((n) => !isEvmNetworkActive(n, activeNetworks))
       .map((n) => n.id)
-  }, [activeNetworks, evmNetworks, showTestnets])
+  }, [activeNetworks, evmNetworks])
 
   const allNetworkIds = useMemo(() => {
     return evmNetworks.filter((n) => !isEvmNetworkActive(n, activeNetworks)).map((n) => n.id)
@@ -347,14 +341,13 @@ const ActivateNetworksModalContent: FC<{
 type DeactivateMode = "all" | "unused"
 
 const DeactivateNetworksModalContent: FC<{
-  showTestnets: boolean
   onClose: () => void
-}> = ({ showTestnets, onClose }) => {
+}> = ({ onClose }) => {
   const { t } = useTranslation("admin")
   const isBalancesInitializing = useIsBalanceInitializing()
 
   const balances = useBalances("all")
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: true })
 
   const [activeEvmNetworkIds, unusedEvmNetworkIds] = useMemo(() => {
     const networkIds = evmNetworks.map((chain) => chain.id)

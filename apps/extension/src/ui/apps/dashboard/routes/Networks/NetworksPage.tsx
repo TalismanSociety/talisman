@@ -63,7 +63,6 @@ const Content = () => {
 
   const [search, setSearch] = useState("")
   const [activeOnly, setActiveOnly] = useState(false)
-  const [showTestnets, setShowTestnets] = useState(false)
 
   return (
     <>
@@ -99,11 +98,6 @@ const Content = () => {
           checked={activeOnly}
           onChange={() => setActiveOnly((prev) => !prev)}
         />
-        <TogglePill
-          label={t("Show testnets")}
-          checked={showTestnets}
-          onChange={() => setShowTestnets((prev) => !prev)}
-        />
       </div>
       <Spacer small />
       <div className="flex gap-4">
@@ -111,9 +105,9 @@ const Content = () => {
       </div>
       <Spacer small />
       {networksType === "polkadot" ? (
-        <ChainsList activeOnly={activeOnly} search={search} showTestnets={showTestnets} />
+        <ChainsList activeOnly={activeOnly} search={search} />
       ) : (
-        <EvmNetworksList activeOnly={activeOnly} search={search} showTestnets={showTestnets} />
+        <EvmNetworksList activeOnly={activeOnly} search={search} />
       )}
     </>
   )
