@@ -23,7 +23,7 @@ export const BraveWarningCard = ({ className, onLearnMoreClick }: Props) => {
       }
       description={
         <span className="text-body-secondary text-sm">
-          {t("By default, Brave prevents Talisman from loading all balances.")}
+          {t("By default, Brave prevents Talisman from loading all your balances.")}
         </span>
       }
       cta={
