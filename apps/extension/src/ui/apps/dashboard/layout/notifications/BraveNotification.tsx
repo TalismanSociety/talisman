@@ -29,10 +29,8 @@ export const BraveWarningNotification = () => {
       <DashboardNotification
         icon={<BraveIcon className="icon" />}
         title={t("Attention Brave users.")}
-        description={t(
-          "Due to a recent Brave update, users may be experiencing issues loading balances.",
-        )}
-        action={t("Learn more")}
+        description={t("By default, Brave prevents Talisman from loading all balances.")}
+        action={t("Learn how to fix")}
         onActionClick={open}
         onClose={handleHide}
       />
