@@ -6,7 +6,6 @@ import {
   AddAccountExternalOptions,
   AddAccountKeypairOptions,
   AddMnemonicOptions,
-  isAccountLedgerPolkadot,
   Keyring,
   KeyringStorage,
   Mnemonic,
@@ -283,17 +282,12 @@ class KeyringStore {
     })
   }
 
-  public migrateLedgerPolkadotCurve(): Promise<void> {
-    return this.updateWithoutPassword((keyring) => {
-      const accountsToMigrate = keyring
-        .getAccounts()
-        .filter(isAccountLedgerPolkadot)
-        .filter((account) => !account.curve)
-      for (const account of accountsToMigrate) {
-        keyring.removeAccount(account.address)
-        keyring.addAccountExternal({ ...account, curve: "ed25519" })
-      }
-    })
+  /**
+   * use this method to force keyring storage to be updated
+   * this is because keyring updates its schema on load, but doesnt persist changes automatically
+   * */
+  public forceUpdate(): Promise<void> {
+    return this.updateWithoutPassword(() => {})
   }
 }
 
