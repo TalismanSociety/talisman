@@ -5,7 +5,7 @@ import {
   Account,
   getAccountGenesisHash,
   isAccountEthereum,
-  isAccountEVM,
+  isAccountEthereumSigner,
   isAccountLedgerPolkadotGeneric,
   isAccountPolkadot,
 } from "@talismn/keyring"
@@ -151,6 +151,6 @@ export const isAccountCompatibleWithNetwork = (
   account: Account,
 ) => {
   return /^\d+$/.test(network.id)
-    ? isAccountEVM(account)
+    ? isAccountEthereumSigner(account)
     : isAccountCompatibleWithChain(network as Chain, account)
 }

@@ -97,7 +97,9 @@ type AccountEVM = Extract<Account, { type: (typeof ACCOUNT_TYPES_EVM)[number] }>
   address: `0x${string}`
 }
 /** Can sign txs on an EVM network */
-export const isAccountEVM = (account: Account | null | undefined): account is AccountEVM => {
+export const isAccountEthereumSigner = (
+  account: Account | null | undefined,
+): account is AccountEVM => {
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 

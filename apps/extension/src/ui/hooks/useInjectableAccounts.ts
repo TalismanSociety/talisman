@@ -1,7 +1,7 @@
 import {
   Account,
   isAccountEthereum,
-  isAccountEVM,
+  isAccountEthereumSigner,
   isAccountInTypes,
   isAccountNotContact,
   isAccountOfType,
@@ -25,7 +25,7 @@ export const useInjectableAccounts = (siteUrl: string, provider?: ProviderType) 
           .filter((account) => !isAccountOfType(account, "ledger-ethereum")) // ledger-ethereum cant sign a tx payload, despite its address being supported by some chains
           .filter((account) => isAccountEthereum(account) || isAccountPolkadot(account))
       case "ethereum":
-        return accounts.filter(isAccountEVM) // all accounts with an ethereum address, except ledger-polkadot
+        return accounts.filter(isAccountEthereumSigner) // all accounts with an ethereum address, except ledger-polkadot
       default:
         return accounts
     }
