@@ -59,7 +59,8 @@ export const EvmNetworksList: FC<{
     const lowerSearch = search?.toLowerCase() ?? ""
 
     const filter = (network: SimpleEvmNetwork) => {
-      if (activeOnly && !isEvmNetworkActive(network, networksActiveState)) return false
+      if (!lowerSearch && activeOnly && !isEvmNetworkActive(network, networksActiveState))
+        return false
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||

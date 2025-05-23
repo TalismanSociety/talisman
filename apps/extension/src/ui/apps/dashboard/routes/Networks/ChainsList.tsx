@@ -52,7 +52,7 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
     const lowerSearch = search?.toLowerCase() ?? ""
 
     const filter = (network: Chain) => {
-      if (activeOnly && !isChainActive(network, networksActiveState)) return false
+      if (!search && activeOnly && !isChainActive(network, networksActiveState)) return false
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
