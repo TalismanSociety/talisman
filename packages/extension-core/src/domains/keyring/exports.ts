@@ -4,6 +4,7 @@ export type * from "@talismn/keyring"
 export {
   isAccountOfType,
   isAccountEthereum,
+  isAccountEVM,
   isAccountExternal,
   isAccountInTypes,
   isAccountOwned,

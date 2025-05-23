@@ -63,7 +63,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       // none are loaded yet
       isBalanceLoading && !balances?.each.some((b) => b.status === "live"),
       // some are loaded, some are still loading
-      isBalanceLoading && balances?.each.some((b) => b.status === "live"),
+      balances && isBalanceLoading && balances.each.some((b) => b.status === "live"),
     ],
     [balances, isBalanceLoading],
   )

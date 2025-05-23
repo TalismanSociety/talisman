@@ -1,10 +1,11 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
-import { isAddressEqual, isEthereumAddress, KeypairCurve } from "@talismn/crypto"
+import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,
   isAccountEthereum,
+  isAccountEVM,
   isAccountLedgerPolkadotGeneric,
   isAccountPolkadot,
 } from "@talismn/keyring"
@@ -46,7 +47,7 @@ export const sortAccounts =
   }
 
 const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
-  if (isEthereumAddress(account.address)) return "ethereum"
+  if (isAccountEthereum(account)) return "ethereum"
   // some dapps pass only sr25519 as filter
   if (isAccountPolkadot(account)) return "sr25519"
   throw new Error("Unsupported account type")
@@ -142,13 +143,7 @@ export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => 
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
-  return isEthereumAddress(account.address)
-    ? chain.account === "secp256k1"
-    : chain.account !== "secp256k1"
-}
-
-export const isAccountCompatibleWithEvmNetwork = (account: Account) => {
-  return isAccountEthereum(account)
+  return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
 export const isAccountCompatibleWithNetwork = (
@@ -156,6 +151,6 @@ export const isAccountCompatibleWithNetwork = (
   account: Account,
 ) => {
   return /^\d+$/.test(network.id)
-    ? isAccountCompatibleWithEvmNetwork(account)
+    ? isAccountEVM(account)
     : isAccountCompatibleWithChain(network as Chain, account)
 }

@@ -1,5 +1,6 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
-import { classNames, convertAddress, encodeAnyAddress } from "@talismn/util"
+import { classNames, encodeAnyAddress } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Account, isAccountLedgerPolkadotGeneric, LedgerPolkadotCurve } from "extension-core"
 import { log } from "extension-shared"
@@ -80,9 +81,9 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
       ...accountDetails,
       address,
       curve,
-      balances: balances.balances.find((b) => convertAddress(b.address, null) === address),
+      balances: balances.balances.find((b) => isAddressEqual(b.address, address)),
       isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
-      connected: !!walletAccounts.find((wa) => convertAddress(wa.address, null) === address),
+      connected: !!walletAccounts.find((wa) => isAddressEqual(wa.address, address)),
     }
   }, [
     accountDetails,
