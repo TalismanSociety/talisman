@@ -50,6 +50,9 @@ const ACCOUNT_TYPES_ETHEREUM = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_EVM = ["contact", "watch-only", "keypair", "ledger-ethereum"] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACCOUNT_TYPES_POLKADOT = [
   "contact",
   "watch-only",
@@ -83,9 +86,18 @@ export const isAccountNotContact = (acc: Account) => acc.type !== "contact"
 type AccountEthereum = Extract<Account, { type: (typeof ACCOUNT_TYPES_ETHEREUM)[number] }> & {
   address: `0x${string}`
 }
+/** Has an ethereum format address, but may not be able to sign txs on an EVM network */
 export const isAccountEthereum = (
   account: Account | null | undefined,
 ): account is AccountEthereum => {
+  return !!account && isEthereumAddress(account.address)
+}
+
+type AccountEVM = Extract<Account, { type: (typeof ACCOUNT_TYPES_EVM)[number] }> & {
+  address: `0x${string}`
+}
+/** Can sign txs on an EVM network */
+export const isAccountEVM = (account: Account | null | undefined): account is AccountEVM => {
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 

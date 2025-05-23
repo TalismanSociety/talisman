@@ -66,7 +66,7 @@ export const ConnectedAccountsPolkadot: FC<{
           onClick={handleToggleEvmAccounts}
           childProps={{ className: "flex items-center gap-2" }}
         >
-          {t("EVM accounts")}{" "}
+          {t("Ethereum accounts")}{" "}
           <Tooltip>
             <TooltipTrigger>
               <InfoIcon />
