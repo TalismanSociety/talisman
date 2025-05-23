@@ -97,6 +97,7 @@ const Content = () => {
           label={t("Active only")}
           checked={activeOnly}
           onChange={() => setActiveOnly((prev) => !prev)}
+          disabled={!!search}
         />
       </div>
       <Spacer small />
