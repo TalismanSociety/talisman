@@ -36,7 +36,7 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
     <div className="text-body-secondary flex w-full flex-col gap-8">
       <p className="text-body-secondary [&>strong]:text-body px-8 text-xs">
         <Trans t={t}>
-          Brave limits the amount of networks Talisman can connect to. In order to view your all
+          Brave limits the amount of networks Talisman can connect to. In order to view all your
           balances please disable the <strong>Restrict WebSockets Pool</strong> flag and restart
           Brave.
         </Trans>
