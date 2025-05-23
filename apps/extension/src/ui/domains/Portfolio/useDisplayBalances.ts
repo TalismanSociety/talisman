@@ -6,7 +6,7 @@ import {
   Balances,
   getAccountGenesisHash,
   isAccountEthereum,
-  isAccountPolkadot,
+  isAccountSs58,
 } from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
@@ -34,7 +34,7 @@ const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balance
 
     // only show DEFAULT_TOKENS if account has no balance
     if (!accountHasSomeBalance) {
-      const isSubstrateAccount = isAccountPolkadot(account)
+      const isSubstrateAccount = isAccountSs58(account)
       const isSubstrateToken = DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)
       if (isSubstrateAccount && isSubstrateToken) return true
 

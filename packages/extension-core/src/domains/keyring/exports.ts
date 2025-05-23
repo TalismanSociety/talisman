@@ -8,7 +8,7 @@ export {
   isAccountExternal,
   isAccountInTypes,
   isAccountOwned,
-  isAccountPolkadot,
+  isAccountSs58,
   isAccountPortfolio,
   isAccountLedgerPolkadotGeneric,
   isAccountLedgerPolkadotLegacy,

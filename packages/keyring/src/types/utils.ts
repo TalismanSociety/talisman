@@ -53,7 +53,7 @@ const ACCOUNT_TYPES_ETHEREUM = [
 const ACCOUNT_TYPES_EVM = ["contact", "watch-only", "keypair", "ledger-ethereum"] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_POLKADOT = [
+const ACCOUNT_TYPES_SS58 = [
   "contact",
   "watch-only",
   "keypair",
@@ -103,12 +103,10 @@ export const isAccountEthereumSigner = (
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 
-type AccountPolkadot = Extract<Account, { type: (typeof ACCOUNT_TYPES_POLKADOT)[number] }> & {
+type AccountSs58 = Extract<Account, { type: (typeof ACCOUNT_TYPES_SS58)[number] }> & {
   genesisHash?: `0x${string}`
 }
-export const isAccountPolkadot = (
-  account: Account | null | undefined,
-): account is AccountPolkadot => {
+export const isAccountSs58 = (account: Account | null | undefined): account is AccountSs58 => {
   return !!account && detectAddressEncoding(account.address) === "ss58"
 }
 

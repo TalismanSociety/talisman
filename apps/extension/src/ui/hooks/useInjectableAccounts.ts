@@ -5,7 +5,7 @@ import {
   isAccountInTypes,
   isAccountNotContact,
   isAccountOfType,
-  isAccountPolkadot,
+  isAccountSs58,
   ProviderType,
 } from "extension-core"
 import { isTalismanUrl } from "extension-shared"
@@ -23,7 +23,7 @@ export const useInjectableAccounts = (siteUrl: string, provider?: ProviderType) 
       case "polkadot":
         return accounts
           .filter((account) => !isAccountOfType(account, "ledger-ethereum")) // ledger-ethereum cant sign a tx payload, despite its address being supported by some chains
-          .filter((account) => isAccountEthereum(account) || isAccountPolkadot(account))
+          .filter((account) => isAccountEthereum(account) || isAccountSs58(account))
       case "ethereum":
         return accounts.filter(isAccountEthereumSigner) // all accounts with an ethereum address, except ledger-polkadot
       default:

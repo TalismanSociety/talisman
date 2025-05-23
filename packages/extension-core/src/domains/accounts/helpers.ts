@@ -7,7 +7,7 @@ import {
   isAccountEthereum,
   isAccountEthereumSigner,
   isAccountLedgerPolkadotGeneric,
-  isAccountPolkadot,
+  isAccountSs58,
 } from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
@@ -49,7 +49,7 @@ export const sortAccounts =
 const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
   if (isAccountEthereum(account)) return "ethereum"
   // some dapps pass only sr25519 as filter
-  if (isAccountPolkadot(account)) return "sr25519"
+  if (isAccountSs58(account)) return "sr25519"
   throw new Error("Unsupported account type")
 }
 

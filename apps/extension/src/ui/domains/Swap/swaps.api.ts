@@ -1,6 +1,6 @@
 import type { PrimitiveAtom } from "jotai"
 import { evmErc20TokenId } from "@talismn/balances"
-import { isAccountEthereum, isAccountPolkadot, remoteConfigStore } from "extension-core"
+import { isAccountEthereum, isAccountSs58, remoteConfigStore } from "extension-core"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import { Loadable } from "jotai/vanilla/utils/loadable"
@@ -544,7 +544,7 @@ export const useFromAccount = () => {
   // TODO: Support signet accounts
   const accounts = useAccounts("owned")
 
-  const substrateAccounts = accounts.filter(isAccountPolkadot)
+  const substrateAccounts = accounts.filter(isAccountSs58)
   const ethAccounts = accounts.filter(isAccountEthereum)
 
   const [fromEvmAddress, setFromEvmAddress] = useAtom(fromEvmAddressAtom)
@@ -591,7 +591,7 @@ export const useToAccount = () => {
 
   const accounts = useAccounts("all")
 
-  const substrateAccounts = accounts.filter(isAccountPolkadot)
+  const substrateAccounts = accounts.filter(isAccountSs58)
   const ethAccounts = accounts.filter(isAccountEthereum)
 
   const [toEvmAddress, setToEvmAddress] = useAtom(toEvmAddressAtom)
