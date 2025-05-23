@@ -21,10 +21,8 @@ export const MonadAnimation = () => {
 
     setStep(1)
 
-    addTimeout(() => {
-      setStep(2)
-      addTimeout(() => setStep(3), 3000)
-    }, 2000)
+    addTimeout(() => setStep(2), 2000)
+    addTimeout(() => setStep(3), 5000)
 
     return () => {
       timeouts.forEach(clearTimeout)
