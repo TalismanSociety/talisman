@@ -1,4 +1,5 @@
 import type { BrowserContext, Page } from "@playwright/test"
+import { randomBytes } from "@noble/hashes/utils"
 import { test as base, chromium } from "@playwright/test"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 
@@ -103,10 +104,11 @@ export const test = base.extend<{
     }) => {
       const page = onboardedPage
       // randomize the name of the account if not provided
-      const suffixLength = 6
-      const getRandomChars = xxhashAsHex(crypto.getRandomValues(new Uint8Array(16))).slice(
+      const suffixLength = 3
+      const randomBuffer = randomBytes(16)
+      const getRandomChars = xxhashAsHex(randomBuffer).slice(
         "0x".length,
-        suffixLength,
+        "0x".length + suffixLength,
       )
       const accName = name || constants.NEW_ACC_NAME + " " + `(${getRandomChars})`
 
