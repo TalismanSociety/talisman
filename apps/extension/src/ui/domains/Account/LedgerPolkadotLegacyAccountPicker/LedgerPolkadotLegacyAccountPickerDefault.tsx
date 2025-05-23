@@ -28,8 +28,6 @@ export const LedgerPolkadotLegacyAccountPickerDefault: FC<
     itemsPerPage,
   )
 
-  // useLedgerSubstrateAppByChain(chain)
-
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
     const { accountIndex, address, addressOffset, genesisHash, name, app } =
       acc as LedgerPolkadotAccountPickerDef

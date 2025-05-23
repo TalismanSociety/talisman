@@ -1,33 +1,28 @@
+import { isAddressEqual } from "@talismn/crypto"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   AuthorizedSiteId,
   ProviderType,
 } from "extension-core"
-import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl } from "extension-shared"
+import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { api } from "@ui/api"
-import { useAuthorisedSites, useSettingValue } from "@ui/state"
+import { useAuthorisedSites } from "@ui/state"
 
-import { useAccountAddresses } from "./useAccountAddresses"
+import { useInjectableAccounts } from "./useInjectableAccounts"
+
+const isAddressIn = (addresses: string[]) => (address: string) =>
+  addresses.some((addr) => isAddressEqual(address, addr))
 
 const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()
-  const isSiteTalismanUrl = isTalismanUrl(sites[id]?.url)
-  const isDevMode = useSettingValue("developerMode")
-  const availableOwnedOrAllAddresses = useAccountAddresses(
-    type === "ethereum",
-    isSiteTalismanUrl || isDevMode ? "all" : "owned",
-  )
-  const signetAddresses = useAccountAddresses(type === "ethereum", "signet")
 
+  const injectableAccounts = useInjectableAccounts(sites[id]?.url ?? "", type)
   const availableAddresses = useMemo(
-    () =>
-      isSiteTalismanUrl
-        ? availableOwnedOrAllAddresses
-        : [...availableOwnedOrAllAddresses, ...signetAddresses],
-    [availableOwnedOrAllAddresses, isSiteTalismanUrl, signetAddresses],
+    () => injectableAccounts.map((account) => account.address),
+    [injectableAccounts],
   )
 
   const connected = useMemo(() => {
@@ -36,9 +31,9 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
 
     switch (type) {
       case "polkadot":
-        return connectedPolkadot.filter((address) => availableAddresses.includes(address))
+        return connectedPolkadot.filter(isAddressIn(availableAddresses))
       case "ethereum":
-        return connectedEthereum.filter((address) => availableAddresses.includes(address))
+        return connectedEthereum.filter(isAddressIn(availableAddresses))
       default:
         throw new Error("provider type not set")
     }
@@ -65,14 +60,15 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const toggleOne = useCallback(
     (address: string) => {
       let newAddresses: string[]
+      const isConnectedAddress = isAddressIn(connected)
       switch (type) {
         case "polkadot":
-          newAddresses = connected.includes(address)
-            ? connected.filter((a) => a !== address)
+          newAddresses = isConnectedAddress(address)
+            ? connected.filter((a) => !isAddressEqual(a, address))
             : [...connected, address]
           break
         case "ethereum":
-          newAddresses = connected.includes(address) ? [] : [address]
+          newAddresses = isConnectedAddress(address) ? [] : [address]
           break
         default:
           throw new Error("provider type not set")
