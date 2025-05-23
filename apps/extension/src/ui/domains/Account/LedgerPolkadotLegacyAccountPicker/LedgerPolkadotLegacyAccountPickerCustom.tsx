@@ -236,7 +236,11 @@ const getNextAccountDetails = (
   const existingAccountIndexes = accounts
     .filter(isAccountLedgerPolkadotLegacy)
     .filter(
-      (a) => a.app === app?.name && a.addressOffset === 0 && typeof a.accountIndex === "number",
+      (a) =>
+        a.app === app?.name &&
+        a.addressOffset === 0 &&
+        typeof a.accountIndex === "number" &&
+        a.genesisHash === chain.genesisHash,
     )
     .map((a) => a.accountIndex as number)
   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++)
