@@ -13,6 +13,7 @@ import {
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { lt } from "semver"
 
 import { getPolkadotLedgerDerivationPath } from "./common"
 import { getOpenLedgerAppError, getTalismanLedgerError, TalismanLedgerError } from "./errors"
@@ -77,7 +78,13 @@ export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
 
   const getAddressEcdsa = useCallback(
     (bip44path: string) => {
-      return withLedger((ledger) => {
+      return withLedger(async (ledger) => {
+        // check if installed app supports secp256k1 accounts
+        const appInfo = await ledger.appInfo()
+        if (!appInfo.appVersion) throw getTalismanLedgerError("Failed to get app version")
+        if (lt(appInfo.appVersion, "100.0.14"))
+          throw getTalismanLedgerError("Please update your Ledger Polkadot app from Ledger Live")
+
         return ledger.getAddressEcdsa(bip44path, false)
       })
     },
