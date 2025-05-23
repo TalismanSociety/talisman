@@ -1,11 +1,9 @@
 import {
   Account,
-  isAccountEthereum,
-  isAccountEthereumSigner,
   isAccountInTypes,
   isAccountNotContact,
-  isAccountOfType,
-  isAccountSs58,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
   ProviderType,
 } from "extension-core"
 import { isTalismanUrl } from "extension-shared"
@@ -21,11 +19,9 @@ export const useInjectableAccounts = (siteUrl: string, provider?: ProviderType) 
   const providerCompatibleAccounts = useMemo<Account[]>(() => {
     switch (provider) {
       case "polkadot":
-        return accounts
-          .filter((account) => !isAccountOfType(account, "ledger-ethereum")) // ledger-ethereum cant sign a tx payload, despite its address being supported by some chains
-          .filter((account) => isAccountEthereum(account) || isAccountSs58(account))
+        return accounts.filter(isAccountPlatformPolkadot)
       case "ethereum":
-        return accounts.filter(isAccountEthereumSigner) // all accounts with an ethereum address, except ledger-polkadot
+        return accounts.filter(isAccountPlatformEthereum)
       default:
         return accounts
     }

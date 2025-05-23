@@ -1,4 +1,4 @@
-import { isAccountEthereum } from "extension-core"
+import { isAccountPlatformEthereum } from "extension-core"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
@@ -16,7 +16,7 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   const navigate = useNavigateWithQuery()
 
   const withNfts = useMemo(() => {
-    return selectedAccounts.some(isAccountEthereum)
+    return selectedAccounts.some(isAccountPlatformEthereum)
   }, [selectedAccounts])
 
   const tabs = useMemo(() => {

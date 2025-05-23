@@ -41,7 +41,7 @@ const ACCOUNT_TYPES_EXTERNAL = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_ETHEREUM = [
+const ACCOUNT_TYPES_ADDRESS_ETHEREUM = [
   "contact",
   "watch-only",
   "keypair",
@@ -50,10 +50,25 @@ const ACCOUNT_TYPES_ETHEREUM = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_EVM = ["contact", "watch-only", "keypair", "ledger-ethereum"] as const
+const ACCOUNT_TYPES_PLATFORM_ETHEREUM = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-ethereum",
+] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_SS58 = [
+const ACCOUNT_TYPES_ADDRESS_SS58 = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-polkadot",
+  "polkadot-vault",
+  "signet",
+] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
   "contact",
   "watch-only",
   "keypair",
@@ -83,30 +98,53 @@ export const isAccountPortfolio = (account: Account | null | undefined): account
 
 export const isAccountNotContact = (acc: Account) => acc.type !== "contact"
 
-type AccountEthereum = Extract<Account, { type: (typeof ACCOUNT_TYPES_ETHEREUM)[number] }> & {
+type AccountAddressEthereum = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_ADDRESS_ETHEREUM)[number] }
+> & {
   address: `0x${string}`
 }
-/** Has an ethereum format address, but may not be able to sign txs on an EVM network */
-export const isAccountEthereum = (
+export const isAccountAddressEthereum = (
   account: Account | null | undefined,
-): account is AccountEthereum => {
+): account is AccountAddressEthereum => {
   return !!account && isEthereumAddress(account.address)
 }
 
-type AccountEVM = Extract<Account, { type: (typeof ACCOUNT_TYPES_EVM)[number] }> & {
+type AccountPlatformEthereum = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_ETHEREUM)[number] }
+> & {
   address: `0x${string}`
 }
-/** Can sign txs on an EVM network */
-export const isAccountEthereumSigner = (
+export const isAccountPlatformEthereum = (
   account: Account | null | undefined,
-): account is AccountEVM => {
+): account is AccountPlatformEthereum => {
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 
-type AccountSs58 = Extract<Account, { type: (typeof ACCOUNT_TYPES_SS58)[number] }> & {
+type AccountPlatformPolkadot = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_POLKADOT)[number] }
+>
+export const isAccountPlatformPolkadot = (
+  account: Account | null | undefined,
+): account is AccountPlatformPolkadot => {
+  return (
+    !!account &&
+    account.type !== "ledger-ethereum" &&
+    (isAccountAddressEthereum(account) || isAccountAddressSs58(account))
+  )
+}
+
+type AccountAddressSs58 = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_ADDRESS_SS58)[number] }
+> & {
   genesisHash?: `0x${string}`
 }
-export const isAccountSs58 = (account: Account | null | undefined): account is AccountSs58 => {
+export const isAccountAddressSs58 = (
+  account: Account | null | undefined,
+): account is AccountAddressSs58 => {
   return !!account && detectAddressEncoding(account.address) === "ss58"
 }
 

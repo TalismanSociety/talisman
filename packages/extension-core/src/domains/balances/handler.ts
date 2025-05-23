@@ -1,4 +1,4 @@
-import { isAccountSs58 } from "@talismn/keyring"
+import { isAccountAddressSs58 } from "@talismn/keyring"
 import { isValidSubstrateAddress } from "@talismn/util"
 
 import { createSubscription, portDisconnected, unsubscribe } from "../../handlers/subscriptions"
@@ -30,7 +30,7 @@ export class BalancesHandler extends ExtensionHandler {
         const accounts = await keyringStore.getAccounts()
 
         // TODO fix this logic: some chains with evm type accounts should still be updated (ex: Mythos, Moonbeam, LAOS)
-        const updateSubstrateChains = accounts.some(isAccountSs58)
+        const updateSubstrateChains = accounts.some(isAccountAddressSs58)
 
         // TODO: Run this on a timer or something instead of when subscribing to balances
         // todo check if not awaiting this causes any issues with custom networks

@@ -4,7 +4,7 @@ import {
   Account,
   getAccountGenesisHash,
   isAccountCompatibleWithChain,
-  isAccountEthereum,
+  isAccountPlatformEthereum,
 } from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -174,7 +174,7 @@ export const CopyAddressAccountForm = () => {
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => !chain || isAccountCompatibleWithChain(chain, account))
-        .filter((account) => !evmNetwork || isAccountEthereum(account))
+        .filter((account) => !evmNetwork || isAccountPlatformEthereum(account))
         // if a folder is selected in portfolio, filter to accounts in that folder
         .filter(
           (account) =>

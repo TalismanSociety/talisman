@@ -3,12 +3,13 @@ export type * from "@talismn/keyring"
 
 export {
   isAccountOfType,
-  isAccountEthereum,
-  isAccountEthereumSigner,
+  isAccountAddressEthereum,
+  isAccountPlatformEthereum,
   isAccountExternal,
   isAccountInTypes,
   isAccountOwned,
-  isAccountSs58,
+  isAccountAddressSs58,
+  isAccountPlatformPolkadot,
   isAccountPortfolio,
   isAccountLedgerPolkadotGeneric,
   isAccountLedgerPolkadotLegacy,

@@ -1,6 +1,6 @@
 import { ArrowRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { isAccountSs58 } from "extension-core"
+import { isAccountAddressSs58 } from "extension-core"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
@@ -14,7 +14,7 @@ export const UnifiedAddressInfoBanner = () => {
   const accounts = useAccounts()
 
   const showBanner = useMemo(
-    () => allowBanner && !hideBanner && accounts.some(isAccountSs58),
+    () => allowBanner && !hideBanner && accounts.some(isAccountAddressSs58),
     [accounts, allowBanner, hideBanner],
   )
 

@@ -2,7 +2,12 @@ import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { isBitcoinAddress } from "@talismn/crypto"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { encodeAnyAddress, isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
-import { Account, isAccountBitcoin, isAccountEthereum, isAccountSs58 } from "extension-core"
+import {
+  Account,
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountBitcoin,
+} from "extension-core"
 import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -49,8 +54,8 @@ export const SeparatedAccountSelector = ({
 
   const allAccounts = useAccounts(allowInput ? "all" : "owned")
 
-  const defaultSubstrateAccounts = allAccounts.filter((a) => isAccountSs58(a))
-  const defaultEvmAccounts = allAccounts.filter((a) => isAccountEthereum(a))
+  const defaultSubstrateAccounts = allAccounts.filter((a) => isAccountAddressSs58(a))
+  const defaultEvmAccounts = allAccounts.filter((a) => isAccountAddressEthereum(a))
 
   const [query, setQuery] = useState("")
 
@@ -86,7 +91,7 @@ export const SeparatedAccountSelector = ({
       : defaultEvmAccounts
     if (
       !accountFromInput ||
-      !isAccountEthereum(accountFromInput) ||
+      !isAccountAddressEthereum(accountFromInput) ||
       filtered.find((a) => a.address.toLowerCase() === accountFromInput?.address.toLowerCase())
     )
       return filtered
@@ -99,7 +104,7 @@ export const SeparatedAccountSelector = ({
       : defaultSubstrateAccounts
     if (
       !accountFromInput ||
-      !isAccountSs58(accountFromInput) ||
+      !isAccountAddressSs58(accountFromInput) ||
       filtered.find((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
     )
       return filtered
