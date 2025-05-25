@@ -36,7 +36,7 @@ export const DashboardLayout: FC<{
             </Suspense>
           </div>
           {/* Main area */}
-          <div className="shrink-0 grow pb-20">
+          <div className="grow pb-20">
             <div className="flex w-full flex-col items-center">
               <div className="flex h-48 w-full shrink-0 items-center justify-center">
                 <HorizontalNav />

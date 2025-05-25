@@ -187,7 +187,7 @@ export const AddLedgerSelectNetwork = () => {
   const showConnect = platform === "ethereum" || (platform === "polkadot" && substrateAppType)
 
   return (
-    <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
+    <form className="flex flex-col" onSubmit={handleSubmit(submit)}>
       <div>
         <HeaderBlock
           title={t("Connect Ledger")}

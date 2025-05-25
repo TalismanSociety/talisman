@@ -147,7 +147,7 @@ export const AddLedgerSelectAccount = () => {
   if (isInvalidInputs) return <Navigate to="/accounts/add/ledger" replace />
 
   return (
-    <form className="flex max-h-screen flex-col gap-12" onSubmit={handleSubmit(submit)}>
+    <form className="flex flex-col gap-12" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
         <h1 className="m-0">{t("Connect Ledger")}</h1>
         {data.platform === "ethereum" && (
