@@ -48,7 +48,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
-import { useSimpleswapSwapStatus } from "@ui/domains/Swap/hooks/useSimpleswapSwapStatus"
+import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
   useChainByGenesisHash,
@@ -295,15 +295,20 @@ const EvmTxActions: FC<{
 
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
 
-  const simpleswapHref = useMemo(() => {
-    if (!txInfo || txInfo.type !== "swap-simpleswap" || !txInfo.exchangeId) return
-    return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
+  const swapHref = useMemo(() => {
+    if (!txInfo) return
+    if (!txInfo.exchangeId) return
+    if (txInfo.type === "swap-simpleswap")
+      return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
+    if (txInfo.type === "swap-stealthex")
+      return `https://stealthex.io/exchange?id=${txInfo.exchangeId}`
+    return
   }, [txInfo])
-  const handleSimpleswapClick = useCallback(() => {
-    if (!simpleswapHref) return
-    window.open(simpleswapHref, "_blank")
+  const handleSwapClick = useCallback(() => {
+    if (!swapHref) return
+    window.open(swapHref, "_blank")
     if (IS_EMBEDDED_POPUP) window.close()
-  }, [simpleswapHref])
+  }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
     () => (evmNetwork?.explorerUrl ? urlJoin(evmNetwork.explorerUrl, "tx", tx.hash) : null),
@@ -391,10 +396,10 @@ const EvmTxActions: FC<{
                 </button>
               </>
             )}
-            {tx.status === "success" && simpleswapHref && (
+            {tx.status === "success" && swapHref && (
               <button
                 type="button"
-                onClick={handleSimpleswapClick}
+                onClick={handleSwapClick}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
                 {t("View swap status")}
@@ -457,9 +462,7 @@ const SwapTransactionStatusLabel = ({
   tx: SubWalletTransaction | EvmWalletTransaction
 }) => {
   const { t } = useTranslation()
-  const swapStatus = useSimpleswapSwapStatus(
-    tx.txInfo?.type === "swap-simpleswap" ? tx.txInfo.exchangeId : undefined,
-  )
+  const swapStatus = useSwapStatus(tx.txInfo?.type, tx.txInfo?.exchangeId)
 
   // show regular tx status while tx is still submitting
   if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
@@ -469,21 +472,25 @@ const SwapTransactionStatusLabel = ({
     case "confirming":
     case "exchanging":
     case "sending":
+    case "verifying":
       return (
         <>
           {swapStatus?.status === "waiting" ? <span>{t("Depositing funds")} </span> : null}
           {swapStatus?.status === "confirming" ? <span>{t("Confirming")} </span> : null}
           {swapStatus?.status === "exchanging" ? <span>{t("Exchanging")} </span> : null}
           {swapStatus?.status === "sending" ? <span>{t("Sending")} </span> : null}
+          {swapStatus?.status === "verifying" ? <span>{t("Verifying")} </span> : null}
           <LoaderIcon className="animate-spin-slow text-body-disabled" />
         </>
       )
     case "failed":
-      return <TransactionStatusLabel status={"error"} />
+    case "refunded":
+    case "expired":
+      return <TransactionStatusLabel status="error" />
     case "finished":
       return <TransactionStatusLabel status={tx.status} />
     default:
-      return <TransactionStatusLabel status={"unknown"} />
+      return <TransactionStatusLabel status="unknown" />
   }
 }
 const SwapTransactionStatusLabelFallback = () => {
@@ -565,7 +572,12 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
   const txInfo = tx.txInfo
   const { isTransfer, value, tokenId } = useMemo(() => {
-    const isTransfer = txInfo?.type !== "swap-simpleswap" && !!tx.tokenId && !!tx.value && tx.to
+    const isTransfer =
+      txInfo?.type !== "swap-simpleswap" &&
+      txInfo?.type !== "swap-stealthex" &&
+      !!tx.tokenId &&
+      !!tx.value &&
+      tx.to
     return isTransfer
       ? { isTransfer, value: tx.value, tokenId: tx.tokenId, to: tx.to }
       : {
@@ -620,7 +632,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
             <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
           </TxIconContainer>
-        ) : txInfo?.type === "swap-simpleswap" ? (
+        ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex items-center">
             <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
@@ -647,7 +659,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       }
       status={
         <>
-          {tx.txInfo?.type === "swap-simpleswap" ? (
+          {["swap-simpleswap", "swap-stealthex"].includes(tx.txInfo?.type ?? "") ? (
             <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
               <SwapTransactionStatusLabel tx={tx} />
             </Suspense>
@@ -663,7 +675,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        txInfo?.type === "swap-simpleswap" ? (
+        txInfo && ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex flex-col">
             <div className="flex items-center justify-end gap-1">
               <Tokens
@@ -701,6 +713,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       }
       fiat={
         txInfo?.type !== "swap-simpleswap" &&
+        txInfo?.type !== "swap-stealthex" &&
         !!amount &&
         amount.fiat(currency) && <Fiat amount={amount} noCountUp />
       }
@@ -751,15 +764,20 @@ const SubTxActions: FC<{
 
   const chain = useChainByGenesisHash(tx.genesisHash)
 
-  const simpleswapHref = useMemo(() => {
-    if (!txInfo || txInfo.type !== "swap-simpleswap" || !txInfo.exchangeId) return
-    return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
+  const swapHref = useMemo(() => {
+    if (!txInfo) return
+    if (!txInfo.exchangeId) return
+    if (txInfo.type === "swap-simpleswap")
+      return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
+    if (txInfo.type === "swap-stealthex")
+      return `https://stealthex.io/exchange?id=${txInfo.exchangeId}`
+    return
   }, [txInfo])
-  const handleSimpleswapClick = useCallback(() => {
-    if (!simpleswapHref) return
-    window.open(simpleswapHref, "_blank")
+  const handleSwapClick = useCallback(() => {
+    if (!swapHref) return
+    window.open(swapHref, "_blank")
     if (IS_EMBEDDED_POPUP) window.close()
-  }, [simpleswapHref])
+  }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
     () => (chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : null),
@@ -804,10 +822,10 @@ const SubTxActions: FC<{
               isOpen ? "visible opacity-100" : "invisible opacity-0",
             )}
           >
-            {tx.status === "success" && simpleswapHref && (
+            {tx.status === "success" && swapHref && (
               <button
                 type="button"
-                onClick={handleSimpleswapClick}
+                onClick={handleSwapClick}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
                 {t("View swap status")}
@@ -851,7 +869,12 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   const txInfo = tx.txInfo
   const { isTransfer, amount } = useMemo(() => {
     const isTransfer =
-      txInfo?.type !== "swap-simpleswap" && tx.value && tx.tokenId && tx.to && token
+      txInfo?.type !== "swap-simpleswap" &&
+      txInfo?.type !== "swap-stealthex" &&
+      tx.value &&
+      tx.tokenId &&
+      tx.to &&
+      token
     return {
       isTransfer,
       amount: isTransfer ? new BalanceFormatter(tx.value, token.decimals, tokenRates) : null,
@@ -885,7 +908,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
           <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
             <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
           </TxIconContainer>
-        ) : txInfo?.type === "swap-simpleswap" ? (
+        ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex items-center">
             <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
@@ -909,7 +932,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       }
       status={
         <>
-          {tx.txInfo?.type === "swap-simpleswap" ? (
+          {["swap-simpleswap", "swap-stealthex"].includes(tx.txInfo?.type ?? "") ? (
             <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
               <SwapTransactionStatusLabel tx={tx} />
             </Suspense>
@@ -925,7 +948,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        txInfo?.type === "swap-simpleswap" ? (
+        txInfo && ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           // tx is a swap deposit
           <div className="flex flex-col">
             <div className="flex items-center justify-end gap-1">
@@ -964,6 +987,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       }
       fiat={
         txInfo?.type !== "swap-simpleswap" &&
+        txInfo?.type !== "swap-stealthex" &&
         !!amount &&
         amount.fiat(currency) && <Fiat amount={amount} noCountUp />
       }

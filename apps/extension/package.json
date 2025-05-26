@@ -84,6 +84,7 @@
     "loglevel": "^1.9.2",
     "lottie-react": "2.4.0",
     "marked": "^14.1.3",
+    "openapi-fetch": "^0.14.0",
     "polkadot-api": "1.7.6",
     "raptorq": "1.7.24",
     "react": "18.3.1",
@@ -169,6 +170,7 @@
     "jest-fetch-mock": "^3.0.3",
     "jest-webextension-mock": "3.8.9",
     "node-fetch": "^3.3.1",
+    "openapi-typescript": "^7.8.0",
     "postcss": "^8.4.47",
     "postcss-import": "^16.1.0",
     "postcss-loader": "^8.1.1",
@@ -196,6 +198,7 @@
   "scripts": {
     "start": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "chore:update-translations": "pnpm exec i18next --silent --config i18next-parser.config.cjs",
+    "chore:codegen:stealthex-swaps": "openapi-typescript https://stealthex.talisman.xyz/docs/openapi.json --export-type --root-types -o src/ui/domains/Swap/swap-modules/stealthex.api.d.ts",
     "dev": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch --env build=dev",
     "dev:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.dev.js --watch --env build=dev",
     "build:extension": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=qa",

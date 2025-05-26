@@ -37,11 +37,12 @@ import {
   toSubstrateAddressAtom,
 } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
+import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { Decimal } from "./swaps-port/Decimal"
 import { publicClientAtomFamily } from "./swaps-port/publicClientAtomFamily"
 import { remoteConfigAtom } from "./swaps-port/remoteConfigAtom"
 
-const swapModules = [simpleswapSwapModule]
+const swapModules = [simpleswapSwapModule, stealthexSwapModule]
 const ETH_LOGO =
   "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eth.svg"
 const BTC_LOGO = "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400"
@@ -445,6 +446,17 @@ export const selectedQuoteAtom = atom(async (get) => {
     ) ?? quotes[0]
   if (!quote) return null
   return quote
+})
+
+export const selectedSwapModuleAtom = atom(async (get) => {
+  const selectedQuote = await get(selectedQuoteAtom)
+  if (!selectedQuote) return
+
+  const selectedProtocol =
+    selectedQuote.quote.state === "hasData" ? selectedQuote.quote.data?.protocol : undefined
+  if (!selectedProtocol) return
+
+  return swapModules.find((module) => module.protocol === selectedProtocol)
 })
 
 const approvalCounterAtom = atom(0)
