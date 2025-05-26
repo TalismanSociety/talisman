@@ -10,7 +10,7 @@ export const useAccountImportBalances = (accounts: Account[]) => {
   const chains = useChains({ includeTestnets: false, activeOnly: true })
   const evmNetworks = useEvmNetworks({ includeTestnets: false, activeOnly: true })
 
-  const balanceParams = useMemo<BalanceByParamsProps>(() => {
+  const balanceParams = useMemo((): BalanceByParamsProps => {
     const addressesByChain: BalanceByParamsProps["addressesByChain"] = chains.reduce(
       (prev, network) => {
         const addresses = accounts
@@ -24,12 +24,12 @@ export const useAccountImportBalances = (accounts: Account[]) => {
 
     const addresses = accounts.filter(isAccountPlatformEthereum).map(({ address }) => address)
 
-    const addressesByEvmNetwork =
+    const addressesAndEvmNetworks =
       evmNetworks.length && addresses.length ? { addresses, evmNetworks } : undefined
 
     return {
       addressesByChain: Object.keys(addressesByChain).length ? addressesByChain : undefined,
-      addressesByEvmNetwork,
+      addressesAndEvmNetworks,
     }
   }, [chains, evmNetworks, accounts])
 
