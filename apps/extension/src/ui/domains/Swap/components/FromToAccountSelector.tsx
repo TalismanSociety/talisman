@@ -107,6 +107,7 @@ const FromAccount = () => {
       <SeparatedAccountSelector
         title={t("Sender")}
         subtitle={t("From")}
+        asset={fromAsset}
         accountsType={assetAccountsType(fromAsset)}
         disableBtc
         substrateAccountPrefix={0}
@@ -163,6 +164,7 @@ const ToAccount = () => {
         subtitle={t("To")}
         allowInput
         allowZeroBalance
+        asset={toAsset}
         accountsType={assetAccountsType(toAsset)}
         substrateAccountPrefix={0}
         substrateAccountsFilter={isAccountOwned}

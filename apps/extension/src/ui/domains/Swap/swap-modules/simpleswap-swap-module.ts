@@ -579,12 +579,14 @@ export const exchangeAtom = atom(async (get) => {
 
     // validate from address for the source chain
     const fromAccount = allAccounts.find((account) => isAddressEqual(account.address, fromAddress))
-    if (!validateAddress(fromAccount, fromAddress, fromAsset.networkType))
+    const fromChain = substrateChains.find((c) => c.id.toString() === String(fromAsset.chainId))
+    if (!validateAddress(fromAccount, fromAddress, fromChain, fromAsset.networkType))
       throw new Error(`Cannot swap from ${fromAsset.chainId} chain with address: ${fromAddress}`)
 
     // validate to address for the target chain
     const toAccount = allAccounts.find((account) => isAddressEqual(account.address, toAddress))
-    if (!validateAddress(toAccount, toAddress, toAsset.networkType))
+    const toChain = substrateChains.find((c) => c.id.toString() === String(toAsset.chainId))
+    if (!validateAddress(toAccount, toAddress, toChain, toAsset.networkType))
       throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${toAddress}`)
 
     // cannot swap from BTC

@@ -9,8 +9,8 @@ import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import { isBitcoinAddress } from "@talismn/crypto/src/address/encoding/bitcoin"
 import {
   Account,
+  isAccountCompatibleWithChain,
   isAccountPlatformEthereum,
-  isAccountPlatformPolkadot,
   remoteConfigStore,
 } from "extension-core"
 import { atom } from "jotai"
@@ -29,6 +29,8 @@ import {
   polygon,
   sonic,
 } from "viem/chains"
+
+import { AnyChain } from "@ui/state"
 
 import { Decimal } from "../swaps-port/Decimal"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
@@ -152,13 +154,16 @@ export type SwapModule = {
 export const validateAddress = (
   account: Account | undefined,
   address: string,
+  chain: AnyChain | undefined,
   networkType: "evm" | "substrate" | "btc",
 ) => {
   switch (networkType) {
     case "evm":
       return account ? isAccountPlatformEthereum(account) : isEthereumAddress(address)
     case "substrate":
-      return account ? isAccountPlatformPolkadot(account) : isSs58Address(address)
+      return account
+        ? chain && isAccountCompatibleWithChain(chain, account)
+        : isSs58Address(address)
     case "btc":
       return isBitcoinAddress(address)
     default:
