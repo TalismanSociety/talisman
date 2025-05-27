@@ -33,7 +33,7 @@ export type AccountWatchOnly = AccountBase & {
 export type AccountLedgerPolkadot = AccountBase & {
   type: "ledger-polkadot"
   curve: LedgerPolkadotCurve // ed25519 or secp256k1
-  app: string // polkadot for generic, other value for legacy or migration app. used to determine derivation path.
+  app: string // polkadot for generic, other value for migration app. used to determine derivation path. ignored for legacy apps.
   accountIndex: number
   addressOffset: number
   genesisHash?: `0x${string}` // if defined, it's a legacy app
