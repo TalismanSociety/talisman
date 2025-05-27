@@ -13,7 +13,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "1004001",
+    specVersion: "1005001",
     nativeToken: {
       id: "polkadot-substrate-native",
     },
@@ -52,9 +52,6 @@ export const chains = [
       },
       {
         url: "wss://rpc-polkadot.luckyfriday.io",
-      },
-      {
-        url: "wss://polkadot.rpc.permanence.io",
       },
       {
         url: "wss://rockx-dot.w3node.com/polka-public-dot/ws",
@@ -321,7 +318,7 @@ export const chains = [
     chainType: "Live",
     implName: "parity-kusama",
     specName: "kusama",
-    specVersion: "1005000",
+    specVersion: "1005001",
     nativeToken: {
       id: "kusama-substrate-native",
     },
@@ -549,7 +546,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1004003",
+    specVersion: "1005001",
     nativeToken: {
       id: "kusama-asset-hub-substrate-native",
     },
@@ -663,7 +660,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-kusama",
     specName: "bridge-hub-kusama",
-    specVersion: "1004000",
+    specVersion: "1005001",
     nativeToken: {
       id: "kusama-bridge-hub-substrate-native",
     },
@@ -738,7 +735,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemint",
     specName: "statemint",
-    specVersion: "1004002",
+    specVersion: "1005001",
     nativeToken: {
       id: "polkadot-asset-hub-substrate-native",
     },
@@ -780,6 +777,9 @@ export const chains = [
         id: "polkadot-asset-hub-substrate-foreignassets-bnc",
       },
       {
+        id: "polkadot-asset-hub-substrate-foreignassets-usdc.e",
+      },
+      {
         id: "polkadot-asset-hub-substrate-foreignassets-eqd",
       },
       {
@@ -793,6 +793,9 @@ export const chains = [
       },
       {
         id: "polkadot-asset-hub-substrate-foreignassets-hdx",
+      },
+      {
+        id: "polkadot-asset-hub-substrate-foreignassets-usdt.e",
       },
       {
         id: "polkadot-asset-hub-substrate-foreignassets-ajun",
@@ -1083,7 +1086,7 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-polkadot",
     specName: "bridge-hub-polkadot",
-    specVersion: "1004003",
+    specVersion: "1005001",
     nativeToken: {
       id: "polkadot-bridge-hub-substrate-native",
     },
