@@ -4,13 +4,13 @@ import { LedgerPolkadotCurve } from "extension-core"
 import { useCallback, useRef } from "react"
 
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
+import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 
 export const useGetLedgerPolkadotAddress = (
   curve: LedgerPolkadotCurve,
   legacyApp?: SubstrateAppParams | null,
 ) => {
-  const { getAddressEcdsa, getAddressEd25519 } = useLedgerSubstrateGeneric({ legacyApp })
+  const { getAddressEcdsa, getAddressEd25519 } = useLedgerPolkadot({ legacyApp })
 
   // derivation path => address cache, usefull when going back to previous page
   const refAddressCache = useRef<Record<string, Promise<GenericeResponseAddress>>>({})

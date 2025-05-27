@@ -21,13 +21,13 @@ import { useLedgerTransport } from "./useLedgerTransport"
 
 type LedgerRequest<T> = (ledger: PolkadotGenericApp) => Promise<T>
 
-type UseLedgerSubstrateGenericProps = {
+type UseLedgerPolkadotProps = {
   legacyApp?: SubstrateAppParams | null
 }
 
-const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}
+const DEFAULT_PROPS: UseLedgerPolkadotProps = {}
 
-export const useLedgerSubstrateGeneric = ({ legacyApp } = DEFAULT_PROPS) => {
+export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
   const { t } = useTranslation()
   const refIsBusy = useRef(false)
   const { ensureTransport, closeTransport } = useLedgerTransport()
