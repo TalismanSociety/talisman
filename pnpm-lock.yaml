@@ -150,13 +150,16 @@ importers:
         version: 1.9.10(@swc/core@1.7.39(@swc/helpers@0.5.13))(bufferutil@4.0.8)(jiti@2.3.3)(postcss@8.4.47)(rxjs@7.8.2)(utf-8-validate@6.0.4)(yaml@2.6.0)
 
   apps/balances-demo:
-    dependencies:
+    devDependencies:
       '@polkadot/api':
         specifier: 15.8.1
         version: 15.8.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@polkadot/extension-dapp':
         specifier: 0.56.2
         version: 0.56.2(@polkadot/api@15.8.1(bufferutil@4.0.8)(utf-8-validate@6.0.4))(@polkadot/util-crypto@13.4.3(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@tailwindcss/forms':
+        specifier: ^0.5.9
+        version: 0.5.9(tailwindcss@3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3)))
       '@talismn/balances':
         specifier: workspace:*
         version: link:../../packages/balances
@@ -166,40 +169,12 @@ importers:
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../../packages/chaindata-provider
-      '@talismn/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
-      anylogger:
-        specifier: ^1.0.11
-        version: 1.0.11
-      anylogger-loglevel:
-        specifier: ^1.0.0
-        version: 1.0.0(anylogger@1.0.11)(loglevel@1.9.2)
-      jotai:
-        specifier: ^2.10.1
-        version: 2.10.1(@types/react@18.3.12)(react@18.3.1)
-      jotai-effect:
-        specifier: ^1.0.3
-        version: 1.0.3(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1))
-      loglevel:
-        specifier: ^1.9.2
-        version: 1.9.2
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.2
-    devDependencies:
-      '@tailwindcss/forms':
-        specifier: ^0.5.9
-        version: 0.5.9(tailwindcss@3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3)))
       '@talismn/eslint-config':
         specifier: workspace:*
         version: link:../../config/eslint-config
+      '@talismn/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -209,15 +184,39 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.3.3
         version: 4.3.3(vite@5.4.10(@types/node@22.14.1)(terser@5.39.0))
+      anylogger:
+        specifier: ^1.0.11
+        version: 1.0.11
+      anylogger-loglevel:
+        specifier: ^1.0.0
+        version: 1.0.0(anylogger@1.0.11)(loglevel@1.9.2)
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.47)
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
+      jotai:
+        specifier: ^2.10.1
+        version: 2.10.1(@types/react@18.3.12)(react@18.3.1)
+      jotai-effect:
+        specifier: ^1.0.3
+        version: 1.0.3(jotai@2.10.1(@types/react@18.3.12)(react@18.3.1))
+      loglevel:
+        specifier: ^1.9.2
+        version: 1.9.2
       postcss:
         specifier: ^8.4.47
         version: 8.4.47
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
       tailwindcss:
         specifier: ^3.4.14
         version: 3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3))
@@ -377,45 +376,6 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.11.1
         version: 3.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/blueimp-md5':
-        specifier: 2.18.2
-        version: 2.18.2
-      '@types/chrome':
-        specifier: 0.0.279
-        version: 0.0.279
-      '@types/color':
-        specifier: 3.0.6
-        version: 3.0.6
-      '@types/dompurify':
-        specifier: ^3.0.5
-        version: 3.0.5
-      '@types/jest':
-        specifier: 29.5.14
-        version: 29.5.14
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
-      '@types/lodash':
-        specifier: ^4.17.12
-        version: 4.17.12
-      '@types/node':
-        specifier: ^22.7.9
-        version: 22.14.1
-      '@types/react':
-        specifier: 18.3.12
-        version: 18.3.12
-      '@types/react-dom':
-        specifier: 18.3.1
-        version: 18.3.1
-      '@types/react-highlight':
-        specifier: ^0.12.8
-        version: 0.12.8
-      '@types/uuid':
-        specifier: ^10.0.0
-        version: 10.0.0
-      '@types/webextension-polyfill':
-        specifier: 0.12.1
-        version: 0.12.1
       '@zondax/ledger-substrate':
         specifier: 1.0.0
         version: 1.0.0
@@ -627,15 +587,54 @@ importers:
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
+      '@types/blueimp-md5':
+        specifier: 2.18.2
+        version: 2.18.2
+      '@types/chrome':
+        specifier: 0.0.279
+        version: 0.0.279
+      '@types/color':
+        specifier: 3.0.6
+        version: 3.0.6
+      '@types/dompurify':
+        specifier: ^3.0.5
+        version: 3.0.5
+      '@types/jest':
+        specifier: 29.5.14
+        version: 29.5.14
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
+      '@types/lodash':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/lz-string':
         specifier: ^1.5.0
         version: 1.5.0
+      '@types/node':
+        specifier: ^22.7.9
+        version: 22.14.1
       '@types/pako':
         specifier: ^2.0.3
         version: 2.0.3
+      '@types/react':
+        specifier: 18.3.12
+        version: 18.3.12
+      '@types/react-dom':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@types/react-highlight':
+        specifier: ^0.12.8
+        version: 0.12.8
       '@types/semver':
         specifier: ^7.5.8
         version: 7.5.8
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+      '@types/webextension-polyfill':
+        specifier: 0.12.1
+        version: 0.12.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.11.0
         version: 8.11.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
@@ -791,22 +790,52 @@ importers:
         version: 3.2.3
 
   apps/playground:
-    dependencies:
+    devDependencies:
       '@headlessui/react':
         specifier: 2.1.10
         version: 2.1.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@metamask/eth-sig-util':
         specifier: 8.0.0
         version: 8.0.0
+      '@openzeppelin/contracts':
+        specifier: ^5.1.0
+        version: 5.1.0
+      '@tailwindcss/forms':
+        specifier: ^0.5.9
+        version: 0.5.9(tailwindcss@3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3)))
+      '@talismn/eslint-config':
+        specifier: workspace:*
+        version: link:../../config/eslint-config
       '@talismn/wagmi-connector':
         specifier: ^0.3.1
         version: 0.3.1(@wagmi/core@2.14.1(@tanstack/query-core@5.59.16)(@types/react@18.3.12)(react@18.3.1)(typescript@5.8.3)(use-sync-external-store@1.2.0(react@18.3.1))(viem@2.28.1(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)))(viem@2.28.1(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2))
       '@tanstack/react-query':
         specifier: 5.59.16
         version: 5.59.16(react@18.3.1)
+      '@types/react':
+        specifier: 18.3.12
+        version: 18.3.12
+      '@types/react-dom':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@vitejs/plugin-react':
+        specifier: 4.3.3
+        version: 4.3.3(vite@5.4.10(@types/node@22.14.1)(terser@5.39.0))
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.4.47)
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
+      eslint:
+        specifier: ^8.57.1
+        version: 8.57.1
+      hardhat:
+        specifier: ^2.22.15
+        version: 2.22.15(bufferutil@4.0.8)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.4.47
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -825,58 +854,27 @@ importers:
       react-use:
         specifier: ^17.5.1
         version: 17.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      talisman-ui:
-        specifier: workspace:*
-        version: link:../../packages/talisman-ui
-      viem:
-        specifier: ^2.27.3
-        version: 2.28.1(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)
-      wagmi:
-        specifier: ^2.12.25
-        version: 2.12.25(@tanstack/query-core@5.59.16)(@tanstack/react-query@5.59.16(react@18.3.1))(@types/react@18.3.12)(bufferutil@4.0.8)(react-dom@18.3.1(react@18.3.1))(react-native@0.76.0(@babel/core@7.26.9)(@babel/preset-env@7.25.9(@babel/core@7.26.9))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@types/react@18.3.12)(bufferutil@4.0.8)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2))(zod@3.24.2)
-    devDependencies:
-      '@openzeppelin/contracts':
-        specifier: ^5.1.0
-        version: 5.1.0
-      '@tailwindcss/forms':
-        specifier: ^0.5.9
-        version: 0.5.9(tailwindcss@3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3)))
-      '@talismn/eslint-config':
-        specifier: workspace:*
-        version: link:../../config/eslint-config
-      '@types/react':
-        specifier: 18.3.12
-        version: 18.3.12
-      '@types/react-dom':
-        specifier: 18.3.1
-        version: 18.3.1
-      '@vitejs/plugin-react':
-        specifier: 4.3.3
-        version: 4.3.3(vite@5.4.10(@types/node@22.14.1)(terser@5.39.0))
-      autoprefixer:
-        specifier: ^10.4.20
-        version: 10.4.20(postcss@8.4.47)
-      eslint:
-        specifier: ^8.57.1
-        version: 8.57.1
-      hardhat:
-        specifier: ^2.22.15
-        version: 2.22.15(bufferutil@4.0.8)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)
-      postcss:
-        specifier: ^8.4.47
-        version: 8.4.47
       tailwindcss:
         specifier: ^3.4.14
         version: 3.4.14(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.14.1)(typescript@5.8.3))
+      talisman-ui:
+        specifier: workspace:*
+        version: link:../../packages/talisman-ui
       typescript:
         specifier: ^5.6.3
         version: 5.8.3
+      viem:
+        specifier: ^2.27.3
+        version: 2.28.1(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)
       vite:
         specifier: ^5.4.10
         version: 5.4.10(@types/node@22.14.1)(terser@5.39.0)
       vite-plugin-svgr:
         specifier: ^4.2.0
         version: 4.2.0(rollup@4.40.0)(typescript@5.8.3)(vite@5.4.10(@types/node@22.14.1)(terser@5.39.0))
+      wagmi:
+        specifier: ^2.12.25
+        version: 2.12.25(@tanstack/query-core@5.59.16)(@tanstack/react-query@5.59.16(react@18.3.1))(@types/react@18.3.12)(bufferutil@4.0.8)(react-dom@18.3.1(react@18.3.1))(react-native@0.76.0(@babel/core@7.26.9)(@babel/preset-env@7.25.9(@babel/core@7.26.9))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@types/react@18.3.12)(bufferutil@4.0.8)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2))(zod@3.24.2)
 
   config/babel-preset:
     dependencies:
@@ -16782,7 +16780,7 @@ snapshots:
       execa: 5.1.1
       invariant: 2.2.4
       metro: 0.81.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      metro-config: 0.81.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      metro-config: 0.81.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       metro-core: 0.81.3
       node-fetch: 2.7.0
       readline: 1.3.0
@@ -23588,21 +23586,6 @@ snapshots:
       flow-enums-runtime: 0.0.6
       metro-core: 0.81.3
 
-  metro-config@0.81.3(bufferutil@4.0.8)(utf-8-validate@5.0.10):
-    dependencies:
-      connect: 3.7.0
-      cosmiconfig: 5.2.1
-      flow-enums-runtime: 0.0.6
-      jest-validate: 29.7.0
-      metro: 0.81.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      metro-cache: 0.81.3
-      metro-core: 0.81.3
-      metro-runtime: 0.81.3
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   metro-config@0.81.3(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     dependencies:
       connect: 3.7.0
@@ -23617,7 +23600,6 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
-    optional: true
 
   metro-core@0.81.3:
     dependencies:
@@ -23729,7 +23711,6 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
-    optional: true
 
   metro@0.81.3(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     dependencies:
@@ -23757,7 +23738,7 @@ snapshots:
       metro-babel-transformer: 0.81.3
       metro-cache: 0.81.3
       metro-cache-key: 0.81.3
-      metro-config: 0.81.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      metro-config: 0.81.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       metro-core: 0.81.3
       metro-file-map: 0.81.3
       metro-resolver: 0.81.3
@@ -23824,7 +23805,6 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
-    optional: true
 
   micro-ftch@0.3.1: {}
 
@@ -27228,7 +27208,6 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 6.0.4
-    optional: true
 
   ws@8.17.1(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     optionalDependencies:
