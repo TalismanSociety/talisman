@@ -1,3 +1,4 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { convertAddress, isNotNil } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Account, LedgerPolkadotCurve } from "extension-core"
@@ -195,15 +196,9 @@ const useLedgerSubstrateGenericAccounts = (
       ledgerAccounts.map((acc) => {
         if (!acc) return null
 
-        // TODO normalize
         const address = convertAddress(acc.address, null)
-        const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === address,
-        )
-
-        const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === address,
-        )
+        const existingAccount = walletAccounts?.find((wa) => isAddressEqual(wa.address, address))
+        const accountBalances = balances.balances.find((b) => isAddressEqual(b.address, address))
 
         return {
           ...acc,
