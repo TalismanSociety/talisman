@@ -1,5 +1,5 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { Chain } from "@talismn/chaindata-provider"
 import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import {
   Account,
@@ -7,7 +7,6 @@ import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
-  isAccountPlatformEthereum,
 } from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
@@ -146,13 +145,4 @@ export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => 
   return isAccountAddressEthereum(account)
     ? chain.account === "secp256k1"
     : chain.account !== "secp256k1"
-}
-
-export const isAccountCompatibleWithNetwork = (
-  network: SimpleEvmNetwork | Chain,
-  account: Account,
-) => {
-  return /^\d+$/.test(network.id)
-    ? isAccountPlatformEthereum(account)
-    : isAccountCompatibleWithChain(network as Chain, account)
 }
