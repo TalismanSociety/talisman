@@ -1,6 +1,5 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { encodeAnyAddress } from "@talismn/util"
-import { isAccountCompatibleWithChain } from "extension-core"
+import { isAccountCompatibleWithChain, isAccountPlatformEthereum } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -27,14 +26,9 @@ export const SendFundsAccountPicker = () => {
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => {
-          if (!token) return false
-
-          if (isEthereumAddress(account.address))
-            return (
-              isEvmToken(token) ||
-              (chain?.account === "secp256k1" && account.type !== "ledger-ethereum")
-            )
-          else return chain && isAccountCompatibleWithChain(chain, account)
+          if (chain) return isAccountCompatibleWithChain(chain, account)
+          if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+          return false
         }),
     [allAccounts, chain, search, token],
   )
