@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
-import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 import { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
@@ -34,7 +33,7 @@ export const watchEthereumTransaction = async (
     const networkName = ethereumNetwork.name ?? "unknown network"
     const txUrl = ethereumNetwork.explorerUrl
       ? urlJoin(ethereumNetwork.explorerUrl, "tx", hash)
-      : nanoid()
+      : chrome.runtime.getURL("dashboard.html#/tx-history")
 
     // PENDING
     if (withNotifications) await createNotification("submitted", networkName, txUrl)
