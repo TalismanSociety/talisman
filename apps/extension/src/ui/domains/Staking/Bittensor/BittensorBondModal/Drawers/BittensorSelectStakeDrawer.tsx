@@ -26,12 +26,12 @@ export const BittensorSelectStakeDrawer = ({
             "Subnet DTAO is a new way of staking your assets through Bittensor’s Dynamic TAO model where you get Alpha tokens as part of staking. You still can safely stake your assets directly to Root (Subnet 0).",
           )}
         </div>
-        <div className="flex w-full items-center gap-4">
-          <Button className="w-full text-sm" onClick={onDismiss}>
+        <div className="grid w-full grid-cols-2 gap-8">
+          <Button className="text-sm" onClick={onDismiss}>
             Root Staking
           </Button>
           <Button
-            className="w-full text-sm"
+            className="text-sm"
             primary
             onClick={() => {
               onDismiss()
