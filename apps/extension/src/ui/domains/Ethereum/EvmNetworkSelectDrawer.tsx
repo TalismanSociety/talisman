@@ -87,7 +87,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <div className="flex flex-col overflow-hidden">
       <div className="px-12">
-        <div className="font-bold">{t("Select Network for this site")}</div>
+        <div className="font-bold">{t("Select network for this site")}</div>
 
         <div className="my-8">
           <SearchInput
