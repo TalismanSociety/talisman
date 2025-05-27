@@ -1,7 +1,7 @@
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
-import { isAccountCompatibleWithChain, isAccountEthereum } from "extension-core"
+import { isAccountCompatibleWithChain, isAccountPlatformEthereum } from "extension-core"
 import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -81,7 +81,7 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
   const accounts = useMemo(
     () =>
       allAccounts.filter((account) => {
-        if (isEvmToken(token)) return isAccountEthereum(account)
+        if (isEvmToken(token)) return isAccountPlatformEthereum(account)
         if (isSubToken(token) && chain) return isAccountCompatibleWithChain(chain, account)
         return false
       }),

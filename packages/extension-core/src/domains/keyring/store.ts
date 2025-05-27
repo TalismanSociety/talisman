@@ -281,6 +281,14 @@ class KeyringStore {
       this.#json$.next(newJson)
     })
   }
+
+  /**
+   * use this method to force keyring storage to be updated
+   * this is because keyring updates its schema on load, but doesnt persist changes automatically
+   * */
+  public forceUpdate(): Promise<void> {
+    return this.updateWithoutPassword(() => {})
+  }
 }
 
 export const keyringStore = new KeyringStore()

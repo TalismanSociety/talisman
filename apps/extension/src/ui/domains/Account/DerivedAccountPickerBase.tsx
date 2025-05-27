@@ -61,11 +61,11 @@ const AccountButton: FC<AccountButtonProps> = ({
   const [isInitializing, isLoading] = useMemo(
     () => [
       // none are loaded yet
-      isBalanceLoading && !balances.each.some((b) => b.status === "live"),
+      isBalanceLoading && !balances?.each.some((b) => b.status === "live"),
       // some are loaded, some are still loading
-      isBalanceLoading && balances.each.some((b) => b.status === "live"),
+      balances && isBalanceLoading && balances.each.some((b) => b.status === "live"),
     ],
-    [balances.each, isBalanceLoading],
+    [balances, isBalanceLoading],
   )
 
   const formattedAddress = useMemo(
@@ -120,7 +120,7 @@ export type DerivedAccountBase = {
   accountIndex: number
   address: string
   genesisHash?: HexString
-  balances: Balances
+  balances?: Balances
   connected?: boolean
   selected?: boolean
   isBalanceLoading?: boolean

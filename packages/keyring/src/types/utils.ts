@@ -41,10 +41,34 @@ const ACCOUNT_TYPES_EXTERNAL = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_ETHEREUM = ["contact", "watch-only", "keypair", "ledger-ethereum"] as const
+const ACCOUNT_TYPES_ADDRESS_ETHEREUM = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-ethereum",
+  "ledger-polkadot",
+] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_POLKADOT = [
+const ACCOUNT_TYPES_PLATFORM_ETHEREUM = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-ethereum",
+] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_ADDRESS_SS58 = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-polkadot",
+  "polkadot-vault",
+  "signet",
+] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
   "contact",
   "watch-only",
   "keypair",
@@ -74,22 +98,60 @@ export const isAccountPortfolio = (account: Account | null | undefined): account
 
 export const isAccountNotContact = (acc: Account) => acc.type !== "contact"
 
-type AccountEthereum = Extract<Account, { type: (typeof ACCOUNT_TYPES_ETHEREUM)[number] }> & {
+type AccountAddressEthereum = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_ADDRESS_ETHEREUM)[number] }
+> & {
   address: `0x${string}`
 }
-export const isAccountEthereum = (
+export const isAccountAddressEthereum = (
   account: Account | null | undefined,
-): account is AccountEthereum => {
+): account is AccountAddressEthereum => {
   return !!account && isEthereumAddress(account.address)
 }
 
-type AccountPolkadot = Extract<Account, { type: (typeof ACCOUNT_TYPES_POLKADOT)[number] }> & {
+type AccountPlatformEthereum = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_ETHEREUM)[number] }
+> & {
+  address: `0x${string}`
+}
+export const isAccountPlatformEthereum = (
+  account: Account | null | undefined,
+): account is AccountPlatformEthereum => {
+  return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
+}
+
+type AccountPlatformPolkadot = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_POLKADOT)[number] }
+>
+export const isAccountPlatformPolkadot = (
+  account: Account | null | undefined,
+): account is AccountPlatformPolkadot => {
+  return (
+    !!account &&
+    account.type !== "ledger-ethereum" &&
+    (isAccountAddressEthereum(account) || isAccountAddressSs58(account))
+  )
+}
+
+type AccountAddressSs58 = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_ADDRESS_SS58)[number] }
+> & {
   genesisHash?: `0x${string}`
 }
-export const isAccountPolkadot = (
+export const isAccountAddressSs58 = (
   account: Account | null | undefined,
-): account is AccountPolkadot => {
+): account is AccountAddressSs58 => {
   return !!account && detectAddressEncoding(account.address) === "ss58"
+}
+
+export const isAccountLedgerPolkadot = (
+  account: Account | null | undefined,
+): account is AccountLedgerPolkadot => {
+  return isAccountOfType(account, "ledger-polkadot")
 }
 
 export const isAccountLedgerPolkadotGeneric = (

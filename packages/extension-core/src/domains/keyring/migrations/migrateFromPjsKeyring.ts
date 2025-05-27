@@ -171,6 +171,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 
               const options: AddAccountExternalOptions = {
                 type: "ledger-polkadot",
+                curve: "ed25519",
                 name: oldPair.meta.name ?? `Ledger ${oldPair.address}`,
                 address: oldPair.address,
                 app: migrationAppName ?? "Polkadot",

@@ -1,6 +1,7 @@
 import { KeypairCurve } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
 import {
+  Account,
   formatSuri,
   getAccountGenesisHash,
   getEthDerivationPath,
@@ -10,7 +11,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
@@ -71,12 +72,20 @@ const useDerivedAccounts = (
   const withBalances = useMemo(() => !!derivedAccounts.filter(isNotNil).length, [derivedAccounts])
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const accountImportDefs = useMemo<AccountImportDef[]>(
+  const accountImportDefs = useMemo(
     () =>
       derivedAccounts.filter(isNotNil).length === itemsPerPage
         ? derivedAccounts
             .filter((acc): acc is DerivedFromMnemonicAccount & { curve: string } => !!acc?.curve)
-            .map((acc) => ({ address: acc.address, curve: acc.curve }))
+            .map(
+              (acc): Account => ({
+                type: "keypair",
+                address: acc.address,
+                curve: acc.curve,
+                name: "",
+                createdAt: Date.now(),
+              }),
+            )
         : [],
     [itemsPerPage, derivedAccounts],
   )

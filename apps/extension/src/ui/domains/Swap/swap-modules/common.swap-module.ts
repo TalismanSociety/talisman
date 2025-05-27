@@ -4,14 +4,18 @@ import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import type { TransactionRequest } from "viem"
 import type { Chain as ViemChain } from "viem/chains"
-import { isAddress as isSubstrateAddress } from "@polkadot/util-crypto"
 import { evmErc20TokenId, evmNativeTokenId, subNativeTokenId } from "@talismn/balances"
+import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import { isBitcoinAddress } from "@talismn/crypto/src/address/encoding/bitcoin"
-import { remoteConfigStore } from "extension-core"
+import {
+  Account,
+  isAccountCompatibleWithChain,
+  isAccountPlatformEthereum,
+  remoteConfigStore,
+} from "extension-core"
 import { atom } from "jotai"
 import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
 import { Loadable } from "jotai/vanilla/utils/loadable"
-import { isAddress } from "viem"
 import {
   arbitrum,
   base,
@@ -25,6 +29,8 @@ import {
   polygon,
   sonic,
 } from "viem/chains"
+
+import { AnyChain } from "@ui/state"
 
 import { Decimal } from "../swaps-port/Decimal"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
@@ -145,12 +151,19 @@ export type SwapModule = {
 
 // atoms shared between swap modules
 
-export const validateAddress = (address: string, networkType: "evm" | "substrate" | "btc") => {
+export const validateAddress = (
+  account: Account | undefined,
+  address: string,
+  chain: AnyChain | undefined,
+  networkType: "evm" | "substrate" | "btc",
+) => {
   switch (networkType) {
     case "evm":
-      return isAddress(address)
+      return account ? isAccountPlatformEthereum(account) : isEthereumAddress(address)
     case "substrate":
-      return isSubstrateAddress(address)
+      return account
+        ? chain && isAccountCompatibleWithChain(chain, account)
+        : isSs58Address(address)
     case "btc":
       return isBitcoinAddress(address)
     default:
@@ -163,7 +176,7 @@ export const selectedSubProtocolAtom = atom<string | undefined>(undefined)
 export const fromAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
 export const fromAmountAtom = atom<Decimal>(Decimal.fromPlanck(0n, 1))
 export const fromSubstrateAddressAtom = atom<string | null>(null)
-export const fromEvmAddressAtom = atom<`0x${string}` | null>(null)
+export const fromEvmAddressAtom = atom<string | null>(null)
 export const fromAddressAtom = atom((get) => {
   const fromAsset = get(fromAssetAtom)
   const evmAddress = get(fromEvmAddressAtom)
@@ -174,7 +187,7 @@ export const fromAddressAtom = atom((get) => {
 
 export const toAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
 export const toSubstrateAddressAtom = atom<string | null>(null)
-export const toEvmAddressAtom = atom<`0x${string}` | null>(null)
+export const toEvmAddressAtom = atom<string | null>(null)
 export const toBtcAddressAtom = atom<string | null>(null)
 
 export const toAddressAtom = atom((get) => {

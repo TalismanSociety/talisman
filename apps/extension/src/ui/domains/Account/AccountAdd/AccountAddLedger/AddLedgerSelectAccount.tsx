@@ -10,11 +10,11 @@ import * as yup from "yup"
 
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { LedgerSubstrateLegacyAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 
-import { LedgerSubstrateGenericAccountPicker } from "../../LedgerSubstrateGenericAccountPicker"
+import { LedgerPolkadotAccountPicker } from "../../LedgerPolkadotAccountPicker"
+import { LedgerPolkadotLegacyAccountPicker } from "../../LedgerPolkadotLegacyAccountPicker"
 import { AddSubstrateLedgerAppType, LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
@@ -180,19 +180,16 @@ export const AddLedgerSelectAccount = () => {
         {data.platform === "polkadot" && (
           <>
             {data.substrateAppType === AddSubstrateLedgerAppType.Legacy && (
-              <LedgerSubstrateLegacyAccountPicker
+              <LedgerPolkadotLegacyAccountPicker
                 chainId={data.chainId as string}
                 onChange={handleAccountsChange}
               />
             )}
             {data.substrateAppType === AddSubstrateLedgerAppType.Generic && (
-              <LedgerSubstrateGenericAccountPicker
-                onChange={handleAccountsChange}
-                chainId={data.chainId}
-              />
+              <LedgerPolkadotAccountPicker onChange={handleAccountsChange} chainId={data.chainId} />
             )}
             {data.substrateAppType === AddSubstrateLedgerAppType.Migration && !!app && (
-              <LedgerSubstrateGenericAccountPicker
+              <LedgerPolkadotAccountPicker
                 onChange={handleAccountsChange}
                 app={app}
                 chainId={data.chainId}

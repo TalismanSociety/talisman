@@ -3,8 +3,8 @@ import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import {
   BalanceSubscriptionResponse,
+  isAccountAddressEthereum,
   isAccountCompatibleWithChain,
-  isAccountEthereum,
 } from "extension-core"
 import {
   combineLatest,
@@ -72,7 +72,7 @@ const allBalances$ = combineLatest([
       // for chain specific accounts, exclude balances from other chains
       if ("chainId" in b && b.chainId && chains[b.chainId])
         return isAccountCompatibleWithChain(chains[b.chainId], account)
-      if ("evmNetworkId" in b && b.evmNetworkId) return isAccountEthereum(account)
+      if ("evmNetworkId" in b && b.evmNetworkId) return isAccountAddressEthereum(account)
       return false
     })
     return new Balances(validBalances, hydrate)

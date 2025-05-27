@@ -4,7 +4,7 @@ import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "ex
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
-import { Checkbox, Drawer, IconButton } from "talisman-ui"
+import { Drawer, IconButton } from "talisman-ui"
 
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -21,21 +21,6 @@ import {
 
 import { NetworkLogo } from "./NetworkLogo"
 
-const searchNetworks = (
-  networks: SimpleEvmNetwork[],
-  currentNetworkId: string | undefined,
-  search: string,
-) => {
-  const lowerSearch = search.toLowerCase()
-  return networks
-    .filter((n) => n.name?.toLowerCase().includes(lowerSearch))
-    .sort((n1, n2) => {
-      if (n1.id === currentNetworkId) return -1
-      if (n2.id === currentNetworkId) return 1
-      return (n1.name ?? "").localeCompare(n2.name ?? "")
-    })
-}
-
 const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
   const currentSite = useCurrentSite()
@@ -47,37 +32,41 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
   const currentNetwork = useEvmNetwork(initialNetworkId)
-  const [isTestnet] = useState(() => !!currentNetwork?.isTestnet)
-  const [settingUseTestnets, setUseTestnets] = useState(isTestnet)
 
-  // show testnets only if initial network was a testnet when opening the drawer, or if testnets are enabled in settings
-  const showTestnets = useMemo(
-    () => isTestnet || settingUseTestnets,
-    [isTestnet, settingUseTestnets],
-  )
-
-  const evmNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: showTestnets })
+  const evmNetworks = useEvmNetworks()
   const activeEvmNetworksState = useActiveEvmNetworksState()
 
   const [allActiveEvmNetworks, allInactiveEvmNetworks] = useMemo(() => {
-    return evmNetworks.reduce(
-      (acc, network) => {
-        const arr = isEvmNetworkActive(network, activeEvmNetworksState) ? acc[0] : acc[1]
-        arr.push(network)
-        return acc
-      },
-      [[] as SimpleEvmNetwork[], [] as SimpleEvmNetwork[]],
-    )
-  }, [activeEvmNetworksState, evmNetworks])
+    return evmNetworks
+      .concat()
+      .sort((n1, n2) => {
+        if (n1.id === currentNetwork?.id) return -1
+        if (n2.id === currentNetwork?.id) return 1
+
+        if (n1.isTestnet && !n2.isTestnet) return 1
+        if (!n1.isTestnet && n2.isTestnet) return -1
+
+        return (n1.name ?? "").localeCompare(n2.name ?? "")
+      })
+      .reduce(
+        (acc, network) => {
+          const arr = isEvmNetworkActive(network, activeEvmNetworksState) ? acc[0] : acc[1]
+          arr.push(network)
+          return acc
+        },
+        [[] as SimpleEvmNetwork[], [] as SimpleEvmNetwork[]],
+      )
+  }, [activeEvmNetworksState, currentNetwork?.id, evmNetworks])
 
   const [search, setSearch] = useDebouncedState("", 150)
 
   const [activeEvmNetworks, inactiveEvmNetworks] = useMemo(() => {
+    const lowerSearch = search.toLowerCase()
     return [
-      searchNetworks(allActiveEvmNetworks, currentNetwork?.id, search),
-      searchNetworks(allInactiveEvmNetworks, currentNetwork?.id, search),
+      allActiveEvmNetworks.filter((n) => n.name?.toLowerCase().includes(lowerSearch)),
+      allInactiveEvmNetworks.filter((n) => n.name?.toLowerCase().includes(lowerSearch)),
     ]
-  }, [allActiveEvmNetworks, allInactiveEvmNetworks, currentNetwork?.id, search])
+  }, [allActiveEvmNetworks, allInactiveEvmNetworks, search])
 
   const handleNetworkClick = useCallback(
     async (id: string) => {
@@ -98,18 +87,8 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <div className="flex flex-col overflow-hidden">
       <div className="px-12">
-        <div className="font-bold">{t("Select Network")}</div>
-        <div className="mt-8 flex w-full items-center justify-between">
-          <div className="text-body-secondary text-sm">{t("Select EVM network for this site")}</div>
-          <Checkbox
-            className={classNames("text-xs", isTestnet && "opacity-50")}
-            checked={showTestnets}
-            disabled={isTestnet}
-            onChange={(e) => setUseTestnets(e.target.checked)}
-          >
-            <span className="text-body-secondary">{t("Enable testnets")}</span>
-          </Checkbox>
-        </div>
+        <div className="font-bold">{t("Select network for this site")}</div>
+
         <div className="my-8">
           <SearchInput
             small={false}

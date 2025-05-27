@@ -51,8 +51,15 @@ export class Keyring {
   }
 
   public static load(data: KeyringStorage): Keyring {
-    // TODO: schema check ?
     if (!data.accounts || !data.mnemonics) throw new Error("Invalid data")
+
+    // automatic upgrade : set default values for newly introduced properties
+    for (const account of data.accounts) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      if (account.type === "ledger-polkadot" && !account.curve) account.curve = "ed25519"
+    }
+
     return new Keyring(data)
   }
 

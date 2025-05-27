@@ -1,4 +1,4 @@
-import { isAccountEthereum, isAccountNotContact, isAccountOfType } from "@talismn/keyring"
+import { isAccountAddressEthereum, isAccountNotContact, isAccountOfType } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -46,7 +46,7 @@ export const trackBalanceTotals = async () => {
             if (!account) return acc
 
             if (!acc[address]) acc[address] = []
-            if (isAccountEthereum(account)) acc[address].push(balance)
+            if (isAccountAddressEthereum(account)) acc[address].push(balance)
             else {
               const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
               if (!chain || isAccountOfType(account, "contact")) return acc

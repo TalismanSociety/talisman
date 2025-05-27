@@ -1,5 +1,5 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { isAccountEthereum, isAccountOwned } from "@talismn/keyring"
+import { isAccountAddressEthereum, isAccountOwned } from "@talismn/keyring"
 import { parseAbi } from "viem"
 
 import { keyringStore } from "../domains/keyring/store"
@@ -17,7 +17,7 @@ export const hasErc721Nft = async ({
 }): Promise<Record<Address, boolean>> => {
   const accounts = await keyringStore.getAccounts()
   const evmAddresses = accounts
-    .filter(isAccountEthereum)
+    .filter(isAccountAddressEthereum)
     .filter(isAccountOwned)
     .map(({ address }) => address)
 

@@ -6,7 +6,7 @@ import {
   activeEvmNetworksStore,
   activeTokensStore,
   isAccountCompatibleWithChain,
-  isAccountEthereum,
+  isAccountPlatformEthereum,
 } from "extension-core"
 import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
 import { log } from "extension-shared"
@@ -90,7 +90,7 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const accounts = useMemo(
     () =>
       allAccounts.filter((account) => {
-        if (isEvmToken(token)) return isAccountEthereum(account)
+        if (isEvmToken(token)) return isAccountPlatformEthereum(account)
         if (isSubToken(token) && chain) return isAccountCompatibleWithChain(chain, account)
         return false
       }),

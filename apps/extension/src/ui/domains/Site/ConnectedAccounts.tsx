@@ -1,11 +1,11 @@
 import { isAddressEqual } from "@talismn/util"
-import { Account, AuthorizedSite, isAccountEthereum } from "extension-core"
+import { Account, AuthorizedSite } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { api } from "@ui/api"
-import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useAuthorisedSites } from "@ui/state"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
@@ -15,7 +15,7 @@ import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 const isMatch = (acc: Account) => (address: string) => isAddressEqual(acc.address, address)
 
 const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
-  const accounts = useAccountsForSite(site)
+  const accounts = useInjectableAccounts(site.url, "polkadot")
 
   // using a local state allows for optimistic updates
   const [activeAccounts, setActiveAccounts] = useState(() =>
@@ -45,12 +45,10 @@ const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
 const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
 
 const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
-  const accounts = useAccountsForSite(site)
+  const accounts = useInjectableAccounts(site?.url ?? "", "ethereum")
   const activeAccounts = useMemo(
     () =>
-      accounts
-        .filter(isAccountEthereum)
-        .map((acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [Account, boolean]),
+      accounts.map((acc) => [acc, site?.ethAddresses?.some(isMatch(acc))] as [Account, boolean]),
     [accounts, site?.ethAddresses],
   )
 

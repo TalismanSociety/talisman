@@ -1,6 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Chain, ChainId, ChainList, Token } from "@talismn/chaindata-provider"
-import { Account, Address, getAccountGenesisHash, isAccountEthereum } from "extension-core"
+import { Account, Address, getAccountGenesisHash, isAccountAddressEthereum } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { getAddress } from "viem"
@@ -47,7 +47,7 @@ const isAccountCompatibleWithChain = (
   const accountGenesisHash = getAccountGenesisHash(account)
   if (account && accountGenesisHash && accountGenesisHash !== chain.genesisHash) return false
 
-  const isEthereum = isAccountEthereum(account)
+  const isEthereum = isAccountAddressEthereum(account)
 
   if (isEthereum) return chain.account === "secp256k1"
   return chain.account !== "secp256k1"

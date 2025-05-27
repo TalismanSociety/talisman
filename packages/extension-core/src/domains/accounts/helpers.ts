@@ -4,9 +4,9 @@ import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,
-  isAccountEthereum,
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
-  isAccountPolkadot,
 } from "@talismn/keyring"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
@@ -46,9 +46,9 @@ export const sortAccounts =
   }
 
 const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
-  if (isAccountEthereum(account)) return "ethereum"
+  if (isAccountAddressEthereum(account)) return "ethereum"
   // some dapps pass only sr25519 as filter
-  if (isAccountPolkadot(account)) return "sr25519"
+  if (isAccountAddressSs58(account)) return "sr25519"
   throw new Error("Unsupported account type")
 }
 
@@ -137,8 +137,12 @@ export const isCurveCompatibleWithChain = (
 }
 
 export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
+  if (account.type === "ledger-ethereum") return false
+
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
-  return isAccountEthereum(account) ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+  return isAccountAddressEthereum(account)
+    ? chain.account === "secp256k1"
+    : chain.account !== "secp256k1"
 }
