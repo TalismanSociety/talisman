@@ -22,6 +22,7 @@ export interface SettingsStoreData {
   nftsSortBy: "floor" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
   developerMode: boolean
+  polkadotVaultSignWithProof: boolean
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   tokensSortBy: "total",
   nftsSortBy: "date",
   developerMode: false,
+  polkadotVaultSignWithProof: true,
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

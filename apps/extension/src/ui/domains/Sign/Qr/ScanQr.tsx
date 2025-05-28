@@ -66,7 +66,7 @@ export const ScanQr = <T extends Types>({
   )
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col items-center gap-2">
       <div
         className="bg-grey-900 relative overflow-hidden rounded-xl"
         style={{ width: `${size}px`, height: `${size}px` }}

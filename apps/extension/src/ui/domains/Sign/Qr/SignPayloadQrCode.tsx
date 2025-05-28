@@ -11,7 +11,9 @@ import {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "extension-core"
-import { FC } from "react"
+import { FC, useMemo } from "react"
+
+import { useSetting } from "@ui/state"
 
 import {
   POLKADOT_GENESIS_HASH,
@@ -28,9 +30,13 @@ export const SignPayloadQrCode: FC<{
   payload: SignerPayloadJSON | SignerPayloadRaw
   shortMetadata?: string
 }> = ({ account, payload, shortMetadata }) => {
+  const [embedProof] = useSetting("polkadotVaultSignWithProof")
+
+  const proof = useMemo(() => (embedProof ? shortMetadata : undefined), [embedProof, shortMetadata])
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["getQrSignPayload", account.address, JSON.stringify(payload), shortMetadata],
-    queryFn: () => getQrSignPayload(account.address, payload, shortMetadata),
+    queryKey: ["getQrSignPayload", account.address, JSON.stringify(payload), proof],
+    queryFn: () => getQrSignPayload(account.address, payload, proof),
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -47,7 +53,7 @@ const registry = new TypeRegistry()
 const getQrSignPayload = (
   address: string,
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  shortMetadata: string | undefined,
+  proof: string | undefined,
 ) => {
   if (isRawPayload(payload))
     return u8aConcat(
@@ -63,13 +69,13 @@ const getQrSignPayload = (
   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload)
   const encodedPayload = extrinsicPayload.toU8a(false)
 
-  return !!shortMetadata && !!payload.metadataHash && payload.mode === 1
+  return !!proof && !!payload.metadataHash && payload.mode === 1
     ? u8aConcat(
         PV_PREFIX_SUBSTRATE,
         PV_PREFIX_CRYPTO_SR25519,
         PV_CMD_SIGN_TX_WITH_PROOF,
         decodeAddress(address),
-        u8aToU8a(fromHex(shortMetadata)),
+        u8aToU8a(fromHex(proof)),
         u8aToU8a(encodedPayload),
         u8aToU8a(payload.genesisHash),
       )
