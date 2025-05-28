@@ -1,3 +1,29 @@
+export const PV_PREFIX_SUBSTRATE = new Uint8Array([0x53])
+export const PV_PREFIX_CRYPTO_SR25519 = new Uint8Array([0x01])
+
+// Commands for Polkadot Vault QR codes:
+// 0x00	legacy mortal transaction
+// 0x01	legacy message ? tx hash ? (not even listed in docs anymore)
+// 0x02	transaction (both mortal and immortal)
+// 0x03	message
+// 0x04	bulk transactions
+// 0x06	transaction with proof
+// 0x80	load metadata update
+// 0x81	load types update
+// 0xc1	add specs update
+// 0xde	derivations import
+export const PV_CMD_SIGN_TX_LEGACY = new Uint8Array([0x00])
+export const PV_CMD_SIGN_TX_HASH_LEGACY = new Uint8Array([0x01])
+export const PV_CMD_SIGN_TX = new Uint8Array([0x02])
+export const PV_CMD_SIGN_MESSAGE = new Uint8Array([0x03])
+export const PV_CMD_SIGN_TX_BULK = new Uint8Array([0x04])
+export const PV_CMD_SIGN_TX_WITH_PROOF = new Uint8Array([0x06])
+export const PV_CMD_SIGN_METADATA = new Uint8Array([0x80])
+export const PV_CMD_SIGN_SPEC = new Uint8Array([0xc1])
+
+export const POLKADOT_GENESIS_HASH =
+  "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+
 export const talismanRedHandSvg =
   `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy` +
   `8yMDAwL3N2ZyI+PHBhdGggZmlsbD0iI2ZkNDg0OCIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJtMzMuODc5IDM1LjExNy0uNSAxOS4xNjVjOC4xMDcgNC4xNjggMTUuNz` +

@@ -17,7 +17,6 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useChainByGenesisHash } from "@ui/state"
 
-import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
 import {
@@ -26,6 +25,7 @@ import {
   QrCodeSourceSelectorProps,
   useQrCodeSourceSelectorState,
 } from "./QrCodeSourceSelector"
+import { SignPayloadQrCode } from "./SignPayloadQrCode"
 
 type SendScanState = {
   page: "SEND"
@@ -54,6 +54,7 @@ interface Props {
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
   payload?: SignerPayloadJSON | SignerPayloadRaw
+  shortMetadata?: string
   containerId: string
   skipInit?: boolean
   narrowMargin?: boolean
@@ -66,6 +67,7 @@ export const QrSubstrate = ({
   onSignature,
   onReject,
   payload,
+  shortMetadata,
   containerId,
   // in the sign tx popup it makes sense to show an INIT state
   // in the send funds popup it does not
@@ -148,6 +150,7 @@ export const QrSubstrate = ({
             account={account}
             genesisHash={genesisHash}
             payload={payload}
+            shortMetadata={shortMetadata}
             setScanState={setScanState}
             reject={onReject}
             scanState={scanState}
@@ -250,6 +253,7 @@ const SendPage = ({
   account,
   genesisHash,
   payload,
+  shortMetadata,
   reject,
   setScanState,
   scanState,
@@ -261,6 +265,7 @@ const SendPage = ({
   account: AccountPolkadotVault
   genesisHash: HexString | null | undefined
   payload?: SignerPayloadJSON | SignerPayloadRaw
+  shortMetadata?: string
   reject?: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
   scanState: SendScanState
@@ -278,7 +283,12 @@ const SendPage = ({
             <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
           </div>
           {payload && (
-            <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
+            <SignPayloadQrCode
+              account={account}
+              // genesisHash={genesisHash}
+              payload={payload}
+              shortMetadata={shortMetadata}
+            />
           )}
         </div>
 
