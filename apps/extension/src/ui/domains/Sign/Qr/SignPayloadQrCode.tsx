@@ -36,7 +36,7 @@ export const SignPayloadQrCode: FC<{
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["getQrSignPayload", account.address, JSON.stringify(payload), proof],
-    queryFn: () => getQrSignPayload(account.address, payload, proof),
+    queryFn: () => getQrSignPayload(account, payload, proof),
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -51,7 +51,7 @@ export const SignPayloadQrCode: FC<{
 const registry = new TypeRegistry()
 
 const getQrSignPayload = (
-  address: string,
+  account: AccountPolkadotVault,
   payload: SignerPayloadJSON | SignerPayloadRaw,
   proof: string | undefined,
 ) => {
@@ -60,9 +60,9 @@ const getQrSignPayload = (
       PV_PREFIX_SUBSTRATE,
       PV_PREFIX_CRYPTO_SR25519,
       PV_CMD_SIGN_MESSAGE,
-      decodeAddress(address),
+      decodeAddress(account.address),
       wrapBytes(payload.data),
-      u8aToU8a(POLKADOT_GENESIS_HASH),
+      u8aToU8a(account.genesisHash || POLKADOT_GENESIS_HASH),
     )
 
   registry.setSignedExtensions(payload.signedExtensions)
@@ -74,8 +74,8 @@ const getQrSignPayload = (
         PV_PREFIX_SUBSTRATE,
         PV_PREFIX_CRYPTO_SR25519,
         PV_CMD_SIGN_TX_WITH_PROOF,
-        decodeAddress(address),
-        u8aToU8a(fromHex(proof)),
+        decodeAddress(account.address),
+        fromHex(proof),
         u8aToU8a(encodedPayload),
         u8aToU8a(payload.genesisHash),
       )
@@ -83,7 +83,7 @@ const getQrSignPayload = (
         PV_PREFIX_SUBSTRATE,
         PV_PREFIX_CRYPTO_SR25519,
         PV_CMD_SIGN_TX,
-        decodeAddress(address),
+        decodeAddress(account.address),
         u8aToU8a(encodedPayload),
         u8aToU8a(payload.genesisHash),
       )
