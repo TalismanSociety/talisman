@@ -54,6 +54,9 @@ export const chains = [
         url: "wss://rpc-polkadot.luckyfriday.io",
       },
       {
+        url: "wss://polkadot.rpc.permanence.io",
+      },
+      {
         url: "wss://rockx-dot.w3node.com/polka-public-dot/ws",
       },
       {
