@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.10.6
+
+### Patch Changes
+
+- 3255efb: chore: generate init data
+
 ## 0.10.5
 
 ### Patch Changes
