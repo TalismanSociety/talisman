@@ -123,7 +123,7 @@ jobs:
       - name: Run playwright tests with xvfb
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
-          pnpm exec playwright test
+          pnpm test:e2e
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

@@ -40,10 +40,10 @@
     "build:review:firefox": "bash scripts/build-review-firefox.sh",
     "lint": "pnpm run -r --parallel lint",
     "test": "pnpm run -r --parallel test",
-    "testpw": "npx playwright test",
-    "testpw:ui": "npx playwright test --ui",
-    "testpw:debug": "npx playwright test --debug",
-    "testpw:trace": "npx playwright test --trace on && npx playwright show-report",
+    "test:e2e": "pnpm exec playwright test",
+    "test:e2e:ui": "pnpm exec playwright test --ui",
+    "test:e2e:debug": "pnpm exec playwright test --debug",
+    "test:e2e:trace": "pnpm exec playwright test --trace on && pnpm exec playwright show-report",
     "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
   },
   "dependencies": {
