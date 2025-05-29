@@ -32,6 +32,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
   const nftsData$ = addresses$.pipe(
     switchMap((addresses) =>
       getQuery$({
+        // TODO understand why this keeps firing when unsubscribed
         queryKey: ["nftsData$", ...addresses].join(":"),
         queryFn: () => fetchNfts(addresses),
         refreshInterval: UPDATE_INTERVAL,
@@ -71,6 +72,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     .subscribe(subscriber)
 
   return () => {
+    //console.log("Unsubscribing from nfts$ observable")
     subOutput.unsubscribe()
     subUpdateStore.unsubscribe()
   }

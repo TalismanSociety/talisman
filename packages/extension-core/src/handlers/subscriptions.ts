@@ -31,8 +31,8 @@ export function genericSubscription<TMessageType extends MessageTypesWithSubscri
   subscriptions[id].unsubscribe = () => subscription.unsubscribe()
 
   port.onDisconnect.addListener((): void => {
-    unsubscribe(id)
     subscription.unsubscribe()
+    unsubscribe(id)
   })
 
   return true
