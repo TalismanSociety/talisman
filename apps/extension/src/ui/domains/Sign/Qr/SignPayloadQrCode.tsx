@@ -1,5 +1,4 @@
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
-//import { createSignPayload } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import { u8aConcat, u8aToU8a } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
