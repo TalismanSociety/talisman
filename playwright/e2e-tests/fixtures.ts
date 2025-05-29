@@ -39,7 +39,7 @@ export const test = base.extend<{
     const extensionId = background.url().split("/")[2]
     await utilize(extensionId)
   },
-  // goes trough onboard flow and reach portfolio page using previsous browser context
+  // goes through onboard flow and reach portfolio page using previous browser context
   onboardedPage: async ({ context, extensionId }, utilize) => {
     const page = await context.newPage()
 
@@ -64,7 +64,7 @@ export const test = base.extend<{
     await utilize(page)
   },
 
-  // add an account of the select type using both the Onboarded page and browser context which the exntenion is running
+  // add an account of the select type using both the onboarded page and browser context which the extension is running
   importAccount: async ({ onboardedPage, extensionId }, utilize) => {
     const importAccount = async ({
       type,
