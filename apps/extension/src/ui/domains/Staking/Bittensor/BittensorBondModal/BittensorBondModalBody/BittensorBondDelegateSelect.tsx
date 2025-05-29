@@ -27,10 +27,12 @@ const sortMethods: SortMethod[] = [
 ]
 
 export const BittensorBondDelegateSelect = () => {
-  const { poolId, stakeType, setStep, setPoolId } = useBittensorBondWizard()
+  const { poolId, stakeType, netuid, setStep, setPoolId } = useBittensorBondWizard()
   const [selectedPoolId, setSelectedPoolId] = useState<number | string | null>(poolId)
-  const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
+
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
+
+  const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
 
   const { t } = useTranslation()
 
@@ -38,7 +40,7 @@ export const BittensorBondDelegateSelect = () => {
     combinedValidatorsData,
     isLoading: combinedValidatorsDataLoading,
     isSupportedValidatorsError,
-  } = useCombinedBittensorValidatorsData()
+  } = useCombinedBittensorValidatorsData(netuid)
 
   const isLoading = useMemo(
     () => combinedValidatorsDataLoading && !sortedDelegators.length,
@@ -101,7 +103,7 @@ export const BittensorBondDelegateSelect = () => {
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-8">
-      <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
+      <ScrollContainerDraggableHorizontal className="flex gap-6">
         {sortMethods.map((method) => (
           <button
             key={method.label}

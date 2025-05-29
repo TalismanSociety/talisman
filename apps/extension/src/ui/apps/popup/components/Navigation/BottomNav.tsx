@@ -14,7 +14,7 @@ import { useLocation, useMatch, useNavigate } from "react-router-dom"
 
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 
 import {
@@ -87,7 +87,7 @@ export const BottomNav = () => {
     open()
   }, [open])
 
-  const { allBackedUp } = useMnemonicBackup()
+  const allBackedUp = useMnemonicsAllBackedUp()
 
   const { t } = useTranslation()
 

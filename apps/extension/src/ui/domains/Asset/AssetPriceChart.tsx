@@ -221,17 +221,36 @@ const useMarketChart = (
       if (!coingeckoId) return null
       const config = CHART_TIMESPANS[timespan]
 
-      const query = new URLSearchParams({
-        vs_currency: currency,
-        days: config.days,
-      })
+      const getMarketChart = async (
+        coingeckoId: string | null,
+        vs_currency: TokenRateCurrency,
+        days: string,
+      ): Promise<{ prices: [number, number][] }> => {
+        const query = new URLSearchParams({ vs_currency, days })
+        const url = `/api/v3/coins/${coingeckoId}/market_chart?${query.toString()}`
+        const result = await fetchFromCoingecko(url)
+        if (!result.ok) throw new Error("Failed to fetch market chart for " + coingeckoId)
+        return { prices: (await result.json())?.prices }
+      }
 
-      const result = await fetchFromCoingecko(
-        `/api/v3/coins/${coingeckoId}/market_chart?${query.toString()}`,
-      )
-      if (!result.ok) throw new Error("Failed to fetch market chart for " + coingeckoId)
+      // We support showing balances in TAO just like we support BTC/ETH/DOT, but coingecko doesn't support TAO as a vs_currency rate.
+      // We can macgyver our own TOKEN<>TAO rate by combining the TOKEN<>USD data with the TAO<>USD data.
+      if (currency === "tao") {
+        const taoUsdChart = await getMarketChart("bittensor", "usd", config.days)
+        const tokenUsdChart = await getMarketChart(coingeckoId, "usd", config.days)
 
-      return result.json() as Promise<{ prices: [number, number][] }>
+        const tokenTaoChart = tokenUsdChart.prices.map(
+          ([timestamp, price], index): [number, number] => [
+            timestamp,
+            price / (taoUsdChart.prices[index]?.[1] ?? 1),
+          ],
+        )
+
+        return { prices: tokenTaoChart }
+      }
+
+      // for any other currency, just return the result of getMarketChart
+      return getMarketChart(coingeckoId, currency, config.days)
     },
     select: (data) => {
       switch (timespan) {

@@ -105,7 +105,7 @@ export default class Tabs extends TabsHandler {
     return getPublicAccounts(
       await keyringStore.getAccounts(),
       filterAccountsByAddresses(site.addresses, anyType),
-      { includeWatchedAccounts: developerMode || isTalismanUrl(site.url) },
+      { developerMode, includePortalOnlyInfo: isTalismanUrl(site.url) },
     )
   }
 
@@ -137,7 +137,7 @@ export default class Tabs extends TabsHandler {
         const site = sites[siteId]
         if (!site || !site.addresses) return []
 
-        return this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
+        return await this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
       },
     )
   }

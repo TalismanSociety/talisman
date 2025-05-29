@@ -1,5 +1,5 @@
 import { InfoIcon } from "@talismn/icons"
-import { Account, isAccountEthereum, KnownRequestIdOnly, ProviderType } from "extension-core"
+import { Account, KnownRequestIdOnly, ProviderType } from "extension-core"
 import capitalize from "lodash/capitalize"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -12,8 +12,8 @@ import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
-import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
@@ -54,7 +54,7 @@ const NoAccountWarning = ({
 }
 
 type ConnectComponent = FC<{
-  accounts: Account[]
+  siteUrl: string
   connected: string[]
   setConnected: (connected: string[]) => void
   onNoAccountClose: (navigateToAddAccount: boolean) => () => void
@@ -65,10 +65,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const allAccounts = useAccountsForSite(authRequest?.url ?? null)
   const [connected, setConnected] = useState<string[]>([])
-
-  const ethereum = Boolean(authRequest?.request?.ethereum)
 
   useEffect(() => {
     if (!authRequest) window.close()
@@ -113,7 +110,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
 
   if (!authRequest) return null
 
-  const ConnectContentComponent: ConnectComponent = ethereum ? ConnectEth : ConnectPolkadot
+  const ConnectContentComponent: ConnectComponent = authRequest.request.ethereum
+    ? ConnectEth
+    : ConnectPolkadot
 
   return (
     <PopupLayout className={className}>
@@ -121,7 +120,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
         <AppPill url={authRequest.url} />
       </PopupHeader>
       <ConnectContentComponent
-        accounts={allAccounts}
+        siteUrl={authRequest.url}
         connected={connected}
         setConnected={setConnected}
         onNoAccountClose={onNoAccountClose}
@@ -140,12 +139,14 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
 }
 
 export const ConnectPolkadot: ConnectComponent = ({
-  accounts,
+  siteUrl,
   connected,
   setConnected,
   onNoAccountClose,
 }) => {
   const { t } = useTranslation("request")
+
+  const accounts = useInjectableAccounts(siteUrl, "polkadot")
 
   const activeAccounts = useMemo(
     () => accounts.map((acc) => [acc, connected.includes(acc.address)] as [Account, boolean]),
@@ -183,16 +184,14 @@ export const ConnectPolkadot: ConnectComponent = ({
 }
 
 export const ConnectEth: ConnectComponent = ({
-  accounts,
+  siteUrl,
   connected,
   setConnected,
   onNoAccountClose,
 }) => {
   const { t } = useTranslation("request")
 
-  const ethAccounts = useMemo(() => {
-    return accounts.filter(isAccountEthereum)
-  }, [accounts])
+  const accounts = useInjectableAccounts(siteUrl, "ethereum")
 
   return (
     <PopupContent>
@@ -207,7 +206,7 @@ export const ConnectEth: ConnectComponent = ({
           infoText={t(`Accounts will be connected via the Ethereum provider`)}
           isSingleProvider
         >
-          {ethAccounts.map((account) => (
+          {accounts.map((account) => (
             <ConnectAccountToggleButtonRow
               key={account.address}
               account={account}
@@ -216,7 +215,7 @@ export const ConnectEth: ConnectComponent = ({
             />
           ))}
         </ConnectAccountsContainer>
-        {!ethAccounts.length && (
+        {!accounts.length && (
           <NoAccountWarning
             type={"ethereum"}
             onIgnoreClick={onNoAccountClose(false)}

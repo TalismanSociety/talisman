@@ -3,7 +3,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/balances"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
-import { DEFAULT_ETH_CHAIN_ID, log } from "extension-shared"
+import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
 import {
   createClient,
@@ -170,7 +170,10 @@ export class EthTabsHandler extends TabsHandler {
       getPublicAccounts(
         await keyringStore.getAccounts(),
         filterAccountsByAddresses(site.ethAddresses),
-        { includeWatchedAccounts: await this.stores.settings.get("developerMode") },
+        {
+          developerMode: await this.stores.settings.get("developerMode"),
+          includePortalOnlyInfo: isTalismanUrl(site.url),
+        },
       )
         .filter(({ type }) => type === "ethereum")
         // send as

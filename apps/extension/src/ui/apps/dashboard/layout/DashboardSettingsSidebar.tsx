@@ -18,7 +18,7 @@ import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()
@@ -121,7 +121,7 @@ const SidebarNavItem: FC<{
 }
 
 const MnemonicNotification = () => {
-  const { allBackedUp } = useMnemonicBackup()
+  const allBackedUp = useMnemonicsAllBackedUp()
 
   return !allBackedUp ? <AlertCircleIcon className="text-alert-warn" /> : null
 }

@@ -452,6 +452,7 @@ export class EthHandler extends ExtensionHandler {
           // EvmNetwork
           id: network.id,
           isTestnet: network.isTestnet,
+          preserveGasEstimate: network.preserveGasEstimate,
           isDefault: existingNetwork?.isDefault ?? false,
           forceScan: existingNetwork?.forceScan ?? false,
           sortIndex: null,

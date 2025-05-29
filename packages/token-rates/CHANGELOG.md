@@ -1,5 +1,20 @@
 # @talismn/token-rates
 
+## 2.0.6
+
+### Patch Changes
+
+- Updated dependencies [729c4e4]
+  - @talismn/chaindata-provider@0.10.5
+
+## 2.0.5
+
+### Patch Changes
+
+- f9cf545: fix: never show NaN tao price
+- Updated dependencies [16cb27c]
+  - @talismn/chaindata-provider@0.10.4
+
 ## 2.0.4
 
 ### Patch Changes

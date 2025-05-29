@@ -34,10 +34,10 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
 
   return (
     <div className="text-body-secondary flex w-full flex-col gap-8">
-      <p className="text-body-secondary [&>b]:text-body px-8 text-xs">
+      <p className="text-body-secondary [&>strong]:text-body px-8 text-xs">
         <Trans t={t}>
-          Due to a recent Brave update (v 1.36) some balances may not display correctly. In order to
-          view your balances please disable the <b>Restrict WebSockets Pool</b> flag and relaunch
+          Brave limits the amount of networks Talisman can connect to. In order to view all your
+          balances please disable the <strong>Restrict WebSockets Pool</strong> flag and restart
           Brave.
         </Trans>
       </p>

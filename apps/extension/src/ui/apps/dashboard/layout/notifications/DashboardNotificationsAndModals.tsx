@@ -17,7 +17,6 @@ import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 
 import DashboardNotifications from "."
-import { BackupWarningModal } from "./BackupWarningModal"
 import { OnboardingToast } from "./OnboardingToast"
 
 export const DashboardNotificationsAndModals = () => {
@@ -45,7 +44,6 @@ export const DashboardNotificationsAndModals = () => {
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
       <AccountRenameModal />
-      <BackupWarningModal />
       <BondModal />
       <BittensorBondModal />
       <CopyAddressModal />

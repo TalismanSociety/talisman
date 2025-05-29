@@ -29,7 +29,6 @@ import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 
-import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
@@ -93,7 +92,6 @@ const Popup = () => {
         <AccountExportPrivateKeyModal />
         <AccountRemoveModal />
         <AccountRenameModal />
-        <BackupWarningDrawer />
         <BondModal />
         <BittensorBondModal />
         <CopyAddressModal />

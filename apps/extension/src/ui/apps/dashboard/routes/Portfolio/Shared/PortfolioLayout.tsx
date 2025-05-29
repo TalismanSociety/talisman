@@ -55,7 +55,7 @@ export const PortfolioLayout: FC<
   return (
     // "-mx-4 px-4" allows for portfolio staking badges to overflow, while keeping a consistant width limit and keep content centered
     <div className="-mx-4 w-full px-4">
-      <div className="relative flex w-full flex-col gap-6 pb-12">
+      <div className="relative flex w-full flex-col gap-6">
         <Suspense
           fallback={<SuspenseTracker name="DashboardPortfolioLayout.PortfolioAccountCheck" />}
         >

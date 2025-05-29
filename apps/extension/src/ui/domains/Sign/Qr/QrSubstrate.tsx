@@ -9,15 +9,14 @@ import {
   SignerPayloadRaw,
 } from "extension-core"
 import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
-import { ReactElement, useState } from "react"
+import { ReactElement, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, Checkbox, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useChainByGenesisHash } from "@ui/state"
+import { useChainByGenesisHash, useSetting } from "@ui/state"
 
-import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
 import {
@@ -26,6 +25,7 @@ import {
   QrCodeSourceSelectorProps,
   useQrCodeSourceSelectorState,
 } from "./QrCodeSourceSelector"
+import { SignPayloadQrCode } from "./SignPayloadQrCode"
 
 type SendScanState = {
   page: "SEND"
@@ -54,6 +54,7 @@ interface Props {
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject?: () => void // will display a cancel button only if this is provided
   payload?: SignerPayloadJSON | SignerPayloadRaw
+  shortMetadata?: string
   containerId: string
   skipInit?: boolean
   narrowMargin?: boolean
@@ -66,6 +67,7 @@ export const QrSubstrate = ({
   onSignature,
   onReject,
   payload,
+  shortMetadata,
   containerId,
   // in the sign tx popup it makes sense to show an INIT state
   // in the send funds popup it does not
@@ -148,6 +150,7 @@ export const QrSubstrate = ({
             account={account}
             genesisHash={genesisHash}
             payload={payload}
+            shortMetadata={shortMetadata}
             setScanState={setScanState}
             reject={onReject}
             scanState={scanState}
@@ -250,6 +253,7 @@ const SendPage = ({
   account,
   genesisHash,
   payload,
+  shortMetadata,
   reject,
   setScanState,
   scanState,
@@ -261,6 +265,7 @@ const SendPage = ({
   account: AccountPolkadotVault
   genesisHash: HexString | null | undefined
   payload?: SignerPayloadJSON | SignerPayloadRaw
+  shortMetadata?: string
   reject?: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
   scanState: SendScanState
@@ -270,19 +275,43 @@ const SendPage = ({
   containerId: string
 }) => {
   const { t } = useTranslation("request")
+  const [embedProof, setEmbedProof] = useSetting("polkadotVaultSignWithProof")
+
+  const canSignWithProof = useMemo(
+    () => !!shortMetadata && !!chain?.hasCheckMetadataHash,
+    [chain?.hasCheckMetadataHash, shortMetadata],
+  )
+
+  const signWithProof = useMemo(
+    () => canSignWithProof && embedProof,
+    [canSignWithProof, embedProof],
+  )
+
   return (
     <>
-      <div className="flex h-full flex-col items-center justify-end">
+      <div className="flex h-full flex-col items-center justify-end gap-6">
         <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-12">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
           </div>
           {payload && (
-            <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
+            <SignPayloadQrCode account={account} payload={payload} shortMetadata={shortMetadata} />
           )}
         </div>
+        <div>
+          <Checkbox
+            onChange={(e) => setEmbedProof(e.target.checked)}
+            checked={!!embedProof}
+            className={classNames(
+              "text-body-secondary hover:text-body gap-8! text-sm",
+              !canSignWithProof && "invisible",
+            )}
+          >
+            {t("I use Polkadot Vault v7.0 or later")}
+          </Checkbox>
+        </div>
 
-        <div className="text-body-secondary mb-10 mt-14 max-w-md text-center leading-10">
+        <div className="text-body-secondary max-w-md text-center text-sm leading-10">
           <Trans t={t}>
             Scan the QR code with the
             <br />
@@ -302,7 +331,8 @@ const SendPage = ({
               </button>
               <button
                 type="button"
-                className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full px-6 py-4 text-sm font-light"
+                disabled={signWithProof}
+                className="bg-primary/10 text-primary enabled:hover:bg-primary/20 inline-block rounded-full px-6 py-4 text-sm font-light disabled:opacity-50"
                 onClick={() => setScanState({ page: "UPDATE_METADATA" })}
               >
                 {t("Update Metadata")}
@@ -310,7 +340,10 @@ const SendPage = ({
             </div>
             <button
               type="button"
-              className="text-grey-200 mt-8 text-xs font-light hover:text-white"
+              className={classNames(
+                "text-grey-200 mt-4 text-xs font-light hover:text-white",
+                signWithProof && "invisible",
+              )}
               onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
             >
               {t("Still seeing an error?")}

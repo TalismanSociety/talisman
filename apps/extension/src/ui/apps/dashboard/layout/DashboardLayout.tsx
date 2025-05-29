@@ -25,7 +25,7 @@ export const DashboardLayout: FC<{
       <div className="relative mx-auto w-full max-w-[144rem]">
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           {/* Sidebar */}
-          <div className="w-[29.6rem] shrink-0 overflow-hidden">
+          <div className="w-[29.6rem] shrink-0 pb-20">
             <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
               <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
               <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
@@ -36,21 +36,23 @@ export const DashboardLayout: FC<{
             </Suspense>
           </div>
           {/* Main area */}
-          <div className="flex grow flex-col items-center overflow-hidden pb-20">
-            <div className="flex h-48 w-full shrink-0 items-center justify-center">
-              <HorizontalNav />
-            </div>
-            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
-              <div
-                className={classNames(
-                  // minimum width is automatically set by the horizontal nav bar which never shrinks
-                  "animate-fade-in w-full grow",
-                )}
-              >
-                <LayoutBreadcrumb />
-                {children}
+          <div className="grow pb-20">
+            <div className="flex w-full flex-col items-center">
+              <div className="flex h-48 w-full shrink-0 items-center justify-center">
+                <HorizontalNav />
               </div>
-            </Suspense>
+              <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Content" />}>
+                <div
+                  className={classNames(
+                    // minimum width is automatically set by the horizontal nav bar which never shrinks
+                    "animate-fade-in w-full grow",
+                  )}
+                >
+                  <LayoutBreadcrumb />
+                  {children}
+                </div>
+              </Suspense>
+            </div>
           </div>
         </div>
       </div>

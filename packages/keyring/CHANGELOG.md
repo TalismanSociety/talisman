@@ -1,5 +1,20 @@
 # @talismn/keyring
 
+## 1.0.0
+
+### Major Changes
+
+- 3b10752: refactor utils names
+
+### Minor Changes
+
+- 3b10752: add curve property on ledger-polkadot accounts
+
+### Patch Changes
+
+- Updated dependencies [3b10752]
+  - @talismn/crypto@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

@@ -272,8 +272,9 @@ export const watchSubstrateTransaction = async (
       async (result, blockNumber, extIndex, finalized) => {
         const type: NotificationType = result === "included" ? "submitted" : result
 
-        // if subscanUrl doesnt exist, the link will not work, but we still need an url for the notification
-        const url = urlJoin(chain.subscanUrl ?? "", "extrinsic", `${blockNumber}-${extIndex}`)
+        const url = chain.subscanUrl
+          ? urlJoin(chain.subscanUrl, "extrinsic", `${blockNumber}-${extIndex}`)
+          : chrome.runtime.getURL("dashboard.html#/tx-history")
 
         if (withNotifications) createNotification(type, chain.name ?? "chain", url)
 

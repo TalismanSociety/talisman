@@ -23,12 +23,12 @@ export const BraveWarningCard = ({ className, onLearnMoreClick }: Props) => {
       }
       description={
         <span className="text-body-secondary text-sm">
-          {t("Due to a recent update, users may be experiencing issues loading balances.")}
+          {t("By default, Brave prevents Talisman from loading all your balances.")}
         </span>
       }
       cta={
         <Button className="w-full" onClick={onLearnMoreClick}>
-          {t("Learn more")}
+          {t("Learn how to fix")}
         </Button>
       }
     />

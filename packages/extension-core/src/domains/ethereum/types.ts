@@ -169,6 +169,7 @@ export type RequestUpsertCustomEvmNetwork = {
   tokenDecimals: number
   tokenCoingeckoId: string | null
   tokenLogoUrl: string | null
+  preserveGasEstimate: boolean
 }
 
 export interface EthMessages {

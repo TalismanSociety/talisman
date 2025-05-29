@@ -33,6 +33,7 @@ type TogglePillProps = {
   defaultChecked?: boolean
   onChange: (checked: boolean) => void
   className?: string
+  disabled?: boolean
 }
 
 export const TogglePill: FC<TogglePillProps> = ({
@@ -41,6 +42,7 @@ export const TogglePill: FC<TogglePillProps> = ({
   defaultChecked,
   onChange,
   className,
+  disabled,
 }) => {
   const [isChecked, setIsChecked] = useState(() => checked ?? defaultChecked ?? false)
 
@@ -65,6 +67,7 @@ export const TogglePill: FC<TogglePillProps> = ({
       onClick={handleClick}
       size="xs"
       className={className}
+      disabled={disabled}
     >
       {label}
     </PillButton>

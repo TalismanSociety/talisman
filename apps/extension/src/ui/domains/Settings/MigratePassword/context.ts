@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useMnemonicBackup } from "@ui/hooks/useMnemonicBackup"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useMnemonics, useSetting } from "@ui/state"
 
@@ -19,7 +19,7 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const [error, setError] = useState<Error>()
   const [useErrorTracking] = useSetting("useErrorTracking")
   const { setStatus, status, message } = useStatus()
-  const { allBackedUp, confirm } = useMnemonicBackup()
+  const allBackedUp = useMnemonicsAllBackedUp()
   const mnemonics = useMnemonics()
 
   // assume that if password has not been migrated yet, there is only one mnemonic
@@ -40,8 +40,8 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const hasNewPassword = !!newPassword
 
   const setMnemonicBackupConfirmed = useCallback(async () => {
-    mnemonicId && !allBackedUp && (await confirm(mnemonicId))
-  }, [confirm, allBackedUp, mnemonicId])
+    mnemonicId && !allBackedUp && (await api.mnemonicConfirm(mnemonicId, true))
+  }, [allBackedUp, mnemonicId])
 
   const migratePassword = useCallback(async () => {
     if ((passwordTrimmed && !newPassword) || !password || !allBackedUp) return

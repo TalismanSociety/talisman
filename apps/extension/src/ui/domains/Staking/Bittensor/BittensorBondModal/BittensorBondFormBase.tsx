@@ -388,14 +388,27 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           )}
         </div>
       </div>
+
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
-        <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{t("Select Validator")}</div>
-          <div className="text-body truncate">
-            <BittensorDelegatorNameButton poolId={poolId} />
+        <div
+          className={classNames(
+            "flex gap-8",
+            stakeType === "subnet" ? "flex-col-reverse" : "flex-col",
+          )}
+        >
+          <div className="flex items-center justify-between gap-6">
+            <div className="whitespace-nowrap">{t("Select Validator")}</div>
+            <div className="text-body truncate">
+              <BittensorDelegatorNameButton
+                poolId={poolId}
+                isDisabled={stakeType === "subnet" && !netuid}
+              />
+            </div>
           </div>
+          <>
+            <BondTypeDetails />
+          </>
         </div>
-        <BondTypeDetails />
         {isSubnetUnbond && (
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated Amount")} </div>

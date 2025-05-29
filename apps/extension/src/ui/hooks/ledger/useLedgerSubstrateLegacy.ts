@@ -1,7 +1,8 @@
 import { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
-import { SubstrateApp, supportedApps } from "@zondax/ledger-substrate"
+import { SubstrateApp } from "@zondax/ledger-substrate"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
   AccountLedgerPolkadot,
   isJsonPayload,
@@ -73,13 +74,15 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
       account: AccountLedgerPolkadot,
       registry: TypeRegistry,
     ) => {
+      if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
+
       return withLedger((ledger) =>
         isJsonPayload(payload)
-          ? signJsonPayload(ledger, payload, account, registry)
-          : signRawPayload(ledger, payload, account),
+          ? signJsonPayload(ledger, app, payload, account, registry)
+          : signRawPayload(ledger, app, payload, account),
       )
     },
-    [withLedger],
+    [app, withLedger],
   )
 
   return {
@@ -114,6 +117,7 @@ const getAccountAddress = async (
 
 const signJsonPayload = async (
   ledger: SubstrateApp,
+  app: SubstrateAppParams,
   payload: SignerPayloadJSON,
   account: AccountLedgerPolkadot,
   registry: TypeRegistry,
@@ -125,7 +129,7 @@ const signJsonPayload = async (
       "This network requires the Polkadot Generic app",
     )
 
-  await checkAppAndDevice(account, ledger)
+  await checkAppAndDevice(account, ledger, app)
 
   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
     version: payload.version,
@@ -148,6 +152,7 @@ const signJsonPayload = async (
 
 const signRawPayload = async (
   ledger: SubstrateApp,
+  app: SubstrateAppParams,
   payload: SignerPayloadRaw,
   account: AccountLedgerPolkadot,
 ) => {
@@ -158,7 +163,7 @@ const signRawPayload = async (
       t("The message is too long to be signed with Ledger."),
     )
 
-  await checkAppAndDevice(account, ledger)
+  await checkAppAndDevice(account, ledger, app)
 
   const { accountIndex, change, addressOffset } = getAccountSpecs(account)
   const { address } = await ledger.getAddress(accountIndex, change, addressOffset)
@@ -188,13 +193,11 @@ const getAccountSpecs = (account: AccountLedgerPolkadot) => ({
   addressOffset: LEDGER_HARDENED_OFFSET + (account.addressOffset ?? 0),
 })
 
-const checkAppAndDevice = async (account: AccountLedgerPolkadot, ledger: SubstrateApp) => {
-  const app = supportedApps.find((a) => a.name === account.app)
-  if (!app)
-    throw getTalismanLedgerError(
-      t("Could not find which Ledger app can be used with this account. Please contact support."),
-    )
-
+const checkAppAndDevice = async (
+  account: AccountLedgerPolkadot,
+  ledger: SubstrateApp,
+  app: SubstrateAppParams,
+) => {
   if (ledger.cla !== app.cla) throw getOpenLedgerAppError(app.name)
 
   const { accountIndex, change, addressOffset } = getAccountSpecs(account)

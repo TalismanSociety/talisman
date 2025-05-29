@@ -77,11 +77,13 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   containerId,
   payload,
   txInfo,
+  txMetadata,
   onSubmitted,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
+  const shortMetadata = useMemo(() => (txMetadata ? toHex(txMetadata) : undefined), [txMetadata])
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
@@ -109,6 +111,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         containerId={containerId ?? "main"}
         genesisHash={payload?.genesisHash}
         payload={payload}
+        shortMetadata={shortMetadata}
         account={account as AccountPolkadotVault}
         onSignature={handleSigned}
       />

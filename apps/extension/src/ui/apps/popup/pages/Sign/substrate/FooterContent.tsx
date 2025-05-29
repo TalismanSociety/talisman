@@ -73,6 +73,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
               <Suspense fallback={null}>
                 <QrSubstrate
                   payload={payload}
+                  shortMetadata={shortMetadata}
                   account={account}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveQr}

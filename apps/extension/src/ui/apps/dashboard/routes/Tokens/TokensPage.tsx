@@ -271,10 +271,9 @@ const Content = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
-  const [includeTestnets, setIncludeTestnets] = useState(false)
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets })
-  const tokens = useTokens({ activeOnly: false, includeTestnets })
+  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: true })
+  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
+  const tokens = useTokens()
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(true)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
@@ -283,11 +282,10 @@ const Content = () => {
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
   const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
-  const toggleShowTestnets = useCallback(() => setIncludeTestnets((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
     return [
-      { id: "ALL", name: "All networks" } as SimpleEvmNetwork,
+      { id: "ALL", name: "All active networks" } as SimpleEvmNetwork,
       ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
   }, [evmNetworks])
@@ -304,9 +302,11 @@ const Content = () => {
     const result = tokens
       .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
       .filter((t) => !!t.evmNetwork?.id && evmNetworksMap[t.evmNetwork.id])
-      .filter((t) => !isActiveOnly || isTokenActive(t, activeTokens))
-      .filter((t) => !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t))
-      .filter((t) => !isHidePools || !isUniswapV2Token(t))
+      .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
+      .filter(
+        (t) => !!search || !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t),
+      )
+      .filter((t) => !!search || !isHidePools || !isUniswapV2Token(t))
       .filter((t) => evmNetworkId === "ALL" || t.evmNetwork?.id === evmNetworkId)
 
     return sortBy(
@@ -314,7 +314,16 @@ const Content = () => {
       (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
       (t) => t.symbol,
     )
-  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])
+  }, [
+    activeTokens,
+    evmNetworkId,
+    evmNetworksMap,
+    isActiveOnly,
+    isCustomOnly,
+    isHidePools,
+    search,
+    tokens,
+  ])
 
   const displayTokens = useMemo(() => {
     const lowerSearch = search.trim().toLowerCase()
@@ -383,13 +392,23 @@ const Content = () => {
             {t("Reset active states")}
           </PillButton>
         </div>
-        <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
-        <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
-        <TogglePill label={t("Enable pools")} checked={!isHidePools} onChange={toggleIsHidePools} />
         <TogglePill
-          label={t("Show testnets")}
-          checked={includeTestnets}
-          onChange={toggleShowTestnets}
+          label={t("Active only")}
+          checked={isActiveOnly}
+          onChange={toggleIsActiveOnly}
+          disabled={!!search}
+        />
+        <TogglePill
+          label={t("Custom only")}
+          checked={isCustomOnly}
+          onChange={toggleIsCustomOnly}
+          disabled={!!search}
+        />
+        <TogglePill
+          label={t("Enable pools")}
+          checked={!isHidePools}
+          onChange={toggleIsHidePools}
+          disabled={!!search}
         />
       </div>
       <Spacer />

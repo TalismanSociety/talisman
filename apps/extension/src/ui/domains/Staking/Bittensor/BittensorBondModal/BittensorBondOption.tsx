@@ -41,6 +41,7 @@ export const BittensorBondOption = ({
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const isSelected = option.poolId === selectedPoolId
+
   return (
     <button
       key={option.poolId}

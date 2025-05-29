@@ -10,7 +10,7 @@ import { useSubstrateBalance } from "./useSubstrateBalance"
 type EvmProps = {
   type: "evm"
   networkId: number
-  address: `0x${string}`
+  address: string
   tokenAddress?: `0x${string}`
 }
 
@@ -67,7 +67,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
       // native token
       if (!props.tokenAddress || props.tokenAddress === zeroAddress) {
         setEvmBalance(undefined)
-        const balance = await client.getBalance({ address: props.address })
+        const balance = await client.getBalance({ address: props.address as `0x${string}` })
         if (abortController.signal.aborted) return
 
         setEvmBalance(
@@ -85,7 +85,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
             abi: erc20Abi,
             functionName: "balanceOf",
             address: props.tokenAddress!,
-            args: [props.address],
+            args: [props.address as `0x${string}`],
           },
           {
             abi: erc20Abi,

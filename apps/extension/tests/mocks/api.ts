@@ -62,6 +62,7 @@ const mockedApiMethods = {
       {
         type: "ledger-polkadot",
         address: ADDRESSES.ALICE,
+        curve: "ed25519",
         name: "Substrate Ledger",
         app: "polkadot",
         accountIndex: 0,

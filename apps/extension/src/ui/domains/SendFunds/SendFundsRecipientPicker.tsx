@@ -1,7 +1,14 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { isAddressEqual } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { Account, Chain, isAccountCompatibleWithChain, isAccountPortfolio } from "extension-core"
+import {
+  Account,
+  Chain,
+  isAccountCompatibleWithChain,
+  isAccountPlatformEthereum,
+  isAccountPortfolio,
+} from "extension-core"
 import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -14,6 +21,7 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts, useChain, useToken } from "@ui/state"
+import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -107,8 +115,17 @@ export const SendFundsRecipientPicker = () => {
 
   const isValidAddressInput = useMemo(() => {
     if (!from) return isValidAddress(search)
+
+    // dont allow using a pasted address of an account that we know cant use target chain
+    const account =
+      isValidAddress(search) && allAccounts.find((acc) => isAddressEqual(acc.address, search))
+    if (account) {
+      if (chain) return isAccountCompatibleWithChain(chain, account)
+      if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+    }
+
     return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
-  }, [from, isFromEthereum, search])
+  }, [allAccounts, chain, from, isFromEthereum, search, token])
 
   /**
    * Check if the search input is a valid Substrate address for the current chain.
@@ -220,8 +237,11 @@ export const SendFundsRecipientPicker = () => {
     () =>
       allAccounts
         .filter((account) => normalize(account.address) !== normalizedFrom)
-        .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
-        .filter((account) => !chain || isAccountCompatibleWithChain(chain, account))
+        .filter((account) => {
+          if (chain) return isAccountCompatibleWithChain(chain, account)
+          if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+          return false
+        })
         .filter(
           (account) =>
             !search ||
@@ -233,14 +253,14 @@ export const SendFundsRecipientPicker = () => {
       allAccounts,
       normalize,
       normalizedFrom,
-      isFromEthereum,
+      chain,
+      token,
       search,
       isValidAddressInput,
       normalizedSearch,
       isNsLookup,
       nsLookup,
       normalizedNsLookup,
-      chain,
     ],
   )
 
