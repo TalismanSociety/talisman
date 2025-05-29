@@ -11,6 +11,7 @@ import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
+import { MonadAnimation } from "./animations/monad/MonadAnimation"
 import { PopupTokenBalances } from "./PopupTokenBalances"
 import { useAssetDetails } from "./useAssetDetails"
 
@@ -79,6 +80,7 @@ export const PopupAssetDetails: FC<{
           <PopupTokenBalances key={tokenId} tokenId={tokenId} balances={bal} />
         ))}
       </div>
+      {symbol === "MON" && <MonadAnimation />}
     </FadeIn>
   )
 }

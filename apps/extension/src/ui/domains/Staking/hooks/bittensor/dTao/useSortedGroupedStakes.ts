@@ -9,8 +9,8 @@ import { useMemo } from "react"
 
 import { useTokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 import { calculateTaoFromAlphaStaked } from "@ui/domains/Portfolio/utils/subtensor"
-import { CHAIN_INFO } from "@ui/domains/Staking/Bittensor/constants"
-import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/sortGroupedStakes"
+import { CHAIN_INFO } from "@ui/domains/Staking/Bittensor/utils/constants"
+import { sortGroupedStakes } from "@ui/domains/Staking/Bittensor/utils/sortGroupedStakes"
 import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 import { useCombinedSubnetData } from "./useCombinedSubnetData"

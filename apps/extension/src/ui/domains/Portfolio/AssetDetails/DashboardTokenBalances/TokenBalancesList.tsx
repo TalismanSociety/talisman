@@ -8,6 +8,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
+import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { UseTokenReturnType } from "@ui/state"
@@ -32,8 +33,9 @@ type TokenBalancesListProps = {
   children: ReactNode
   symbol: string
   shouldDisplayActionBtns?: boolean
-  shouldDisplayStakeBtn?: boolean // TODO: This prop should be removed once dTao stake is implemented
   shouldDisplayTotalAvailableBalance?: boolean
+  stakeType?: StakeType
+  netuid?: number
 }
 
 export const TokenBalancesList = ({
@@ -51,8 +53,9 @@ export const TokenBalancesList = ({
   children,
   symbol,
   shouldDisplayActionBtns = true,
-  shouldDisplayStakeBtn = true,
   shouldDisplayTotalAvailableBalance = true,
+  stakeType,
+  netuid,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -109,9 +112,14 @@ export const TokenBalancesList = ({
           />
         </div>
         <div className="flex items-center justify-end">
-          {tokenId && shouldDisplayStakeBtn && (
+          {tokenId && (
             <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
-              <BondButton tokenId={tokenId} balances={balances} />
+              <BondButton
+                tokenId={tokenId}
+                balances={balances}
+                stakeType={stakeType}
+                netuid={netuid}
+              />
             </div>
           )}
           <AssetBalanceCellValue

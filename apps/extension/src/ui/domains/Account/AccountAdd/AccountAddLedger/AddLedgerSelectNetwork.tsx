@@ -147,6 +147,7 @@ export const AddLedgerSelectNetwork = () => {
   const [platform, chainId, substrateAppType] = watch(["platform", "chainId", "substrateAppType"])
 
   const chain = useLedgerSubstrateChain(chainId ?? (defaultValues.chainId as string))
+  const curve = useMemo(() => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"), [chain])
 
   const submit = useCallback(
     async ({ platform, chainId, substrateAppType }: FormData) => {
@@ -187,7 +188,7 @@ export const AddLedgerSelectNetwork = () => {
   const showConnect = platform === "ethereum" || (platform === "polkadot" && substrateAppType)
 
   return (
-    <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
+    <form className="flex flex-col" onSubmit={handleSubmit(submit)}>
       <div>
         <HeaderBlock
           title={t("Connect Ledger")}
@@ -293,12 +294,14 @@ export const AddLedgerSelectNetwork = () => {
 
               {substrateAppType === AddSubstrateLedgerAppType.Generic && (
                 <ConnectLedgerSubstrateGeneric
+                  curve={curve}
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
               {substrateAppType === AddSubstrateLedgerAppType.Migration && (
                 <ConnectLedgerSubstrateGeneric
+                  curve={curve}
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                   legacyAppName={chain?.ledgerAppName}

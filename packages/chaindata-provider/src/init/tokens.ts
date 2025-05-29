@@ -375,6 +375,40 @@ export const tokens = [
     coingeckoId: "mythos",
   },
   {
+    id: "polkadot-asset-hub-substrate-foreignassets-usdc.e",
+    type: "substrate-foreignassets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "USDC.e",
+    decimals: 6,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/usd-coin.webp",
+    existentialDeposit: "10000",
+    onChainId:
+      '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}}]}}',
+    isFrozen: false,
+    chain: {
+      id: "polkadot-asset-hub",
+    },
+    coingeckoId: "usd-coin",
+  },
+  {
+    id: "polkadot-asset-hub-substrate-foreignassets-usdt.e",
+    type: "substrate-foreignassets",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "USDT.e",
+    decimals: 6,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/tether.webp",
+    existentialDeposit: "10000",
+    onChainId:
+      '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xdac17f958d2ee523a2206206994597c13d831ec7"}}]}}',
+    isFrozen: false,
+    chain: {
+      id: "polkadot-asset-hub",
+    },
+    coingeckoId: "tether",
+  },
+  {
     id: "polkadot-asset-hub-substrate-foreignassets-vdot",
     type: "substrate-foreignassets",
     isTestnet: false,

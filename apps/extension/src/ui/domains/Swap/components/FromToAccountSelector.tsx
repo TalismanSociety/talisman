@@ -1,9 +1,10 @@
-import { isBitcoinAddress } from "@talismn/crypto"
-import { isAccountOwned } from "extension-core"
+import { isAddressEqual, isBitcoinAddress, isEthereumAddress } from "@talismn/crypto"
+import { isAccountOwned, isAccountPlatformEthereum } from "extension-core"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isAddress as isEvmAddress } from "viem"
+
+import { useAccounts } from "@ui/state"
 
 import {
   fromAddressAtom,
@@ -54,6 +55,7 @@ export const FromToAccountSelector = () => {
 const FromAccount = () => {
   const { t } = useTranslation()
 
+  const allAccounts = useAccounts()
   const fromAsset = useAtomValue(fromAssetAtom)
   const fromAddress = useAtomValue(fromAddressAtom)
   const [fromEvmAddress, setFromEvmAddress] = useAtom(fromEvmAddressAtom)
@@ -65,15 +67,28 @@ const FromAccount = () => {
     (address: string | null) => {
       if (!address) return
 
-      if (isEvmAddress(address)) {
+      const setAsEthereum = () => {
         if (fromEvmAddress === toEvmAddress) setToEvmAddress(address)
-        return setFromEvmAddress(address)
+        setFromEvmAddress(address)
+      }
+      const setAsPolkadot = () => {
+        if (fromSubstrateAddress === toSubstrateAddress) setToSubstrateAddress(address)
+        setFromSubstrateAddress(address)
       }
 
-      if (fromSubstrateAddress === toSubstrateAddress) setToSubstrateAddress(address)
-      setFromSubstrateAddress(address)
+      // if address is in keyring, check platform
+      const account = allAccounts.find((account) => isAddressEqual(account.address, address))
+      if (account) {
+        if (isAccountPlatformEthereum(account)) return setAsEthereum()
+        else return setAsPolkadot()
+      }
+
+      // if address is not in keyring, check address format
+      if (isEthereumAddress(address)) return setAsEthereum()
+      else return setAsPolkadot()
     },
     [
+      allAccounts,
       fromEvmAddress,
       fromSubstrateAddress,
       setFromEvmAddress,
@@ -92,6 +107,7 @@ const FromAccount = () => {
       <SeparatedAccountSelector
         title={t("Sender")}
         subtitle={t("From")}
+        asset={fromAsset}
         accountsType={assetAccountsType(fromAsset)}
         disableBtc
         substrateAccountPrefix={0}
@@ -107,6 +123,7 @@ const FromAccount = () => {
 const ToAccount = () => {
   const { t } = useTranslation()
 
+  const allAccounts = useAccounts()
   const toAsset = useAtomValue(toAssetAtom)
   const toAddress = useAtomValue(toAddressAtom)
   const setEvmAddress = useSetAtom(toEvmAddressAtom)
@@ -123,10 +140,19 @@ const ToAccount = () => {
       }
 
       if (isBitcoinAddress(address)) return setBtcAddress(address)
-      if (isEvmAddress(address)) return setEvmAddress(address)
-      setSubstrateAddress(address)
+
+      // if address is in keyring, check platform
+      const account = allAccounts.find((account) => isAddressEqual(account.address, address))
+      if (account) {
+        if (isAccountPlatformEthereum(account)) return setEvmAddress(address)
+        else return setSubstrateAddress(address)
+      }
+
+      // if address is not in keyring, check address format
+      if (isEthereumAddress(address)) return setEvmAddress(address)
+      else return setSubstrateAddress(address)
     },
-    [setBtcAddress, setEvmAddress, setSubstrateAddress],
+    [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress],
   )
 
   return (
@@ -138,6 +164,7 @@ const ToAccount = () => {
         subtitle={t("To")}
         allowInput
         allowZeroBalance
+        asset={toAsset}
         accountsType={assetAccountsType(toAsset)}
         substrateAccountPrefix={0}
         substrateAccountsFilter={isAccountOwned}

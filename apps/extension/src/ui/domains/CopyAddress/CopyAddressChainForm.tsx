@@ -177,6 +177,9 @@ export const CopyAddressChainForm = () => {
         (c) => !isAccountLedgerPolkadotGeneric(account) || c.hasCheckMetadataHash,
       )
       .sort((a, b) => {
+        if (a.id === "polkadot") return -1
+        if (b.id === "polkadot") return 1
+
         if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
           return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
         return (a.name ?? "").localeCompare(b.name ?? "")

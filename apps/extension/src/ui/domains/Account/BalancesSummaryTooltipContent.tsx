@@ -10,14 +10,16 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 
-export const BalancesSummaryTooltipContent: FC<{ balances: Balances }> = ({ balances }) => {
+export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | undefined }> = ({
+  balances,
+}) => {
   const { t } = useTranslation()
   const tokens = useTokensMap()
   const evmNetworks = useEvmNetworksMap()
   const chains = useChainsMap()
 
   const tokenBalances = useMemo(() => {
-    const positiveBalances = balances.each.filter((b) => b.total.planck > 0)
+    const positiveBalances = (balances ?? new Balances([])).each.filter((b) => b.total.planck > 0)
     // dedupe by asset in case there are entries for staking
     const tokenIds = [...new Set(positiveBalances.map((b) => b.tokenId))]
 

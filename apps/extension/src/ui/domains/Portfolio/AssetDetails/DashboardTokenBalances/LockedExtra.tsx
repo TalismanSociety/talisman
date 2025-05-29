@@ -5,7 +5,6 @@ import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
@@ -13,13 +12,14 @@ import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
 type LockedExtraProps = {
+  netuid?: number
   tokenId: TokenId
   address?: string
   isLoading: boolean
   rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string; netuid?: number }
 }
 
-export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtraProps) => {
+export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: LockedExtraProps) => {
   const { t } = useTranslation()
   const { data } = useNomPoolStakingStatus(tokenId)
   const { selectedAccount } = usePortfolioNavigation()
@@ -47,11 +47,6 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
     [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
   )
 
-  const isExternalUnbond = useMemo(
-    () => tokenId === "bittensor-substrate-native" && rowMeta.netuid !== ROOT_NETUID,
-    [rowMeta.netuid, tokenId],
-  )
-
   if (!rowAddress) return null
 
   return (
@@ -76,11 +71,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
         )
       ) : canUnbond ? (
         <UnbondButton
+          netuid={netuid}
           tokenId={tokenId}
           address={rowAddress}
           variant="large"
           poolId={rowMeta.poolId ?? rowMeta.hotkey}
-          isExternalUnbond={isExternalUnbond}
+          isBittensorUnbond={tokenId === "bittensor-substrate-native"}
         />
       ) : null}
     </div>

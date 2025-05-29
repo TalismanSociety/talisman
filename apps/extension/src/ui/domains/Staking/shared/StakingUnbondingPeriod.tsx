@@ -1,7 +1,7 @@
 import { ChainId } from "extension-core"
 import { FC } from "react"
 
-import { BittensorUnbondingPeriod } from "../Bittensor/BittensorUnbondingPeriod"
+import { BittensorUnbondingPeriod } from "../Bittensor/BittensorBondModal/BittensorUnbondingPeriod"
 import { NomPoolUnbondingPeriod } from "../NominationPools/NomPoolUnbondingPeriod"
 
 export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }> = ({

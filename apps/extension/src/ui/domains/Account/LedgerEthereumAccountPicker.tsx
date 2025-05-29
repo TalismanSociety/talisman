@@ -1,5 +1,5 @@
 import { isNotNil } from "@talismn/util"
-import { getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "extension-core"
+import { Account, getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -8,7 +8,7 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useEvmNetworks } from "@ui/state"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
@@ -110,10 +110,18 @@ const useLedgerEthereumAccounts = (
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
-  const balanceDefs = useMemo<AccountImportDef[]>(
+  const balanceDefs = useMemo(
     () =>
       withBalances && derivedAccounts.filter(isNotNil).length === itemsPerPage
-        ? derivedAccounts.filter(isNotNil).map(({ address }) => ({ address, curve: "ethereum" }))
+        ? derivedAccounts.filter(isNotNil).map(
+            ({ address }): Account => ({
+              type: "ledger-ethereum",
+              address,
+              name: "",
+              createdAt: Date.now(),
+              derivationPath: "",
+            }),
+          )
         : [],
     [derivedAccounts, itemsPerPage, withBalances],
   )

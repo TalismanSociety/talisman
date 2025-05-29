@@ -1,5 +1,5 @@
 import { InfoIcon } from "@talismn/icons"
-import { Account, isAccountEthereum } from "extension-core"
+import { Account, isAccountAddressEthereum } from "extension-core"
 import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -15,13 +15,13 @@ export const ConnectedAccountsPolkadot: FC<{
   const { t } = useTranslation()
 
   const hasEthereumActiveAccounts = useMemo(
-    () => activeAccounts.some((acc) => isAccountEthereum(acc[0]) && acc[1]),
+    () => activeAccounts.some((acc) => isAccountAddressEthereum(acc[0]) && acc[1]),
     [activeAccounts],
   )
   const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
 
   const displayedAccounts = useMemo(
-    () => activeAccounts.filter(([acc]) => enableEvmAccounts || !isAccountEthereum(acc)),
+    () => activeAccounts.filter(([acc]) => enableEvmAccounts || !isAccountAddressEthereum(acc)),
     [activeAccounts, enableEvmAccounts],
   )
 
@@ -50,7 +50,7 @@ export const ConnectedAccountsPolkadot: FC<{
       if (enabled) {
         onUpdateAccounts(
           activeAccounts
-            .filter(([acc, isConnected]) => !isAccountEthereum(acc) && isConnected)
+            .filter(([acc, isConnected]) => !isAccountAddressEthereum(acc) && isConnected)
             .map(([a]) => a.address),
         )
       }
@@ -66,7 +66,7 @@ export const ConnectedAccountsPolkadot: FC<{
           onClick={handleToggleEvmAccounts}
           childProps={{ className: "flex items-center gap-2" }}
         >
-          {t("EVM accounts")}{" "}
+          {t("Ethereum accounts")}{" "}
           <Tooltip>
             <TooltipTrigger>
               <InfoIcon />

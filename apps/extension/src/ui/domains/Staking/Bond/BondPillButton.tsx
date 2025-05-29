@@ -5,7 +5,7 @@ import { Balances } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useBondButton } from "./useBondButton"
+import { useBondButton } from "./hooks/useBondButton"
 
 export const BondPillButton: FC<{
   tokenId: TokenId

@@ -1,5 +1,5 @@
 import { BalanceJson, Balances } from "@talismn/balances"
-import { isAccountEthereum, isAccountOfType, isAccountOwned } from "@talismn/keyring"
+import { isAccountAddressEthereum, isAccountOfType, isAccountOwned } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { normalizeAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
@@ -46,7 +46,7 @@ export const hideGetStartedOnceFunded = async () => {
             if (!account) return acc
 
             if (!acc[address]) acc[address] = []
-            if (isAccountEthereum(account)) acc[address].push(balance)
+            if (isAccountAddressEthereum(account)) acc[address].push(balance)
             else {
               const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
               if (!chain || isAccountOfType(account, "contact")) return acc

@@ -26,28 +26,18 @@ import { TokenLogo } from "../../Asset/TokenLogo"
 import { Tokens } from "../../Asset/Tokens"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { STAKING_APR_UNAVAILABLE } from "../helpers"
-import { useCombinedBittensorValidatorsData } from "../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useStakingAPR } from "../hooks/nomPools/useStakingAPR"
-import { BondPoolName } from "../shared/BondPoolName"
+import { NominationPoolName } from "../NominationPools/NominationPoolName"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { BondAccountPicker } from "./BondAccountPicker"
 import { BondAccountPillButton } from "./BondAccountPillButton"
-import { useBondWizard } from "./useBondWizard"
+import { useBondWizard } from "./hooks/useBondWizard"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
   const { t } = useTranslation()
 
   if (!token) return null
-
-  const stakeAssetLabel = () => {
-    switch (token.chain?.id) {
-      case "bittensor":
-        return t("Delegated Staking")
-      default:
-        return t("Pooled Staking")
-    }
-  }
 
   return (
     <div className="flex h-16 items-center gap-4 px-4">
@@ -55,7 +45,7 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
       <div className="flex items-center gap-2">
         <div className="text-body text-base">{token.symbol}</div>
         <div className="bg-body-disabled inline-block size-2 rounded-full"></div>
-        <div className="text-body-secondary text-sm">{stakeAssetLabel()}</div>
+        <div className="text-body-secondary text-sm">{t("Pooled Staking")}</div>
       </div>
     </div>
   )
@@ -322,18 +312,6 @@ const NomPoolStakeApr = () => {
   )
 }
 
-const BittensorStakeApr = () => {
-  const { poolId } = useBondWizard()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData()
-
-  const apr = useMemo(() => {
-    const validator = combinedValidatorsData.find((validator) => validator.poolId === poolId)
-    return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
-  }, [combinedValidatorsData, poolId])
-
-  return <StakeAprBase apr={apr} isLoading={isLoading} isError={isError} error={null} />
-}
-
 const AnalogTimechainStakeApr = () => {
   return <StakeAprBase apr={0.55} isLoading={false} isError={false} error={null} />
 }
@@ -342,8 +320,6 @@ const StakeApr = () => {
   const { token } = useBondWizard()
 
   switch (token?.chain?.id) {
-    case "bittensor":
-      return <BittensorStakeApr />
     case "analog-timechain":
       return <AnalogTimechainStakeApr />
     default:
@@ -397,12 +373,7 @@ const FeeEstimate = () => {
 
 export const BondForm = () => {
   const { t } = useTranslation()
-  const { account, accountPicker, token, payload, setStep, poolId, bondType } = useBondWizard()
-
-  const isBittensor = bondType === "bittensor"
-
-  const bondRowLabel = useMemo(() => (isBittensor ? t("Validator") : t("Pool")), [isBittensor, t])
-  const yeldRowLabel = useMemo(() => (isBittensor ? t("APY") : t("APR")), [isBittensor, t])
+  const { account, accountPicker, token, payload, poolId, setStep, setAddress } = useBondWizard()
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -431,9 +402,9 @@ export const BondForm = () => {
       </div>
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
         <div className="flex items-center justify-between gap-8">
-          <div className="whitespace-nowrap">{bondRowLabel}</div>
+          <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="text-body truncate">
-            <BondPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">
@@ -441,15 +412,11 @@ export const BondForm = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 whitespace-nowrap leading-none">
-                  {yeldRowLabel}
+                  {t("APR")}
                   <InfoIcon />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                {isBittensor
-                  ? t("Estimated Annual Percentage Yield (APY)")
-                  : t("Estimated Annual Percentage Rate (APR)")}
-              </TooltipContent>
+              <TooltipContent>{t("Estimated Annual Percentage Rate (APR)")}</TooltipContent>
             </Tooltip>
           </div>
           <div className={"overflow-hidden font-bold"}>
@@ -474,7 +441,13 @@ export const BondForm = () => {
         {t("Review")}
       </Button>
 
-      <BondAccountPicker />
+      <BondAccountPicker
+        isOpen={accountPicker.isOpen}
+        account={account}
+        token={token}
+        handleClose={accountPicker.close}
+        setAddress={setAddress}
+      />
     </div>
   )
 }

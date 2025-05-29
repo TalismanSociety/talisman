@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 0.1.4
+
+### Patch Changes
+
+- 3b10752: fix: isAddressEqual to return false if addresses are invalid
+
 ## 0.1.3
 
 ### Patch Changes

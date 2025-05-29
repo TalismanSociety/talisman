@@ -20,6 +20,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
+import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
@@ -28,7 +29,6 @@ import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 
-import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
@@ -92,8 +92,8 @@ const Popup = () => {
         <AccountExportPrivateKeyModal />
         <AccountRemoveModal />
         <AccountRenameModal />
-        <BackupWarningDrawer />
         <BondModal />
+        <BittensorBondModal />
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />
         <LedgerPolkadotUpgradeAlertDrawer />

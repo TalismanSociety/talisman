@@ -90,6 +90,7 @@ const SendFundsQrSubstrate = () => {
       account={account as AccountPolkadotVault}
       genesisHash={chain?.genesisHash ?? getAccountGenesisHash(account)}
       payload={subTransaction.unsigned}
+      shortMetadata={subTransaction.shortMetadata}
       onReject={showQrApproval(false)}
       onSignature={handleSigned}
       containerId="main"

@@ -5,8 +5,8 @@ import {
   Balance,
   Balances,
   getAccountGenesisHash,
-  isAccountEthereum,
-  isAccountPolkadot,
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
 } from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
@@ -26,7 +26,11 @@ const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balance
   return (balance: Balance): boolean => {
     const account = accounts?.find((a) => isAddressEqual(a.address, balance.address))
     // don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
-    if (isAccountEthereum(account) && account.type === "ledger-ethereum" && !balance.evmNetworkId)
+    if (
+      isAccountAddressEthereum(account) &&
+      account.type === "ledger-ethereum" &&
+      !balance.evmNetworkId
+    )
       return false
 
     const hasNonZeroBalance = balance.total.planck > 0
@@ -34,11 +38,11 @@ const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balance
 
     // only show DEFAULT_TOKENS if account has no balance
     if (!accountHasSomeBalance) {
-      const isSubstrateAccount = isAccountPolkadot(account)
+      const isSubstrateAccount = isAccountAddressSs58(account)
       const isSubstrateToken = DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)
       if (isSubstrateAccount && isSubstrateToken) return true
 
-      const isEthereumAccount = !account || isAccountEthereum(account)
+      const isEthereumAccount = !account || isAccountAddressEthereum(account)
       const isEthereumToken = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)
       if (isEthereumAccount && isEthereumToken) return true
     }

@@ -1,6 +1,7 @@
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
@@ -8,9 +9,9 @@ import { remoteConfigStore } from "extension-core"
 import { atom, Getter } from "jotai"
 import { withAtomEffect } from "jotai-effect"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
-import { encodeFunctionData, erc20Abi, isAddress, publicActions, TransactionRequest } from "viem"
+import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
 
-import { getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
+import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
@@ -560,6 +561,8 @@ export const exchangeAtom = atom(async (get) => {
     const toAsset = get(toAssetAtom)
     if (!toAsset) throw new Error("Missing to asset")
 
+    const allAccounts = await get(atomWithObservable(() => accounts$))
+
     const fromAddress = formatAddress(get(fromAddressAtom), fromAsset)
     if (!fromAddress) throw new Error("Missing from address")
 
@@ -575,11 +578,15 @@ export const exchangeAtom = atom(async (get) => {
     if (!currency_to) throw new Error("Missing currency to")
 
     // validate from address for the source chain
-    if (!validateAddress(fromAddress, fromAsset.networkType))
+    const fromAccount = allAccounts.find((account) => isAddressEqual(account.address, fromAddress))
+    const fromChain = substrateChains.find((c) => c.id.toString() === String(fromAsset.chainId))
+    if (!validateAddress(fromAccount, fromAddress, fromChain, fromAsset.networkType))
       throw new Error(`Cannot swap from ${fromAsset.chainId} chain with address: ${fromAddress}`)
 
     // validate to address for the target chain
-    if (!validateAddress(toAddress, toAsset.networkType))
+    const toAccount = allAccounts.find((account) => isAddressEqual(account.address, toAddress))
+    const toChain = substrateChains.find((c) => c.id.toString() === String(toAsset.chainId))
+    if (!validateAddress(toAccount, toAddress, toChain, toAsset.networkType))
       throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${toAddress}`)
 
     // cannot swap from BTC
@@ -739,7 +746,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   if (!fromAddress) return null
 
   if (fromAsset.networkType === "evm") {
-    if (!isAddress(fromAddress)) return null // invalid ethereum address
+    if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
     const knownEvmNetworks = await get(atomWithObservable(() => getEvmNetworksMap$()))
     const network = knownEvmNetworks[fromAsset.chainId]
     const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeToken?.id)))

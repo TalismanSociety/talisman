@@ -2,7 +2,7 @@ import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi, erc20BalancesAggregatorAbi, EvmErc20Token } from "@talismn/balances"
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-import { isAccountEthereum, isAccountNotContact } from "@talismn/keyring"
+import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
 import { DEBUG, log } from "extension-shared"
 import { isEqual, uniq } from "lodash"
@@ -550,7 +550,7 @@ class AssetDiscoveryScanner {
     const accounts = await keyringStore.getAccounts()
     const addresses = accounts
       .filter(isAccountNotContact)
-      .filter(isAccountEthereum)
+      .filter(isAccountPlatformEthereum)
       .map((acc) => acc.address)
 
     // all active evm networks

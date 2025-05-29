@@ -20,6 +20,7 @@ type TokenBalancesDetailRowProps = {
   symbol: string
   tokenId?: TokenId
   tokenDecimals: number
+  netuid?: number
 }
 
 export const TokenBalancesDetailRow = ({
@@ -29,6 +30,7 @@ export const TokenBalancesDetailRow = ({
   symbol,
   tokenId,
   tokenDecimals,
+  netuid,
 }: TokenBalancesDetailRowProps) => {
   const tokenBalance = useMemo(() => {
     const alphaBalanceInTao = new BigNumber(
@@ -49,10 +51,11 @@ export const TokenBalancesDetailRow = ({
           <div className="truncate capitalize">{row.title}</div>
           {!!row.locked && tokenId && row.meta && (
             <LockedExtra
+              netuid={netuid}
               tokenId={tokenId}
               address={row.address}
-              rowMeta={row.meta}
               isLoading={status.status === "fetching" || !!row.isLoading}
+              rowMeta={row.meta}
             />
           )}
         </div>

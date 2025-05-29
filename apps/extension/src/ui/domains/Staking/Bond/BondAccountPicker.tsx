@@ -1,6 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { Token } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { getAccountGenesisHash, isAccountOfType } from "extension-core"
+import { Account, Address, getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -11,13 +12,25 @@ import { useAccounts, useChain } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { BondAccountsList } from "./BondAccountsList"
-import { useBondModal } from "./useBondModal"
-import { useBondWizard } from "./useBondWizard"
+import { useBondModal } from "./hooks/useBondModal"
 
-export const BondAccountPicker = () => {
+type BondAccountPickerProps = {
+  account: Account | null
+  token: Token | null
+  isOpen: boolean
+  handleClose: () => void
+  setAddress: (address: Address) => void
+}
+
+export const BondAccountPicker = ({
+  account,
+  token,
+  isOpen,
+  setAddress,
+  handleClose,
+}: BondAccountPickerProps) => {
   const { t } = useTranslation()
   const { close } = useBondModal()
-  const { account, token, setAddress, accountPicker } = useBondWizard()
   const [search, setSearch] = useState("")
 
   const chain = useChain(token?.chain?.id)
@@ -48,21 +61,21 @@ export const BondAccountPicker = () => {
   const handleSelect = useCallback(
     (address: string) => {
       setAddress(address)
-      accountPicker.close()
+      handleClose
     },
-    [accountPicker, setAddress],
+    [handleClose, setAddress],
   )
 
   return (
     <Modal
       containerId="StakingModalDialog"
-      isOpen={accountPicker.isOpen}
-      onDismiss={accountPicker.close}
+      isOpen={isOpen}
+      onDismiss={handleClose}
       className="relative z-50 size-full"
     >
       <div className="flex size-full flex-grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
-          <IconButton onClick={accountPicker.close}>
+          <IconButton onClick={handleClose}>
             <ChevronLeftIcon />
           </IconButton>
           <div>{"Select account"}</div>

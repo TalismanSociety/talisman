@@ -8,6 +8,7 @@ export const evmNetworkFormSchema = yup
   .object({
     id: yup.string().required(" "),
     isTestnet: yup.boolean().required(),
+    preserveGasEstimate: yup.boolean().required(),
     name: yup.string().required(i18next.t("Required")),
     tokenCoingeckoId: yup.string().trim(),
     tokenSymbol: yup

@@ -1,8 +1,19 @@
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { isBitcoinAddress } from "@talismn/crypto"
+import { isAddressEqual, isBitcoinAddress } from "@talismn/crypto"
 import { ChevronLeftIcon } from "@talismn/icons"
-import { encodeAnyAddress, isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
-import { Account, isAccountBitcoin, isAccountEthereum, isAccountPolkadot } from "extension-core"
+import {
+  decodeAnyAddress,
+  encodeAnyAddress,
+  isEthereumAddress,
+  isValidSubstrateAddress,
+} from "@talismn/util"
+import {
+  Account,
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountBitcoin,
+  isAccountCompatibleWithChain,
+  isAccountPlatformEthereum,
+} from "extension-core"
 import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,7 +25,11 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
 import { useAccounts, useChain, useToken } from "@ui/state"
 
-import { fromAssetAtom, toAssetAtom } from "../swap-modules/common.swap-module"
+import {
+  fromAssetAtom,
+  SwappableAssetWithDecimals,
+  toAssetAtom,
+} from "../swap-modules/common.swap-module"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {
@@ -22,6 +37,7 @@ type Props = {
   subtitle: string
   allowInput?: boolean
   allowZeroBalance?: boolean
+  asset: SwappableAssetWithDecimals | null
   accountsType?: "substrate" | "ethereum" | "btc" | "all"
   onAccountChange?: (address: string | null) => void
   evmAccountsFilter?: (account: Account) => boolean
@@ -34,6 +50,7 @@ type Props = {
 export const SeparatedAccountSelector = ({
   title,
   subtitle,
+  asset,
   accountsType = "substrate",
   allowInput = false,
   allowZeroBalance = false,
@@ -49,8 +66,12 @@ export const SeparatedAccountSelector = ({
 
   const allAccounts = useAccounts(allowInput ? "all" : "owned")
 
-  const defaultSubstrateAccounts = allAccounts.filter((a) => isAccountPolkadot(a))
-  const defaultEvmAccounts = allAccounts.filter((a) => isAccountEthereum(a))
+  const chain = useChain(String(asset?.chainId))
+
+  const defaultSubstrateAccounts = allAccounts.filter(
+    (a) => chain && isAccountCompatibleWithChain(chain, a),
+  )
+  const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
 
   const [query, setQuery] = useState("")
 
@@ -66,7 +87,7 @@ export const SeparatedAccountSelector = ({
 
     if (accountsType === "substrate" && isValidSubstrateAddress(query)) {
       // computation will always be done in generic format
-      const address = encodeAddress(decodeAddress(query), 42)
+      const address = encodeAnyAddress(decodeAnyAddress(query), 42)
       return { ...accountCommon, name: shortenAddress(address), address }
     }
     if (
@@ -86,7 +107,7 @@ export const SeparatedAccountSelector = ({
       : defaultEvmAccounts
     if (
       !accountFromInput ||
-      !isAccountEthereum(accountFromInput) ||
+      !isAccountAddressEthereum(accountFromInput) ||
       filtered.find((a) => a.address.toLowerCase() === accountFromInput?.address.toLowerCase())
     )
       return filtered
@@ -99,7 +120,7 @@ export const SeparatedAccountSelector = ({
       : defaultSubstrateAccounts
     if (
       !accountFromInput ||
-      !isAccountPolkadot(accountFromInput) ||
+      !isAccountAddressSs58(accountFromInput) ||
       filtered.find((a) => a.address.toLowerCase() === accountFromInput.address.toLowerCase())
     )
       return filtered
@@ -120,7 +141,7 @@ export const SeparatedAccountSelector = ({
     return substrateAccounts.filter(
       (account) =>
         account.address?.toLowerCase().includes(query.toLowerCase()) ||
-        encodeAddress(decodeAddress(account.address), substrateAccountPrefix)
+        encodeAnyAddress(decodeAnyAddress(account.address), substrateAccountPrefix)
           .toLowerCase()
           .includes(query.toLowerCase()) ||
         account.name?.toLowerCase().includes(query.toLowerCase()),
@@ -135,24 +156,22 @@ export const SeparatedAccountSelector = ({
   const selectedAccount = useMemo(() => {
     if (value === null || value === undefined) return
 
-    switch (accountsType) {
-      case "all": {
-        const encodedValue = encodeAnyAddress(value)
-        return [...evmAccounts, ...substrateAccounts].find(
-          (account) => encodeAnyAddress(account.address) === encodedValue,
-        )
+    const accounts = (() => {
+      switch (accountsType) {
+        case "all":
+          return [...evmAccounts, ...substrateAccounts]
+        case "ethereum":
+          return evmAccounts
+        case "substrate":
+          return substrateAccounts
+        case "btc":
+          return btcAccounts
+        default:
+          return []
       }
-      case "ethereum":
-        return evmAccounts.find((account) => account.address === value)
-      case "substrate": {
-        const encodedValue = encodeAnyAddress(value)
-        return substrateAccounts.find(
-          (account) => encodeAnyAddress(account.address) === encodedValue,
-        )
-      }
-      case "btc":
-        return btcAccounts.find((account) => account.address === value)
-    }
+    })()
+
+    return accounts.find((account) => isAddressEqual(account.address, value))
   }, [accountsType, evmAccounts, substrateAccounts, btcAccounts, value])
 
   const onSelectAccount = useCallback(
@@ -325,7 +344,7 @@ const AccountRow = ({
     )
       return address
 
-    return encodeAddress(decodeAddress(address), substrateAccountPrefix)
+    return encodeAnyAddress(decodeAnyAddress(address), substrateAccountPrefix)
   }, [address, substrateAccountPrefix])
 
   return <div className="truncate">{name ?? shortenAddress(formattedAddress)}</div>

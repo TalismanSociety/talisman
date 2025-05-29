@@ -5,7 +5,7 @@ import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { type TokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
-import { CHAIN_INFO, DTAO_LOGO, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/constants"
+import { CHAIN_INFO, DTAO_LOGO, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { type CombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSelectedCurrency } from "@ui/state"
 
@@ -96,6 +96,8 @@ export const BittensorTokenBalanceList = ({
 
   return (
     <TokenBalancesList
+      stakeType={isRootStake || isChainIfo ? "root" : "subnet"}
+      netuid={Number(listKey)}
       tokenId={tokenId}
       tokenLogoUrl={!isChainIfo && !isRootStake ? DTAO_LOGO : undefined}
       balances={balances}
@@ -105,7 +107,6 @@ export const BittensorTokenBalanceList = ({
       assetPriceInfo={assetPriceInfo}
       networkType={rowNetworkType}
       shouldDisplayActionBtns={isChainIfo}
-      shouldDisplayStakeBtn={isChainIfo || isRootStake}
     >
       {groupedStakesByNetuid?.map((row, i, rows) => {
         const { meta: { dynamicInfo = {} } = {}, title } = row
@@ -116,6 +117,7 @@ export const BittensorTokenBalanceList = ({
 
         return (
           <TokenBalancesDetailRow
+            netuid={Number(listKey)}
             key={row.key}
             row={row}
             isLastRow={rows.length === i + 1}

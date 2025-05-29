@@ -7,8 +7,8 @@ import { log } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
-import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
@@ -33,7 +33,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   )
 
   const legacyApp = useLedgerSubstrateAppByName(migrationAppName as string)
-  const { sign } = useLedgerSubstrateGeneric({ legacyApp })
+  const { sign } = useLedgerPolkadot({ legacyApp })
 
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
