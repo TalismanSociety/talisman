@@ -189,9 +189,9 @@ export const SortByButton = () => {
                 onClick={() => setSortBy("date")}
               />
               <ContextMenuOptionItem
-                label={t("Floor price")}
-                selected={sortBy === "floor"}
-                onClick={() => setSortBy("floor")}
+                label={t("Value")}
+                selected={sortBy === "value"}
+                onClick={() => setSortBy("value")}
               />
               <ContextMenuOptionItem
                 label={t("Name")}

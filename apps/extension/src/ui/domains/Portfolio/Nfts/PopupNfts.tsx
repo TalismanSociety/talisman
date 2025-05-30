@@ -1,5 +1,5 @@
 import { StarIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,7 +14,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
 import { NftsUnavailable } from "./NftsUnavailable"
 
 const NoNftFound = () => {
@@ -76,7 +76,10 @@ const NftCollectionRowInner: FC<{
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
-  const floorUsdValue = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
+  const value = useMemo(() => {
+    const values = nfts.map((nft) => nft.price).filter(isNotNil)
+    return values.length ? values.reduce((acc, price) => acc + price, 0) : null
+  }, [nfts])
 
   const { t } = useTranslation()
 
@@ -122,14 +125,10 @@ const NftCollectionRowInner: FC<{
         <div
           className={classNames(
             "text-body-secondary",
-            floorUsdValue === null && "select-none text-transparent",
+            value === null && "select-none text-transparent",
           )}
         >
-          {floorUsdValue !== null ? (
-            <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
-          ) : (
-            "N/A"
-          )}
+          {value !== null ? <Fiat amount={value} forceCurrency="usd" noCountUp /> : "N/A"}
         </div>
       </div>
     </button>

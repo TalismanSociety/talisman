@@ -1,5 +1,4 @@
 import { RequestIdOnly } from "../../types/base"
-import { NftStoreData } from "./store"
 
 export type RefreshNftMetadataRequestBody = {
   evmNetworkId: string
@@ -10,13 +9,14 @@ export type RefreshNftMetadataRequestBody = {
 /**
  * Types in this section should be kept in sync with the ones from asset-discovery-api
  */
-type NftBase = {
+
+export type AccountNft = {
   id: string
   collectionId: string
   tokenId: string
   networkId: string
   type: string // 'ERC721' | 'ERC1155'
-  previewUrl: string
+  previewUrl: string | null
   imageUrl: string | null
   videoUrl: string | null
   audioUrl: string | null
@@ -24,10 +24,9 @@ type NftBase = {
   contract: string
   marketplaceUrls: string[] | null
   traits: object | null
-}
-
-export type Nft = NftBase & {
-  owners: Record<string, number>
+  price: number | null
+  owner: string
+  amount: number
 }
 
 export type NftCollection = {
@@ -41,17 +40,56 @@ export type NftCollection = {
   marketplaceUrls: string[] | null
 }
 
-export type FetchNftsRequest = { addresses: string[] }
+export type AccountNfts = { nfts: AccountNft[]; collections: NftCollection[] }
 
-export type FetchNftsResponse = { nfts: Nft[]; collections: NftCollection[] }
+// type NftBase = {
+//   id: string
+//   collectionId: string
+//   tokenId: string
+//   networkId: string
+//   type: string // 'ERC721' | 'ERC1155'
+//   previewUrl: string
+//   imageUrl: string | null
+//   videoUrl: string | null
+//   audioUrl: string | null
+//   name: string
+//   contract: string
+//   marketplaceUrls: string[] | null
+//   traits: object | null
+//   price: number | null
+// }
+
+export type Nft = Omit<AccountNft, "amount" | "owner"> & {
+  owners: Record<string, number>
+}
+
+// export type NftCollection = {
+//   id: string
+//   name: string
+//   description: string
+//   iconUrl: string | null
+//   bannerUrl: string | null
+//   itemsCount: number | null
+//   ownersCount: number | null
+//   marketplaceUrls: string[] | null
+// }
+
+// export type FetchNftsRequest = { addresses: string[] }
+
+// export type FetchNftsResponse = { nfts: Nft[]; collections: NftCollection[] }
 
 /**
  * Types below are local to the wallet
  */
+
 export type NftLoadingStatus = "stale" | "loading" | "loaded"
 
-export type NftData = Omit<NftStoreData, "id" | "accountsKey" | "networksKey"> & {
+export type NftData = {
   status: NftLoadingStatus
+  nfts: Nft[]
+  collections: NftCollection[]
+  hiddenNftCollectionIds: string[]
+  favoriteNftIds: string[]
 }
 
 export type SetHiddenNftCollectionRequest = { id: string; isHidden: boolean }

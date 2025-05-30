@@ -1,7 +1,8 @@
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { nfts$, refreshNftMetadata, setFavoriteNft, setHiddenNftCollection } from "./service"
+import { nfts$, refreshNftMetadata } from "./service"
+import { setFavoriteNft, setHiddenNftCollection } from "./store"
 
 const handleSetHiddenNftCollection: MessageHandler<"pri(nfts.collection.setHidden)"> = (
   request,

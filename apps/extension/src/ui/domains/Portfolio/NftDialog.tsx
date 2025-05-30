@@ -44,7 +44,6 @@ import { NetworkAddress } from "../Account/AddressLinkOrCopy"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
-import { getNftCollectionFloorUsd } from "./Nfts/helpers"
 
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()
@@ -140,14 +139,12 @@ const TabContentCollection: FC<{
   const { t } = useTranslation()
   const network = useNetwork(nft.networkId)
 
-  const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
-
   return (
     <>
       <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
-        <div className="text-body-secondary">{t("Floor Price")}</div>
+        <div className="text-body-secondary">{t("Price")}</div>
         <div className="text-right">
-          {floorPrice ? <Fiat amount={floorPrice} forceCurrency="usd" /> : t("Unavailable")}
+          {nft.price ? <Fiat amount={nft.price} forceCurrency="usd" /> : t("Unavailable")}
         </div>
         <div className="text-body-secondary">{t("Items")}</div>
         <div className="text-right">{collection.itemsCount ?? t("Unavailable")}</div>
@@ -219,7 +216,7 @@ const TabContentNft: FC<{
             <div className="flex items-center justify-end gap-[0.5em]">
               <AccountIcon address={address} className="text-md" />
               <div className="truncate">
-                <Address address={address} />
+                <Address address={address} startCharCount={6} endCharCount={6} />
               </div>
 
               <IconButton className="text-base" onClick={() => copyToClipboard(address)}>

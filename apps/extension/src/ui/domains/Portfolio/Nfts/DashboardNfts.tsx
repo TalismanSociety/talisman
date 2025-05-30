@@ -1,4 +1,5 @@
 import { StarIcon } from "@talismn/icons"
+import { isNotNil } from "@talismn/util"
 import { NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,7 +14,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
 
 const NoNftFound = () => {
   const { t } = useTranslation()
@@ -77,7 +78,10 @@ const NftCollectionRowInner: FC<{
     return network?.name ?? null
   }, [evmNetworksMap, networkIds])
 
-  const floorUsdValue = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
+  const value = useMemo(() => {
+    const values = nfts.map((nft) => nft.price).filter(isNotNil)
+    return values.length ? values.reduce((acc, price) => acc + price, 0) : null
+  }, [nfts])
 
   const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
@@ -108,9 +112,7 @@ const NftCollectionRowInner: FC<{
         </div>
       </div>
       <div className="text-right">
-        {floorUsdValue !== null ? (
-          <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
-        ) : null}
+        {value !== null ? <Fiat amount={value} forceCurrency="usd" noCountUp /> : null}
       </div>
       <div className="text-right">
         {nfts.length} {nfts.length > 1 ? t("NFTs") : t("NFT")}
@@ -147,7 +149,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
     <div>
       <div className="text-body-disabled mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-sm">
         <div className="pl-[4.4rem]">{t("Collection")}</div>
-        <div className="text-right">{t("Floor")}</div>
+        <div className="text-right">{t("Value")}</div>
         <div className="text-right">{t("Owned")}</div>
       </div>
 

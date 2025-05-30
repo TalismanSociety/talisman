@@ -1,71 +1,95 @@
-import { isAccountNotContact } from "@talismn/keyring"
-import { getQuery$, QueryResult } from "@talismn/util"
+import { Account, isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
+import { getQuery$ } from "@talismn/util"
 import { isEqual } from "lodash"
-import { combineLatest, distinctUntilChanged, map, Observable, switchMap } from "rxjs"
+import { combineLatest, distinctUntilChanged, map, Observable, shareReplay, switchMap } from "rxjs"
 
-import { activeEvmNetworksObservable } from "../balances/pool"
 import { keyringStore } from "../keyring/store"
-import { fetchNfts } from "./fetchNfts"
-import { nftsStore$ } from "./store"
-import { FetchNftsResponse, NftData } from "./types"
+import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
+import { nftsStore$, updateNftsStore } from "./store"
+import { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
 
 const ONE_MINUTE = 60 * 1000
 
 const UPDATE_INTERVAL = ONE_MINUTE // leverage cache on endpoint
 
+const fetchAccountNfts = async (account: Account): Promise<AccountNfts> => {
+  if (isAccountPlatformEthereum(account)) return fetchEvmAccountNfts(account.address)
+  // if (isAccountPlatformPolkadot(account)) return fetchDotAccountNfts(account.address)
+  return { nfts: [], collections: [] }
+}
+
 export const nfts$ = new Observable<NftData>((subscriber) => {
-  const addresses$ = keyringStore.accounts$.pipe(
-    map((accounts) =>
-      accounts
-        .filter(isAccountNotContact)
+  const updateData$ = keyringStore.accounts$.pipe(
+    map((allAccounts) => allAccounts.filter(isAccountNotContact)),
+    switchMap((accounts) =>
+      combineLatest(
+        accounts.map((account) =>
+          getQuery$({
+            queryKey: `nfts:${account.address}`,
+            queryFn: () => fetchAccountNfts(account),
+            refreshInterval: UPDATE_INTERVAL, // different interval per platform ?
+          }).pipe(
+            map((nftsData) => ({
+              address: account.address,
+              nftsData,
+            })),
+          ),
+        ),
+      ),
+    ),
+    map((accountsQueries) => {
+      //console.log("[nfts] accountsQueries", accountsQueries)
+      const status: NftLoadingStatus = accountsQueries.some((aq) => aq.nftsData.status === "error")
+        ? "stale"
+        : accountsQueries.every((aq) => aq.nftsData.status === "loaded")
+          ? "loaded"
+          : "loading"
+
+      const loadedAddresses = accountsQueries
+        .filter((aq) => aq.nftsData.status === "loaded")
         .map((a) => a.address)
-        .sort(),
+
+      const loadedAccountsData = accountsQueries.reduce(
+        (acc, curr) => {
+          if (curr.nftsData.status !== "loaded") return acc
+          acc.nfts.push(...curr.nftsData.data.nfts)
+          acc.collections.push(...curr.nftsData.data.collections)
+          return acc
+        },
+        { nfts: [], collections: [] } as AccountNfts,
+      )
+
+      return {
+        status,
+        loadedAddresses,
+        ...loadedAccountsData,
+      }
+    }),
+    distinctUntilChanged<{ status: NftLoadingStatus; loadedAddresses: string[] } & AccountNfts>(
+      isEqual,
     ),
-    distinctUntilChanged<string[]>(isEqual),
   )
 
-  const activeNetworkIds$ = activeEvmNetworksObservable.pipe(
-    map((networks) => networks.map((n) => n.id).sort()),
-    distinctUntilChanged<string[]>(isEqual),
-  )
+  const subUpdateStore = updateData$.subscribe((data) => {
+    updateNftsStore({
+      addresses: data.loadedAddresses,
+      nfts: data.nfts,
+      collections: data.collections,
+    })
+  })
 
-  const nftsData$ = addresses$.pipe(
-    switchMap((addresses) =>
-      getQuery$({
-        // TODO understand why this keeps firing when unsubscribed
-        queryKey: ["nftsData$", ...addresses].join(":"),
-        queryFn: () => fetchNfts(addresses),
-        refreshInterval: UPDATE_INTERVAL,
-      }),
-    ),
-    distinctUntilChanged<QueryResult<FetchNftsResponse>>(isEqual),
-  )
-
-  const subUpdateStore = combineLatest([addresses$, nftsData$, activeNetworkIds$]).subscribe(
-    ([addresses, nftsData, evmNetworkIds]) => {
-      if (nftsData.status === "loaded")
-        nftsStore$.next({
-          ...nftsStore$.value,
-          accountsKey: addresses.join(","),
-          networksKey: evmNetworkIds.join(","),
-          ...nftsData.data,
-          timestamp: Date.now(),
-        })
-    },
-  )
-
-  const subOutput = combineLatest([nftsStore$, nftsData$.pipe(map((loadable) => loadable.status))])
+  const subOutput = combineLatest([nftsStore$, updateData$])
     .pipe(
-      map(([store, status]) => {
-        const { collections, nfts, timestamp, favoriteNftIds, hiddenNftCollectionIds } = store
+      map(([store, update]) => {
+        const { collections, nfts, favoriteNftIds, hiddenNftCollectionIds } = store
         const data: NftData = {
-          status: status === "error" ? "stale" : status,
+          status: update.status,
           collections,
-          nfts,
-          timestamp,
+          nfts: mergeAccountNfts(nfts),
           favoriteNftIds,
           hiddenNftCollectionIds,
         }
+        // console.log("[nfts] subOutput map", { store, update, data })
         return data
       }),
     )
@@ -76,31 +100,63 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     subOutput.unsubscribe()
     subUpdateStore.unsubscribe()
   }
-})
+}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
-  const hiddenNftCollectionIds = nftsStore$.value.hiddenNftCollectionIds.filter((cid) => cid !== id)
-  if (isHidden) hiddenNftCollectionIds.push(id)
+// nfts$.subscribe((data) => {
+//   console.log(
+//     "[nfts] subscribe callback status:%s nfts:%s collectoins:%s",
+//     data.status,
+//     data.nfts.length,
+//     data.collections.length,
+//   )
+// })
 
-  nftsStore$.next({
-    ...nftsStore$.value,
-    hiddenNftCollectionIds,
-  })
+const mergeAccountNfts = (accountNfts: AccountNft[]): Nft[] => {
+  const nfts: Nft[] = []
+
+  for (const accountNft of accountNfts) {
+    let nft = nfts.find((n) => n.id === accountNft.id)
+    if (!nft) {
+      nft = nftFromAccountNft(accountNft)
+      nfts.push(nft)
+    }
+    nft.owners[accountNft.owner] = accountNft.amount
+  }
+
+  return nfts
 }
 
-export const setFavoriteNft = (id: string, isFavorite: boolean) => {
-  const favoriteNftIds = nftsStore$.value.favoriteNftIds.filter((nid) => nid !== id)
-  if (isFavorite) favoriteNftIds.push(id)
-
-  nftsStore$.next({
-    ...nftsStore$.value,
-    favoriteNftIds,
-  })
+const nftFromAccountNft = (accountNft: AccountNft): Nft => {
+  const { owner, amount, ...rest } = accountNft
+  return {
+    ...rest,
+    owners: { [owner]: amount },
+  }
 }
 
-export const refreshNftMetadata = async (id: string) => {
-  const nft = nftsStore$.value.nfts.find((n) => n.id === id)
-  if (!nft) return
+// export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
+//   const hiddenNftCollectionIds = nftsStore$.value.hiddenNftCollectionIds.filter((cid) => cid !== id)
+//   if (isHidden) hiddenNftCollectionIds.push(id)
+
+//   nftsStore$.next({
+//     ...nftsStore$.value,
+//     hiddenNftCollectionIds,
+//   })
+// }
+
+// export const setFavoriteNft = (id: string, isFavorite: boolean) => {
+//   const favoriteNftIds = nftsStore$.value.favoriteNftIds.filter((nid) => nid !== id)
+//   if (isFavorite) favoriteNftIds.push(id)
+
+//   nftsStore$.next({
+//     ...nftsStore$.value,
+//     favoriteNftIds,
+//   })
+// }
+
+export const refreshNftMetadata = async (_id: string) => {
+  // const nft = nftsStore$.value.nfts.find((n) => n.id === id)
+  // if (!nft) return
   throw new Error("Not implemented yet")
 
   // const { networkId, contract, tokenId } = nft

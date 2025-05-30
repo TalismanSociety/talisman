@@ -1,29 +1,13 @@
 import { Nft, NftCollection } from "extension-core"
 
-export const getPortfolioNftPreviewUrl = (nft: Nft, _collection?: NftCollection) => {
-  return nft.previewUrl
-  // if (nft.previews.small) return nft.previews.small
-  // if (nft.imageUrl) return nft.imageUrl
-  // if (collection?.imageUrl) return collection.imageUrl
-  return null
-}
-
 export const getPortfolioNftCollectionPreviewUrl = (collection: NftCollection, nfts: Nft[]) => {
   const collectionNfts = nfts.filter((nft) => nft.collectionId === collection.id)
 
-  // TODO pick favorite if any
   // if user has only 1 NFT in that collection, use it as the image
-  if (collectionNfts.length) return getPortfolioNftPreviewUrl(collectionNfts[0], collection)
+  if (collectionNfts.length === 1) return collectionNfts[0].previewUrl
 
   return collection.iconUrl
 }
-
-// const sortByLastAcquisitionDate = (nft1: Nft, nft2: Nft) => {
-//   const lastAcquired1 = getNftLastAcquiredAt(nft1)
-//   const lastAcquired2 = getNftLastAcquiredAt(nft2)
-
-//   return lastAcquired2.localeCompare(lastAcquired1)
-// }
 
 export const getNftLastAcquiredAt = (_nft: Nft, _owner?: string): string => {
   // TODO
@@ -37,17 +21,6 @@ export const getNftQuantity = (nft: Nft, owner?: string) => {
   return Object.entries(nft.owners)
     .filter(([address]) => !owner || owner === address)
     .reduce((acc, [, count]) => acc + count, 0)
-}
-
-export const getNftCollectionFloorUsd = (_collection: NftCollection): number | null => {
-  // TODO
-  return 0
-  // return (
-  //   collection.marketplaces
-  //     .filter((m) => m.floorUsd)
-  //     .map((mp) => mp.floorUsd ?? 0)
-  //     .sort((a, b) => a - b)[0] ?? null
-  // )
 }
 
 export const getNftCollectionLastAcquiredAt = (

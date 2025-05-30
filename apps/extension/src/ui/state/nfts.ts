@@ -5,7 +5,6 @@ import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rx
 
 import { api } from "@ui/api"
 import {
-  getNftCollectionFloorUsd,
   getNftCollectionLastAcquiredAt,
   getNftLastAcquiredAt,
 } from "@ui/domains/Portfolio/Nfts/helpers"
@@ -179,13 +178,8 @@ export const [useNfts, nfts$] = bind(
                 return (n1.name ?? "").localeCompare(n2.name ?? "")
               }
 
-              case "floor": {
-                if (!collection1 || !collection2) return 0
-
-                const f1 = getNftCollectionFloorUsd(collection1)
-                const f2 = getNftCollectionFloorUsd(collection2)
-
-                if (f1 !== f2) return (f2 ?? 0) - (f1 ?? 0)
+              case "value": {
+                if (n1.price !== n2.price) return (n2.price ?? 0) - (n1.price ?? 0)
 
                 break
               }
@@ -244,11 +238,14 @@ export const [useNfts, nfts$] = bind(
                 return (c1.name ?? "").localeCompare(c2.name ?? "")
               }
 
-              case "floor": {
-                const f1 = getNftCollectionFloorUsd(c1)
-                const f2 = getNftCollectionFloorUsd(c2)
+              case "value": {
+                const nfts1 = allNfts.filter((n) => n.collectionId === c1.id)
+                const nfts2 = allNfts.filter((n) => n.collectionId === c2.id)
 
-                if (f1 !== f2) return (f2 ?? 0) - (f1 ?? 0)
+                const v1 = nfts1.reduce((acc, n) => acc + (n.price ?? 0), 0)
+                const v2 = nfts2.reduce((acc, n) => acc + (n.price ?? 0), 0)
+
+                if (v1 !== v2) return (v2 ?? 0) - (v1 ?? 0)
 
                 break
               }

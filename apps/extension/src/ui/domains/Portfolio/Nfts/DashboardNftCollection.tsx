@@ -126,16 +126,11 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
 }
 
 const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
-  // collection,
   nft,
   onClick,
 }) => {
   // favorites are the first ones in the list, can check just the first one
   const isFavorite = useIsFavoriteNft(nft.id)
-
-  // const imageUrl = useMemo(() => {
-  //   return nft.previews.small ?? nft.imageUrl
-  // }, [nft.imageUrl, nft.previews.small])
 
   return (
     <NftTile

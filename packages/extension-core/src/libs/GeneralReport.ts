@@ -1,8 +1,10 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountOwned } from "@talismn/keyring"
-import { sleep } from "@talismn/util"
+import { isNotNil, sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
+import { uniq } from "lodash"
 import groupBy from "lodash/groupBy"
+import { firstValueFrom } from "rxjs"
 
 import { sentry } from "../config/sentry"
 import { db } from "../db"
@@ -13,7 +15,6 @@ import { settingsStore } from "../domains/app/store.settings"
 import { balancePool } from "../domains/balances/pool"
 import { Balances } from "../domains/balances/types"
 import { keyringStore } from "../domains/keyring/store"
-import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
@@ -293,31 +294,25 @@ async function getGeneralReport({
   //
   // nfts
   //
-  const ownedNfts = nftsStore$.value.nfts.filter((nft) =>
-    Object.entries(nft.owners).some(
-      ([address, count]) =>
-        !!count && ownedAddresses.some((ownedAddress) => isAddressEqual(address, ownedAddress)),
-    ),
-  )
-  const ownedCollections = nftsStore$.value.collections.filter((c) =>
-    ownedNfts.some((n) => n.collectionId === c.id),
+  const { nfts, collections } = await firstValueFrom(nftsStore$)
+  const ownedNfts = nfts.filter((nft) =>
+    ownedAddresses.some((ownedAddress) => isAddressEqual(nft.owner, ownedAddress)),
   )
 
   const TOP_NFT_COLLECTIONS_COUNT = 20
   const nftsCount = ownedNfts.length
-  const floorByCollectionId = Object.fromEntries(
-    ownedCollections
-      .map((collection) => [collection.id, getNftCollectionFloorUsd(collection)] as const)
-      .filter(([, floor]) => !!floor),
+
+  const nftsTotalValue = ownedNfts.reduce((total, nft) => total + (nft.price || 0) * nft.amount, 0)
+
+  const topNftCollections = uniq(
+    nfts
+      .concat()
+      .sort((n1, n2) => (n1.price ?? 0) - (n2.price ?? 0))
+      .map((nft) => nft.collectionId),
   )
-  const nftsTotalValue = ownedNfts.reduce(
-    (total, nft) => total + (floorByCollectionId[nft.collectionId] ?? 0),
-    0,
-  )
-  const topNftCollections = Object.entries(floorByCollectionId)
-    .sort((c1, c2) => (c2[1] ?? 0) - (c1[1] ?? 0))
     .slice(0, TOP_NFT_COLLECTIONS_COUNT)
-    .map(([collectionId]) => ownedCollections.find((c) => c.id === collectionId)?.name)
+    .map((cid) => collections.find((c) => c.id === cid)?.name)
+    .filter(isNotNil)
 
   return {
     // accounts
