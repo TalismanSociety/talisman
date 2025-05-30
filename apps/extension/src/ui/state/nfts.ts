@@ -4,10 +4,7 @@ import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
-import {
-  getNftCollectionLastAcquiredAt,
-  getNftLastAcquiredAt,
-} from "@ui/domains/Portfolio/Nfts/helpers"
+import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
 
 import { getAccountsByCategory$ } from "./accounts"
 import { getChains$, getEvmNetworks$ } from "./chaindata"
@@ -166,11 +163,13 @@ export const [useNfts, nfts$] = bind(
 
             switch (sortBy) {
               case "date": {
-                const last1 = getNftLastAcquiredAt(n1)
-                const last2 = getNftLastAcquiredAt(n2)
-                const d1 = new Date(last1).getTime()
-                const d2 = new Date(last2).getTime()
-                if (d1 !== d2) return d2 - d1
+                const last1 = n1.updatedAt
+                const last2 = n2.updatedAt
+                if (last1 && last2) {
+                  const d1 = new Date(last1).getTime()
+                  const d2 = new Date(last2).getTime()
+                  if (d1 !== d2) return d2 - d1
+                }
                 break
               }
 
@@ -205,7 +204,7 @@ export const [useNfts, nfts$] = bind(
           })
 
         const collectionIds = new Set(nfts.map((nft) => nft.collectionId))
-        const lastAcquiredPerCollection = new Map<string, string | null>()
+        const lastAcquiredPerCollection = new Map<string, number | null>()
         const collections = allCollections
           .filter((c) => collectionIds.has(c.id))
           .sort((c1, c2) => {
@@ -220,16 +219,15 @@ export const [useNfts, nfts$] = bind(
             switch (sortBy) {
               case "date": {
                 if (!lastAcquiredPerCollection.has(c1.id))
-                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastAcquiredAt(c1, nfts))
+                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c1, nfts))
 
                 if (!lastAcquiredPerCollection.has(c1.id))
-                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastAcquiredAt(c2, nfts))
+                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c2, nfts))
 
                 const lastAcquired1 = lastAcquiredPerCollection.get(c1.id)
                 const lastAcquired2 = lastAcquiredPerCollection.get(c2.id)
 
-                if (lastAcquired1 && lastAcquired2)
-                  return lastAcquired2.localeCompare(lastAcquired1)
+                if (lastAcquired1 && lastAcquired2) return lastAcquired2 - lastAcquired1
 
                 break
               }

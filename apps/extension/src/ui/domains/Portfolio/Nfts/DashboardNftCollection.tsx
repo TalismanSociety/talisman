@@ -13,7 +13,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
+import { getNftQuantity } from "./helpers"
 
 export const DashboardNftCollection = () => {
   const [viewMode] = useSetting("nftsViewMode")
@@ -60,6 +60,7 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   nft,
   onClick,
 }) => {
+  const { t } = useTranslation()
   const isFavorite = useIsFavoriteNft(nft.id)
 
   return (
@@ -76,7 +77,9 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
         </div>
       </div>
       <div className="truncate text-right">{nft.tokenId ? `#${nft.tokenId}` : null}</div>
-      <div className="text-right">{format(new Date(getNftLastAcquiredAt(nft)), "P")}</div>
+      <div className="text-right">
+        {nft.updatedAt ? format(new Date(nft.updatedAt), "P") : t("N/A")}
+      </div>
     </button>
   )
 }

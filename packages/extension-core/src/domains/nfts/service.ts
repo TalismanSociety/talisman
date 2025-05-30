@@ -1,4 +1,9 @@
-import { Account, isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
+import {
+  Account,
+  isAccountNotContact,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+} from "@talismn/keyring"
 import { getQuery$ } from "@talismn/util"
 import { isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, Observable, shareReplay, switchMap } from "rxjs"
@@ -6,6 +11,7 @@ import { combineLatest, distinctUntilChanged, map, Observable, shareReplay, swit
 import { keyringStore } from "../keyring/store"
 import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
 import { nftsStore$, updateNftsStore } from "./store"
+import { fetchDotAccountNfts } from "./subscan"
 import { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
 
 const ONE_MINUTE = 60 * 1000
@@ -14,7 +20,7 @@ const UPDATE_INTERVAL = ONE_MINUTE // leverage cache on endpoint
 
 const fetchAccountNfts = async (account: Account): Promise<AccountNfts> => {
   if (isAccountPlatformEthereum(account)) return fetchEvmAccountNfts(account.address)
-  // if (isAccountPlatformPolkadot(account)) return fetchDotAccountNfts(account.address)
+  if (isAccountPlatformPolkadot(account)) return fetchDotAccountNfts(account.address)
   return { nfts: [], collections: [] }
 }
 
@@ -38,7 +44,6 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
       ),
     ),
     map((accountsQueries) => {
-      //console.log("[nfts] accountsQueries", accountsQueries)
       const status: NftLoadingStatus = accountsQueries.some((aq) => aq.nftsData.status === "error")
         ? "stale"
         : accountsQueries.every((aq) => aq.nftsData.status === "loaded")
@@ -96,20 +101,10 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     .subscribe(subscriber)
 
   return () => {
-    //console.log("Unsubscribing from nfts$ observable")
     subOutput.unsubscribe()
     subUpdateStore.unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
-
-// nfts$.subscribe((data) => {
-//   console.log(
-//     "[nfts] subscribe callback status:%s nfts:%s collectoins:%s",
-//     data.status,
-//     data.nfts.length,
-//     data.collections.length,
-//   )
-// })
 
 const mergeAccountNfts = (accountNfts: AccountNft[]): Nft[] => {
   const nfts: Nft[] = []
@@ -133,26 +128,6 @@ const nftFromAccountNft = (accountNft: AccountNft): Nft => {
     owners: { [owner]: amount },
   }
 }
-
-// export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
-//   const hiddenNftCollectionIds = nftsStore$.value.hiddenNftCollectionIds.filter((cid) => cid !== id)
-//   if (isHidden) hiddenNftCollectionIds.push(id)
-
-//   nftsStore$.next({
-//     ...nftsStore$.value,
-//     hiddenNftCollectionIds,
-//   })
-// }
-
-// export const setFavoriteNft = (id: string, isFavorite: boolean) => {
-//   const favoriteNftIds = nftsStore$.value.favoriteNftIds.filter((nid) => nid !== id)
-//   if (isFavorite) favoriteNftIds.push(id)
-
-//   nftsStore$.next({
-//     ...nftsStore$.value,
-//     favoriteNftIds,
-//   })
-// }
 
 export const refreshNftMetadata = async (_id: string) => {
   // const nft = nftsStore$.value.nfts.find((n) => n.id === id)

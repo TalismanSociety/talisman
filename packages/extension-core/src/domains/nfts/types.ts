@@ -27,6 +27,8 @@ export type AccountNft = {
   price: number | null
   owner: string
   amount: number
+  description: string | null
+  updatedAt: number | null
 }
 
 export type NftCollection = {
@@ -42,41 +44,9 @@ export type NftCollection = {
 
 export type AccountNfts = { nfts: AccountNft[]; collections: NftCollection[] }
 
-// type NftBase = {
-//   id: string
-//   collectionId: string
-//   tokenId: string
-//   networkId: string
-//   type: string // 'ERC721' | 'ERC1155'
-//   previewUrl: string
-//   imageUrl: string | null
-//   videoUrl: string | null
-//   audioUrl: string | null
-//   name: string
-//   contract: string
-//   marketplaceUrls: string[] | null
-//   traits: object | null
-//   price: number | null
-// }
-
 export type Nft = Omit<AccountNft, "amount" | "owner"> & {
   owners: Record<string, number>
 }
-
-// export type NftCollection = {
-//   id: string
-//   name: string
-//   description: string
-//   iconUrl: string | null
-//   bannerUrl: string | null
-//   itemsCount: number | null
-//   ownersCount: number | null
-//   marketplaceUrls: string[] | null
-// }
-
-// export type FetchNftsRequest = { addresses: string[] }
-
-// export type FetchNftsResponse = { nfts: Nft[]; collections: NftCollection[] }
 
 /**
  * Types below are local to the wallet
