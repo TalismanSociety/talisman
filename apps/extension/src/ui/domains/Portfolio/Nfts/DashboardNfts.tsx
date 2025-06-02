@@ -7,7 +7,7 @@ import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useEvmNetworksMap, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
+import { useChainsMap, useEvmNetworksMap, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
 
 import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -72,11 +72,12 @@ const NftCollectionRowInner: FC<{
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
   const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
+  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
   const networkName = useMemo(() => {
     if (networkIds.length !== 1) return null
-    const network = evmNetworksMap[networkIds[0]]
+    const network = evmNetworksMap[networkIds[0]] ?? chainsMap[networkIds[0]]
     return network?.name ?? null
-  }, [evmNetworksMap, networkIds])
+  }, [chainsMap, evmNetworksMap, networkIds])
 
   const value = useMemo(() => {
     const values = nfts.map((nft) => nft.price).filter(isNotNil)
@@ -121,6 +122,30 @@ const NftCollectionRowInner: FC<{
   )
 }
 
+const NftCollectionRowSkeleton = () => (
+  <div className="bg-grey-900 grid h-32 grid-cols-3 items-center rounded-sm px-8">
+    <div className="flex items-center gap-6">
+      <div className="bg-grey-800 animated-pulse size-16 rounded-sm"></div>
+      <div className="flex grow flex-col gap-2 overflow-hidden">
+        <div className="flex w-full gap-2 overflow-hidden text-base">
+          <span className="text-grey-800 bg-grey-800 animate-pulse truncate rounded-sm font-bold">
+            AAAAAAAAAAA AAAA
+          </span>
+        </div>
+        <div className="flex w-full gap-2 overflow-hidden text-base">
+          <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm text-sm">
+            NNNNNNNNNNN
+          </span>
+        </div>
+      </div>
+    </div>
+    <div></div>
+    <div className="text-right">
+      <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm">1 NFT</span>
+    </div>
+  </div>
+)
+
 const NftCollectionRow: FC<{
   collection: NftCollection
   data: NftData
@@ -162,6 +187,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
             onNftClick={onNftClick}
           />
         ))}
+        {data.status === "loading" && <NftCollectionRowSkeleton />}
       </div>
     </div>
   )
@@ -222,6 +248,12 @@ const NftCollectionTile: FC<{
   )
 }
 
+const NftCollectionTileSkeleton = () => (
+  <div className="w-[21.9rem]">
+    <div className="bg-grey-800 size-[21.9rem] animate-pulse rounded-sm"></div>
+  </div>
+)
+
 const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => void }> = ({
   data,
   onNftClick,
@@ -236,6 +268,7 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
           onNftClick={onNftClick}
         />
       ))}
+      {data.status === "loading" && <NftCollectionTileSkeleton />}
     </div>
   )
 }

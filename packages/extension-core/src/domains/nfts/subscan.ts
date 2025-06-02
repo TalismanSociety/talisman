@@ -15,10 +15,10 @@ export const fetchDotAccountNfts = async (address: string): Promise<AccountNfts>
   if (!isSs58Address(address)) throw new Error("Address is not an EVM address")
 
   const results = await Promise.all(
-    Object.entries(NETWORKS).map(([chainId, subscanChainId]) =>
-      fetchDotAccountChainNfts(address, chainId, subscanChainId),
-    ),
+    Object.keys(NETWORKS).map((chainId) => fetchDotAccountChainNfts(address, chainId)),
   )
+
+  // TODO filter out disabled chains
 
   return results.reduce(
     (acc, item) => {
@@ -30,26 +30,58 @@ export const fetchDotAccountNfts = async (address: string): Promise<AccountNfts>
   )
 }
 
-// Use p-queue to match subscan rate limit of 5 requests per second
-// In practice it seems limited at 1 request per second, maybe because we are not using an api key
-const subscanQueue = new PQueue({
+// Use a global promise queue to comply with subscan rate limit of 5 requests per second
+// In practice it seems limited at 1 request per second, most likely because we are not using an api key
+// The rate limit is global to all of their subdomains
+const SUBSCAN_QUEUE = new PQueue({
   interval: 1000,
   intervalCap: 1,
 })
 
+const postSubscanWithRetry = async <T>(url: string, body: string, maxAttempts = 3) => {
+  try {
+    const result = await SUBSCAN_QUEUE.add(
+      async (): Promise<T> => {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            Content: "application/json",
+          },
+          body,
+        })
+
+        if (!response.ok)
+          throw new Error(`Failed to fetch ${url} (${response.status} - ${response.statusText})`)
+
+        return response.json() as Promise<T>
+      },
+      {
+        timeout: 10_000,
+        throwOnTimeout: true,
+      },
+    )
+
+    if (!result) throw new Error("Failed to fetch")
+
+    return result
+  } catch (err) {
+    if (!maxAttempts) throw new Error("Failed to fetch - max attempts reached")
+    await sleep(1000) // wait before retrying
+    return postSubscanWithRetry(url, body, maxAttempts - 1)
+  }
+}
+
 // assume collections are not changing often, keep them in memory
 const CACHE = new Map<string, NftCollection>()
 
-const fetchDotAccountChainNfts = async (
-  address: string,
-  chainId: string,
-  subscanChainId: string,
-): Promise<AccountNfts> => {
+const fetchDotAccountChainNfts = async (address: string, chainId: string): Promise<AccountNfts> => {
   try {
     if (!isSs58Address(address)) throw new Error("Address is not a Polkadot address")
 
     const allData: GetNftsResponseNft[] = []
 
+    const subscanChainId = NETWORKS[chainId]
     const ITEMS_PER_PAGE = 100
     const MAX_PAGES = 5
     let page = 0
@@ -123,7 +155,6 @@ const fetchDotAccountChainNfts = async (
     log.error("Failed to fetch Polkadot account NFTs", {
       address,
       chainId,
-      subscanChainId,
       error: err,
     })
     throw err
@@ -225,7 +256,8 @@ const itemToOwnedNft = (
 ): AccountNft => ({
   id: `subscan:${chainId}:${nft.collection_id}:${nft.item_id}`,
   collectionId: `subscan:${chainId}:${nft.collection_id}`,
-  contract: "",
+  contract: null,
+  nftCollectionId: nft.collection_id,
   tokenId: nft.item_id,
   networkId: chainId,
   name: nft.metadata.name ?? "",
@@ -282,31 +314,3 @@ const collectionToNftCollection = (
     collection.metadata.external_url,
   ].filter(Boolean) as string[],
 })
-
-const postSubscanWithRetry = async <T>(url: string, body: string, maxAttempts = 3) => {
-  try {
-    const result = await subscanQueue.add(async (): Promise<T> => {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          Content: "application/json",
-        },
-        body,
-      })
-
-      if (!response.ok)
-        throw new Error(`Failed to fetch ${url} (${response.status} - ${response.statusText})`)
-
-      return response.json() as Promise<T>
-    })
-
-    if (!result) throw new Error("Failed to fetch")
-
-    return result
-  } catch (err) {
-    if (!maxAttempts) throw new Error("Failed to fetch - max attempts reached")
-    await sleep(1000) // wait before retrying
-    return postSubscanWithRetry(url, body, maxAttempts - 1)
-  }
-}

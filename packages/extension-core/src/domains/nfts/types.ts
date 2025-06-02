@@ -15,13 +15,14 @@ export type AccountNft = {
   collectionId: string
   tokenId: string
   networkId: string
-  type: string // 'ERC721' | 'ERC1155'
+  type: string // 'ERC721' | 'ERC1155' | 'Polkadot'
   previewUrl: string | null
   imageUrl: string | null
   videoUrl: string | null
   audioUrl: string | null
   name: string
-  contract: string
+  contract: string | null
+  nftCollectionId: string | null // used on solana and polkadot
   marketplaceUrls: string[] | null
   traits: object | null
   price: number | null

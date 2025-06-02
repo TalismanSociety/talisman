@@ -116,9 +116,11 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         <ContextMenuItem onClick={handleHideCollectionClick}>
           {isCollectionHidden ? t("Show collection") : t("Hide collection")}
         </ContextMenuItem>
-        <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
-          {t("Refresh Metadata")}
-        </ContextMenuItem>
+        {!nft.id.startsWith("subscan:") && (
+          <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
+            {t("Refresh Metadata")}
+          </ContextMenuItem>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   )
@@ -143,14 +145,6 @@ const TabContentCollection: FC<{
   return (
     <>
       <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
-        <div className="text-body-secondary">{t("Price")}</div>
-        <div className="text-right">
-          {nft.price ? <Fiat amount={nft.price} forceCurrency="usd" /> : t("Unavailable")}
-        </div>
-        <div className="text-body-secondary">{t("Items")}</div>
-        <div className="text-right">{collection.itemsCount ?? t("Unavailable")}</div>
-        <div className="text-body-secondary">{t("Holders")}</div>
-        <div className="text-right">{collection.ownersCount ?? t("Unavailable")}</div>
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
           <ChainLogo id={nft.networkId} className="text-md" />
@@ -166,6 +160,20 @@ const TabContentCollection: FC<{
         )}
         <div className="text-body-secondary">{t("Type")}</div>
         <div className="text-right">{nft.type ?? t("Unknown")}</div>
+        {!!nft.nftCollectionId && (
+          <>
+            <div className="text-body-secondary">{t("Collection ID")}</div>
+            <div className="text-right">{nft.nftCollectionId}</div>
+          </>
+        )}
+        <div className="text-body-secondary">{t("Price")}</div>
+        <div className="text-right">
+          {nft.price ? <Fiat amount={nft.price} forceCurrency="usd" /> : t("Unknown")}
+        </div>
+        <div className="text-body-secondary">{t("Items")}</div>
+        <div className="text-right">{collection.itemsCount ?? t("Unknown")}</div>
+        <div className="text-body-secondary">{t("Holders")}</div>
+        <div className="text-right">{collection.ownersCount ?? t("Unknown")}</div>
       </div>
       {!!collection.description && (
         <>

@@ -6,10 +6,19 @@ import {
 } from "@talismn/keyring"
 import { getQuery$ } from "@talismn/util"
 import { isEqual } from "lodash"
-import { combineLatest, distinctUntilChanged, map, Observable, shareReplay, switchMap } from "rxjs"
+import {
+  combineLatest,
+  distinctUntilChanged,
+  firstValueFrom,
+  map,
+  Observable,
+  shareReplay,
+  switchMap,
+} from "rxjs"
 
 import { keyringStore } from "../keyring/store"
 import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
+import { fetchEvmNftRefresh } from "./fetchEvmNftRefresh"
 import { nftsStore$, updateNftsStore } from "./store"
 import { fetchDotAccountNfts } from "./subscan"
 import { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
@@ -129,16 +138,12 @@ const nftFromAccountNft = (accountNft: AccountNft): Nft => {
   }
 }
 
-export const refreshNftMetadata = async (_id: string) => {
-  // const nft = nftsStore$.value.nfts.find((n) => n.id === id)
-  // if (!nft) return
-  throw new Error("Not implemented yet")
+export const refreshNftMetadata = async (id: string) => {
+  const store = await firstValueFrom(nftsStore$)
+  const nft = store.nfts.find((nft) => nft.id === id)
+  if (!nft) return
 
-  // const { networkId, contract, tokenId } = nft
-  // await fetchRefreshNftMetadata(networkId, contract, tokenId)
-  // // force an update after 15 seconds, might be lucky !
-  // await sleep(15_000)
-  // // updateData()
-  // we don't know when the refresh will be done, lower the update interval to 10 minute for this session
-  // UPDATE_INTERVAL = 60 * 1000
+  if (nft.id.startsWith("subscan")) throw new Error("Polkadot NFTs cant be refreshed")
+
+  return fetchEvmNftRefresh(id)
 }
