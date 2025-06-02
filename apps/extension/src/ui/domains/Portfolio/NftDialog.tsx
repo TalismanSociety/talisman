@@ -43,6 +43,7 @@ import { Address } from "../Account/Address"
 import { NetworkAddress } from "../Account/AddressLinkOrCopy"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
+import { NftDescription } from "./NftDescription"
 import { NftImage } from "./NftImage"
 
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
@@ -171,7 +172,7 @@ const TabContentCollection: FC<{
           <div className="bg-grey-800 h-0.5"></div>
           <div className="space-y-8 hyphens-auto">
             <div className="text-body-secondary">{t("Description")}</div>
-            <div>{collection.description}</div>
+            <NftDescription text={collection.description} />
           </div>
         </>
       )}
@@ -233,6 +234,13 @@ const TabContentNft: FC<{
           </Fragment>
         ))}
       </div>
+      {(!!nft.description || !!traits.length) && <div className="bg-grey-800 h-0.5"></div>}
+      {!!nft.description && (
+        <div className="space-y-8">
+          <div className="text-body-secondary">{t("Description")}</div>
+          <NftDescription text={nft.description} />
+        </div>
+      )}
       {!!traits.length && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Properties")}</div>
