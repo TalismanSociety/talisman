@@ -216,7 +216,7 @@ const NftCollectionTile: FC<{
   })
 
   return (
-    <div ref={refContainer} className="h-[24.8rem] w-[22rem]">
+    <div ref={refContainer} className="w-[21.9rem]">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )
@@ -227,7 +227,7 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
   onNftClick,
 }) => {
   return (
-    <div className="flex flex-wrap gap-[2.4rem]">
+    <div className="flex flex-wrap gap-[2rem]">
       {data.collections.map((collection, i) => (
         <NftCollectionTile
           key={`${collection.id}-${i}`}
