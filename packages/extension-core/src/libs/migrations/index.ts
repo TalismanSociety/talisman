@@ -19,6 +19,7 @@ import {
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
 import { migrateFromPjsKeyring, migrateLedgerPolkadotCurve } from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
+import { migrateNftsV2 } from "../../domains/nfts/migrations"
 import { migrateSubstrateTokensIds } from "../../domains/transactions/migrations"
 import { Migrations } from "./types"
 
@@ -41,6 +42,7 @@ export const migrations: Migrations = [
   migrateEnabledTestnets,
   migrateSubstrateTokensIds,
   migrateLedgerPolkadotCurve,
+  migrateNftsV2,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
