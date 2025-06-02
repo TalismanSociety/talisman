@@ -63,4 +63,11 @@ jest.mock("../../src/util/isBackgroundPage", () => ({
   isBackgroundPage: jest.fn().mockImplementation(() => true),
 }))
 
+// Mock p-queue and its methods
+jest.mock("p-queue", () => {
+  return jest.fn().mockImplementation(() => ({
+    add: jest.fn((fn) => Promise.resolve(fn())),
+  }))
+})
+
 export {}
