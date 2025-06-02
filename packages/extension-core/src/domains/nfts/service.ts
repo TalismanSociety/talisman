@@ -4,7 +4,7 @@ import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
 } from "@talismn/keyring"
-import { getQuery$ } from "@talismn/util"
+import { getQuery$, isNotNil } from "@talismn/util"
 import { isEqual } from "lodash"
 import {
   combineLatest,
@@ -28,9 +28,23 @@ const ONE_MINUTE = 60 * 1000
 const UPDATE_INTERVAL = ONE_MINUTE // leverage cache on endpoint
 
 const fetchAccountNfts = async (account: Account): Promise<AccountNfts> => {
-  if (isAccountPlatformEthereum(account)) return fetchEvmAccountNfts(account.address)
-  if (isAccountPlatformPolkadot(account)) return fetchDotAccountNfts(account.address)
-  return { nfts: [], collections: [] }
+  // some accounts may own both substrate and ethereum NFTs (ex: ethereum accounts that also own nfts on mythos)
+  const results = await Promise.all(
+    [
+      isAccountPlatformEthereum(account) ? fetchEvmAccountNfts(account.address) : null,
+      isAccountPlatformPolkadot(account) ? fetchDotAccountNfts(account) : null,
+    ].filter(isNotNil),
+  )
+
+  return results.reduce(
+    (acc, curr) => {
+      return {
+        nfts: acc.nfts.concat(...curr.nfts),
+        collections: acc.collections.concat(...curr.collections),
+      }
+    },
+    { nfts: [], collections: [] },
+  )
 }
 
 export const nfts$ = new Observable<NftData>((subscriber) => {

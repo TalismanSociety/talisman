@@ -1,29 +1,39 @@
-import { isSs58Address } from "@talismn/crypto"
-import { sleep } from "@talismn/util"
+import { Account } from "@talismn/keyring"
+import { isNotNil, sleep } from "@talismn/util"
 import { log } from "extension-shared"
 import PQueue from "p-queue"
 
+import { chaindataProvider } from "../../rpcs/chaindata"
+import { isAccountCompatibleWithChain } from "../accounts/helpers"
+import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { AccountNft, AccountNfts, NftCollection } from "./types"
 
 // Talisman ChainId => Subscan chain slug
 const NETWORKS: Record<string, string> = {
   "polkadot-asset-hub": "assethub-polkadot",
   "kusama-asset-hub": "assethub-kusama",
+  // "mythos": "mythos", // it works but they all seem like technical collections without name nor image
 }
 
-export const fetchDotAccountNfts = async (address: string): Promise<AccountNfts> => {
-  if (!isSs58Address(address)) throw new Error("Address is not an EVM address")
+export const fetchDotAccountNfts = async (account: Account): Promise<AccountNfts> => {
+  const activeChains = await activeChainsStore.get()
 
   const results = await Promise.all(
-    Object.keys(NETWORKS).map((chainId) => fetchDotAccountChainNfts(address, chainId)),
+    Object.keys(NETWORKS).map(async (chainId) => {
+      const chain = await chaindataProvider.chainById(chainId)
+      return chain &&
+        isAccountCompatibleWithChain(chain, account) &&
+        isChainActive(chain, activeChains)
+        ? fetchDotAccountChainNfts(account.address, chainId)
+        : null
+    }),
   )
 
-  // TODO filter out disabled chains
-
-  return results.reduce(
+  return results.filter(isNotNil).reduce(
     (acc, item) => {
       acc.nfts.push(...item.nfts)
-      acc.collections.push(...item.collections)
+      for (const col of item.collections)
+        if (!acc.collections.some((c) => c.id === col.id)) acc.collections.push(col)
       return acc
     },
     { nfts: [], collections: [] } as AccountNfts,
@@ -77,8 +87,6 @@ const CACHE = new Map<string, NftCollection>()
 
 const fetchDotAccountChainNfts = async (address: string, chainId: string): Promise<AccountNfts> => {
   try {
-    if (!isSs58Address(address)) throw new Error("Address is not a Polkadot address")
-
     const allData: GetNftsResponseNft[] = []
 
     const subscanChainId = NETWORKS[chainId]
@@ -178,8 +186,7 @@ const getUpdatedAt = async (nft: GetNftsResponseNft, subscanChainId: string) => 
     )
 
     const timestamps = res.data.list?.map((c) => c.block_timestamp) ?? []
-    const updatedAt = Math.max(...timestamps)
-    return updatedAt ?? null
+    return timestamps.length ? Math.max(...timestamps) : null
   } catch (err) {
     log.error("Failed to fetch Polkadot NFT date", {
       nft,
