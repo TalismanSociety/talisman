@@ -9,6 +9,7 @@ import { isEqual } from "lodash"
 import {
   combineLatest,
   distinctUntilChanged,
+  first,
   firstValueFrom,
   map,
   Observable,
@@ -48,8 +49,32 @@ const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<
 }
 
 export const nfts$ = new Observable<NftData>((subscriber) => {
-  const updateData$ = keyringStore.accounts$.pipe(
-    map((allAccounts) => allAccounts.filter(isAccountNotContact)),
+  const nftsCountByAccount$ = nftsStore$.pipe(
+    map(({ nfts }) =>
+      nfts.reduce(
+        (acc, nft) => {
+          if (!acc[nft.owner]) acc[nft.owner] = 0
+          acc[nft.owner]++
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    ),
+    first(), // take only the first value to not retrigger sub if more nfts are added to the store
+  )
+
+  const updateData$ = combineLatest([keyringStore.accounts$, nftsCountByAccount$]).pipe(
+    map(([allAccounts, nftsByAccount]) =>
+      allAccounts
+        .filter(isAccountNotContact)
+        // sort accounts by number of nfts so newly created accounts are prioritised
+        .sort((a1, a2) => (nftsByAccount[a1.address] ?? 0) - (nftsByAccount[a2.address] ?? 0))
+        // but prioritise evm accounts as they only need 1 request each
+        .sort(
+          (a1, a2) =>
+            (isAccountPlatformEthereum(a2) ? 1 : 0) - (isAccountPlatformEthereum(a1) ? 1 : 0),
+        ),
+    ),
     switchMap((accounts) =>
       combineLatest(
         accounts.map((account) =>
