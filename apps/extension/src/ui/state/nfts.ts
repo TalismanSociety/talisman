@@ -268,7 +268,7 @@ export const [useNfts, nfts$] = bind(
 
 export const [useNft, nft$] = bind(
   (id: string | null) =>
-    nfts$.pipe(
+    nftData$.pipe(
       map(({ nfts, collections }) => {
         if (!id) return null
 
