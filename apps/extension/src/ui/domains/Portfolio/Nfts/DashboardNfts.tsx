@@ -242,7 +242,7 @@ const NftCollectionTile: FC<{
   })
 
   return (
-    <div ref={refContainer} className="w-[21.9rem]">
+    <div ref={refContainer} className="h-[24.6rem] w-[21.9rem]">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )

@@ -1,5 +1,5 @@
 import { Account } from "@talismn/keyring"
-import { isNotNil, sleep } from "@talismn/util"
+import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 import PQueue from "p-queue"
 
@@ -88,7 +88,6 @@ const postSubscanWithRetry = async <T>(
   } catch (err) {
     signal.throwIfAborted()
     if (!maxAttempts) throw new Error("Failed to fetch - max attempts reached")
-    await sleep(1000) // wait before retrying
     return postSubscanWithRetry(url, body, signal, maxAttempts - 1)
   }
 }
