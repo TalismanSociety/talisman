@@ -16,7 +16,7 @@ export type QueryResult<
 
 type QueryOptions<T> = {
   queryKey: string
-  queryFn: () => Promise<T>
+  queryFn: (signal: AbortSignal) => Promise<T>
   defaultValue?: T
   refreshInterval?: number
 }
@@ -29,6 +29,8 @@ export const getQuery$ = <T>({
 }: QueryOptions<T>): Observable<QueryResult<T>> => {
   return getCachedObservable$(queryKey, () =>
     new Observable<QueryResult<T>>((subscriber) => {
+      const controller = new AbortController()
+
       const result = new BehaviorSubject<QueryResult<T>>({
         status: "loading",
         data: defaultValue,
@@ -43,14 +45,19 @@ export const getQuery$ = <T>({
 
       // fetch result subscription
       const run = () => {
-        queryFn()
+        if (controller.signal.aborted) return
+
+        queryFn(controller.signal)
           .then((data) => {
+            if (controller.signal.aborted) return
             result.next({ status: "loaded", data, error: undefined })
           })
           .catch((error) => {
+            if (controller.signal.aborted) return
             result.next({ status: "error", data: undefined, error })
           })
           .finally(() => {
+            if (controller.signal.aborted) return
             if (refreshInterval) timeout = setTimeout(run, refreshInterval)
           })
       }
@@ -60,6 +67,7 @@ export const getQuery$ = <T>({
       return () => {
         sub.unsubscribe()
         if (timeout) clearTimeout(timeout)
+        controller.abort(new Error("getQuery$ unsubscribed"))
       }
     }).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
   )

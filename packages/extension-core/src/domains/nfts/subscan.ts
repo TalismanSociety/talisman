@@ -15,7 +15,10 @@ const NETWORKS: Record<string, string> = {
   // "mythos": "mythos", // it works but they all seem like technical collections without name nor image
 }
 
-export const fetchDotAccountNfts = async (account: Account): Promise<AccountNfts> => {
+export const fetchDotAccountNfts = async (
+  account: Account,
+  signal: AbortSignal,
+): Promise<AccountNfts> => {
   const activeChains = await activeChainsStore.get()
 
   const results = await Promise.all(
@@ -24,7 +27,7 @@ export const fetchDotAccountNfts = async (account: Account): Promise<AccountNfts
       return chain &&
         isAccountCompatibleWithChain(chain, account) &&
         isChainActive(chain, activeChains)
-        ? fetchDotAccountChainNfts(account.address, chainId)
+        ? fetchDotAccountChainNfts(account.address, chainId, signal)
         : null
     }),
   )
@@ -48,7 +51,12 @@ const SUBSCAN_QUEUE = new PQueue({
   intervalCap: 1,
 })
 
-const postSubscanWithRetry = async <T>(url: string, body: string, maxAttempts = 3) => {
+const postSubscanWithRetry = async <T>(
+  url: string,
+  body: string,
+  signal: AbortSignal,
+  maxAttempts = 3,
+) => {
   try {
     const result = await SUBSCAN_QUEUE.add(
       async (): Promise<T> => {
@@ -59,6 +67,7 @@ const postSubscanWithRetry = async <T>(url: string, body: string, maxAttempts = 
             Content: "application/json",
           },
           body,
+          signal,
         })
 
         if (!response.ok)
@@ -69,6 +78,7 @@ const postSubscanWithRetry = async <T>(url: string, body: string, maxAttempts = 
       {
         timeout: 10_000,
         throwOnTimeout: true,
+        signal,
       },
     )
 
@@ -76,16 +86,21 @@ const postSubscanWithRetry = async <T>(url: string, body: string, maxAttempts = 
 
     return result
   } catch (err) {
+    signal.throwIfAborted()
     if (!maxAttempts) throw new Error("Failed to fetch - max attempts reached")
     await sleep(1000) // wait before retrying
-    return postSubscanWithRetry(url, body, maxAttempts - 1)
+    return postSubscanWithRetry(url, body, signal, maxAttempts - 1)
   }
 }
 
 // assume collections are not changing often, keep them in memory
 const CACHE = new Map<string, NftCollection>()
 
-const fetchDotAccountChainNfts = async (address: string, chainId: string): Promise<AccountNfts> => {
+const fetchDotAccountChainNfts = async (
+  address: string,
+  chainId: string,
+  signal: AbortSignal,
+): Promise<AccountNfts> => {
   try {
     const allData: GetNftsResponseNft[] = []
 
@@ -97,6 +112,8 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
     let resultsCount: number
 
     do {
+      signal.throwIfAborted()
+
       const { data } = await postSubscanWithRetry<GetNftsResponse>(
         `https://${subscanChainId}.api.subscan.io/api/scan/nfts/info/items`,
         JSON.stringify({
@@ -104,6 +121,7 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
           page,
           row: ITEMS_PER_PAGE,
         }),
+        signal,
       )
 
       allData.push(...(data.list ?? []))
@@ -114,7 +132,7 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
 
     const nfts = await Promise.all(
       allData.map(async (nft) => {
-        const updatedAt = await getUpdatedAt(nft, subscanChainId)
+        const updatedAt = await getUpdatedAt(nft, subscanChainId, signal)
         return itemToOwnedNft(chainId, nft, address, updatedAt)
       }),
     )
@@ -132,6 +150,7 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
           const { data } = await postSubscanWithRetry<GetNftInfoResponse>(
             `https://${subscanChainId}.api.subscan.io/api/scan/nfts/info`,
             JSON.stringify({ collection_id: collectionId }),
+            signal,
           )
 
           const collection = collectionToNftCollection(chainId, collectionId, data)
@@ -140,8 +159,9 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
 
           return collection
         } catch (err) {
-          // fallback
+          signal.throwIfAborted()
 
+          // fallback
           return collectionToNftCollection(chainId, collectionId, {
             collection_id: collectionId,
             data: "",
@@ -160,6 +180,7 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
 
     return { nfts, collections: collections.filter(Boolean) as NftCollection[] }
   } catch (err) {
+    signal.throwIfAborted()
     log.error("Failed to fetch Polkadot account NFTs", {
       address,
       chainId,
@@ -169,7 +190,11 @@ const fetchDotAccountChainNfts = async (address: string, chainId: string): Promi
   }
 }
 
-const getUpdatedAt = async (nft: GetNftsResponseNft, subscanChainId: string) => {
+const getUpdatedAt = async (
+  nft: GetNftsResponseNft,
+  subscanChainId: string,
+  signal: AbortSignal,
+) => {
   try {
     const res = await postSubscanWithRetry<{
       data: {
@@ -183,11 +208,13 @@ const getUpdatedAt = async (nft: GetNftsResponseNft, subscanChainId: string) => 
         row: 100,
         page: 0,
       }),
+      signal,
     )
 
     const timestamps = res.data.list?.map((c) => c.block_timestamp) ?? []
     return timestamps.length ? Math.max(...timestamps) : null
   } catch (err) {
+    signal.throwIfAborted()
     log.error("Failed to fetch Polkadot NFT date", {
       nft,
       error: err,

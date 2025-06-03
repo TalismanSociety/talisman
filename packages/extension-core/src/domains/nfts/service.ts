@@ -27,12 +27,12 @@ const ONE_MINUTE = 60 * 1000
 
 const UPDATE_INTERVAL = ONE_MINUTE // leverage cache on endpoint
 
-const fetchAccountNfts = async (account: Account): Promise<AccountNfts> => {
+const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<AccountNfts> => {
   // some accounts may own both substrate and ethereum NFTs (ex: ethereum accounts that also own nfts on mythos)
   const results = await Promise.all(
     [
-      isAccountPlatformEthereum(account) ? fetchEvmAccountNfts(account.address) : null,
-      isAccountPlatformPolkadot(account) ? fetchDotAccountNfts(account) : null,
+      isAccountPlatformEthereum(account) ? fetchEvmAccountNfts(account.address, signal) : null,
+      isAccountPlatformPolkadot(account) ? fetchDotAccountNfts(account, signal) : null,
     ].filter(isNotNil),
   )
 
@@ -55,7 +55,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
         accounts.map((account) =>
           getQuery$({
             queryKey: `nfts:${account.address}`,
-            queryFn: () => fetchAccountNfts(account),
+            queryFn: (signal) => fetchAccountNfts(account, signal),
             refreshInterval: UPDATE_INTERVAL, // different interval per platform ?
           }).pipe(
             map((nftsData) => ({
@@ -108,17 +108,15 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
 
   const subOutput = combineLatest([nftsStore$, updateData$])
     .pipe(
-      map(([store, update]) => {
+      map(([store, update]): NftData => {
         const { collections, nfts, favoriteNftIds, hiddenNftCollectionIds } = store
-        const data: NftData = {
+        return {
           status: update.status,
           collections,
           nfts: mergeAccountNfts(nfts),
           favoriteNftIds,
           hiddenNftCollectionIds,
         }
-        // console.log("[nfts] subOutput map", { store, update, data })
-        return data
       }),
     )
     .subscribe(subscriber)
@@ -133,23 +131,18 @@ const mergeAccountNfts = (accountNfts: AccountNft[]): Nft[] => {
   const nfts: Nft[] = []
 
   for (const accountNft of accountNfts) {
+    const { owner, amount, ...rest } = accountNft
+
     let nft = nfts.find((n) => n.id === accountNft.id)
     if (!nft) {
-      nft = nftFromAccountNft(accountNft)
+      nft = { ...rest, owners: {} }
       nfts.push(nft)
     }
-    nft.owners[accountNft.owner] = accountNft.amount
+
+    nft.owners[owner] = amount
   }
 
   return nfts
-}
-
-const nftFromAccountNft = (accountNft: AccountNft): Nft => {
-  const { owner, amount, ...rest } = accountNft
-  return {
-    ...rest,
-    owners: { [owner]: amount },
-  }
 }
 
 export const refreshNftMetadata = async (id: string) => {
