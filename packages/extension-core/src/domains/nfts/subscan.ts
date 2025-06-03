@@ -15,34 +15,6 @@ const NETWORKS: Record<string, string> = {
   // "mythos": "mythos", // it works but they all seem like technical collections without name nor image
 }
 
-export const fetchDotAccountNfts = async (
-  account: Account,
-  signal: AbortSignal,
-): Promise<AccountNfts> => {
-  const activeChains = await activeChainsStore.get()
-
-  const results = await Promise.all(
-    Object.keys(NETWORKS).map(async (chainId) => {
-      const chain = await chaindataProvider.chainById(chainId)
-      return chain &&
-        isAccountCompatibleWithChain(chain, account) &&
-        isChainActive(chain, activeChains)
-        ? fetchDotAccountChainNfts(account.address, chainId, signal)
-        : null
-    }),
-  )
-
-  return results.filter(isNotNil).reduce(
-    (acc, item) => {
-      acc.nfts.push(...item.nfts)
-      for (const col of item.collections)
-        if (!acc.collections.some((c) => c.id === col.id)) acc.collections.push(col)
-      return acc
-    },
-    { nfts: [], collections: [] } as AccountNfts,
-  )
-}
-
 // Use a global promise queue to comply with subscan rate limit of 5 requests per second
 // In practice it seems limited at 1 request per second, most likely because we are not using an api key
 // The rate limit is global to all of their subdomains
@@ -50,6 +22,49 @@ const SUBSCAN_QUEUE = new PQueue({
   interval: 1000,
   intervalCap: 1,
 })
+
+// Use another promise queue to ensure accounts are processed only one at a time.
+// This helps displaying first results faster on the front end
+const ACCOUNTS_QUEUE = new PQueue({
+  concurrency: 1,
+})
+
+export const fetchDotAccountNfts = async (
+  account: Account,
+  signal: AbortSignal,
+): Promise<AccountNfts> => {
+  const result = await ACCOUNTS_QUEUE.add(
+    async () => {
+      const activeChains = await activeChainsStore.get()
+
+      const results = await Promise.all(
+        Object.keys(NETWORKS).map(async (chainId) => {
+          const chain = await chaindataProvider.chainById(chainId)
+          return chain &&
+            isAccountCompatibleWithChain(chain, account) &&
+            isChainActive(chain, activeChains)
+            ? fetchDotAccountChainNfts(account.address, chainId, signal)
+            : null
+        }),
+      )
+
+      return results.filter(isNotNil).reduce(
+        (acc, item) => {
+          acc.nfts.push(...item.nfts)
+          for (const col of item.collections)
+            if (!acc.collections.some((c) => c.id === col.id)) acc.collections.push(col)
+          return acc
+        },
+        { nfts: [], collections: [] } as AccountNfts,
+      )
+    },
+    { signal },
+  )
+
+  if (!result) throw new Error(`Failed to fetch dot nfts for ${account.address}`)
+
+  return result
+}
 
 const postSubscanWithRetry = async <T>(
   url: string,
