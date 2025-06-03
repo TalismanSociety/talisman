@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-// import { format } from "date-fns/format"
+import { format } from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import { toPairs } from "lodash"
@@ -217,6 +217,13 @@ const TabContentNft: FC<{
                 </div>
               )}
             </div>
+
+            {!!nft.updatedAt && (
+              <>
+                <div className="text-body-secondary">{t("Updated on")}</div>
+                <div className="text-right">{format(new Date(nft.updatedAt), "P")}</div>
+              </>
+            )}
           </>
         )}
         {Object.entries(nft.owners).map(([address, quantity]) => (
@@ -227,12 +234,10 @@ const TabContentNft: FC<{
               <div className="truncate">
                 <Address address={address} startCharCount={6} endCharCount={6} />
               </div>
-
               <IconButton className="text-base" onClick={() => copyToClipboard(address)}>
                 <CopyIcon />
               </IconButton>
             </div>
-
             {quantity > 1 && (
               <>
                 <div className="text-body-secondary">{t("Quantity")}</div>

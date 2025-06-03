@@ -43,7 +43,7 @@ const NoNftFound = () => {
 }
 
 export const PopupNfts = () => {
-  const showNfts = useFeatureFlag("NFTS")
+  const showNfts = useFeatureFlag("NFTS_V2")
   return showNfts ? <PopupNftsInner /> : <NftsUnavailable />
 }
 

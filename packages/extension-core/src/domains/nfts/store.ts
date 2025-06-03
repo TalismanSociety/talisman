@@ -7,9 +7,6 @@ import { AccountNft, NftCollection } from "./types"
 
 export type NftStoreData = {
   id: "nfts"
-  // accountsKey: string
-  // networksKey: string
-  // timestamp: number | null
   collections: NftCollection[]
   nfts: AccountNft[]
   hiddenNftCollectionIds: string[]
@@ -18,9 +15,6 @@ export type NftStoreData = {
 
 const DEFAULT_DATA: NftStoreData = {
   id: "nfts",
-  // accountsKey: "",
-  // networksKey: "",
-  // timestamp: null,
   collections: [],
   nfts: [],
   hiddenNftCollectionIds: [],
@@ -94,7 +88,3 @@ export const setFavoriteNft = (id: string, isFavorite: boolean) => {
     favoriteNftIds,
   })
 }
-
-// nftsStore$.subscribe((store) => {
-//   console.log("[nfts] store updated:", store)
-// })

@@ -84,7 +84,7 @@ const MainContent: FC = () => {
 }
 
 export const PortfolioAssets = () => {
-  const showNfts = useFeatureFlag("NFTS")
+  const showNfts = useFeatureFlag("NFTS_V2")
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
 

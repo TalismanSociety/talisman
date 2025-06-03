@@ -91,15 +91,14 @@ const getExternalBalances$ = (
     return new Observable<BalanceSubscriptionResponse>((subscriber) => {
       externalBalancePool = new ExternalBalancePool()
 
+      // init synchronously
       subscriber.next({
         data: [],
         status: "initialising",
       })
 
-      // :jean:
+      // TODO refactor pool so it doesnt need an id nor a disconnect function..
       const id = crypto.randomUUID()
-
-      // :jean:
       let disconnect: () => void
       const onDisconnected = new Promise<void>((resolve) => {
         disconnect = () => resolve()
@@ -123,8 +122,8 @@ const getExternalBalances$ = (
       })
 
       return () => {
-        disconnect() // this triggers some 5 sec timeout, then only it will actually unsubscribe
-        externalBalancePool.destroy() // this might not play well with the above
+        disconnect() // this triggers some 5 sec timeout in the pool, then only it will actually unsubscribe
+        externalBalancePool.destroy() // not sure if this plays well with the above, though I havent noticed any issues yet
       }
     }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
   })

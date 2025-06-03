@@ -32,7 +32,7 @@ export const PortfolioRoutes = () => (
 )
 
 const PortfolioToolbar = () => {
-  const showNfts = useFeatureFlag("NFTS")
+  const showNfts = useFeatureFlag("NFTS_V2")
 
   return (
     <Routes>

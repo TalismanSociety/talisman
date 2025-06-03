@@ -70,7 +70,7 @@ export type FeatureFlags = Partial<{
   QUEST_LINK: boolean
   UNIFIED_ADDRESS_BANNER: boolean
   AUTONOMYS_QUEST_BANNER: boolean
-  NFTS: boolean
+  NFTS_V2: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

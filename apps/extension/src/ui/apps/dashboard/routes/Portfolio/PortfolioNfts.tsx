@@ -6,7 +6,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
 export const PortfolioNfts = () => {
-  const showNfts = useFeatureFlag("NFTS")
+  const showNfts = useFeatureFlag("NFTS_V2")
   const { pageOpenEvent } = useAnalytics()
 
   useEffect(() => {

@@ -56,7 +56,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           getQuery$({
             queryKey: `nfts:${account.address}`,
             queryFn: (signal) => fetchAccountNfts(account, signal),
-            refreshInterval: UPDATE_INTERVAL, // different interval per platform ?
+            refreshInterval: UPDATE_INTERVAL,
           }).pipe(
             map((nftsData) => ({
               address: account.address,
