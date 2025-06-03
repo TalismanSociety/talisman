@@ -85,7 +85,7 @@ const subscribeBalancesByParams = async (
 
   const externalBalancePool = new ExternalBalancePool()
 
-  externalBalancePool.setSubcriptionParameters({
+  externalBalancePool.setSubscriptionParameters({
     addressesByChain,
     addressesAndEvmNetworks,
     addressesAndTokens,

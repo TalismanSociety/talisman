@@ -775,7 +775,7 @@ export class ExternalBalancePool extends BalancePool {
     super({ persist: false })
   }
 
-  async setSubcriptionParameters({
+  async setSubscriptionParameters({
     addressesByChain,
     addressesAndEvmNetworks,
     addressesAndTokens,

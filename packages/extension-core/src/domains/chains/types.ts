@@ -7,7 +7,7 @@ import { SignerPayloadGenesisHash } from "../signing/types"
 export type { Chain, ChainId, ChainList, SubstrateRpc } from "@talismn/chaindata-provider"
 
 export type RequestChainGenerateQrAddNetworkSpecs = {
-  genesisHash: SignerPayloadGenesisHash // ussing the imported type from above enables us to stay up to date with upstream changes
+  genesisHash: SignerPayloadGenesisHash // using the imported type from above enables us to stay up to date with upstream changes
 }
 
 export type RequestChainGenerateQrUpdateNetworkMetadata = {

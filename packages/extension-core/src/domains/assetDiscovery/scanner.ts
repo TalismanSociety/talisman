@@ -169,7 +169,7 @@ class AssetDiscoveryScanner {
           if (!addresses.length || !networkIds.length) return
 
           // on wallet unlock, scan networks with forceScan:true
-          // this helps discovery during growth campagins, where users are incentivized to send tokens from CEXs
+          // this helps discovery during growth campaigns, where users are incentivized to send tokens from CEXs
           await this.startScan({ addresses, networkIds, withApi: true })
         } catch (err) {
           log.error("[AssetDiscovery] Failed to start scan on unlock", { err })
