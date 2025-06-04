@@ -13,7 +13,8 @@ export const ReverseButton = () => {
           "absolute left-1/2 top-5 -translate-x-1/2 -translate-y-1/2",
           "flex items-center justify-center",
           "text-primary border-black-secondary text-md rounded-full border border-solid bg-[#2D3121] p-6",
-          "transition-colors hover:bg-[#383d29]",
+          reverse && "transition-colors hover:bg-[#383d29]",
+          !reverse && "text-primary/70 cursor-not-allowed bg-[#2D3121]/70",
         )}
         onClick={reverse}
       >
