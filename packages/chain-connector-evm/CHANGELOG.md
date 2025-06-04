@@ -1,5 +1,12 @@
 # @talismn/chain-connector-evm
 
+## 0.10.7
+
+### Patch Changes
+
+- Updated dependencies [719c548]
+  - @talismn/chaindata-provider@0.10.7
+
 ## 0.10.6
 
 ### Patch Changes
