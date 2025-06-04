@@ -50,6 +50,9 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
       }
     }, [refDiv])
 
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => setIsMounted(true), [])
+
     if (typeof forwardedRef === "function")
       throw new Error("forwardRef as function is not supported")
 
@@ -70,7 +73,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
           )}
         >
           {/* In case of suspense, revDiv.current might be null on first render. This causes problems with child row virtualizers which memoize it, on production builds only */}
-          {!!refDiv.current && (
+          {isMounted && (
             <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
           )}
         </div>
