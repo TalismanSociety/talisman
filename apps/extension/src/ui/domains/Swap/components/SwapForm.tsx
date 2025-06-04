@@ -68,7 +68,7 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
 
   const handleChangeFromAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
-      if (asset && toAsset && asset.id === toAsset.id && reverse) reverse()
+      if (asset && toAsset && asset.id === toAsset.id) reverse()
       else setFromAsset(asset)
     },
     [reverse, setFromAsset, toAsset],
@@ -76,7 +76,7 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
 
   const handleChangeToAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
-      if (asset && fromAsset && asset.id === fromAsset.id && reverse) reverse()
+      if (asset && fromAsset && asset.id === fromAsset.id) reverse()
       else setToAsset(asset)
     },
     [fromAsset, reverse, setToAsset],

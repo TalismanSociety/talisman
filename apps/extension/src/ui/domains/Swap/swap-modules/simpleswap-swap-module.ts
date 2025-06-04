@@ -7,7 +7,7 @@ import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
-import { atom, Getter } from "jotai"
+import { atom, ExtractAtomValue, Getter } from "jotai"
 import { withAtomEffect } from "jotai-effect"
 import { atomWithObservable, loadable } from "jotai/utils"
 import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
@@ -456,24 +456,37 @@ const simpleswapAssetsAtom = atom(async (get) => {
   )
 })
 
+const pairKeyFromPair = (pair: Awaited<ExtractAtomValue<typeof pairsAtom>>[number]) =>
+  pair.toLowerCase()
+const pairKeyFromAsset = (asset: SwappableAssetBaseType) =>
+  asset.context.simpleswap?.symbol.toLowerCase()
+
+const pairsAtom = atom(async (get) => {
+  const fromAsset = get(fromAssetAtom)
+  const { symbol } = fromAsset?.context?.simpleswap ?? {}
+  if (!symbol) return [] // not supported
+
+  const pairs = await simpleSwapSdk.getPairs({ symbol, fixed: false })
+  if (!pairs || !Array.isArray(pairs)) return []
+
+  return pairs
+})
+
 const fromAssetsSelector = atom(async (get) => await get(simpleswapAssetsAtom))
 const toAssetsSelector = atom(async (get) => {
   const allAssets = await get(simpleswapAssetsAtom)
   const fromAsset = get(fromAssetAtom)
   if (!fromAsset) return allAssets
 
-  const symbol = fromAsset.context.simpleswap?.symbol
-  if (!symbol) return [] // not supported
-
-  const pairs = await simpleSwapSdk.getPairs({ symbol, fixed: false })
+  const pairs = await get(pairsAtom)
   if (!pairs || !Array.isArray(pairs)) return []
 
-  return [
-    fromAsset,
-    ...allAssets.filter((asset) =>
-      pairs.find((p) => p.toLowerCase() === asset.context.simpleswap?.symbol.toLowerCase()),
-    ),
-  ]
+  const validDestinations = new Set(pairs.map(pairKeyFromPair))
+  const validDestAssets = allAssets.filter((asset) =>
+    validDestinations.has(pairKeyFromAsset(asset)),
+  )
+
+  return [fromAsset, ...validDestAssets]
 })
 
 const quote: QuoteFunction = loadable(

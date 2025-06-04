@@ -5,7 +5,7 @@ import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
-import { atom, Getter } from "jotai"
+import { atom, ExtractAtomValue, Getter } from "jotai"
 import { withAtomEffect } from "jotai-effect"
 import { atomWithObservable, loadable } from "jotai/utils"
 import createClient from "openapi-fetch"
@@ -71,7 +71,6 @@ const LOGO = stealthexLogo
 type AssetContext = {
   network: string
   symbol: string
-  routeHasCustomFee?: boolean
 }
 
 const supportedEvmChains: Record<string, ViemChain | undefined> = {
@@ -417,39 +416,50 @@ const assetsAtom = atom(async () => {
   )
 })
 
+const pairKeyFromPair = (pair: Awaited<ExtractAtomValue<typeof pairsAtom>>[number]) =>
+  `${pair.network}::${pair.symbol}`
+const pairKeyFromAsset = (asset: SwappableAssetBaseType) =>
+  asset && `${asset.context?.stealthex?.network}::${asset.context?.stealthex?.symbol}`
+
+const pairsAtom = atom(async (get) => {
+  const fromAsset = get(fromAssetAtom)
+  const { symbol, network } = fromAsset?.context?.stealthex ?? {}
+  if (!symbol || !network) return [] // not supported
+
+  const pairs = await stealthexSdk.getPairs({ symbol, network })
+  if (!pairs || !Array.isArray(pairs)) return []
+
+  return pairs
+})
+
+const routeHasCustomFeeAtom = atom(async (get) => {
+  const pairs = await get(pairsAtom)
+  if (!pairs || !Array.isArray(pairs)) return false
+
+  const toAsset = get(toAssetAtom)
+  if (!toAsset || !toAsset.context.stealthex) return false
+  if (!("stealthex" in toAsset.context)) return false
+
+  const toAssetKey = pairKeyFromAsset(toAsset)
+  const pair = pairs.find((pair) => pairKeyFromPair(pair) === toAssetKey)
+  if (!pair) return false
+
+  return !!pair.features.includes("custom_fee")
+})
+
 const fromAssetsSelector = atom(async (get) => await get(assetsAtom))
 const toAssetsSelector = atom(async (get) => {
   const allAssets = await get(assetsAtom)
   const fromAsset = get(fromAssetAtom)
   if (!fromAsset) return allAssets
 
-  const { symbol, network } = fromAsset.context.stealthex
-  if (!symbol || !network) return [] // not supported
-
-  const pairs = await stealthexSdk.getPairs({ symbol, network })
+  const pairs = await get(pairsAtom)
   if (!pairs || !Array.isArray(pairs)) return []
 
-  const keyFromPair = (pair: (typeof pairs)[number]) => `${pair.network}::${pair.symbol}`
-  const keyFromAsset = (asset: (typeof allAssets)[number]) =>
-    `${asset.context?.stealthex?.network}::${asset.context?.stealthex?.symbol}`
-
-  const validDestinations = new Set(pairs.map(keyFromPair))
-  const routeHasCustomFee = Object.fromEntries(
-    pairs.map((pair) => [keyFromPair(pair), pair.features.includes("custom_fee")]),
+  const validDestinations = new Set(pairs.map(pairKeyFromPair))
+  const validDestAssets = allAssets.filter((asset) =>
+    validDestinations.has(pairKeyFromAsset(asset)),
   )
-
-  const validDestAssets = allAssets
-    .filter((asset) => validDestinations.has(keyFromAsset(asset)))
-    .map((asset) => ({
-      ...asset,
-      context: {
-        ...asset.context,
-        stealthex: {
-          ...asset.context.stealthex,
-          routeHasCustomFee: !!routeHasCustomFee[keyFromAsset(asset)],
-        },
-      },
-    }))
 
   return [fromAsset, ...validDestAssets]
 })
@@ -459,9 +469,7 @@ const quote: QuoteFunction = loadable(
     const fromAsset = get(fromAssetAtom)
     const toAsset = get(toAssetAtom)
     const fromAmount = get(fromAmountAtom)
-    const routeHasCustomFee = toAsset?.context.stealthex.routeHasCustomFee
-    if (typeof routeHasCustomFee !== "boolean")
-      throw new Error(`Missing required asset context 'routeHasCustomFee'`)
+    const routeHasCustomFee = await get(routeHasCustomFeeAtom)
 
     if (!fromAsset || !toAsset || !fromAmount || fromAmount.planck === 0n) return null
     const from: AssetContext = fromAsset.context.stealthex
@@ -558,9 +566,7 @@ const exchangeAtom = atom(async (get): Promise<StealthexExchange | undefined> =>
     // cannot swap from BTC
     if (fromAsset.networkType === "btc") throw new Error("Swapping from BTC is not supported.")
 
-    const routeHasCustomFee = toAsset?.context.stealthex.routeHasCustomFee
-    if (typeof routeHasCustomFee !== "boolean")
-      throw new Error(`Missing required asset context 'routeHasCustomFee'`)
+    const routeHasCustomFee = await get(routeHasCustomFeeAtom)
 
     const exchange = await stealthexSdk.createExchange({
       route: { from, to },
