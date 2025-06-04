@@ -530,7 +530,7 @@ const quote: QuoteFunction = loadable(
           fees: [],
           providerLogo: LOGO,
           providerName: PROTOCOL_NAME,
-          talismanFeeBps: TALISMAN_FEE,
+          talismanFee: TALISMAN_FEE,
         }
       }
       return null
@@ -548,7 +548,7 @@ const quote: QuoteFunction = loadable(
       fees: gasFee ? [gasFee] : [],
       providerLogo: LOGO,
       providerName: PROTOCOL_NAME,
-      talismanFeeBps: TALISMAN_FEE,
+      talismanFee: TALISMAN_FEE,
     }
   }),
 )
