@@ -9,6 +9,10 @@ const projectToken = process.env.SIMPLE_LOCALIZE_PROJECT_TOKEN
 const endpoint = `https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES`
 const fallbackLanguages = { en: "English" }
 
+const supportedLanguages = process.env.SUPPORTED_LANGUAGES
+  ? JSON.parse(process.env.SUPPORTED_LANGUAGES.replace(/'/g, '"'))
+  : null
+
 module.exports = class SimpleLocalizeDownloadPlugin {
   constructor(
     options = {
@@ -70,7 +74,8 @@ module.exports = class SimpleLocalizeDownloadPlugin {
 
         setSupportedLanguages(
           options,
-          Object.keys(languages).length > 0 ? languages : fallbackLanguages,
+          // if set via env variable, force that value
+          supportedLanguages ?? (Object.keys(languages).length > 0 ? languages : fallbackLanguages),
         )
       }
       callback()
