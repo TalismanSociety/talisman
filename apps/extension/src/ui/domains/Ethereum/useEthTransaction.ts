@@ -121,22 +121,19 @@ const useBlockFeeData = (
         { gasLimit: blockGasLimit, baseFeePerGas, gasUsed },
         feeHistoryAnalysis,
         estimatedGas,
+        minimumMaxPriorityFeePerGas,
       ] = await Promise.all([
         publicClient.getGasPrice(),
         publicClient.getBlock(),
         withFeeOptions ? getFeeHistoryAnalysis(publicClient) : undefined,
         // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
         estimateGas(publicClient, tx),
+        // publicClient.estimateMaxPriorityFeePerGas() requests eth_maxPriorityFeePerGas method which is not available on all networks
+        // and fallbacks to gasPrice - baseFee if not available
+        withFeeOptions ? publicClient.estimateMaxPriorityFeePerGas() : 0n,
       ])
 
       if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
-        // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
-        let minimumMaxPriorityFeePerGas = gasPrice - feeHistoryAnalysis.nextBaseFee
-        if (minimumMaxPriorityFeePerGas < 0n) {
-          // on a busy network, when there is a sudden lowering of amount of transactions, it can happen that baseFeePerGas is higher than gPrice
-          minimumMaxPriorityFeePerGas = 0n
-        }
-
         // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
         // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
         // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
