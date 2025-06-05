@@ -1,5 +1,11 @@
 # @talismn/on-chain-id
 
+## 0.1.15
+
+### Patch Changes
+
+- @talismn/balances@0.9.9
+
 ## 0.1.14
 
 ### Patch Changes

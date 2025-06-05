@@ -1,5 +1,17 @@
 # @talismn/balances-react
 
+## 0.9.9
+
+### Patch Changes
+
+- Updated dependencies [cb55639]
+  - @talismn/chaindata-provider@0.10.8
+  - @talismn/balances@0.9.9
+  - @talismn/chain-connector@0.10.8
+  - @talismn/chain-connector-evm@0.10.8
+  - @talismn/connection-meta@0.2.14
+  - @talismn/token-rates@2.0.9
+
 ## 0.9.8
 
 ### Patch Changes
