@@ -403,14 +403,15 @@ const simpleSwapSdk = {
 
 const simpleswapAssetsAtom = atom(async (get) => {
   const allCurrencies = await simpleSwapSdk.getAllCurrencies()
+
   const supportedTokens = allCurrencies.filter((currency) => {
     if (currency.isFiat) return false
     const isEvmNetwork = supportedEvmChains[currency.network as keyof typeof supportedEvmChains]
     const isSpecialAsset = specialAssets[currency.symbol]
-    if (isEvmNetwork) {
-      // evm assets must be whitelisted as a special asset or have a contract address
-      return isSpecialAsset || !!currency.contract_address
-    }
+
+    // evm assets must be whitelisted as a special asset or have a contract address
+    if (isEvmNetwork) return isSpecialAsset || !!currency.contract_address
+
     // substrate assets must be whitelisted as a special asset
     return isSpecialAsset
   })
@@ -418,40 +419,42 @@ const simpleswapAssetsAtom = atom(async (get) => {
 
   return Object.values(
     supportedTokens.reduce(
-      (acc, cur) => {
-        const evmChain = supportedEvmChains[cur.network as keyof typeof supportedEvmChains]
-        const polkadotAsset = specialAssets[cur.symbol]
+      (acc, currency) => {
+        const evmChain = supportedEvmChains[currency.network as keyof typeof supportedEvmChains]
+        const polkadotAsset = specialAssets[currency.symbol]
+
         const id = evmChain
           ? getTokenIdForSwappableAsset(
               "evm",
               evmChain.id,
-              cur.contract_address ? cur.contract_address : undefined,
+              currency.contract_address ? currency.contract_address : undefined,
             )
           : polkadotAsset?.id
         const chainId = evmChain ? evmChain.id : polkadotAsset?.chainId
         if (!id || !chainId) return acc
+
         const image =
           (knownTokens[id]?.logo !== githubUnknownTokenLogoUrl
             ? knownTokens[id]?.logo
-            : undefined) ?? cur.image
+            : undefined) ?? currency.image
         const asset: SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }> = {
           id,
-          name: polkadotAsset?.name ?? cur.name,
-          symbol: polkadotAsset?.symbol ?? cur.symbol,
+          name: polkadotAsset?.name ?? currency.name,
+          symbol: polkadotAsset?.symbol ?? currency.symbol,
           chainId,
-          contractAddress: cur.contract_address ? cur.contract_address : undefined,
+          contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,
           networkType: evmChain ? "evm" : (polkadotAsset?.networkType ?? "substrate"),
           assetHubAssetId: polkadotAsset?.assetHubAssetId,
           context: {
             simpleswap: {
-              symbol: cur.symbol,
+              symbol: currency.symbol,
             },
           },
         }
         return { ...acc, [id]: asset }
       },
-      {} as Record<string, SwappableAssetBaseType>,
+      {} as Record<string, SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>>,
     ),
   )
 })

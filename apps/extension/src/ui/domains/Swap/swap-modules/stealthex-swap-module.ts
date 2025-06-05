@@ -1,6 +1,7 @@
 import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { chainConnectorsAtom } from "@talismn/balances-react"
+import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
@@ -25,7 +26,7 @@ import {
   zksync,
 } from "viem/chains"
 
-import { accounts$, getChains$, getEvmNetworksMap$, getToken$ } from "@ui/state"
+import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
 import type { QuoteResponse } from "./common.swap-module.ts"
 import type {
@@ -59,12 +60,41 @@ const apiUrl = "https://stealthex.talisman.xyz"
 export const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
 export const PROTOCOL_NAME = "StealthEX"
 const DECENTRALISATION_SCORE = 1.5
-const TALISMAN_TOTAL_FEE = 0.01 // We take a fee of 1.0%
+type FeeProps = { fromAsset: SwappableAssetBaseType; toAsset: SwappableAssetBaseType }
+const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {
+  const isSubToOrFromEvm =
+    (fromAsset.networkType === "substrate" && toAsset.networkType === "evm") ||
+    (fromAsset.networkType === "evm" && toAsset.networkType === "substrate")
+
+  const isSubToOrFromSub =
+    (fromAsset.networkType === "substrate" && toAsset.networkType === "substrate") ||
+    (fromAsset.networkType === "substrate" && toAsset.networkType === "substrate")
+
+  const isEvmToOrFromEvm =
+    (fromAsset.networkType === "evm" && toAsset.networkType === "evm") ||
+    (fromAsset.networkType === "evm" && toAsset.networkType === "evm")
+
+  const isToOrFromBtc = fromAsset.networkType === "btc" || toAsset.networkType === "btc"
+
+  if (isSubToOrFromEvm) return 0.015 // 1.5% total fee for sub<>evm
+  if (isSubToOrFromSub) return 0.005 // 0.5% total fee for sub<>sub
+  if (isEvmToOrFromEvm) return 0.002 // 0.2% total fee for evm<>evm (NOTE: will actually be 0.4%, as that is the minimum we can set via stealthex for now)
+  if (isToOrFromBtc) return 0.015 // 1.5% total fee for any<>btc
+  return 0.01 // 1.0% total fee by default
+}
 const BUILT_IN_FEE = 0.004 // StealthEX always includes an affiliate fee of 0.4%
-const TALISMAN_ADDITIONAL_FEE = TALISMAN_TOTAL_FEE - BUILT_IN_FEE // We want a total fee of 1.5%, so subtract the built-in fee of 0.4%
+const getAdditionalFee = (feeProps: FeeProps) =>
+  Math.max(
+    // we want a total fee of x,
+    // so get the total talisman fee for this route,
+    // then subtract the built-in fee of 0.4%, which is applied to all exchanges made via stealthex
+    getTalismanTotalFee(feeProps) - BUILT_IN_FEE,
+    // if the talisman total fee is less than the built-in fee, default to an additional_fee of 0.0
+    0,
+  )
 // Our UI represents a 1% fee as `0.01`, but the StealthEX api represents a 1% fee as `1.0`.
 // 1.0 = 0.01 * 100
-const additional_fee_percent = TALISMAN_ADDITIONAL_FEE * 100
+const getAdditionalFeePercent = (feeProps: FeeProps) => getAdditionalFee(feeProps) * 100
 
 const LOGO = stealthexLogo
 
@@ -254,14 +284,14 @@ const stealthexSdk = {
   },
   getRange: async ({
     route,
-    routeHasCustomFee,
     estimation,
     rate,
+    additional_fee_percent,
   }: {
     route: { from: { network: string; symbol: string }; to: { network: string; symbol: string } }
-    routeHasCustomFee: boolean
     estimation?: "direct" | "reversed"
     rate?: "floating" | "fixed"
+    additional_fee_percent?: number
   }): Promise<{ min: BigNumber }> => {
     // default values
     estimation ||= "direct"
@@ -271,9 +301,10 @@ const stealthexSdk = {
       route,
       estimation,
       rate,
-      additional_fee_percent: routeHasCustomFee ? additional_fee_percent : undefined,
+      additional_fee_percent,
     }
-    if (!routeHasCustomFee) delete params.additional_fee_percent
+    if (params.additional_fee_percent === undefined) delete params.additional_fee_percent
+    if (params.additional_fee_percent === 0.0) delete params.additional_fee_percent
 
     const { data: range, error } = await api.POST("/v4/rates/range", { body: params })
     if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
@@ -281,16 +312,16 @@ const stealthexSdk = {
   },
   getEstimate: async ({
     route,
-    routeHasCustomFee,
     amount,
     estimation,
     rate,
+    additional_fee_percent,
   }: {
     route: { from: { network: string; symbol: string }; to: { network: string; symbol: string } }
-    routeHasCustomFee: boolean
     amount: number
     estimation?: "direct" | "reversed"
     rate?: "floating" | "fixed"
+    additional_fee_percent?: number
   }): Promise<number> => {
     // default values
     estimation ||= "direct"
@@ -301,9 +332,10 @@ const stealthexSdk = {
       amount,
       estimation,
       rate,
-      additional_fee_percent: routeHasCustomFee ? additional_fee_percent : undefined,
+      additional_fee_percent,
     }
-    if (!routeHasCustomFee) delete params.additional_fee_percent
+    if (params.additional_fee_percent === undefined) delete params.additional_fee_percent
+    if (params.additional_fee_percent === 0.0) delete params.additional_fee_percent
 
     const { data: estimate, error } = await api.POST("/v4/rates/estimated-amount", { body: params })
     if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
@@ -311,7 +343,6 @@ const stealthexSdk = {
   },
   createExchange: async ({
     route,
-    routeHasCustomFee,
     amount,
     estimation,
     rate,
@@ -319,9 +350,9 @@ const stealthexSdk = {
     extra_id,
     refund_address,
     refund_extra_id,
+    additional_fee_percent,
   }: {
     route: { from: { network: string; symbol: string }; to: { network: string; symbol: string } }
-    routeHasCustomFee: boolean
     amount: number
     estimation?: "direct" | "reversed"
     rate?: "floating" | "fixed"
@@ -329,6 +360,7 @@ const stealthexSdk = {
     extra_id?: string
     refund_address?: string
     refund_extra_id?: string
+    additional_fee_percent?: number
   }): Promise<StealthexExchange> => {
     // default values
     estimation ||= "direct"
@@ -343,12 +375,13 @@ const stealthexSdk = {
       extra_id,
       refund_address,
       refund_extra_id,
-      additional_fee_percent: routeHasCustomFee ? additional_fee_percent : undefined,
+      additional_fee_percent,
     }
     if (extra_id === undefined) delete params.extra_id
     if (refund_address === undefined) delete params.refund_address
     if (refund_extra_id === undefined) delete params.refund_extra_id
-    if (!routeHasCustomFee) delete params.additional_fee_percent
+    if (params.additional_fee_percent === undefined) delete params.additional_fee_percent
+    if (params.additional_fee_percent === 0.0) delete params.additional_fee_percent
 
     const { data: exchange, error } = await api.POST("/v4/exchanges", { body: params })
     if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
@@ -363,7 +396,7 @@ const stealthexSdk = {
   },
 }
 
-const assetsAtom = atom(async () => {
+const assetsAtom = atom(async (get) => {
   const allCurrencies = await stealthexSdk.getAllCurrencies()
 
   const supportedTokens = allCurrencies.filter((currency) => {
@@ -376,6 +409,7 @@ const assetsAtom = atom(async () => {
     // substrate assets must be whitelisted as a special asset
     return isSpecialAsset
   })
+  const knownTokens = await get(atomWithObservable(() => getTokensMap$()))
 
   return Object.values(
     supportedTokens.reduce(
@@ -393,13 +427,17 @@ const assetsAtom = atom(async () => {
         const chainId = evmChain ? evmChain.id : specialAsset?.chainId
         if (!id || !chainId) return acc
 
+        const image =
+          (knownTokens[id]?.logo !== githubUnknownTokenLogoUrl
+            ? knownTokens[id]?.logo
+            : undefined) ?? currency.icon_url
         const asset: SwappableAssetBaseType<{ stealthex: AssetContext }> = {
           id,
           name: specialAsset?.name ?? currency.name,
           symbol: specialAsset?.symbol ?? currency.symbol,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
-          image: currency.icon_url,
+          image,
           networkType: evmChain ? "evm" : (specialAsset?.networkType ?? "substrate"),
           assetHubAssetId: specialAsset?.assetHubAssetId,
           context: {
@@ -479,7 +517,10 @@ const quote: QuoteFunction = loadable(
     // force refresh
     get(swapQuoteRefresherAtom)
 
-    const range = await stealthexSdk.getRange({ route: { from, to }, routeHasCustomFee })
+    const additional_fee_percent = routeHasCustomFee
+      ? getAdditionalFeePercent({ fromAsset, toAsset })
+      : undefined
+    const range = await stealthexSdk.getRange({ route: { from, to }, additional_fee_percent })
     if (range && range.min.isGreaterThan(fromAmount.toString()))
       throw new Error(`StealthEX minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
@@ -488,8 +529,8 @@ const quote: QuoteFunction = loadable(
       // Error format: `return { decentralisationScore: DECENTRALISATION_SCORE, protocol: PROTOCOL, inputAmountBN: fromAmount.planck, outputAmountBN: 0n, error: '<error here>', timeInSec: 5 * 60, fees: [], providerLogo: LOGO, providerName: PROTOCOL_NAME, talismanFee: TALISMAN_TOTAL_FEE, }`
       const estimate = await stealthexSdk.getEstimate({
         route: { from, to },
-        routeHasCustomFee,
         amount: fromAmount.toNumber(),
+        additional_fee_percent,
       })
 
       const gasFee = await estimateGas(get)
@@ -504,7 +545,7 @@ const quote: QuoteFunction = loadable(
         fees: gasFee ? [gasFee] : [],
         providerLogo: LOGO,
         providerName: PROTOCOL_NAME,
-        talismanFee: TALISMAN_TOTAL_FEE,
+        talismanFee: getTalismanTotalFee({ fromAsset, toAsset }),
       }
     } catch (cause) {
       // eslint-disable-next-line no-console
@@ -568,11 +609,14 @@ const exchangeAtom = atom(async (get): Promise<StealthexExchange | undefined> =>
 
     const routeHasCustomFee = await get(routeHasCustomFeeAtom)
 
+    const additional_fee_percent = routeHasCustomFee
+      ? getAdditionalFeePercent({ fromAsset, toAsset })
+      : undefined
     const exchange = await stealthexSdk.createExchange({
       route: { from, to },
-      routeHasCustomFee,
       amount: amount.toNumber(),
       address: toAddress,
+      additional_fee_percent,
     })
     if (!exchange) throw new Error("Error creating exchange")
 
