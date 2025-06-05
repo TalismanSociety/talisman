@@ -526,7 +526,7 @@ const quote: QuoteFunction = loadable(
 
     try {
       // TODO: Return `null` or an error when getRange / getEstimate fails
-      // Error format: `return { decentralisationScore: DECENTRALISATION_SCORE, protocol: PROTOCOL, inputAmountBN: fromAmount.planck, outputAmountBN: 0n, error: '<error here>', timeInSec: 5 * 60, fees: [], providerLogo: LOGO, providerName: PROTOCOL_NAME, talismanFee: TALISMAN_TOTAL_FEE, }`
+      // Error format: `return { decentralisationScore: DECENTRALISATION_SCORE, protocol: PROTOCOL, inputAmountBN: fromAmount.planck, outputAmountBN: 0n, error: '<error here>', timeInSec: 5 * 60, fees: [], providerLogo: LOGO, providerName: PROTOCOL_NAME, talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE), }`
       const estimate = await stealthexSdk.getEstimate({
         route: { from, to },
         amount: fromAmount.toNumber(),
@@ -545,7 +545,7 @@ const quote: QuoteFunction = loadable(
         fees: gasFee ? [gasFee] : [],
         providerLogo: LOGO,
         providerName: PROTOCOL_NAME,
-        talismanFee: getTalismanTotalFee({ fromAsset, toAsset }),
+        talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE),
       }
     } catch (cause) {
       // eslint-disable-next-line no-console
