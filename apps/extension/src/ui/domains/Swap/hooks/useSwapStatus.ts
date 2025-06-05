@@ -59,9 +59,9 @@ export const swapStatusAtom = atomFamily((protocolAndId?: string) =>
     const [protocol, id] = protocolAndId.split("::")
     const retryStatus = (() => {
       switch (protocol) {
-        case "simpleswap":
+        case "swap-simpleswap":
           return retrySimpleswapStatus
-        case "stealthex":
+        case "swap-stealthex":
           return retryStealthexStatus
         default:
           return
