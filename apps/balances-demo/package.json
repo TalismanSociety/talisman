@@ -13,8 +13,8 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "devDependencies": {
-    "@polkadot/api": "16.1.2",
-    "@polkadot/extension-dapp": "0.59.1",
+    "@polkadot/api": "15.8.1",
+    "@polkadot/extension-dapp": "0.56.2",
     "@tailwindcss/forms": "^0.5.9",
     "@talismn/balances": "workspace:*",
     "@talismn/balances-react": "workspace:*",
