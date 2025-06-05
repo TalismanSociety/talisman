@@ -48,10 +48,10 @@
     "viem": "^2.27.3"
   },
   "devDependencies": {
-    "@polkadot/api-contract": "15.8.1",
-    "@polkadot/types": "15.8.1",
-    "@polkadot/util": "13.4.3",
-    "@polkadot/util-crypto": "13.4.3",
+    "@polkadot/api-contract": "16.1.2",
+    "@polkadot/types": "16.1.2",
+    "@polkadot/util": "13.5.1",
+    "@polkadot/util-crypto": "13.5.1",
     "@substrate/txwrapper-core": "7.5.3",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
