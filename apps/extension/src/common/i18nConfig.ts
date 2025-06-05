@@ -56,7 +56,7 @@ i18next
     returnNull: false,
     returnEmptyString: false,
 
-    debug: true,
+    debug: false,
 
     // user lang auto-detection config
     detection: {
