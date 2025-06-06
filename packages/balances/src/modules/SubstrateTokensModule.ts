@@ -11,13 +11,15 @@ import {
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
-  decodeMetadata,
+  decAnyMetadata,
   decodeScale,
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
   getLookupFn,
+  getMetadataVersion,
   papiParse,
+  unifyMetadata,
 } from "@talismn/scale"
 import { compressToEncodedURIComponent } from "lz-string"
 import { Binary } from "polkadot-api"
@@ -101,13 +103,13 @@ export const SubTokensModule: NewBalanceModule<
       if (metadataRpc === undefined) return { isTestnet }
       if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
-      if (!metadata) return { isTestnet }
-
+      // TODO understand why this is needed
+      const metadataVersion = getMetadataVersion(metadataRpc)
+      const metadata = decAnyMetadata(metadataRpc)
       const palletId = moduleConfig?.palletId ?? defaultPalletId
       compactMetadata(metadata, [{ pallet: palletId, items: ["Accounts"] }])
 
-      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
+      const miniMetadata = encodeMetadata(metadata)
 
       return palletId === defaultPalletId
         ? { isTestnet, miniMetadata, metadataVersion }
@@ -213,9 +215,7 @@ export const SubTokensModule: NewBalanceModule<
         }
       })()
 
-      const { metadata } = decodeMetadata(metadataRpc)
-      if (metadata === undefined) throw new Error("Unable to decode metadata")
-
+      const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
       const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
 
       const tryBuildCallData = (

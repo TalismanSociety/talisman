@@ -183,7 +183,7 @@ const signPayload = async (
       )
     if (!registry) throw getTalismanLedgerError(t("Missing registry."))
 
-    const hasCheckMetadataHash = registry.metadata.extrinsic.signedExtensions.some(
+    const hasCheckMetadataHash = registry.metadata.extrinsic.transactionExtensions.some(
       (ext) => ext.identifier.toString() === "CheckMetadataHash",
     )
     if (!hasCheckMetadataHash)

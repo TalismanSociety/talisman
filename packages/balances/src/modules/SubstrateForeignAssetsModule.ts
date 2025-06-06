@@ -11,13 +11,16 @@ import {
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
+  decAnyMetadata,
   decodeMetadata,
   decodeScale,
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
   getLookupFn,
+  getMetadataVersion,
   papiParse,
+  unifyMetadata,
 } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
@@ -87,14 +90,14 @@ export const SubForeignAssetsModule: NewBalanceModule<
       if (metadataRpc === undefined) return { isTestnet }
       if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
-      if (!metadata) return { isTestnet }
+      const metadataVersion = getMetadataVersion(metadataRpc)
+      const metadata = decAnyMetadata(metadataRpc)
 
       compactMetadata(metadata, [
         { pallet: "ForeignAssets", items: ["Account", "Asset", "Metadata"] },
       ])
 
-      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
+      const miniMetadata = encodeMetadata(metadata)
 
       return { isTestnet, miniMetadata, metadataVersion }
     },
@@ -106,10 +109,10 @@ export const SubForeignAssetsModule: NewBalanceModule<
       if (miniMetadata === undefined || metadataVersion === undefined) return {}
       if (metadataVersion < 14) return {}
 
-      const { metadata } = decodeMetadata(miniMetadata)
-      if (metadata === undefined) return {}
+      const metadata = decAnyMetadata(miniMetadata)
+      const unifiedMetadata = unifyMetadata(metadata)
 
-      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+      const scaleBuilder = getDynamicBuilder(getLookupFn(unifiedMetadata))
       const assetCoder = scaleBuilder.buildStorage("ForeignAssets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("ForeignAssets", "Metadata")
 
@@ -257,7 +260,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const { metadata } = decodeMetadata(metadataRpc)
       if (metadata === undefined) throw new Error("Unable to decode metadata")
 
-      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+      const scaleBuilder = getDynamicBuilder(getLookupFn(unifyMetadata(metadata)))
       try {
         const { location, codec } = scaleBuilder.buildCall(pallet, method)
         const callData = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))

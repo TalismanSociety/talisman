@@ -3,7 +3,8 @@ import { Chain } from "./types"
 
 export const getCallDocs = (chain: Chain, pallet: string, method: string): string | null => {
   try {
-    const typeIdCalls = chain.metadata.pallets.find(({ name }) => name === pallet)?.calls
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const typeIdCalls = chain.metadata.pallets.find(({ name }) => name === pallet)?.calls?.type
     if (!typeIdCalls) return null
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

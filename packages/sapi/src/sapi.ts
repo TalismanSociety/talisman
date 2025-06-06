@@ -1,7 +1,7 @@
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { SignerPayloadJSON } from "@polkadot/types/types"
 import { assert } from "@polkadot/util"
-import { decodeMetadata, getDynamicBuilder, getLookupFn } from "@talismn/scale"
+import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 
 import { getCallDocs } from "./helpers/getCallDocs"
 import { getChainInfo } from "./helpers/getChainInfo"
@@ -18,6 +18,8 @@ import { isApiAvailable } from "./helpers/isApiAvailable"
 import { Chain } from "./helpers/types"
 import { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
 
+import "@polkadot-api/substrate-bindings"
+
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 
 export const getScaleApi = (
@@ -28,10 +30,9 @@ export const getScaleApi = (
   signedExtensions?: ExtDef,
   registryTypes?: unknown,
 ) => {
-  const decoded = decodeMetadata(hexMetadata)
-  assert(decoded.metadata, `Missing Metadata V14+ for chain ${connector.chainId}`)
+  const metadata = unifyMetadata(decAnyMetadata(hexMetadata)) // unifyMetadata()
+  assert(metadata, `Missing Metadata V14+ for chain ${connector.chainId}`)
 
-  const { metadata } = decoded
   const lookup = getLookupFn(metadata)
   const builder = getDynamicBuilder(lookup)
 

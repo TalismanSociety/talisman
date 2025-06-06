@@ -12,12 +12,15 @@ import {
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
+  decAnyMetadata,
   decodeMetadata,
   decodeScale,
   encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
   getLookupFn,
+  getMetadataVersion,
+  unifyMetadata,
 } from "@talismn/scale"
 import { isBigInt } from "@talismn/util"
 import camelCase from "lodash/camelCase"
@@ -89,15 +92,15 @@ export const SubEquilibriumModule: NewBalanceModule<
       if (metadataRpc === undefined) return { isTestnet }
       if (moduleConfig?.disable !== false) return { isTestnet } // default to disabled
 
-      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
-      if (!metadata) return { isTestnet }
+      const metadataVersion = getMetadataVersion(metadataRpc)
+      const metadata = decAnyMetadata(metadataRpc)
 
       compactMetadata(metadata, [
         { pallet: "EqAssets", items: ["Assets"] },
         { pallet: "System", items: ["Account"] },
       ])
 
-      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
+      const miniMetadata = encodeMetadata(metadata)
 
       return { isTestnet, miniMetadata, metadataVersion }
     },
@@ -114,7 +117,7 @@ export const SubEquilibriumModule: NewBalanceModule<
       if (metadata === undefined) return {}
 
       try {
-        const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+        const scaleBuilder = getDynamicBuilder(getLookupFn(unifyMetadata(metadata)))
         const assetsCoder = scaleBuilder.buildStorage("EqAssets", "Assets")
         const stateKey = assetsCoder.keys.enc()
 

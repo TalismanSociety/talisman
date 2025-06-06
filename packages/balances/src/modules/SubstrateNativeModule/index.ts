@@ -5,10 +5,12 @@ import { ChainConnectionError } from "@talismn/chain-connector"
 import { githubTokenLogoUrl, TokenId } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
-  decodeMetadata,
+  decAnyMetadata,
   encodeMetadata,
   getDynamicBuilder,
   getLookupFn,
+  getMetadataVersion,
+  unifyMetadata,
 } from "@talismn/scale"
 import { Deferred } from "@talismn/util"
 import camelCase from "lodash/camelCase"
@@ -60,6 +62,7 @@ import { SubNativeBalanceError } from "./util/SubNativeBalanceError"
 export { filterBaseLocks, getLockTitle } from "./util/balanceLockTypes"
 export type { BalanceLockType } from "./util/balanceLockTypes"
 
+export { subNativeTokenId } from "./types"
 export type {
   CustomSubNativeToken,
   ModuleType,
@@ -69,7 +72,6 @@ export type {
   SubNativeToken,
   SubNativeTransferParams,
 } from "./types"
-export { subNativeTokenId } from "./types"
 
 const DEFAULT_SYMBOL = "Unit"
 const DEFAULT_DECIMALS = 0
@@ -114,17 +116,17 @@ export const SubNativeModule: NewBalanceModule<
       //
       // process metadata into SCALE encoders/decoders
       //
-
-      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
-      if (!metadata) return { isTestnet, symbol, decimals }
+      const metadataVersion = getMetadataVersion(metadataRpc)
+      const metadata = decAnyMetadata(metadataRpc)
+      const unifiedMetadata = unifyMetadata(metadata)
 
       //
       // get runtime constants
       //
 
-      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+      const scaleBuilder = getDynamicBuilder(getLookupFn(unifiedMetadata))
       const getConstantValue = (palletName: string, constantName: string) => {
-        const encodedValue = metadata.pallets
+        const encodedValue = unifiedMetadata.pallets
           .find(({ name }) => name === palletName)
           ?.constants.find(({ name }) => name === constantName)?.value
         if (!encodedValue) return
@@ -160,10 +162,10 @@ export const SubNativeModule: NewBalanceModule<
         ],
       )
 
-      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
+      const miniMetadata = encodeMetadata(metadata)
 
       const hasFreezesItem = Boolean(
-        metadata.pallets
+        unifiedMetadata.pallets
           .find(({ name }) => name === "Balances")
           ?.storage?.items.find(({ name }) => name === "Freezes"),
       )

@@ -1,9 +1,8 @@
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { getDynamicBuilder, getLookupFn, V14, V15 } from "@talismn/scale"
+import { getDynamicBuilder, getLookupFn, UnifiedMetadata } from "@talismn/scale"
 
 import { SapiConnector } from "./getSapiConnector"
 
-export type ScaleMetadata = V14 | V15
 export type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
 export type ScaleLookup = ReturnType<typeof getLookupFn>
 
@@ -14,7 +13,7 @@ export type Chain = {
   hasCheckMetadataHash?: boolean
   signedExtensions?: ExtDef
   registryTypes?: unknown
-  metadata: ScaleMetadata
+  metadata: UnifiedMetadata
   lookup: ScaleLookup
   builder: ScaleBuilder
 }
