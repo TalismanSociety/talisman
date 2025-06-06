@@ -4,7 +4,9 @@
 const noop = (..._data: any[]) => {}
 
 /**
- **/
+ * A simple logging utility that provides methods for logging errors, warnings, logs, and debug messages.
+ * It also includes a timer utility for measuring the duration of operations.
+ */
 export const log = {
   error: typeof console.error === "function" ? console.error.bind(console) : noop,
   warn: typeof console.warn === "function" ? console.warn.bind(console) : noop,
