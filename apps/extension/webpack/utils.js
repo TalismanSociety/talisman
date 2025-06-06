@@ -91,9 +91,6 @@ const getSentryPlugin = (env) => {
   })
 }
 
-const dropConsole = (env) =>
-  ["production", "canary"].includes(env.build) && process.env.NODE_ENV !== "TEST"
-
 const updateManifestDetails = async (env, manifest) => {
   const data = await readFile(path.join(manifestDir, `${browser}.json`), "utf-8")
   const browserSpecificManifestDetails = JSON.parse(data)
@@ -130,5 +127,4 @@ module.exports = {
   getManifestVersionName,
   getArchiveFileName,
   getSentryPlugin,
-  dropConsole,
 }
