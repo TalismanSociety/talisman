@@ -1,17 +1,17 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
-import { DEBUG } from "./constants"
 
 /** A function which does nothing. */
 const noop = (..._data: any[]) => {}
 
 /**
- * Provides a convenience wrapper around the console methods to only log when DEBUG mode is enabled.
- **/
+ * A simple logging utility that provides methods for logging errors, warnings, logs, and debug messages.
+ * It also includes a timer utility for measuring the duration of operations.
+ */
 export const log = {
-  error: DEBUG && typeof console.error === "function" ? console.error.bind(console) : noop,
-  warn: DEBUG && typeof console.warn === "function" ? console.warn.bind(console) : noop,
-  log: DEBUG && typeof console.log === "function" ? console.log.bind(console) : noop,
-  debug: DEBUG && typeof console.debug === "function" ? console.debug.bind(console) : noop,
+  error: typeof console.error === "function" ? console.error.bind(console) : noop,
+  warn: typeof console.warn === "function" ? console.warn.bind(console) : noop,
+  log: typeof console.log === "function" ? console.log.bind(console) : noop,
+  debug: typeof console.debug === "function" ? console.debug.bind(console) : noop,
 
   /**
    * A convenient way to create a debug timer.
@@ -22,8 +22,6 @@ export const log = {
    * done()
    **/
   timer: (label: string) => {
-    if (!DEBUG) return () => {}
-
     const timeKey = `${label} (${crypto.randomUUID()})`
     console.time(timeKey)
 
