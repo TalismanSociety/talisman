@@ -16,7 +16,6 @@ const {
   getArchiveFileName,
   manifestDir,
   getSentryPlugin,
-  dropConsole,
 } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
@@ -106,8 +105,6 @@ const config = (env) => {
           terserOptions: {
             compress: {
               defaults: true,
-              // Drop any calls to console.error/warn/log/debug from production/canary builds, and when running tests
-              drop_console: dropConsole(env) ? ["error", "warn", "log", "debug"] : false,
             },
           },
         }),
