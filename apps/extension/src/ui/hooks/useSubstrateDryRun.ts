@@ -20,8 +20,6 @@ export const useSubstrateDryRun = (jsonPayload: SignerPayloadJSON | null | undef
       if (!jsonPayload) return null
 
       const sapi = await getSapiFromSignerPayloadJSON(jsonPayload)
-      if (!sapi) return null
-
       if (!sapi?.isApiAvailable("DryRunApi", "dry_run_call")) return null
 
       const decodedCall = sapi.getDecodedCallFromPayload(jsonPayload)
