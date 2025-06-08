@@ -16,8 +16,7 @@ export const getCheckMetadataHashPayloadProps = (
   )
   if (!hasCheckMetadataHash) return {}
 
-  const lookup = getLookupFn(metadata)
-  const builder = getDynamicBuilder(lookup)
+  const builder = getDynamicBuilder(getLookupFn(metadata))
 
   const metadataHash = merkleizeMetadata(metadataRpc, {
     tokenSymbol: token.symbol,
