@@ -226,7 +226,7 @@ export const SubTokensModule: NewBalanceModule<
         try {
           const { location, codec } = scaleBuilder.buildCall(pallet, method)
           return [
-            Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args))),
+            Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)])),
             undefined,
           ]
         } catch (cause) {

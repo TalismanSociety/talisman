@@ -19,7 +19,7 @@ export const getSignerPayloadJSON = async (
   chainInfo: ChainInfo,
 ): Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array }> => {
   const { codec, location } = chain.builder.buildCall(palletName, methodName)
-  const method = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
+  const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
 
   const blockNumber = await getStorageValue<number>(chain, "System", "Number", [])
   if (blockNumber === null) throw new Error("Block number not found")

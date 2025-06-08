@@ -41,7 +41,7 @@ export const getPayloadWithMetadataHash = (
 
     // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
     // const { extra, additionalSigned } = getSignedExtensionValues(payload, metadata)
-    // const badExtPayload = mergeUint8(fromHex(payload.method), ...extra, ...additionalSigned)
+    // const badExtPayload = mergeUint8([fromHex(payload.method), ...extra, ...additionalSigned])
 
     const registry = getTypeRegistry(chain, payload)
     const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)

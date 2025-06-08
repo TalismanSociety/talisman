@@ -263,7 +263,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const scaleBuilder = getDynamicBuilder(getLookupFn(unifyMetadata(metadata)))
       try {
         const { location, codec } = scaleBuilder.buildCall(pallet, method)
-        const callData = Binary.fromBytes(mergeUint8(new Uint8Array(location), codec.enc(args)))
+        const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
 
         return { type: "substrate", callData: toHex(callData.asBytes()) }
       } catch (cause) {
