@@ -28,7 +28,7 @@ import {
 
 import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
-import type { QuoteResponse } from "./common.swap-module.ts"
+import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
@@ -534,6 +534,16 @@ const quote: QuoteFunction = loadable(
       })
 
       const gasFee = await estimateGas(get)
+      // relative fee, multiply by fromAmount to get planck fee
+      const talismanFee = Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE)
+      // add talisman fee
+      const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
+        amount: BigNumber(fromAmount.planck.toString())
+          .times(BigNumber(10).pow(-fromAmount.decimals))
+          .times(talismanFee),
+        name: "Talisman Fee",
+        tokenId: fromAsset.id,
+      })
 
       return {
         decentralisationScore: DECENTRALISATION_SCORE,
@@ -542,10 +552,10 @@ const quote: QuoteFunction = loadable(
         outputAmountBN: Decimal.fromUserInput(String(estimate), toAsset.decimals).planck,
         // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
         timeInSec: 5 * 60,
-        fees: gasFee ? [gasFee] : [],
+        fees,
         providerLogo: LOGO,
         providerName: PROTOCOL_NAME,
-        talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE),
+        talismanFee,
       }
     } catch (cause) {
       // eslint-disable-next-line no-console
@@ -783,9 +793,9 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
         to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
         value: 0n,
       })
-      const amount = Decimal.fromPlanck(gasPrice * gasLimit, nativeToken.decimals ?? 0, {
-        currency: nativeToken.symbol,
-      })
+      const amount = BigNumber(gasPrice.toString())
+        .times(gasLimit.toString())
+        .times(BigNumber(10).pow(-(nativeToken.decimals ?? 0)))
       return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
     }
 
@@ -815,12 +825,11 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
           fromAmount.planck,
         )
   const decimals = transferTx.registry.chainDecimals[0] ?? 10 // default to polkadot decimals 10
-  const symbol = transferTx.registry.chainTokens[0] ?? "DOT" // default to polkadot symbol 'DOT'
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
   return {
     name: "Est. Gas Fees",
     tokenId: substrateChain?.nativeToken?.id ?? "polkadot-substrate-native",
-    amount: Decimal.fromPlanck(paymentInfo.partialFee.toBigInt(), decimals, { currency: symbol }),
+    amount: BigNumber(paymentInfo.partialFee.toString()).times(BigNumber(10).pow(-decimals)),
   }
 }
 

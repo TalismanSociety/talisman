@@ -2,6 +2,7 @@ import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
 import { Chain, Token } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
+import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
@@ -61,8 +62,7 @@ const getSubstratePayloadMetadata = async ({
     )
     assert(metadataRpc, "Unable to get metadata rpc")
 
-    // TODO try and avoid creating new metadata object
-    const metadata = registry.createType("Metadata", metadataRpc)
+    const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
 
     // generate the sapi object if possible
     const sapi =
@@ -84,10 +84,7 @@ const getSubstratePayloadMetadata = async ({
     // check if runtime supports CheckMetadataHash
     const hasCheckMetadataHash =
       chain.hasCheckMetadataHash && // this can be toggled off from chaindata
-      metadata.version >= 15 &&
-      metadata.asLatest.extrinsic.signedExtensions.some(
-        (ext) => ext.identifier.toString() === "CheckMetadataHash",
-      )
+      metadata.extrinsic.signedExtensions.some((ext) => ext.identifier === "CheckMetadataHash")
 
     // it is not possible to generate a valid metadata hash for dev chains as they are missing symbol and decimals in their chain spec
     // this should be check using a system_properties rpc call but checking token details achieves the same thing

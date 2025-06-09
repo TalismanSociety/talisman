@@ -1,4 +1,4 @@
-import { XcmVersionedLocation } from "@polkadot-api/descriptors"
+import { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { Chain } from "extension-core"
 import { log } from "extension-shared"
 
@@ -9,7 +9,7 @@ const getParachain = (relayId: string, paraId: number, chains: Chain[]): Chain =
 }
 
 export const getChainFromXcmLocation = (
-  multiLocation: XcmVersionedLocation,
+  multiLocation: XcmVersionedLocation | HydrationXcmVersionedLocation,
   chain: Chain,
   chains: Chain[],
 ): Chain => {
@@ -37,7 +37,7 @@ export const getChainFromXcmLocation = (
     }
 
     const parachain = interior.value.find((i) => i.type === "Parachain")
-    if (parachain) return getParachain(relayId, parachain.value, chains)
+    if (parachain?.type === "Parachain") return getParachain(relayId, parachain.value, chains)
 
     return chain // assume location targets something on current chain
   } catch (err) {

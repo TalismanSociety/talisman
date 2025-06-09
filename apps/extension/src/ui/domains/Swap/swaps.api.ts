@@ -1,5 +1,6 @@
 import type { PrimitiveAtom } from "jotai"
 import { evmErc20TokenId } from "@talismn/balances"
+import BigNumber from "bignumber.js"
 import { isAccountAddressEthereum, isAccountAddressSs58, remoteConfigStore } from "extension-core"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
@@ -403,10 +404,12 @@ export const sortedQuotesAtom = atom(async (get) => {
   return quotes.data
     ?.map((q) => {
       if (q.state !== "hasData") return { quote: q, fees: 0 }
-      const fees = q.data?.fees.reduce((acc, fee) => {
-        const rate = tokenRates[fee.tokenId]?.usd?.price ?? 0
-        return acc + fee.amount.toNumber() * rate
-      }, 0)
+      const fees = q.data?.fees
+        .reduce((acc, fee) => {
+          const rate = tokenRates[fee.tokenId]?.usd?.price ?? 0
+          return acc.plus(fee.amount.times(rate))
+        }, BigNumber(0))
+        ?.toNumber()
       return {
         quote: q,
         fees,

@@ -10,15 +10,17 @@ import {
   Token,
 } from "@talismn/chaindata-provider"
 import {
-  Binary,
   compactMetadata,
-  decodeMetadata,
+  decAnyMetadata,
   decodeScale,
   encodeMetadata,
   getDynamicBuilder,
   getLookupFn,
+  getMetadataVersion,
+  unifyMetadata,
 } from "@talismn/scale"
 import camelCase from "lodash/camelCase"
+import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -86,12 +88,12 @@ export const SubAssetsModule: NewBalanceModule<
       if (metadataRpc === undefined) return { isTestnet }
       if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
-      if (!metadata) return { isTestnet }
+      const metadataVersion = getMetadataVersion(metadataRpc)
+      const metadata = decAnyMetadata(metadataRpc)
 
       compactMetadata(metadata, [{ pallet: "Assets", items: ["Account", "Asset", "Metadata"] }])
 
-      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
+      const miniMetadata = encodeMetadata(metadata)
 
       return { isTestnet, miniMetadata, metadataVersion }
     },
@@ -103,9 +105,7 @@ export const SubAssetsModule: NewBalanceModule<
       if (miniMetadata === undefined || metadataVersion === undefined) return {}
       if (metadataVersion < 14) return {}
 
-      const { metadata } = decodeMetadata(miniMetadata)
-      if (metadata === undefined) return {}
-
+      const metadata = unifyMetadata(decAnyMetadata(miniMetadata))
       const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")

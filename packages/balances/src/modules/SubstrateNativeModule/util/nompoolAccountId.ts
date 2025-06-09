@@ -18,7 +18,7 @@ const nompoolAccountId = (palletId: string, poolId: string | number, index: numb
   const remainingBytes = 32 - length
   const encEmptyH256 = new Uint8Array(remainingBytes)
 
-  const bytes = mergeUint8(encModPrefix, encPalletId, encIndex, encPoolId, encEmptyH256)
+  const bytes = mergeUint8([encModPrefix, encPalletId, encIndex, encPoolId, encEmptyH256])
 
   return AccountId().dec(bytes)
 }

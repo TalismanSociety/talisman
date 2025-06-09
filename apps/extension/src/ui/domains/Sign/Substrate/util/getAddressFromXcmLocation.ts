@@ -1,11 +1,13 @@
-import { XcmVersionedLocation } from "@polkadot-api/descriptors"
+import { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
 import { u8aToHex } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
 import { Address } from "extension-core"
 import { log } from "extension-shared"
 import { FixedSizeBinary } from "polkadot-api"
 
-export const getAddressFromXcmLocation = (multiLocation: XcmVersionedLocation): Address => {
+export const getAddressFromXcmLocation = (
+  multiLocation: XcmVersionedLocation | HydrationXcmVersionedLocation,
+): Address => {
   try {
     const interior = multiLocation.value.interior
 
@@ -19,10 +21,11 @@ export const getAddressFromXcmLocation = (multiLocation: XcmVersionedLocation): 
     }
 
     const anyAccountKey20 = interior.value.find((i) => i.type === "AccountKey20")
-    if (anyAccountKey20) return anyAccountKey20.value.key.asHex()
+    if (anyAccountKey20?.type === "AccountKey20") return anyAccountKey20.value.key.asHex()
 
     const anyAccountId32 = interior.value.find((i) => i.type === "AccountId32")
-    if (anyAccountId32) return getAddressFromAccountId32(anyAccountId32.value.id)
+    if (anyAccountId32?.type === "AccountId32")
+      return getAddressFromAccountId32(anyAccountId32.value.id)
 
     // throw an error so the sign popup fallbacks to default view
     throw new Error("Unknown address")

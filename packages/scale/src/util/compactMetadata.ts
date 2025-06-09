@@ -1,13 +1,14 @@
+import { Metadata } from "@polkadot-api/substrate-bindings"
+
 import log from "../log"
-import { V14, V15 } from "../papito"
+import { Prettify } from "./Prettify"
 
-export type V14Type = V14["lookup"][0]
-export type V14Pallet = V14["pallets"][0]
-export type V14StorageItem = NonNullable<V14Pallet["storage"]>["items"][0]
+export type MetadataType = SupportedMetadata["lookup"][number]
+export type MetadataPallet = SupportedMetadata["pallets"][number]
+export type MetadataStorageItem = NonNullable<MetadataPallet["storage"]>["items"][number]
 
-export type V15Type = V15["lookup"][0]
-export type V15Pallet = V15["pallets"][0]
-export type V15StorageItem = NonNullable<V15Pallet["storage"]>["items"][0]
+type SupportedMetadata = Extract<Metadata["metadata"], { tag: SupportedMetadataVersion }>["value"]
+type SupportedMetadataVersion = "v14" | "v15" | "v16"
 
 /**
  * Converts a `Metadata` into a `MiniMetadata`.
@@ -19,16 +20,21 @@ export type V15StorageItem = NonNullable<V15Pallet["storage"]>["items"][0]
  * types used in the `System.Account` storage query will remain inside of metadata.lookups.
  */
 export const compactMetadata = (
-  metadata: V15 | V14,
+  anyMetadata: Metadata,
   palletsAndItems: Array<{ pallet: string; constants?: string[]; items: string[] }> = [],
   runtimeApisAndMethods: Array<{ runtimeApi: string; methods: string[] }> = [],
   extraKeepTypes: number[] = [],
 ) => {
+  if (!isCompactableMetadata(anyMetadata))
+    throw new Error(`Metadata version ${anyMetadata.metadata.tag} not supported in compactMetadata`)
+
+  const metadata: SupportedMetadata = anyMetadata.metadata.value
+
   // remove pallets we don't care about
   metadata.pallets = metadata.pallets.filter((pallet) =>
     // keep this pallet if it's listed in `palletsAndItems`
     palletsAndItems.some(({ pallet: palletName }) => pallet.name === palletName),
-  )
+  ) as typeof metadata.pallets
 
   // remove fields we don't care about from each pallet, and extract types for each storage item we care about
   const palletsKeepTypes = palletsAndItems.flatMap(
@@ -138,14 +144,11 @@ export const compactMetadata = (
   }
   remapTypeIds(metadata, getNewTypeId)
 
-  if ("address" in metadata.extrinsic) {
-    // metadata is v15 (NOT v14)
-    metadata.extrinsic.address = 0
-    metadata.extrinsic.call = 0
-    metadata.extrinsic.extra = 0
-    metadata.extrinsic.signature = 0
-  }
-  metadata.extrinsic.signedExtensions = []
+  if ("address" in metadata.extrinsic) metadata.extrinsic.address = 0
+  if ("call" in metadata.extrinsic) metadata.extrinsic.call = 0
+  if ("signature" in metadata.extrinsic) metadata.extrinsic.signature = 0
+  if ("extra" in metadata.extrinsic) metadata.extrinsic.extra = 0
+  if ("signedExtensions" in metadata.extrinsic) metadata.extrinsic.signedExtensions = []
   if ("outerEnums" in metadata) {
     // metadata is v15 (NOT v14)
     metadata.outerEnums.call = 0
@@ -154,8 +157,24 @@ export const compactMetadata = (
   }
 }
 
+type CompactableMetadata = Prettify<
+  Omit<Metadata, "metadata"> & {
+    metadata: Extract<Metadata["metadata"], { tag: SupportedMetadataVersion }>
+  }
+>
+const isCompactableMetadata = (metadata: Metadata): metadata is CompactableMetadata => {
+  switch (metadata.metadata.tag) {
+    case "v14":
+    case "v15":
+    case "v16":
+      return true
+    default:
+      return false
+  }
+}
+
 const addDependentTypes = (
-  metadataTysMap: Map<V15Type["id"] | V14Type["id"], V15Type | V14Type>,
+  metadataTysMap: Map<MetadataType["id"], MetadataType>,
   keepTypes: Set<number>,
   types: number[],
   // Prevent stack overflow when a type references itself
@@ -231,13 +250,16 @@ const addDependentTypes = (
   }
 }
 
-const remapTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
+const remapTypeIds = (metadata: SupportedMetadata, getNewTypeId: (oldTypeId: number) => number) => {
   remapLookupTypeIds(metadata, getNewTypeId)
   remapStorageTypeIds(metadata, getNewTypeId)
   remapRuntimeApisTypeIds(metadata, getNewTypeId)
 }
 
-const remapLookupTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
+const remapLookupTypeIds = (
+  metadata: SupportedMetadata,
+  getNewTypeId: (oldTypeId: number) => number,
+) => {
   for (const type of metadata.lookup) {
     type.id = getNewTypeId(type.id)
 
@@ -298,7 +320,11 @@ const remapLookupTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: numbe
     }
   }
 }
-const remapStorageTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
+
+const remapStorageTypeIds = (
+  metadata: SupportedMetadata,
+  getNewTypeId: (oldTypeId: number) => number,
+) => {
   for (const pallet of metadata.pallets) {
     for (const item of pallet.storage?.items ?? []) {
       if (item.type.tag === "plain") item.type.value = getNewTypeId(item.type.value)
@@ -314,7 +340,7 @@ const remapStorageTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: numb
 }
 
 const remapRuntimeApisTypeIds = (
-  metadata: V14 | V15,
+  metadata: SupportedMetadata,
   getNewTypeId: (oldTypeId: number) => number,
 ) => {
   for (const runtimeApi of metadata.apis) {
