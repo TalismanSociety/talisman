@@ -162,7 +162,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { open: openRampsModal } = useRampsModal()
   const { open: openSwapTokensModal } = useSwapTokensModal()
@@ -243,7 +243,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           <Action key={index} {...action} />
         ))}
       </div>
-      {showQuestLink && <QuestLink />}
+      {showQuestLink && i18n.language === "en" && <QuestLink />}
     </div>
   )
 }
