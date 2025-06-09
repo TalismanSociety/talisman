@@ -285,10 +285,10 @@ const Content = () => {
 
   const networkOptions = useMemo(() => {
     return [
-      { id: "ALL", name: "All active networks" } as SimpleEvmNetwork,
+      { id: "ALL", name: t("All active networks") } as SimpleEvmNetwork,
       ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
-  }, [evmNetworks])
+  }, [evmNetworks, t])
   const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
 
   // search value is debounced by SearchInput component
