@@ -1,7 +1,7 @@
-import { isPotentialAzns, isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
+import { isPotentialAzns, isPotentialEns } from "@talismn/on-chain-id"
 import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useDebounce } from "react-use"
 
 import { api } from "@ui/api"
@@ -52,56 +52,13 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
     },
     enabled: isNsLookup,
     gcTime: Infinity,
-    initialData: (): [string, NsLookupType] | null => {
-      if (!name) return null
-
-      const item = nsNamesCache.get(name)
-      if (!item?.result) return null
-
-      const address = Array.isArray(item.result) ? (item.result[0] ?? null) : null
-      const nsLookupType = Array.isArray(item.result) ? (item.result[1] ?? null) : null
-      if (!address || !nsLookupType) return null
-
-      return [address, nsLookupType]
-    },
   })
-
-  useEffect(() => {
-    if (!name || !result) return
-
-    // update cache
-    if (result === undefined) nsNamesCache.delete(name)
-    else nsNamesCache.set(name, { result, updated: Date.now() })
-
-    // persist cache to local storage
-    persistNsNamesCache()
-  }, [name, result])
 
   const [address, nsLookupType] = result ?? [null, null]
 
   return [address, { isNsLookup, nsLookupType, isNsFetching, ...rest }] as const
 }
 
-const cacheKey = "TalismanNsNamesCache"
-const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
-const nsNamesCache = new Map<string, { result?: [string, NsLookupType] | null; updated?: number }>(
-  JSON.parse(localStorage.getItem(cacheKey) ?? "[]"),
-)
-const persistNsNamesCache = () =>
-  localStorage.setItem(
-    cacheKey,
-    JSON.stringify(
-      Array.from(nsNamesCache.entries())
-        // remove cached items which haven't been seen in a while
-        .filter(
-          ([, item]) =>
-            // check that the updated field exists
-            item?.updated &&
-            // check that the item has been updated within the persistItemDuration
-            Date.now() - item.updated <= persistItemDuration,
-        ),
-    ),
-  )
-
 /** Removes any data left over in the @deprecated cache */
 localStorage.removeItem("TalismanEnsNamesCache")
+localStorage.removeItem("TalismanNsNamesCache")
