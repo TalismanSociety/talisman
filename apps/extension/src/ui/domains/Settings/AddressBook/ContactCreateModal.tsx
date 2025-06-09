@@ -218,7 +218,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title="Add new contact">
+      <ModalDialog title={t("Add new contact")}>
         <form onSubmit={handleSubmit(submit)} className="grid gap-8">
           <FormFieldContainer error={errors.name?.message} label={t("Name")}>
             <FormFieldInputText
