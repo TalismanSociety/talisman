@@ -12,7 +12,6 @@ import {
 import {
   compactMetadata,
   decAnyMetadata,
-  decodeMetadata,
   decodeScale,
   encodeMetadata,
   encodeStateKey,
@@ -257,10 +256,8 @@ export const SubForeignAssetsModule: NewBalanceModule<
         amount: BigInt(amount),
       }
 
-      const { metadata } = decodeMetadata(metadataRpc)
-      if (metadata === undefined) throw new Error("Unable to decode metadata")
-
-      const scaleBuilder = getDynamicBuilder(getLookupFn(unifyMetadata(metadata)))
+      const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       try {
         const { location, codec } = scaleBuilder.buildCall(pallet, method)
         const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))

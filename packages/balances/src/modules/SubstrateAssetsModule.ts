@@ -12,7 +12,6 @@ import {
 import {
   compactMetadata,
   decAnyMetadata,
-  decodeMetadata,
   decodeScale,
   encodeMetadata,
   getDynamicBuilder,
@@ -106,10 +105,8 @@ export const SubAssetsModule: NewBalanceModule<
       if (miniMetadata === undefined || metadataVersion === undefined) return {}
       if (metadataVersion < 14) return {}
 
-      const { metadata } = decodeMetadata(miniMetadata)
-      if (metadata === undefined) return {}
-
-      const scaleBuilder = getDynamicBuilder(getLookupFn(unifyMetadata(metadata)))
+      const metadata = unifyMetadata(decAnyMetadata(miniMetadata))
+      const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
       const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")
 

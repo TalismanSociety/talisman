@@ -13,7 +13,6 @@ import {
 import {
   compactMetadata,
   decAnyMetadata,
-  decodeMetadata,
   decodeScale,
   encodeMetadata,
   encodeStateKey,
@@ -113,11 +112,9 @@ export const SubEquilibriumModule: NewBalanceModule<
       if (miniMetadata === undefined || metadataVersion === undefined) return {}
       if (metadataVersion < 14) return {}
 
-      const { metadata } = decodeMetadata(miniMetadata)
-      if (metadata === undefined) return {}
-
       try {
-        const scaleBuilder = getDynamicBuilder(getLookupFn(unifyMetadata(metadata)))
+        const metadata = unifyMetadata(decAnyMetadata(miniMetadata))
+        const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
         const assetsCoder = scaleBuilder.buildStorage("EqAssets", "Assets")
         const stateKey = assetsCoder.keys.enc()
 
