@@ -91,7 +91,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
           <div className="flex shrink-0 flex-col justify-center">
             <AccountIcon type="polkadot-identicon" className="!text-lg" address={address} />
           </div>
-          <div>{t("Substrate (Generic)")}</div>
+          <div>Substrate ({t("Generic")})</div>
         </div>
       </PillButton>
     )
@@ -278,7 +278,7 @@ export const CopyAddressCopyForm = () => {
                 <Trans
                   t={t}
                   defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
-                  values={{ name: t("Substrate (Generic)") }}
+                  values={{ name: `Substrate (${t("Generic")})` }}
                   components={{
                     Highlight: <span className="text-body" />,
                     Tooltip: (
