@@ -39,7 +39,7 @@ export const getDryRunCall = async <T>(
         data: null,
       }
 
-    const origin = Enum("system", Enum("System", from))
+    const origin = Enum("system", Enum("Signed", from))
 
     const { pallet, method, args } = decodedCall
     const call = { type: pallet, value: { type: method, value: args } }
