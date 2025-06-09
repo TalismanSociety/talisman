@@ -1,8 +1,5 @@
-import type {
-  polkadot,
-  polkadotAssetHub,
-  // PolkadotRuntimeOriginCaller,
-} from "@polkadot-api/descriptors"
+import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
+import { DispatchRawOrigin } from "@polkadot-api/descriptors"
 import { Enum } from "polkadot-api"
 
 import log from "../log"
@@ -48,7 +45,7 @@ export const getDryRunCall = async <T>(
 
     // This will throw an error if the api is not available on that chain
     const data = await getRuntimeCallResult<DryRunResult>(chain, "DryRunApi", "dry_run_call", [
-      Enum("system", Enum("Signed", from)),
+      Enum("system", DispatchRawOrigin.Signed(from)),
       call,
     ])
 
