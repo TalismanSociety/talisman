@@ -1,9 +1,11 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { u8aToHex } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances"
+import { Chain } from "@talismn/chaindata-provider"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 
 export const getCheckMetadataHashPayloadProps = (
+  chain: Chain,
   metadataRpc: string,
   specName: string,
   specVersion: number,
@@ -11,9 +13,9 @@ export const getCheckMetadataHashPayloadProps = (
 ) => {
   const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
 
-  const hasCheckMetadataHash = metadata.extrinsic.signedExtensions.some(
-    (ext) => ext.identifier === "CheckMetadataHash",
-  )
+  const hasCheckMetadataHash =
+    chain.hasCheckMetadataHash &&
+    metadata.extrinsic.signedExtensions.some((ext) => ext.identifier === "CheckMetadataHash")
   if (!hasCheckMetadataHash) return {}
 
   const builder = getDynamicBuilder(getLookupFn(metadata))
