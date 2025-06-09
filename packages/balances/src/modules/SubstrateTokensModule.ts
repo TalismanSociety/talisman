@@ -103,7 +103,6 @@ export const SubTokensModule: NewBalanceModule<
       if (metadataRpc === undefined) return { isTestnet }
       if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      // TODO understand why this is needed
       const metadataVersion = getMetadataVersion(metadataRpc)
       const metadata = decAnyMetadata(metadataRpc)
       const palletId = moduleConfig?.palletId ?? defaultPalletId

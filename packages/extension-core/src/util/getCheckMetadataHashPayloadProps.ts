@@ -9,7 +9,7 @@ export const getCheckMetadataHashPayloadProps = (
   specVersion: number,
   token: SubNativeToken,
 ) => {
-  const metadata = unifyMetadata(decAnyMetadata(metadataRpc)) // ensure metadata is V14+ compatible
+  const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
 
   const hasCheckMetadataHash = metadata.extrinsic.signedExtensions.some(
     (ext) => ext.identifier === "CheckMetadataHash",

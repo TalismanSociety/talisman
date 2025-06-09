@@ -18,8 +18,6 @@ import { isApiAvailable } from "./helpers/isApiAvailable"
 import { Chain } from "./helpers/types"
 import { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
 
-import "@polkadot-api/substrate-bindings"
-
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 
 export const getScaleApi = (
@@ -30,7 +28,7 @@ export const getScaleApi = (
   signedExtensions?: ExtDef,
   registryTypes?: unknown,
 ) => {
-  const metadata = unifyMetadata(decAnyMetadata(hexMetadata)) // unifyMetadata()
+  const metadata = unifyMetadata(decAnyMetadata(hexMetadata))
   assert(metadata, `Missing Metadata V14+ for chain ${connector.chainId}`)
 
   const lookup = getLookupFn(metadata)

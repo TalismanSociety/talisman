@@ -5,11 +5,11 @@ import log from "../log"
 type Prettify<T> = {
   [K in keyof T]: T[K]
 } & {}
-
-type SupportedMetadata = Extract<Metadata["metadata"], { tag: "v14" | "v15" | "v16" }>["value"]
+type SupportedMetadataVersion = "v14" | "v15" | "v16"
+type SupportedMetadata = Extract<Metadata["metadata"], { tag: SupportedMetadataVersion }>["value"]
 type CompactableMetadata = Prettify<
   Omit<Metadata, "metadata"> & {
-    metadata: Extract<Metadata["metadata"], { tag: "v14" | "v15" | "v16" }>
+    metadata: Extract<Metadata["metadata"], { tag: SupportedMetadataVersion }>
   }
 >
 
@@ -46,8 +46,6 @@ export const compactMetadata = (
   if (!isCompactableMetadata(anyMetadata)) return
 
   const metadata = anyMetadata.metadata.value
-  //   log.error("Metadata is not compactable", metadata)
-  //   return
 
   // remove pallets we don't care about
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
