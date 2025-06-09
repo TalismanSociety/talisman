@@ -1,5 +1,6 @@
 import { ClockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import BigNumber from "bignumber.js"
 import { intervalToDuration } from "date-fns"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useMemo } from "react"
@@ -72,8 +73,9 @@ export const SwapDetailsCard = ({
       quote.fees
         .reduce((acc, fee) => {
           const rate = tokenRates[fee.tokenId]?.[currency]?.price ?? 0
-          return acc + fee.amount.toNumber() * rate
-        }, 0)
+          return acc.plus(fee.amount.times(rate))
+        }, BigNumber(0))
+        .toNumber()
         .toLocaleString(undefined, { style: "currency", currency, maximumSignificantDigits: 2 }),
     [currency, quote.fees, tokenRates],
   )

@@ -27,7 +27,7 @@ import {
 
 import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
-import type { QuoteResponse } from "./common.swap-module.ts"
+import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
@@ -540,6 +540,14 @@ const quote: QuoteFunction = loadable(
     }
 
     const gasFee = await estimateGas(get)
+    // add talisman fee
+    const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
+      amount: BigNumber(fromAmount.planck.toString())
+        .times(BigNumber(10).pow(-fromAmount.decimals))
+        .times(TALISMAN_FEE),
+      name: "Talisman Fee",
+      tokenId: fromAsset.id,
+    })
 
     return {
       decentralisationScore: DECENTRALISATION_SCORE,
@@ -548,7 +556,7 @@ const quote: QuoteFunction = loadable(
       outputAmountBN: Decimal.fromUserInput(output, toAsset.decimals).planck,
       // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
       timeInSec: 5 * 60,
-      fees: gasFee ? [gasFee] : [],
+      fees,
       providerLogo: LOGO,
       providerName: PROTOCOL_NAME,
       talismanFee: TALISMAN_FEE,
@@ -793,9 +801,9 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
         to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
         value: 0n,
       })
-      const amount = Decimal.fromPlanck(gasPrice * gasLimit, nativeToken.decimals ?? 0, {
-        currency: nativeToken.symbol,
-      })
+      const amount = BigNumber(gasPrice.toString())
+        .times(gasLimit.toString())
+        .times(BigNumber(10).pow(-(nativeToken.decimals ?? 0)))
       return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
     }
 
@@ -825,12 +833,11 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
           fromAmount.planck,
         )
   const decimals = transferTx.registry.chainDecimals[0] ?? 10 // default to polkadot decimals 10
-  const symbol = transferTx.registry.chainTokens[0] ?? "DOT" // default to polkadot symbol 'DOT'
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
   return {
     name: "Est. Gas Fees",
     tokenId: substrateChain?.nativeToken?.id ?? "polkadot-substrate-native",
-    amount: Decimal.fromPlanck(paymentInfo.partialFee.toBigInt(), decimals, { currency: symbol }),
+    amount: BigNumber(paymentInfo.partialFee.toString()).times(BigNumber(10).pow(-decimals)),
   }
 }
 
