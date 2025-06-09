@@ -45,7 +45,7 @@ type EvmNetworkFormProps = {
 }
 
 const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { evmNetwork, isActive, setActive, isActiveSetByUser, resetToTalismanDefault } =
     useKnownEvmNetwork(evmNetworkId)
 
@@ -93,7 +93,7 @@ const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) =>
 }
 
 export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
   const existingEvmNetwork = useEvmNetwork(evmNetworkId)
   const existingToken = useToken(existingEvmNetwork?.nativeToken?.id)
@@ -384,7 +384,7 @@ const evmNetworkToFormData = (
 }
 
 const ExistingNetworkModal: FC<{ evmNetworkId?: EvmNetworkId }> = ({ evmNetworkId }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { evmNetwork, isActive } = useKnownEvmNetwork(evmNetworkId)
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()

@@ -49,7 +49,7 @@ export const useDeleteFolderModal = () => {
 }
 
 export const DeleteFolderModal = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { id, name, treeName, close, isOpen } = useDeleteFolderModal()
 
   return (
@@ -86,7 +86,7 @@ const DeleteFolder = ({
   onCancel,
   className,
 }: DeleteFolderProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const handleDeleteClick = useCallback(async () => {
     await api.accountsCatalogRunActions([{ type: "removeFolder", tree: treeName, id }])
     onConfirm()

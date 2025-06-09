@@ -8,7 +8,7 @@ import { MnemonicCreateModalDialog } from "./Dialog"
 
 export const Verify = () => {
   const { setStage, mnemonic, complete } = useMnemonicCreateModal()
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const handleComplete = useCallback(() => {
     setStage(Stages.Complete)

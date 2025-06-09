@@ -24,7 +24,7 @@ const SignMessage = ({
   request: string
   isDecrypt: boolean
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const data = useMemo(() => {
     return request
   }, [request])
@@ -47,7 +47,7 @@ const SignMessage = ({
 }
 
 export const Encrypt = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as EncryptRequestIdOnly | DecryptRequestIdOnly
   const req = useRequest(id)

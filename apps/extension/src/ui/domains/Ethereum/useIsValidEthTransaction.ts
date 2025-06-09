@@ -18,7 +18,7 @@ export const useIsValidEthTransaction = (
   priority: EthPriorityOptionName | undefined,
   isReplacement = false,
 ) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const account = useAccountByAddress(tx?.from)
   const { balance } = useEthBalance(publicClient, tx?.from)
 

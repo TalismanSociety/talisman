@@ -103,7 +103,7 @@ const schema = yup
   .required()
 
 export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const allAccounts = useAccounts()
   const accountEthAddresses = useMemo(
     () => allAccounts.filter(isAccountAddressEthereum).map((a) => a.address),

@@ -28,7 +28,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const [hideDust, setHideDust] = useSetting("hideDust")
   const [identiconType, setIdenticonType] = useSetting("identiconType")

@@ -8,7 +8,7 @@ import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useAccountAddQr } from "./context"
 
 export const Scan = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { state, dispatch } = useAccountAddQr()
   if (state.type !== "SCAN") return null
   return (

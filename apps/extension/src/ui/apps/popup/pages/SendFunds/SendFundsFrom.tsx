@@ -13,7 +13,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const SendFundsFrom = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   return (
     <SendFundsLayout title={t("Send from")} withBackLink analytics={ANALYTICS_PAGE}>
       <SendFundsAccountPicker />

@@ -16,7 +16,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { deleteContact } = useAddressBook()
   useAnalyticsPageView(ANALYTICS_PAGE)
 

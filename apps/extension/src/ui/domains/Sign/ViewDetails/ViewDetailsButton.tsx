@@ -18,7 +18,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
   isAnalysing = false,
   hasError = false,
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const [hasClickRequest, setHasClickRequest] = useState(false)
 
   const handleClick = useCallback(() => {

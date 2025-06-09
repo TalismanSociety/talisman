@@ -42,7 +42,7 @@ export const [MnemonicSetPvVerifierModalProvider, useMnemonicSetPvVerifierModal]
 )
 
 export const MnemonicSetPvVerifierModal = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { mnemonic, close, isOpen } = useMnemonicSetPvVerifierModal()
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
 

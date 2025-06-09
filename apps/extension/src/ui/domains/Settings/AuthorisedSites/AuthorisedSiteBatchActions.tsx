@@ -46,7 +46,7 @@ export const BatchActionButton: FC<{
 export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = ({
   providerType,
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const handleForgetAll = useCallback(async () => {
     try {

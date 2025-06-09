@@ -23,7 +23,7 @@ const FakePill: FC<PropsWithChildren> = ({ children }) => {
 }
 
 export const AddCustomErc20Token = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   useBalancesHydrate() // preload
   const [error, setError] = useState<string>()
   const { id } = useParams() as WatchAssetRequestIdOnly

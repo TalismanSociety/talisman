@@ -21,7 +21,7 @@ import { FooterContent } from "./FooterContent"
 import { MessageSiws } from "./MessageSiws"
 
 export const PolkadotSignMessageRequest = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const {
     url,
     request,

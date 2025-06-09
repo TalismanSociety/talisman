@@ -7,7 +7,7 @@ import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptI
 import { useSetting } from "@ui/state"
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
 
   return (

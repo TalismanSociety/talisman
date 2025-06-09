@@ -584,7 +584,7 @@ export const useEthTransaction = (
     isReplacement,
   )
 
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { error, errorDetails } = useMemo(() => {
     const anyError = (errorEip1559Support ??
       nonceError ??

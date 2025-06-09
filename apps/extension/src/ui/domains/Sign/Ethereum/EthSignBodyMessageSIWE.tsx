@@ -22,7 +22,7 @@ const ViewDetailsContent: FC<{
   siwe: ParsedMessage
   onClose: () => void
 }> = ({ account, request, siwe, onClose }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const evmNetwork = useEvmNetwork(String(siwe.chainId))
 
   const message = useMemo(() => hexToString(request.request), [request.request])
@@ -69,7 +69,7 @@ export const EthSignBodyMessageSIWE: FC<{
   request: EthSignRequest
   siwe: ParsedMessage
 }> = ({ account, request, siwe }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
   const isValidUrl = useMemo(() => {

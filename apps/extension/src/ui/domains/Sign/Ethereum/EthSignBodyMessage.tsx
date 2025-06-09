@@ -99,7 +99,7 @@ export type EthSignBodyMessageProps = {
 }
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { siwe, isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
     useEthSignMessage(request)
 

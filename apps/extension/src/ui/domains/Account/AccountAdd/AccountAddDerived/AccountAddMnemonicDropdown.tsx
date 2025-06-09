@@ -23,7 +23,7 @@ export const AccountAddMnemonicDropdown: FC<{
   value: string | null // null means "generate new"
   onChange: (mnemonicId: string | null) => void
 }> = ({ label, value, onChange }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const allAccounts = useAccounts()
 

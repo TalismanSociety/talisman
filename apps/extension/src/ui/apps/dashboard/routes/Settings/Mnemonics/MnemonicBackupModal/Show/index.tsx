@@ -9,7 +9,7 @@ import { Verify } from "./Verify"
 import { ViewMnemonic } from "./View"
 
 export const ShowMnemonic = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { mnemonic, stage, setStage } = useMnemonicBackupModal()
 
   const title = useMemo(() => {

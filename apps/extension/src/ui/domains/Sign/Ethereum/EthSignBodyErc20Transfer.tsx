@@ -14,7 +14,7 @@ import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc20Transfer: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)

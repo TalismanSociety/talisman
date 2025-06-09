@@ -64,7 +64,7 @@ const SupportedNetworks = () => {
 }
 
 export const WelcomePage = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { reset, setStage } = useOnboard()
   const navigate = useNavigate()

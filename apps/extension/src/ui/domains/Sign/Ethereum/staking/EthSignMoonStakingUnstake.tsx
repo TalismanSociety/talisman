@@ -9,7 +9,7 @@ import { SignViewStakingUnstake } from "../../Views/staking/SignViewStakingUnsta
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingUnstake: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { network } = useEthSignKnownTransactionRequest()
   const token = useToken(network?.nativeToken?.id)
 

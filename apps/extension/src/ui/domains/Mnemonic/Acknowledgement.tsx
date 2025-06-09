@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => void }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <div>

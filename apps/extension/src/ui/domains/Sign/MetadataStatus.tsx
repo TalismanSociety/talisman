@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { isKnownChain, isMetadataUpdating, hasMetadataUpdateFailed, updateUrl, requiresUpdate } =
     useMetadataUpdates(genesisHash, specVersion)
 

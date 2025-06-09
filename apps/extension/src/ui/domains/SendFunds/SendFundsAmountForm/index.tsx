@@ -17,7 +17,7 @@ import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
 
 const ReviewButton = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { gotoReview } = useSendFundsWizard()
   const { isValid, tokensToBeReaped, recipientWarning } = useSendFunds()
   const forfeitDrawer = useGlobalOpenClose("sendFundsForfeitDrawer")
@@ -91,7 +91,7 @@ const ReviewButton = () => {
 }
 
 export const SendFundsAmountForm = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { from, to, goto, tokenId } = useSendFundsWizard()
   const genesisHash = useGenesisHashFromTokenId(tokenId)
 

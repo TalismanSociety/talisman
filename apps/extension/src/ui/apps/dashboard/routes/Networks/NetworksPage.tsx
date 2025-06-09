@@ -22,7 +22,7 @@ import { EvmNetworksList } from "./EvmNetworksList"
 import { useNetworksType } from "./useNetworksType"
 
 const NoticeTooltip: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <Tooltip>
@@ -45,7 +45,7 @@ const [usePreload] = bind(
 )
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   usePreload()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()

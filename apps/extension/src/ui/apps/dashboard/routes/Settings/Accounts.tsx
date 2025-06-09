@@ -30,7 +30,7 @@ const [usePreload] = bind(
 )
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   usePreload()
   useAnalyticsPageView(ANALYTICS_PAGE)
 

@@ -320,7 +320,7 @@ const EvmTxActions: FC<{
     if (IS_EMBEDDED_POPUP) window.close()
   }, [hrefBlockExplorer])
 
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return (
     <div
@@ -430,7 +430,7 @@ const EvmTxActions: FC<{
 }
 
 const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   switch (status) {
     case "error":
@@ -621,7 +621,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     onContextMenuClose?.()
   }, [onContextMenuClose])
 
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return (
     <TransactionRowBase
@@ -789,7 +789,7 @@ const SubTxActions: FC<{
     if (IS_EMBEDDED_POPUP) window.close()
   }, [hrefBlockExplorer])
 
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return (
     <div
@@ -897,7 +897,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     onContextMenuClose?.()
   }, [onContextMenuClose])
 
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return (
     <TransactionRowBase

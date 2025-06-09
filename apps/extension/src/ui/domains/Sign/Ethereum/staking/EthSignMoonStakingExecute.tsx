@@ -6,7 +6,7 @@ import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingExecute } from "../../Views/staking/SignViewStakingExecute"
 
 export const EthSignMoonStakingExecute: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <SignContainer
       networkType="ethereum"

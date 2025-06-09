@@ -2,7 +2,7 @@ import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { Trans, useTranslation } from "react-i18next"
 
 export const AccountAddDcentDisabledMessage = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return (
     <>
       <h2 className="">{t("D'CENT support is currently unavailable")}</h2>

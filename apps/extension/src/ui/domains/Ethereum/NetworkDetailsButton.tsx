@@ -14,7 +14,7 @@ const NetworkDetailsDrawer: FC<{
   onClose: () => void
   title?: ReactNode
 }> = ({ network, isOpen, title, onClose }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   const tryParseIntFromHex = useCallback(
     (value: string) => {
@@ -61,7 +61,7 @@ export const NetworkDetailsButton: FC<{
   label?: string
   className?: string
 }> = ({ network, label, className }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
   return (
@@ -80,7 +80,7 @@ export const NetworkDetailsLink: FC<{
   className?: string
   title?: ReactNode
 }> = ({ network, label, className, title }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
   return (

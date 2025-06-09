@@ -68,7 +68,7 @@ type FormData = {
 }
 
 export const AccountAddMnemonicForm = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const { data, updateData, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()

@@ -59,7 +59,7 @@ type VerifyProps = {
 }
 
 export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [matchedDisplayIdx, setMatchedDisplayIdx] = useState<number[]>([])
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const mnemonicWords = useMemo(() => mnemonic?.split(" "), [mnemonic])

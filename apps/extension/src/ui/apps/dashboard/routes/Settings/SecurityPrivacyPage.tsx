@@ -20,7 +20,7 @@ import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useFeatureFlag, useSetting } from "@ui/state"
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const [autoRiskScan, setAutoRiskScan] = useSetting("autoRiskScan")

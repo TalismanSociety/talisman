@@ -23,7 +23,7 @@ import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState, useBalancesHydrate, useChains, useMnemonic } from "@ui/state"
 
 const SetVerifierCertificateContentInner = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [mnemonicId, setMnemonicId] = useState<string | null>(null)
@@ -132,7 +132,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 }
 
 const MetadataPortalContent = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const chains = useChains({ activeOnly: false, includeTestnets: true })
   const [chain, setChain] = useState<Chain | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
@@ -231,7 +231,7 @@ const MetadataPortalContent = () => {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   useBalancesHydrate() // preload
 
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")

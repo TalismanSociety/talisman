@@ -20,7 +20,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return (
     <>
       <HeaderBlock title={t("About")} />

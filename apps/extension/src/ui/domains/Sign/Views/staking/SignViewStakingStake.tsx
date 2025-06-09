@@ -10,7 +10,7 @@ export const SignViewStakingStake: FC<{
   tokenId: TokenId
   autoCompound?: number
 }> = ({ planck, tokenId, autoCompound }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div>{t("You are staking")}</div>

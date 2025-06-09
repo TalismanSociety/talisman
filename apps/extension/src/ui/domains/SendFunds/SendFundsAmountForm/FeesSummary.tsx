@@ -29,7 +29,7 @@ const NetworkRow = () => {
 }
 
 const EvmFeeSettingsRow = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { token, evmNetwork, evmTransaction } = useSendFunds()
 
   if (!token || !evmTransaction || !evmNetwork || !isEvmToken(token)) return null
@@ -67,7 +67,7 @@ const EvmFeeSettingsRow = () => {
 }
 
 export const FeesSummary = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { feeToken, estimatedFee, isLoading } = useSendFunds()
 
   return (

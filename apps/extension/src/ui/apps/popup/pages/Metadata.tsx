@@ -12,7 +12,7 @@ import { useRequest } from "@ui/state"
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
 export const Metadata: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { id } = useParams<"id">() as KnownRequestIdOnly<"metadata">
   const metadataRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()

@@ -25,7 +25,7 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
   activeOnly,
   search,
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { recommendedNetworks } = useRemoteConfig()
   const networksActiveState = useActiveChainsState()
   const chains = useChains()
@@ -265,7 +265,7 @@ type ActivateMode = "recommended" | "all"
 const ActivateNetworksModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const networks = useChains()
   const activeNetworks = useActiveChainsState()
@@ -341,7 +341,7 @@ type DeactivateMode = "all" | "unused"
 const DeactivateNetworksModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isBalancesInitializing = useIsBalanceInitializing()
   const balances = useBalances("all")
   const chains = useChains({ activeOnly: true, includeTestnets: true })

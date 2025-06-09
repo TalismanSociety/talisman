@@ -39,7 +39,7 @@ export const ViewDetailsSub: FC = () => {
 const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const { chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
@@ -158,7 +158,7 @@ const ViewDetailsContent: FC<{
 }
 
 const useLifetimeRows = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { sapi, payload } = usePolkadotSigningRequest()
 
   const period = useMemo(() => {

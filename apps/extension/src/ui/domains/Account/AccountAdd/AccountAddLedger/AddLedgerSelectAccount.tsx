@@ -64,7 +64,7 @@ type FormData = {
 }
 
 export const AddLedgerSelectAccount = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { data, connectAccounts: importAccounts, onSuccess } = useAddLedgerAccount()
 
   const app = useLedgerSubstrateAppByName(CHAIN_ID_TO_LEDGER_APP_NAME[data.chainId as string])

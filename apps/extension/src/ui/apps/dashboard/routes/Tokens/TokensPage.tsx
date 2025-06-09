@@ -48,7 +48,7 @@ import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 const NoticeTooltip: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <Tooltip>
@@ -60,7 +60,7 @@ const NoticeTooltip: FC = () => {
   )
 }
 const CustomPill = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <div className="bg-primary/10 text-primary inline-block rounded p-4 py-2 text-xs font-light">
@@ -91,7 +91,7 @@ const useCoingeckoUrl = (token: Token) => {
 }
 
 const TokenRow: FC<{ token: Token }> = ({ token }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const activeTokens = useActiveTokensState()
@@ -183,7 +183,7 @@ const VirtualizedRows: FC<{ tokens: Token[] }> = ({ tokens }) => {
 }
 
 const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   if (!tokens.length)
     return (
@@ -265,7 +265,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)

@@ -11,7 +11,7 @@ import imgFeePriorityMedium from "@talisman/theme/images/fee-priority-medium.png
 import imgFeePriorityRecommended from "@talisman/theme/images/fee-priority-recommended.png"
 
 export const useFeePriorityOptionsUI = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return useMemo<Record<EthPriorityOptionName, { icon: string; label: string }>>(
     () => ({

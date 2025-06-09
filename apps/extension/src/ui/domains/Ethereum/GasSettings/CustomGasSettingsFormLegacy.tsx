@@ -143,7 +143,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   txDetails,
   onConfirm,
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {

@@ -10,7 +10,7 @@ import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 export const EthSignBodyDefault: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { network, request, decodedTx } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)

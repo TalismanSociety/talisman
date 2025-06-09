@@ -27,7 +27,7 @@ export const QrCode: FC<Props> = (props) => (
 )
 
 const QrCodeInner = ({ data, image, imageOptions }: Props) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const qrCodeFrames = useRef<Array<string | null> | null>(null)
   const qrCodeFramesReady = useRef(0)
   const [generation, setGeneration] = useState(0)

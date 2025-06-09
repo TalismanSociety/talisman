@@ -7,7 +7,7 @@ import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   return (
