@@ -7,6 +7,7 @@ import { evmErc20TokenId, evmNativeTokenId, subNativeTokenId } from "@talismn/ba
 import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import { isBitcoinAddress } from "@talismn/crypto/src/address/encoding/bitcoin"
 import { ScaleApi } from "@talismn/sapi"
+import BigNumber from "bignumber.js"
 import {
   Account,
   isAccountCompatibleWithChain,
@@ -47,7 +48,7 @@ export type SwappableAssetWithDecimals<TContext = Partial<Record<SupportedSwapPr
 
 export type QuoteFee = {
   name: string
-  amount: Decimal
+  amount: BigNumber
   tokenId: string
 }
 
