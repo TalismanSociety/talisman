@@ -685,6 +685,10 @@ const useSendFundsProvider = () => {
     setSendErrorMessage(undefined)
   }, [location])
 
+  useEffect(() => {
+    if (dryRun) log.debug("Dry run result", dryRun)
+  }, [dryRun])
+
   return {
     from,
     to,
