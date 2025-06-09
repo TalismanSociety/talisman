@@ -1,8 +1,8 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
-import { TypeRegistry } from "@polkadot/types"
 import { u8aToHex } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances"
 import { Chain } from "@talismn/chaindata-provider"
+import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 
 export const getCheckMetadataHashPayloadProps = (
   chain: Chain,
@@ -11,22 +11,19 @@ export const getCheckMetadataHashPayloadProps = (
   specVersion: number,
   token: SubNativeToken,
 ) => {
-  const registry = new TypeRegistry()
-  const metadata = registry.createType("Metadata", metadataRpc)
-  registry.setMetadata(metadata)
+  const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
 
   const hasCheckMetadataHash =
-    chain.hasCheckMetadataHash && // can be toggled off from chaindata
-    metadata.version >= 15 &&
-    metadata.asLatest.extrinsic.signedExtensions.some(
-      (ext) => ext.identifier.toString() === "CheckMetadataHash",
-    )
+    chain.hasCheckMetadataHash &&
+    metadata.extrinsic.signedExtensions.some((ext) => ext.identifier === "CheckMetadataHash")
   if (!hasCheckMetadataHash) return {}
+
+  const builder = getDynamicBuilder(getLookupFn(metadata))
 
   const metadataHash = merkleizeMetadata(metadataRpc, {
     tokenSymbol: token.symbol,
     decimals: token.decimals,
-    base58Prefix: registry.chainSS58 ?? 42,
+    base58Prefix: builder.ss58Prefix ?? 42,
     specName,
     specVersion,
   }).digest()

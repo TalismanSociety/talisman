@@ -4,7 +4,7 @@ const { defaults } = require("jest-config")
 
 module.exports = {
   transformIgnorePatterns: [
-    "/node_modules/.pnpm/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|@talismn|scale-ts)",
+    "/node_modules/.pnpm/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|@talismn|scale-ts|@rx-state)",
   ],
   transform: {
     "^.+\\.(t|j)s$": ["@swc/jest"],

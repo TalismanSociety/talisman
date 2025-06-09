@@ -1,6 +1,6 @@
-import { Binary } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
+import { Binary } from "polkadot-api"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
