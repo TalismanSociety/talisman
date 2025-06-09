@@ -28,7 +28,7 @@ import {
 
 import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
-import type { QuoteResponse } from "./common.swap-module.ts"
+import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
@@ -534,6 +534,17 @@ const quote: QuoteFunction = loadable(
       })
 
       const gasFee = await estimateGas(get)
+      // relative fee, multiply by fromAmount to get planck fee
+      const talismanFee = Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE)
+      // add talisman fee
+      const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
+        amount: Decimal.fromPlanck(
+          BigNumber(fromAmount.planck.toString()).times(talismanFee).toString(),
+          fromAsset.decimals,
+        ),
+        name: "Talisman Fee",
+        tokenId: fromAsset.id,
+      })
 
       return {
         decentralisationScore: DECENTRALISATION_SCORE,
@@ -542,10 +553,10 @@ const quote: QuoteFunction = loadable(
         outputAmountBN: Decimal.fromUserInput(String(estimate), toAsset.decimals).planck,
         // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
         timeInSec: 5 * 60,
-        fees: gasFee ? [gasFee] : [],
+        fees,
         providerLogo: LOGO,
         providerName: PROTOCOL_NAME,
-        talismanFee: Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE),
+        talismanFee,
       }
     } catch (cause) {
       // eslint-disable-next-line no-console

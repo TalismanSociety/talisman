@@ -27,7 +27,7 @@ import {
 
 import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
 
-import type { QuoteResponse } from "./common.swap-module.ts"
+import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
@@ -540,6 +540,15 @@ const quote: QuoteFunction = loadable(
     }
 
     const gasFee = await estimateGas(get)
+    // add talisman fee
+    const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
+      amount: Decimal.fromPlanck(
+        BigNumber(fromAmount.planck.toString()).times(TALISMAN_FEE).toString(),
+        fromAsset.decimals,
+      ),
+      name: "Talisman Fee",
+      tokenId: fromAsset.id,
+    })
 
     return {
       decentralisationScore: DECENTRALISATION_SCORE,
@@ -548,7 +557,7 @@ const quote: QuoteFunction = loadable(
       outputAmountBN: Decimal.fromUserInput(output, toAsset.decimals).planck,
       // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
       timeInSec: 5 * 60,
-      fees: gasFee ? [gasFee] : [],
+      fees,
       providerLogo: LOGO,
       providerName: PROTOCOL_NAME,
       talismanFee: TALISMAN_FEE,
