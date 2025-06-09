@@ -10,7 +10,6 @@ import {
   Token,
 } from "@talismn/chaindata-provider"
 import {
-  Binary,
   compactMetadata,
   decAnyMetadata,
   decodeMetadata,
@@ -22,6 +21,7 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import camelCase from "lodash/camelCase"
+import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"

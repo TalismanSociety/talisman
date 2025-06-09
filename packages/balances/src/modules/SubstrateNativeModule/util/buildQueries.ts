@@ -1,7 +1,7 @@
 import { Chain, Token } from "@talismn/chaindata-provider"
-import { Binary, decodeScale, encodeStateKey } from "@talismn/scale"
+import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { BigMath, blake2Concat, decodeAnyAddress } from "@talismn/util"
-import { Enum } from "polkadot-api"
+import { Binary, Enum } from "polkadot-api"
 import { Struct, u32, u128 } from "scale-ts"
 
 import log from "../../../log"
