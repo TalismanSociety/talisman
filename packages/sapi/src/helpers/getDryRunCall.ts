@@ -40,12 +40,14 @@ export const getDryRunCall = async <T>(
         data: null,
       }
 
+    const origin = Enum("system", DispatchRawOrigin.Signed(from))
+
     const { pallet, method, args } = decodedCall
     const call = { type: pallet, value: { type: method, value: args } }
 
     // This will throw an error if the api is not available on that chain
     const data = await getRuntimeCallResult<DryRunResult>(chain, "DryRunApi", "dry_run_call", [
-      Enum("system", DispatchRawOrigin.Signed(from)),
+      origin,
       call,
     ])
 
