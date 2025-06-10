@@ -1,12 +1,14 @@
-import { enUS, ko, Locale, ru, zhCN } from "date-fns/locale"
+import { enUS, fr, ko, Locale, ptBR, ru, zhCN } from "date-fns/locale"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 const I18_TO_DATEFNS_LOCALE_MAP: Record<string, Locale> = {
-  en: enUS,
-  kr: ko,
+  "en": enUS,
+  "kr": ko,
   ru,
-  zh: zhCN,
+  "zh": zhCN,
+  fr,
+  "pt-BR": ptBR,
 }
 
 export const useDateFnsLocale = () => {

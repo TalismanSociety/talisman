@@ -7,7 +7,7 @@ import {
 } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { formatDistanceToNowStrict } from "date-fns"
+import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
   BalanceFormatter,
   ChainId,
@@ -49,6 +49,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
   useChainByGenesisHash,
@@ -219,21 +220,22 @@ const TxIconContainer = ({
   </Tooltip>
 )
 
-const displayDistanceToNow = (timestamp: number) =>
+const displayDistanceToNow = (timestamp: number, locale: Locale) =>
   Date.now() - timestamp > 60_000
-    ? formatDistanceToNowStrict(timestamp, { addSuffix: true })
+    ? formatDistanceToNowStrict(timestamp, { addSuffix: true, locale })
     : i18next.t("Just now")
 
 const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
-  const [text, setText] = useState(() => displayDistanceToNow(timestamp))
+  const locale = useDateFnsLocale()
+  const [text, setText] = useState(() => displayDistanceToNow(timestamp, locale))
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setText(displayDistanceToNow(timestamp))
+      setText(displayDistanceToNow(timestamp, locale))
     }, 10_000)
 
     return () => clearInterval(interval)
-  }, [text, timestamp])
+  }, [locale, text, timestamp])
 
   return <>{text}</>
 }
