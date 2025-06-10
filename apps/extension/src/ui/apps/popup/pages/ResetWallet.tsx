@@ -56,9 +56,11 @@ const ConfirmDrawer = ({
               "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key.",
             )}
           </p>
-          <p className="mt-12 text-center">{t("Type 'Reset wallet' below to continue")}</p>
+          <p className="mt-12 text-center">
+            {t("Type '{resetWalletText}' below to continue", { resetWalletText: "Reset wallet" })}
+          </p>
         </div>
-        <FormFieldInputText onChange={handleTextChange} placeholder={t("Reset wallet")} />
+        <FormFieldInputText onChange={handleTextChange} placeholder={"Reset wallet"} />
         <div className="mt-12 flex flex-col gap-8">
           <Button
             type="submit"
