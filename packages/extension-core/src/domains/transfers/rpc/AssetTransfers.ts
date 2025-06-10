@@ -1,11 +1,9 @@
-import type { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { KeyringPair } from "@polkadot/keyring/types"
-import { Metadata, TypeRegistry } from "@polkadot/types"
+import { TypeRegistry } from "@polkadot/types"
 import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { createEra } from "@substrate/txwrapper-core/lib/core/method"
 import { SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
 
@@ -189,19 +187,21 @@ export default class AssetTransfersRpc {
     assert(chain.nativeToken, `Unknown native token for chain ${chainId}`)
     const nativeToken = (await chaindataProvider.tokenById(chain.nativeToken.id)) as SubNativeToken
 
-    const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
-      chainConnector.send(chainId, "chain_getBlockHash", [], false),
-      chainConnector.send(chainId, "chain_getBlock", [], false),
+    // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
+    // using a finalized block as reference for mortality is necessary for txs to get through
+    const blockHash = await chainConnector.send(chainId, "chain_getFinalizedHead", [], false)
+
+    const [header, runtimeVersion, nonce] = await Promise.all([
+      chainConnector.send(chainId, "chain_getHeader", [blockHash]),
+      getRuntimeVersion(chainId, blockHash),
       chainConnector.send(chainId, "system_accountNextIndex", [from.address]),
-      getRuntimeVersion(chainId),
     ])
 
+    const blockNumber = Number(header.number)
     const { specVersion, transactionVersion } = runtimeVersion
 
     const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)
     assert(metadataRpc, "Could not fetch metadata")
-
-    registry.setMetadata(new Metadata(registry, metadataRpc), undefined, chain.signedExtensions)
 
     const palletModule = balanceModules.find((m) => m.type === token.type)
     assert(palletModule, `Failed to construct tx for token of type '${token.type}'`)
@@ -241,7 +241,7 @@ export default class AssetTransfersRpc {
       userExtensions: chain.signedExtensions,
       registry,
       blockHash,
-      blockNumber: block.header.number,
+      blockNumber,
       nonce,
       specVersion,
       transactionVersion,
@@ -254,70 +254,47 @@ export default class AssetTransfersRpc {
       `Failed to handle tx type ${transaction.type} for token '${token.id}'`,
     )
 
-    const callData = transaction.callData
+    const era = registry.createType("ExtrinsicEra", { current: blockNumber, period: 64 })
 
-    // We used to use a library called txwrapper-core to build both the calldata and the SignerPayloadJSON out of the tx method and args.
-    // Now, we use PAPI to build the calldata, and then put together the SignerPayloadJSON ourselves.
-    //
-    // The structure here is based on the txwrapper-core internals:
-    // https://github.com/paritytech/txwrapper-core/blob/4a3b301f12427f100e8548eda29db90bae6bf23b/packages/txwrapper-core/src/core/method/defineMethod.ts#L162-L186
-    const unsignedTx: SignerPayloadJSON = {
+    const unsigned: SignerPayloadJSON = {
       address: from.address,
       assetId: undefined,
       blockHash,
-      blockNumber: registry.createType("BlockNumber", block.header.number).toHex(),
-      era: createEra(registry, {
-        kind: "mortal",
-        blockNumber: block.header.number,
-        period: 64,
-      }).toHex(),
+      blockNumber: registry.createType("BlockNumber", blockNumber).toHex(),
+      era: era.toHex(),
       genesisHash,
-      method: callData,
+      method: transaction.callData,
       nonce: registry.createType("Compact<Index>", nonce).toHex(),
       signedExtensions: registry.signedExtensions,
       specVersion: registry.createType("u32", specVersion).toHex(),
       tip: registry.createType("Compact<Balance>", tip ? Number(tip) : 0).toHex(),
       transactionVersion: registry.createType("u32", transactionVersion).toHex(),
       version: EXTRINSIC_VERSION,
+      withSignedTransaction: true,
+      ...checkMetadataHash,
     }
 
     // create the unsigned extrinsic
     const tx = registry.createType(
       "Extrinsic",
-      { method: unsignedTx.method },
-      { version: unsignedTx.version },
+      { method: unsigned.method },
+      { version: unsigned.version },
     )
 
-    const unsigned: UnsignedTransaction = {
-      metadataRpc,
-      ...unsignedTx,
-      ...checkMetadataHash,
-      withSignedTransaction: true,
-    }
+    // create signable extrinsic payload
+    const payload = registry.createType("ExtrinsicPayload", unsigned)
 
     if (sign) {
-      // create signable extrinsic payload
-      const extrinsicPayload = registry.createType("ExtrinsicPayload", unsigned, {
-        version: unsignedTx.version,
-      })
-
       // sign it using keyring (will fail if keyring is locked or if address is from hardware device)
-      const { signature } = extrinsicPayload.sign(from)
+      const { signature } = payload.sign(from)
 
       // apply signature
-      tx.addSignature(unsignedTx.address, signature, unsigned)
+      tx.addSignature(from.address, signature, payload.toHex())
 
       return { tx, registry, unsigned, chain, signature }
     } else {
       // tx signed with fake signature for fee calculation
-      tx.signFake(unsignedTx.address, {
-        blockHash,
-        genesisHash,
-        nonce,
-        runtimeVersion,
-        ...checkMetadataHash,
-        withSignedTransaction: true,
-      })
+      tx.signFake(unsigned.address, { ...unsigned, era, runtimeVersion })
 
       return { tx, registry, unsigned, chain, signature: undefined }
     }
