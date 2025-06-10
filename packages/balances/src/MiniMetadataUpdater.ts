@@ -8,11 +8,10 @@ import {
   fetchInitMiniMetadatas,
   fetchMiniMetadatas,
 } from "@talismn/chaindata-provider"
-import { toHex } from "@talismn/scale"
+import { fetchBestMetadata } from "@talismn/sapi"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import { from } from "rxjs"
-import { Bytes, Option, u32 } from "scale-ts"
 
 import { ChainConnectors } from "./BalanceModule"
 import log from "./log"
@@ -258,43 +257,13 @@ export class MiniMetadataUpdater {
           const { specName, specVersion } = chain
           if (specName === null) return
           if (specVersion === null) return
-
-          const fetchMetadata = async () => {
-            const errors: { v15: null | unknown; v14: null | unknown } = { v15: null, v14: null }
-
-            try {
-              const response = await this.#chainConnectors.substrate?.send(chainId, "state_call", [
-                "Metadata_metadata_at_version",
-                toHex(u32.enc(15)),
-              ])
-              const result = response ? Option(Bytes()).dec(response) : null
-              if (result) return result
-            } catch (v15Cause) {
-              errors.v15 = v15Cause
-            }
-
-            try {
-              const response = await this.#chainConnectors.substrate?.send(
-                chainId,
-                "state_getMetadata",
-                [],
-              )
-              if (response) return response
-            } catch (v14Cause) {
-              errors.v14 = v14Cause
-            }
-
-            log.warn(
-              `Failed to fetch both metadata v15 and v14 for chain ${chainId}`,
-              errors.v15,
-              errors.v14,
-            )
-            return null
-          }
+          if (!this.#chainConnectors.substrate) return
 
           const [metadataRpc, systemProperties] = await Promise.all([
-            fetchMetadata(),
-            this.#chainConnectors.substrate?.send(chainId, "system_properties", []),
+            fetchBestMetadata((method, params, isCacheable) =>
+              this.#chainConnectors.substrate!.send(chainId, method, params, isCacheable),
+            ),
+            this.#chainConnectors.substrate.send(chainId, "system_properties", []),
           ])
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {

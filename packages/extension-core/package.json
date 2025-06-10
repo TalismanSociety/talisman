@@ -43,6 +43,7 @@
     "@talismn/crypto": "workspace:*",
     "@talismn/keyring": "workspace:*",
     "@talismn/on-chain-id": "workspace:*",
+    "@talismn/sapi": "workspace:*",
     "@talismn/scale": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
