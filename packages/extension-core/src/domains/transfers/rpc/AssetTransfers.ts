@@ -92,7 +92,6 @@ export default class AssetTransfersRpc {
     const { registry } = await getTypeRegistry(
       unsigned.genesisHash,
       unsigned.specVersion,
-      unsigned.blockHash,
       unsigned.signedExtensions,
     )
 
@@ -189,18 +188,23 @@ export default class AssetTransfersRpc {
 
     // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
     // using a finalized block as reference for mortality is necessary for txs to get through
-    const blockHash = await chainConnector.send(chainId, "chain_getFinalizedHead", [], false)
+    const blockHash = await chainConnector.send<`0x${string}`>(
+      chainId,
+      "chain_getFinalizedHead",
+      [],
+      false,
+    )
 
     const [header, runtimeVersion, nonce] = await Promise.all([
-      chainConnector.send(chainId, "chain_getHeader", [blockHash]),
+      chainConnector.send<{ number: `0x${string}` }>(chainId, "chain_getHeader", [blockHash]),
       getRuntimeVersion(chainId, blockHash),
-      chainConnector.send(chainId, "system_accountNextIndex", [from.address]),
+      chainConnector.send<number>(chainId, "system_accountNextIndex", [from.address]),
     ])
 
     const blockNumber = Number(header.number)
     const { specVersion, transactionVersion } = runtimeVersion
 
-    const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)
+    const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion)
     assert(metadataRpc, "Could not fetch metadata")
 
     const palletModule = balanceModules.find((m) => m.type === token.type)
