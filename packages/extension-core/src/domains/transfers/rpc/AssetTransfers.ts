@@ -289,7 +289,7 @@ export default class AssetTransfersRpc {
       const { signature } = payload.sign(from)
 
       // apply signature
-      tx.addSignature(from.address, signature, payload.toHex())
+      tx.addSignature(unsigned.address, signature, payload.toHex())
 
       return { tx, registry, unsigned, chain, signature }
     } else {
