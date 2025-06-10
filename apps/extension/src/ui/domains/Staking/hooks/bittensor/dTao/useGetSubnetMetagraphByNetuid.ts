@@ -1,4 +1,4 @@
-import { GetDynamicInfoResult } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { GetDynamicInfoResult } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"

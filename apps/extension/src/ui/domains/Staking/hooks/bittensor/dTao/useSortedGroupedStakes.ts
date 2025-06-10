@@ -1,7 +1,4 @@
-import {
-  ONE_ALPHA_TOKEN,
-  SCALE_FACTOR,
-} from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { ONE_ALPHA_TOKEN, SCALE_FACTOR } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceFormatter, Balances } from "extension-core"
 import { groupBy } from "lodash"

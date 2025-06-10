@@ -1,5 +1,5 @@
 // const TAO_DECIMALS = 10n ** 9n
-import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { SCALE_FACTOR } from "@talismn/balances"
 import { useMemo } from "react"
 
 import { useGetSubnetMetagraphByNetuid } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"

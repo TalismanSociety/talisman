@@ -1,4 +1,4 @@
-import { ONE_ALPHA_TOKEN } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { ONE_ALPHA_TOKEN } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { type TokenRates } from "@talismn/token-rates"
 import { BalanceFormatter, Balances } from "extension-core"

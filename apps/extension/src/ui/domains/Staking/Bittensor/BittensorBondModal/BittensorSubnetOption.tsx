@@ -1,4 +1,4 @@
-import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { SCALE_FACTOR } from "@talismn/balances"
 import { classNames, planckToTokens } from "@talismn/util"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"

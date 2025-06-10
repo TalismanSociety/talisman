@@ -73,3 +73,5 @@ export { privacyRoundCurrency } from "./util/privacyRoundCurrency"
 export * from "./domains/nfts/exports"
 export * from "./domains/keyring/exports"
 export * from "./domains/transactions/exports"
+
+export { isContractAddress } from "./util/isContractAddress"
