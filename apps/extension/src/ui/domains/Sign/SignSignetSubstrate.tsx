@@ -1,4 +1,4 @@
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import { SignerPayloadJSON } from "@polkadot/types/types"
 import { XCircleIcon } from "@talismn/icons"
 import { AccountSignet, SignerPayloadRaw } from "extension-core"
 import { useMemo } from "react"

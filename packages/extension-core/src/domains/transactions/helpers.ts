@@ -1,6 +1,6 @@
 import { TypeRegistry } from "@polkadot/types"
+import { SignerPayloadJSON } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"

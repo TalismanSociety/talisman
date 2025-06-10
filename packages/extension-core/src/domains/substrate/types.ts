@@ -1,7 +1,7 @@
 import type { HexString } from "@polkadot/util/types"
 import type { ChainId } from "@talismn/chaindata-provider"
 import type { TalismanMetadataDef } from "extension-shared"
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import { SignerPayloadJSON } from "@polkadot/types/types"
 
 import { WalletTransactionInfo } from "../transactions"
 
