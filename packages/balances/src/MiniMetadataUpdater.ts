@@ -257,13 +257,26 @@ export class MiniMetadataUpdater {
           const { specName, specVersion } = chain
           if (specName === null) return
           if (specVersion === null) return
-          if (!this.#chainConnectors.substrate) return
+
+          const fetchMetadata = async () => {
+            try {
+              return await fetchBestMetadata(
+                (method, params, isCacheable) => {
+                  if (!this.#chainConnectors.substrate)
+                    throw new Error("Substrate connector is not available")
+                  return this.#chainConnectors.substrate.send(chainId, method, params, isCacheable)
+                },
+                true, // allow v14 fallback
+              )
+            } catch (err) {
+              log.warn(`Failed to fetch metadata for chain ${chainId}`)
+              return undefined
+            }
+          }
 
           const [metadataRpc, systemProperties] = await Promise.all([
-            fetchBestMetadata((method, params, isCacheable) =>
-              this.#chainConnectors.substrate!.send(chainId, method, params, isCacheable),
-            ),
-            this.#chainConnectors.substrate.send(chainId, "system_properties", []),
+            fetchMetadata(),
+            this.#chainConnectors.substrate?.send(chainId, "system_properties", []),
           ])
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
