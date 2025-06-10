@@ -29,7 +29,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const networks = useSortedEvmNetworks(true)

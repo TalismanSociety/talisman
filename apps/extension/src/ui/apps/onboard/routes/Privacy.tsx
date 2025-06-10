@@ -20,7 +20,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const PrivacyPage = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { updateData, setOnboarded } = useOnboard()

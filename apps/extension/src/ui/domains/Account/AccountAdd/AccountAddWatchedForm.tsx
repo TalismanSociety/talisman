@@ -21,7 +21,7 @@ import { useAccounts } from "@ui/state"
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
 
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   // get type paramter from url
   const [params] = useSearchParams()
   const defaultPlatform = useMemo(() => {

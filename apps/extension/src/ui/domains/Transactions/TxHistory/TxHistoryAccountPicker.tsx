@@ -41,7 +41,7 @@ export const TxHistoryAccountPicker: FC<{
           <IconButton onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
-          <div>{"Select account"}</div>
+          <div>{t("Select account")}</div>
           <IconButton onClick={onDismiss} className="invisible">
             <XIcon />
           </IconButton>

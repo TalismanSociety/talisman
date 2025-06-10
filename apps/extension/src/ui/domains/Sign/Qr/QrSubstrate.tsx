@@ -78,7 +78,7 @@ export const QrSubstrate = ({
   // move around when switching to this component
   narrowMargin = false,
 }: Props): ReactElement<Props> => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const [scanState, setScanState] = useState<ScanState>(
     skipInit ? { page: "SEND" } : { page: "INIT" },
   )
@@ -274,7 +274,7 @@ const SendPage = ({
   chain: Chain | null
   containerId: string
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const [embedProof, setEmbedProof] = useSetting("polkadotVaultSignWithProof")
 
   const canSignWithProof = useMemo(

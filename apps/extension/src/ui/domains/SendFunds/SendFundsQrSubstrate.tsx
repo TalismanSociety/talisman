@@ -14,7 +14,7 @@ import { useAccountByAddress, useChain, useToken } from "@ui/state"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsQrSubstrate = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { tokenId, from, to, amount } = useSendFundsWizard()
   const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   const [error, setError] = useState<Error>()

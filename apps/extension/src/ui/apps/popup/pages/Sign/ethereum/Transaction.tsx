@@ -35,7 +35,7 @@ const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefin
 }
 
 export const EthSignTransactionRequest = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const {
     url,
     request,

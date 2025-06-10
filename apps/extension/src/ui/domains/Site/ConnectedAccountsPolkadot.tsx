@@ -60,13 +60,13 @@ export const ConnectedAccountsPolkadot: FC<{
 
   return (
     <>
-      <div className="mb-2 mt-6 flex w-full items-center justify-between px-8 text-xs">
+      <div className="mb-2 mt-6 flex w-full items-center justify-between gap-3 overflow-hidden px-8 text-xs">
         <Checkbox
           checked={enableEvmAccounts}
           onClick={handleToggleEvmAccounts}
           childProps={{ className: "flex items-center gap-2" }}
         >
-          {t("Ethereum accounts")}{" "}
+          <span className="truncate">{t("Ethereum accounts")}</span>
           <Tooltip>
             <TooltipTrigger>
               <InfoIcon />
@@ -78,10 +78,10 @@ export const ConnectedAccountsPolkadot: FC<{
             </TooltipContent>
           </Tooltip>
         </Checkbox>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 truncate">
           <button
             type="button"
-            className="text-body-secondary hover:text-grey-300"
+            className="text-body-secondary hover:text-grey-300 truncate"
             onClick={handleDisconnectAllClick}
           >
             {t("Disconnect All")}
@@ -89,7 +89,7 @@ export const ConnectedAccountsPolkadot: FC<{
           <div className="bg-body-disabled h-[1rem] w-0.5"></div>
           <button
             type="button"
-            className="text-body-secondary hover:text-grey-300"
+            className="text-body-secondary hover:text-grey-300 truncate"
             onClick={handleConnectAllClick}
           >
             {t("Connect All")}

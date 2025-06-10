@@ -75,7 +75,7 @@ type ContactItemProps = ExistingContactComponentProps & {
 }
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
@@ -200,7 +200,7 @@ const contactTypeAddressTypeMap: Record<ProviderType, AddressEncoding> = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   // preload balances because of the send button
   useBalances("owned")
 

@@ -244,7 +244,7 @@ const ErrorMessage = () => {
 }
 
 export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
   const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } = useSendFunds()
 

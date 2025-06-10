@@ -6,7 +6,7 @@ import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
 
 export const Acknowledgement = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { setStage } = useMnemonicCreateModal()
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>

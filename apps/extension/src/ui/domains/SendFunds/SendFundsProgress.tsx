@@ -23,7 +23,7 @@ const getBlockExplorerUrl = (
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
   const evmNetwork = useEvmNetwork(tx.networkType === "evm" ? tx.evmNetworkId : null)
@@ -70,7 +70,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
 }
 
 const useStatusDetails = (tx?: WalletTransaction) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { title, subtitle, animStatus } = useMemo<{
     title: string
     subtitle: string
@@ -150,7 +150,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
   href,
   onClose,
 }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { title, subtitle, animStatus } = useStatusDetails(tx)
 
   return (

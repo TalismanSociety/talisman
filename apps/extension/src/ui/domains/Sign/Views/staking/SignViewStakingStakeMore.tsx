@@ -9,7 +9,7 @@ export const SignViewStakingStakeMore: FC<{
   planck: bigint
   tokenId: TokenId
 }> = ({ planck, tokenId }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div>{t("You are adding")}</div>

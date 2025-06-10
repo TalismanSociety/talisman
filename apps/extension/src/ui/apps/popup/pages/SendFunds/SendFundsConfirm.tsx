@@ -13,7 +13,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const SendFundsConfirm = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   return (
     <SendFundsLayout withBackLink title={t("Confirm")} analytics={ANALYTICS_PAGE}>
       <SendFundsConfirmForm />

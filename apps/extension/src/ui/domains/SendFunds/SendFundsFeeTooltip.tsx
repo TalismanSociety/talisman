@@ -7,7 +7,7 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { useSendFunds } from "./useSendFunds"
 
 export const SendFundsFeeTooltip = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { feeToken, feeTokenBalance, estimatedFee, evmTransaction } = useSendFunds()
   if (!feeToken || !feeTokenBalance || !estimatedFee) return null
 

@@ -144,7 +144,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 const initialState: AddQrState = { type: "SCAN", enable: false }
 
 const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
 

@@ -30,7 +30,7 @@ export const EvmNetworksList: FC<{
   activeOnly: boolean
   search?: string
 }> = ({ activeOnly, search }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const { recommendedNetworks } = useRemoteConfig()
   const evmNetworks = useEvmNetworks()
@@ -268,7 +268,7 @@ type ActivateMode = "recommended" | "all"
 const ActivateNetworksModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const evmNetworks = useEvmNetworks()
   const activeNetworks = useActiveEvmNetworksState()
@@ -344,7 +344,7 @@ type DeactivateMode = "all" | "unused"
 const DeactivateNetworksModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isBalancesInitializing = useIsBalanceInitializing()
 
   const balances = useBalances("all")

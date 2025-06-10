@@ -22,7 +22,7 @@ const methodButtonsFromMethodType = {
 }
 
 export const AccountCreateContainer = ({ className }: { className?: string }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { methodType } = useAccountCreateContext()
   const MethodButtonsComponent = methodButtonsFromMethodType[methodType] ?? null
 
@@ -103,7 +103,7 @@ function MethodTypeTab({
 }
 
 function NewAccountMethodButtons() {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [accountType, setAccountType] = useState<string>()
 
   return (
@@ -141,7 +141,7 @@ function NewAccountMethodButtons() {
 }
 
 function ImportAccountMethodButtons() {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <>
@@ -168,7 +168,7 @@ function ImportAccountMethodButtons() {
 }
 
 function ConnectAccountMethodButtons() {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isLedgerCapable = getIsLedgerCapable()
 
   return (
@@ -200,7 +200,7 @@ function ConnectAccountMethodButtons() {
 }
 
 function WatchedAccountMethodButtons() {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [accountType, setAccountType] = useState<string>()
 
   return (

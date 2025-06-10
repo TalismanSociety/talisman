@@ -110,7 +110,7 @@ const DefaultView: FC<{
 }
 
 const LoadingShimmer = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return (
     <div className="text-body-secondary animate-fade-in flex flex-col items-center gap-2 pt-40 leading-[140%]">

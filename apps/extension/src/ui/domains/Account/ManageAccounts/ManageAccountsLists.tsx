@@ -12,7 +12,7 @@ import { UiTree, UiTreeAccount, UiTreeFolder } from "./types"
 import { dataTreeToUiTree } from "./util"
 
 export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()
 
   const accountsMap = useMemo(

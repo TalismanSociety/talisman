@@ -70,7 +70,7 @@ const MnemonicFormInner = () => {
 }
 
 export const MnemonicCreateForm = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
       <div className={"flex w-full min-w-[58rem] flex-col"}>

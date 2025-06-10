@@ -51,7 +51,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const PasswordPage = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { data, createPassword, isResettingWallet, passwordExists, setOnboarded } = useOnboard()

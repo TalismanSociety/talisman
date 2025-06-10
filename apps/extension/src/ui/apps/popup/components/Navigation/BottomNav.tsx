@@ -163,22 +163,22 @@ const NavButton: FC<{
     >
       <div
         className={classNames(
-          "flex size-full flex-col items-center justify-center gap-[0.15rem]",
+          "flex w-full flex-col items-center justify-center gap-[0.15rem] overflow-visible",
           "translate-y-4 transition-transform group-hover:translate-y-0",
         )}
       >
         {withBadge ? (
-          <div className="relative size-10">
+          <div className="relative size-10 shrink-0">
             <Icon className="size-10" />
             <div className="bg-primary absolute -right-1 -top-1 size-3 rounded-full"></div>
           </div>
         ) : (
-          <Icon className="size-10" />
+          <Icon className="size-10 shrink-0" />
         )}
         <div
           className={classNames(
             "leading-paragraph text-[1rem]",
-            "opacity-0 transition-opacity group-hover:opacity-100",
+            "text-nowrap opacity-0 transition-opacity group-hover:opacity-100",
           )}
         >
           {label}

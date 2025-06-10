@@ -88,7 +88,7 @@ const SubstrateNetworkSelect: FC<{
 }
 
 export const AddLedgerSelectNetwork = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { data: defaultValues, updateData } = useAddLedgerAccount()
 
   const chains = useLedgerSubstrateChains()

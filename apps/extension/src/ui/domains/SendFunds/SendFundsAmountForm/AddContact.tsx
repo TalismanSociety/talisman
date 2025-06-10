@@ -12,7 +12,7 @@ import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"
 
 export const AddContact = ({ tokenGenesisHash }: { tokenGenesisHash?: HexString }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { to } = useSendFunds()
   const account = useAccountByAddress(to)
   const { contacts } = useAddressBook()

@@ -108,7 +108,7 @@ export const NetworkRpcsListField = ({
   placeholder?: string
   FieldComponent?: React.ComponentType<SortableRpcItemProps>
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { watch, control } = useFormContext<RpcFormData>()
 
   const {

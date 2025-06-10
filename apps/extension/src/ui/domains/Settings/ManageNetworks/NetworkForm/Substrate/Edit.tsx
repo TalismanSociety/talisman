@@ -19,7 +19,7 @@ export type SubNetworkFormEditProps = SubNetworkFormBaseProps & {
 }
 
 export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isBuiltInChain = useIsBuiltInChain(chainId)
 
   const chain = useChain(chainId)

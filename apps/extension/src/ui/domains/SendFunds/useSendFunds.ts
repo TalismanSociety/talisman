@@ -48,7 +48,7 @@ import { useFeeToken } from "./useFeeToken"
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
 const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const hydrate = useBalancesHydrate()
 
   return useQuery({
@@ -215,7 +215,7 @@ const useSubTransaction = (
 export type ToWarning = "AZERO_ID" | undefined
 
 const useSendFundsProvider = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()

@@ -36,7 +36,7 @@ type ViewDetailsContentProps = {
 }
 
 const Gwei: FC<{ value: bigint | null | undefined }> = ({ value }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <>
       {value !== null && value !== undefined
@@ -47,7 +47,7 @@ const Gwei: FC<{ value: bigint | null | undefined }> = ({ value }) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const feePriorityOptions = useFeePriorityOptionsUI()
   const {
     request,
@@ -344,7 +344,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 }
 
 export const ViewDetailsEth = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
   const { isLoading } = useEthSignTransactionRequest()
 

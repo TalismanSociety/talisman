@@ -10,7 +10,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 
 export const ResetEvmNetworkButton: FC<{ network: SimpleEvmNetwork }> = ({ network }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
 

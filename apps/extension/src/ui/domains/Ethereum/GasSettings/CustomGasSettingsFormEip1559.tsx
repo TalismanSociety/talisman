@@ -156,7 +156,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   txDetails,
   onConfirm,
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {

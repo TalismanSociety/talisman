@@ -10,7 +10,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 
 export const ResetSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chain }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 

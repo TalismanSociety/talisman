@@ -18,7 +18,7 @@ export type DcentSubstratePayload = {
 export const SignDcentUnsupportedMessage: FC<
   Pick<SignHardwareSubstrateProps, "containerId" | "className" | "onCancel">
 > = ({ containerId, className, onCancel }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string | undefined>(
     t("Sorry, D'CENT is no longer supported in Talisman"),

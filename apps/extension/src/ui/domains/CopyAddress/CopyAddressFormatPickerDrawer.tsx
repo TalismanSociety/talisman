@@ -137,7 +137,7 @@ const FormatRow: FC<{
   const { t } = useTranslation()
 
   return (
-    <div className="border-grey-700 flex h-[6.8rem] w-full items-center gap-6 rounded-lg border px-10">
+    <div className="border-grey-700 flex h-[6.8rem] w-full items-center gap-6 rounded-lg border px-8">
       <div className="size-16 shrink-0">
         <ChainLogo id={chainId} className="shrink-0 text-xl" />
       </div>
@@ -148,7 +148,7 @@ const FormatRow: FC<{
             {label}
           </div>
         </div>
-        <div className="text-body-secondary text-xs">{shortenAddress(address, 10, 10)}</div>
+        <div className="text-body-secondary text-xs">{shortenAddress(address, 8, 8)}</div>
       </div>
       <Button primary small onClick={onSelect}>
         {t("Select")}

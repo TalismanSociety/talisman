@@ -11,7 +11,7 @@ import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAdd
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   // get type paramter from url
   const [params] = useSearchParams()
   const urlParamPlatform = (params.get("platform") ?? undefined) as KeypairCurve | undefined

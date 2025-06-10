@@ -96,7 +96,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
         .filter(isNotNil),
     [allAccounts, addresses],
   )
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return (
     <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
       <div>{t("Accounts")}</div>
@@ -183,7 +183,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   tokenId,
   assets,
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
@@ -351,7 +351,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 }
 
 const AssetTable: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isInitializing = useIsInitializingScan()
   const { balances, balancesByTokenId, tokenIds } = useAssetDiscoveryScanProgress()
   // this hook is in charge of fetching the token rates for the tokens that were discovered
@@ -376,7 +376,7 @@ const AssetTable: FC = () => {
 }
 
 const Header: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isInitializing = useIsInitializingScan()
   const { balances, accountsCount, networksCount, tokensCount, percent, isInProgress } =
     useAssetDiscoveryScanProgress()
@@ -536,7 +536,7 @@ const NetworksWrapper: FC<{
 }
 
 const ScanInfo: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const isInitializing = useIsInitializingScan()
 
   const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
@@ -638,7 +638,7 @@ const ScanInfo: FC = () => {
 }
 
 const Notice: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return (
     <div className="bg-grey-800 text-body-secondary flex items-center gap-8 rounded p-8 py-6">
       <div>
@@ -673,7 +673,7 @@ const Notice: FC = () => {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   useBalancesHydrate() // preload
 
   useAnalyticsPageView(ANALYTICS_PAGE)

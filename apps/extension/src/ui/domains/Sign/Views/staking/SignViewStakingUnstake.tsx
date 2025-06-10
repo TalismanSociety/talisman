@@ -8,7 +8,7 @@ import { useToken } from "@ui/state"
 export const SignViewStakingUnstake: FC<{
   tokenId: TokenId
 }> = ({ tokenId }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const token = useToken(tokenId)
 
   return (

@@ -12,7 +12,7 @@ export const AnalyticsOptInInfo: FC<{
   className?: string
   children?: ReactNode
 }> = ({ className, children }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <div className={classNames("flex flex-col gap-12", className)}>

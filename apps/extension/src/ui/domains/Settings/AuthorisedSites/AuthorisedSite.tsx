@@ -21,7 +21,7 @@ const ConfirmForgetDialog: FC<{
   onConfirm: () => void
   onCancel: () => void
 }> = ({ siteLabel, onConfirm, onCancel }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <div className="text-body-secondary text-sm">
@@ -54,7 +54,7 @@ export const AuthorizedSite: FC<{
   id: string
   provider: ProviderType
 }> = ({ id, provider }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { origin, connected, availableAddresses, toggleAll, toggleOne, forget } =
     useAuthorisedSiteById(id, provider)
   const [showForget, setShowForget] = useState(false)

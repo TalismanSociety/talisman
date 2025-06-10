@@ -20,7 +20,7 @@ import { useAccountsCatalog } from "@ui/state"
 export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
 
 export const NewFolderModal = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { close, isOpen } = useNewFolderModal()
 
   return (
@@ -44,7 +44,7 @@ interface NewFolderProps {
 }
 
 const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const schema = useMemo(
     () =>
