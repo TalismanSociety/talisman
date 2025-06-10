@@ -12,12 +12,6 @@ export type MnemonicOption = {
   accounts?: Account[]
 }
 
-const GENERATE_MNEMONIC_OPTION = {
-  value: "new",
-  label: "Generate new recovery phrase",
-  accounts: [],
-}
-
 export const AccountAddMnemonicDropdown: FC<{
   label?: string
   value: string | null // null means "generate new"
@@ -26,6 +20,15 @@ export const AccountAddMnemonicDropdown: FC<{
   const { t } = useTranslation()
 
   const allAccounts = useAccounts()
+
+  const newMmnemonicOption = useMemo(
+    () => ({
+      value: "new",
+      label: t("Generate new recovery phrase"),
+      accounts: [],
+    }),
+    [t],
+  )
 
   const mnemonics = useMnemonics()
   const mnemonicOptions: MnemonicOption[] = useMemo(() => {
@@ -46,13 +49,13 @@ export const AccountAddMnemonicDropdown: FC<{
           accounts: accountsByMnemonic[m.id] || [],
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-      GENERATE_MNEMONIC_OPTION,
+      newMmnemonicOption,
     ]
-  }, [allAccounts, mnemonics])
+  }, [allAccounts, mnemonics, newMmnemonicOption])
 
   const selected = useMemo(
-    () => mnemonicOptions.find((o) => o.value === value) ?? GENERATE_MNEMONIC_OPTION,
-    [mnemonicOptions, value],
+    () => mnemonicOptions.find((o) => o.value === value) ?? newMmnemonicOption,
+    [mnemonicOptions, newMmnemonicOption, value],
   )
 
   const handleChange = useCallback(
