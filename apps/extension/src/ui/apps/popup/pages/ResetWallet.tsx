@@ -57,7 +57,7 @@ const ConfirmDrawer = ({
             )}
           </p>
           <p className="mt-12 text-center">
-            {t("Type '{resetWalletText}' below to continue", { resetWalletText: "Reset wallet" })}
+            {t("Type '{{resetWalletText}}' below to continue", { resetWalletText: "Reset wallet" })}
           </p>
         </div>
         <FormFieldInputText onChange={handleTextChange} placeholder={"Reset wallet"} />
