@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 0.1.5
+
+### Patch Changes
+
+- 78f3616: bump pjs and papi deps
+
 ## 0.1.4
 
 ### Patch Changes

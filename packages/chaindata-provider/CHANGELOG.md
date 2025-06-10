@@ -1,5 +1,7 @@
 # @talismn/chaindata-provider
 
+## 0.10.9
+
 ## 0.10.8
 
 ### Patch Changes

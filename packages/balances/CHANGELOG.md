@@ -1,5 +1,19 @@
 # @talismn/balances
 
+## 0.9.10
+
+### Patch Changes
+
+- 78f3616: bump pjs and papi deps
+- Updated dependencies [78f3616]
+  - @talismn/chain-connector@0.10.9
+  - @talismn/scale@0.1.2
+  - @talismn/sapi@0.0.4
+  - @talismn/util@0.4.2
+  - @talismn/chain-connector-evm@0.10.9
+  - @talismn/chaindata-provider@0.10.9
+  - @talismn/token-rates@2.0.10
+
 ## 0.9.9
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @talismn/keyring
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [78f3616]
+  - @talismn/crypto@0.1.5
+
 ## 1.0.0
 
 ### Major Changes
