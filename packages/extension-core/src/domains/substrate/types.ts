@@ -17,7 +17,6 @@ type SubstrateRequestSend = {
 type SubstrateRequestChainMetadata = {
   genesisHash: HexString
   specVersion?: number
-  blockHash?: HexString
 }
 
 type SubstrateRequestSubmit = {
