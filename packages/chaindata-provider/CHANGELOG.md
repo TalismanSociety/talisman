@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.11.0
+
+### Minor Changes
+
+- ecd5c7a: feat: chaindata v3
+
 ## 0.10.9
 
 ## 0.10.8
