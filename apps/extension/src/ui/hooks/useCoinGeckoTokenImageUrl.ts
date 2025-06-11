@@ -13,6 +13,8 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null | unde
   })
 
   return useMemo(() => {
+    if (!coingeckoTokenId) return null
+
     const token = tokens?.find((t) => t.id === coingeckoTokenId)
 
     return !tokens || token

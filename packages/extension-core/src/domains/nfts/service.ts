@@ -5,6 +5,7 @@ import {
   isAccountPlatformPolkadot,
 } from "@talismn/keyring"
 import { getQuery$, isNotNil } from "@talismn/util"
+import { log } from "extension-shared"
 import { isEqual } from "lodash"
 import {
   combineLatest,
@@ -49,6 +50,8 @@ const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<
 }
 
 export const nfts$ = new Observable<NftData>((subscriber) => {
+  log.log("Opening NFTs subscription")
+
   const nftsCountByAccount$ = nftsStore$.pipe(
     map(({ nfts }) =>
       nfts.reduce(
@@ -147,6 +150,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     .subscribe(subscriber)
 
   return () => {
+    log.log("Closing NFTs subscription")
     subOutput.unsubscribe()
     subUpdateStore.unsubscribe()
   }
