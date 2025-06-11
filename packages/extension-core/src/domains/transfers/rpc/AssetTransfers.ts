@@ -92,7 +92,6 @@ export default class AssetTransfersRpc {
     const { registry } = await getTypeRegistry(
       unsigned.genesisHash,
       unsigned.specVersion,
-      undefined,
       unsigned.signedExtensions,
     )
 

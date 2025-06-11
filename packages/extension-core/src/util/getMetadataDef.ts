@@ -19,28 +19,26 @@ const CACHE_PROMISES = new Map<string, Promise<TalismanMetadataDef | undefined>>
 
 const getResultCacheKey = (genesisHash: HexString, specVersion?: number) =>
   !specVersion || !genesisHash ? null : `${genesisHash}-${specVersion}`
-const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number, blockHash?: string) =>
-  [chainIdOrHash, specVersion ?? "", blockHash ?? ""].join("-")
+const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number) =>
+  [chainIdOrHash, specVersion ?? ""].join("-")
 
 /**
  *
  * @param chainIdOrHash chainId or genesisHash
  * @param specVersion
- * @param blockHash if specVersion isn't specified, this is the blockHash where to fetch the correct metadata from
  * @returns
  */
 export const getMetadataDef = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
-  const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion, blockHash)
+  const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion)
 
   // prevent concurrent calls that would fetch the same data
   if (!CACHE_PROMISES.has(cacheKey))
     CACHE_PROMISES.set(
       cacheKey,
-      getMetadataDefInner(chainIdOrHash, specVersion, blockHash).finally(() => {
+      getMetadataDefInner(chainIdOrHash, specVersion).finally(() => {
         CACHE_PROMISES.delete(cacheKey)
       }),
     )
@@ -51,13 +49,8 @@ export const getMetadataDef = async (
 const getMetadataDefInner = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
-
-  // blockHash being equal to genesisHash happens when trying to decode payload of immortal transactions
-  // in that case, blockHash must not be used as block reference when fetching data
-  if (blockHash && blockHash === genesisHash) blockHash = undefined
 
   const cacheKey = getResultCacheKey(genesisHash, specVersion)
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
@@ -83,7 +76,7 @@ const getMetadataDefInner = async (
   }
 
   try {
-    const { specVersion: runtimeSpecVersion } = await getRuntimeVersion(chain.id, blockHash)
+    const { specVersion: runtimeSpecVersion } = await getRuntimeVersion(chain.id)
     assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
 
     // if specVersion wasn't specified, but store version is up to date, look no further
@@ -102,12 +95,7 @@ const getMetadataDefInner = async (
     // if (DEBUG) throw new Error("Failed to update metadata (debugging)")
 
     // fetch the metadataDef from the chain
-    const newData = await fetchMetadataDefFromChain(
-      chain,
-      genesisHash,
-      runtimeSpecVersion,
-      blockHash,
-    )
+    const newData = await fetchMetadataDefFromChain(chain, genesisHash, runtimeSpecVersion)
     if (!newData) return // unable to get data from rpc, return nothing
 
     // save in cache

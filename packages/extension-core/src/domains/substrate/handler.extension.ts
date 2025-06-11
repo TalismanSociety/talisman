@@ -23,7 +23,6 @@ export class SubHandler extends ExtensionHandler {
     const { registry } = await getTypeRegistry(
       payload.genesisHash,
       payload.specVersion,
-      payload.blockHash,
       payload.signedExtensions,
     )
 
