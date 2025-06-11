@@ -49,6 +49,7 @@ import TalismanHandler from "../domains/talisman/handler"
 import { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
+import { chaindataProvider } from "../rpcs/chaindata"
 import { SubstrateSignResponse } from "../types/domains"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
@@ -195,7 +196,24 @@ export default class Tabs extends TabsHandler {
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {
-    return ((await db.metadata.toArray()) || []).map(({ genesisHash, specVersion }) => ({
+    // this is called by dapps to determine whether they should force the wallet to update metadata before submitting a tx (we can't know on which chain up front)
+    // we dont want this metadata as it's not the full one, so it's an UX overhead we want to avoid
+    // => return the spec version of all chains for which we know how to connect, plus the ones for which we have the metadata in db
+    const [chains, metadata] = await Promise.all([
+      chaindataProvider.chains(),
+      db.metadata.toArray(),
+    ])
+
+    const dicSpecVersions = [...chains.filter(({ rpcs }) => rpcs?.length), ...metadata].reduce(
+      (acc, { genesisHash, specVersion }) => {
+        if (genesisHash && specVersion)
+          acc[genesisHash] = Math.max(acc[genesisHash] ?? 0, Number(specVersion))
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    return Object.entries(dicSpecVersions).map(([genesisHash, specVersion]) => ({
       genesisHash,
       specVersion,
     }))
