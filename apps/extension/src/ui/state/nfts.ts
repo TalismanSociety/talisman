@@ -233,7 +233,8 @@ export const [useNfts, nfts$] = bind(
               }
 
               case "name": {
-                return (c1.name ?? "").localeCompare(c2.name ?? "")
+                if (c1.name !== c2.name) return (c1.name ?? "").localeCompare(c2.name ?? "")
+                break
               }
 
               case "value": {
@@ -249,7 +250,7 @@ export const [useNfts, nfts$] = bind(
               }
             }
 
-            return (c1.name ?? "").localeCompare(c2.name ?? "")
+            return c1.id.localeCompare(c2.id) // if nothing else, sort by id.
           })
 
         return { status, nfts, collections, favoriteNftIds, hiddenNftCollectionIds } as NftData
