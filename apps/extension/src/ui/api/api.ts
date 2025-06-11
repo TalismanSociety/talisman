@@ -307,11 +307,10 @@ export const api: MessageTypes = {
       signature,
       txInfo,
     }),
-  subChainMetadata: (genesisHash, specVersion, blockHash) =>
+  subChainMetadata: (genesisHash, specVersion) =>
     messageService.sendMessage("pri(substrate.metadata.get)", {
       genesisHash,
       specVersion,
-      blockHash,
     }),
 
   // asset discovery

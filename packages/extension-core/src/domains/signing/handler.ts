@@ -51,13 +51,12 @@ export default class SigningHandler extends ExtensionHandler {
       let registry = new TypeRegistry()
 
       if (isJsonPayload(payload)) {
-        const { signedExtensions, specVersion, blockHash } = payload
+        const { signedExtensions, specVersion } = payload
         const genesisHash = validateHexString(payload.genesisHash)
 
         const { registry: fullRegistry } = await getTypeRegistry(
           genesisHash,
           specVersion,
-          blockHash,
           signedExtensions,
         )
 
@@ -177,14 +176,9 @@ export default class SigningHandler extends ExtensionHandler {
       analyticsProperties.chain = chain?.chainName ?? undefined
 
       if (chain) {
-        const { signedExtensions, specVersion, blockHash } = payload
+        const { signedExtensions, specVersion } = payload
         const genesisHash = validateHexString(payload.genesisHash)
-        const { registry } = await getTypeRegistry(
-          genesisHash,
-          specVersion,
-          blockHash,
-          signedExtensions,
-        )
+        const { registry } = await getTypeRegistry(genesisHash, specVersion, signedExtensions)
 
         if (payload.withSignedTransaction) {
           const tx = registry.createType(

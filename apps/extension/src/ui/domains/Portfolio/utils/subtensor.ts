@@ -1,4 +1,4 @@
-import { SCALE_FACTOR } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { SCALE_FACTOR } from "@talismn/balances"
 
 const calculateAlphaPrice = ({ alphaIn, taoIn }: { alphaIn: number; taoIn: number }): number => {
   return (taoIn * Number(SCALE_FACTOR.toString())) / alphaIn

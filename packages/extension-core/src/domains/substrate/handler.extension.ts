@@ -23,7 +23,6 @@ export class SubHandler extends ExtensionHandler {
     const { registry } = await getTypeRegistry(
       payload.genesisHash,
       payload.specVersion,
-      payload.blockHash,
       payload.signedExtensions,
     )
 
@@ -85,9 +84,8 @@ export class SubHandler extends ExtensionHandler {
   private metadata: MessageHandler<"pri(substrate.metadata.get)"> = ({
     genesisHash,
     specVersion,
-    blockHash,
   }) => {
-    return getMetadataDef(genesisHash, specVersion, blockHash)
+    return getMetadataDef(genesisHash, specVersion)
   }
 
   public async handle<TMessageType extends MessageTypes>(

@@ -31,3 +31,4 @@ export * from "./SubstratePsp22Module"
 export * from "./SubstrateTokensModule"
 
 export * from "./util"
+export * from "./abis"

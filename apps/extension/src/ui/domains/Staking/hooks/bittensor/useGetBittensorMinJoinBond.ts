@@ -1,4 +1,4 @@
-import { SUBTENSOR_MIN_STAKE_AMOUNT_PLANK } from "@talismn/balances/src/modules/SubstrateNativeModule/util/subtensor"
+import { SUBTENSOR_MIN_STAKE_AMOUNT_PLANK } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 
