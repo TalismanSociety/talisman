@@ -1,5 +1,19 @@
 # @talismn/balances
 
+## 0.9.11
+
+### Patch Changes
+
+- 51c676b: fix: exports
+- 549f1e5: fetchBestMetadata method
+- Updated dependencies [549f1e5]
+- Updated dependencies [ecd5c7a]
+  - @talismn/sapi@0.0.5
+  - @talismn/chaindata-provider@0.11.0
+  - @talismn/chain-connector@0.11.0
+  - @talismn/chain-connector-evm@0.11.0
+  - @talismn/token-rates@2.0.11
+
 ## 0.9.10
 
 ### Patch Changes

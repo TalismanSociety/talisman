@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.0.5
+
+### Patch Changes
+
+- 549f1e5: fetchBestMetadata method
+
 ## 0.0.4
 
 ### Patch Changes
