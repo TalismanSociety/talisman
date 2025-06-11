@@ -46,7 +46,7 @@ const nftData$ = new Observable<NftData>((subscriber) => {
     unsubscribe()
   }
 }).pipe(
-  debugObservable("nftData$", true),
+  debugObservable("nftData$"),
   // backend subscription must be active only when this observable is subscribed
   // => all bind() calls using this observable will need a default value or they will never unsubscribe
   shareReplay({ refCount: true, bufferSize: 1 }),
