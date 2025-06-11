@@ -10,6 +10,8 @@ import { getStorageValue } from "./getStorageValue"
 import { mortal, toPjsHex } from "./papi"
 import { Chain, ChainInfo } from "./types"
 
+const PERIOD = 64 // validity period in blocks, used for mortal era
+
 export const getSignerPayloadJSON = async (
   chain: Chain,
   palletName: string,
@@ -21,24 +23,25 @@ export const getSignerPayloadJSON = async (
   const { codec, location } = chain.builder.buildCall(palletName, methodName)
   const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
 
-  const blockNumber = await getStorageValue<number>(chain, "System", "Number", [])
-  if (blockNumber === null) throw new Error("Block number not found")
+  // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
+  // using a finalized block as reference for mortality is necessary for txs to get through
+  const blockHash = await getSendRequestResult<`0x${string}`>(
+    chain,
+    "chain_getFinalizedHead",
+    [],
+    false,
+  )
 
-  const [account, genesisHash, blockHash] = await Promise.all([
-    // TODO if V15 available, use a runtime call instead : AccountNonceApi/account_nonce
-    // about nonce https://github.com/paritytech/json-rpc-interface-spec/issues/156
-    getStorageValue<{ nonce: number }>(chain, "System", "Account", [signerConfig.address]),
+  const [nonce, genesisHash, blockNumber] = await Promise.all([
+    getSendRequestResult<number>(chain, "system_accountNextIndex", [signerConfig.address], false),
     getStorageValue<Binary>(chain, "System", "BlockHash", [0]),
-    getSendRequestResult<`0x${string}`>(chain, "chain_getBlockHash", [blockNumber], false), // TODO find the right way to fetch this with new RPC api, this is not available in storage yet
+    getStorageValue<number>(chain, "System", "Number", [], blockHash),
   ])
   if (!genesisHash) throw new Error("Genesis hash not found")
   if (!blockHash) throw new Error("Block hash not found")
 
-  const nonce = account ? account.nonce : 0
-  const era = mortal({ period: 16, phase: blockNumber % 16 })
-  const signedExtensions = chain.metadata.extrinsic.signedExtensions.map((ext) =>
-    ext.identifier.toString(),
-  )
+  const era = mortal({ period: PERIOD, phase: blockNumber % PERIOD })
+  const signedExtensions = chain.metadata.extrinsic.signedExtensions.map((ext) => ext.identifier)
 
   const basePayload: SignerPayloadJSON = {
     address: signerConfig.address,
