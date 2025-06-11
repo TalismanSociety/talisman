@@ -225,7 +225,7 @@ const getUpdatedAt = async (
       signal,
     )
 
-    const timestamps = res.data.list?.map((c) => c.block_timestamp) ?? []
+    const timestamps = res.data.list?.map((c) => c.block_timestamp * 1000) ?? []
     return timestamps.length ? Math.max(...timestamps) : null
   } catch (err) {
     signal.throwIfAborted()

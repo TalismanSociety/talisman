@@ -200,7 +200,7 @@ export const [useNfts, nfts$] = bind(
               //ignore
             }
 
-            return 0
+            return n1.id.localeCompare(n2.id) // if nothing else, sort by id.
           })
 
         const collectionIds = new Set(nfts.map((nft) => nft.collectionId))
