@@ -1,5 +1,5 @@
 import { normalizeAddress } from "@talismn/crypto"
-import { isEqual, uniq } from "lodash"
+import { isEqual, keyBy } from "lodash"
 import { BehaviorSubject, debounceTime } from "rxjs"
 
 import { getDbBlob, updateDbBlob } from "../../db"
@@ -48,16 +48,17 @@ export const updateNftsStore = ({
 }) => {
   const normalizedAddresses = addresses.map(normalizeAddress)
   const newStoreData = structuredClone(subject.value)
-  const newCollectionsIds = uniq(collections.map((c) => c.id))
 
   newStoreData.nfts = newStoreData.nfts
     .filter((nft) => !normalizedAddresses.includes(normalizeAddress(nft.owner)))
     .concat(nfts)
-  newStoreData.collections = newStoreData.collections
-    .filter((col) => !newCollectionsIds.includes(col.id))
-    .concat(collections)
-    // cleanup unused collections
-    .filter((col) => newStoreData.nfts.some((nft) => nft.collectionId === col.id))
+
+  // consolidate collections
+  const newCollectionsMap = keyBy(newStoreData.collections.concat(collections), (c) => c.id)
+  for (const collectionId of Object.keys(newCollectionsMap))
+    if (!newStoreData.nfts.some((nft) => nft.collectionId === collectionId))
+      delete newCollectionsMap[collectionId]
+  newStoreData.collections = Object.values(newCollectionsMap)
 
   // cleanup orphan nfts
   newStoreData.nfts.filter((nft) =>
