@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
@@ -61,6 +62,7 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   onClick,
 }) => {
   const { t } = useTranslation()
+  const locale = useDateFnsLocale()
   const isFavorite = useIsFavoriteNft(nft.id)
 
   return (
@@ -78,7 +80,7 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
       </div>
       <div className="truncate text-right">{nft.tokenId ? `#${nft.tokenId}` : null}</div>
       <div className="text-right">
-        {nft.updatedAt ? format(new Date(nft.updatedAt), "P") : t("N/A")}
+        {nft.updatedAt ? format(new Date(nft.updatedAt), "P", { locale }) : t("N/A")}
       </div>
     </button>
   )
@@ -110,7 +112,7 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
       <div className="text-body-disabled mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-sm">
         <div className="pl-[4.4rem]">{t("Name")}</div>
         <div className="text-right">{t("Token ID")}</div>
-        <div className="text-right">{t("Acquired on")}</div>
+        <div className="text-right">{t("Updated on")}</div>
       </div>
 
       <div className="flex flex-col gap-4">

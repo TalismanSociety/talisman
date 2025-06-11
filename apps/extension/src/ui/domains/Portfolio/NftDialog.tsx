@@ -35,6 +35,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useIsHiddenNftCollection, useNetwork, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -192,6 +193,7 @@ const TabContentNft: FC<{
   nft: Nft
 }> = ({ nft }) => {
   const { t } = useTranslation()
+  const locale = useDateFnsLocale()
 
   const copyToClipboard = useCopyToClipboard()
 
@@ -221,7 +223,7 @@ const TabContentNft: FC<{
             {!!nft.updatedAt && (
               <>
                 <div className="text-body-secondary">{t("Updated on")}</div>
-                <div className="text-right">{format(new Date(nft.updatedAt), "P")}</div>
+                <div className="text-right">{format(new Date(nft.updatedAt), "P", { locale })}</div>
               </>
             )}
           </>

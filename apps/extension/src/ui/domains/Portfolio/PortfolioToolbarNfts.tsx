@@ -184,7 +184,7 @@ export const SortByButton = () => {
             </ContextMenuTrigger>
             <ContextMenuContent>
               <ContextMenuOptionItem
-                label={t("Last acquired")}
+                label={t("Date")}
                 selected={sortBy === "date"}
                 onClick={() => setSortBy("date")}
               />

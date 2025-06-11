@@ -204,7 +204,7 @@ export const [useNfts, nfts$] = bind(
           })
 
         const collectionIds = new Set(nfts.map((nft) => nft.collectionId))
-        const lastAcquiredPerCollection = new Map<string, number | null>()
+        const lastUpdatedPerCollection = new Map<string, number | null>()
         const collections = allCollections
           .filter((c) => collectionIds.has(c.id))
           .sort((c1, c2) => {
@@ -218,16 +218,16 @@ export const [useNfts, nfts$] = bind(
 
             switch (sortBy) {
               case "date": {
-                if (!lastAcquiredPerCollection.has(c1.id))
-                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c1, nfts))
+                if (!lastUpdatedPerCollection.has(c1.id))
+                  lastUpdatedPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c1, nfts))
 
-                if (!lastAcquiredPerCollection.has(c1.id))
-                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c2, nfts))
+                if (!lastUpdatedPerCollection.has(c1.id))
+                  lastUpdatedPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c2, nfts))
 
-                const lastAcquired1 = lastAcquiredPerCollection.get(c1.id)
-                const lastAcquired2 = lastAcquiredPerCollection.get(c2.id)
+                const lastUpdated1 = lastUpdatedPerCollection.get(c1.id)
+                const lastUpdated2 = lastUpdatedPerCollection.get(c2.id)
 
-                if (lastAcquired1 && lastAcquired2) return lastAcquired2 - lastAcquired1
+                if (lastUpdated1 && lastUpdated2) return lastUpdated2 - lastUpdated1
 
                 break
               }

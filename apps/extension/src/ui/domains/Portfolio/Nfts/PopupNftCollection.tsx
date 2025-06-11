@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
@@ -61,6 +62,7 @@ const NftRowInner: FC<{
   onClick: () => void
 }> = ({ collection, nft, onClick }) => {
   const { t } = useTranslation()
+  const locale = useDateFnsLocale()
   const isFavorite = useIsFavoriteNft(nft.id)
 
   return (
@@ -77,7 +79,7 @@ const NftRowInner: FC<{
         </div>
       </div>
       <div className="text-right">
-        {nft.updatedAt ? format(new Date(nft.updatedAt), "P") : t("N/A")}
+        {nft.updatedAt ? format(new Date(nft.updatedAt), "P", { locale }) : t("N/A")}
       </div>
     </button>
   )
