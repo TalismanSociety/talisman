@@ -6,7 +6,7 @@ import { Button, ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "ta
 import { useRiskAnalysis } from "./Ethereum/riskAnalysis"
 
 export const SignApproveButton: FC<ButtonProps> = (props) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const riskAnalysis = useRiskAnalysis()
 
   const color = useMemo(() => {

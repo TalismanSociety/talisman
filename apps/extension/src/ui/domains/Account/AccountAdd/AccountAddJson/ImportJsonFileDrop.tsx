@@ -31,7 +31,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
   onChange,
   isInvalid,
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [file, setFile] = useState<File>()
 
   const onDrop = useCallback(

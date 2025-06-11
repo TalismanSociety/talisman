@@ -1,5 +1,5 @@
 import { WalletTransactionInfo } from "extension-core"
-import { useAtomValue, useSetAtom } from "jotai"
+import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,15 +19,10 @@ import {
   toAddressAtom,
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
-import {
-  exchangeAtom,
-  saveIdForMonitoring,
-  PROTOCOL as SIMPLESWAP_PROTOCOL,
-  substratePayloadAtom,
-} from "../swap-modules/simpleswap-swap-module"
+import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { useFastBalance } from "../swaps-port/useFastBalance"
-import { toAmountAtom } from "../swaps.api"
+import { selectedSwapModuleAtom, toAmountAtom } from "../swaps.api"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
 
 export const SwapConfirmSubstrate = ({
@@ -52,6 +47,11 @@ export const SwapConfirmSubstrate = ({
   const toAsset = useAtomValue(toAssetAtom)
   const fromAmount = useAtomValue(fromAmountAtom)
   const toAmount = useAtomValue(loadable(toAmountAtom))
+  const swapModule = useAtomValue(selectedSwapModuleAtom)
+  const exchangeAtom = useMemo(
+    () => swapModule?.exchangeAtom ?? atom(null),
+    [swapModule?.exchangeAtom],
+  )
 
   const insufficientBalance = useMemo(() => {
     if (!fastBalance?.balance) return undefined
@@ -68,30 +68,45 @@ export const SwapConfirmSubstrate = ({
     [fastBalance, fromAmount.planck],
   )
   const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
-  const payloadLoadable = useAtomValue(
-    loadable(useMemo(() => substratePayloadAtom(sapi, allowReap), [sapi, allowReap])),
+  const substratePayloadAtom = useMemo(
+    () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
+    [swapModule, sapi, allowReap],
   )
+  const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
 
-  const txInfo: WalletTransactionInfo | undefined = useMemo(
-    () =>
-      exchangeLoadable.state === "hasData" &&
-      fromAsset &&
-      toAsset &&
-      toAmount.state === "hasData" &&
-      toAmount.data !== null &&
-      toAddress !== null
-        ? {
-            type: "swap-simpleswap",
-            exchangeId: exchangeLoadable.data.id,
-            fromTokenId: fromAsset.id,
-            toTokenId: toAsset.id,
-            fromAmount: fromAmount.planck.toString(),
-            toAmount: toAmount.data.planck.toString(),
-            to: toAddress,
-          }
-        : undefined,
-    [exchangeLoadable, fromAmount.planck, fromAsset, toAddress, toAmount, toAsset],
-  )
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (exchangeLoadable.state !== "hasData") return
+    if (!exchangeLoadable.data) return
+    if (!fromAsset) return
+    if (!toAsset) return
+    if (toAmount.state !== "hasData") return
+    if (toAmount.data === null) return
+    if (toAddress === null) return
+
+    switch (swapModule?.protocol) {
+      case "simpleswap":
+        return {
+          type: "swap-simpleswap",
+          exchangeId: exchangeLoadable.data.id,
+          fromTokenId: fromAsset.id,
+          toTokenId: toAsset.id,
+          fromAmount: fromAmount.planck.toString(),
+          toAmount: toAmount.data.planck.toString(),
+          to: toAddress,
+        }
+      case "stealthex":
+        return {
+          type: "swap-stealthex",
+          exchangeId: exchangeLoadable.data.id,
+          fromTokenId: fromAsset.id,
+          toTokenId: toAsset.id,
+          fromAmount: fromAmount.planck.toString(),
+          toAmount: toAmount.data.planck.toString(),
+          to: toAddress,
+        }
+    }
+    throw new Error(`swapModule ${swapModule?.protocol} not supported`)
+  }, [exchangeLoadable, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])
 
   const isDisabled = useMemo(() => {
     return (
@@ -112,16 +127,20 @@ export const SwapConfirmSubstrate = ({
   const navigate = useNavigate()
   const onSubmitted = useCallback(
     (hash: Hex) => {
-      if (txInfo) {
-        saveIdForMonitoring(txInfo.exchangeId, hash)
-        fromAddress && saveAddressForQuest(txInfo.exchangeId, fromAddress, SIMPLESWAP_PROTOCOL)
-      }
+      if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
+      if (
+        txInfo &&
+        ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type) &&
+        fromAddress &&
+        swapModule?.protocol
+      )
+        saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
       closeSwapTokensModal()
       resetSwapForm()
       navigate("/tx-history")
     },
-    [closeSwapTokensModal, fromAddress, navigate, resetSwapForm, txInfo],
+    [closeSwapTokensModal, fromAddress, navigate, resetSwapForm, swapModule, txInfo],
   )
 
   return (

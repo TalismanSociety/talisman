@@ -20,7 +20,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const PrivacyPage = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { updateData, setOnboarded } = useOnboard()
@@ -80,7 +80,12 @@ export const PrivacyPage = () => {
           <Button className="bg-transparent" fullWidth onClick={handleClick(false)}>
             {t("No thanks")}
           </Button>
-          <Button onClick={handleClick(true)} fullWidth primary>
+          <Button
+            onClick={handleClick(true)}
+            fullWidth
+            primary
+            data-testid="onboarding-privacy-accept-button"
+          >
             {t("I agree")}
           </Button>
         </div>

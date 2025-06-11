@@ -116,7 +116,7 @@ const Accounts = () => {
   }, [genericEvent, navigate])
 
   return (
-    <div className="flex w-full flex-col gap-8 p-8">
+    <div className="flex w-full flex-col gap-8 p-8" data-testid="sidebar-account-list">
       <div className="flex h-16 shrink-0 items-center">
         <div className="grow pl-4 text-[2rem] font-bold">{t("Accounts")}</div>
         <Tooltip>

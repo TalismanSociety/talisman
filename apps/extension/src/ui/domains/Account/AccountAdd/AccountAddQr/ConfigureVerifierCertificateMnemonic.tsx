@@ -22,7 +22,7 @@ const VerifierCertificateOption = ({ text, children }: { text: string; children:
 )
 
 const ConfigureVerifierCertificateMnemonicForm = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { dispatch, state, submit } = useAccountAddQr()
   const mnemonics = useMnemonics()
   const { generateMnemonic } = useMnemonicCreateModal()

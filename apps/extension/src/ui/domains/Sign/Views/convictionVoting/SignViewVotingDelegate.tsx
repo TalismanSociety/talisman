@@ -38,7 +38,7 @@ export const SignViewVotingDelegate: FC<{
   trackId: number
   explorerUrl?: string | null
 }> = ({ amount, tokenId, representative, conviction, trackId, explorerUrl }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const url = useMemo(
     () => (explorerUrl && representative ? `${explorerUrl}/address/${representative}` : undefined),
     [representative, explorerUrl],

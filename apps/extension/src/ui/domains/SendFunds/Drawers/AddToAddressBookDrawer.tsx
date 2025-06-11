@@ -40,7 +40,7 @@ const AddToAddressBookDrawerForm: FC<{
   tokenGenesisHash?: HexString
   onClose?: () => void
 }> = ({ address, tokenGenesisHash, onClose }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { add } = useAddressBook()
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(

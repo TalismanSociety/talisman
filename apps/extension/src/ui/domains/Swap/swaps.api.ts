@@ -1,5 +1,6 @@
 import type { PrimitiveAtom } from "jotai"
 import { evmErc20TokenId } from "@talismn/balances"
+import BigNumber from "bignumber.js"
 import { isAccountAddressEthereum, isAccountAddressSs58, remoteConfigStore } from "extension-core"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
@@ -37,11 +38,12 @@ import {
   toSubstrateAddressAtom,
 } from "./swap-modules/common.swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
+import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { Decimal } from "./swaps-port/Decimal"
 import { publicClientAtomFamily } from "./swaps-port/publicClientAtomFamily"
 import { remoteConfigAtom } from "./swaps-port/remoteConfigAtom"
 
-const swapModules = [simpleswapSwapModule]
+const swapModules = [simpleswapSwapModule, stealthexSwapModule]
 const ETH_LOGO =
   "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eth.svg"
 const BTC_LOGO = "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400"
@@ -402,10 +404,12 @@ export const sortedQuotesAtom = atom(async (get) => {
   return quotes.data
     ?.map((q) => {
       if (q.state !== "hasData") return { quote: q, fees: 0 }
-      const fees = q.data?.fees.reduce((acc, fee) => {
-        const rate = tokenRates[fee.tokenId]?.usd?.price ?? 0
-        return acc + fee.amount.toNumber() * rate
-      }, 0)
+      const fees = q.data?.fees
+        .reduce((acc, fee) => {
+          const rate = tokenRates[fee.tokenId]?.usd?.price ?? 0
+          return acc.plus(fee.amount.times(rate))
+        }, BigNumber(0))
+        ?.toNumber()
       return {
         quote: q,
         fees,
@@ -445,6 +449,17 @@ export const selectedQuoteAtom = atom(async (get) => {
     ) ?? quotes[0]
   if (!quote) return null
   return quote
+})
+
+export const selectedSwapModuleAtom = atom(async (get) => {
+  const selectedQuote = await get(selectedQuoteAtom)
+  if (!selectedQuote) return
+
+  const selectedProtocol =
+    selectedQuote.quote.state === "hasData" ? selectedQuote.quote.data?.protocol : undefined
+  if (!selectedProtocol) return
+
+  return swapModules.find((module) => module.protocol === selectedProtocol)
 })
 
 const approvalCounterAtom = atom(0)
@@ -510,10 +525,12 @@ export const toAmountAtom = atom(async (get) => {
 // utility hooks
 
 export const useReverse = () => {
+  const setFromAmount = useSetAtom(fromAmountAtom)
+
   const [fromAsset, setFromAsset] = useAtom(fromAssetAtom)
   const [toAsset, setToAsset] = useAtom(toAssetAtom)
+
   const toAmount = useAtomValue(loadable(toAmountAtom))
-  const setFromAmount = useSetAtom(fromAmountAtom)
 
   return useCallback(() => {
     if (toAmount.state === "hasData" && toAmount.data) {

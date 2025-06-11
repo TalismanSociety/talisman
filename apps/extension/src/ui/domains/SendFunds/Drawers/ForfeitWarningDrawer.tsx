@@ -15,7 +15,7 @@ type ForfeitDetailsProps = {
   planck: string
 }
 const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const token = useToken(tokenId)
 
   if (!isSubToken(token)) return null
@@ -50,7 +50,7 @@ export const ForfeitWarningDrawer = ({
   close: () => void
   handleAccept: () => void
 }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { tokensToBeReaped } = useSendFunds()
 
   return (

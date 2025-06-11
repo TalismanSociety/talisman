@@ -21,7 +21,7 @@ import { FooterContent } from "./FooterContent"
 import { MessageSiws } from "./MessageSiws"
 
 export const PolkadotSignMessageRequest = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const {
     url,
     request,
@@ -66,7 +66,7 @@ export const PolkadotSignMessageRequest = () => {
         {siwsRequest === null && account && request && (
           <>
             <div className="text-body-secondary flex h-full w-full flex-col items-center text-center">
-              <h1 className="text-body text-md my-12 font-bold leading-9">{"Sign Request"}</h1>
+              <h1 className="text-body text-md my-12 font-bold leading-9">{t("Sign Request")}</h1>
               <h2 className="mb-8 text-base leading-[3.2rem]">
                 {t("You are signing a message with account")}{" "}
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />

@@ -14,7 +14,7 @@ type ObjectLabelProps = {
 }
 
 const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJson }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <div>
       {t("{{label}} as :", { label })}{" "}

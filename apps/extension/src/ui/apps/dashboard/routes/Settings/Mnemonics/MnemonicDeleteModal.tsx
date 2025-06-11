@@ -46,7 +46,7 @@ export const [MnemonicDeleteModalProvider, useMnemonicDeleteModal] = provideCont
 )
 
 export const MnemonicDeleteModal = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { mnemonic, close, isOpen } = useMnemonicDeleteModal()
   const [inputCheck, setInputCheck] = useState<string>("")
 

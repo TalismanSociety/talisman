@@ -12,7 +12,7 @@ import { AuthorizedSite } from "./AuthorisedSite"
 import { AuthorisedSitesBatchActions } from "./AuthorisedSiteBatchActions"
 
 export const AuthorisedSites = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const sites = useAuthorisedSites()
   const [providerType, setProviderType] = useState<ProviderType>("polkadot")
 

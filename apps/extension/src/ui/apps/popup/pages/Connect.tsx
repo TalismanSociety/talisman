@@ -27,7 +27,7 @@ const NoAccountWarning = ({
   onIgnoreClick: () => void
   onAddAccountClick: () => void
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <Drawer isOpen anchor="bottom" containerId="main">
       <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
@@ -61,7 +61,7 @@ type ConnectComponent = FC<{
 }>
 
 export const Connect: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
@@ -128,8 +128,15 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
 
       <PopupFooter>
         <div className="grid w-full grid-cols-2 gap-12">
-          <Button onClick={reject}>{t("Reject")}</Button>
-          <Button primary onClick={authorise} disabled={connected.length <= 0}>
+          <Button onClick={reject} data-testid="connection-reject-button">
+            {t("Reject")}
+          </Button>
+          <Button
+            primary
+            onClick={authorise}
+            disabled={connected.length <= 0}
+            data-testid="connection-connect-button"
+          >
             {t("Connect")} {connected.length > 0 && connected.length}
           </Button>
         </div>
@@ -144,7 +151,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   setConnected,
   onNoAccountClose,
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   const accounts = useInjectableAccounts(siteUrl, "polkadot")
 
@@ -189,7 +196,7 @@ export const ConnectEth: ConnectComponent = ({
   setConnected,
   onNoAccountClose,
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   const accounts = useInjectableAccounts(siteUrl, "ethereum")
 

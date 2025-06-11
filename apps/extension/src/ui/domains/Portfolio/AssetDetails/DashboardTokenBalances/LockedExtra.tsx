@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
@@ -21,6 +22,7 @@ type LockedExtraProps = {
 
 export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: LockedExtraProps) => {
   const { t } = useTranslation()
+  const locale = useDateFnsLocale()
   const { data } = useNomPoolStakingStatus(tokenId)
   const { selectedAccount } = usePortfolioNavigation()
 
@@ -37,9 +39,11 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: Lo
   const withdrawIn = useMemo(
     () =>
       !!rowMeta.unbonding && !!accountStatus?.canWithdrawIn
-        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }))
+        ? formatDuration(intervalToDuration({ start: 0, end: accountStatus.canWithdrawIn }), {
+            locale,
+          })
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding],
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale],
   )
 
   const canUnbond = useMemo(

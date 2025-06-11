@@ -22,7 +22,6 @@ import { getMetadataDef } from "./getMetadataDef"
 export const getTypeRegistry = async (
   chainIdOrHash: string,
   specVersion?: number | string,
-  blockHash?: string,
   signedExtensions?: string[],
 ) => {
   const registry = new TypeRegistry()
@@ -65,7 +64,7 @@ export const getTypeRegistry = async (
   if (chain?.registryTypes) registry.register(chain.registryTypes)
 
   const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
-  const metadataDef = await getMetadataDef(chainIdOrHash, numSpecVersion, blockHash)
+  const metadataDef = await getMetadataDef(chainIdOrHash, numSpecVersion)
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
 
   if (metadataDef) {

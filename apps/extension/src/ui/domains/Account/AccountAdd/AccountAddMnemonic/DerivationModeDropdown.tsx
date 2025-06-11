@@ -17,7 +17,7 @@ export const DerivationModeDropdown: FC<{
   className?: string
   onChange: (value: AccountAddDerivationMode) => void
 }> = ({ value, disabled, className, onChange }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const items = useMemo<DropdownOption[]>(
     () => [

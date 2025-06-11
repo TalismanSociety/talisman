@@ -46,7 +46,7 @@ const AccountDerivedPicker = ({
 }
 
 export const ConfigureAccount = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
   const chains = useChains({ activeOnly: true, includeTestnets: true })

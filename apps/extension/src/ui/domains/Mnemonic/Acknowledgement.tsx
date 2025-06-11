@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => void }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <div>
@@ -35,7 +35,7 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
             </span>
           </div>
         </div>
-        <Button primary onClick={onContinueClick}>
+        <Button primary onClick={onContinueClick} data-testid="mnemonic-acknowledge-button">
           {t("Acknowledge and Continue")}
         </Button>
       </div>

@@ -29,7 +29,7 @@ const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
 export const ConnectSignetPage = () => {
   const navigate = useNavigate()
   const { signetUrl, signetUrlOrigin, setSignetUrl, setVaults } = useSignetConnect()
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const [isConnecting, setIsConnecting] = useState(false)
 
   const handleContinue = useCallback(

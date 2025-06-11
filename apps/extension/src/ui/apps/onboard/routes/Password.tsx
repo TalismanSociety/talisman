@@ -51,7 +51,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const PasswordPage = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { data, createPassword, isResettingWallet, passwordExists, setOnboarded } = useOnboard()
@@ -188,6 +188,7 @@ export const PasswordPage = () => {
               className={classNames(!isValid && "opacity-70")}
               disabled={!isValid}
               processing={isSubmitting}
+              data-testid="onboarding-password-confirm-button"
             >
               {t("Continue")}
             </Button>

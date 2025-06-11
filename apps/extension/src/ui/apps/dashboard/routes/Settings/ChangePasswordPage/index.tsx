@@ -24,7 +24,7 @@ type FormData = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const allBackedUp = useMnemonicsAllBackedUp()
   const [progress, setProgress] = useState<ChangePasswordStatusUpdateType>()

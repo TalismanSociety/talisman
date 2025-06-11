@@ -65,7 +65,7 @@ const decodeMultilocation = (multilocation?: {
 }
 
 export const EthSignMoonXTokensTransfer: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
   const tokens = useTokens()

@@ -1,5 +1,47 @@
 # @talismn/chain-connector
 
+## 0.11.0
+
+### Patch Changes
+
+- Updated dependencies [ecd5c7a]
+  - @talismn/chaindata-provider@0.11.0
+  - @talismn/connection-meta@0.2.16
+
+## 0.10.9
+
+### Patch Changes
+
+- 78f3616: bump pjs and papi deps
+- Updated dependencies [78f3616]
+  - @talismn/util@0.4.2
+  - @talismn/chaindata-provider@0.10.9
+  - @talismn/connection-meta@0.2.15
+
+## 0.10.8
+
+### Patch Changes
+
+- Updated dependencies [cb55639]
+  - @talismn/chaindata-provider@0.10.8
+  - @talismn/connection-meta@0.2.14
+
+## 0.10.7
+
+### Patch Changes
+
+- Updated dependencies [719c548]
+  - @talismn/chaindata-provider@0.10.7
+  - @talismn/connection-meta@0.2.13
+
+## 0.10.6
+
+### Patch Changes
+
+- Updated dependencies [3255efb]
+  - @talismn/chaindata-provider@0.10.6
+  - @talismn/connection-meta@0.2.12
+
 ## 0.10.5
 
 ### Patch Changes

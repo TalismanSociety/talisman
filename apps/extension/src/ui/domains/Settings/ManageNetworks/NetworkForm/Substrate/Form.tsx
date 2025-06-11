@@ -34,7 +34,7 @@ export const SubNetworkForm = ({
   submitButtonText,
   children,
 }: SubNetworkFormProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const {
     formState: { errors, isDirty, isValid, isSubmitting, touchedFields },
     handleSubmit: submitForm,

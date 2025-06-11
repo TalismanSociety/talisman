@@ -72,13 +72,14 @@ export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
     (
       payload: SignerPayloadJSON | SignerPayloadRaw,
       account: AccountLedgerPolkadot,
-      registry: TypeRegistry,
+      registry?: TypeRegistry,
     ) => {
       if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
+      if (isJsonPayload(payload) && !registry) throw getTalismanLedgerError("Missing registry.")
 
       return withLedger((ledger) =>
         isJsonPayload(payload)
-          ? signJsonPayload(ledger, app, payload, account, registry)
+          ? signJsonPayload(ledger, app, payload, account, registry!)
           : signRawPayload(ledger, app, payload, account),
       )
     },

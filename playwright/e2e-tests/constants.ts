@@ -1,0 +1,8 @@
+export const DEFAULT_PASSWORD = "talismanwallet"
+export const NEW_ACC_NAME = "PW e2e - Fresh"
+export const ETH_ACC_NAME = "PW e2e - ETH"
+export const ETH_ACC_ADDRESS = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+export const ETH_TEST_MNEMONIC = "test test test test test test test test test test test junk"
+export const DOT_ACC_NAME = "PW e2e - DOT"
+export const DOT_ACC_ADDRESS = "5GmS1wtCfR4tK5SSgnZbVT4kYw5W8NmxmijcsxCQE6oLW6A8"
+export const DOT_TEST_MNEMONIC = "test test test test test test test test test test test junk"

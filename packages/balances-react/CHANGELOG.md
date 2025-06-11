@@ -1,5 +1,69 @@
 # @talismn/balances-react
 
+## 0.9.11
+
+### Patch Changes
+
+- Updated dependencies [51c676b]
+- Updated dependencies [549f1e5]
+- Updated dependencies [ecd5c7a]
+  - @talismn/balances@0.9.11
+  - @talismn/chaindata-provider@0.11.0
+  - @talismn/chain-connector@0.11.0
+  - @talismn/chain-connector-evm@0.11.0
+  - @talismn/connection-meta@0.2.16
+  - @talismn/token-rates@2.0.11
+
+## 0.9.10
+
+### Patch Changes
+
+- Updated dependencies [78f3616]
+  - @talismn/chain-connector@0.10.9
+  - @talismn/balances@0.9.10
+  - @talismn/scale@0.1.2
+  - @talismn/util@0.4.2
+  - @talismn/chain-connector-evm@0.10.9
+  - @talismn/chaindata-provider@0.10.9
+  - @talismn/connection-meta@0.2.15
+  - @talismn/token-rates@2.0.10
+
+## 0.9.9
+
+### Patch Changes
+
+- Updated dependencies [cb55639]
+  - @talismn/chaindata-provider@0.10.8
+  - @talismn/balances@0.9.9
+  - @talismn/chain-connector@0.10.8
+  - @talismn/chain-connector-evm@0.10.8
+  - @talismn/connection-meta@0.2.14
+  - @talismn/token-rates@2.0.9
+
+## 0.9.8
+
+### Patch Changes
+
+- Updated dependencies [719c548]
+  - @talismn/chaindata-provider@0.10.7
+  - @talismn/balances@0.9.8
+  - @talismn/chain-connector@0.10.7
+  - @talismn/chain-connector-evm@0.10.7
+  - @talismn/connection-meta@0.2.13
+  - @talismn/token-rates@2.0.8
+
+## 0.9.7
+
+### Patch Changes
+
+- Updated dependencies [3255efb]
+  - @talismn/chaindata-provider@0.10.6
+  - @talismn/balances@0.9.7
+  - @talismn/chain-connector@0.10.6
+  - @talismn/chain-connector-evm@0.10.6
+  - @talismn/connection-meta@0.2.12
+  - @talismn/token-rates@2.0.7
+
 ## 0.9.6
 
 ### Patch Changes

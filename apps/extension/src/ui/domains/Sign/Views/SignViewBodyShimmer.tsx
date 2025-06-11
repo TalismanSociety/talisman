@@ -2,7 +2,7 @@ import { LoaderIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 
 export const SignViewBodyShimmer = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   return (
     <div className="text-body-secondary flex flex-col items-center gap-2 pt-64 leading-[140%]">

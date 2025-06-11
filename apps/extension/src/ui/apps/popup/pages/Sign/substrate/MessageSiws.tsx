@@ -19,7 +19,7 @@ export type Props = {
 }
 
 export const MessageSiws = ({ account, chain, request, validationError }: Props) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
   return (
@@ -63,7 +63,7 @@ const ViewDetailsContent: FC<{
   request: SiwsMessage
   onClose: () => void
 }> = ({ account, request, onClose }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const message = useMemo(() => request.prepareMessage(), [request])
 
   return (

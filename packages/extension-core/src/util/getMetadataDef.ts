@@ -1,8 +1,7 @@
-import { TypeRegistry } from "@polkadot/types"
-import { OpaqueMetadata } from "@polkadot/types/interfaces"
-import { assert, isHex, u8aToNumber } from "@polkadot/util"
+import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
+import { fetchBestMetadata } from "@talismn/sapi"
 import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
 import { sentry } from "../config/sentry"
@@ -12,35 +11,32 @@ import { TalismanMetadataDef } from "../domains/substrate/types"
 import { chainConnector } from "../rpcs/chain-connector"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
-import { stateCall } from "./stateCall"
 
 const CACHE_RESULTS = new Map<string, TalismanMetadataDef>()
 const CACHE_PROMISES = new Map<string, Promise<TalismanMetadataDef | undefined>>()
 
 const getResultCacheKey = (genesisHash: HexString, specVersion?: number) =>
   !specVersion || !genesisHash ? null : `${genesisHash}-${specVersion}`
-const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number, blockHash?: string) =>
-  [chainIdOrHash, specVersion ?? "", blockHash ?? ""].join("-")
+const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number) =>
+  [chainIdOrHash, specVersion ?? ""].join("-")
 
 /**
  *
  * @param chainIdOrHash chainId or genesisHash
  * @param specVersion
- * @param blockHash if specVersion isn't specified, this is the blockHash where to fetch the correct metadata from
  * @returns
  */
 export const getMetadataDef = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
-  const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion, blockHash)
+  const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion)
 
   // prevent concurrent calls that would fetch the same data
   if (!CACHE_PROMISES.has(cacheKey))
     CACHE_PROMISES.set(
       cacheKey,
-      getMetadataDefInner(chainIdOrHash, specVersion, blockHash).finally(() => {
+      getMetadataDefInner(chainIdOrHash, specVersion).finally(() => {
         CACHE_PROMISES.delete(cacheKey)
       }),
     )
@@ -51,13 +47,8 @@ export const getMetadataDef = async (
 const getMetadataDefInner = async (
   chainIdOrHash: string,
   specVersion?: number,
-  blockHash?: string,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
-
-  // blockHash being equal to genesisHash happens when trying to decode payload of immortal transactions
-  // in that case, blockHash must not be used as block reference when fetching data
-  if (blockHash && blockHash === genesisHash) blockHash = undefined
 
   const cacheKey = getResultCacheKey(genesisHash, specVersion)
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
@@ -83,7 +74,7 @@ const getMetadataDefInner = async (
   }
 
   try {
-    const { specVersion: runtimeSpecVersion } = await getRuntimeVersion(chain.id, blockHash)
+    const { specVersion: runtimeSpecVersion } = await getRuntimeVersion(chain.id)
     assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
 
     // if specVersion wasn't specified, but store version is up to date, look no further
@@ -102,12 +93,7 @@ const getMetadataDefInner = async (
     // if (DEBUG) throw new Error("Failed to update metadata (debugging)")
 
     // fetch the metadataDef from the chain
-    const newData = await fetchMetadataDefFromChain(
-      chain,
-      genesisHash,
-      runtimeSpecVersion,
-      blockHash,
-    )
+    const newData = await fetchMetadataDefFromChain(chain, genesisHash, runtimeSpecVersion)
     if (!newData) return // unable to get data from rpc, return nothing
 
     // save in cache
@@ -221,83 +207,10 @@ if (DEBUG) {
   }
 }
 
-export const getLatestMetadataRpc = async (
-  chainId: ChainId,
-  blockHash?: string,
-): Promise<`0x${string}`> => {
-  const stop = log.timer(`getLatestMetadataRpc(${chainId})`)
-  try {
-    const versions = await stateCall(
-      chainId,
-      "Metadata_metadata_versions",
-      "Vec<u32>",
-      [],
-      blockHash as HexString,
-      true,
-    )
-    if (versions.err) versions.unwrap()
-
-    const numVersions = versions.unwrap().toJSON() as number[]
-    const latest = Math.max(...numVersions.filter((v) => v <= 15)) // 15 is the max Talisman supports for now
-    const version = new TypeRegistry().createType("u32", latest)
-
-    const maybeOpaqueMetadata = await stateCall(
-      chainId,
-      "Metadata_metadata_at_version",
-      "OpaqueMetadata",
-      [version],
-      blockHash as HexString,
-      true,
-    )
-
-    if (maybeOpaqueMetadata.err) maybeOpaqueMetadata.unwrap()
-
-    const opaqueMetadata = maybeOpaqueMetadata.unwrap()
-
-    return metadataFromOpaque(opaqueMetadata)
-  } catch (err) {
-    const message = (err as { message?: string })?.message
-    if (
-      message?.includes("is not found") || // crust standalone
-      message?.includes("Module doesn't have export Metadata_metadata_versions") // 3DPass
-    )
-      return await getLegacyMetadataRpc(chainId, blockHash) // fetch metadata the old way
-
-    // eslint-disable-next-line no-console
-    console.error("getLatestMetadataRpc", { err })
-
-    throw err
-  } finally {
-    stop()
-  }
-}
-
-export const getLegacyMetadataRpc = async (
-  chainId: ChainId,
-  blockHash?: string,
-): Promise<`0x${string}`> => {
-  return await chainConnector.send<HexString>(
-    chainId,
-    "state_getMetadata",
-    [blockHash],
-    !!blockHash,
+export const getLatestMetadataRpc = (chainId: ChainId) =>
+  fetchBestMetadata((method, params, isCacheable) =>
+    chainConnector.send(chainId, method, params, isCacheable),
   )
-}
 
-const metadataFromOpaque = (opaque: OpaqueMetadata) => {
-  try {
-    // pjs codec for OpaqueMetadata doesn't allow us to decode the actual Metadata, find it ourselves
-    const u8aBytes = opaque.toU8a()
-    for (let i = 0; i < 20; i++) {
-      // skip until we find the magic number that is used as prefix of metadata objects (usually in the first 10 bytes)
-      if (u8aToNumber(u8aBytes.slice(i, i + 4)) !== 0x6174656d) continue
-
-      const metadata = new TypeRegistry().createType("Metadata", u8aBytes.slice(i))
-
-      return metadata.toHex()
-    }
-    throw new Error("Magic number not found")
-  } catch (cause) {
-    throw new Error("Failed to decode metadata from OpaqueMetadata", { cause })
-  }
-}
+export const getLegacyMetadataRpc = (chainId: ChainId) =>
+  chainConnector.send<HexString>(chainId, "state_getMetadata", [], true)

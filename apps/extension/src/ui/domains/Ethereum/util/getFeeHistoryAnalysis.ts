@@ -1,8 +1,7 @@
 import * as Sentry from "@sentry/browser"
+import { EthBaseFeeTrend } from "extension-core"
 import { log } from "extension-shared"
 import { formatGwei, parseGwei, PublicClient } from "viem"
-
-import { EthBaseFeeTrend } from "../../../../../../../packages/extension-core/src/domains/signing/types"
 
 const BLOCKS_HISTORY_LENGTH = 5
 const REWARD_PERCENTILES = [10, 20, 30]

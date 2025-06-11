@@ -32,7 +32,7 @@ const config = (env) =>
         test: /(?<!(content_script|page))\.(ts|js|mts|mjs)/,
       }),
       new SimpleLocalizeDownloadPlugin({
-        devMode: true, // TODO env variable
+        devMode: !process.env.DEV_WITH_LANGUAGES,
       }),
       new CopyPlugin({
         patterns: [

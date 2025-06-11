@@ -13,7 +13,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <>

@@ -13,7 +13,7 @@ export const githubCdn = "https://raw.githubusercontent.com"
 export const githubChaindataOrg = "TalismanSociety"
 export const githubChaindataRepo = "chaindata"
 export const githubChaindataBranch = CHAINDATA_BRANCH
-export const githubChaindataDistDir = "pub/v2"
+export const githubChaindataDistDir = "pub/v3"
 
 export const githubChaindataBaseUrl = `${githubCdn}/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
 export const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`

@@ -6,7 +6,7 @@ import { useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
 
 export const Complete = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { complete } = useMnemonicCreateModal()
 
   return (

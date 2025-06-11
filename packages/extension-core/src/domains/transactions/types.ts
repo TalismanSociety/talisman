@@ -37,15 +37,24 @@ export type WalletTransactionInfo =
   //     value: string
   //     to: Address
   //   } |
-  {
-    type: "swap-simpleswap"
-    exchangeId: string
-    fromTokenId: TokenId
-    toTokenId: TokenId
-    fromAmount: string
-    toAmount: string
-    to: Address
-  }
+  | {
+      type: "swap-simpleswap"
+      exchangeId: string
+      fromTokenId: TokenId
+      toTokenId: TokenId
+      fromAmount: string
+      toAmount: string
+      to: Address
+    }
+  | {
+      type: "swap-stealthex"
+      exchangeId: string
+      fromTokenId: TokenId
+      toTokenId: TokenId
+      fromAmount: string
+      toAmount: string
+      to: Address
+    }
 
 export type WalletTransactionBase = WalletTransactionTransferInfo & {
   account: Address

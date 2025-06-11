@@ -14,11 +14,11 @@ const Pill = ({ className, children }: { className?: string; children?: ReactNod
 )
 
 export const TestnetPill = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return <Pill className="bg-alert-warn/10 text-alert-warn">{t("Testnet")}</Pill>
 }
 
 export const CustomPill = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return <Pill>{t("Custom")}</Pill>
 }

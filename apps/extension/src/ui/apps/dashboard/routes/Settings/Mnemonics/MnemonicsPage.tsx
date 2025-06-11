@@ -41,7 +41,7 @@ import {
 } from "./MnemonicSetPvVerifierModal"
 
 const NoMnemonicMessage = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const handleAddAccountClick = useCallback(() => {
@@ -103,7 +103,7 @@ const AccountRow: FC<{ account: AccountOfType<"keypair"> }> = ({ account }) => (
 )
 
 const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { isOpen, toggle } = useOpenClose()
   const { open: openRename } = useMnemonicRenameModal()
   const { open: openSetPvVerifier, isVerifier } = useMnemonicSetPvVerifierModal()
@@ -232,7 +232,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
 }
 
 const BackupReminder: FC = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const mnemonics = useMnemonics()
 
   const count = useMemo(
@@ -297,7 +297,7 @@ const MnemonicsList = () => {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   return (
     <MnemonicRenameModalProvider>

@@ -52,7 +52,7 @@ export const useRenameFolderModal = () => {
 }
 
 export const RenameFolderModal = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { id, name, treeName, close, isOpen } = useRenameFolderModal()
 
   return (
@@ -93,7 +93,7 @@ const RenameFolder = ({
   onCancel,
   className,
 }: RenameFolderProps) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const schema = useMemo(
     () =>

@@ -11,7 +11,7 @@ export const SignViewVotingVote: FC<{
   pollIndex: number
   conviction: number
 }> = ({ voteAmount, tokenId, pollIndex, conviction }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between">

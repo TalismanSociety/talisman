@@ -6,7 +6,7 @@ import { Stages, useMnemonicBackupModal } from "./context"
 import { MnemonicBackupModalBase } from "./MnemonicBackupModalBase"
 
 export const Acknowledgement = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { setStage } = useMnemonicBackupModal()
 
   return (

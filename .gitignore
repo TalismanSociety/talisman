@@ -35,3 +35,9 @@ yarn-error.log*
 dist
 review
 apps/extension/public/locales/*
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

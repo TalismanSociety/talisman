@@ -30,7 +30,7 @@ export const SuccessPage = () => {
         <div className="text-body-secondary text-center">
           {t("Your Talisman wallet awakens. Let the journey begin.")}
         </div>
-        <Button primary onClick={completeOnboarding}>
+        <Button primary onClick={completeOnboarding} data-testid="onboarding-enter-talisman-button">
           {t("Enter Talisman")}
         </Button>
       </div>

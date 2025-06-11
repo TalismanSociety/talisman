@@ -2,6 +2,7 @@ import { UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -25,6 +26,7 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
   className,
   onClick,
 }) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(address as string)
 
   const [name, accountGenesisHash] = useMemo(() => {
@@ -57,7 +59,7 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
             )}
           </div>
         ) : (
-          "Select account"
+          t("Select account")
         )}
         <AccountTypeIcon type={account?.type} className="text-primary-500" />
       </div>

@@ -68,7 +68,7 @@ type FormData = {
 }
 
 export const AccountAddMnemonicForm = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const { data, updateData, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()
@@ -307,6 +307,7 @@ export const AccountAddMnemonicForm = () => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
+            data-testid="account-add-mnemonic-import-button"
           >
             {t("Import")}
           </Button>

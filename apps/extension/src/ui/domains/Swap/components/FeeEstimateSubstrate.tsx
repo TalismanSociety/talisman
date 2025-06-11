@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { useAtomValue } from "jotai"
+import { atom, useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,8 +9,8 @@ import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { fromAmountAtom, fromAssetAtom } from "../swap-modules/common.swap-module"
-import { substratePayloadAtom } from "../swap-modules/simpleswap-swap-module"
 import { useFastBalance } from "../swaps-port/useFastBalance"
+import { selectedSwapModuleAtom } from "../swaps.api"
 
 export const FeeEstimateSubstrate = ({
   fastBalance,
@@ -21,6 +21,7 @@ export const FeeEstimateSubstrate = ({
 
   const fromAsset = useAtomValue(fromAssetAtom)
   const fromAmount = useAtomValue(fromAmountAtom)
+  const swapModule = useAtomValue(selectedSwapModuleAtom)
 
   const { data: sapi } = useScaleApi(
     fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null,
@@ -31,9 +32,11 @@ export const FeeEstimateSubstrate = ({
       fromAmount.planck > fastBalance.balance.stayAlive.planck,
     [fastBalance, fromAmount.planck],
   )
-  const payloadLoadable = useAtomValue(
-    loadable(useMemo(() => substratePayloadAtom(sapi, allowReap), [sapi, allowReap])),
+  const substratePayloadAtom = useMemo(
+    () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
+    [swapModule, sapi, allowReap],
   )
+  const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
 
   const feeEstimate = useGetFeeEstimate({
     sapi,

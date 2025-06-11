@@ -20,7 +20,7 @@ const MnemonicRenameForm: FC<{
   onConfirm: () => void
   onCancel: () => void
 }> = ({ mnemonic, onConfirm, onCancel }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const allMnemonics = useMnemonics()
   const otherAccountNames = useMemo(
@@ -145,7 +145,7 @@ export const [MnemonicRenameModalProvider, useMnemonicRenameModal] = provideCont
 )
 
 export const MnemonicRenameModal = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { mnemonic, close, isOpen } = useMnemonicRenameModal()
 
   return (

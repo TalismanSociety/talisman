@@ -14,6 +14,10 @@ export const languages: Record<string, string> = process.env.SUPPORTED_LANGUAGES
 
 const locales = Object.keys(languages)
 
+i18next.on("languageChanged", (lng) => {
+  document.documentElement.lang = lng
+})
+
 i18next
   .use(LanguageDetector)
   .use(initReactI18next)

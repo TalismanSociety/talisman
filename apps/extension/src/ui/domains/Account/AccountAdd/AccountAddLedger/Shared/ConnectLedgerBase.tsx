@@ -22,7 +22,7 @@ export const ConnectLedgerBase: FC<ConnectLedgerBaseProps> = ({
   onReadyChanged,
   className,
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   // flag to prevents double connect attempt in dev mode
   const refIsBusy = useRef(false)

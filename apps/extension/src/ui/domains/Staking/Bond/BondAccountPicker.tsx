@@ -78,7 +78,7 @@ export const BondAccountPicker = ({
           <IconButton onClick={handleClose}>
             <ChevronLeftIcon />
           </IconButton>
-          <div>{"Select account"}</div>
+          <div>{t("Select account")}</div>
           <IconButton onClick={close}>
             <XIcon />
           </IconButton>

@@ -28,7 +28,7 @@ import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList
 import { ToWarning, useSendFunds } from "./useSendFunds"
 
 const AddressFormatError = ({ chain }: { chain?: Chain }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   return (
     <div className="h-min-h-full align-center flex w-full flex-col items-center gap-4 px-12 py-7">
       <XOctagonIcon className="text-brand-orange text-lg" />
@@ -61,7 +61,7 @@ const UnknownAddressDrawer = ({
   address: string
   chain?: Chain
 }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
 
   const handleProceedClick = useCallback(() => {
     onProceed(address)
@@ -100,7 +100,7 @@ const UnknownAddressDrawer = ({
 }
 
 export const SendFundsRecipientPicker = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { from, to, set, tokenId } = useSendFundsWizard()
   const { setRecipientWarning } = useSendFunds()
   const { open, close, isOpen } = useOpenClose()

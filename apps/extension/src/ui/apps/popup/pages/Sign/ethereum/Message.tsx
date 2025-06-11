@@ -20,7 +20,7 @@ import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignNetworkLogo } from "../SignNetworkLogo"
 
 export const EthSignMessageRequest = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const {
     url,
     request,

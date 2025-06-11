@@ -22,6 +22,7 @@ import { TransactionRequest } from "viem"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useSubstrateDryRun } from "@ui/hooks/useSubstrateDryRun"
 import { useTip } from "@ui/hooks/useTip"
 import {
   useAccountByAddress,
@@ -47,7 +48,7 @@ import { useFeeToken } from "./useFeeToken"
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
 const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const hydrate = useBalancesHydrate()
 
   return useQuery({
@@ -214,7 +215,7 @@ const useSubTransaction = (
 export type ToWarning = "AZERO_ID" | undefined
 
 const useSendFundsProvider = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
@@ -414,6 +415,8 @@ const useSendFundsProvider = () => {
 
   const isSendingEnough = useIsSendingEnough(recipientBalance, token, transfer)
 
+  const { data: dryRun, isLoading: isLoadingDryRun } = useSubstrateDryRun(subTransaction?.unsigned)
+
   const { isValid, error, errorDetails } = useMemo(() => {
     try {
       if (fromAccount?.type === "watch-only")
@@ -457,7 +460,8 @@ const useSendFundsProvider = () => {
         !tokensToBeReaped ||
         !feeToken ||
         !feeTokenBalance ||
-        !estimatedFee
+        !estimatedFee ||
+        isLoadingDryRun
       )
         return { isValid: false, error: undefined }
 
@@ -493,6 +497,12 @@ const useSendFundsProvider = () => {
         }
       }
 
+      if (dryRun?.available && !dryRun.ok)
+        return {
+          isValid: false,
+          error: t("Transaction would fail: ") + dryRun.errorMessage,
+        }
+
       const txError = evmTransaction?.error || subTransaction?.error
       if (txError)
         return {
@@ -524,11 +534,13 @@ const useSendFundsProvider = () => {
     maxCostBreakdown,
     tokensToBeReaped,
     isSendingEnough,
+    dryRun,
     evmTransaction?.error,
     subTransaction?.error,
+    isLoadingDryRun,
   ])
 
-  const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading
+  const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading || isLoadingDryRun
   const isEstimatingMaxAmount = sendMax && !maxAmount
 
   const onSendMaxClick = useCallback(() => {
@@ -672,6 +684,10 @@ const useSendFundsProvider = () => {
   useEffect(() => {
     setSendErrorMessage(undefined)
   }, [location])
+
+  useEffect(() => {
+    if (dryRun) log.debug("Dry run result", dryRun)
+  }, [dryRun])
 
   return {
     from,

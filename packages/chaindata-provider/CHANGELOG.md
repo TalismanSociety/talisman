@@ -1,5 +1,31 @@
 # @talismn/chaindata-provider
 
+## 0.11.0
+
+### Minor Changes
+
+- ecd5c7a: feat: chaindata v3
+
+## 0.10.9
+
+## 0.10.8
+
+### Patch Changes
+
+- cb55639: generate init data
+
+## 0.10.7
+
+### Patch Changes
+
+- 719c548: generate init data
+
+## 0.10.6
+
+### Patch Changes
+
+- 3255efb: chore: generate init data
+
 ## 0.10.5
 
 ### Patch Changes

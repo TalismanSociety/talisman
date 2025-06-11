@@ -81,7 +81,7 @@ const useLookupAddress = (
 }
 
 const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { toggle, isOpen } = useOpenClose()
 
   return (
@@ -105,7 +105,7 @@ const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
 }
 
 const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   // get type paramter from url
   const [params] = useSearchParams()
   const defaultPlatform = useMemo(() => {
@@ -337,6 +337,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             primary
             disabled={!isValid}
             processing={isSubmitting}
+            data-testid="account-add-new-account-button"
           >
             {t("Create")}
           </Button>

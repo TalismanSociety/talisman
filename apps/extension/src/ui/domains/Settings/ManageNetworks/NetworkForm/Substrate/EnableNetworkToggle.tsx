@@ -6,7 +6,7 @@ import { FormFieldContainer, Toggle, Tooltip, TooltipContent, TooltipTrigger } f
 import { useKnownChain } from "@ui/hooks/useKnownChain"
 
 export const EnableNetworkToggle: FC<{ chainId?: string }> = ({ chainId }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { chain, isActive, setActive, isActiveSetByUser, resetToTalismanDefault } =
     useKnownChain(chainId)
 

@@ -1,4 +1,13 @@
 import {
+  abiErc20,
+  abiErc721,
+  abiErc1155,
+  abiMoonConvictionVoting,
+  abiMoonStaking,
+  abiMoonXTokens,
+  isContractAddress,
+} from "extension-core"
+import {
   decodeFunctionData,
   getAbiItem,
   getContract,
@@ -6,16 +15,6 @@ import {
   PublicClient,
   TransactionRequestBase,
 } from "viem"
-
-import {
-  abiErc20,
-  abiErc721,
-  abiErc1155,
-  abiMoonStaking,
-} from "../../../../../../../packages/extension-core/src/util/abi"
-import { abiMoonConvictionVoting } from "../../../../../../../packages/extension-core/src/util/abi/abiMoonConvictionVoting"
-import { abiMoonXTokens } from "../../../../../../../packages/extension-core/src/util/abi/abiMoonXTokens"
-import { isContractAddress } from "../../../../../../../packages/extension-core/src/util/isContractAddress"
 
 const MOON_CHAIN_PRECOMPILES = [
   {

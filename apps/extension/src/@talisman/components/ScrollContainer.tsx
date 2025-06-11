@@ -69,10 +69,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
             innerClassName,
           )}
         >
-          {/* In case of suspense, revDiv.current might be null on first render. This causes problems with child row virtualizers which memoize it, on production builds only */}
-          {!!refDiv.current && (
-            <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
-          )}
+          <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
         </div>
         <div
           className={classNames(

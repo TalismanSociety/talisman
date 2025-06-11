@@ -13,7 +13,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const SendFundsAmount = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   return (
     <SendFundsLayout title={t("Send")} analytics={ANALYTICS_PAGE}>
       <SendFundsAmountForm />

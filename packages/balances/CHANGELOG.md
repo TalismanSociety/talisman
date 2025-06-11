@@ -1,5 +1,63 @@
 # @talismn/balances
 
+## 0.9.11
+
+### Patch Changes
+
+- 51c676b: fix: exports
+- 549f1e5: fetchBestMetadata method
+- Updated dependencies [549f1e5]
+- Updated dependencies [ecd5c7a]
+  - @talismn/sapi@0.0.5
+  - @talismn/chaindata-provider@0.11.0
+  - @talismn/chain-connector@0.11.0
+  - @talismn/chain-connector-evm@0.11.0
+  - @talismn/token-rates@2.0.11
+
+## 0.9.10
+
+### Patch Changes
+
+- 78f3616: bump pjs and papi deps
+- Updated dependencies [78f3616]
+  - @talismn/chain-connector@0.10.9
+  - @talismn/scale@0.1.2
+  - @talismn/sapi@0.0.4
+  - @talismn/util@0.4.2
+  - @talismn/chain-connector-evm@0.10.9
+  - @talismn/chaindata-provider@0.10.9
+  - @talismn/token-rates@2.0.10
+
+## 0.9.9
+
+### Patch Changes
+
+- Updated dependencies [cb55639]
+  - @talismn/chaindata-provider@0.10.8
+  - @talismn/chain-connector@0.10.8
+  - @talismn/chain-connector-evm@0.10.8
+  - @talismn/token-rates@2.0.9
+
+## 0.9.8
+
+### Patch Changes
+
+- Updated dependencies [719c548]
+  - @talismn/chaindata-provider@0.10.7
+  - @talismn/chain-connector@0.10.7
+  - @talismn/chain-connector-evm@0.10.7
+  - @talismn/token-rates@2.0.8
+
+## 0.9.7
+
+### Patch Changes
+
+- Updated dependencies [3255efb]
+  - @talismn/chaindata-provider@0.10.6
+  - @talismn/chain-connector@0.10.6
+  - @talismn/chain-connector-evm@0.10.6
+  - @talismn/token-rates@2.0.7
+
 ## 0.9.6
 
 ### Patch Changes

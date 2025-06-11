@@ -21,7 +21,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { id } = useParams<"id">()
 

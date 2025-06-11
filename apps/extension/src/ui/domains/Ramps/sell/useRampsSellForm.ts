@@ -2,16 +2,16 @@ import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import { isAccountCompatibleWithChain, isAccountPlatformEthereum } from "extension-core"
-import { chaindataProvider } from "extension-core/src/rpcs/chaindata"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
+import { firstValueFrom } from "rxjs"
 import { z } from "zod"
 
 import { notify } from "@talisman/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { useAccounts, useChain, useToken } from "@ui/state"
+import { getChain$, getToken$, useAccounts, useChain, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -139,9 +139,9 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
 const redirectToProvider = async (formData: FormData, quote: RampsSellQuoteSuccess) => {
   let address = formData.account
 
-  const token = await chaindataProvider.tokenById(formData.tokenId)
+  const token = await firstValueFrom(getToken$(formData.tokenId))
   if (token?.chain?.id) {
-    const chain = await chaindataProvider.chainById(token.chain.id)
+    const chain = await firstValueFrom(getChain$(token.chain.id))
     if (typeof chain?.prefix === "number") address = encodeAddressSs58(address, chain.prefix)
   }
 

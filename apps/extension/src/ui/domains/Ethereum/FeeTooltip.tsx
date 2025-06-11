@@ -14,7 +14,7 @@ export const FeeTooltip = ({
   tokenId: TokenId | undefined
   balance: bigint | null | undefined
 }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
 
   if (!estimatedFee && !maxFee) return null
 

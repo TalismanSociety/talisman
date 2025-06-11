@@ -1,5 +1,40 @@
 # @talismn/on-chain-id
 
+## 0.1.17
+
+### Patch Changes
+
+- Updated dependencies [51c676b]
+- Updated dependencies [549f1e5]
+  - @talismn/balances@0.9.11
+
+## 0.1.16
+
+### Patch Changes
+
+- 78f3616: bump pjs and papi deps
+- Updated dependencies [78f3616]
+  - @talismn/balances@0.9.10
+  - @talismn/util@0.4.2
+
+## 0.1.15
+
+### Patch Changes
+
+- @talismn/balances@0.9.9
+
+## 0.1.14
+
+### Patch Changes
+
+- @talismn/balances@0.9.8
+
+## 0.1.13
+
+### Patch Changes
+
+- @talismn/balances@0.9.7
+
 ## 0.1.12
 
 ### Patch Changes

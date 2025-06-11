@@ -1,4 +1,4 @@
-import { AccountLedgerPolkadot } from "extension-core"
+import { AccountLedgerPolkadot, isJsonPayload } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -28,7 +28,8 @@ export const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
 
   const signWithLedger = useCallback(async () => {
     if (!payload || !onSigned || !account) return
-    if (!registry) return setError(getTalismanLedgerError(t("Missing registry.")))
+    if (isJsonPayload(payload) && !registry)
+      return setError(getTalismanLedgerError(t("Missing registry.")))
 
     onSentToDevice?.(true)
     setIsSigning(true)

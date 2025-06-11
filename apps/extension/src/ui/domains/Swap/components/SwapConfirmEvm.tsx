@@ -4,7 +4,7 @@ import {
   serializeTransactionRequest,
   WalletTransactionInfo,
 } from "extension-core"
-import { useAtomValue, useSetAtom } from "jotai"
+import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,15 +27,10 @@ import {
   toAddressAtom,
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
-import {
-  evmTransactionAtom,
-  exchangeAtom,
-  saveIdForMonitoring,
-  PROTOCOL as SIMPLESWAP_PROTOCOL,
-} from "../swap-modules/simpleswap-swap-module"
+import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { useFastBalance } from "../swaps-port/useFastBalance"
-import { toAmountAtom } from "../swaps.api"
+import { selectedSwapModuleAtom, toAmountAtom } from "../swaps.api"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
 
 export const SwapConfirmEvm = ({
@@ -60,31 +55,53 @@ export const SwapConfirmEvm = ({
   const toAsset = useAtomValue(toAssetAtom)
   const fromAmount = useAtomValue(fromAmountAtom)
   const toAmount = useAtomValue(loadable(toAmountAtom))
+  const swapModule = useAtomValue(selectedSwapModuleAtom)
+  const exchangeAtom = useMemo(
+    () => swapModule?.exchangeAtom ?? atom(null),
+    [swapModule?.exchangeAtom],
+  )
+  const evmTransactionAtom = useMemo(
+    () => swapModule?.evmTransactionAtom ?? atom(null),
+    [swapModule?.evmTransactionAtom],
+  )
 
   const account = useAccountByAddress(fromAddress)
   const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
   const evmTxLoadable = useAtomValue(loadable(evmTransactionAtom))
 
-  const txInfo: WalletTransactionInfo | undefined = useMemo(
-    () =>
-      exchangeLoadable.state === "hasData" &&
-      fromAsset &&
-      toAsset &&
-      toAmount.state === "hasData" &&
-      toAmount.data !== null &&
-      toAddress !== null
-        ? {
-            type: "swap-simpleswap",
-            exchangeId: exchangeLoadable.data.id,
-            fromTokenId: fromAsset.id,
-            toTokenId: toAsset.id,
-            fromAmount: fromAmount.planck.toString(),
-            toAmount: toAmount.data.planck.toString(),
-            to: toAddress,
-          }
-        : undefined,
-    [exchangeLoadable, fromAmount.planck, fromAsset, toAddress, toAmount, toAsset],
-  )
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (exchangeLoadable.state !== "hasData") return
+    if (!exchangeLoadable.data) return
+    if (!fromAsset) return
+    if (!toAsset) return
+    if (toAmount.state !== "hasData") return
+    if (toAmount.data === null) return
+    if (toAddress === null) return
+
+    switch (swapModule?.protocol) {
+      case "simpleswap":
+        return {
+          type: "swap-simpleswap",
+          exchangeId: exchangeLoadable.data.id,
+          fromTokenId: fromAsset.id,
+          toTokenId: toAsset.id,
+          fromAmount: fromAmount.planck.toString(),
+          toAmount: toAmount.data.planck.toString(),
+          to: toAddress,
+        }
+      case "stealthex":
+        return {
+          type: "swap-stealthex",
+          exchangeId: exchangeLoadable.data.id,
+          fromTokenId: fromAsset.id,
+          toTokenId: toAsset.id,
+          fromAmount: fromAmount.planck.toString(),
+          toAmount: toAmount.data.planck.toString(),
+          to: toAddress,
+        }
+    }
+    throw new Error(`swapModule ${swapModule?.protocol} not supported`)
+  }, [exchangeLoadable, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])
 
   // once the payload is sent to ledger, we must freeze it
   const [isPayloadLocked, setIsPayloadLocked] = useState(false)
@@ -129,10 +146,14 @@ export const SwapConfirmEvm = ({
         txInfo,
       )
 
-      if (txInfo) {
-        saveIdForMonitoring(txInfo.exchangeId, hash)
-        fromAddress && saveAddressForQuest(txInfo.exchangeId, fromAddress, SIMPLESWAP_PROTOCOL)
-      }
+      if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
+      if (
+        txInfo &&
+        ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type) &&
+        fromAddress &&
+        swapModule?.protocol
+      )
+        saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
       closeSwapTokensModal()
       resetSwapForm()
@@ -147,7 +168,16 @@ export const SwapConfirmEvm = ({
       })
     }
     setIsProcessing(false)
-  }, [closeSwapTokensModal, fromAddress, fromAsset, navigate, resetSwapForm, transaction, txInfo])
+  }, [
+    closeSwapTokensModal,
+    fromAddress,
+    fromAsset,
+    navigate,
+    resetSwapForm,
+    swapModule?.protocol,
+    transaction,
+    txInfo,
+  ])
 
   const sendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -164,10 +194,15 @@ export const SwapConfirmEvm = ({
           txInfo,
         )
 
-        if (txInfo) {
+        if (txInfo && txInfo.type === "swap-simpleswap")
           saveIdForMonitoring(txInfo.exchangeId, hash)
-          fromAddress && saveAddressForQuest(txInfo.exchangeId, fromAddress, SIMPLESWAP_PROTOCOL)
-        }
+        if (
+          txInfo &&
+          ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type) &&
+          fromAddress &&
+          swapModule?.protocol
+        )
+          saveAddressForQuest(txInfo.exchangeId, fromAddress, swapModule.protocol)
 
         closeSwapTokensModal()
         resetSwapForm()
@@ -183,7 +218,16 @@ export const SwapConfirmEvm = ({
       }
       setIsProcessing(false)
     },
-    [closeSwapTokensModal, fromAddress, fromAsset, navigate, resetSwapForm, transaction, txInfo],
+    [
+      closeSwapTokensModal,
+      fromAddress,
+      fromAsset,
+      navigate,
+      resetSwapForm,
+      swapModule?.protocol,
+      transaction,
+      txInfo,
+    ],
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])

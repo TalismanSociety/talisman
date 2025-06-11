@@ -12,7 +12,7 @@ import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721Transfer: FC = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const asset = decodedTx.asset as { tokenURI?: string; name?: string } | undefined

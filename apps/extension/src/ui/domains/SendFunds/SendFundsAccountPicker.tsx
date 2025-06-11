@@ -12,7 +12,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsAccountPicker = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { from, to, tokenId, set, remove } = useSendFundsWizard()
   const [search, setSearch] = useState("")
 

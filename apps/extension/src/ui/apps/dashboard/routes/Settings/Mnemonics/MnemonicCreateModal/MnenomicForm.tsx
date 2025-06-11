@@ -59,6 +59,7 @@ const MnemonicFormInner = () => {
             className="text-grey-300 hover:text-body flex h-11 cursor-pointer gap-5 self-center text-sm font-bold"
             onClick={complete}
             type="button"
+            data-testid="mnemonic-skip-verification-button"
           >
             {t("Skip Verification")}
           </button>
@@ -69,7 +70,7 @@ const MnemonicFormInner = () => {
 }
 
 export const MnemonicCreateForm = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
       <div className={"flex w-full min-w-[58rem] flex-col"}>

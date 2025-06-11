@@ -11,7 +11,7 @@ export const ChangePasswordModal = ({
   isOpen: boolean
   progressStage?: ChangePasswordStatusUpdateType
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const progressDisplay = useMemo(() => {
     switch (progressStage) {
       case ChangePasswordStatusUpdateStatus.VALIDATING:

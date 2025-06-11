@@ -40,7 +40,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   showBalances,
   tokenId,
 }) => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const handleAccountClick = useCallback(
     (address: string) => () => {
       onSelect?.(address)

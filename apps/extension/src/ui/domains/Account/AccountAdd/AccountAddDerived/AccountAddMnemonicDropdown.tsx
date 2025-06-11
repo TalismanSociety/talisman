@@ -12,20 +12,23 @@ export type MnemonicOption = {
   accounts?: Account[]
 }
 
-const GENERATE_MNEMONIC_OPTION = {
-  value: "new",
-  label: "Generate new recovery phrase",
-  accounts: [],
-}
-
 export const AccountAddMnemonicDropdown: FC<{
   label?: string
   value: string | null // null means "generate new"
   onChange: (mnemonicId: string | null) => void
 }> = ({ label, value, onChange }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
 
   const allAccounts = useAccounts()
+
+  const newMmnemonicOption = useMemo(
+    () => ({
+      value: "new",
+      label: t("Generate new recovery phrase"),
+      accounts: [],
+    }),
+    [t],
+  )
 
   const mnemonics = useMnemonics()
   const mnemonicOptions: MnemonicOption[] = useMemo(() => {
@@ -46,13 +49,13 @@ export const AccountAddMnemonicDropdown: FC<{
           accounts: accountsByMnemonic[m.id] || [],
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-      GENERATE_MNEMONIC_OPTION,
+      newMmnemonicOption,
     ]
-  }, [allAccounts, mnemonics])
+  }, [allAccounts, mnemonics, newMmnemonicOption])
 
   const selected = useMemo(
-    () => mnemonicOptions.find((o) => o.value === value) ?? GENERATE_MNEMONIC_OPTION,
-    [mnemonicOptions, value],
+    () => mnemonicOptions.find((o) => o.value === value) ?? newMmnemonicOption,
+    [mnemonicOptions, newMmnemonicOption, value],
   )
 
   const handleChange = useCallback(
@@ -70,7 +73,10 @@ export const AccountAddMnemonicDropdown: FC<{
       label={label ?? t("Recovery phrase")}
       propertyKey="value"
       renderItem={(o) => (
-        <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
+        <div
+          className="text-body-secondary flex w-full items-center gap-6 overflow-hidden"
+          data-testid="account-add-mnemonic-dropdown"
+        >
           <div className="bg-body/10 text-md rounded-full p-4">
             {o.value === "new" ? <PlusIcon /> : <SecretIcon />}
           </div>

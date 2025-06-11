@@ -54,7 +54,7 @@ const NetworkDisplay = () => {
 }
 
 const TotalAmountRow = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const {
     sendMax,
     maxAmount,
@@ -104,7 +104,7 @@ const TotalAmountRow = () => {
 }
 
 export const ExternalRecipientWarning = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { to, chain, evmNetwork } = useSendFunds()
   const accounts = useAccounts("owned")
 
@@ -134,7 +134,7 @@ export const ExternalRecipientWarning = () => {
 }
 
 const SendButton = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { signMethod, sendErrorMessage, send, isProcessing } = useSendFunds()
 
   const [isReady, setIsReady] = useState(false)
@@ -180,7 +180,7 @@ const SendButton = () => {
 }
 
 const EvmFeeSummary = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { token, evmNetwork, evmTransaction } = useSendFunds()
 
   if (!token || !evmTransaction) return null
@@ -239,7 +239,7 @@ const EvmFeeSummary = () => {
 }
 
 const SubFeeSummary = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { subTransaction, feeToken, tip, tipToken } = useSendFunds()
 
   if (!subTransaction) return null
@@ -295,7 +295,7 @@ const FeeSummary = () => {
 }
 
 export const SendFundsConfirmForm = () => {
-  const { t } = useTranslation("send-funds")
+  const { t } = useTranslation()
   const { from, to, chain, evmNetwork, evmTransaction } = useSendFunds()
 
   return (

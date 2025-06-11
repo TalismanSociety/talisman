@@ -1,7 +1,8 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
-import { Binary, decodeScale, encodeStateKey } from "@talismn/scale"
+import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { isEthereumAddress, isNotNil } from "@talismn/util"
+import { Binary } from "polkadot-api"
 import { combineLatest, map, scan, share, switchAll } from "rxjs"
 
 import type { SubNativeModule } from "./index"

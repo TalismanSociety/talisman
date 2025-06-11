@@ -42,7 +42,7 @@ const ConfirmRemove = ({
   token: EvmErc20Token | EvmUniswapV2Token
   onClose: () => void
 }) => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   // keep last one to prevent symbol to disappear when deleting it
@@ -100,7 +100,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const Content = () => {
-  const { t } = useTranslation("admin")
+  const { t } = useTranslation()
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()

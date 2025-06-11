@@ -25,7 +25,7 @@ const SettingsSourceSelector: FC<{
   network: AddEthereumChainParameter
   knownNetwork: SimpleEvmNetwork
 }> = ({ source, onChange, network, knownNetwork }) => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   const knownNativeToken = useToken(knownNetwork.nativeToken?.id)
 
   const handleOptionChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -102,7 +102,7 @@ const SettingsSourceSelector: FC<{
 }
 
 export const AddEthereumNetwork = () => {
-  const { t } = useTranslation("request")
+  const { t } = useTranslation()
   useBalancesHydrate() // preload
   const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
   const request = useRequest(id)

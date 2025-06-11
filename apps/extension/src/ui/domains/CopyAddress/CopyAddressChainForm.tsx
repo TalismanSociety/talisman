@@ -163,7 +163,7 @@ export const CopyAddressChainForm = () => {
       key: "substrate",
       chainId: null,
       prefix: null,
-      name: t("Substrate (Generic)"),
+      name: `Substrate (${t("Generic")})`,
     }),
     [t],
   )

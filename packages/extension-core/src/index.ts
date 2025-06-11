@@ -29,6 +29,7 @@ export { SitesAuthorizedStore } from "./domains/sitesAuthorised/store"
 
 export { getHumanReadableErrorMessage } from "./domains/ethereum/errors"
 export { getEthTransferTransactionBase } from "./domains/ethereum/helpers"
+export { isContractAddress } from "./util/isContractAddress"
 
 export { isDecryptRequest } from "./util/isDecryptRequest"
 

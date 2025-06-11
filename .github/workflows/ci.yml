@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Update & Enable corepack
+      - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -78,6 +78,60 @@ jobs:
           path: ./apps/extension/dist/chrome/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}_chrome.zip
           retention-days: 5
 
+  # This job will use the files from the build job to run Playwright tests
+  playwright:
+    name: "E2E test the wallet with Playwright"
+    needs: build
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Update & enable corepack
+        run: npm install -g corepack@latest && corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build papi descriptors
+        run: pnpm papi
+      - name: Download build artifact # download wallet that was built in the build job
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: ./build-artifact
+      - name: Unzip build artifact to the playwright extension path
+        run: |
+          mkdir -p ./apps/extension/dist/chrome
+          unzip ./build-artifact/*.zip -d ./apps/extension/dist/chrome
+      - name: Cache playwright browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-browsers-${{ runner.os }}-
+      - name: Install playwright browser - chromium with system dependencies
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Install xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Run playwright tests with xvfb
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
+          pnpm test:e2e
+      - name: "Upload playwright report"
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
   # This job will build and publish a snapshot version of the packages which have changesets in this PR
   publish_snapshot:
     name: "Publish a snapshot version of any packages with changesets in this PR to npm"
@@ -90,7 +144,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Update & Enable corepack
+      - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -126,7 +180,7 @@ jobs:
           # fetch all branches on the repo
           # (we need this in order to compare the changes between this PR and the default branch)
           fetch-depth: 0
-      - name: Update & Enable corepack
+      - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -264,7 +318,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # also get the previous commit
-      - name: Update & Enable corepack
+      - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
