@@ -171,7 +171,7 @@ const TabContentCollection: FC<{
         <div className="text-right">
           {nft.price ? <Fiat amount={nft.price} forceCurrency="usd" /> : t("Unknown")}
         </div>
-        <div className="text-body-secondary">{t("Items")}</div>
+        <div className="text-body-secondary">{t("Total Supply")}</div>
         <div className="text-right">{collection.itemsCount ?? t("Unknown")}</div>
         <div className="text-body-secondary">{t("Holders")}</div>
         <div className="text-right">{collection.ownersCount ?? t("Unknown")}</div>
