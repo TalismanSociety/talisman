@@ -73,6 +73,8 @@ export type {
   SubNativeTransferParams,
 } from "./types"
 
+export * from "./util/subtensor"
+
 const DEFAULT_SYMBOL = "Unit"
 const DEFAULT_DECIMALS = 0
 

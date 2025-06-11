@@ -1,6 +1,10 @@
 import PromisePool from "@supercharge/promise-pool"
-import { erc20Abi, erc20BalancesAggregatorAbi, EvmErc20Token } from "@talismn/balances"
-import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
+import {
+  abiMulticall,
+  erc20Abi,
+  erc20BalancesAggregatorAbi,
+  EvmErc20Token,
+} from "@talismn/balances"
 import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
