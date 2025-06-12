@@ -14,10 +14,21 @@ import { tokens as initSubstrateTokens } from "./tokens"
 // You can update them by running the following command:
 // `pnpm chore:generate-init-data`
 
-export const fetchInitChains = async (): Promise<Chain[]> => initChains as Chain[]
+export const fetchInitChains = async (): Promise<Chain[]> =>
+  // `as unknown` is needed for when we make breaking changes to chaindata.
+  // when this happens, we don't want tsc to check this type, because that would prevent us from compiling
+  // the generateInitData script, which in turn updates the initChains data to match the new changes
+  initChains as unknown as Chain[]
 export const fetchInitEvmNetworks = async (): Promise<EvmNetwork[]> =>
-  initEvmNetworks as EvmNetwork[]
-export const fetchInitSubstrateTokens = async (): Promise<Token[]> => initSubstrateTokens as Token[]
+  // `as unknown` is needed for when we make breaking changes to chaindata.
+  // when this happens, we don't want tsc to check this type, because that would prevent us from compiling
+  // the generateInitData script, which in turn updates the initEvmNetworks data to match the new changes
+  initEvmNetworks as unknown as EvmNetwork[]
+export const fetchInitSubstrateTokens = async (): Promise<Token[]> =>
+  // `as unknown` is needed for when we make breaking changes to chaindata.
+  // when this happens, we don't want tsc to check this type, because that would prevent us from compiling
+  // the generateInitData script, which in turn updates the initSubstrateTokens data to match the new changes
+  initSubstrateTokens as unknown as Token[]
 
 // TODO: Move `fetchMiniMetadatas` into `@talismn/balances`,
 // so that we don't have a circular import between `@talismn/balances` and `@talismn/chaindata-provider`.
