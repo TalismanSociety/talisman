@@ -19,6 +19,7 @@ import content_v2_6_0 from "./v2.6.0"
 import content_v2_8_0 from "./v2.8.0"
 import content_v2_9_0 from "./v2.9.0"
 import content_v2_10_0 from "./v2.10.0"
+import content_v2_11_0 from "./v2.11.0"
 
 export const latestUpdates: WhatsNewVersionData = {
   ...content_v1_21_0,
@@ -41,4 +42,5 @@ export const latestUpdates: WhatsNewVersionData = {
   ...content_v2_8_0,
   ...content_v2_9_0,
   ...content_v2_10_0,
+  ...content_v2_11_0,
 }
