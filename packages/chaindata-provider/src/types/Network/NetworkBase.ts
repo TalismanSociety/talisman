@@ -27,6 +27,7 @@ export const NetworkBaseDef = z.object({
     name: z.string().nonempty(),
     coingeckoId: z.string().optional(),
     mirrorOf: z.string().optional(),
+    logo: z.string().optional(),
   }),
   themeColor: z.string().optional(),
   blockExplorerUrls: z.array(z.url({ protocol: /^https$/ })).optional(),
