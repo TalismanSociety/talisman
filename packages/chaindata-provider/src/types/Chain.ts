@@ -25,6 +25,7 @@ export type Chain = {
   tokens: Array<{ id: TokenId }> | null // The ORML tokens for this chain
   account: string | null // The account address format of this chain
   subscanUrl: string | null // The subscan endpoint of this chain
+  blockExplorerUrls: string[] | null // The block explorer URLs of this chain
   chainspecQrUrl: string | null // A url to a qr code with the chainspec for this chain
   latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
   isUnknownFeeToken: boolean // Indicates if chain may use a different fee token than it's native token
