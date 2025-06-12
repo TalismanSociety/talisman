@@ -12,7 +12,7 @@ import { SubTokensTokenDef } from "./SubstrateTokensToken"
 /**
  * The `Token` sum type, which is a union of all of the possible `TokenTypes`.
  */
-export const Token = z.union([
+export const TokenDef = z.union([
   EvmErc20TokenDef,
   EvmNativeTokenDef,
   EvmUniswapV2TokenDef,
@@ -22,6 +22,6 @@ export const Token = z.union([
   SubPsp22TokenDef,
   SubTokensTokenDef,
 ])
-export type Token = z.infer<typeof Token>
+export type Token = z.infer<typeof TokenDef>
 
 export type TokenId = Token["id"]
