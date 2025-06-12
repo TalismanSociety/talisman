@@ -21,8 +21,15 @@ export const NetworkBaseDef = z.object({
   name: z.string().nonempty(),
   logo: z.string().optional(),
   nativeTokenId: z.string(),
+  nativeCurrency: z.object({
+    decimals: z.uint32(),
+    symbol: z.string().nonempty(),
+    name: z.string().nonempty(),
+    coingeckoId: z.string().optional(),
+    mirrorOf: z.string().optional(),
+  }),
   themeColor: z.string().optional(),
   blockExplorerUrls: z.array(z.url({ protocol: /^https$/ })).optional(),
-  balancesConfig: BalanceModuleConfig.optional(),
+  // balancesConfig: BalanceModuleConfig.optional(),
 })
 export type NetworkBase = z.infer<typeof NetworkBaseDef>
