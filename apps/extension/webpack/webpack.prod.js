@@ -88,10 +88,7 @@ const config = (env) => {
       }),
       new SimpleLocalizeDownloadPlugin(),
       // Do not include source maps in the zip file
-      new ZipPlugin({
-        folder: distDir,
-        filename: getArchiveFileName(env),
-      }),
+      new ZipPlugin({ folder: distDir, filename: getArchiveFileName(env) }),
       new BundleAnalyzerPlugin({
         // analyzerMode defaults to server, spawning a http server which can hang the process
         // static will instead output a static html file to the dist folder, and not hang the terminal
