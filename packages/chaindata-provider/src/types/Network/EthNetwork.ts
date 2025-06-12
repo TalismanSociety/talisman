@@ -1,11 +1,11 @@
 import z from "zod/v4"
 
-import { EthereumAddress } from "./common"
-import { NetworkBase } from "./NetworkBase"
+import { EthereumAddress } from "../common"
+import { NetworkBaseDef } from "./NetworkBase"
 
 const ContractName = z.enum(["Erc20Aggregator", "Multicall3"])
 
-export const EthNetwork = NetworkBase.extend({
+export const EthNetworkDef = NetworkBaseDef.extend({
   platform: z.literal("ethereum"),
   substrateChainId: z.string().optional(),
   preserveGasEstimate: z.boolean().optional(),
@@ -22,4 +22,4 @@ export const EthNetwork = NetworkBase.extend({
   ]),
   contracts: z.partialRecord(ContractName, EthereumAddress).optional(),
 })
-export type EthNetwork = z.infer<typeof EthNetwork>
+export type EthNetwork = z.infer<typeof EthNetworkDef>
