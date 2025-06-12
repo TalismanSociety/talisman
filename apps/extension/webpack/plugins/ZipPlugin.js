@@ -1,7 +1,7 @@
 /* eslint-env es2021 */
 /**
  * Using this custom plugin because `zip-webpack-plugin` hooks into processAssets,
- * but we need it to hook into afterProcessAssets to allow ReplaceAssetPlugin to do it's job before files get zipped.
+ * but we need it to hook into afterProcessAssets to allow ReplaceAssetPlugin to do its job before files get zipped.
  */
 const path = require("path")
 const fs = require("fs")
@@ -19,23 +19,17 @@ ZipPlugin.prototype.apply = function (compiler) {
   }
 
   compiler.hooks.done.tapAsync(ZipPlugin.name, (_, callback) => {
+    // test if the dist folder exists
+    // if not, a compilation error must have occurred before this step.
+    // when that happens, we should exit here so that webpack can tell us what went wrong
+    // if we try to continue, we'll replace the helpful compilation error with less helpful `failed to create zip archive` error
+    if (!fs.existsSync(options.folder)) return callback()
+
     const output = fs.createWriteStream(path.join(options.folder, options.filename))
     var archive = archiver("zip")
 
     output.on("error", function (err) {
       console.error("Failed to create zip file (output)", err)
-
-      for (let i = 0; i <= 5; i++) {
-        const parents = new Array(i).fill("..")
-        try {
-          console.info(
-            `fs.readdirSync("${path.join(options.folder, ...parents)}"): ${fs.readdirSync(path.join(options.folder, ...parents))}`,
-          )
-        } catch (error) {
-          console.error(`Failed to readdir ${path.join(options.folder, ...parents)}`)
-        }
-      }
-
       callback(err)
     })
     output.on("close", function () {
