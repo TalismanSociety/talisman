@@ -23,6 +23,7 @@ export const chains = [
       },
     ],
     account: "*25519",
+    blockExplorerUrls: ["https://polkadot.subscan.io/"],
     subscanUrl: "https://polkadot.subscan.io/",
     chainspecQrUrl: "https://metadata.parity.io/qr/polkadot_specs.png",
     latestMetadataQrUrl: "https://metadata.parity.io/qr/polkadot_metadata_latest.apng",
@@ -331,6 +332,7 @@ export const chains = [
       },
     ],
     account: "*25519",
+    blockExplorerUrls: ["https://kusama.subscan.io/"],
     subscanUrl: "https://kusama.subscan.io/",
     chainspecQrUrl: "https://metadata.parity.io/qr/kusama_specs.png",
     latestMetadataQrUrl: "https://metadata.parity.io/qr/kusama_metadata_latest.apng",
@@ -571,6 +573,7 @@ export const chains = [
       },
     ],
     account: "*25519",
+    blockExplorerUrls: ["https://assethub-kusama.subscan.io/"],
     subscanUrl: "https://assethub-kusama.subscan.io/",
     chainspecQrUrl: "https://metadata.parity.io/qr/kusama-statemine_specs.png",
     latestMetadataQrUrl: "https://metadata.parity.io/qr/kusama-statemine_metadata_latest.apng",
@@ -579,9 +582,6 @@ export const chains = [
     rpcs: [
       {
         url: "wss://sys.ibp.network/asset-hub-kusama",
-      },
-      {
-        url: "wss://asset-hub-kusama-rpc.dwellir.com",
       },
       {
         url: "wss://statemine-rpc-tn.dwellir.com",
@@ -600,6 +600,9 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io/assethub",
+      },
+      {
+        url: "wss://asset-hub-kusama-rpc.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -673,6 +676,7 @@ export const chains = [
       },
     ],
     account: "*25519",
+    blockExplorerUrls: ["https://bridgehub-kusama.subscan.io/"],
     subscanUrl: "https://bridgehub-kusama.subscan.io/",
     chainspecQrUrl: "https://metadata.parity.io/qr/kusama-bridge-hub-kusama_specs.png",
     latestMetadataQrUrl:
@@ -808,6 +812,7 @@ export const chains = [
       },
     ],
     account: "*25519",
+    blockExplorerUrls: ["https://assethub-polkadot.subscan.io/"],
     subscanUrl: "https://assethub-polkadot.subscan.io/",
     chainspecQrUrl: "https://metadata.parity.io/qr/polkadot-statemint_specs.png",
     latestMetadataQrUrl: "https://metadata.parity.io/qr/polkadot-statemint_metadata_latest.apng",
@@ -1099,6 +1104,7 @@ export const chains = [
       },
     ],
     account: "*25519",
+    blockExplorerUrls: ["https://bridgehub-polkadot.subscan.io/"],
     subscanUrl: "https://bridgehub-polkadot.subscan.io/",
     chainspecQrUrl: "https://metadata.parity.io/qr/polkadot-bridge-hub-polkadot_specs.png",
     latestMetadataQrUrl:
