@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser"
-import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/balances"
+import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/chaindata-provider"
 import { RotateCcwIcon } from "@talismn/icons"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -112,10 +112,10 @@ const Content = () => {
     () => (isErc20Token(token) ? token : isUniswapV2Token(token) ? token : undefined),
     [token],
   )
-  const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
+  const network = useEvmNetwork(erc20Token?.networkId)
 
   const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownEvmToken(
-    erc20Token?.evmNetwork?.id,
+    erc20Token?.networkId,
     erc20Token?.contractAddress,
   )
 

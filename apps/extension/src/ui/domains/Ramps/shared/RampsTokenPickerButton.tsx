@@ -67,8 +67,8 @@ export const RampsTokenPickerButton: FC<{
 }
 
 const TokenContent: FC<{ token: Token }> = ({ token }) => {
-  const evmNetwork = useEvmNetwork(token.evmNetwork?.id)
-  const dotNetwork = useChain(token.chain?.id)
+  const evmNetwork = useEvmNetwork(token.networkId)
+  const dotNetwork = useChain(token.networkId)
 
   return (
     <div className="flex items-center gap-4 truncate text-left">

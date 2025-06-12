@@ -1,5 +1,4 @@
-import { EvmErc20Token } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { EvmErc20Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
@@ -24,7 +23,7 @@ const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { open, canOpen } = useViewOnExplorer(token.contractAddress, token.evmNetwork?.id)
+  const { open, canOpen } = useViewOnExplorer(token.contractAddress, token.networkId)
 
   const handleClick = useCallback(() => {
     open()

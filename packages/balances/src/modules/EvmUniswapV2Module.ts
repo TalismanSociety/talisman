@@ -2,10 +2,11 @@ import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
+  CustomEvmUniswapV2Token,
   EvmNetworkId,
   EvmNetworkList,
+  EvmUniswapV2Token,
   githubTokenLogoUrl,
-  Token,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
@@ -31,9 +32,6 @@ export { uniswapV2PairAbi }
 type ModuleType = "evm-uniswapv2"
 const moduleType: ModuleType = "evm-uniswapv2"
 
-export type EvmUniswapV2Token = Extract<Token, { type: ModuleType; isCustom?: true }>
-export type CustomEvmUniswapV2Token = Extract<Token, { type: ModuleType; isCustom: true }>
-
 export const evmUniswapV2TokenId = (
   chainId: EvmNetworkId,
   contractAddress: EvmUniswapV2Token["contractAddress"],
@@ -46,14 +44,14 @@ export type EvmUniswapV2ChainMeta = {
 export type EvmUniswapV2ModuleConfig = {
   pools?: Array<
     {
-      contractAddress?: string
+      contractAddress?: `0x${string}`
       decimals?: number
       symbol0?: string
       symbol1?: string
       decimals0?: number
       decimals1?: number
-      tokenAddress0?: string
-      tokenAddress1?: string
+      tokenAddress0?: `0x${string}`
+      tokenAddress1?: `0x${string}`
       coingeckoId0?: string
       coingeckoId1?: string
     } & BalancesConfigTokenParams
@@ -103,6 +101,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
           tokenAddress1,
           coingeckoId0,
           coingeckoId1,
+          name,
         } = tokenConfig
 
         if (
@@ -123,9 +122,11 @@ export const EvmUniswapV2Module: NewBalanceModule<
         const token: EvmUniswapV2Token = {
           id,
           type: "evm-uniswapv2",
+          platform: "ethereum",
           isTestnet,
           isDefault: tokenConfig.isDefault ?? false,
           symbol: `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
+          name: name ?? `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           decimals,
           logo: tokenConfig?.logo || githubTokenLogoUrl("uniswap"),
           symbol0,
@@ -137,12 +138,11 @@ export const EvmUniswapV2Module: NewBalanceModule<
           tokenAddress1,
           coingeckoId0,
           coingeckoId1,
-          evmNetwork: { id: chainId },
+          networkId: chainId,
         }
 
         if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
         if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-        if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
         if (tokenConfig?.noDiscovery) token.noDiscovery = tokenConfig?.noDiscovery
 
@@ -357,7 +357,7 @@ function groupAddressesByTokenByEvmNetwork(
         return byChain
       }
 
-      const chainId = token.evmNetwork?.id
+      const chainId = token.networkId
       if (!chainId) {
         log.error(`Token ${tokenId} has no evm network`)
         return byChain

@@ -223,7 +223,7 @@ const rawTokens$ = new Observable<Token[]>((subscriber) => {
 const allTokens$ = combineLatest([rawTokens$, allEvmNetworksMap$, allChainsMap$]).pipe(
   map(([tokens, evmNetworksMap, chainsMap]) =>
     tokens.filter(
-      (token) => chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"],
+      (token) => chainsMap[token.networkId ?? "#"] || evmNetworksMap[token.networkId ?? "#"],
     ),
   ),
   shareReplay(1),
@@ -243,7 +243,7 @@ const allTokensWithoutTestnets$ = combineLatest([
     tokens.filter(
       (token) =>
         !token.isTestnet &&
-        (chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]),
+        (chainsMap[token.networkId ?? "#"] || evmNetworksMap[token.networkId ?? "#"]),
     ),
   ),
   shareReplay(1),
@@ -263,7 +263,7 @@ const activeTokensWithTestnets$ = combineLatest([
   map(([tokens, evmNetworksMap, chainsMap, activeTokens]) =>
     tokens.filter(
       (token) =>
-        (chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]) &&
+        (chainsMap[token.networkId ?? "#"] || evmNetworksMap[token.networkId ?? "#"]) &&
         isTokenActive(token, activeTokens),
     ),
   ),
@@ -284,7 +284,7 @@ const activeTokensWithoutTestnets$ = combineLatest([
     tokens.filter(
       (token) =>
         !token.isTestnet &&
-        (chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]),
+        (chainsMap[token.networkId ?? "#"] || evmNetworksMap[token.networkId ?? "#"]),
     ),
   ),
   shareReplay(1),

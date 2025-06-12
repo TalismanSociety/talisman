@@ -1,4 +1,4 @@
-import { Chain, Token } from "@talismn/chaindata-provider"
+import { Chain, SubNativeToken, Token } from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { BigMath, blake2Concat, decodeAnyAddress } from "@talismn/util"
 import { Binary, Enum } from "polkadot-api"
@@ -7,7 +7,7 @@ import { Struct, u32, u128 } from "scale-ts"
 import log from "../../../log"
 import { AddressesByToken, AmountWithLabel, getValueId, MiniMetadata } from "../../../types"
 import { findChainMeta, RpcStateQuery, StorageCoders } from "../../util"
-import { SubNativeBalance, SubNativeToken } from "../types"
+import { SubNativeBalance } from "../types"
 import { getLockedType } from "./balanceLockTypes"
 
 export type QueryKey = string
@@ -72,7 +72,7 @@ export async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return outerResult
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return outerResult

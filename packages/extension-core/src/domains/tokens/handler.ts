@@ -1,11 +1,11 @@
 import { assert } from "@polkadot/util"
+import { evmErc20TokenId, evmUniswapV2TokenId } from "@talismn/balances"
 import {
   CustomEvmErc20Token,
   CustomEvmUniswapV2Token,
-  evmErc20TokenId,
-  evmUniswapV2TokenId,
-} from "@talismn/balances"
-import { githubUnknownTokenLogoUrl, Token } from "@talismn/chaindata-provider"
+  githubUnknownTokenLogoUrl,
+  Token,
+} from "@talismn/chaindata-provider"
 import { isEqual } from "lodash"
 import { distinctUntilChanged } from "rxjs"
 
@@ -53,12 +53,9 @@ export default class TokensHandler extends ExtensionHandler {
 
       case "pri(tokens.evm.custom.add)": {
         const token = request as CustomEvmTokenCreate
-        const networkId = token.chainId || token.evmNetworkId
-        assert(networkId, "A chainId or an evmNetworkId is required")
-        const chain = token.chainId ? await chaindataProvider.chainById(token.chainId) : undefined
-        const evmNetwork = token.evmNetworkId
-          ? await chaindataProvider.evmNetworkById(token.evmNetworkId)
-          : undefined
+        assert(token.networkId, "A networkId is required")
+        const network = await chaindataProvider.evmNetworkById(token.networkId)
+        assert(network, "network not found")
         assert(typeof token.type === "string", "A token type is required")
         assert(typeof token.contractAddress === "string", "A contract address is required")
         if (token.type === "evm-uniswapv2") {
@@ -73,9 +70,9 @@ export default class TokensHandler extends ExtensionHandler {
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
         const tokenId = (() => {
-          if (token.type === "evm-erc20") return evmErc20TokenId(networkId, token.contractAddress)
+          if (token.type === "evm-erc20") return evmErc20TokenId(network.id, token.contractAddress)
           if (token.type === "evm-uniswapv2")
-            return evmUniswapV2TokenId(networkId, token.contractAddress)
+            return evmUniswapV2TokenId(network.id, token.contractAddress)
 
           return
         })()
@@ -88,25 +85,28 @@ export default class TokensHandler extends ExtensionHandler {
             return {
               id: tokenId,
               type: "evm-erc20",
-              isTestnet: (chain || evmNetwork)?.isTestnet || false,
+              platform: "ethereum",
+              isTestnet: !!network.isTestnet,
               symbol: token.symbol,
+              name: token.name,
               decimals: Number(token.decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
-              logo: token.image || githubUnknownTokenLogoUrl,
+              logo: token.logo || githubUnknownTokenLogoUrl,
               coingeckoId: token.coingeckoId,
               contractAddress: token.contractAddress,
-              evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
+              networkId: token.networkId,
               isCustom: true,
-              image: token.image,
             }
 
           if (token.type === "evm-uniswapv2")
             return {
               id: tokenId,
               type: "evm-uniswapv2",
-              isTestnet: (chain || evmNetwork)?.isTestnet || false,
+              platform: "ethereum",
+              isTestnet: !!network.isTestnet,
               symbol: token.symbol,
               decimals: Number(token.decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
-              logo: token.image || githubUnknownTokenLogoUrl,
+              name: token.name,
+              logo: token.logo || githubUnknownTokenLogoUrl,
               symbol0: token.symbol0,
               decimals0: token.decimals0,
               symbol1: token.symbol1,
@@ -116,9 +116,8 @@ export default class TokensHandler extends ExtensionHandler {
               tokenAddress1: token.tokenAddress1,
               coingeckoId0: token.coingeckoId0,
               coingeckoId1: token.coingeckoId1,
-              evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
+              networkId: token.networkId,
               isCustom: true,
-              image: token.image,
             }
 
           return
@@ -134,7 +133,7 @@ export default class TokensHandler extends ExtensionHandler {
                 : "unknown"
           } token`,
           {
-            evmNetworkId: token.evmNetworkId,
+            evmNetworkId: token.networkId,
             symbol: token.symbol,
             contractAddress: token.contractAddress,
           },

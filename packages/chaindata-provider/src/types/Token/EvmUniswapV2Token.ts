@@ -1,24 +1,23 @@
-import { EvmNetworkId } from "../EvmNetwork"
-import { NewTokenType } from "./types"
+import z from "zod/v4"
 
-type ModuleType = "evm-uniswapv2"
+import { EthereumAddress } from "../common"
+import { EvmErc20TokenDef } from "./EvmErc20Token"
 
-export type EvmUniswapV2Token = NewTokenType<
-  ModuleType,
-  {
-    contractAddress: string
-    symbol0: string
-    symbol1: string
-    decimals0: number
-    decimals1: number
-    tokenAddress0: string
-    tokenAddress1: string
-    coingeckoId0?: string
-    coingeckoId1?: string
-    evmNetwork: { id: EvmNetworkId } | null
-  }
->
-export type CustomEvmUniswapV2Token = Omit<EvmUniswapV2Token, "isCustom"> & {
-  isCustom: true
-  image?: string
-}
+export const EvmUniswapV2TokenDef = EvmErc20TokenDef.extend({
+  type: z.literal("evm-uniswapv2"),
+  symbol0: z.string().nonempty(),
+  symbol1: z.string().nonempty(),
+  decimals0: z.int().min(0),
+  decimals1: z.int().min(0),
+  tokenAddress0: EthereumAddress,
+  tokenAddress1: EthereumAddress,
+  coingeckoId0: z.string().optional(),
+  coingeckoId1: z.string().optional(),
+})
+export type EvmUniswapV2Token = z.infer<typeof EvmUniswapV2TokenDef>
+
+export const CustomEvmUniswapV2TokenDef = EvmUniswapV2TokenDef.extend({
+  isCustom: z.literal(true),
+})
+
+export type CustomEvmUniswapV2Token = z.infer<typeof CustomEvmUniswapV2TokenDef>

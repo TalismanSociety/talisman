@@ -54,8 +54,8 @@ const useRecipientBalance = (token?: Token | null, address?: Address | null) => 
   return useQuery({
     queryKey: [token?.id, address, hydrate],
     queryFn: async () => {
-      if (!token || !token.chain || !address || !hydrate) return null
-      const storage = await api.getBalance({ chainId: token.chain.id, address, tokenId: token.id })
+      if (!token || !address || !hydrate) return null
+      const storage = await api.getBalance({ chainId: token.networkId, address, tokenId: token.id })
       if (!storage) throw Error(t("Could not fetch recipient balance."))
       return storage ? new Balance(storage, hydrate) : null
     },
@@ -78,7 +78,6 @@ const useIsSendingEnough = (
         case "evm-native":
           return true
         case "substrate-assets":
-        case "substrate-equilibrium":
         case "substrate-foreignassets":
         case "substrate-native":
         case "substrate-psp22":
@@ -118,7 +117,7 @@ const useEvmTransaction = (
     setEvmInvalidTxError(undefined)
     if (
       !isEvmToken(token) ||
-      !token.evmNetwork?.id ||
+      !token.networkId ||
       !token ||
       !planck ||
       !isEthereumAddress(from) ||
@@ -126,7 +125,7 @@ const useEvmTransaction = (
     )
       setTx(undefined)
     else {
-      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, BigInt(planck))
+      getEthTransferTransactionBase(token.networkId, from, to, token, BigInt(planck))
         .then(setTx)
         .catch((err) => {
           setEvmInvalidTxError(err)
@@ -137,10 +136,10 @@ const useEvmTransaction = (
     }
   }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked, false)
+  const result = useEthTransaction(tx, token?.networkId, isLocked, false)
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
-    evmNetworkId: token?.evmNetwork?.id,
+    evmNetworkId: token?.networkId,
     tx,
     disableAutoRiskScan: true,
   })
@@ -162,9 +161,9 @@ const useSubTransaction = (
   const qSubstrateEstimateFee = useQuery({
     queryKey: ["estimateFee", from, to, token?.id, amount, tip, method],
     queryFn: async () => {
-      if (!token?.chain?.id || !from || !to || !amount) return null
+      if (!token?.networkId || !from || !to || !amount) return null
       const { partialFee, unsigned } = await api.assetTransferCheckFees(
-        token.chain.id,
+        token.networkId,
         token.id,
         from,
         to,
@@ -227,8 +226,8 @@ const useSendFundsProvider = () => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const chain = useChain(token?.chain?.id)
+  const evmNetwork = useEvmNetwork(token?.networkId)
+  const chain = useChain(token?.networkId)
   const tipToken = useToken(chain?.nativeToken?.id)
   const tipTokenRates = useTokenRates(chain?.nativeToken?.id)
   const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
@@ -241,7 +240,7 @@ const useSendFundsProvider = () => {
     [amount, token, tokenRates],
   )
 
-  const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id, !isLocked)
+  const { requiresTip, tip: tipPlanck } = useTip(token?.networkId, !isLocked)
   const tip = useMemo(
     () => (tipPlanck ? new BalanceFormatter(tipPlanck, tipToken?.decimals, tipTokenRates) : null),
     [tipPlanck, tipToken?.decimals, tipTokenRates],
@@ -583,9 +582,9 @@ const useSendFundsProvider = () => {
         options: { value: privacyRoundCurrency(value.fiat("usd") ?? 0) ?? "0" },
       })
 
-      if (token.chain?.id && chain?.genesisHash) {
+      if (token.networkId && chain?.genesisHash) {
         const { hash } = await api.assetTransfer(
-          token.chain.id,
+          token.networkId,
           token.id,
           from,
           to,
@@ -595,14 +594,14 @@ const useSendFundsProvider = () => {
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
-      } else if (token.evmNetwork?.id) {
+      } else if (token.networkId) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
         if (!isEthereumAddress(from)) throw new Error("Invalid sender address")
         if (!isEthereumAddress(to)) throw new Error("Invalid recipient address")
         const gasSettings = serializeGasSettings(evmTransaction.gasSettings)
         const { hash } = await api.assetTransferEth(
-          token.evmNetwork.id,
+          token.networkId,
           token.id,
           from,
           to,
@@ -610,7 +609,7 @@ const useSendFundsProvider = () => {
           gasSettings,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
+        gotoProgress({ hash, networkIdOrHash: token.networkId })
       } else throw new Error("Unknown network")
     } catch (err) {
       log.error("Failed to submit tx", { err })
@@ -651,15 +650,10 @@ const useSendFundsProvider = () => {
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return
         }
-        if (
-          evmTransaction?.transaction &&
-          amount &&
-          token?.evmNetwork?.id &&
-          isEthereumAddress(to)
-        ) {
+        if (evmTransaction?.transaction && amount && token?.networkId && isEthereumAddress(to)) {
           const serialized = serializeTransactionRequest(evmTransaction.transaction)
           const { hash } = await api.assetTransferEthHardware(
-            token.evmNetwork.id,
+            token.networkId,
             token.id,
             amount,
             to,
@@ -667,7 +661,7 @@ const useSendFundsProvider = () => {
             signature,
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-          gotoProgress({ hash, networkIdOrHash: token.evmNetwork.id })
+          gotoProgress({ hash, networkIdOrHash: token.networkId })
           return
         }
         throw new Error("Unknown transaction")

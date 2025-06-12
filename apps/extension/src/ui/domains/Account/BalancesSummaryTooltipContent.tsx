@@ -27,9 +27,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
       .map((tokenId) => {
         const token = tokens[tokenId]
         if (!token) return null
-        const network =
-          (token.evmNetwork && evmNetworks[token.evmNetwork.id]) ||
-          (token.chain && chains[token.chain.id])
+        const network = evmNetworks[token.networkId] ?? chains[token.networkId]
         if (!network) return null
         if (token.mirrorOf && tokenIds.includes(token.mirrorOf)) return null
 

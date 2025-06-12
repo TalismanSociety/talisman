@@ -8,7 +8,7 @@ import {
   BalancesConfigTokenParams,
   ChainId,
   githubTokenLogoUrl,
-  Token,
+  SubPsp22Token,
   TokenList,
 } from "@talismn/chaindata-provider"
 import camelCase from "lodash/camelCase"
@@ -22,8 +22,6 @@ import { makeContractCaller } from "./util"
 
 type ModuleType = "substrate-psp22"
 const moduleType: ModuleType = "substrate-psp22"
-
-export type SubPsp22Token = Extract<Token, { type: ModuleType }>
 
 export const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
@@ -139,14 +137,16 @@ export const SubPsp22Module: NewBalanceModule<
           const token: SubPsp22Token = {
             id,
             type: "substrate-psp22",
+            platform: "polkadot",
             isTestnet,
             isDefault: tokenConfig.isDefault ?? true,
             symbol,
             decimals,
+            name: tokenConfig?.name || symbol,
             logo: tokenConfig?.logo || githubTokenLogoUrl(id),
             existentialDeposit,
             contractAddress,
-            chain: { id: chainId },
+            networkId: chainId,
           }
 
           if (tokenConfig?.symbol) {
@@ -154,7 +154,6 @@ export const SubPsp22Module: NewBalanceModule<
             token.id = subPsp22TokenId(chainId, token.symbol)
           }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
           tokens[token.id] = token
@@ -242,7 +241,7 @@ export const SubPsp22Module: NewBalanceModule<
       if (token.type !== "substrate-psp22")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
-      const chainId = token.chain.id
+      const chainId = token.networkId
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
@@ -328,7 +327,7 @@ const fetchBalances = async (
       // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({
         chainConnector,
-        chainId: token.chain.id,
+        chainId: token.networkId,
         registry,
       })
 
@@ -357,8 +356,8 @@ const fetchBalances = async (
         status: "live",
 
         address,
-        multiChainId: { subChainId: token.chain.id },
-        chainId: token.chain.id,
+        multiChainId: { subChainId: token.networkId },
+        chainId: token.networkId,
         tokenId,
 
         value: balance,

@@ -27,7 +27,7 @@ export const useRampCryptoAsset = (
   return useMemo(() => {
     if (!token || !currencyCode) return null
     const type = getRampTokenType(token)
-    const chainId = getRampChainId(remoteConfig, token.evmNetwork?.id ?? token.chain?.id ?? "")
+    const chainId = getRampChainId(remoteConfig, token.networkId ?? token.networkId ?? "")
 
     if (!type || !chainId) return null
 
@@ -60,7 +60,7 @@ const getRampTokenType = (token: Token) => {
     case "evm-native":
       return "NATIVE"
     case "substrate-assets":
-      return token.chain.id === "polkadot-asset-hub" ? "DOT_AH" : null
+      return token.networkId === "polkadot-asset-hub" ? "DOT_AH" : null
     default:
       return null
   }

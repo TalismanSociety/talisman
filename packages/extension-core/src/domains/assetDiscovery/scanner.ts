@@ -1,11 +1,13 @@
 import PromisePool from "@supercharge/promise-pool"
+import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
-  abiMulticall,
-  erc20Abi,
-  erc20BalancesAggregatorAbi,
   EvmErc20Token,
-} from "@talismn/balances"
-import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+  EvmNetwork,
+  EvmNetworkId,
+  Token,
+  TokenId,
+  TokenList,
+} from "@talismn/chaindata-provider"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
 import { DEBUG, log } from "extension-shared"
@@ -54,12 +56,12 @@ const BALANCES_FETCH_CHUNK_SIZE = 1000
 // native tokens should be processed and displayed first
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
   const token = tokens[tokenId]
-  if (!token?.evmNetwork?.id) {
+  if (!token?.networkId) {
     log.warn("No token or network found for tokenId", tokenId)
     return `${tokenId}::${address}`
   }
 
-  return `${token.evmNetwork?.id}::${
+  return `${token.networkId}::${
     tokens[tokenId].type === "evm-native" ? "t1" : "t2"
   }::${tokenId}::${address}`
 }
@@ -298,8 +300,7 @@ class AssetDiscoveryScanner {
             return activeTokens[token.id] === undefined
           case "evm-native":
             return (
-              activeNetworks[token.evmNetwork.id] === undefined ||
-              activeTokens[token.id] === undefined
+              activeNetworks[token.networkId] === undefined || activeTokens[token.id] === undefined
             )
           default:
             return false
@@ -307,7 +308,7 @@ class AssetDiscoveryScanner {
       })
       .map((t) => {
         log.debug("[AssetDiscovery] Forcing scan because of", t.id)
-        return t.evmNetwork?.id
+        return t.networkId
       })
       .filter((id): id is string => !!id)
 
@@ -315,9 +316,9 @@ class AssetDiscoveryScanner {
 
     const tokensToScan = allTokens
       .filter(isEvmToken)
-      .filter((t) => networkIdsToScan.includes(t.evmNetwork?.id ?? ""))
+      .filter((t) => networkIdsToScan.includes(t.networkId ?? ""))
       .filter((token) => {
-        const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+        const evmNetwork = evmNetworks[token.networkId ?? ""]
         if (!evmNetwork) return false
         if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
         if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
@@ -367,9 +368,9 @@ class AssetDiscoveryScanner {
 
       const tokensToScan = allTokens
         .filter(isEvmToken)
-        .filter((t) => scope.networkIds.includes(t.evmNetwork?.id ?? ""))
+        .filter((t) => scope.networkIds.includes(t.networkId ?? ""))
         .filter((token) => {
-          const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+          const evmNetwork = evmNetworks[token.networkId ?? ""]
           if (!evmNetwork) return false
           if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
           if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
@@ -380,7 +381,7 @@ class AssetDiscoveryScanner {
 
       const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
         tokensToScan,
-        (t) => t.evmNetwork?.id,
+        (t) => t.networkId,
       )
 
       const totalChecks = tokensToScan.length * scope.addresses.length
@@ -589,7 +590,7 @@ class AssetDiscoveryScanner {
       ).filter(isEvmToken)
 
       const evmNetworkIds = uniq(
-        tokens.map((token) => token.evmNetwork?.id).filter((id): id is EvmNetworkId => !!id),
+        tokens.map((token) => token.networkId).filter((id): id is EvmNetworkId => !!id),
       )
       const evmNetworks = (
         await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))

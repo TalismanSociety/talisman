@@ -1,5 +1,4 @@
-import { EvmErc20Token } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import { EvmErc20Token, Token } from "@talismn/chaindata-provider"
 
 export const isErc20Token = <T extends Token>(
   token?: T | null | EvmErc20Token,

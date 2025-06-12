@@ -1,5 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChaindataProvider } from "@talismn/chaindata-provider"
+import { ChaindataProvider, SubNativeToken } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { isEthereumAddress } from "@talismn/util"
 import { Binary, SS58String } from "polkadot-api"
@@ -10,7 +10,7 @@ import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import { AddressesByToken, SubscriptionCallback } from "../../types"
 import { findChainMeta, getUniqueChainIds } from "../util"
-import { SubNativeBalance, SubNativeToken } from "./types"
+import { SubNativeBalance } from "./types"
 import {
   calculateTaoFromDynamicInfo,
   GetDynamicInfoParams,
@@ -44,7 +44,7 @@ export async function subscribeSubtensorStaking(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        allChains[token.chain.id],
+        allChains[token.networkId],
       )
       return chainMeta?.hasSubtensorPallet === true
     })
@@ -78,7 +78,7 @@ export async function subscribeSubtensorStaking(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       continue
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       continue

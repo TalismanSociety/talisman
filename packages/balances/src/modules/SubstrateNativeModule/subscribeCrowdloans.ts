@@ -1,6 +1,10 @@
 import { u8aToHex } from "@polkadot/util"
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChaindataProvider } from "@talismn/chaindata-provider"
+import {
+  ChaindataProvider,
+  CustomSubNativeToken,
+  SubNativeToken,
+} from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
@@ -18,7 +22,7 @@ import {
   RpcStateQuery,
   RpcStateQueryHelper,
 } from "../util"
-import { CustomSubNativeToken, SubNativeBalance, SubNativeToken } from "./types"
+import { SubNativeBalance } from "./types"
 import { asObservable } from "./util/asObservable"
 import { crowdloanFundContributionsChildKey } from "./util/crowdloanFundContributionsChildKey"
 
@@ -45,7 +49,7 @@ export async function subscribeCrowdloans(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        allChains[token.chain.id],
+        allChains[token.networkId],
       )
       return typeof chainMeta?.crowdloanPalletId === "string"
     })
@@ -89,7 +93,7 @@ export async function subscribeCrowdloans(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       continue
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       continue

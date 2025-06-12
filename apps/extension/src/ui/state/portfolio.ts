@@ -43,8 +43,8 @@ const getNetworkTokenSymbols = ({
 }) => {
   if (!tokens) return []
   const networkTokens = tokens.filter((token) => {
-    if (isSubToken(token)) return token.chain?.id === chainId
-    if (isEvmToken(token)) return token.evmNetwork?.id === evmNetworkId
+    if (isSubToken(token)) return token.networkId === chainId
+    if (isEvmToken(token)) return token.networkId === evmNetworkId
     return true
   })
   return networkTokens.map(({ symbol }) => symbol).filter(isTruthy)

@@ -26,7 +26,7 @@ export const RampsAccountPickerButton: FC<{
   const { isOpen, open, close } = useOpenClose()
 
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useChain(token?.networkId)
 
   const account = useMemo(() => {
     if (!selected) return null

@@ -38,7 +38,7 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
       const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
       const tokenIds = sortBy(
         Object.keys(balancesByTokenId).filter((id) => !!tokensMap[id]), // some tokens may have been deleted since the scan finished
-        (tokenId) => Number(tokensMap[tokenId]?.evmNetwork?.id ?? 0),
+        (tokenId) => Number(tokensMap[tokenId]?.networkId ?? 0),
         (tokenId) => tokensMap[tokenId]?.symbol,
       )
 

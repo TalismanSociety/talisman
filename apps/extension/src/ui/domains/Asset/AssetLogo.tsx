@@ -51,11 +51,11 @@ const LpAssetLogo = ({ className, id }: { className?: string; id?: TokenId }) =>
   const lpToken = useToken(id)
   const tokenId0 =
     lpToken?.type === "evm-uniswapv2"
-      ? evmErc20TokenId(lpToken?.evmNetwork?.id ?? "", lpToken?.tokenAddress0)
+      ? evmErc20TokenId(lpToken?.networkId ?? "", lpToken?.tokenAddress0)
       : null
   const tokenId1 =
     lpToken?.type === "evm-uniswapv2"
-      ? evmErc20TokenId(lpToken?.evmNetwork?.id ?? "", lpToken?.tokenAddress1)
+      ? evmErc20TokenId(lpToken?.networkId ?? "", lpToken?.tokenAddress1)
       : null
   const token0 = useToken(tokenId0)
   const token1 = useToken(tokenId1)

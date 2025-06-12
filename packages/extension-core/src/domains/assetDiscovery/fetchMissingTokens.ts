@@ -61,7 +61,7 @@ const getTokenIdFromAsset = (asset: DiscoveredAsset): TokenId | null => {
     case "native":
       return evmNativeTokenId(asset.networkId)
     case "erc20":
-      return evmErc20TokenId(asset.networkId, asset.contractAddress.toLowerCase())
+      return evmErc20TokenId(asset.networkId, asset.contractAddress)
     default:
       return null
   }

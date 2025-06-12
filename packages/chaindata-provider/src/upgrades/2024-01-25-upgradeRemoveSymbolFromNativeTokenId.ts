@@ -26,7 +26,7 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
   const evmNetworksToUpsert: EvmNetwork[] = []
 
   for (const nativeToken of nativeTokens) {
-    const networkId = nativeToken.chain?.id || nativeToken.evmNetwork?.id
+    const networkId = nativeToken.networkId || nativeToken.networkId
     if (!networkId) continue
 
     const id =

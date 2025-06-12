@@ -49,7 +49,7 @@ const useBestTokenForSymbol = (balances: Balances) => {
         (t) =>
           !t.isTestnet &&
           ["substrate-native", "evm-native"].includes(t.type) &&
-          chains?.find((c) => !c.relay && c.id === t.chain?.id),
+          chains?.find((c) => !c.relay && c.id === t.networkId),
       ) ??
       // mainnet solo/para native
       matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
@@ -60,7 +60,7 @@ const useBestTokenForSymbol = (balances: Balances) => {
         (t) =>
           t.isTestnet &&
           ["substrate-native", "evm-native"].includes(t.type) &&
-          chains?.find((c) => !c.relay && c.id === t.chain?.id),
+          chains?.find((c) => !c.relay && c.id === t.networkId),
       ) ??
       // testnet solo/para native
       matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??

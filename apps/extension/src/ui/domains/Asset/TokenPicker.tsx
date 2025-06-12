@@ -275,16 +275,16 @@ const TokensList: FC<TokensListProps> = ({
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
       if (!account || selected) return true
-      if (accountChain) return token.chain?.id === accountChain.id
+      if (accountChain) return token.networkId === accountChain.id
 
       // substrate accounts can send as long as we have a corresponding chain
-      if (!isEthereumAddress(address)) return !!token.chain
+      if (!isEthereumAddress(address)) return token.platform === "polkadot"
 
       // ethereum ledger account can only sign on evm chain
-      if (account.type === "ledger-ethereum") return !!token.evmNetwork
+      if (account.type === "ledger-ethereum") return token.platform === "ethereum"
 
       // non ledger ethereum accounts may also sign on substrate chains (MOVR, GLMR, ..)
-      return !!chainsMap[token.chain?.id ?? ""] || !!token.evmNetwork
+      return !!chainsMap[token.networkId ?? ""] || token.platform === "ethereum"
     },
     [account, accountChain, selected, address, chainsMap],
   )
@@ -295,8 +295,8 @@ const TokensList: FC<TokensListProps> = ({
       .filter(filterAccountCompatibleTokens)
       .filter(isTransferableToken)
       .map((token) => {
-        const chain = token.chain && chainsMap[token.chain.id]
-        const evmNetwork = token.evmNetwork && evmNetworksMap[token.evmNetwork.id]
+        const chain = chainsMap[token.networkId]
+        const evmNetwork = evmNetworksMap[token.networkId]
         return {
           id: token.id,
           token,

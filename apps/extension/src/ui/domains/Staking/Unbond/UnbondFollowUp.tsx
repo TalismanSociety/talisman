@@ -6,7 +6,7 @@ export const UnbondFollowUp = () => {
   const { close } = useUnbondModal()
   const { hash, token } = useUnbondWizard()
 
-  if (!hash || !token?.chain?.id) return null
+  if (!hash || !token?.networkId) return null
 
-  return <TxProgress hash={hash} networkIdOrHash={token.chain.id} onClose={close} />
+  return <TxProgress hash={hash} networkIdOrHash={token.networkId} onClose={close} />
 }

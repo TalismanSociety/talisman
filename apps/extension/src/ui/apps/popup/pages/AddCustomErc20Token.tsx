@@ -33,7 +33,7 @@ export const AddCustomErc20Token = () => {
     if (!request) window.close()
   }, [request])
 
-  const network = useEvmNetwork(request?.token?.evmNetwork?.id)
+  const network = useEvmNetwork(request?.token?.networkId)
 
   const approve = useCallback(async () => {
     setError(undefined)
@@ -67,7 +67,7 @@ export const AddCustomErc20Token = () => {
           <div>
             <img
               className="inline-block h-28 w-28 rounded-full"
-              src={request.token.image ?? UNKNOWN_TOKEN_URL}
+              src={request.token.logo ?? UNKNOWN_TOKEN_URL}
               alt={request.token.symbol}
               crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
             />
@@ -79,7 +79,7 @@ export const AddCustomErc20Token = () => {
               <FakePill>
                 <img
                   className="h-8 w-8 rounded-full"
-                  src={request.token.image ?? UNKNOWN_TOKEN_URL}
+                  src={request.token.logo ?? UNKNOWN_TOKEN_URL}
                   crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
                   alt=""
                 />

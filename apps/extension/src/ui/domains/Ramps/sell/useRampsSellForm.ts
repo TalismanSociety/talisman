@@ -75,7 +75,7 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
   const quotes = useRampsSellQuotes(quoteOpts)
 
   const token = useToken(formData.tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useChain(token?.networkId)
   const allAccounts = useAccounts("portfolio")
 
   const accounts = useMemo(
@@ -140,8 +140,8 @@ const redirectToProvider = async (formData: FormData, quote: RampsSellQuoteSucce
   let address = formData.account
 
   const token = await firstValueFrom(getToken$(formData.tokenId))
-  if (token?.chain?.id) {
-    const chain = await firstValueFrom(getChain$(token.chain.id))
+  if (token?.networkId) {
+    const chain = await firstValueFrom(getChain$(token.networkId))
     if (typeof chain?.prefix === "number") address = encodeAddressSs58(address, chain.prefix)
   }
 

@@ -7,7 +7,7 @@ import {
   ChaindataProvider,
   ChainId,
   githubTokenLogoUrl,
-  Token,
+  SubTokensToken,
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
@@ -40,8 +40,6 @@ type ModuleType = "substrate-tokens"
 const moduleType: ModuleType = "substrate-tokens"
 
 const defaultPalletId = "Tokens"
-
-export type SubTokensToken = Extract<Token, { type: ModuleType }>
 
 export const subTokensTokenId = (chainId: ChainId, onChainId: string | number) =>
   `${chainId}-substrate-tokens-${compressToEncodedURIComponent(String(onChainId))}`
@@ -132,14 +130,16 @@ export const SubTokensModule: NewBalanceModule<
           const token: SubTokensToken = {
             id,
             type: "substrate-tokens",
+            platform: "polkadot",
             isTestnet,
             isDefault: tokenConfig.isDefault ?? true,
             symbol,
             decimals,
+            name: tokenConfig?.name ?? symbol,
             logo: tokenConfig?.logo || githubTokenLogoUrl(id),
             existentialDeposit,
             onChainId,
-            chain: { id: chainId },
+            networkId: chainId,
           }
 
           if (tokenConfig?.symbol) {
@@ -147,7 +147,6 @@ export const SubTokensModule: NewBalanceModule<
             token.id = subTokensTokenId(chainId, token.onChainId)
           }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
           tokens[token.id] = token
@@ -193,7 +192,7 @@ export const SubTokensModule: NewBalanceModule<
       if (token.type !== "substrate-tokens")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
-      const chainId = token.chain.id
+      const chainId = token.networkId
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
@@ -352,7 +351,7 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []

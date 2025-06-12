@@ -158,7 +158,7 @@ export const useBittensorBondWizard = () => {
   const slippageDrawer = useInnerOpenClose("isSlippageDrawerOpen")
   const warningDrawer = useInnerOpenClose("isWarningDrawerOpen")
 
-  const { data: sapi } = useScaleApi(token?.chain?.id)
+  const { data: sapi } = useScaleApi(token?.networkId)
 
   // active stake position
   const selectedStake = useMemo(
@@ -195,7 +195,7 @@ export const useBittensorBondWizard = () => {
     poolId,
     netuid,
     plancks,
-    chainId: token?.chain?.id,
+    chainId: token?.networkId,
     stakeType,
     userMaxSlippage,
     selectedStake,

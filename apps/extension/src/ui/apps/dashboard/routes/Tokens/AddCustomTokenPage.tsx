@@ -106,7 +106,7 @@ const Content = () => {
       try {
         assert(tokenInfo, "Missing token info")
         assert(tokenInfo.contractAddress === token.contractAddress, "Token mismatch")
-        assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
+        assert(tokenInfo.networkId === token.evmNetworkId, "Token mismatch")
 
         if (knownToken && !isActive) await setActive(true)
         else {
@@ -179,7 +179,7 @@ const Content = () => {
               disabled
               before={
                 tokenInfo && (
-                  <AssetLogoBase className="ml-[-0.8rem] mr-2 text-[3rem]" url={tokenInfo?.image} />
+                  <AssetLogoBase className="ml-[-0.8rem] mr-2 text-[3rem]" url={tokenInfo?.logo} />
                 )
               }
               small

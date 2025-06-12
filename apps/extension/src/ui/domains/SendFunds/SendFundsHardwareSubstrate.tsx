@@ -40,7 +40,7 @@ export const SendFundsHardwareSubstrate = () => {
               ? privacyRoundCurrency(Number(planckToTokens(amount, token.decimals)))
               : "unknown",
             tokenId,
-            chainId: token?.chain?.id || "unknown",
+            chainId: token?.networkId || "unknown",
             internal: !!knownAddress,
             recipientType: knownAddress ? recipientTypeMap[knownAddress.type] : "external",
             hardware: true,

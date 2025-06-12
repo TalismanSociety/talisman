@@ -51,7 +51,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const tokenType = token.type
       if (
         tokenType === "substrate-assets" ||
-        tokenType === "substrate-equilibrium" ||
         tokenType === "substrate-foreignassets" ||
         tokenType === "substrate-native" ||
         tokenType === "substrate-psp22" ||
@@ -117,7 +116,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const tokenType = token.type
     if (
       tokenType === "substrate-assets" ||
-      tokenType === "substrate-equilibrium" ||
       tokenType === "substrate-foreignassets" ||
       tokenType === "substrate-native" ||
       tokenType === "substrate-psp22" ||

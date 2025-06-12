@@ -1,5 +1,8 @@
-import type { CustomEvmErc20Token, CustomEvmUniswapV2Token } from "@talismn/balances"
-import type { ChainId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import type {
+  CustomEvmErc20Token,
+  CustomEvmUniswapV2Token,
+  Token,
+} from "@talismn/chaindata-provider"
 
 import { RequestIdOnly } from "../../types/base"
 
@@ -16,8 +19,8 @@ export type CustomEvmTokenCreate = CustomEvmErc20TokenCreate | CustomEvmUniswapV
 
 export type CustomEvmErc20TokenCreate = Pick<
   CustomEvmErc20Token,
-  "type" | "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
-> & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }
+  "type" | "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "logo" | "name" | "networkId"
+>
 
 export type CustomEvmUniswapV2TokenCreate = Pick<
   CustomEvmUniswapV2Token,
@@ -33,5 +36,7 @@ export type CustomEvmUniswapV2TokenCreate = Pick<
   | "tokenAddress1"
   | "coingeckoId0"
   | "coingeckoId1"
-  | "image"
-> & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }
+  | "logo"
+  | "name"
+  | "networkId"
+>

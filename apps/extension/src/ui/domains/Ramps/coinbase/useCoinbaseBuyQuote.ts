@@ -116,7 +116,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
     const item = coinbaseBuyOptions?.purchase_currencies
       .flatMap((c) => c.networks.map((n) => ({ id: c.id, symbol: c.symbol, ...n })))
       .find((n) => {
-        if (isEvmToken(token) && n.chain_id === token.evmNetwork?.id) {
+        if (isEvmToken(token) && n.chain_id === token.networkId) {
           if (
             token.type === "evm-erc20" &&
             token.contractAddress.toLowerCase() === n.contract_address.toLowerCase()
@@ -125,7 +125,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
           if (token.type === "evm-native" && !n.contract_address) return true
         }
 
-        if (isSubToken(token) && n.name === token.chain?.id && n.symbol === token.symbol)
+        if (isSubToken(token) && n.name === token.networkId && n.symbol === token.symbol)
           return true
 
         return false

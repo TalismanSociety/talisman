@@ -1,6 +1,11 @@
 import { assert, u8aToHex } from "@polkadot/util"
-import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
-import { Chain, CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { subNativeTokenId } from "@talismn/balances"
+import {
+  Chain,
+  CustomChain,
+  CustomSubNativeToken,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import Dexie from "dexie"
 import { isEqual } from "lodash"
@@ -38,13 +43,14 @@ export class ChainsHandler extends ExtensionHandler {
       const newToken: CustomSubNativeToken = {
         id: subNativeTokenId(chain.id),
         type: "substrate-native",
+        platform: "polkadot",
         isTestnet: chain.isTestnet,
         symbol: chain.nativeTokenSymbol,
+        name: chain.nativeTokenSymbol, // TODO
         decimals: chain.nativeTokenDecimals,
         existentialDeposit: existingNativeToken?.existentialDeposit ?? "0", // TODO: query this for custom chains
         logo: chain.nativeTokenLogoUrl ?? githubUnknownTokenLogoUrl,
-        chain: { id: chain.id },
-        evmNetwork: existingNativeToken?.evmNetwork,
+        networkId: chain.id,
         isCustom: true,
       }
 

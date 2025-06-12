@@ -193,7 +193,8 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       (genesisHash) => chains.find((chain) => chain.genesisHash === genesisHash)?.id,
     )
     const enabledChainsFilter = enabledChainIds
-      ? (token: Token) => token.chain && enabledChainIds?.includes(token.chain.id)
+      ? (token: Token) =>
+          token.platform === "polkadot" && enabledChainIds?.includes(token.networkId)
       : () => true
     const enabledTokensFilter = enabledTokensConfig
       ? (token: Token) => enabledTokensConfig.includes(token.id)
@@ -212,16 +213,16 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       .forEach((token) => {
         // filter out tokens on chains/evmNetworks which have no rpcs
         const hasRpcs =
-          (token.chain?.id && (chainsById[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-          (token.evmNetwork?.id && (evmNetworksById[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+          (token.networkId && (chainsById[token.networkId]?.rpcs?.length ?? 0) > 0) ||
+          (token.networkId && (evmNetworksById[token.networkId]?.rpcs?.length ?? 0) > 0)
         if (!hasRpcs) return
 
         if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
         addressesByTokenByModule[token.type][token.id] = allAddresses.filter((address) => {
           // for each address, fetch balances only from compatible chains
           return isEthereumAddress(address)
-            ? token.evmNetwork?.id || chainsById[token.chain?.id ?? ""]?.account === "secp256k1"
-            : token.chain?.id && chainsById[token.chain?.id ?? ""]?.account !== "secp256k1"
+            ? token.networkId || chainsById[token.networkId ?? ""]?.account === "secp256k1"
+            : token.networkId && chainsById[token.networkId ?? ""]?.account !== "secp256k1"
         })
       })
 

@@ -1,37 +1,20 @@
-import { CustomEvmErc20Token, EvmErc20Token } from "./EvmErc20Token"
-import { EvmNativeToken } from "./EvmNativeToken"
-import { CustomEvmUniswapV2Token, EvmUniswapV2Token } from "./EvmUniswapV2Token"
-import { SubAssetsToken } from "./SubstrateAssetsToken"
-import { SubEquilibriumToken } from "./SubstrateEquilibriumToken"
-import { SubForeignAssetsToken } from "./SubstrateForeignAssetsToken"
-import { CustomSubNativeToken, SubNativeToken } from "./SubstrateNativeToken"
-import { SubPsp22Token } from "./SubstratePsp22Token"
-import { SubTokensToken } from "./SubstrateTokensToken"
-import { TokenBase, TokenId } from "./types"
+import { Token, TokenId } from "./Token"
 
-export type { TokenId } from "./types"
+export * from "./EvmErc20Token"
+export * from "./EvmNativeToken"
+export * from "./EvmUniswapV2Token"
+export * from "./SubstrateAssetsToken"
+export * from "./SubstrateForeignAssetsToken"
+export * from "./SubstrateNativeToken"
+export * from "./SubstratePsp22Token"
+export * from "./SubstrateTokensToken"
+export * from "./Token"
+export * from "./utils"
+
+// export type { TokenId } from "./types"
 
 /** A collection of `Token` objects */
 export type TokenList = Record<TokenId, Token>
-
-/**
- * The `Token` sum type, which is a union of all of the possible `TokenTypes`.
- */
-export type Token = TokenBase &
-  (
-    | EvmErc20Token
-    | CustomEvmErc20Token
-    | EvmNativeToken
-    | EvmUniswapV2Token
-    | CustomEvmUniswapV2Token
-    | SubAssetsToken
-    | SubEquilibriumToken
-    | SubForeignAssetsToken
-    | SubNativeToken
-    | CustomSubNativeToken
-    | SubPsp22Token
-    | SubTokensToken
-  )
 
 /**
  * A selection of fields which can be set as part of the `BalancesConfig` section on chaindata for any module type.
@@ -43,5 +26,13 @@ export type Token = TokenBase &
  */
 export type BalancesConfigTokenParams = Pick<
   Partial<Token>,
-  "symbol" | "coingeckoId" | "dcentName" | "mirrorOf" | "logo" | "isDefault" | "noDiscovery"
+  | "symbol"
+  | "coingeckoId"
+  | "mirrorOf"
+  | "logo"
+  | "isDefault"
+  | "noDiscovery"
+  | "name"
+  | "decimals"
+  | "symbol"
 >

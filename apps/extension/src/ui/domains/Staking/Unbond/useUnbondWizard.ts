@@ -61,7 +61,7 @@ export const useUnbondWizard = () => {
   const feeToken = useFeeToken(token?.id)
   const tokenRates = useTokenRates(tokenId)
 
-  const { data: sapi } = useScaleApi(token?.chain?.id)
+  const { data: sapi } = useScaleApi(token?.networkId)
 
   const {
     pool,
@@ -77,7 +77,7 @@ export const useUnbondWizard = () => {
     unbondType,
   } = useGetUnbondInfo({
     sapi,
-    chainId: token?.chain?.id,
+    chainId: token?.networkId,
     address: account?.address,
   })
 

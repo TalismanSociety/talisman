@@ -11,8 +11,9 @@ const ABI_UNISWAPV2PAIR = parseAbi([
 export type UniswapV2ContractData = {
   symbol: string
   decimals: number
-  tokenAddress0: string
-  tokenAddress1: string
+  name: string
+  tokenAddress0: `0x${string}`
+  tokenAddress1: `0x${string}`
   token0: Erc20ContractData
   token1: Erc20ContractData
 }
@@ -38,7 +39,7 @@ export const getUniswapV2ContractData = async (
 
   const symbol = `${token0.symbol ?? "UNKNOWN"}/${token1.symbol ?? "UNKNOWN"}`
 
-  return { symbol, decimals, tokenAddress0, tokenAddress1, token0, token1 }
+  return { symbol, decimals, tokenAddress0, tokenAddress1, token0, token1, name: symbol } // TODO fetch contract name so user can know which exchange its from
 }
 
 const getUniswapV2Contract =

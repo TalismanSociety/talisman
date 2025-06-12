@@ -70,7 +70,7 @@ const CustomPill = () => {
 }
 
 const useBlockExplorerUrl = (token: Token) => {
-  const evmNetwork = useEvmNetwork(token.evmNetwork?.id)
+  const evmNetwork = useEvmNetwork(token.networkId)
 
   return useMemo(() => {
     if (isErc20Token(token) && evmNetwork?.explorerUrl)
@@ -95,7 +95,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
   const navigate = useNavigate()
 
   const activeTokens = useActiveTokensState()
-  const network = useEvmNetwork(token.evmNetwork?.id)
+  const network = useEvmNetwork(token.networkId)
   const blockExplorerUrl = useBlockExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
 
@@ -301,17 +301,17 @@ const Content = () => {
   const filteredTokens = useMemo(() => {
     const result = tokens
       .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
-      .filter((t) => !!t.evmNetwork?.id && evmNetworksMap[t.evmNetwork.id])
+      .filter((t) => !!t.networkId && evmNetworksMap[t.networkId])
       .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
       .filter(
         (t) => !!search || !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t),
       )
       .filter((t) => !!search || !isHidePools || !isUniswapV2Token(t))
-      .filter((t) => evmNetworkId === "ALL" || t.evmNetwork?.id === evmNetworkId)
+      .filter((t) => evmNetworkId === "ALL" || t.networkId === evmNetworkId)
 
     return sortBy(
       result,
-      (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
+      (t) => evmNetworksMap[t.networkId]?.name,
       (t) => t.symbol,
     )
   }, [

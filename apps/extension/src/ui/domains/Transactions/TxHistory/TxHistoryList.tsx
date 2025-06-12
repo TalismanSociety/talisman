@@ -636,13 +636,10 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           </TxIconContainer>
         ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
-            <TxIconContainer
-              className="-ml-4"
-              networkId={toToken?.chain?.id ?? toToken?.evmNetwork?.id}
-            >
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
               <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>
@@ -912,13 +909,10 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
           </TxIconContainer>
         ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
-            <TxIconContainer
-              className="-ml-4"
-              networkId={toToken?.chain?.id ?? toToken?.evmNetwork?.id}
-            >
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
               <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>

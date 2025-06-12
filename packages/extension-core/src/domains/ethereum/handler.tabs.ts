@@ -1,7 +1,7 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/balances"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { evmErc20TokenId } from "@talismn/balances"
+import { CustomEvmErc20Token, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
@@ -496,7 +496,7 @@ export class EthTabsHandler extends TabsHandler {
         if (typeof ethChainId !== "number")
           throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-        const tokenId = evmErc20TokenId(ethChainId.toString(), address)
+        const tokenId = evmErc20TokenId(ethChainId.toString(), address as `0x${string}`)
         const existing = await chaindataProvider.tokenById(tokenId)
         if (existing && isTokenActive(existing, await activeTokensStore.get()))
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -519,7 +519,7 @@ export class EthTabsHandler extends TabsHandler {
         const symbolFound = allTokens.some(
           (token) =>
             token.type === "evm-erc20" &&
-            token.evmNetwork?.id === ethChainId.toString() &&
+            token.networkId === ethChainId.toString() &&
             token.symbol === symbol &&
             token.contractAddress.toLowerCase() !== address.toLowerCase(),
         )
@@ -546,15 +546,16 @@ export class EthTabsHandler extends TabsHandler {
         const token: CustomEvmErc20Token = {
           id: tokenId,
           type: "evm-erc20",
+          platform: "ethereum",
           isTestnet: false,
           symbol: symbol ?? tokenInfo.symbol,
           decimals: decimals ?? tokenInfo.decimals,
-          logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
+          name: tokenInfo.name,
+          logo: image ?? tokenInfo.logo ?? githubUnknownTokenLogoUrl,
           coingeckoId: tokenInfo.coingeckoId,
-          contractAddress: address,
-          evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
+          contractAddress: address as `0x${string}`,
+          networkId: tokenInfo.networkId,
           isCustom: true,
-          image: image ?? tokenInfo.image,
         }
 
         await requestWatchAsset(url, request.params, token, warnings, port)

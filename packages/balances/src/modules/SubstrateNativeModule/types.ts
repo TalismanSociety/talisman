@@ -1,6 +1,6 @@
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { BalancesConfigTokenParams, ChainId, Token } from "@talismn/chaindata-provider"
+import { BalancesConfigTokenParams, ChainId } from "@talismn/chaindata-provider"
 
 import { NewTransferParamsType } from "../../BalanceModule"
 import { NewBalanceType } from "../../types"
@@ -10,9 +10,6 @@ export type { BalanceLockType } from "./util/balanceLockTypes"
 
 export type ModuleType = "substrate-native"
 export const moduleType: ModuleType = "substrate-native"
-
-export type SubNativeToken = Extract<Token, { type: ModuleType; isCustom?: true }>
-export type CustomSubNativeToken = Extract<Token, { type: ModuleType; isCustom: true }>
 
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")

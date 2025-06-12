@@ -31,7 +31,7 @@ export const getMultiLocationTokenId = (
         values(tokens).find(
           (token: Token) =>
             token.type === "substrate-assets" &&
-            token.chain.id === chain.id &&
+            token.networkId === chain.id &&
             token.assetId === String(assetId),
         )?.id ?? null
       )

@@ -106,7 +106,7 @@ export const SendFundsRecipientPicker = () => {
   const { open, close, isOpen } = useOpenClose()
   const [search, setSearch] = useState("")
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useChain(token?.networkId)
 
   const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
 

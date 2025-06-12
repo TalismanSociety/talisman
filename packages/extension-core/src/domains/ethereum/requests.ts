@@ -1,4 +1,4 @@
-import type { CustomEvmErc20Token } from "@talismn/balances"
+import type { CustomEvmErc20Token } from "@talismn/chaindata-provider"
 import { AddEthereumChainParameter } from "viem"
 
 import type { Port } from "../../types/base"

@@ -1,12 +1,18 @@
-import { EvmNetworkId } from "../EvmNetwork"
-import { NewTokenType } from "./types"
+import z from "zod/v4"
 
-type ModuleType = "evm-native"
+import { TokenBase } from "./TokenBase"
 
-export type EvmNativeToken = NewTokenType<
-  ModuleType,
-  {
-    evmNetwork: { id: EvmNetworkId }
-    isCustom?: true
-  }
->
+// import { NewTokenType } from "./types"
+
+// type ModuleType = "evm-native"
+
+export const EvmNativeTokenDef = TokenBase.extend({
+  type: z.literal("evm-native"),
+  platform: z.literal("ethereum"),
+})
+export type EvmNativeToken = z.infer<typeof EvmNativeTokenDef>
+
+export const CustomEvmNativeTokenDef = EvmNativeTokenDef.extend({
+  isCustom: z.literal(true),
+})
+export type CustomEvmNativeToken = z.infer<typeof CustomEvmNativeTokenDef>

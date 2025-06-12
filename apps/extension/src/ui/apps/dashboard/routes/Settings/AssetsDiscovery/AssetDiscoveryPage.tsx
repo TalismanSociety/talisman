@@ -128,10 +128,7 @@ const NetworksTooltip: FC<{ networks: (Chain | SimpleEvmNetwork)[] }> = ({ netwo
       networks
         .map(
           (n) =>
-            [
-              n,
-              tokens.filter((t) => t.evmNetwork?.id === n.id || t.chain?.id === n.id).length,
-            ] as const,
+            [n, tokens.filter((t) => t.networkId === n.id || t.networkId === n.id).length] as const,
         )
         .sort((a, b) => b[1] - a[1]),
     [networks, tokens],
@@ -161,7 +158,7 @@ const NetworksTooltip: FC<{ networks: (Chain | SimpleEvmNetwork)[] }> = ({ netwo
 }
 
 const useBlockExplorerUrl = (token: Token | null) => {
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+  const evmNetwork = useEvmNetwork(token?.networkId)
 
   return useMemo(() => {
     if ((isErc20Token(token) || isUniswapV2Token(token)) && evmNetwork?.explorerUrl)
@@ -186,7 +183,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+  const evmNetwork = useEvmNetwork(token?.networkId)
   const tokenRates = useAssetDiscoveryTokenRates(token?.id)
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
@@ -552,7 +549,7 @@ const ScanInfo: FC = () => {
     const tokenIds = Object.keys(balancesByTokenId)
     return tokenIds.some((tokenId) => {
       const token = tokensMap[tokenId]
-      const evmNetwork = evmNetworksMap[token?.evmNetwork?.id ?? ""]
+      const evmNetwork = evmNetworksMap[token?.networkId ?? ""]
       return (
         token &&
         evmNetwork &&
@@ -564,7 +561,7 @@ const ScanInfo: FC = () => {
   const enableAll = useCallback(async () => {
     const tokenIds = Object.keys(balancesByTokenId)
     const evmNetworkIds = [
-      ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.evmNetwork?.id).filter(isTruthy)),
+      ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.networkId).filter(isTruthy)),
     ] as EvmNetworkId[]
     await activeEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await activeTokensStore.set(

@@ -7,7 +7,7 @@ import {
   ChaindataProvider,
   ChainId,
   githubTokenLogoUrl,
-  Token,
+  SubForeignAssetsToken,
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
@@ -31,8 +31,6 @@ import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelp
 
 type ModuleType = "substrate-foreignassets"
 const moduleType: ModuleType = "substrate-foreignassets"
-
-export type SubForeignAssetsToken = Extract<Token, { type: ModuleType }>
 
 export const subForeignAssetTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-foreignassets-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
@@ -173,15 +171,17 @@ export const SubForeignAssetsModule: NewBalanceModule<
           const token: SubForeignAssetsToken = {
             id,
             type: "substrate-foreignassets",
+            platform: "polkadot",
             isTestnet,
             isDefault: tokenConfig?.isDefault ?? true,
             symbol,
             decimals,
+            name: tokenConfig?.name || symbol,
             logo: tokenConfig?.logo || githubTokenLogoUrl(id),
             existentialDeposit,
             onChainId: tokenConfig.onChainId,
             isFrozen,
-            chain: { id: chainId },
+            networkId: chainId,
           }
 
           if (tokenConfig?.symbol) {
@@ -189,7 +189,6 @@ export const SubForeignAssetsModule: NewBalanceModule<
             token.id = subForeignAssetTokenId(chainId, token.symbol)
           }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
           tokens[token.id] = token
@@ -235,7 +234,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       if (token.type !== "substrate-foreignassets")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
-      const chainId = token.chain.id
+      const chainId = token.networkId
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
@@ -303,7 +302,7 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []

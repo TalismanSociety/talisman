@@ -31,7 +31,8 @@
   "dependencies": {
     "anylogger": "^1.0.11",
     "dexie": "^4.0.9",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^3.25.62"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

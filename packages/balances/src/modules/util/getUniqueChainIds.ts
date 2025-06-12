@@ -8,7 +8,7 @@ export const getUniqueChainIds = (
 ): ChainId[] => [
   ...new Set(
     Object.keys(addressesByToken)
-      .map((tokenId) => tokens[tokenId]?.chain?.id)
+      .map((tokenId) => tokens[tokenId]?.networkId)
       .flatMap((chainId) => (chainId ? [chainId] : [])),
   ),
 ]

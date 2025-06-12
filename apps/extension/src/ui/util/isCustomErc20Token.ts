@@ -1,5 +1,4 @@
-import { CustomEvmErc20Token } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import { CustomEvmErc20Token, Token } from "@talismn/chaindata-provider"
 
 import { isErc20Token } from "./isErc20Token"
 

@@ -2,7 +2,12 @@ import { arrayChunk, assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import PromisePool from "@supercharge/promise-pool"
 import { ChainConnectionError } from "@talismn/chain-connector"
-import { githubTokenLogoUrl, TokenId } from "@talismn/chaindata-provider"
+import {
+  CustomSubNativeToken,
+  githubTokenLogoUrl,
+  SubNativeToken,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import {
   compactMetadata,
   decAnyMetadata,
@@ -44,13 +49,11 @@ import { subscribeCrowdloans } from "./subscribeCrowdloans"
 import { subscribeNompoolStaking } from "./subscribeNompoolStaking"
 import { subscribeSubtensorStaking } from "./subscribeSubtensorStaking"
 import {
-  CustomSubNativeToken,
   ModuleType,
   moduleType,
   SubNativeBalance,
   SubNativeChainMeta,
   SubNativeModuleConfig,
-  SubNativeToken,
   subNativeTokenId,
   SubNativeTransferParams,
 } from "./types"
@@ -64,12 +67,10 @@ export type { BalanceLockType } from "./util/balanceLockTypes"
 
 export { subNativeTokenId } from "./types"
 export type {
-  CustomSubNativeToken,
   ModuleType,
   SubNativeBalance,
   SubNativeChainMeta,
   SubNativeModuleConfig,
-  SubNativeToken,
   SubNativeTransferParams,
 } from "./types"
 
@@ -201,18 +202,19 @@ export const SubNativeModule: NewBalanceModule<
       const nativeToken: SubNativeToken = {
         id,
         type: "substrate-native",
+        platform: "polkadot",
         isTestnet,
         isDefault: moduleConfig?.isDefault ?? true,
         symbol: symbol ?? DEFAULT_SYMBOL,
+        name: moduleConfig?.name ?? symbol ?? DEFAULT_SYMBOL,
         decimals: decimals ?? DEFAULT_DECIMALS,
         logo: moduleConfig?.logo || githubTokenLogoUrl(id),
         existentialDeposit: existentialDeposit ?? "0",
-        chain: { id: chainId },
+        networkId: chainId,
       }
 
       if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
       if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      if (moduleConfig?.dcentName) nativeToken.dcentName = moduleConfig?.dcentName
       if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
 
       return { [nativeToken.id]: nativeToken }
@@ -388,7 +390,7 @@ export const SubNativeModule: NewBalanceModule<
             // coerce ChainConnection errors into SubNativeBalance errors
             const errorChainId = (error as ChainConnectionError).chainId
             Object.entries(await getModuleTokens())
-              .filter(([, token]) => token.chain?.id === errorChainId)
+              .filter(([, token]) => token.networkId === errorChainId)
               .forEach(([tokenId]) => {
                 const wrappedError = new SubNativeBalanceError(
                   tokenId,
@@ -486,7 +488,7 @@ export const SubNativeModule: NewBalanceModule<
       if (token.type !== "substrate-native")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
-      const chainId = token.chain.id
+      const chainId = token.networkId
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 

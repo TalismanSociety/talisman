@@ -40,7 +40,7 @@ export const getTokenFromCurrency = (
   chain: Chain,
   tokens: Token[],
 ): Token => {
-  const chainTokens = tokens.filter((t) => t.chain?.id === chain.id)
+  const chainTokens = tokens.filter((t) => t.networkId === chain.id)
 
   try {
     // ex: HDX

@@ -225,7 +225,7 @@ const erc20Atom = atomFamily((addressChainId: string) =>
     if (!symbol || !decimals || !name) return null
 
     const coingeckoData = await get(coingeckoCoinByAddressAtom(`${address}:${platform.id}`))
-    const id = evmErc20TokenId(address, chainIdString)
+    const id = evmErc20TokenId(chainIdString, address)
 
     return {
       id,

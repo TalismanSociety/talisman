@@ -1,9 +1,10 @@
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
+  CustomEvmNativeToken,
+  EvmNativeToken,
   EvmNetworkId,
   githubTokenLogoUrl,
-  Token,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
@@ -16,9 +17,6 @@ import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
 const moduleType: ModuleType = "evm-native"
-
-export type EvmNativeToken = Extract<Token, { type: ModuleType }>
-export type CustomEvmNativeToken = Extract<Token, { type: ModuleType }>
 
 export const evmNativeTokenId = (chainId: EvmNetworkId) =>
   `${chainId}-evm-native`.toLowerCase().replace(/ /g, "-")
@@ -33,10 +31,7 @@ export type EvmNativeChainMeta = {
   isTestnet: boolean
 }
 
-export type EvmNativeModuleConfig = {
-  symbol?: string
-  decimals?: number
-} & BalancesConfigTokenParams
+export type EvmNativeModuleConfig = BalancesConfigTokenParams
 
 export type EvmNativeBalance = NewBalanceType<ModuleType, "simple", "ethereum">
 
@@ -89,22 +84,24 @@ export const EvmNativeModule: NewBalanceModule<
 
       const symbol = moduleConfig?.symbol ?? "ETH"
       const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
+      const name = moduleConfig?.name ?? symbol
 
       const id = evmNativeTokenId(chainId)
       const nativeToken: EvmNativeToken = {
+        platform: "ethereum",
         id,
         type: "evm-native",
         isTestnet,
         isDefault: true,
         symbol,
         decimals,
+        name,
         logo: moduleConfig?.logo || githubTokenLogoUrl(id),
-        evmNetwork: { id: chainId },
+        networkId: chainId,
       }
 
       if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
       if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      if (moduleConfig?.dcentName) nativeToken.dcentName = moduleConfig?.dcentName
       if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
       if (moduleConfig?.noDiscovery) nativeToken.noDiscovery = moduleConfig?.noDiscovery
 
@@ -123,7 +120,7 @@ export const EvmNativeModule: NewBalanceModule<
             const ethAddresses = addresses.filter(isEthereumAddress)
             if (ethAddresses.length === 0) return null
             const token = tokens[tokenId]
-            const evmNetworkId = token.evmNetwork?.id
+            const evmNetworkId = token.networkId
             if (!evmNetworkId) return null
             return [tokenId, ethAddresses] as [string, Address[]]
           })
@@ -249,7 +246,7 @@ const fetchBalances = async (
   return Promise.all(
     Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
       const token = tokens[tokenId]
-      const evmNetworkId = token.evmNetwork?.id
+      const evmNetworkId = token.networkId
       if (!evmNetworkId) throw new Error(`Token ${token.id} has no evm network`)
       const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
 
@@ -351,7 +348,7 @@ async function getFreeBalances(
           ? err.message
           : err
       log.warn(
-        `Failed to get balance from chain ${publicClient.chain?.id} for ${ethAddresses.length} addresses: ${errorMessage}`,
+        `Failed to get balance from chain ${publicClient.chain.id} for ${ethAddresses.length} addresses: ${errorMessage}`,
       )
       return ethAddresses.map(() => "error")
     }

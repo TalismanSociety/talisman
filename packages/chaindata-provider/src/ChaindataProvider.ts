@@ -289,7 +289,7 @@ export class ChaindataProvider implements IChaindataProvider {
       return await this.#db.transaction("rw", this.#db.chains, this.#db.tokens, async () => {
         // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
         await this.#db.tokens
-          .filter((token) => token.type === "substrate-native" && token.chain?.id === chainId)
+          .filter((token) => token.type === "substrate-native" && token.networkId === chainId)
           .delete()
         await this.#db.chains.delete(chainId)
 
@@ -318,7 +318,7 @@ export class ChaindataProvider implements IChaindataProvider {
     try {
       return this.#db.transaction("rw", [this.#db.evmNetworks, this.#db.tokens], async () => {
         await this.#db.evmNetworks.delete(evmNetworkId)
-        await this.#db.tokens.filter((token) => token.evmNetwork?.id === evmNetworkId).delete()
+        await this.#db.tokens.filter((token) => token.networkId === evmNetworkId).delete()
       })
     } catch (cause) {
       throw new Error("Failed to remove custom evm network", { cause })
@@ -346,7 +346,7 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
 
-    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName, noDiscovery } =
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, name, noDiscovery } =
       nativeModule.moduleConfig as Token
     if (!symbol) throw new Error("Missing native token symbol")
     if (!decimals) throw new Error("Missing native token decimals")
@@ -354,17 +354,18 @@ export class ChaindataProvider implements IChaindataProvider {
     const builtInNativeToken: Token = {
       id: getNativeTokenId(evmNetworkId, "evm-native"),
       type: "evm-native",
-      evmNetwork: { id: evmNetworkId },
+      platform: "ethereum",
+      networkId: evmNetworkId,
       isTestnet: builtInEvmNetwork.isTestnet ?? false,
       isDefault: true,
       symbol,
       decimals,
+      name: name ?? symbol,
       coingeckoId,
       logo,
     }
 
     if (mirrorOf) builtInNativeToken.mirrorOf = mirrorOf
-    if (dcentName) builtInNativeToken.dcentName = dcentName
     if (noDiscovery) builtInNativeToken.noDiscovery = noDiscovery
 
     builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
@@ -373,7 +374,7 @@ export class ChaindataProvider implements IChaindataProvider {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
         // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
         await this.#db.tokens
-          .filter((token) => token.type === "evm-native" && token.evmNetwork?.id === evmNetworkId)
+          .filter((token) => token.type === "evm-native" && token.networkId === evmNetworkId)
           .delete()
         const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
         if (networkToDelete?.nativeToken?.id)
@@ -590,7 +591,7 @@ export class ChaindataProvider implements IChaindataProvider {
     // (Maybe put the test into each balance module itself)
 
     const existingChainTokens = await this.#db.tokens
-      .filter((token) => token.chain?.id === chainId && token.type === source)
+      .filter((token) => token.networkId === chainId && token.type === source)
       .toArray()
 
     newTokens.forEach((token) => {
@@ -690,7 +691,7 @@ export class ChaindataProvider implements IChaindataProvider {
             if (deleteChains === undefined) return true
 
             // delete tokens on chainIdFilter chains is it is specified
-            if (token.chain?.id && deleteChains.has(token.chain.id)) return true
+            if (token.networkId && deleteChains.has(token.networkId)) return true
 
             return false
           })
@@ -706,8 +707,8 @@ export class ChaindataProvider implements IChaindataProvider {
 
           if (deleteChains === undefined) return true
 
-          if (!token.chain?.id) return true
-          if (deleteChains.has(token.chain.id)) return true
+          if (!token.networkId) return true
+          if (deleteChains.has(token.networkId)) return true
 
           return false
         })

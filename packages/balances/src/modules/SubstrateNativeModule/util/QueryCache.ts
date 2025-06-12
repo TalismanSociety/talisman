@@ -1,4 +1,4 @@
-import { ChaindataProvider, ChainId } from "@talismn/chaindata-provider"
+import { ChaindataProvider, ChainId, SubNativeToken } from "@talismn/chaindata-provider"
 import { firstThenDebounce } from "@talismn/util"
 import { liveQuery } from "dexie"
 import {
@@ -14,7 +14,7 @@ import {
 import { db as balancesDb } from "../../../TalismanBalancesDatabase"
 import { AddressesByToken } from "../../../types"
 import { buildStorageCoders, getUniqueChainIds, RpcStateQuery } from "../../util"
-import { SubNativeBalance, SubNativeToken } from "../types"
+import { SubNativeBalance } from "../types"
 import { buildQueries, QueryKey } from "./buildQueries"
 import { detectMiniMetadataChanges } from "./detectMiniMetadataChanges"
 
@@ -53,10 +53,10 @@ export class QueryCache {
         const tokensByChainId = tokens
           .filter((token): token is SubNativeToken => token.type === "substrate-native")
           .reduce<Record<ChainId, Array<SubNativeToken>>>((result, token) => {
-            if (!token.chain?.id) return result
-            result[token.chain.id]
-              ? result[token.chain.id].push(token)
-              : (result[token.chain.id] = [token])
+            if (!token.networkId) return result
+            result[token.networkId]
+              ? result[token.networkId].push(token)
+              : (result[token.networkId] = [token])
             return result
           }, {})
 

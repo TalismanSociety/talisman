@@ -1,5 +1,8 @@
-import type { CustomEvmErc20Token } from "@talismn/balances"
-import type { EvmNetworkId, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import type {
+  CustomEvmErc20Token,
+  EvmNetworkId,
+  SimpleEvmNetwork,
+} from "@talismn/chaindata-provider"
 import type {
   AddEthereumChainParameter,
   EIP1193Parameters,

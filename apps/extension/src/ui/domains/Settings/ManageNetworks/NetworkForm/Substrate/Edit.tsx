@@ -1,6 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CustomSubNativeToken, SubNativeToken } from "@talismn/balances"
-import { Chain, ChainId, CustomChain, isCustomChain } from "@talismn/chaindata-provider"
+import {
+  Chain,
+  ChainId,
+  CustomChain,
+  CustomSubNativeToken,
+  isCustomChain,
+  SubNativeToken,
+} from "@talismn/chaindata-provider"
 import { useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"

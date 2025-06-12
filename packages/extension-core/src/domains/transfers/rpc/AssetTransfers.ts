@@ -4,8 +4,7 @@ import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { SubNativeToken } from "@talismn/balances"
-import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, SubNativeToken, TokenId } from "@talismn/chaindata-provider"
 
 import { balanceModules } from "../../../rpcs/balance-modules"
 import { chainConnector } from "../../../rpcs/chain-connector"
@@ -213,7 +212,6 @@ export default class AssetTransfersRpc {
     if (
       !(
         "substrate-assets" === palletModule.type ||
-        "substrate-equilibrium" === palletModule.type ||
         "substrate-foreignassets" === palletModule.type ||
         "substrate-native" === palletModule.type ||
         "substrate-psp22" === palletModule.type ||
@@ -221,7 +219,7 @@ export default class AssetTransfersRpc {
       )
     )
       throw new Error(
-        `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`,
+        `${token.symbol} transfers on ${token.networkId} are not implemented in this version of Talisman.`,
       )
 
     const checkMetadataHash = getCheckMetadataHashPayloadProps(

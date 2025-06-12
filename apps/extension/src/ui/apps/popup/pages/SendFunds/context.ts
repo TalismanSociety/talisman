@@ -56,8 +56,8 @@ const useSendFundsWizardProvider = () => {
           const prevToken = allTokensMap[searchParams.get("tokenId") as TokenId]
           const nextToken = allTokensMap[value as TokenId]
           if (
-            prevToken?.evmNetwork?.id !== nextToken?.evmNetwork?.id ||
-            prevToken?.chain?.id !== nextToken?.chain?.id
+            prevToken?.networkId !== nextToken?.networkId ||
+            prevToken?.networkId !== nextToken?.networkId
           ) {
             searchParams.delete("from")
             searchParams.delete("to")

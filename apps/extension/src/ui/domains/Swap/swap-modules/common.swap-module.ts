@@ -273,7 +273,7 @@ export const getTokenIdForSwappableAsset = (
   switch (chainType) {
     case "evm":
       return contractAddress
-        ? evmErc20TokenId(chainId.toString(), contractAddress)
+        ? evmErc20TokenId(chainId.toString(), contractAddress as `0x${string}`)
         : evmNativeTokenId(chainId.toString())
     case "substrate":
       return subNativeTokenId(chainId.toString())

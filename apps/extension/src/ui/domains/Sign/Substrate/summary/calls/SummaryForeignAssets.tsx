@@ -1,5 +1,5 @@
 import { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
-import { SubForeignAssetsToken } from "@talismn/balances"
+import { SubForeignAssetsToken } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -31,7 +31,7 @@ const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["ForeignAssets
     return tokens.find(
       (t) =>
         t.type === "substrate-foreignassets" &&
-        t.chain.id === sapi.chainId &&
+        t.networkId === sapi.chainId &&
         t.onChainId === papiStringify(decodedCall.args.id),
     ) as SubForeignAssetsToken | undefined
   }, [decodedCall.args.id, sapi.chainId, tokens])
@@ -107,7 +107,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
     return tokens.find(
       (t) =>
         t.type === "substrate-foreignassets" &&
-        t.chain.id === sapi.chainId &&
+        t.networkId === sapi.chainId &&
         t.onChainId === papiStringify(decodedCall.args.id),
     ) as SubForeignAssetsToken | undefined
   }, [decodedCall.args.id, sapi.chainId, tokens])

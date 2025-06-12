@@ -1,14 +1,27 @@
-import { ChainId } from "../Chain"
-import { NewTokenType } from "./types"
+import z from "zod/v4"
 
-type ModuleType = "substrate-assets"
+import { TokenBase } from "./TokenBase"
 
-export type SubAssetsToken = NewTokenType<
-  ModuleType,
-  {
-    existentialDeposit: string
-    assetId: string
-    isFrozen: boolean
-    chain: { id: ChainId }
-  }
->
+export const SubAssetsTokenDef = TokenBase.extend({
+  type: z.literal("substrate-assets"),
+  platform: z.literal("polkadot"),
+  assetId: z.string(),
+  isFrozen: z.boolean().optional(),
+  existentialDeposit: z.string(),
+})
+export type SubAssetsToken = z.infer<typeof SubAssetsTokenDef>
+
+// import { ChainId } from "../Chain"
+// import { NewTokenType } from "./types"
+
+// type ModuleType = "substrate-assets"
+
+// export type SubAssetsToken = NewTokenType<
+//   ModuleType,
+//   {
+//     existentialDeposit: string
+//     assetId: string
+//     isFrozen: boolean
+//     chain: { id: ChainId }
+//   }
+// >

@@ -4,8 +4,8 @@ import { useChain, useEvmNetwork, useToken } from "@ui/state"
 
 export const useFeeToken = (tokenId?: string | null) => {
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+  const chain = useChain(token?.networkId)
+  const evmNetwork = useEvmNetwork(token?.networkId)
 
   const feeTokenId = useMemo(() => {
     if (!token) return null
@@ -18,7 +18,6 @@ export const useFeeToken = (tokenId?: string | null) => {
       case "evm-native":
         return evmNetwork?.nativeToken?.id
       case "substrate-assets":
-      case "substrate-equilibrium":
       case "substrate-foreignassets":
       case "substrate-native":
       case "substrate-psp22":

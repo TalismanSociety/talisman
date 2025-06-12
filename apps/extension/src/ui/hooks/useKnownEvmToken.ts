@@ -31,7 +31,7 @@ export const useKnownEvmToken = (
 
     const isToken = (t: Token) => isErc20ByAddress(t) || isUniswapV2ByAddress(t)
 
-    return allErc20Tokens.find((t) => t.evmNetwork?.id === evmNetworkId && isToken(t))
+    return allErc20Tokens.find((t) => t.networkId === evmNetworkId && isToken(t))
   }, [allErc20Tokens, contractAddress, evmNetworkId])
 
   const isActive = useMemo(() => token && isTokenActive(token, activeTokens), [activeTokens, token])

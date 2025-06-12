@@ -11,7 +11,6 @@ export const useExistentialDeposit = (tokenId: TokenId | null | undefined) => {
     if (!token) return null
     switch (token.type) {
       case "substrate-assets":
-      case "substrate-equilibrium":
       case "substrate-foreignassets":
       case "substrate-native":
       case "substrate-psp22":

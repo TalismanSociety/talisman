@@ -1,15 +1,18 @@
-import { EvmNetworkId } from "../EvmNetwork"
-import { NewTokenType } from "./types"
+import z from "zod/v4"
 
-type ModuleType = "evm-erc20"
+import { EthereumAddress } from "../common"
+import { TokenBase } from "./TokenBase"
 
-export type EvmErc20Token = NewTokenType<
-  ModuleType,
-  {
-    contractAddress: string
-    evmNetwork: { id: EvmNetworkId } | null
-    isCustom?: true
-    image?: string
-  }
->
-export type CustomEvmErc20Token = Omit<EvmErc20Token, "isCustom"> & { isCustom: true }
+export const EvmErc20TokenDef = TokenBase.extend({
+  type: z.literal("evm-erc20"),
+  platform: z.literal("ethereum"),
+  contractAddress: EthereumAddress,
+  isCustom: z.boolean().optional(),
+})
+export type EvmErc20Token = z.infer<typeof EvmErc20TokenDef>
+
+export const CustomErc20TokenDef = EvmErc20TokenDef.extend({
+  isCustom: z.literal(true),
+})
+// TODO: do we really need this type in chaindata provider ? feels like a wallet only information
+export type CustomEvmErc20Token = z.infer<typeof CustomErc20TokenDef>

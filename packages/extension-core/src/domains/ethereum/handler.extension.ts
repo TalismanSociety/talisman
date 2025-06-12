@@ -1,8 +1,9 @@
 import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { CustomEvmNativeToken, evmNativeTokenId } from "@talismn/balances"
+import { evmNativeTokenId } from "@talismn/balances"
 import {
+  CustomEvmNativeToken,
   CustomEvmNetwork,
   EvmNetwork,
   githubUnknownTokenLogoUrl,
@@ -370,12 +371,14 @@ export class EthHandler extends ExtensionHandler {
         ? {
             id: `${networkId}-evm-native`.toLowerCase(),
             type: "evm-native",
+            platform: "ethereum",
             isTestnet: isTestnet,
             symbol: network.nativeCurrency.symbol,
+            name: network.nativeCurrency.symbol, // TODO
             decimals: network.nativeCurrency.decimals,
             logo:
               (network.iconUrls || [knownNativeTokenConfig?.logo])[0] || githubUnknownTokenLogoUrl,
-            evmNetwork: { id: networkId },
+            networkId,
             isCustom: true,
             coingeckoId: knownNativeTokenConfig?.coingeckoId,
             // TODO fix typings and include this
@@ -437,13 +440,14 @@ export class EthHandler extends ExtensionHandler {
         const newToken: CustomEvmNativeToken = {
           id: evmNativeTokenId(network.id),
           type: "evm-native",
+          platform: "ethereum",
           isTestnet: network.isTestnet,
           symbol: network.tokenSymbol,
+          name: network.tokenSymbol, // TODO
           decimals: network.tokenDecimals,
           logo: network.tokenLogoUrl ?? githubUnknownTokenLogoUrl,
           coingeckoId: network.tokenCoingeckoId ?? "",
-          chain: existingToken?.chain,
-          evmNetwork: { id: network.id },
+          networkId: network.id,
           isCustom: true,
         }
 
@@ -569,7 +573,7 @@ export class EthHandler extends ExtensionHandler {
       talismanAnalytics.captureDelayed("add asset evm", {
         contractAddress: token.contractAddress,
         symbol: token.symbol,
-        network: token.evmNetwork,
+        network: token.networkId,
         isCustom: !knownToken,
       })
 

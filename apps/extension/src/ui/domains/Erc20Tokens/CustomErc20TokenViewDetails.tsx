@@ -1,5 +1,4 @@
-import { CustomEvmErc20Token } from "@talismn/balances"
-import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { CustomEvmErc20Token, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 

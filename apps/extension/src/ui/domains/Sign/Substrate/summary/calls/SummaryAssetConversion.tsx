@@ -1,6 +1,10 @@
 import { PolkadotAssetHubCalls, XcmV3Junctions } from "@polkadot-api/descriptors"
-import { SubAssetsToken, SubForeignAssetsToken, SubNativeToken } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import {
+  SubAssetsToken,
+  SubForeignAssetsToken,
+  SubNativeToken,
+  Token,
+} from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { Chain } from "extension-core"
 import { useMemo } from "react"
@@ -120,14 +124,14 @@ const getTokenFromlocation = (
   const onChainId = papiStringify(location)
   const token = tokens.find(
     (t) =>
-      t.type === "substrate-foreignassets" && t.chain.id === chain.id && t.onChainId === onChainId,
+      t.type === "substrate-foreignassets" && t.networkId === chain.id && t.onChainId === onChainId,
   ) as SubForeignAssetsToken
   if (token) return token
 
   if (location.parents === 0) {
     if (location.interior.type === "Here") {
       const token = tokens.find(
-        (t) => t.type === "substrate-native" && t.chain.id === chain.id,
+        (t) => t.type === "substrate-native" && t.networkId === chain.id,
       ) as SubNativeToken
       if (token) return token
     }
@@ -148,7 +152,7 @@ const getTokenFromlocation = (
 
   if (location.parents === 1 && !!chain.relay && location.interior.type === "Here") {
     const token = tokens.find(
-      (t) => t.type === "substrate-native" && t.chain.id === chain.relay?.id,
+      (t) => t.type === "substrate-native" && t.networkId === chain.relay?.id,
     ) as SubNativeToken
     if (token) return token
   }

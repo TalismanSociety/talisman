@@ -1,5 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChaindataProvider } from "@talismn/chaindata-provider"
+import { ChaindataProvider, SubNativeToken } from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { isEthereumAddress, isNotNil } from "@talismn/util"
 import { Binary } from "polkadot-api"
@@ -16,7 +16,7 @@ import {
   RpcStateQuery,
   RpcStateQueryHelper,
 } from "../util"
-import { SubNativeBalance, SubNativeToken } from "./types"
+import { SubNativeBalance } from "./types"
 import { asObservable } from "./util/asObservable"
 import { nompoolStashAccountId } from "./util/nompoolAccountId"
 
@@ -42,7 +42,7 @@ export async function subscribeNompoolStaking(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        allChains[token.chain.id],
+        allChains[token.networkId],
       )
       return typeof chainMeta?.nominationPoolsPalletId === "string"
     })
@@ -88,7 +88,7 @@ export async function subscribeNompoolStaking(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       continue
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       continue

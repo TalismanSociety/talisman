@@ -1,5 +1,11 @@
-import { CustomEvmErc20Token, CustomEvmNativeToken, CustomSubNativeToken } from "@talismn/balances"
-import { Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+import {
+  CustomEvmErc20Token,
+  CustomEvmNativeToken,
+  CustomSubNativeToken,
+  Token,
+  TokenId,
+  TokenList,
+} from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -34,10 +40,7 @@ const isCustomToken = (token: Token | CustomToken): token is CustomToken => {
   return "isCustom" in token && !!token.isCustom
 }
 
-export const isTokenActive = (
-  token: Token | CustomEvmErc20Token | CustomSubNativeToken | CustomEvmNativeToken,
-  activeTokens: ActiveTokens,
-) => {
+export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
   return activeTokens[token.id] ?? (isCustomToken(token) || token.isDefault)
 }
 

@@ -1,6 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { CustomSubNativeToken } from "@talismn/balances"
-import { EvmNetworkId, isCustomEvmNetwork, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import {
+  CustomSubNativeToken,
+  EvmNetworkId,
+  isCustomEvmNetwork,
+  SimpleEvmNetwork,
+} from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"

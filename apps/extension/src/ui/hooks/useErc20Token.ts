@@ -20,7 +20,7 @@ export const useErc20Token = (
           ?.filter(isErc20Token)
           .find(
             (t) =>
-              t.evmNetwork?.id === evmNetworkId &&
+              t.networkId === evmNetworkId &&
               t.contractAddress.toLowerCase() === contractAddress.toLowerCase(),
           )) ||
       null,

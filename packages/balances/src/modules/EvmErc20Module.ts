@@ -2,9 +2,11 @@ import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
+  CustomEvmErc20Token,
+  EvmErc20Token,
+  EvmErc20TokenDef,
   EvmNetworkId,
   githubTokenLogoUrl,
-  Token,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isTruthy } from "@talismn/util"
@@ -21,9 +23,6 @@ export { erc20Abi, erc20BalancesAggregatorAbi }
 type ModuleType = "evm-erc20"
 const moduleType: ModuleType = "evm-erc20"
 
-export type EvmErc20Token = Extract<Token, { type: ModuleType; isCustom?: true }>
-export type CustomEvmErc20Token = Extract<Token, { type: ModuleType; isCustom: true }>
-
 export const evmErc20TokenId = (
   chainId: EvmNetworkId,
   tokenContractAddress: EvmErc20Token["contractAddress"],
@@ -38,7 +37,8 @@ export type EvmErc20ModuleConfig = {
     {
       symbol?: string
       decimals?: number
-      contractAddress?: string
+      name?: string
+      contractAddress?: `0x${string}`
     } & BalancesConfigTokenParams
   >
 }
@@ -127,13 +127,19 @@ export const EvmErc20Module: NewBalanceModule<
 
       const chainTokens: Record<string, EvmErc20Token> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
-        const { contractAddress, symbol: contractSymbol, decimals: contractDecimals } = tokenConfig
+        const {
+          contractAddress,
+          symbol: contractSymbol,
+          decimals: contractDecimals,
+          name: contractName,
+        } = tokenConfig
         // TODO : in chaindata's build, filter out all tokens that don't have any of these
         if (!contractAddress || !contractSymbol || contractDecimals === undefined) {
           log.warn("ignoring token on chain %s", chainId, tokenConfig)
           continue
         }
 
+        // TODO zodify this
         const symbol = tokenConfig?.symbol ?? contractSymbol ?? "ETH"
         const decimals =
           typeof tokenConfig?.decimals === "number"
@@ -148,20 +154,33 @@ export const EvmErc20Module: NewBalanceModule<
         const token: EvmErc20Token = {
           id,
           type: "evm-erc20",
+          platform: "ethereum",
           isTestnet,
           isDefault: tokenConfig.isDefault ?? true,
           symbol,
           decimals,
+          name: contractName ?? symbol,
           logo: tokenConfig?.logo || githubTokenLogoUrl(id),
           contractAddress,
-          evmNetwork: { id: chainId },
+          networkId: chainId,
         }
 
         if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
         if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-        if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
         if (tokenConfig?.noDiscovery) token.noDiscovery = tokenConfig?.noDiscovery
+
+        const validation = EvmErc20TokenDef.safeParse(token)
+        if (validation.success) {
+          chainTokens[token.id] = token
+        } else {
+          log.warn(
+            "Ignoring invalid token",
+            token.id,
+            validation.error.message,
+            validation.error.issues,
+          )
+        }
 
         chainTokens[token.id] = token
       }
@@ -190,7 +209,7 @@ export const EvmErc20Module: NewBalanceModule<
             const ethAddresses = addresses.filter(isEthereumAddress)
             if (ethAddresses.length === 0) return null
             const token = tokens[tokenId]
-            const evmNetworkId = token.evmNetwork?.id
+            const evmNetworkId = token.networkId
             if (!evmNetworkId) return null
             return [tokenId, ethAddresses]
           })
@@ -492,7 +511,7 @@ function groupAddressesByTokenByEvmNetwork(
         return byChain
       }
 
-      const chainId = token.evmNetwork?.id
+      const chainId = token.networkId
       if (!chainId) {
         log.error(`Token ${tokenId} has no evm network`)
         return byChain

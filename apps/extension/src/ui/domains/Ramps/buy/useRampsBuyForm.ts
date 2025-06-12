@@ -83,7 +83,7 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const quotes = useRampsBuyQuotes(quoteOpts)
 
   const token = useToken(formData.tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useChain(token?.networkId)
   const allAccounts = useAccounts("portfolio")
 
   const accounts = useMemo(
@@ -148,8 +148,8 @@ const redirectToProvider = async (formData: FormData, quote: RampsBuyQuoteSucces
   let address = formData.account
 
   const token = await firstValueFrom(getToken$(formData.tokenId))
-  if (token?.chain?.id) {
-    const chain = await firstValueFrom(getChain$(token.chain.id))
+  if (token?.networkId) {
+    const chain = await firstValueFrom(getChain$(token.networkId))
     if (typeof chain?.prefix === "number") address = encodeAddressSs58(address, chain.prefix)
   }
 
@@ -164,8 +164,8 @@ const ensureTokenEnabled = async (tokenId: string) => {
 
   await activeTokensStore.setActive(tokenId, true)
 
-  if (isEvmToken(token) && token.evmNetwork?.id)
-    await activeEvmNetworksStore.setActive(token.evmNetwork.id, true)
-  else if (isSubToken(token) && token.chain?.id)
-    await activeChainsStore.setActive(token.chain.id, true)
+  if (isEvmToken(token) && token.networkId)
+    await activeEvmNetworksStore.setActive(token.networkId, true)
+  else if (isSubToken(token) && token.networkId)
+    await activeChainsStore.setActive(token.networkId, true)
 }

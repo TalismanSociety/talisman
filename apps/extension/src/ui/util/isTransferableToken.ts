@@ -24,7 +24,6 @@ export const isTransferableToken = (t: Token) => {
     case "evm-native":
     case "evm-uniswapv2":
     case "substrate-assets":
-    case "substrate-equilibrium":
     case "substrate-foreignassets":
     case "substrate-native":
     case "substrate-psp22":

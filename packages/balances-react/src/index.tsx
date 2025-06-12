@@ -15,7 +15,6 @@ export {
   evmErc20TokenId,
   evmNativeTokenId,
   subNativeTokenId,
-  subEquilibriumTokenId,
   subAssetTokenId,
   subPsp22TokenId,
   subTokensTokenId,

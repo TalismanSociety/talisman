@@ -62,8 +62,8 @@ export const useNomPoolWithdrawWizard = () => {
   const feeToken = useFeeToken(token?.id)
   const tokenRates = useTokenRates(tokenId)
 
-  const { data: pool } = useNomPoolByMember(token?.chain?.id, account?.address)
-  const { data: sapi } = useScaleApi(token?.chain?.id)
+  const { data: pool } = useNomPoolByMember(token?.networkId, account?.address)
+  const { data: sapi } = useScaleApi(token?.networkId)
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
@@ -73,7 +73,7 @@ export const useNomPoolWithdrawWizard = () => {
     [genericEvent, tokenId],
   )
 
-  const { data: currentEra } = useCurrentStakingEra(token?.chain?.id)
+  const { data: currentEra } = useCurrentStakingEra(token?.networkId)
 
   const pointsToWithdraw = useMemo(() => {
     if (!currentEra || !pool) return null

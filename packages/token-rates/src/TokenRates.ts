@@ -39,7 +39,7 @@ export async function fetchTokenRates(
       //
       // This section contains the logic such that: if token is an LP token, then fetch the rates for the two underlying tokens.
       if (token.type === "evm-uniswapv2") {
-        if (!token.evmNetwork) return []
+        if (token.platform !== "ethereum") return []
 
         const getToken = (evmNetworkId: string, tokenAddress: string, coingeckoId: string) => ({
           id: evmErc20TokenId(evmNetworkId, tokenAddress),
@@ -47,10 +47,10 @@ export async function fetchTokenRates(
         })
 
         const token0 = token.coingeckoId0
-          ? [getToken(token.evmNetwork.id, token.tokenAddress0, token.coingeckoId0)]
+          ? [getToken(token.networkId, token.tokenAddress0, token.coingeckoId0)]
           : []
         const token1 = token.coingeckoId1
-          ? [getToken(token.evmNetwork.id, token.tokenAddress1, token.coingeckoId1)]
+          ? [getToken(token.networkId, token.tokenAddress1, token.coingeckoId1)]
           : []
 
         return [...token0, ...token1]

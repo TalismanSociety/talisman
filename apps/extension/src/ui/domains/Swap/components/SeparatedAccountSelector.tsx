@@ -282,10 +282,10 @@ const AccountPicker = ({
   const toAsset = useAtomValue(toAssetAtom)
 
   const fromToken = useToken(fromAsset?.id)
-  const fromChain = useChain(fromToken?.chain?.id)
+  const fromChain = useChain(fromToken?.networkId)
 
   const toToken = useToken(toAsset?.id)
-  const toChain = useChain(toToken?.chain?.id)
+  const toChain = useChain(toToken?.networkId)
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">

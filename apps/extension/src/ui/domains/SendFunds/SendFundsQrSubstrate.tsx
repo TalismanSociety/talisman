@@ -20,7 +20,7 @@ const SendFundsQrSubstrate = () => {
   const [error, setError] = useState<Error>()
 
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useChain(token?.networkId)
   const account = useAccountByAddress(from) ?? undefined
   const knownAddress = useIsKnownAddress(to)
 
@@ -46,7 +46,7 @@ const SendFundsQrSubstrate = () => {
               ? privacyRoundCurrency(Number(planckToTokens(amount, token.decimals)))
               : "unknown",
             tokenId,
-            chainId: token?.chain?.id || "unknown",
+            chainId: token?.networkId || "unknown",
             internal: !!knownAddress,
             recipientType: knownAddress ? recipientTypeMap[knownAddress.type] : "external",
             qr: true,

@@ -49,7 +49,7 @@ export const NomPoolWithdrawReview = () => {
         <div className="flex items-center justify-between gap-8 pt-2">
           <div className="whitespace-nowrap">{t("Account")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
-            <StakingAccountDisplay address={account.address} chainId={token?.chain?.id} />
+            <StakingAccountDisplay address={account.address} chainId={token?.networkId} />
           </div>
         </div>
         <div className="py-8">
@@ -58,7 +58,7 @@ export const NomPoolWithdrawReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
           <div className="text-body truncate">
-            <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <NominationPoolName poolId={poolId} chainId={token?.networkId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">

@@ -37,7 +37,7 @@ export type TokenBalances = ReturnType<typeof useTokenBalances>
 
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useChain(token?.networkId)
 
   const { selectedAccount: account } = usePortfolioNavigation()
   const { summary, tokenBalances } = useTokenBalancesSummary(balances)

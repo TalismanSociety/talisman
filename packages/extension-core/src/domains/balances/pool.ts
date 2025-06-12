@@ -50,7 +50,7 @@ import {
 
 type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
 type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs">
-type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
+type TokenIdAndType = Pick<Token, "id" | "type" | "networkId" | "platform">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
@@ -450,11 +450,11 @@ abstract class BalancePool {
       miniMetadatas.every((m) => existingMiniMetadataIds.has(m.id))
 
     // compare tokens
-    const newTokens = tokens.map(({ id, type, chain, evmNetwork }) => ({
+    const newTokens = tokens.map(({ id, type, platform, networkId }) => ({
       id,
       type,
-      chain,
-      evmNetwork,
+      platform,
+      networkId,
     }))
 
     const existingTokens = this.tokens
@@ -740,24 +740,26 @@ class KeyringBalancePool extends BalancePool {
       // filter out tokens on chains/evmNetworks which have no rpcs
       .filter(
         (token) =>
-          (token.chain?.id && (this.chains[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-          (token.evmNetwork?.id && (this.evmNetworks[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0),
+          (token.networkId && (this.chains[token.networkId]?.rpcs?.length ?? 0) > 0) ||
+          (token.networkId && (this.evmNetworks[token.networkId]?.rpcs?.length ?? 0) > 0),
       )
       .forEach((token) => {
         if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-        const chain = token.chain?.id ? this.chains[token.chain?.id] : undefined
+        const chain = token.networkId ? this.chains[token.networkId] : undefined
 
         addressesByTokenByModule[token.type][token.id] = Object.entries(addressesGenesisHashes)
           .filter(
             // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
             ([, genesisHashes]) =>
-              !token.chain || !genesisHashes || genesisHashes.includes(chain?.genesisHash ?? ""),
+              token.platform !== "ethereum" ||
+              !genesisHashes ||
+              genesisHashes.includes(chain?.genesisHash ?? ""),
           )
           .filter(([address]) => {
             // for each address, fetch balances only from compatible chains
             return isEthereumAddress(address)
-              ? token.evmNetwork?.id || chain?.account === "secp256k1"
-              : token.chain?.id && chain?.account !== "secp256k1"
+              ? token.networkId || chain?.account === "secp256k1"
+              : token.networkId && chain?.account !== "secp256k1"
           })
           .map(([address]) => address)
       })
@@ -841,7 +843,7 @@ const getSubscriptionParams = (
     // convert chains and evmNetworks into a list of tokenIds
     .flatMap(([chainOrNetwork, addresses]) =>
       activeTokens
-        .filter((t) => t.chain?.id === chainOrNetwork.id || t.evmNetwork?.id === chainOrNetwork.id)
+        .filter((t) => t.networkId === chainOrNetwork.id || t.networkId === chainOrNetwork.id)
         .map((t) => [t.id, addresses] as const),
     )
 
