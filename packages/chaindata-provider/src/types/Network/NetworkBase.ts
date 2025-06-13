@@ -30,7 +30,7 @@ export const NetworkBaseDef = z.object({
     logo: z.string().optional(),
   }),
   themeColor: z.string().optional(),
-  blockExplorerUrls: z.array(z.url({ protocol: /^https$/ })).optional(),
+  blockExplorerUrls: z.array(z.url({ protocol: /^https?$/ })).optional(),
   // balancesConfig: BalanceModuleConfig.optional(),
 })
 export type NetworkBase = z.infer<typeof NetworkBaseDef>

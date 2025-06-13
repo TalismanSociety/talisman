@@ -9,7 +9,7 @@ export const EthNetworkDef = NetworkBaseDef.extend({
   platform: z.literal("ethereum"),
   substrateChainId: z.string().optional(),
   preserveGasEstimate: z.boolean().optional(),
-  rpcs: z.array(z.url({ protocol: /^https$/ })),
+  rpcs: z.array(z.url({ protocol: /^https?$/ })),
   feeType: z.enum(["legacy", "eip-1559"]).optional(),
   l2FeeType: z.union([
     z.object({

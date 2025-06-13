@@ -13,7 +13,7 @@ export const DotNetworkDef = NetworkBaseDef.extend({
   overrideNativeTokenId: z.string().optional(), // TODO: explain why we need this
   prefix: z.number(),
   oldPrefix: z.number().optional(),
-  rpcs: z.array(z.url({ protocol: /^wss$/ })),
+  rpcs: z.array(z.url({ protocol: /^wss?$/ })),
   relayId: z.string().optional(),
   paraId: z.number().optional(), // u32, can use number
   registryTypes: z.any().optional(),
