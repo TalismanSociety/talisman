@@ -1,6 +1,7 @@
 import { Transaction } from "dexie"
 
-import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token, TokenId } from "../types"
+import { Token, TokenId } from "../chaindata"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "../types"
 
 const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")

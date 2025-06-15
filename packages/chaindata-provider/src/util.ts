@@ -1,6 +1,7 @@
 import { firstValueFrom, Observable } from "rxjs"
 
-import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork, Token } from "./types"
+import { Token } from "./chaindata"
+import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork } from "./types"
 
 /**
  * Util to add our onfinality api key to any public onfinality RPC urls in an array of chains.

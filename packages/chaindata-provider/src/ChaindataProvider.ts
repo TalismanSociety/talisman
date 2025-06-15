@@ -1,6 +1,7 @@
 import { liveQuery, Transaction, TransactionMode } from "dexie"
 import { map, ReplaySubject, SubscriptionLike } from "rxjs"
 
+import { Token, TokenId } from "./chaindata"
 import { githubTokenLogoUrl, githubUnknownTokenLogoUrl } from "./constants"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitSubstrateTokens } from "./init"
 import log from "./log"
@@ -21,8 +22,6 @@ import {
   EvmNetwork,
   EvmNetworkId,
   IChaindataProvider,
-  Token,
-  TokenId,
 } from "./types"
 import * as util from "./util"
 

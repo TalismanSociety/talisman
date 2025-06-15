@@ -1,15 +1,7 @@
 import { Dexie } from "dexie"
 
-import {
-  Chain,
-  ChainId,
-  CustomChain,
-  CustomEvmNetwork,
-  EvmNetwork,
-  EvmNetworkId,
-  Token,
-  TokenId,
-} from "./types"
+import { Token, TokenId } from "./chaindata"
+import { Chain, ChainId, CustomChain, CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "./types"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 import { upgradeAddIsDefaultToExistingChains } from "./upgrades/2024-01-25-upgradeAddIsDefaultToExistingChains"
 

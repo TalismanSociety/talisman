@@ -1,5 +1,5 @@
+import { TokenId } from "../chaindata"
 import { EvmNetworkId } from "./EvmNetwork"
-import { TokenId } from "./Token"
 
 export type ChainList = Record<ChainId, Chain>
 

@@ -4,7 +4,7 @@ import {
   BalancesConfigTokenParams,
   CustomEvmErc20Token,
   EvmErc20Token,
-  EvmErc20TokenDef,
+  EvmErc20TokenSchema,
   EvmNetworkId,
   githubTokenLogoUrl,
   TokenList,
@@ -170,7 +170,7 @@ export const EvmErc20Module: NewBalanceModule<
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
         if (tokenConfig?.noDiscovery) token.noDiscovery = tokenConfig?.noDiscovery
 
-        const validation = EvmErc20TokenDef.safeParse(token)
+        const validation = EvmErc20TokenSchema.safeParse(token)
         if (validation.success) {
           chainTokens[token.id] = token
         } else {

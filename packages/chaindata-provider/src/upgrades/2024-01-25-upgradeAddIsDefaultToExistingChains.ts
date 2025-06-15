@@ -1,6 +1,7 @@
 import { Transaction } from "dexie"
 
-import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token, TokenId } from "../types"
+import { Token, TokenId } from "../chaindata"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "../types"
 
 // for DB version 2, Wallet version 1.21.0
 export const upgradeAddIsDefaultToExistingChains = async (tx: Transaction) => {

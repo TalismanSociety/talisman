@@ -1,4 +1,5 @@
-import type { Chain, EvmNetwork, Token } from "../types"
+import type { Chain, EvmNetwork } from "../types"
+import { Token } from "../chaindata"
 import { chains as initChains } from "./chains"
 import { evmNetworks as initEvmNetworks } from "./evm-networks"
 import { miniMetadatas as initMiniMetadatas } from "./mini-metadatas"

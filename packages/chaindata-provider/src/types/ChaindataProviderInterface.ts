@@ -1,8 +1,8 @@
 import { Observable } from "rxjs"
 
+import { Token, TokenId } from "../chaindata"
 import { Chain, ChainId, CustomChain } from "./Chain"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "./EvmNetwork"
-import { Token, TokenId } from "./Token"
 
 export interface IChaindataChainProvider {
   chainsObservable: Observable<Chain[]>

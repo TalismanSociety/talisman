@@ -1,3 +1,3 @@
-import { Token } from "../types"
+import { Token } from "../chaindata"
 
 export const tokens: Token[] = []
