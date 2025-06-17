@@ -2,8 +2,7 @@ import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import {
-  activeChainsStore,
-  activeEvmNetworksStore,
+  activeNetworksStore,
   activeTokensStore,
   isAccountCompatibleWithNetwork,
 } from "extension-core"
@@ -17,8 +16,6 @@ import { z } from "zod"
 import { notify } from "@talisman/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
 import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 
 import { RampsFormSharedData } from "../shared/types"
 import { RampsBuyQuote, RampsBuyQuoteSuccess } from "./types"
@@ -161,9 +158,5 @@ const ensureTokenEnabled = async (tokenId: string) => {
   if (!token) return
 
   await activeTokensStore.setActive(tokenId, true)
-
-  if (isEvmToken(token) && token.networkId)
-    await activeEvmNetworksStore.setActive(token.networkId, true)
-  else if (isSubToken(token) && token.networkId)
-    await activeChainsStore.setActive(token.networkId, true)
+  await activeNetworksStore.setActive(token.networkId, true)
 }

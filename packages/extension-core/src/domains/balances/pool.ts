@@ -37,7 +37,6 @@ import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
 import { isBackgroundPage } from "../../util/isBackgroundPage"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { keyringStore } from "../keyring/store"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
@@ -87,11 +86,11 @@ const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<stri
 // )
 
 // TODO yeet (still used by nfts)
-export const activeEvmNetworksObservable = getActiveStuff(
-  chaindataProvider.evmNetworksObservable,
-  activeEvmNetworksStore.observable,
-  isEvmNetworkActive,
-)
+// export const activeEvmNetworksObservable = getActiveStuff(
+//   chaindataProvider.evmNetworksObservable,
+//   activeEvmNetworksStore.observable,
+//   isEvmNetworkActive,
+// )
 
 export const activeNetworksObservable = getActiveStuff(
   chaindataProvider.networksObservable,

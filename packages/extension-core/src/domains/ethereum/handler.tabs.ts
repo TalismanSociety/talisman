@@ -29,6 +29,7 @@ import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
 import { TalismanNotOnboardedError } from "../app/utils"
+import { isNetworkActive } from "../balances/store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { signAndSendEth, signEth } from "../signing/requests"
@@ -62,7 +63,7 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
+import { activeEvmNetworksStore } from "./store.activeEvmNetworks"
 import {
   AnyEthRequest,
   AnyEvmError,
@@ -323,7 +324,7 @@ export class EthTabsHandler extends TabsHandler {
     const activeNetworks = await activeEvmNetworksStore.get()
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
-    if (existing && isEvmNetworkActive(existing, activeNetworks))
+    if (existing && isNetworkActive(existing, activeNetworks))
       return this.switchEthereumChain(url, {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: network.chainId }],
@@ -385,7 +386,7 @@ export class EthTabsHandler extends TabsHandler {
 
     const ethereumNetwork = await chaindataProvider.evmNetworkById(ethChainId.toString())
     const activeNetworks = await activeEvmNetworksStore.get()
-    if (!ethereumNetwork || !isEvmNetworkActive(ethereumNetwork, activeNetworks))
+    if (!ethereumNetwork || !isNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(
         `Unknown network ${ethChainId}, try adding the chain using wallet_addEthereumChain first`,
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,

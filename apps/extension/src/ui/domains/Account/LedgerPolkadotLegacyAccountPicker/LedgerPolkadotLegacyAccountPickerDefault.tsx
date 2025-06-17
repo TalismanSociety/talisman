@@ -1,6 +1,6 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil, validateHexString } from "@talismn/util"
-import { Account, getAccountGenesisHash, isChainActive } from "extension-core"
+import { Account, getAccountGenesisHash, isNetworkActive } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -85,7 +85,7 @@ const useLedgerChainAccounts = (
   const chain = useChain(chainId)
   const activeChains = useActiveNetworksState()
   const withBalances = useMemo(
-    () => !chain?.isTestnet && !!chain && isChainActive(chain, activeChains),
+    () => !chain?.isTestnet && !!chain && isNetworkActive(chain, activeChains),
     [chain, activeChains],
   )
 

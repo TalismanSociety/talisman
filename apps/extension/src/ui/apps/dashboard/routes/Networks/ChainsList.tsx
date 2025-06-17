@@ -2,7 +2,7 @@ import { DotNetwork, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ActiveChains, activeChainsStore, isChainActive, isNetworkActive } from "extension-core"
+import { ActiveNetworks, activeNetworksStore, isNetworkActive } from "extension-core"
 import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -87,7 +87,7 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
   const activateAll = useCallback(
     (activate = false) =>
       () => {
-        activeChainsStore.set(Object.fromEntries(filteredChains.map((n) => [n.id, activate])))
+        activeNetworksStore.set(Object.fromEntries(filteredChains.map((n) => [n.id, activate])))
       },
     [filteredChains],
   )
@@ -151,7 +151,7 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
 
 const VirtualizedRows: FC<{
   networks: DotNetwork[]
-  activeNetworksState: ActiveChains
+  activeNetworksState: ActiveNetworks
 }> = ({ networks, activeNetworksState }) => {
   const virtualizer = useVirtualizer({
     count: networks.length,
@@ -188,10 +188,10 @@ const VirtualizedRows: FC<{
 
 const ChainRow: FC<{
   network: DotNetwork
-  activeNetworksState: ActiveChains
+  activeNetworksState: ActiveNetworks
 }> = ({ network: chain, activeNetworksState: activeChainsState }) => {
   const isActive = useMemo(
-    () => isChainActive(chain, activeChainsState),
+    () => isNetworkActive(chain, activeChainsState),
     [activeChainsState, chain],
   )
 
@@ -210,7 +210,7 @@ const ChainRow: FC<{
 
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      activeChainsStore.setActive(chain.id, e.target.checked)
+      activeNetworksStore.setActive(chain.id, e.target.checked)
     },
     [chain.id],
   )
@@ -240,7 +240,7 @@ const ResetAllNetworksModalContent: FC<{
   const { t } = useTranslation()
 
   const handleClick = useCallback(async () => {
-    activeChainsStore.mutate(() => ({}))
+    activeNetworksStore.mutate(() => ({}))
     onClose()
   }, [onClose])
 
@@ -273,12 +273,12 @@ const ActivateNetworksModalContent: FC<{
   const recommendedNetworkIds = useMemo(() => {
     return networks
       .filter((n) => n.isDefault)
-      .filter((n) => !isChainActive(n, activeNetworks))
+      .filter((n) => !isNetworkActive(n, activeNetworks))
       .map((n) => n.id)
   }, [activeNetworks, networks])
 
   const allNetworkIds = useMemo(() => {
-    return networks.filter((n) => !isChainActive(n, activeNetworks)).map((n) => n.id)
+    return networks.filter((n) => !isNetworkActive(n, activeNetworks)).map((n) => n.id)
   }, [activeNetworks, networks])
 
   const [mode, setMode] = useState<ActivateMode>("recommended")
@@ -289,7 +289,7 @@ const ActivateNetworksModalContent: FC<{
   )
 
   const handleClick = useCallback(async () => {
-    activeChainsStore.mutate((prev) => ({
+    activeNetworksStore.mutate((prev) => ({
       ...prev,
       ...Object.fromEntries(networkIdsToActivate.map((chainId) => [chainId, true])),
     }))
@@ -360,7 +360,7 @@ const DeactivateNetworksModalContent: FC<{
   const handleClick = useCallback(async () => {
     const networkIds = mode === "all" ? activeChainIds : unusedChainIds
 
-    activeChainsStore.mutate((prev) => ({
+    activeNetworksStore.mutate((prev) => ({
       ...prev,
       ...Object.fromEntries(networkIds.map((chainId) => [chainId, false])),
     }))

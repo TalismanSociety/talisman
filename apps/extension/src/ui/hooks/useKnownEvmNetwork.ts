@@ -1,5 +1,5 @@
 import { isCustomEvmNetwork, isEthNetwork } from "@talismn/chaindata-provider"
-import { activeEvmNetworksStore, isNetworkActive } from "extension-core"
+import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { useCallback, useMemo } from "react"
 
 import { useActiveNetworksState, useNetworkById } from "@ui/state"
@@ -20,7 +20,7 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   const setActive = useCallback(
     (enable: boolean) => {
       if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
-      activeEvmNetworksStore.setActive(evmNetworkId, enable)
+      activeNetworksStore.setActive(evmNetworkId, enable)
     },
     [evmNetwork, evmNetworkId],
   )
@@ -31,7 +31,7 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
-    return activeEvmNetworksStore.resetActive(evmNetworkId)
+    return activeNetworksStore.resetActive(evmNetworkId)
   }, [evmNetwork, evmNetworkId])
 
   return {

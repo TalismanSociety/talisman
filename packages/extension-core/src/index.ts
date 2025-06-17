@@ -46,16 +46,6 @@ export * from "./domains/ethereum/helpers"
 export { assetDiscoveryStore } from "./domains/assetDiscovery/store"
 
 export {
-  activeChainsStore,
-  isChainActive,
-  type ActiveChains,
-} from "./domains/chains/store.activeChains"
-export {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-  type ActiveEvmNetworks,
-} from "./domains/ethereum/store.activeEvmNetworks"
-export {
   activeTokensStore,
   isTokenActive,
   type ActiveTokens,

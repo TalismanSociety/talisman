@@ -1,5 +1,5 @@
 import { isCustomChain, Network } from "@talismn/chaindata-provider"
-import { activeChainsStore, isNetworkActive } from "extension-core"
+import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { useCallback, useMemo } from "react"
 
 import { useActiveNetworksState, useNetworkById } from "@ui/state"
@@ -17,7 +17,7 @@ export const useKnownChain = (chainId: string | null | undefined) => {
   const setActive = useCallback(
     (enable: boolean) => {
       if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
-      activeChainsStore.setActive(chainId, enable)
+      activeNetworksStore.setActive(chainId, enable)
     },
     [chain, chainId],
   )
@@ -28,7 +28,7 @@ export const useKnownChain = (chainId: string | null | undefined) => {
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
-    activeChainsStore.resetActive(chainId)
+    activeNetworksStore.resetActive(chainId)
   }, [chain, chainId])
 
   return {

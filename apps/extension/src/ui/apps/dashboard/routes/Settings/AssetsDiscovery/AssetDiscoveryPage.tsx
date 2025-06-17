@@ -13,11 +13,11 @@ import {
 import { classNames, isNotNil, isTruthy } from "@talismn/util"
 import {
   Account,
-  activeEvmNetworksStore,
+  activeNetworksStore,
   activeTokensStore,
   DiscoveredBalance,
   getAccountGenesisHash,
-  isEvmNetworkActive,
+  isNetworkActive,
   isTokenActive,
 } from "extension-core"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useRef } from "react"
@@ -207,7 +207,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
     () =>
       !!evmNetwork &&
       !!token &&
-      isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
+      isNetworkActive(evmNetwork, activeEvmNetworks) &&
       isTokenActive(token, activeTokens),
     [activeEvmNetworks, activeTokens, evmNetwork, token],
   )
@@ -217,9 +217,9 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       const checked = e.target.checked
       if (!token || !evmNetwork) return
 
-      if (checked) activeEvmNetworksStore.setActive(evmNetwork.id, true)
+      if (checked) activeNetworksStore.setActive(evmNetwork.id, true)
       // when unchecking, dont disable the network except for native tokens
-      else if (token.type === "evm-native") activeEvmNetworksStore.setActive(evmNetwork.id, false)
+      else if (token.type === "evm-native") activeNetworksStore.setActive(evmNetwork.id, false)
       // if token is not native, allow it to be toggled. Native tokens are taken care of by the network toggle
       if (token.type !== "evm-native") activeTokensStore.setActive(token.id, checked)
     },
@@ -227,7 +227,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   )
 
   const isInactiveNetwork = useMemo(
-    () => evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks),
+    () => evmNetwork && !isNetworkActive(evmNetwork, activeEvmNetworks),
     [activeEvmNetworks, evmNetwork],
   )
 
@@ -383,8 +383,7 @@ const Header: FC = () => {
   const activeNetworks = useActiveNetworksState()
   const recommendedNetworks = useMemo(() => {
     return allNetworks.filter(
-      (n) =>
-        isEvmNetworkActive(n, activeNetworks) || (n.forceScan && activeNetworks[n.id] !== false),
+      (n) => isNetworkActive(n, activeNetworks) || (n.forceScan && activeNetworks[n.id] !== false),
     )
   }, [activeNetworks, allNetworks])
 
@@ -553,7 +552,7 @@ const ScanInfo: FC = () => {
       return (
         token &&
         evmNetwork &&
-        (!isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens))
+        (!isNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens))
       )
     })
   }, [balancesByTokenId, activeEvmNetworks, activeTokens, evmNetworksMap, tokensMap])
@@ -563,7 +562,7 @@ const ScanInfo: FC = () => {
     const evmNetworkIds = [
       ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.networkId).filter(isTruthy)),
     ] as EvmNetworkId[]
-    await activeEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
+    await activeNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await activeTokensStore.set(
       Object.fromEntries(
         tokenIds.filter((id) => !id.includes("evm-native")).map((id) => [id, true]),

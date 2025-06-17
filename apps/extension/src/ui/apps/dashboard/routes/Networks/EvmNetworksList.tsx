@@ -2,7 +2,7 @@ import { EthNetwork, isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ActiveEvmNetworks, activeEvmNetworksStore, isEvmNetworkActive } from "extension-core"
+import { ActiveNetworks, activeNetworksStore, isNetworkActive } from "extension-core"
 import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -54,8 +54,7 @@ export const EvmNetworksList: FC<{
     const lowerSearch = search?.toLowerCase() ?? ""
 
     const filter = (network: EthNetwork) => {
-      if (!lowerSearch && activeOnly && !isEvmNetworkActive(network, networksActiveState))
-        return false
+      if (!lowerSearch && activeOnly && !isNetworkActive(network, networksActiveState)) return false
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
@@ -146,7 +145,7 @@ export const EvmNetworksList: FC<{
 
 const VirtualizedRows: FC<{
   networks: EthNetwork[]
-  activeNetworksState: ActiveEvmNetworks
+  activeNetworksState: ActiveNetworks
 }> = ({ networks, activeNetworksState }) => {
   const virtualizer = useVirtualizer({
     count: networks.length,
@@ -186,10 +185,10 @@ const VirtualizedRows: FC<{
 
 const EvmNetworksRow: FC<{
   network: EthNetwork
-  activeNetworksState: ActiveEvmNetworks
+  activeNetworksState: ActiveNetworks
 }> = ({ network, activeNetworksState }) => {
   const isActive = useMemo(
-    () => isEvmNetworkActive(network, activeNetworksState),
+    () => isNetworkActive(network, activeNetworksState),
     [activeNetworksState, network],
   )
 
@@ -208,7 +207,7 @@ const EvmNetworksRow: FC<{
 
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      activeEvmNetworksStore.setActive(network.id, e.target.checked)
+      activeNetworksStore.setActive(network.id, e.target.checked)
     },
     [network.id],
   )
@@ -238,7 +237,7 @@ const ResetAllNetworksModalContent: FC<{
   const { t } = useTranslation()
 
   const handleClick = useCallback(async () => {
-    activeEvmNetworksStore.mutate(() => ({}))
+    activeNetworksStore.mutate(() => ({}))
     onClose()
   }, [onClose])
 
@@ -271,12 +270,12 @@ const ActivateNetworksModalContent: FC<{
   const recommendedNetworkIds = useMemo(() => {
     return evmNetworks
       .filter((n) => n.isDefault)
-      .filter((n) => !isEvmNetworkActive(n, activeNetworks))
+      .filter((n) => !isNetworkActive(n, activeNetworks))
       .map((n) => n.id)
   }, [activeNetworks, evmNetworks])
 
   const allNetworkIds = useMemo(() => {
-    return evmNetworks.filter((n) => !isEvmNetworkActive(n, activeNetworks)).map((n) => n.id)
+    return evmNetworks.filter((n) => !isNetworkActive(n, activeNetworks)).map((n) => n.id)
   }, [activeNetworks, evmNetworks])
 
   const [mode, setMode] = useState<ActivateMode>("recommended")
@@ -287,7 +286,7 @@ const ActivateNetworksModalContent: FC<{
   )
 
   const handleClick = useCallback(async () => {
-    activeEvmNetworksStore.mutate((prev) => ({
+    activeNetworksStore.mutate((prev) => ({
       ...prev,
       ...Object.fromEntries(networkIdsToActivate.map((chainId) => [chainId, true])),
     }))
@@ -359,7 +358,7 @@ const DeactivateNetworksModalContent: FC<{
   const handleClick = useCallback(async () => {
     const networkIds = mode === "all" ? activeEvmNetworkIds : unusedEvmNetworkIds
 
-    activeEvmNetworksStore.mutate((prev) => ({
+    activeNetworksStore.mutate((prev) => ({
       ...prev,
       ...Object.fromEntries(networkIds.map((chainId) => [chainId, false])),
     }))
