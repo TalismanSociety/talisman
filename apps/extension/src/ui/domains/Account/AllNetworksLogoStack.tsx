@@ -1,4 +1,4 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,7 +9,7 @@ import { type PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePort
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useChainsMap, useEvmNetworksMap, useNetworks } from "@ui/state"
 
-type Props = { ids?: (ChainId | EvmNetworkId)[]; className?: string; max?: number }
+type Props = { ids?: NetworkId[]; className?: string; max?: number }
 
 const prioNetworks = [
   "1", // ethereum mainnet
@@ -44,9 +44,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
         const evmNetwork = evmNetworksMap[id]
         if (!chain && !evmNetwork) return []
         if (chain?.isTestnet || evmNetwork?.isTestnet) return []
-        // const relay = chain.topologyInfo.type === "parachain" ? chainsMap[chain.topologyInfo.relayId] : null
-        // const relay = chain?.relay?.id ? chainsMap[chain.relay.id] : null
-        const { label, type } = getNetworkInfo(t, { networkId: chain.id, networks: allNetworks })
+        const { label, type } = getNetworkInfo(t, { networkId: id, networks: allNetworks })
 
         return { id, label, type, logo: chain?.logo ?? evmNetwork?.logo }
       }),

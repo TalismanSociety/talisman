@@ -2,7 +2,7 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { BalanceJson } from "@talismn/balances"
-import { ChainId, EvmNetworkId, Network, Token, TokenId } from "@talismn/chaindata-provider"
+import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
@@ -215,7 +215,7 @@ export default interface MessageTypes {
 
   // asset transfer messages
   assetTransfer: (
-    chainId: ChainId,
+    chainId: NetworkId,
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
@@ -224,7 +224,7 @@ export default interface MessageTypes {
     method?: AssetTransferMethod,
   ) => Promise<ResponseAssetTransfer>
   assetTransferEth: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     tokenId: TokenId,
     fromAddress: EvmAddress,
     toAddress: EvmAddress,
@@ -232,7 +232,7 @@ export default interface MessageTypes {
     gasSettings: EthGasSettings<string>,
   ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     tokenId: TokenId,
     amount: string,
     to: EvmAddress,
@@ -240,7 +240,7 @@ export default interface MessageTypes {
     signedTransaction: HexString,
   ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
-    chainId: ChainId,
+    chainId: NetworkId,
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
@@ -256,13 +256,13 @@ export default interface MessageTypes {
 
   // eth related messages
   ethSignAndSend: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     transferInfo?: WalletTransactionTransferInfo,
     txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethSendSigned: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
     transferInfo?: WalletTransactionTransferInfo,
@@ -284,7 +284,7 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
-  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: EvmNetworkId) => Promise<number>
+  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: NetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId, enableDefault: boolean) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
@@ -301,7 +301,7 @@ export default interface MessageTypes {
 
   // substrate rpc calls
   subSend: <T>(
-    chainId: ChainId,
+    chainId: NetworkId,
     method: string,
     params: unknown[],
     isCacheable?: boolean,
