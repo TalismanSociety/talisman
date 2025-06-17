@@ -25,7 +25,7 @@ import {
   sonic,
 } from "viem/chains"
 
-import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
+import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 
 import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
@@ -576,7 +576,9 @@ export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
 export type SimpleswapExchange = Exchange
 const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
   try {
-    const substrateChains = await get(atomWithObservable(() => getChains$()))
+    const substrateChains = await get(
+      atomWithObservable(() => getNetworks$({ platform: "polkadot" })),
+    )
     const formatAddress = (
       address: string | null,
       asset: SwappableAssetWithDecimals<unknown> | null,
@@ -779,9 +781,11 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
 
   if (fromAsset.networkType === "evm") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
-    const knownEvmNetworks = await get(atomWithObservable(() => getEvmNetworksMap$()))
+    const knownEvmNetworks = await get(
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
+    )
     const network = knownEvmNetworks[fromAsset.chainId]
-    const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeToken?.id)))
+    const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeTokenId)))
     const evmChain = Object.values(supportedEvmChains).find(
       (c) => c?.id.toString() === fromAsset.chainId.toString(),
     )
@@ -815,7 +819,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   if (swappingFromBtc) return null
 
   // swapping from Polkadot
-  const chains = await get(atomWithObservable(() => getChains$()))
+  const chains = await get(atomWithObservable(() => getNetworks$({ platform: "polkadot" })))
   const substrateChain = chains.find((c) => c.id === fromAsset.chainId)
   const polkadotApi = await get(apiPromiseAtom(substrateChain?.id))
   if (!polkadotApi) return null
@@ -836,7 +840,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
   return {
     name: "Est. Gas Fees",
-    tokenId: substrateChain?.nativeToken?.id ?? "polkadot-substrate-native",
+    tokenId: substrateChain?.nativeTokenId ?? "polkadot-substrate-native",
     amount: BigNumber(paymentInfo.partialFee.toBigInt().toString()).times(10 ** -decimals),
   }
 }

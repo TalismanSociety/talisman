@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { Chain, EvmNetworkId, SimpleEvmNetwork, Token, TokenId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Network, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -55,7 +55,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import {
   useAccounts,
-  useActiveEvmNetworksState,
+  useActiveNetworksState,
   useActiveTokensState,
   useAssetDiscoveryScan,
   useAssetDiscoveryScanProgress,
@@ -119,7 +119,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   )
 }
 
-const NetworksTooltip: FC<{ networks: (Chain | SimpleEvmNetwork)[] }> = ({ networks }) => {
+const NetworksTooltip: FC<{ networks: Network[] }> = ({ networks }) => {
   const { t } = useTranslation()
 
   const tokens = useTokens()
@@ -158,14 +158,14 @@ const NetworksTooltip: FC<{ networks: (Chain | SimpleEvmNetwork)[] }> = ({ netwo
 }
 
 const useBlockExplorerUrl = (token: Token | null) => {
-  const evmNetwork = useEvmNetwork(token?.networkId)
+  const network = useEvmNetwork(token?.networkId)
 
   return useMemo(() => {
-    if ((isErc20Token(token) || isUniswapV2Token(token)) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+    if ((isErc20Token(token) || isUniswapV2Token(token)) && network?.blockExplorerUrls[0])
+      return urlJoin(network.blockExplorerUrls[0], "token", token.contractAddress)
 
     return null
-  }, [token, evmNetwork?.explorerUrl])
+  }, [token, network?.blockExplorerUrls])
 }
 
 const useCoingeckoUrl = (token: Token | null) => {
@@ -185,7 +185,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.networkId)
   const tokenRates = useAssetDiscoveryTokenRates(token?.id)
-  const activeEvmNetworks = useActiveEvmNetworksState()
+  const activeEvmNetworks = useActiveNetworksState()
   const activeTokens = useActiveTokensState()
 
   const balance = useMemo(() => {
@@ -380,7 +380,7 @@ const Header: FC = () => {
 
   const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: true })
 
-  const activeNetworks = useActiveEvmNetworksState()
+  const activeNetworks = useActiveNetworksState()
   const recommendedNetworks = useMemo(() => {
     return allNetworks.filter(
       (n) =>
@@ -519,7 +519,7 @@ const AccountsWrapper: FC<{
 
 const NetworksWrapper: FC<{
   children?: ReactNode
-  networks: (Chain | SimpleEvmNetwork)[]
+  networks: Network[]
   className?: string
 }> = ({ children, networks, className }) => {
   return (
@@ -539,7 +539,7 @@ const ScanInfo: FC = () => {
   const { balancesByTokenId, balances, isInProgress } = useAssetDiscoveryScanProgress()
   const { lastScanAccounts, lastScanNetworks, lastScanTimestamp } = useAssetDiscoveryScan()
 
-  const activeEvmNetworks = useActiveEvmNetworksState()
+  const activeEvmNetworks = useActiveNetworksState()
   const activeTokens = useActiveTokensState()
   const tokensMap = useTokensMap()
   const evmNetworksMap = useEvmNetworksMap()
@@ -581,7 +581,7 @@ const ScanInfo: FC = () => {
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
     [accounts, lastScanAccounts],
   )
-  const lastNetworks = useMemo<(Chain | SimpleEvmNetwork)[]>(
+  const lastNetworks = useMemo<Network[]>(
     () => lastScanNetworks.map((id) => evmNetworksMap[id] ?? chainsMap[id]).filter(isNotNil),
     [chainsMap, evmNetworksMap, lastScanNetworks],
   )

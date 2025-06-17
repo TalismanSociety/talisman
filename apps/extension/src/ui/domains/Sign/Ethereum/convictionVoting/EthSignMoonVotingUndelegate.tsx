@@ -13,7 +13,7 @@ export const EthSignMoonVotingUndelegate: FC = () => {
 
   const trackId = useMemo(() => getContractCallArg<number>(decodedTx, "trackId"), [decodedTx])
 
-  if (!network?.nativeToken?.id || trackId === undefined) return null
+  if (!network?.nativeTokenId || trackId === undefined) return null
 
   return (
     <SignContainer

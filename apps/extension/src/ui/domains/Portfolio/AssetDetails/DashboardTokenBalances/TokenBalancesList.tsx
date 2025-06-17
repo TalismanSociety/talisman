@@ -1,4 +1,4 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import { Token, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { Balances } from "extension-core"
 import { ReactNode, Suspense } from "react"
@@ -11,7 +11,6 @@ import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellVal
 import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { UseTokenReturnType } from "@ui/state"
 
 import { BalanceSummary } from "../../useTokenBalancesSummary"
 import { CopyAddressButton } from "../CopyAddressIconButton"
@@ -20,7 +19,7 @@ import { TokenContextMenu } from "../TokenContextMenu"
 
 type TokenBalancesListProps = {
   tokenId: TokenId
-  token: UseTokenReturnType
+  token: Token | null
   tokenLogoUrl?: string
   balances: Balances
   detailRowsLength: number

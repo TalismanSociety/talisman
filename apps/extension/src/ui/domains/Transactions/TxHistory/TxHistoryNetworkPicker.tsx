@@ -6,7 +6,7 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Chain, SimpleEvmNetwork } from "extension-core"
+import { Network } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -15,15 +15,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useChain, useChainByGenesisHash, useEvmNetwork } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
-
-type Network = Chain | SimpleEvmNetwork
-
-const getNetworkId = (network: Network): string => {
-  const genesisHash = "genesisHash" in network ? network.genesisHash : undefined
-  return genesisHash || network.id
-}
 
 export const TxHistoryNetworkPicker: FC<{
   isOpen?: boolean
@@ -93,8 +85,8 @@ const NetworksList: FC<{
         <NetworkRow
           key={network.id}
           network={network}
-          selected={getNetworkId(network) === selectedNetworkId}
-          onClick={() => onSelect(getNetworkId(network))}
+          selected={network.id === selectedNetworkId}
+          onClick={() => onSelect(network.id)}
         />
       ))}
       {networks.length === 0 && (
@@ -111,12 +103,7 @@ const NetworkRow: FC<{
 }> = ({ network, selected, onClick }) => {
   const { t } = useTranslation()
 
-  const chain = useChainByGenesisHash(
-    network && "genesisHash" in network ? network.genesisHash : null,
-  )
-  const relay = useChain(chain?.relay?.id ?? null)
-  const evmNetwork = useEvmNetwork(network?.id ?? null)
-  const networkInfo = useNetworkInfo({ evmNetwork, chain, relay })
+  const networkInfo = useNetworkInfo(network?.id)
 
   return (
     <button

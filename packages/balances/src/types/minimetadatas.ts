@@ -6,18 +6,11 @@ import { ChainId } from "@talismn/chaindata-provider"
 export const deriveMiniMetadataId = ({
   source,
   chainId,
-  specName,
   specVersion,
-  balancesConfig,
-}: Pick<
-  MiniMetadata,
-  "source" | "chainId" | "specName" | "specVersion" | "balancesConfig"
->): string =>
+  libVersion,
+}: Pick<MiniMetadata, "source" | "chainId" | "specVersion" | "libVersion">): string =>
   u8aToHex(
-    xxhashAsU8a(
-      new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}${balancesConfig}`),
-      64,
-    ),
+    xxhashAsU8a(new TextEncoder().encode(`${source}${chainId}${specVersion}${libVersion}`), 64),
     undefined,
     false,
   )
@@ -40,24 +33,12 @@ export type MiniMetadata = {
   /** The chain this miniMetadata came from */
   chainId: ChainId
 
-  /** The chain specName which this miniMetadata is valid for */
-  specName: string
-
   /** The chain specVersion which this miniMetadata is valid for */
-  specVersion: string
+  specVersion: number
 
-  /** The JSON-encoded chain balancesConfig which this miniMetadata is valid for */
-  balancesConfig: string
-
-  /** The version of the metadata format e.g. 13, 14, 15, etc */
-  version: number
+  /** the version of the balances library used to craft the mini metadata */
+  libVersion: string
 
   /** The miniMetadata encoded as a hex string */
   data: `0x${string}` | null
-
-  /**
-   * Some balance modules need a little bit of extra data in addition to the miniMetadata.
-   * They can store that data as a JSON-encoded string here.
-   */
-  extra: string
 }

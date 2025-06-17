@@ -1,6 +1,9 @@
 import { Balances } from "@talismn/balances"
+import { isDotNetwork } from "@talismn/chaindata-provider"
 import { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
+import { Network } from "extension-core"
+import { keyBy } from "lodash"
 import { useMemo } from "react"
 
 import { usePortfolio, useSelectedCurrency } from "@ui/state"
@@ -23,9 +26,12 @@ const DEFAULT_SUMMARY: BalanceSummary = {
   availableFiat: null,
 }
 
+const isRelayDotNetwork = (network: Network) =>
+  isDotNetwork(network) && network.topologyInfo.type === "relay"
+
 // This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
 const useBestTokenForSymbol = (balances: Balances) => {
-  const { tokens, chains } = usePortfolio()
+  const { tokens, networks } = usePortfolio()
   const currency = useSelectedCurrency()
 
   return useMemo(() => {
@@ -41,16 +47,12 @@ const useBestTokenForSymbol = (balances: Balances) => {
 
     const tokenIds = balances.each.map((t) => t.tokenId)
     const matches = tokens?.filter((t) => tokenIds.includes(t.id))
+    const networksById = keyBy(networks, "id")
 
     return (
       // priority to token from a relay chain
       // mainnet relay native
-      matches?.find(
-        (t) =>
-          !t.isTestnet &&
-          ["substrate-native", "evm-native"].includes(t.type) &&
-          chains?.find((c) => !c.relay && c.id === t.networkId),
-      ) ??
+      matches?.find((t) => !t.isTestnet && isRelayDotNetwork(networksById[t.networkId])) ??
       // mainnet solo/para native
       matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
       // mainnet which has an image
@@ -60,7 +62,7 @@ const useBestTokenForSymbol = (balances: Balances) => {
         (t) =>
           t.isTestnet &&
           ["substrate-native", "evm-native"].includes(t.type) &&
-          chains?.find((c) => !c.relay && c.id === t.networkId),
+          isRelayDotNetwork(networksById[t.networkId]),
       ) ??
       // testnet solo/para native
       matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
@@ -69,7 +71,7 @@ const useBestTokenForSymbol = (balances: Balances) => {
       // fallback
       matches?.[0]
     )
-  }, [balances.each, chains, currency, tokens])
+  }, [balances.each, currency, networks, tokens])
 }
 
 export const useTokenBalancesSummary = (balances: Balances) => {

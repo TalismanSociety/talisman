@@ -1,4 +1,3 @@
-import { assert } from "@polkadot/util"
 import {
   AddressesByToken,
   db as balancesDb,
@@ -6,7 +5,14 @@ import {
   MiniMetadata,
   StoredBalanceJson,
 } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import {
+  DotNetwork,
+  EthNetwork,
+  isDotNetwork,
+  isEthNetwork,
+  Network,
+  Token,
+} from "@talismn/chaindata-provider"
 import { Account, getAccountGenesisHash, isAccountNotContact } from "@talismn/keyring"
 import { Deferred, encodeAnyAddress, firstThenDebounce, isEthereumAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
@@ -31,12 +37,10 @@ import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
 import { isBackgroundPage } from "../../util/isBackgroundPage"
-import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
-import { Chain } from "../chains/types"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
-import { EvmNetwork } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
-import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
+import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 import {
   AddressesAndEvmNetwork,
   AddressesAndTokens,
@@ -48,8 +52,8 @@ import {
   RequestBalancesByParamsSubscribe,
 } from "./types"
 
-type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
-type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs">
+type ChainIdAndRpcs = Pick<DotNetwork, "id" | "genesisHash" | "account" | "rpcs">
+type EvmNetworkIdAndRpcs = Pick<EthNetwork, "id" | "nativeTokenId" | "substrateChainId" | "rpcs">
 type TokenIdAndType = Pick<Token, "id" | "type" | "networkId" | "platform">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
@@ -76,16 +80,23 @@ const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<stri
     }),
   )
 }
-export const activeChainsObservable = getActiveStuff(
-  chaindataProvider.chainsObservable,
-  activeChainsStore.observable,
-  isChainActive,
-)
+// export const activeChainsObservable = getActiveStuff(
+//   chaindataProvider.chainsObservable,
+//   activeChainsStore.observable,
+//   isChainActive,
+// )
 
+// TODO yeet (still used by nfts)
 export const activeEvmNetworksObservable = getActiveStuff(
   chaindataProvider.evmNetworksObservable,
   activeEvmNetworksStore.observable,
   isEvmNetworkActive,
+)
+
+export const activeNetworksObservable = getActiveStuff(
+  chaindataProvider.networksObservable,
+  activeNetworksStore.observable,
+  isNetworkActive,
 )
 
 export const activeTokensObservable = getActiveStuff(
@@ -347,19 +358,14 @@ abstract class BalancePool {
    * @param address - The address to query the balance
    */
   async getBalance({
-    chainId,
-    evmNetworkId,
     tokenId,
     address: chainFormattedAddress,
   }: RequestBalance): Promise<BalanceJson | undefined> {
-    assert(chainId || evmNetworkId, "chainId or evmNetworkId is required")
-
     const address = encodeAnyAddress(chainFormattedAddress, 42)
 
     // search for existing balance in the store
     const storeBalances = new Balances(Object.values(this.balances))
-    const networkFilter = chainId ? { chainId } : { evmNetworkId }
-    const existing = storeBalances.find({ ...networkFilter, tokenId, address })
+    const existing = storeBalances.find({ tokenId, address })
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
@@ -383,7 +389,7 @@ abstract class BalancePool {
     const addressesByToken = { [tokenId]: [address] }
     const balances = await balanceModule.fetchBalances(addressesByToken)
 
-    return balances.find({ chainId, evmNetworkId, tokenId, address }).sorted[0]?.toJSON()
+    return balances.find({ tokenId, address }).sorted[0]?.toJSON()
   }
 
   /**
@@ -393,8 +399,9 @@ abstract class BalancePool {
     // subscribe to all the inputs that make up the list of tokens to watch balances for
     // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
     return combineLatest([
-      activeChainsObservable,
-      activeEvmNetworksObservable,
+      // activeChainsObservable,
+      // activeEvmNetworksObservable,
+      activeNetworksObservable,
       activeTokensObservable,
       liveQuery(() => balancesDb.miniMetadatas.toArray()),
     ]).subscribe({
@@ -416,16 +423,13 @@ abstract class BalancePool {
    *                 Chains present in the store but not in this list will be removed.
    *                 Chains with a different health status to what is in the store will be updated.
    */
-  private async setChains(
-    chains: Chain[],
-    evmNetworks: EvmNetwork[],
-    tokens: Token[],
-    miniMetadatas: MiniMetadata[],
-  ) {
+  private async setChains(networks: Network[], tokens: Token[], miniMetadatas: MiniMetadata[]) {
     // Check for changes since the last call to this.setChains
     // compare chains
     const newChains = Object.fromEntries(
-      chains.map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])]),
+      networks
+        .filter(isDotNetwork)
+        .map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])]),
     )
     const noChainChanges =
       Object.keys(newChains).length === Object.keys(this.chains).length &&
@@ -433,10 +437,12 @@ abstract class BalancePool {
 
     // compare evm networks
     const newEvmNetworks = Object.fromEntries(
-      evmNetworks.map((evmNetwork) => [
-        evmNetwork.id,
-        pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-      ]),
+      networks
+        .filter(isEthNetwork)
+        .map((evmNetwork) => [
+          evmNetwork.id,
+          pick(evmNetwork, ["id", "nativeTokenId", "substrateChainId", "rpcs"]),
+        ]),
     )
 
     const noEvmNetworkChanges =
@@ -475,9 +481,10 @@ abstract class BalancePool {
     const tokenIds = new Set(tokens.map((token) => token.id))
     await this.deleteBalances((balance) => {
       // remove balance if chain/evm network doesn't exist
-      if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && !this.chains[balance.chainId]) return true
-      if (balance.evmNetworkId !== undefined && !this.evmNetworks[balance.evmNetworkId]) return true
+      if (balance.networkId) return true
+      if (!this.chains[balance.networkId] && !this.evmNetworks[balance.networkId]) return true
+      // if (balance.chainId !== undefined && !this.chains[balance.chainId]) return true
+      // if (balance.evmNetworkId !== undefined && !this.evmNetworks[balance.evmNetworkId]) return true
 
       // remove balance if token doesn't exist
       if (!tokenIds.has(balance.tokenId)) return true
@@ -613,15 +620,15 @@ abstract class BalancePool {
             // set status to stale for balances matching the error
             const currentBalances = Object.values(this.balances)
             const staleBalances = Object.values(currentBalances)
-              .filter(({ tokenId, address, source, ...rest }) => {
-                const locationId = "chainId" in rest ? rest.chainId : rest.evmNetworkId
-                const chainComparison = error.chainId
-                  ? error.chainId === locationId
-                  : error.evmNetworkId
-                    ? error.evmNetworkId === locationId
-                    : true
+              .filter(({ tokenId, address, source, networkId }) => {
+                //  const locationId = "chainId" in rest ? rest.chainId : rest.evmNetworkId
+                // const chainComparison =
+                // ? error.chainId === locationId
+                // : error.evmNetworkId
+                //   ? error.evmNetworkId === locationId
+                //   : true
                 return (
-                  chainComparison &&
+                  error.networkId === networkId &&
                   addressesByModuleToken[tokenId]?.includes(address) &&
                   source === balanceModule.type
                 )

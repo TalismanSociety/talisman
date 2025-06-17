@@ -1,11 +1,10 @@
 import { XcmVersionedAssets } from "@polkadot-api/descriptors"
-import { TokenId, TokenList } from "@talismn/chaindata-provider"
-import { Chain } from "extension-core"
+import { DotNetwork, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export const getMultiAssetTokenId = (
   assets: XcmVersionedAssets,
-  chain: Chain,
+  chain: DotNetwork,
   tokens: TokenList,
 ): { tokenId: TokenId; value: bigint } => {
   if (assets.type === "V3") {
@@ -16,8 +15,8 @@ export const getMultiAssetTokenId = (
       if (asset.id.type === "Concrete" && asset.fun.type === "Fungible") {
         const value = asset.fun.value
         const interior = asset.id.value.interior
-        if (interior.type === "Here" && chain.nativeToken?.id) {
-          return { tokenId: chain.nativeToken.id, value }
+        if (interior.type === "Here" && chain.nativeTokenId) {
+          return { tokenId: chain.nativeTokenId, value }
         }
         if (interior.type === "X2") {
           if (

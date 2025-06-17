@@ -67,7 +67,7 @@ const decodeMultilocation = (multilocation?: {
 export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation()
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
-  const substrateChain = useChain(network?.substrateChain?.id)
+  const substrateChain = useChain(network?.substrateChainId)
   const tokens = useTokens()
 
   const [destination, amount, currencyAddress] = useMemo(
@@ -80,7 +80,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   )
 
   const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
-  const nativeToken = useToken(network?.nativeToken?.id)
+  const nativeToken = useToken(network?.nativeTokenId)
 
   const { decimals, symbol, coingeckoId, logo } = useMemo(() => {
     // native token on moonbeam is available as an ERC20 on this precompiled contract
@@ -114,17 +114,17 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
   const chains = useChains()
-  const targetChain = useMemo(
-    () =>
-      target
-        ? target.paraId !== undefined // if no paraId, target is the relay chain
-          ? chains.find(
-              (c) => c.relay?.id === substrateChain?.relay?.id && c.paraId === target.paraId,
-            )
-          : chains.find((c) => c.id === substrateChain?.relay?.id)
-        : undefined,
-    [chains, substrateChain?.relay?.id, target],
-  )
+  const targetChain = useMemo(() => {
+    if (!target || !substrateChain) return undefined
+
+    // assume paraId is on the same relay chain as substrateChain
+    if (substrateChain.topologyInfo.type !== "parachain") return undefined
+    const relayId = substrateChain.topologyInfo.relayId
+
+    return target.paraId
+      ? chains.find((c) => c.topologyInfo.type === "parachain" && c.paraId === target.paraId)
+      : chains.find((c) => c.id === relayId)
+  }, [chains, substrateChain, target])
 
   const targetAddress = useMemo(
     () =>

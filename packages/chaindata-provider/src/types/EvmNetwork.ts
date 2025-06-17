@@ -1,10 +1,15 @@
 import { TokenId } from "../chaindata"
 import { BalancesConfig, BalancesMetadata, ChainId } from "./Chain"
 
+/** @deprecated */
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork>
+/** @deprecated */
 export type SimpleEvmNetworkList = Record<EvmNetworkId, SimpleEvmNetwork>
 
+/** @deprecated */
 export type EvmNetworkId = string
+
+/** @deprecated */
 export type EvmNetwork = {
   id: EvmNetworkId
   isTestnet: boolean
@@ -46,17 +51,21 @@ export type EvmNetwork = {
   balancesMetadata: Array<BalancesMetadata>
   erc20aggregator?: `0x${string}`
 }
+
+/** @deprecated */
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true
   explorerUrls: string[]
   iconUrls: string[]
 }
 
+/** @deprecated */
 export type SimpleEvmNetwork = Omit<
   EvmNetwork | CustomEvmNetwork,
   "balancesConfig" | "balancesMetadata"
 >
 
+/** @deprecated */
 export type EthereumRpc = {
   url: string // The url of this ethereum RPC
 }

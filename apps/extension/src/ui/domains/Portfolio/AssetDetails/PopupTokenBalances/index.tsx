@@ -15,7 +15,14 @@ type TokenBalancesParams = {
 }
 
 export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
-  const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
+  const {
+    network: chainOrNetwork,
+    summary,
+    token,
+    detailRows,
+    status,
+    networkType,
+  } = useTokenBalances({
     tokenId,
     balances,
   })

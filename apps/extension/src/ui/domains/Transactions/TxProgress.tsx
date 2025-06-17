@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
@@ -13,14 +13,9 @@ import { useChainByGenesisHash, useEvmNetwork, useTransaction } from "@ui/state"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
 
-const getBlockExplorerUrl = (
-  network: SimpleEvmNetwork | undefined | null,
-  chain: Chain | undefined | null,
-  hash: string,
-) => {
-  if (network?.explorerUrl) return urlJoin(network.explorerUrl, "tx", hash)
-  if (chain?.subscanUrl) return urlJoin(chain.subscanUrl, "tx", hash)
-  return undefined
+const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
+  const blockExplorerUrl = network?.blockExplorerUrls[0]
+  return blockExplorerUrl ? urlJoin(blockExplorerUrl, "tx", hash) : undefined
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
@@ -204,7 +199,7 @@ type TxProgressSubstrateProps = {
 
 const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, className }) => {
   const chain = useChainByGenesisHash(tx.genesisHash)
-  const href = useMemo(() => getBlockExplorerUrl(undefined, chain, tx.hash), [chain, tx.hash])
+  const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
   return (
     <TxProgressBase
@@ -225,7 +220,7 @@ type TxProgressEvmProps = {
 
 const TxProgressEvm: FC<TxProgressEvmProps> = ({ tx, className, onClose }) => {
   const network = useEvmNetwork(tx.evmNetworkId)
-  const href = useMemo(() => getBlockExplorerUrl(network, undefined, tx.hash), [network, tx.hash])
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
   return (
     <TxProgressBase
@@ -252,7 +247,7 @@ export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, onClose
 
   // tx is null if not found in db
   if (tx === null) {
-    const href = getBlockExplorerUrl(evmNetwork, chain, hash)
+    const href = getBlockExplorerUrl(evmNetwork ?? chain, hash)
     return <TxProgressBase href={href} className={className} onClose={onClose} />
   }
 

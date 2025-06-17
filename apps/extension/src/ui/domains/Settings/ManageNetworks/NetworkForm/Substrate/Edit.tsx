@@ -1,9 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
-  Chain,
-  ChainId,
-  CustomChain,
   CustomSubNativeToken,
+  DotNetwork,
+  DotNetworkId,
   isCustomChain,
   SubNativeToken,
 } from "@talismn/chaindata-provider"
@@ -21,7 +20,7 @@ import { SubNetworkFormData, subNetworkFormSchema } from "./schema"
 import { SubNetworkFormBaseProps } from "./types"
 
 export type SubNetworkFormEditProps = SubNetworkFormBaseProps & {
-  chainId?: ChainId
+  chainId?: DotNetworkId
 }
 
 export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditProps) => {
@@ -29,7 +28,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
   const isBuiltInChain = useIsBuiltInChain(chainId)
 
   const chain = useChain(chainId)
-  const nativeToken = useToken(chain?.nativeToken?.id) as
+  const nativeToken = useToken(chain?.nativeTokenId) as
     | CustomSubNativeToken
     | SubNativeToken
     | undefined
@@ -84,24 +83,23 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
 }
 
 const chainToFormData = (
-  chain?: Chain | CustomChain,
+  chain?: DotNetwork,
   nativeToken?: SubNativeToken | CustomSubNativeToken,
 ): SubNetworkFormData | undefined => {
   if (!chain) return undefined
 
   return {
     id: chain.id,
-    isTestnet: chain.isTestnet,
+    isTestnet: !!chain.isTestnet,
     genesisHash: chain.genesisHash!,
     name: chain.name ?? "",
     nativeTokenSymbol: nativeToken?.symbol ?? "Unit",
     nativeTokenDecimals: nativeToken?.decimals ?? 0,
     nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? "",
     accountFormat: chain.account!,
-    subscanUrl: chain.subscanUrl ?? "",
+    subscanUrl: chain.blockExplorerUrls[0] ?? "",
     rpcs:
-      chain?.rpcs?.map((rpc) => ({ url: rpc.url, genesisHash: chain.genesisHash ?? undefined })) ??
-      [],
+      chain?.rpcs?.map((rpc) => ({ url: rpc, genesisHash: chain.genesisHash ?? undefined })) ?? [],
     hasCheckMetadataHash: chain.hasCheckMetadataHash ?? false,
   }
 }

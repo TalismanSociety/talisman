@@ -11,7 +11,7 @@ import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
-import { useChain, useSelectedCurrency, useToken } from "@ui/state"
+import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -37,7 +37,7 @@ export type TokenBalances = ReturnType<typeof useTokenBalances>
 
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)
-  const chain = useChain(token?.networkId)
+  const network = useNetworkById(token?.networkId)
 
   const { selectedAccount: account } = usePortfolioNavigation()
   const { summary, tokenBalances } = useTokenBalancesSummary(balances)
@@ -159,10 +159,9 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 
   const detailRows = useEnhanceDetailRows(rawDetailRows)
 
-  const { evmNetwork } = useMemo(() => balances.sorted[0], [balances])
+  const { networkId } = useMemo(() => balances.sorted[0], [balances])
 
-  const relay = useChain(chain?.relay?.id)
-  const networkType = useNetworkCategory({ chain, evmNetwork, relay })
+  const networkType = useNetworkCategory(networkId)
 
   const status = useBalancesStatus(balances)
 
@@ -170,11 +169,9 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
     summary,
     token,
     detailRows,
-    evmNetwork,
-    chain,
     status,
     networkType,
-    chainOrNetwork: chain || evmNetwork,
+    network,
   }
 }
 

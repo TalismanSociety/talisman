@@ -1,19 +1,29 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Chain, ChainId, ChainList, Token } from "@talismn/chaindata-provider"
-import { Account, Address, getAccountGenesisHash, isAccountAddressEthereum } from "extension-core"
+import {
+  ChainId,
+  DotNetwork,
+  Network,
+  NetworkId,
+  NetworkList,
+  Token,
+} from "@talismn/chaindata-provider"
+import { encodeAddressSs58, isAddressEqual, normalizeAddress } from "@talismn/crypto"
+import {
+  Account,
+  Address,
+  getAccountGenesisHash,
+  isAccountCompatibleWithNetwork,
+} from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { getAddress } from "viem"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
 import {
   useAccountByAddress,
   useAccounts,
-  useChain,
-  useChainByGenesisHash,
-  useChainsMap,
-  useEvmNetwork,
+  useNetworkByGenesisHash,
+  useNetworkById,
+  useNetworksMapById,
   useToken,
 } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
@@ -28,29 +38,21 @@ type CopyAddressWizardState = CopyAddressWizardInputs & { route: CopyAddressWiza
 
 const isAccountCompatibleWithChain = (
   accounts: Account[],
-  chainsMap: ChainList,
+  chainsMap: NetworkList,
   address: Address | undefined | null,
-  chainId: ChainId | undefined | null,
+  networkId: NetworkId | undefined | null,
 ) => {
-  if (!address || !chainId) return true
+  if (!address || !networkId) return true
 
-  const chain = chainId ? chainsMap[chainId] : null
-  const account = accounts.find(
-    (a) => address && convertAddress(a.address, null) === convertAddress(address, null),
-  )
+  const chain = networkId ? chainsMap[networkId] : null
+  const account = accounts.find((a) => address && isAddressEqual(a.address, address))
 
   if (!account || !chain) {
-    log.warn("unknown account/chain compatibility", { account, chain, address, chainId })
+    log.warn("unknown account/chain compatibility", { account, chain, address, chainId: networkId })
     return true
   }
 
-  const accountGenesisHash = getAccountGenesisHash(account)
-  if (account && accountGenesisHash && accountGenesisHash !== chain.genesisHash) return false
-
-  const isEthereum = isAccountAddressEthereum(account)
-
-  if (isEthereum) return chain.account === "secp256k1"
-  return chain.account !== "secp256k1"
+  return isAccountCompatibleWithNetwork(chain as unknown as DotNetwork, account)
 }
 
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
@@ -61,20 +63,24 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
   return "copy"
 }
 
-const getFormattedAddress = (address?: Address, chain?: Chain | null, legacyFormat?: boolean) => {
-  if (address) {
-    try {
-      if (isEthereumAddress(address)) return getAddress(address) // enforces format for checksum
+const getFormattedAddress = (
+  address?: Address,
+  network?: Network | null,
+  legacyFormat?: boolean,
+) => {
+  if (!address) return null
 
+  try {
+    if (isEthereumAddress(address)) return normalizeAddress(address)
+
+    if (network?.platform === "polkadot") {
       const prefix =
-        legacyFormat && typeof chain?.oldPrefix === "number"
-          ? chain.oldPrefix
-          : (chain?.prefix ?? null)
+        legacyFormat && typeof network.oldPrefix === "number" ? network.oldPrefix : network.prefix
 
-      return convertAddress(address, prefix)
-    } catch (err) {
-      log.error("Failed to format address", { err })
-    }
+      return encodeAddressSs58(address, prefix)
+    } else throw new Error("Unexpected network platform")
+  } catch (err) {
+    log.error("Failed to format address", { err })
   }
 
   return null
@@ -84,7 +90,7 @@ const getQrLogo = async (
   address: string | null,
   isGeneric: boolean,
   ethereum?: Token | null,
-  chain?: Chain | null,
+  network?: Network | null,
 ) => {
   if (!address) {
     return undefined
@@ -95,7 +101,7 @@ const getQrLogo = async (
     if (avatar) return avatar
   }
 
-  const logo = isEthereumAddress(address) ? ethereum?.logo : chain?.logo
+  const logo = isEthereumAddress(address) ? ethereum?.logo : network?.logo
   if (!logo) {
     return undefined
   }
@@ -120,22 +126,24 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }))
 
   const ethereum = useToken("1-evm-native")
-  const chain = useChain(state.networkId)
-  const evmNetwork = useEvmNetwork(state.networkId)
+
+  const network = useNetworkById(state.networkId)
+  // const chain = useChain(state.networkId)
+  // const evmNetwork = useEvmNetwork(state.networkId)
 
   const formattedAddress = useMemo(
-    () => getFormattedAddress(state.address, chain, state.legacyFormat),
-    [chain, state],
+    () => getFormattedAddress(state.address, network, state.legacyFormat),
+    [network, state],
   )
 
   const [isLogoLoaded, setIsLogoLoaded] = useState(false)
   const [logo, setLogo] = useState<string>()
   useEffect(() => {
     setIsLogoLoaded(false)
-    getQrLogo(formattedAddress, state.networkId === null, ethereum, chain)
+    getQrLogo(formattedAddress, state.networkId === null, ethereum, network)
       .then(setLogo)
       .finally(() => setIsLogoLoaded(true))
-  }, [chain, ethereum, formattedAddress, state.networkId])
+  }, [network, ethereum, formattedAddress, state.networkId])
 
   const setStateAndUpdateRoute = useCallback((updates: Partial<CopyAddressWizardInputs>) => {
     setState((prev) => {
@@ -145,30 +153,35 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [])
 
   const accounts = useAccounts()
-  const chainsMap = useChainsMap({ activeOnly: true, includeTestnets: true })
+  const networksMap = useNetworksMapById({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
     (chainId: ChainId | null, legacyFormat?: boolean) => {
       // if account & chain are not compatible, clear address
-      const address = isAccountCompatibleWithChain(accounts, chainsMap, state.address, chainId)
+      const address = isAccountCompatibleWithChain(accounts, networksMap, state.address, chainId)
         ? state.address
         : undefined
 
       setStateAndUpdateRoute({ networkId: chainId, address, legacyFormat })
     },
-    [accounts, chainsMap, setStateAndUpdateRoute, state.address],
+    [accounts, networksMap, setStateAndUpdateRoute, state.address],
   )
 
   const setAddress = useCallback(
     (address: Address) => {
       if (state.networkId) {
-        const chainId = isAccountCompatibleWithChain(accounts, chainsMap, address, state.networkId)
+        const chainId = isAccountCompatibleWithChain(
+          accounts,
+          networksMap,
+          address,
+          state.networkId,
+        )
           ? state.networkId
           : undefined
         setStateAndUpdateRoute({ address, networkId: chainId })
       } else setStateAndUpdateRoute({ address })
     },
-    [accounts, chainsMap, setStateAndUpdateRoute, state.networkId],
+    [accounts, networksMap, setStateAndUpdateRoute, state.networkId],
   )
 
   const goToAddressPage = useCallback(() => {
@@ -181,7 +194,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   // If chain restricted account, automatically select the chain
   const account = useAccountByAddress(state.address)
-  const targetChain = useChainByGenesisHash(getAccountGenesisHash(account))
+  const targetChain = useNetworkByGenesisHash(getAccountGenesisHash(account))
   useEffect(() => {
     if (targetChain) setChainId(targetChain.id)
   }, [setChainId, targetChain])
@@ -205,17 +218,18 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   // shortcut called before the last screen of the wizard
   const copySpecific = useCallback(
     async (address: string, chainId?: string | null, legacyFormat?: boolean) => {
-      const chain = chainId ? chainsMap[chainId] : null
-      const formattedAddress = chain
-        ? convertAddress(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
-        : address
+      const chain = chainId ? networksMap[chainId] : null
+      const formattedAddress =
+        chain?.platform === "polkadot" && chain.account === "*25519"
+          ? encodeAddressSs58(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
+          : address
       const onQrClick = () => {
         open({ address, networkId: chainId, qr: true, legacyFormat })
       }
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
     },
-    [chainsMap, close, open],
+    [close, networksMap, open],
   )
 
   const ctx = {
@@ -227,8 +241,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     goToNetworkPage,
     setChainId,
     setAddress,
-    chain,
-    evmNetwork,
+    network,
     copy,
     copySpecific,
     isLogoLoaded,

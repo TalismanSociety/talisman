@@ -63,7 +63,17 @@ export const chaindataAtom = atomWithObservable((get) => {
     map(filterTestnets),
     distinctUntilIsEqual,
   )
+  const networks = get(chaindataProviderAtom).networksObservable.pipe(
+    distinctUntilIsEqual,
+    map(filterTestnets),
+    distinctUntilIsEqual,
+  )
   const evmNetworksById = get(chaindataProviderAtom).evmNetworksByIdObservable.pipe(
+    distinctUntilIsEqual,
+    map(filterMapTestnets),
+    distinctUntilIsEqual,
+  )
+  const networksById = get(chaindataProviderAtom).networksByIdObservable.pipe(
     distinctUntilIsEqual,
     map(filterMapTestnets),
     distinctUntilIsEqual,
@@ -90,6 +100,8 @@ export const chaindataAtom = atomWithObservable((get) => {
   )
 
   return combineLatest({
+    networks,
+    networksById,
     chains,
     chainsById,
     chainsByGenesisHash,

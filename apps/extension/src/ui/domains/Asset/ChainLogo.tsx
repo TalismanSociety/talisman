@@ -41,7 +41,7 @@ type ChainLogoProps = {
 const ChainLogoInner: FC<ChainLogoProps> = ({ id, className }) => {
   const chain = useChain(id)
   const evmNetwork = useEvmNetwork(id)
-  const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChain?.id)
+  const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChainId)
 
   const props: ChainLogoBaseProps = useMemo(
     () => chain ?? evmNetworkSubstrateChain ?? evmNetwork ?? {},

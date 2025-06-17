@@ -39,7 +39,7 @@ const ViewDetailsContent: FC<{
         <ViewDetailsAddress
           label={t("From")}
           address={account.address}
-          blockExplorerUrl={evmNetwork?.explorerUrl}
+          blockExplorerUrl={evmNetwork?.blockExplorerUrls[0]}
         />
         <ViewDetailsField label={t("Domain")}>{siwe.domain}</ViewDetailsField>
         <ViewDetailsField label={t("Statement")}>{siwe.statement}</ViewDetailsField>

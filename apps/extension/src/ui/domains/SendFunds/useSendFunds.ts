@@ -1,6 +1,6 @@
 import { HexString } from "@polkadot/util/types"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { isDotNetwork, Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -29,8 +29,7 @@ import {
   useBalance,
   useBalancesByAddress,
   useBalancesHydrate,
-  useChain,
-  useEvmNetwork,
+  useNetworkById,
   useToken,
   useTokenRates,
   useTokenRatesMap,
@@ -55,7 +54,10 @@ const useRecipientBalance = (token?: Token | null, address?: Address | null) => 
     queryKey: [token?.id, address, hydrate],
     queryFn: async () => {
       if (!token || !address || !hydrate) return null
-      const storage = await api.getBalance({ chainId: token.networkId, address, tokenId: token.id })
+      const storage = await api.getBalance({
+        address,
+        tokenId: token.id,
+      })
       if (!storage) throw Error(t("Could not fetch recipient balance."))
       return storage ? new Balance(storage, hydrate) : null
     },
@@ -226,10 +228,11 @@ const useSendFundsProvider = () => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
-  const evmNetwork = useEvmNetwork(token?.networkId)
-  const chain = useChain(token?.networkId)
-  const tipToken = useToken(chain?.nativeToken?.id)
-  const tipTokenRates = useTokenRates(chain?.nativeToken?.id)
+  // const evmNetwork = useEvmNetwork(token?.networkId)
+  // const chain = useChain(token?.networkId)
+  const network = useNetworkById(token?.networkId)
+  const tipToken = useToken(network?.nativeTokenId)
+  const tipTokenRates = useTokenRates(network?.nativeTokenId)
   const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
@@ -582,7 +585,7 @@ const useSendFundsProvider = () => {
         options: { value: privacyRoundCurrency(value.fiat("usd") ?? 0) ?? "0" },
       })
 
-      if (token.networkId && chain?.genesisHash) {
+      if (token.networkId && isDotNetwork(network)) {
         const { hash } = await api.assetTransfer(
           token.networkId,
           token.id,
@@ -593,7 +596,7 @@ const useSendFundsProvider = () => {
           method,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
+        gotoProgress({ hash, networkIdOrHash: network.genesisHash })
       } else if (token.networkId) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
@@ -617,13 +620,13 @@ const useSendFundsProvider = () => {
       setIsProcessing(false)
     }
   }, [
-    chain,
     sendMax,
     maxAmount,
     transfer,
     from,
     to,
     token,
+    network,
     tip?.planck,
     method,
     gotoProgress,
@@ -634,7 +637,7 @@ const useSendFundsProvider = () => {
     async (signature: HexString, payload?: SignerPayloadJSON) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
+        if (subTransaction?.unsigned && token?.id && isDotNetwork(network)) {
           // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload had to be modified to include metadata hash
           // otherwise, signature is for the initial payload
           const { hash } = await api.assetTransferApproveSign(
@@ -647,7 +650,7 @@ const useSendFundsProvider = () => {
             },
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-          gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
+          gotoProgress({ hash, networkIdOrHash: network.genesisHash })
           return
         }
         if (evmTransaction?.transaction && amount && token?.networkId && isEthereumAddress(to)) {
@@ -670,7 +673,7 @@ const useSendFundsProvider = () => {
         setIsProcessing(false)
       }
     },
-    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain],
+    [subTransaction, token, network, evmTransaction, amount, to, gotoProgress],
   )
 
   // reset send error if route or params changes
@@ -692,8 +695,7 @@ const useSendFundsProvider = () => {
     sendMax,
     allowReap,
     onSendMaxClick,
-    chain,
-    evmNetwork,
+    network,
     evmTransaction,
     subTransaction,
     method,

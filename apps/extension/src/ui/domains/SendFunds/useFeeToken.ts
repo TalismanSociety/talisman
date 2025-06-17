@@ -10,21 +10,22 @@ export const useFeeToken = (tokenId?: string | null) => {
   const feeTokenId = useMemo(() => {
     if (!token) return null
 
-    if (typeof chain?.feeToken === "string") return chain.feeToken
+    // TODO reintroduce below insanity
+    //if (typeof chain?.feeToken === "string") return chain.feeToken
 
     switch (token.type) {
       case "evm-uniswapv2":
       case "evm-erc20":
       case "evm-native":
-        return evmNetwork?.nativeToken?.id
+        return evmNetwork?.nativeTokenId
       case "substrate-assets":
       case "substrate-foreignassets":
       case "substrate-native":
       case "substrate-psp22":
       case "substrate-tokens":
-        return chain?.nativeToken?.id
+        return chain?.nativeTokenId
     }
-  }, [chain?.feeToken, chain?.nativeToken?.id, evmNetwork?.nativeToken?.id, token])
+  }, [chain?.nativeTokenId, evmNetwork?.nativeTokenId, token])
 
   return useToken(feeTokenId)
 }

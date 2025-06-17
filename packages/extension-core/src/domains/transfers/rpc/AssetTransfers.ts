@@ -4,7 +4,13 @@ import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { Chain, ChainId, SubNativeToken, TokenId } from "@talismn/chaindata-provider"
+import {
+  ChainId,
+  DotNetwork,
+  NetworkId,
+  SubNativeToken,
+  TokenId,
+} from "@talismn/chaindata-provider"
 
 import { balanceModules } from "../../../rpcs/balance-modules"
 import { chainConnector } from "../../../rpcs/chain-connector"
@@ -160,7 +166,7 @@ export default class AssetTransfersRpc {
    *          - `registry` a type registry containing metadata for the chain this transaction should be submitted to.
    */
   private static async prepareTransaction(
-    chainId: ChainId,
+    chainId: NetworkId,
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,
@@ -172,7 +178,7 @@ export default class AssetTransfersRpc {
     tx: Extrinsic
     registry: TypeRegistry
     unsigned: SignerPayloadJSON
-    chain: Chain
+    chain: DotNetwork
     signature?: HexString
   }> {
     const chain = await chaindataProvider.chainById(chainId)
@@ -182,8 +188,7 @@ export default class AssetTransfersRpc {
     const token = await chaindataProvider.tokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
-    assert(chain.nativeToken, `Unknown native token for chain ${chainId}`)
-    const nativeToken = (await chaindataProvider.tokenById(chain.nativeToken.id)) as SubNativeToken
+    const nativeToken = (await chaindataProvider.tokenById(chain.nativeTokenId)) as SubNativeToken
 
     // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
     // using a finalized block as reference for mortality is necessary for txs to get through

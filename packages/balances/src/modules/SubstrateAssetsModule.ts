@@ -5,9 +5,9 @@ import { defineMethod } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
-  ChainId,
   githubTokenLogoUrl,
   SubAssetsToken,
+  subAssetTokenId,
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
@@ -31,13 +31,8 @@ import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelp
 type ModuleType = "substrate-assets"
 const moduleType: ModuleType = "substrate-assets"
 
-export const subAssetTokenId = (chainId: ChainId, assetId: string, tokenSymbol: string) =>
-  `${chainId}-substrate-assets-${assetId}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
 export type SubAssetsChainMeta = {
-  isTestnet: boolean
   miniMetadata?: string
-  metadataVersion?: number
 }
 
 export type SubAssetsModuleConfig = {
@@ -48,7 +43,7 @@ export type SubAssetsModuleConfig = {
   >
 }
 
-export type SubAssetsBalance = NewBalanceType<ModuleType, "complex", "substrate">
+export type SubAssetsBalance = NewBalanceType<ModuleType, "complex">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -99,9 +94,8 @@ export const SubAssetsModule: NewBalanceModule<
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       if ((moduleConfig?.tokens ?? []).length < 1) return {}
 
-      const { isTestnet, miniMetadata, metadataVersion } = chainMeta
-      if (miniMetadata === undefined || metadataVersion === undefined) return {}
-      if (metadataVersion < 14) return {}
+      const { miniMetadata } = chainMeta
+      if (!miniMetadata) return {}
 
       const metadata = unifyMetadata(decAnyMetadata(miniMetadata))
       const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
@@ -162,12 +156,11 @@ export const SubAssetsModule: NewBalanceModule<
           const decimals = assetsMetadata?.decimals ?? 0
           const isFrozen = assetsMetadata?.is_frozen ?? false
 
-          const id = subAssetTokenId(chainId, assetId, symbol)
+          const id = subAssetTokenId(chainId, assetId)
           const token: SubAssetsToken = {
             id,
             type: "substrate-assets",
             platform: "polkadot",
-            isTestnet,
             isDefault: tokenConfig?.isDefault ?? true,
             symbol,
             name: tokenConfig?.name || symbol,
@@ -181,7 +174,7 @@ export const SubAssetsModule: NewBalanceModule<
 
           if (tokenConfig?.symbol) {
             token.symbol = tokenConfig?.symbol
-            token.id = subAssetTokenId(chainId, assetId, token.symbol)
+            token.id = subAssetTokenId(chainId, assetId)
           }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
@@ -318,25 +311,25 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const chainId = token.networkId
-    if (!chainId) {
+    const networkId = token.networkId
+    if (!networkId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-    const chain = chains[chainId]
+    const chain = chains[networkId]
     if (!chain) {
-      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
+      log.warn(`Chain ${networkId} for token ${tokenId} not found`)
       return []
     }
 
     return addresses.flatMap((address): RpcStateQuery<SubAssetsBalance | null> | [] => {
-      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const scaleCoder = chainStorageCoders.get(networkId)?.storage
       const stateKey =
         tryEncode(scaleCoder, BigInt(token.assetId), address) ??
         tryEncode(scaleCoder, token.assetId, address)
       if (!stateKey) {
         log.warn(
-          `Invalid assetId / address in ${chainId} storage query ${token.assetId} / ${address}`,
+          `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
         )
         return []
       }
@@ -354,7 +347,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-assets balance on chain ${chainId}`,
+          `Failed to decode substrate-assets balance on chain ${networkId}`,
         ) ?? {
           balance: 0n,
           is_frozen: false,
@@ -390,14 +383,13 @@ async function buildQueries(
           status: "live",
 
           address,
-          multiChainId: { subChainId: chainId },
-          chainId,
+          networkId,
           tokenId: token.id,
           values: balanceValues,
         } as SubAssetsBalance
       }
 
-      return { chainId, stateKey, decodeResult }
+      return { chainId: networkId, stateKey, decodeResult }
     })
   })
 }

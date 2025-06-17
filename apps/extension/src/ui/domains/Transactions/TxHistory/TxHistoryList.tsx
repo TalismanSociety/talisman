@@ -313,8 +313,11 @@ const EvmTxActions: FC<{
   }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
-    () => (evmNetwork?.explorerUrl ? urlJoin(evmNetwork.explorerUrl, "tx", tx.hash) : null),
-    [evmNetwork?.explorerUrl, tx.hash],
+    () =>
+      evmNetwork?.blockExplorerUrls[0]
+        ? urlJoin(evmNetwork.blockExplorerUrls[0], "tx", tx.hash)
+        : null,
+    [evmNetwork?.blockExplorerUrls, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -585,11 +588,11 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       : {
           isTransfer,
           value: tx.unsigned.value,
-          tokenId: evmNetwork?.nativeToken?.id,
+          tokenId: evmNetwork?.nativeTokenId,
           to: tx.unsigned.to,
         }
   }, [
-    evmNetwork?.nativeToken?.id,
+    evmNetwork?.nativeTokenId,
     tx.to,
     tx.tokenId,
     tx.unsigned.to,
@@ -779,8 +782,8 @@ const SubTxActions: FC<{
   }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
-    () => (chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : null),
-    [chain?.subscanUrl, tx.hash],
+    () => (chain?.blockExplorerUrls[0] ? urlJoin(chain.blockExplorerUrls[0], "tx", tx.hash) : null),
+    [chain?.blockExplorerUrls, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return

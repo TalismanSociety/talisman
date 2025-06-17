@@ -260,7 +260,7 @@ const EvmDrawerContent: FC<{
             {t("Estimated Fee")}{" "}
             <EvmEstimatedFeeTooltip
               account={tx.account}
-              feeTokenId={evmNetwork?.nativeToken?.id}
+              feeTokenId={evmNetwork?.nativeTokenId}
               txDetails={txDetails}
             />
           </div>
@@ -269,16 +269,13 @@ const EvmDrawerContent: FC<{
         <div className="flex h-12 w-full items-center justify-between">
           <div>
             {txDetails?.estimatedFee ? (
-              <TokensAndFiat
-                planck={txDetails.estimatedFee}
-                tokenId={evmNetwork?.nativeToken?.id}
-              />
+              <TokensAndFiat planck={txDetails.estimatedFee} tokenId={evmNetwork?.nativeTokenId} />
             ) : null}
           </div>
           <div>
-            {evmNetwork?.nativeToken && txDetails && transaction && (
+            {evmNetwork && txDetails && transaction && (
               <EthFeeSelect
-                tokenId={evmNetwork.nativeToken.id}
+                tokenId={evmNetwork.nativeTokenId}
                 drawerContainerId={containerId ?? "main"}
                 gasSettingsByPriority={gasSettingsByPriority}
                 setCustomSettings={setCustomSettings}

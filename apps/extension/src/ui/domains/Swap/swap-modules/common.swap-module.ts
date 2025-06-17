@@ -3,22 +3,26 @@
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import type { TransactionRequest } from "viem"
-import { evmErc20TokenId, evmNativeTokenId, subNativeTokenId } from "@talismn/balances"
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  Network,
+  subNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import BigNumber from "bignumber.js"
 import {
   Account,
-  isAccountCompatibleWithChain,
+  isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
+  isAddressCompatibleWithNetwork,
   remoteConfigStore,
   SignerPayloadJSON,
 } from "extension-core"
 import { atom } from "jotai"
 import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
 import { Loadable } from "jotai/vanilla/utils/loadable"
-
-import { AnyChain } from "@ui/state"
 
 import { Decimal } from "../swaps-port/Decimal"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
@@ -148,20 +152,24 @@ export type SwapModule = {
   } | null>
 }
 
-// atoms shared between swap modules
-
+// atoms shared between swap module
 export const validateAddress = (
   account: Account | undefined,
   address: string,
-  chain: AnyChain | undefined,
+  network: Network | undefined,
   networkType: "evm" | "substrate" | "btc",
 ) => {
+  if (network) {
+    if (account) return isAccountCompatibleWithNetwork(network, account)
+    if (address) return isAddressCompatibleWithNetwork(network, address)
+  }
+
   switch (networkType) {
     case "evm":
       return account ? isAccountPlatformEthereum(account) : isEthereumAddress(address)
     case "substrate":
       return account
-        ? chain && isAccountCompatibleWithChain(chain, account)
+        ? network && isAccountCompatibleWithNetwork(network, account)
         : isSs58Address(address)
     case "btc":
       return isBitcoinAddress(address)

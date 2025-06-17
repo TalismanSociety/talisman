@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
-import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
@@ -277,7 +277,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     return { hash }
   }
 
-  handle<TMessageType extends keyof RequestSignatures>(
+  handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],

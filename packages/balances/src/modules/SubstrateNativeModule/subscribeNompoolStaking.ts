@@ -401,8 +401,7 @@ export async function subscribeNompoolStaking(
               source: "substrate-native",
               status: "live",
               address,
-              multiChainId: { subChainId: chainId },
-              chainId,
+              networkId: chainId,
               tokenId,
               values: [
                 {

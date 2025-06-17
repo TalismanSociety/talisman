@@ -18,7 +18,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainsMapByGenesisHash } from "@ui/state"
+import { useNetworksMapByGenesisHash } from "@ui/state"
 
 import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
@@ -67,7 +67,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
 
   const { genesisHash, limitToNetwork } = watch()
   const chains = useChainsFilteredByAddressPrefix(contact?.address)
-  const chainsByGenesisHash = useChainsMapByGenesisHash()
+  const chainsByGenesisHash = useNetworksMapByGenesisHash()
   const setGenesisHash = useCallback(
     (genesisHash?: HexString) =>
       setValue("genesisHash", genesisHash, {

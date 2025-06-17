@@ -14,6 +14,7 @@ import { EthHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
+import NetworksHandler from "../domains/networks/handler"
 import { NftsHandler } from "../domains/nfts"
 import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
@@ -41,6 +42,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       chains: new ChainsHandler(stores),
+      networks: new NetworksHandler(stores),
       app: new AppHandler(stores),
       assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),

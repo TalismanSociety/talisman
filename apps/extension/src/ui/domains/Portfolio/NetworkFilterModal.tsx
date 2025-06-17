@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { classNames, isTruthy } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -74,16 +74,19 @@ const NetworkFilterModalContent: FC<{
 }> = ({ networkIds, networkId, onChange, onClose }) => {
   const { t } = useTranslation()
   // network options may include pairs of evm+chain networks
-  const { networks } = usePortfolio()
+  // what a great idea
+  const { networkOptions } = usePortfolio()
 
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
 
   const filteredNetworks = useMemo(() => {
     const lowerSearch = search.toLowerCase()
-    return networks.filter((network) => {
+    return networkOptions.filter((network) => {
       const thisNetworkIds = [
-        ...new Set([network.id, network.evmNetworkId, network.chainId].filter(isTruthy)),
+        network.id,
+        // TODO when sober: understand what happened here and cleanup
+        //...new Set([network.id, network.evmNetworkId, network.chainId].filter(isTruthy)),
       ]
       return (
         thisNetworkIds.some((id) => networkIds.includes(id)) &&
@@ -91,7 +94,7 @@ const NetworkFilterModalContent: FC<{
           network.symbols?.find((symbol) => symbol.toLowerCase().includes(lowerSearch)))
       )
     })
-  }, [networkIds, networks, search])
+  }, [networkIds, networkOptions, search])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">

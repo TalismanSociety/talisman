@@ -1,5 +1,5 @@
 import { sleep } from "@talismn/util"
-import { SimpleEvmNetwork } from "extension-core"
+import { EthNetwork } from "extension-core"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -7,9 +7,8 @@ import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { api } from "@ui/api"
 
-export const ResetEvmNetworkButton: FC<{ network: SimpleEvmNetwork }> = ({ network }) => {
+export const ResetEvmNetworkButton: FC<{ network: EthNetwork }> = ({ network }) => {
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
@@ -17,7 +16,8 @@ export const ResetEvmNetworkButton: FC<{ network: SimpleEvmNetwork }> = ({ netwo
   const handleConfirmReset = useCallback(async () => {
     if (!network) return
     try {
-      await api.ethNetworkReset(network.id.toString())
+      // await api.ethNetworkReset(network.id.toString())
+      if (Date.now()) throw new Error("Not implemented")
       close()
       await sleep(350) // wait for atom to reflect changes
       navigate("/settings/networks-tokens/networks/ethereum")

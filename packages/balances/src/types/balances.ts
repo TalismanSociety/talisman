@@ -1,4 +1,4 @@
-import { ChainList, SimpleEvmNetworkList, TokenList } from "@talismn/chaindata-provider"
+import { NetworkList, TokenList } from "@talismn/chaindata-provider"
 import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import {
   BigMath,
@@ -78,8 +78,9 @@ export type BalanceSource = BalanceJson["source"]
 
 /** TODO: Remove this in favour of a frontend-friendly `ChaindataProvider` */
 export type HydrateDb = Partial<{
-  chains: ChainList
-  evmNetworks: SimpleEvmNetworkList
+  // chains: ChainList
+  // evmNetworks: SimpleEvmNetworkList
+  networks: NetworkList
   tokens: TokenList
   tokenRates: TokenRatesList
 }>
@@ -301,14 +302,14 @@ export class Balances {
   }
 }
 
-type BalanceJsonEvm = BalanceJson & { evmNetworkId: string }
+// type BalanceJsonEvm = BalanceJson & { evmNetworkId: string }
 
-const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNetworkId" in balance
+// const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNetworkId" in balance
 
 export const getBalanceId = (balance: BalanceJson) => {
-  const { source, address, tokenId } = balance
-  const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
-  return [source, address, locationId, tokenId].filter(isTruthy).join("::")
+  const { source, address, tokenId, networkId } = balance
+  //const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
+  return [source, address, networkId, tokenId].filter(isTruthy).join("::")
 }
 
 /**
@@ -383,21 +384,33 @@ export class Balance {
     return this.#storage.address
   }
 
-  get chainId() {
-    return isBalanceEvm(this.#storage) ? undefined : this.#storage.chainId
-  }
-  get chain() {
-    return (this.#db?.chains && this.chainId && this.#db?.chains[this.chainId]) || null
+  // /** @deprecated */
+  // get chainId() {
+  //   return isBalanceEvm(this.#storage) ? undefined : this.#storage.chainId
+  // }
+  // /** @deprecated */
+  // get chain() {
+  //   return (this.#db?.networks && this.networkId && this.#db?.networks[this.networkId]) || null
+  // }
+
+  // /** @deprecated */
+  // get evmNetworkId() {
+  //   return isBalanceEvm(this.#storage) ? this.#storage.evmNetworkId : undefined
+  // }
+  // /** @deprecated */
+  // get evmNetwork() {
+  //   return (
+  //     (this.#db?.networks && this.networkId && this.#db?.networks[this.networkId]) ||
+  //     null
+  //   )
+  // }
+
+  get networkId() {
+    return this.#storage.networkId
   }
 
-  get evmNetworkId() {
-    return isBalanceEvm(this.#storage) ? this.#storage.evmNetworkId : undefined
-  }
-  get evmNetwork() {
-    return (
-      (this.#db?.evmNetworks && this.evmNetworkId && this.#db?.evmNetworks[this.evmNetworkId]) ||
-      null
-    )
+  get network() {
+    return (this.#db?.networks && this.networkId && this.#db?.networks[this.networkId]) || null
   }
 
   get tokenId() {
@@ -419,11 +432,11 @@ export class Balance {
     // regardless of whether or not the underlying erc20s are actually in chaindata and enabled.
     if (
       this.isSource("evm-uniswapv2") &&
-      this.token?.type === "evm-uniswapv2" &&
-      this.evmNetworkId
+      this.token?.type === "evm-uniswapv2" // &&
+      //this.evmNetworkId
     ) {
-      const tokenId0 = evmErc20TokenId(this.evmNetworkId, this.token.tokenAddress0)
-      const tokenId1 = evmErc20TokenId(this.evmNetworkId, this.token.tokenAddress1)
+      const tokenId0 = evmErc20TokenId(this.networkId, this.token.tokenAddress0)
+      const tokenId1 = evmErc20TokenId(this.networkId, this.token.tokenAddress1)
 
       const decimals = this.token.decimals
       const decimals0 = this.token.decimals0

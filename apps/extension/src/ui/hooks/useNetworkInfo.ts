@@ -1,42 +1,60 @@
-import { Chain, SimpleEvmNetwork } from "extension-core"
+import { DotNetwork, Network, NetworkId, NetworkList } from "extension-core"
 import { TFunction } from "i18next"
+import { isArray, keyBy } from "lodash"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useNetworks } from "@ui/state"
+
 export type NetworkInfoProps = {
-  chain?: Chain | null
-  evmNetwork?: SimpleEvmNetwork | null
-  relay?: Chain | null
+  networkId: NetworkId | null | undefined
+  networks: Network[] | NetworkList
 }
 
-export const getNetworkInfo = (t: TFunction, { chain, evmNetwork, relay }: NetworkInfoProps) => {
-  if (evmNetwork) {
-    const label = evmNetwork.name
-    return { label, type: evmNetwork.isTestnet ? t("EVM Testnet") : t("EVM Blockchain") }
-  }
+const getDotNetworkType = (t: TFunction, network: DotNetwork, networks: NetworkList) => {
+  if (network.isTestnet) return t("Testnet")
 
-  if (chain) {
-    const label = chain.name
-    const type = (() => {
-      if (chain.isTestnet) return t("Testnet")
-      if (chain.paraId) {
-        if (relay?.name) return t("{{name}} Parachain", { name: relay?.name })
-        return t("Parachain")
+  switch (network.topologyInfo.type) {
+    case "standalone":
+      return t("Blockchain")
+    case "relay":
+      return t("Relay Chain")
+    case "parachain": {
+      const relay = networks[network.topologyInfo.relayId]
+      return relay?.name ? t("{{name}} Parachain", { name: relay.name }) : t("Parachain")
+    }
+  }
+}
+
+export const getNetworkInfo = (t: TFunction, { networkId, networks }: NetworkInfoProps) => {
+  const networksMap = isArray(networks) ? keyBy(networks, "id") : networks
+  const network = networksMap[networkId ?? ""]
+
+  // TODO adjust so we can return undefined instead
+  if (!network) return { label: "", type: "", fullName: "" }
+
+  switch (network.platform) {
+    case "ethereum":
+      return {
+        label: network.name,
+        type: network.isTestnet ? t("EVM Testnet") : t("EVM Blockchain"),
+        fullName: network.substrateChainId ? `${network.name} (${t("Ethereum")})` : network.name,
       }
-      return (chain.parathreads || []).length > 0 ? t("Relay Chain") : t("Blockchain")
-    })()
-
-    return { label, type }
+    case "polkadot": {
+      const type = getDotNetworkType(t, network, networksMap)
+      return {
+        label: network.name,
+        type: type,
+        fullName:
+          network.topologyInfo.type !== "standalone" ? `${network.name} (${type})` : network.name,
+      }
+    }
   }
-
-  return { label: "", type: "" }
 }
 
-export const useNetworkInfo = ({ chain, evmNetwork, relay }: NetworkInfoProps) => {
+export const useNetworkInfo = (networkId: NetworkId | null | undefined) => {
+  const networks = useNetworks()
   const { t } = useTranslation()
 
-  return useMemo(
-    () => getNetworkInfo(t, { chain, evmNetwork, relay }),
-    [chain, evmNetwork, relay, t],
-  )
+  return useMemo(() => getNetworkInfo(t, { networkId, networks }), [networkId, networks, t])
 }

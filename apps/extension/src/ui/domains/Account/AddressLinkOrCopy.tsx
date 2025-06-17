@@ -4,7 +4,7 @@ import { ChainId, EvmNetworkId } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import { useChain, useEvmNetwork } from "@ui/state"
+import { useNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { Address } from "./Address"
@@ -26,13 +26,12 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
   noShorten,
   noOnChainId,
 }) => {
-  const evmNetwork = useEvmNetwork(networkId)
-  const chain = useChain(networkId)
+  const network = useNetwork(networkId)
 
   const blockExplorerUrl = useMemo(() => {
-    const baseUrl = evmNetwork?.explorerUrl ?? chain?.subscanUrl ?? null
+    const baseUrl = network?.blockExplorerUrls?.[0] || null
     return baseUrl ? urlJoin(baseUrl, "address", address) : null
-  }, [address, chain?.subscanUrl, evmNetwork?.explorerUrl])
+  }, [address, network?.blockExplorerUrls])
 
   const effectiveMode = useMemo(() => {
     // link must fallback to copy if no blockExplorerUrl

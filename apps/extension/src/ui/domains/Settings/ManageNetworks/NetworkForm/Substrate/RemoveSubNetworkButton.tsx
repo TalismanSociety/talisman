@@ -1,23 +1,22 @@
-import { Chain, CustomChain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { api } from "@ui/api"
 
-export const RemoveSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chain }) => {
+export const RemoveSubNetworkButton: FC<{ chain: DotNetwork }> = ({ chain }) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
   const handleConfirmRemove = useCallback(async () => {
     if (!chain) return
     try {
-      await api.chainRemove(chain.id)
-      navigate("/settings/networks-tokens/networks/polkadot")
+      throw new Error("Not implemented")
+      // await api.chainRemove(chain.id)
+      // navigate("/settings/networks-tokens/networks/polkadot")
     } catch (err) {
       notify({
         title: t("Failed to remove"),
@@ -25,7 +24,7 @@ export const RemoveSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ cha
         type: "error",
       })
     }
-  }, [chain, navigate, t])
+  }, [chain, t])
 
   const name = chain?.name ?? t("N/A")
 

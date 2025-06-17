@@ -1,9 +1,13 @@
 import { TokenId } from "../chaindata"
 import { EvmNetworkId } from "./EvmNetwork"
 
+/** @deprecated use DotNetworkList */
 export type ChainList = Record<ChainId, Chain>
 
+/** @deprecated use NetworkId */
 export type ChainId = string
+
+/** @deprecated use DotNetwork */
 export type Chain = {
   id: ChainId // The ID of this chain
   isTestnet: boolean // Is this chain a testnet?
@@ -74,6 +78,7 @@ export type Chain = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registryTypes?: any
 }
+/** @deprecated use CustomDotNetwork */
 export type CustomChain = Chain & {
   isCustom: true
 }

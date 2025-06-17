@@ -1,4 +1,4 @@
-import { Chain, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
+import { Network, Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
@@ -13,12 +13,12 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useChainsMap, useEvmNetworksMap, useRemoteConfig, useSelectedCurrency } from "@ui/state"
+import { useNetworksMapById, useRemoteConfig, useSelectedCurrency } from "@ui/state"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
 type TokenDisplay = Token & {
-  network: Chain | SimpleEvmNetwork
+  network: Network
   rates?: TokenRates
 }
 
@@ -34,19 +34,18 @@ export const RampsTokenPicker: FC<{
   const [search, setSearch] = useState("")
   const remoteConfig = useRemoteConfig()
 
-  const evmNetworksMap = useEvmNetworksMap()
-  const dotNetworksMap = useChainsMap()
+  const networksMap = useNetworksMapById()
 
   const tokensWithNetwork = useMemo<TokenDisplay[] | undefined>(
     () =>
       tokens
         ?.map((t) => ({
           ...t,
-          network: evmNetworksMap[t.networkId ?? ""] ?? dotNetworksMap[t.networkId ?? ""],
+          network: networksMap[t.networkId],
           rates: tokenRates?.[t.id],
         }))
         .filter((t) => !!t.network),
-    [tokenRates, dotNetworksMap, evmNetworksMap, tokens],
+    [tokens, networksMap, tokenRates],
   )
 
   const sortedTokens = useMemo(

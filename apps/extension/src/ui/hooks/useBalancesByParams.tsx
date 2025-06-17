@@ -1,10 +1,10 @@
 import md5 from "blueimp-md5"
 import {
+  AddressesAndEvmNetwork,
   AddressesAndTokens,
   AddressesByChain,
   Balances,
   BalanceSubscriptionResponse,
-  AddressesAndEvmNetwork as EvmNetworksAndAddresses,
 } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
@@ -17,7 +17,7 @@ import { useBalancesHydrate } from "@ui/state"
 const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", data: [] }
 
 const DEFAULT_BY_CHAIN: AddressesByChain = {}
-const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: EvmNetworksAndAddresses = {
+const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: AddressesAndEvmNetwork = {
   addresses: [],
   evmNetworks: [],
 }
@@ -25,7 +25,7 @@ const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenI
 
 export type BalanceByParamsProps = {
   addressesByChain?: AddressesByChain
-  addressesAndEvmNetworks?: EvmNetworksAndAddresses
+  addressesAndEvmNetworks?: AddressesAndEvmNetwork
   addressesAndTokens?: AddressesAndTokens
 }
 

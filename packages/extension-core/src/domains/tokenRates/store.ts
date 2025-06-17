@@ -12,7 +12,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
-import { activeTokensStore, filterActiveTokens } from "../tokens/store.activeTokens"
+import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
 
 // refresh token rates on subscription start if older than 1 minute
 const MIN_REFRESH_INTERVAL = 1 * 60_000

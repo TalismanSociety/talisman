@@ -15,5 +15,23 @@ export const SubTokensTokenSchema = TokenBase.extend({
 })
 export type SubTokensToken = z.infer<typeof SubTokensTokenSchema>
 
+export type SubTokensTokenIdSpecs = {
+  type: typeof TOKEN_TYPE
+  networkId: NetworkId
+  onChainId: string
+}
+
 export const subTokensTokenId = (networkId: NetworkId, onChainId: string | number) =>
   generateTokenId(networkId, TOKEN_TYPE, LZString.compressToEncodedURIComponent(String(onChainId)))
+
+export const parseSubTokensTokenId = (tokenId: string): SubTokensTokenIdSpecs => {
+  const [networkId, type, onChainId] = tokenId.split(":")
+  if (!networkId || !onChainId) throw new Error(`Invalid SubTokensToken ID: ${tokenId}`)
+  if (type !== TOKEN_TYPE) throw new Error(`Invalid SubTokensToken type: ${type}`)
+
+  return {
+    type,
+    networkId,
+    onChainId: LZString.decompressFromEncodedURIComponent(onChainId) || "",
+  }
+}

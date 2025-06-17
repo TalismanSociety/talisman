@@ -17,6 +17,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   genesisHash: HexStringSchema,
   platform: z.literal("polkadot"),
   isRelay: z.boolean().optional(), // has paras pallet
+  chainName: z.string(), // system_chain - used only to lookup typesBundle in p.js, for chains that do not have metadata v14
   specName: z.string(),
   specVersion: z.number(),
   account: z.enum(["secp256k1", "*25519"]),
@@ -37,3 +38,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
 })
 
 export type DotNetwork = z.infer<typeof DotNetworkSchema>
+
+export type DotNetworkId = DotNetwork["id"]
+
+export type DotNetworkList = Record<DotNetworkId, DotNetwork>

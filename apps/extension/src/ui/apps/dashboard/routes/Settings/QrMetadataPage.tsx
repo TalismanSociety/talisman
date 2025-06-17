@@ -1,4 +1,4 @@
-import { Chain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { LoaderIcon, SecretIcon } from "@talismn/icons"
 import { log, POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -101,7 +101,7 @@ const SetVerifierCertificateContent = () => (
   </MnemonicCreateModalProvider>
 )
 
-const renderOption = (chain: Chain) => {
+const renderOption = (chain: DotNetwork) => {
   return (
     <div className="flex max-w-full items-center gap-5 overflow-hidden">
       <ChainLogo id={chain.id} className="text-[1.25em]" />
@@ -134,7 +134,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 const MetadataPortalContent = () => {
   const { t } = useTranslation()
   const chains = useChains({ activeOnly: false, includeTestnets: true })
-  const [chain, setChain] = useState<Chain | null>(null)
+  const [chain, setChain] = useState<DotNetwork | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")

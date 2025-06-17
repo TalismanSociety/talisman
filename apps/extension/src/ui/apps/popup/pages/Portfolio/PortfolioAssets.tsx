@@ -1,5 +1,6 @@
+import { isDotNetwork, isEthNetwork } from "@talismn/chaindata-provider"
 import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
-import { FC, Suspense, useCallback, useEffect } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
 import { Button } from "talisman-ui"
@@ -49,13 +50,19 @@ const PopupAnalyticsEvent: FC<{ name: string }> = ({ name }) => {
 }
 
 const MainContent: FC = () => {
-  const { evmNetworks, chains } = usePortfolio()
+  const { networks } = usePortfolio()
   const { selectedAccount: account } = usePortfolioNavigation()
 
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
 
-  if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
+  const [chains, evmNetworks] = useMemo(() => {
+    const chains = networks.filter(isDotNetwork)
+    const evmNetworks = networks.filter(isEthNetwork)
+    return [chains, evmNetworks]
+  }, [networks])
+
+  if (!account?.type && !networks.length) return <EnableNetworkMessage />
   if (isAccountAddressSs58(account) && !chains.length)
     return <EnableNetworkMessage type="substrate" />
   if (

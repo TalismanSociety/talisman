@@ -1,11 +1,6 @@
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames, isEthereumAddress, normalizeAddress } from "@talismn/util"
-import {
-  Account,
-  getAccountGenesisHash,
-  isAccountCompatibleWithChain,
-  isAccountPlatformEthereum,
-} from "extension-core"
+import { Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -53,7 +48,7 @@ const AccountRowContainer: FC<
 
 const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const { t } = useTranslation()
-  const { setAddress, copySpecific, chain } = useCopyAddressWizard()
+  const { setAddress, copySpecific, network } = useCopyAddressWizard()
   const accountChain = useChainByGenesisHash(getAccountGenesisHash(account))
 
   const formatted = useMemo(
@@ -62,13 +57,13 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   )
 
   const canCopySpecific = useMemo(
-    () => isEthereumAddress(account.address) || !!accountChain || !!chain,
-    [account.address, accountChain, chain],
+    () => isEthereumAddress(account.address) || !!accountChain || !!network,
+    [account.address, accountChain, network],
   )
 
   const handleCopyClick = useCallback(() => {
-    copySpecific(formatted, chain?.id)
-  }, [copySpecific, formatted, chain?.id])
+    copySpecific(formatted, network?.id)
+  }, [copySpecific, formatted, network?.id])
 
   const handleSelectClick = useCallback(() => {
     setAddress(account.address)
@@ -163,7 +158,7 @@ export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSele
 }
 
 export const CopyAddressAccountForm = () => {
-  const { address, setAddress, chain, evmNetwork, addresses } = useCopyAddressWizard()
+  const { address, setAddress, network, addresses } = useCopyAddressWizard()
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
@@ -173,15 +168,14 @@ export const CopyAddressAccountForm = () => {
     () =>
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
-        .filter((account) => !chain || isAccountCompatibleWithChain(chain, account))
-        .filter((account) => !evmNetwork || isAccountPlatformEthereum(account))
+        .filter((account) => !network || isAccountCompatibleWithNetwork(network, account))
         // if a folder is selected in portfolio, filter to accounts in that folder
         .filter(
           (account) =>
             !addresses?.length ||
             addresses.map((a) => normalizeAddress(a)).includes(normalizeAddress(account.address)),
         ),
-    [allAccounts, chain, evmNetwork, search, addresses],
+    [allAccounts, network, search, addresses],
   )
 
   return (

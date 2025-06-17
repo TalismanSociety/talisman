@@ -4,6 +4,7 @@ import {
   BalancesConfigTokenParams,
   CustomEvmErc20Token,
   EvmErc20Token,
+  evmErc20TokenId,
   EvmErc20TokenSchema,
   EvmNetworkId,
   githubTokenLogoUrl,
@@ -12,7 +13,7 @@ import {
 import { isEthereumAddress, isTruthy } from "@talismn/util"
 import { Address, Hex, PublicClient } from "viem"
 
-import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
+import { DefaultBalanceModule, DefaultChainMeta, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import { erc20Abi } from "./abis/erc20"
@@ -23,14 +24,7 @@ export { erc20Abi, erc20BalancesAggregatorAbi }
 type ModuleType = "evm-erc20"
 const moduleType: ModuleType = "evm-erc20"
 
-export const evmErc20TokenId = (
-  chainId: EvmNetworkId,
-  tokenContractAddress: EvmErc20Token["contractAddress"],
-) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
-
-export type EvmErc20ChainMeta = {
-  isTestnet: boolean
-}
+export type EvmErc20ChainMeta = DefaultChainMeta
 
 export type EvmErc20ModuleConfig = {
   tokens?: Array<
@@ -43,7 +37,7 @@ export type EvmErc20ModuleConfig = {
   >
 }
 
-export type EvmErc20Balance = NewBalanceType<ModuleType, "simple", "ethereum">
+export type EvmErc20Balance = NewBalanceType<ModuleType, "simple">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -101,7 +95,9 @@ export const EvmErc20Module: NewBalanceModule<
   const getErc20Aggregators = async () => {
     const evmNetworks = await chaindataProvider.evmNetworks()
     return Object.fromEntries(
-      evmNetworks.filter((n) => n.erc20aggregator).map((n) => [n.id, n.erc20aggregator!]),
+      evmNetworks
+        .filter((n) => n.contracts?.Erc20Aggregator)
+        .map((n) => [n.id, n.contracts!.Erc20Aggregator!]),
     )
   }
 
@@ -112,18 +108,19 @@ export const EvmErc20Module: NewBalanceModule<
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
+    async fetchEvmChainMeta(_chainId) {
+      return undefined
+      // const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
 
-      return { isTestnet }
+      // return { isTestnet }
     },
 
     /**
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
+    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig) {
+      //const { isTestnet } = chainMeta
 
       const chainTokens: Record<string, EvmErc20Token> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
@@ -155,7 +152,7 @@ export const EvmErc20Module: NewBalanceModule<
           id,
           type: "evm-erc20",
           platform: "ethereum",
-          isTestnet,
+          //isTestnet,
           isDefault: tokenConfig.isDefault ?? true,
           symbol,
           decimals,
@@ -194,7 +191,7 @@ export const EvmErc20Module: NewBalanceModule<
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
       const initialisingBalances = new Set<string>()
       const positiveBalanceNetworks = new Set<string>(
-        (initialBalances as EvmErc20Balance[])?.map((b) => b.evmNetworkId),
+        (initialBalances as EvmErc20Balance[])?.map((b) => b.networkId),
       )
       const tokens = await getModuleTokens()
 
@@ -370,19 +367,19 @@ const fetchBalances = async (
     errors: [] as Array<EvmErc20BalanceError | EvmErc20NetworkError>,
   }
   await Promise.all(
-    Object.entries(tokenAddressesByNetwork).map(async ([evmNetworkId, networkParams]) => {
-      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+    Object.entries(tokenAddressesByNetwork).map(async ([networkId, networkParams]) => {
+      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(networkId)
       if (!publicClient)
         throw new EvmErc20NetworkError(
-          `Could not get rpc provider for evm network ${evmNetworkId}`,
-          evmNetworkId,
+          `Could not get rpc provider for evm network ${networkId}`,
+          networkId,
         )
 
       const balances = await getEvmTokenBalances(
         publicClient,
         networkParams as BalanceDef[],
         result.errors,
-        erc20Aggregators[evmNetworkId],
+        erc20Aggregators[networkId],
       )
 
       // consider only non null balances in the results
@@ -393,8 +390,8 @@ const fetchBalances = async (
               source: "evm-erc20",
               status: "live",
               address: networkParams[i].address,
-              multiChainId: { evmChainId: evmNetworkId },
-              evmNetworkId,
+              // multiChainId: { evmChainId: evmNetworkId },
+              networkId,
               tokenId: networkParams[i].token.id,
               value: free!,
             }) as EvmErc20Balance,

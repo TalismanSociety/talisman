@@ -1,6 +1,6 @@
 import { firstValueFrom, Observable } from "rxjs"
 
-import { Token } from "./chaindata"
+import { DotNetwork, EthNetwork, Token } from "./chaindata"
 import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork } from "./types"
 
 /**
@@ -129,12 +129,14 @@ export const withErrorReason = async <T>(
 // Utils which aren't used by this package, but are helpful for other packages
 //
 
-export const isCustomChain = (chain: Chain | CustomChain): chain is CustomChain => {
+/** @deprecated */
+export const isCustomChain = (chain: Chain | CustomChain | DotNetwork): chain is CustomChain => {
   return "isCustom" in chain && chain.isCustom === true
 }
 
+/** @deprecated */
 export const isCustomEvmNetwork = (
-  evmNetwork: EvmNetwork | CustomEvmNetwork | SimpleEvmNetwork,
+  evmNetwork: EvmNetwork | CustomEvmNetwork | SimpleEvmNetwork | EthNetwork,
 ): evmNetwork is CustomEvmNetwork => {
   return "isCustom" in evmNetwork && evmNetwork.isCustom === true
 }

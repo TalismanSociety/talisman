@@ -18,7 +18,7 @@ export {
   subAssetTokenId,
   subPsp22TokenId,
   subTokensTokenId,
-} from "@talismn/balances"
+} from "@talismn/chaindata-provider"
 
 export * from "./hooks/useBalances"
 export * from "./hooks/useChainConnectors"

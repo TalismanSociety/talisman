@@ -38,6 +38,7 @@ export const useFastBalance = (props?: UseFastBalanceProps) => {
 const useEvmBalance = (props?: UseFastBalanceProps) => {
   const [evmBalance, setEvmBalance] = useState<Decimal | undefined>()
 
+  // TODO use useExtensionPublicClient which routes requests through backend's chain connector
   useEffect(() => {
     const abortController = new AbortController()
 

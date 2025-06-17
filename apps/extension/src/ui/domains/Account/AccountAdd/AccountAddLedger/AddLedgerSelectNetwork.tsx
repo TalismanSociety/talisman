@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Platform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Chain } from "extension-core"
+import { DotNetwork } from "extension-core"
 import { t } from "i18next"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -62,7 +62,7 @@ const AppVersionButton: FC<{
   )
 }
 
-const renderSubstratNetworkOption = (chain: Chain) => (
+const renderSubstratNetworkOption = (chain: DotNetwork) => (
   <div className="flex max-w-full items-center gap-5 overflow-hidden">
     <ChainLogo id={chain?.id} className="text-[1.25em]" />
     <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
@@ -158,7 +158,7 @@ export const AddLedgerSelectNetwork = () => {
   )
 
   const handleNetworkChange = useCallback(
-    (chain: Chain | null) => {
+    (chain: DotNetwork | null) => {
       reset({
         platform: "polkadot",
         chainId: chain?.id,

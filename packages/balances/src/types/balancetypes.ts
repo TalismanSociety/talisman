@@ -1,5 +1,5 @@
 import { PluginBalanceTypes } from "@talismn/balances/plugins"
-import { ChainId, EvmChainId, EvmNetworkId, SubChainId, TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { Address } from "./addresses"
 
@@ -58,20 +58,20 @@ type IBalanceBase = {
   address: Address
   /** The token this balance is for */
   tokenId: TokenId
+
+  networkId: NetworkId
 }
 
-type IBalanceBaseEvm = {
-  /** WIP, use `chainId` or `evmNetworkId` for now */
-  multiChainId: EvmChainId
-  /** The evm chain this balance is on */
-  evmNetworkId: EvmNetworkId
-}
+// type IBalanceBaseEvm = {
+//   /** WIP, use `chainId` or `evmNetworkId` for now */
+//   multiChainId: EvmChainId
 
-type IBalanceBaseSubstrate = {
-  multiChainId: SubChainId
-  /** The substrate chain this balance is on */
-  chainId: ChainId
-}
+// }
+
+// type IBalanceBaseSubstrate = {
+//   multiChainId: SubChainId
+
+// }
 
 type IBalanceSimpleValues = {
   /** For balance types with a simple value, this is the value of the balance (eg, evm native token balance) */
@@ -86,15 +86,14 @@ type IBalanceComplexValues = {
 }
 
 /** `IBalance` is a common interface which all balance types must implement. */
-export type IBalance = IBalanceBase &
-  (IBalanceSimpleValues | IBalanceComplexValues) &
-  (IBalanceBaseEvm | IBalanceBaseSubstrate)
+export type IBalance = IBalanceBase & (IBalanceSimpleValues | IBalanceComplexValues)
+// & (IBalanceBaseEvm | IBalanceBaseSubstrate)
 
 export type EvmBalance = IBalanceBase &
-  IBalanceBaseEvm &
+  // IBalanceBaseEvm &
   (IBalanceSimpleValues | IBalanceComplexValues)
 export type SubstrateBalance = IBalanceBase &
-  IBalanceBaseSubstrate &
+  // IBalanceBaseSubstrate &
   (IBalanceSimpleValues | IBalanceComplexValues)
 
 /** An unlabelled amount of a balance */
@@ -176,9 +175,9 @@ export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
 export type NewBalanceType<
   TModuleType extends string,
   TBalanceValueType extends "simple" | "complex",
-  TNetworkType extends "ethereum" | "substrate",
+  // TNetworkType extends "ethereum" | "substrate",
 > = IBalanceBase &
-  (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) &
-  (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate) & {
+  (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) & {
+    // &   (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate)
     source: TModuleType
   }

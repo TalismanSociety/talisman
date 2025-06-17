@@ -5,9 +5,10 @@ import { useQuery } from "@tanstack/react-query"
 import { ChainId } from "extension-core"
 import { getMetadataRpcFromDef } from "extension-shared"
 import { useMemo } from "react"
+import { isHex } from "viem"
 
 import { api } from "@ui/api"
-import { useChain, useChainByGenesisHash, useToken } from "@ui/state"
+import { useNetworkByGenesisHash, useNetworkById, useToken } from "@ui/state"
 
 /**
  * useScaleApi instantiates a ScaleApi object for a given chainIdOrHash, specVersion, and blockHash.
@@ -19,10 +20,10 @@ export const useScaleApi = (
   specVersion?: number,
   blockHash?: HexString,
 ) => {
-  const chainById = useChain(chainIdOrHash)
-  const chainByGenesisHash = useChainByGenesisHash(chainIdOrHash)
+  const chainById = useNetworkById<"polkadot">(chainIdOrHash)
+  const chainByGenesisHash = useNetworkByGenesisHash(isHex(chainIdOrHash) ? chainIdOrHash : null)
   const chain = useMemo(() => chainById || chainByGenesisHash, [chainById, chainByGenesisHash])
-  const token = useToken(chain?.nativeToken?.id)
+  const token = useToken(chain?.nativeTokenId)
 
   return useQuery({
     queryKey: ["useScaleApi", chain, specVersion, blockHash, token],

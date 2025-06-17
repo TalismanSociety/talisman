@@ -112,7 +112,7 @@ export const EthSignTransactionRequest = () => {
             </div>
 
             <div className="text-body-secondary flex min-h-[4.48rem] flex-col gap-2 text-sm">
-              {transaction && txDetails && !!network?.nativeToken && (
+              {transaction && txDetails && !!network && (
                 <>
                   <div className="flex items-center justify-between">
                     <div>
@@ -125,7 +125,7 @@ export const EthSignTransactionRequest = () => {
                         </TooltipTrigger>
                         <TooltipContent>
                           <FeeTooltip
-                            tokenId={network.nativeToken.id}
+                            tokenId={network.nativeTokenId}
                             estimatedFee={txDetails.estimatedFee}
                             maxFee={txDetails.maxFee}
                             balance={balance}
@@ -138,14 +138,14 @@ export const EthSignTransactionRequest = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <TokensAndFiat
-                        tokenId={network.nativeToken.id}
+                        tokenId={network.nativeTokenId}
                         planck={txDetails.estimatedFee.toString()}
                       />
                     </div>
                     <div>
                       <EthFeeSelect
                         tx={transaction}
-                        tokenId={network.nativeToken.id}
+                        tokenId={network.nativeTokenId}
                         disabled={isPayloadLocked}
                         gasSettingsByPriority={gasSettingsByPriority}
                         setCustomSettings={setCustomSettings}

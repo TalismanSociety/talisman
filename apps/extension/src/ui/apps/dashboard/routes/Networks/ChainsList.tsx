@@ -1,8 +1,8 @@
-import { Chain, isCustomChain } from "@talismn/chaindata-provider"
+import { DotNetwork, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ActiveChains, activeChainsStore, isChainActive } from "extension-core"
+import { ActiveChains, activeChainsStore, isChainActive, isNetworkActive } from "extension-core"
 import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -11,7 +11,7 @@ import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } f
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import {
-  useActiveChainsState,
+  useActiveNetworksState,
   useBalances,
   useChains,
   useIsBalanceInitializing,
@@ -27,7 +27,7 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
 }) => {
   const { t } = useTranslation()
   const { recommendedNetworks } = useRemoteConfig()
-  const networksActiveState = useActiveChainsState()
+  const networksActiveState = useActiveNetworksState()
   const chains = useChains()
 
   const allSortedNetworks = useMemo(() => {
@@ -51,19 +51,19 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
   const [filteredChains, exactMatches] = useMemo(() => {
     const lowerSearch = search?.toLowerCase() ?? ""
 
-    const filter = (network: Chain) => {
-      if (!search && activeOnly && !isChainActive(network, networksActiveState)) return false
+    const filter = (network: DotNetwork) => {
+      if (!search && activeOnly && !isNetworkActive(network, networksActiveState)) return false
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
-        network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+        network.nativeTokenId.toLowerCase().includes(lowerSearch)
       )
     }
 
     const filtered = allSortedNetworks.filter(filter)
     const exactMatches = filtered.flatMap((network) =>
       lowerSearch.trim() === network.name?.toLowerCase().trim() ||
-      lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
+      lowerSearch.trim() === network.nativeTokenId.toLowerCase().trim()
         ? [network.id]
         : [],
     )
@@ -150,7 +150,7 @@ export const ChainsList: FC<{ activeOnly: boolean; search?: string }> = ({
 }
 
 const VirtualizedRows: FC<{
-  networks: Chain[]
+  networks: DotNetwork[]
   activeNetworksState: ActiveChains
 }> = ({ networks, activeNetworksState }) => {
   const virtualizer = useVirtualizer({
@@ -187,7 +187,7 @@ const VirtualizedRows: FC<{
 }
 
 const ChainRow: FC<{
-  network: Chain
+  network: DotNetwork
   activeNetworksState: ActiveChains
 }> = ({ network: chain, activeNetworksState: activeChainsState }) => {
   const isActive = useMemo(
@@ -268,7 +268,7 @@ const ActivateNetworksModalContent: FC<{
   const { t } = useTranslation()
 
   const networks = useChains()
-  const activeNetworks = useActiveChainsState()
+  const activeNetworks = useActiveNetworksState()
 
   const recommendedNetworkIds = useMemo(() => {
     return networks
@@ -351,7 +351,7 @@ const DeactivateNetworksModalContent: FC<{
 
     return [
       networkIds,
-      networkIds.filter((chainId) => !balances.find({ chainId }).sum.planck.total),
+      networkIds.filter((networkId) => !balances.find({ networkId }).sum.planck.total),
     ]
   }, [chains, balances])
 

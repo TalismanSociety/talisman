@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { Chain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
@@ -271,7 +271,7 @@ const SendPage = ({
   scanState: SendScanState
   qrCodeSource: QrCodeSource | undefined
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
-  chain: Chain | null
+  chain: DotNetwork | null
   containerId: string
 }) => {
   const { t } = useTranslation()

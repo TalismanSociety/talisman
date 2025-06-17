@@ -1,4 +1,4 @@
-import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { GlobeIcon, InfoIcon } from "@talismn/icons"
 import { KnownRequestIdOnly } from "extension-core"
 import { log } from "extension-shared"
@@ -23,10 +23,10 @@ const SettingsSourceSelector: FC<{
   source: SettingsSource
   onChange: (src: SettingsSource) => void
   network: AddEthereumChainParameter
-  knownNetwork: SimpleEvmNetwork
+  knownNetwork: EthNetwork
 }> = ({ source, onChange, network, knownNetwork }) => {
   const { t } = useTranslation()
-  const knownNativeToken = useToken(knownNetwork.nativeToken?.id)
+  const knownNativeToken = useToken(knownNetwork.nativeTokenId)
 
   const handleOptionChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -40,14 +40,14 @@ const SettingsSourceSelector: FC<{
 
     return {
       chainName: knownNetwork.name ?? "N/A",
-      rpcUrls: knownNetwork.rpcs?.map((rpc) => rpc.url) ?? [],
+      rpcUrls: knownNetwork.rpcs,
       chainId: toHex(Number(knownNetwork.id)),
       nativeCurrency: {
         name: knownNativeToken.symbol,
         symbol: knownNativeToken.symbol,
         decimals: knownNativeToken.decimals,
       },
-      blockExplorerUrls: knownNetwork.explorerUrl ? [knownNetwork.explorerUrl] : [],
+      blockExplorerUrls: knownNetwork.blockExplorerUrls,
       iconUrls: [],
     }
   }, [knownNativeToken, knownNetwork])
@@ -123,7 +123,7 @@ export const AddEthereumNetwork = () => {
   }, [request])
 
   const knownNetwork = useEvmNetwork(evmNetworkId)
-  const knownNativeToken = useToken(knownNetwork?.nativeToken?.id)
+  const knownNativeToken = useToken(knownNetwork?.nativeTokenId)
   // checking native token availability handles edge cases
   const canEnableDefault = useMemo(() => !!knownNativeToken, [knownNativeToken])
 

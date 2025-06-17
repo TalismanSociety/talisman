@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/util"
 import {
   Account,
@@ -7,6 +8,9 @@ import {
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+  Network,
+  NetworkId,
 } from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
@@ -15,23 +19,34 @@ import {
 import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 
-import { portfolio$, portfolioSelectedAccounts$, usePortfolioSelectedAccounts } from "@ui/state"
+import {
+  getNetworksMapById$,
+  portfolio$,
+  portfolioSelectedAccounts$,
+  useNetworksMapById,
+  usePortfolioSelectedAccounts,
+} from "@ui/state"
 
 // TODO: default tokens should be controlled from chaindata
-const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balances) => {
+const shouldDisplayBalance = (
+  accounts: Account[] | undefined,
+  networksById: Record<NetworkId, Network>,
+  balances: Balances,
+) => {
   const accountHasSomeBalance =
     balances.find((b) => !accounts || accounts.some((a) => isAddressEqual(a.address, b.address)))
       .sum.planck.total > 0n
 
   return (balance: Balance): boolean => {
     const account = accounts?.find((a) => isAddressEqual(a.address, balance.address))
-    // don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
-    if (
-      isAccountAddressEthereum(account) &&
-      account.type === "ledger-ethereum" &&
-      !balance.evmNetworkId
-    )
-      return false
+    if (!account) return false
+
+    const network = networksById[balance.networkId]
+    if (!network) return false
+
+    // hide balances incompatible with the account
+    // ex don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
+    if (!isAccountCompatibleWithNetwork(network, account)) return false
 
     const hasNonZeroBalance = balance.total.planck > 0
     if (hasNonZeroBalance) return true
@@ -48,7 +63,7 @@ const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balance
     }
 
     const genesisHash = getAccountGenesisHash(account)
-    if (!!genesisHash && genesisHash === balance.chain?.genesisHash)
+    if (!!genesisHash && genesisHash === getNetworkGenesisHash(network))
       return balance.token?.type === "substrate-native" || balance.total.planck > 0n
 
     return false
@@ -57,15 +72,17 @@ const shouldDisplayBalance = (accounts: Account[] | undefined, balances: Balance
 
 export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
   (filter: "all" | "network" | "search") =>
-    combineLatest([portfolio$, portfolioSelectedAccounts$]).pipe(
-      map(([{ networkBalances, allBalances, searchBalances }, accounts]) => {
+    combineLatest([portfolio$, getNetworksMapById$(), portfolioSelectedAccounts$]).pipe(
+      map(([{ networkBalances, allBalances, searchBalances }, networksById, accounts]) => {
         switch (filter) {
           case "all":
-            return networkBalances.find(shouldDisplayBalance(accounts, allBalances))
+            return networkBalances.find(shouldDisplayBalance(accounts, networksById, allBalances))
           case "network":
-            return networkBalances.find(shouldDisplayBalance(accounts, networkBalances))
+            return networkBalances.find(
+              shouldDisplayBalance(accounts, networksById, networkBalances),
+            )
           case "search":
-            return searchBalances.find(shouldDisplayBalance(accounts, searchBalances))
+            return searchBalances.find(shouldDisplayBalance(accounts, networksById, searchBalances))
         }
       }),
     ),
@@ -76,9 +93,10 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
  */
 export const useDisplayBalances = (balances: Balances) => {
   const accounts = usePortfolioSelectedAccounts()
+  const networksById = useNetworksMapById()
 
   return useMemo(
-    () => balances.find(shouldDisplayBalance(accounts, balances)),
-    [accounts, balances],
+    () => balances.find(shouldDisplayBalance(accounts, networksById, balances)),
+    [accounts, balances, networksById],
   )
 }

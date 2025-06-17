@@ -1,15 +1,15 @@
-import { EvmNativeToken, EvmNetworkId, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork, EthNetworkId, EvmNativeToken } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
 import { api } from "@ui/api"
-import { useEvmNetwork, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 
 const viemRequest =
-  (chainId: EvmNetworkId): ViemRequest =>
+  (chainId: EthNetworkId): ViemRequest =>
   async ({ method, params }) => {
     try {
       return await api.ethRequest({ chainId, method, params })
@@ -20,7 +20,7 @@ const viemRequest =
   }
 
 export const getExtensionPublicClient = (
-  evmNetwork: SimpleEvmNetwork,
+  evmNetwork: EthNetwork,
   nativeToken: EvmNativeToken,
 ): PublicClient => {
   const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`
@@ -53,9 +53,9 @@ export const getExtensionPublicClient = (
   })
 }
 
-export const usePublicClient = (evmNetworkId?: EvmNetworkId): PublicClient | undefined => {
-  const evmNetwork = useEvmNetwork(evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id)
+export const usePublicClient = (evmNetworkId?: EthNetworkId): PublicClient | undefined => {
+  const evmNetwork = useNetworkById<"ethereum">(evmNetworkId)
+  const nativeToken = useToken(evmNetwork?.nativeTokenId)
 
   const publicClient = useMemo(() => {
     if (!evmNetwork || nativeToken?.type !== "evm-native") return undefined

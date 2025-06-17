@@ -1,5 +1,6 @@
 import { Address as TAddress } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
+import { encodeAddressSs58, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
@@ -11,31 +12,30 @@ import urlJoin from "url-join"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useAccountByAddress, useChain, useEvmNetwork } from "@ui/state"
+import { useAccountByAddress, useChain, useNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
 const useBlockExplorerUrl = (
-  address?: TAddress | null,
-  chainId?: ChainId | null,
-  evmNetworkId?: EvmNetworkId | null,
+  address: TAddress | null | undefined,
+  networkId: NetworkId | null | undefined,
   shouldFormatAddress = true,
 ) => {
-  const chain = useChain(chainId as string)
-  const evmNetwork = useEvmNetwork(evmNetworkId as string)
+  const network = useNetwork(networkId)
   const resolvedAddress = useMemo(() => {
-    return shouldFormatAddress && chain && address ? convertAddress(address, chain.prefix) : address
-  }, [address, chain, shouldFormatAddress])
+    if (!network || !shouldFormatAddress || !address) return address
+
+    return network.platform === "polkadot" && network.account === "*25519"
+      ? encodeAddressSs58(address, network.prefix)
+      : normalizeAddress(address)
+  }, [address, network, shouldFormatAddress])
 
   return useMemo(() => {
-    if (resolvedAddress && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "address", resolvedAddress)
-    if (resolvedAddress && chain?.subscanUrl)
-      return urlJoin(chain.subscanUrl, "address", resolvedAddress)
-    return null
-  }, [chain?.subscanUrl, evmNetwork?.explorerUrl, resolvedAddress])
+    if (!resolvedAddress || !network?.blockExplorerUrls.length) return null
+    return urlJoin(network.blockExplorerUrls[0], "address", resolvedAddress)
+  }, [network?.blockExplorerUrls, resolvedAddress])
 }
 
 const AddressTooltip: FC<{
@@ -76,20 +76,14 @@ const AddressTooltip: FC<{
 type AddressDisplayProps = {
   // allow undefined but force developer to fill the property so he doesn't forget
   address: TAddress | null | undefined
-  chainId: ChainId | null | undefined
-  evmNetworkId: EvmNetworkId | null | undefined
+  networkId: string | null | undefined
   className?: string
 }
 
-export const AddressDisplay: FC<AddressDisplayProps> = ({
-  address,
-  chainId,
-  evmNetworkId,
-  className,
-}) => {
-  const chain = useChain(chainId as string)
+export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, className }) => {
+  const chain = useChain(networkId as string)
   const account = useAccountByAddress(address)
-  const blockExplorerUrl = useBlockExplorerUrl(address, chainId, evmNetworkId, !!account)
+  const blockExplorerUrl = useBlockExplorerUrl(address, networkId, !!account)
 
   const resolvedAddress = useMemo(() => {
     return chain && address ? convertAddress(address, chain.prefix) : address

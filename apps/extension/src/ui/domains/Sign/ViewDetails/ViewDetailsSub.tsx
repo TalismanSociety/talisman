@@ -43,7 +43,7 @@ const ViewDetailsContent: FC<{
   const { genericEvent } = useAnalytics()
   const { chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
-  const nativeToken = useToken(chain?.nativeToken?.id)
+  const nativeToken = useToken(chain?.nativeTokenId)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const isExtrinsic = isJsonPayload(payload)
@@ -104,7 +104,7 @@ const ViewDetailsContent: FC<{
           label={t("From")}
           address={payload.address}
           chainPrefix={chain?.prefix}
-          blockExplorerUrl={chain?.subscanUrl}
+          blockExplorerUrl={chain?.blockExplorerUrls[0]}
         />
 
         {isExtrinsic ? (

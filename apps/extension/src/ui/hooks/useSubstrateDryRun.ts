@@ -6,7 +6,7 @@ import { getMetadataRpcFromDef } from "extension-shared"
 import { firstValueFrom } from "rxjs"
 
 import { api } from "@ui/api"
-import { getChainByGenesisHash$, getToken$ } from "@ui/state"
+import { getNetworkByGenesisHash$, getToken$ } from "@ui/state"
 
 export type DryRunResult = (
   | typeof polkadot
@@ -33,10 +33,10 @@ export const useSubstrateDryRun = (jsonPayload: SignerPayloadJSON | null | undef
 const getSapiFromSignerPayloadJSON = async (jsonPayload: SignerPayloadJSON | null | undefined) => {
   if (!jsonPayload) return null
 
-  const chain = await firstValueFrom(getChainByGenesisHash$(jsonPayload.genesisHash))
+  const chain = await firstValueFrom(getNetworkByGenesisHash$(jsonPayload.genesisHash))
   if (!chain) return null
 
-  const token = await firstValueFrom(getToken$(chain.nativeToken?.id))
+  const token = await firstValueFrom(getToken$(chain.nativeTokenId))
   if (!token) return null
 
   const metadataDef = await api.subChainMetadata(jsonPayload.genesisHash)

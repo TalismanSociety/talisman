@@ -1,4 +1,4 @@
-import { EvmNetworkId, SimpleEvmNetwork } from "extension-core"
+import { EthNetwork, NetworkId } from "extension-core"
 import { useCallback, useEffect, useState } from "react"
 import { Dropdown } from "talisman-ui"
 
@@ -8,14 +8,14 @@ import { NetworkLogo } from "./NetworkLogo"
 
 type NetworkSelectProps = {
   placeholder?: string
-  defaultChainId?: EvmNetworkId
-  onChange?: (chainId: EvmNetworkId) => void
+  defaultChainId?: NetworkId
+  onChange?: (chainId: NetworkId) => void
   disabled?: boolean
   className?: string
   withTestnets: boolean
 }
 
-const renderNetwork = (network: SimpleEvmNetwork) => {
+const renderNetwork = (network: EthNetwork) => {
   return (
     <div className="flex items-center gap-5">
       <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
@@ -33,7 +33,7 @@ export const NetworkSelect = ({
   withTestnets,
 }: NetworkSelectProps) => {
   const networks = useSortedEvmNetworks(withTestnets)
-  const [selected, setSelected] = useState<SimpleEvmNetwork | undefined>(
+  const [selected, setSelected] = useState<EthNetwork | undefined>(
     networks.find((n) => n.id === defaultChainId),
   )
 
@@ -47,7 +47,7 @@ export const NetworkSelect = ({
   }, [defaultChainId, networks, selected])
 
   const handleChange = useCallback(
-    (item: SimpleEvmNetwork | null) => {
+    (item: EthNetwork | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)

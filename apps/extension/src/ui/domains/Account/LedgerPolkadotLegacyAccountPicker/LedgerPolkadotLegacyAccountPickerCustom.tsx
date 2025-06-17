@@ -2,7 +2,12 @@ import { isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { Account, Chain, isAccountLedgerPolkadotLegacy, LedgerPolkadotCurve } from "extension-core"
+import {
+  Account,
+  DotNetwork,
+  isAccountLedgerPolkadotLegacy,
+  LedgerPolkadotCurve,
+} from "extension-core"
 import { log } from "extension-shared"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -229,7 +234,7 @@ type CustomAccountDetails = {
 
 const getNextAccountDetails = (
   accounts: Account[],
-  chain: Chain,
+  chain: DotNetwork,
   app: SubstrateAppParams,
 ): CustomAccountDetails => {
   let nextAccountIndex = 0

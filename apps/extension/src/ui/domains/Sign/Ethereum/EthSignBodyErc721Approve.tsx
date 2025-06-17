@@ -79,7 +79,10 @@ export const EthSignBodyErc721Approve: FC = () => {
       </div>
       <div className="flex max-w-full overflow-hidden">
         <div className="whitespace-nowrap">{t("on behalf of")}</div>
-        <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
+        <SignParamAccountButton
+          address={account.address}
+          explorerUrl={network.blockExplorerUrls[0]}
+        />
       </div>
       {!!image && (
         <div className="mb-[-0.8rem] mt-12 text-center">

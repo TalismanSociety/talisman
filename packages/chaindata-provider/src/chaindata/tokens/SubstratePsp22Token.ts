@@ -1,6 +1,7 @@
 import z from "zod/v4"
 
 import { NetworkId } from "../networks"
+import { TokenId } from "./Token"
 import { TokenBase } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
@@ -14,5 +15,23 @@ export const SubPsp22TokenSchema = TokenBase.extend({
 })
 export type SubPsp22Token = z.infer<typeof SubPsp22TokenSchema>
 
+export type SubPsp22TokenIdSpecs = {
+  type: typeof TOKEN_TYPE
+  networkId: NetworkId
+  contractAddress: string
+}
+
 export const subPsp22TokenId = (networkId: NetworkId, contractAddress: string) =>
   generateTokenId(networkId, TOKEN_TYPE, contractAddress.toLowerCase())
+
+export const parseSubPsp22TokenId = (tokenId: TokenId): SubPsp22TokenIdSpecs => {
+  const [networkId, type, contractAddress] = tokenId.split(":")
+  if (!networkId || !contractAddress) throw new Error(`Invalid SubPsp22Token ID: ${tokenId}`)
+  if (type !== TOKEN_TYPE) throw new Error(`Invalid SubPsp22Token type: ${type}`)
+
+  return {
+    type,
+    networkId,
+    contractAddress, // TODO normalize ?
+  }
+}

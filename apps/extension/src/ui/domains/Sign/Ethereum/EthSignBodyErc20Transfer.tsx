@@ -17,7 +17,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
   const { t } = useTranslation()
   const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const nativeToken = useToken(network?.nativeToken?.id)
+  const nativeToken = useToken(network?.nativeTokenId)
   const currency = useSelectedCurrency()
 
   const { from, value, to } = useMemo(() => {
@@ -74,14 +74,18 @@ export const EthSignBodyErc20Transfer: FC = () => {
       <div className="flex">
         <div>{t("from")}</div>
         {isOnBehalf && from ? (
-          <SignParamAccountButton explorerUrl={network.explorerUrl} address={from} withIcon />
+          <SignParamAccountButton
+            explorerUrl={network.blockExplorerUrls[0]}
+            address={from}
+            withIcon
+          />
         ) : (
           <SignParamAccountButton address={account.address} />
         )}
       </div>
       <div className="flex">
         <div>{t("to")}</div>
-        <SignParamAccountButton explorerUrl={network.explorerUrl} address={to} withIcon />
+        <SignParamAccountButton explorerUrl={network.blockExplorerUrls[0]} address={to} withIcon />
       </div>
       {isOnBehalf && (
         <div className="flex">

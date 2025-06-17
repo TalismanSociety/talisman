@@ -14,7 +14,7 @@ import { TogglePill } from "@talisman/components/TogglePill"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { activeChainsState$, activeEvmNetworksState$, balancesHydrate$ } from "@ui/state"
+import { activeNetworksState$, balancesHydrate$ } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
@@ -40,9 +40,7 @@ const NoticeTooltip: FC = () => {
   )
 }
 
-const [usePreload] = bind(
-  combineLatest([balancesHydrate$, activeChainsState$, activeEvmNetworksState$]),
-)
+const [usePreload] = bind(combineLatest([balancesHydrate$, activeNetworksState$]))
 
 const Content = () => {
   const { t } = useTranslation()

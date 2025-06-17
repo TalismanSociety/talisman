@@ -1,4 +1,4 @@
-import { Chain, CustomChain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { decodeSs58Address, detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
 import { HexString } from "extension-shared"
 import { useEffect, useMemo } from "react"
@@ -29,7 +29,7 @@ export const useChainsFilteredByAddressPrefix = (address?: string) => {
 }
 
 export const useGenesisHashEffects = (
-  chains: (Chain | CustomChain)[],
+  chains: DotNetwork[],
   genesisHash: HexString | undefined,
   setGenesisHash: (genesisHash?: HexString) => void,
 ) => {

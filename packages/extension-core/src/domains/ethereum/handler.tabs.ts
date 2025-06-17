@@ -1,7 +1,10 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { evmErc20TokenId } from "@talismn/balances"
-import { CustomEvmErc20Token, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  CustomEvmErc20Token,
+  evmErc20TokenId,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
@@ -17,7 +20,7 @@ import {
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
 
-import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { TabsHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -26,6 +29,7 @@ import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
 import { TalismanNotOnboardedError } from "../app/utils"
+import { activeTokensStore, isTokenActive } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { signAndSendEth, signEth } from "../signing/requests"
 import {
@@ -38,7 +42,6 @@ import {
   EthWalletPermissions,
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
-import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { getEvmErrorCause } from "./errors"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
@@ -785,7 +788,7 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  async handle<TMessageType extends keyof RequestSignatures>(
+  async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],

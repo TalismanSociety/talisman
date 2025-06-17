@@ -1,6 +1,6 @@
 import { InfoIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "extension-core"
+import { activeNetworksStore, EthNetwork, isNetworkActive } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
@@ -13,7 +13,7 @@ import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import {
-  useActiveEvmNetworksState,
+  useActiveNetworksState,
   useAuthorisedSites,
   useEvmNetwork,
   useEvmNetworks,
@@ -34,7 +34,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const currentNetwork = useEvmNetwork(initialNetworkId)
 
   const evmNetworks = useEvmNetworks()
-  const activeEvmNetworksState = useActiveEvmNetworksState()
+  const activeEvmNetworksState = useActiveNetworksState()
 
   const [allActiveEvmNetworks, allInactiveEvmNetworks] = useMemo(() => {
     return evmNetworks
@@ -50,11 +50,11 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       })
       .reduce(
         (acc, network) => {
-          const arr = isEvmNetworkActive(network, activeEvmNetworksState) ? acc[0] : acc[1]
+          const arr = isNetworkActive(network, activeEvmNetworksState) ? acc[0] : acc[1]
           arr.push(network)
           return acc
         },
-        [[] as SimpleEvmNetwork[], [] as SimpleEvmNetwork[]],
+        [[] as EthNetwork[], [] as EthNetwork[]],
       )
   }, [activeEvmNetworksState, currentNetwork?.id, evmNetworks])
 
@@ -72,7 +72,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     async (id: string) => {
       const ethChainId = Number(id)
       if (!currentSite?.id || isNaN(ethChainId)) return
-      if (!activeEvmNetworksState[id]) await activeEvmNetworksStore.setActive(id, true)
+      if (!activeEvmNetworksState[id]) await activeNetworksStore.setActive(id, true)
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()
     },
@@ -154,7 +154,7 @@ const NETWORK_VISIBILITY_OPTIONS: IntersectionObserverInit = {
 }
 
 const NetworkButton: FC<{
-  network: SimpleEvmNetwork
+  network: EthNetwork
   isSelected: boolean
   onClick: () => void
 }> = ({ network, isSelected, onClick }) => {
@@ -192,7 +192,7 @@ const NetworkButton: FC<{
 }
 
 const NetworkRows: FC<{
-  networks: SimpleEvmNetwork[]
+  networks: EthNetwork[]
   selectedNetworkId?: string
   onSelect: (networkId: string) => void
 }> = ({ networks, selectedNetworkId, onSelect }) => {

@@ -30,7 +30,7 @@ export const TokenBalancesUniswapV2Row = ({
 
   const token = balance.token
   if (token?.type !== "evm-uniswapv2") return null
-  if (!balance.evmNetworkId) return null
+  if (!balance.networkId) return null
 
   return (
     <div

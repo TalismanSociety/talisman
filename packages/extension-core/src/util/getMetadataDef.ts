@@ -1,6 +1,6 @@
 import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { Chain, ChainId } from "@talismn/chaindata-provider"
+import { ChainId, DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
@@ -146,14 +146,14 @@ export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: s
 }
 
 export const fetchMetadataDefFromChain = async (
-  chain: Chain,
+  chain: DotNetwork,
   genesisHash: `0x${string}`,
   runtimeSpecVersion?: number,
   blockHash?: string,
 
   /** defaults to `getLatestMetadataRpc`, but can be overridden */
   fetchMethod: (
-    chainId: ChainId,
+    chainId: NetworkId,
     blockHash?: string,
   ) => Promise<`0x${string}`> = getLatestMetadataRpc,
 ): Promise<TalismanMetadataDef | undefined> => {
@@ -176,7 +176,7 @@ export const fetchMetadataDefFromChain = async (
 
   return {
     genesisHash,
-    chain: chain.chainName,
+    chain: chain.name,
     specVersion: runtimeSpecVersion,
     ss58Format: chainProperties.ss58Format,
     tokenSymbol: Array.isArray(chainProperties.tokenSymbol)

@@ -1,25 +1,23 @@
-import { Chain, CustomChain } from "@talismn/chaindata-provider"
-import { sleep } from "@talismn/util"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { api } from "@ui/api"
 
-export const ResetSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chain }) => {
+export const ResetSubNetworkButton: FC<{ chain: DotNetwork }> = ({ chain }) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  //const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
   const handleConfirmReset = useCallback(async () => {
     if (!chain) return
     try {
-      await api.chainReset(chain.id)
-      await sleep(350) // wait for atom to reflect changes
-      navigate("/settings/networks-tokens/networks/polkadot")
+      throw new Error("Not implemented")
+      // await api.chainReset(chain.id)
+      // await sleep(350) // wait for atom to reflect changes
+      // navigate("/settings/networks-tokens/networks/polkadot")
     } catch (err) {
       notify({
         title: t("Failed to reset"),
@@ -27,7 +25,7 @@ export const ResetSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chai
         type: "error",
       })
     }
-  }, [chain, navigate, t])
+  }, [chain, t])
 
   // keep name in memory to allow for popup closing animation
   const [networkName, setNetworkName] = useState<string>(() => chain?.name ?? t("N/A"))

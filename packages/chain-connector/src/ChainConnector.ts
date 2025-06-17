@@ -624,7 +624,7 @@ export class ChainConnector {
     const chain = await this.#chaindataChainProvider.chainById(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
-    let rpcs = (chain.rpcs ?? []).map(({ url }) => url)
+    let rpcs = chain.rpcs.concat() // clone to avoid mutating the original array
     const priorityRpcs = this.#connectionMetaDb
       ? await this.#connectionMetaDb.chainPriorityRpcs.get(chainId)
       : undefined

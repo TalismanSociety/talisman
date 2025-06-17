@@ -332,8 +332,7 @@ export async function subscribeCrowdloans(
               source: "substrate-native",
               status: "live",
               address,
-              multiChainId: { subChainId: chainId },
-              chainId,
+              networkId: chainId,
               tokenId,
               values: Array.from(contributions).map(({ amount, paraId }) => ({
                 type: "crowdloan",

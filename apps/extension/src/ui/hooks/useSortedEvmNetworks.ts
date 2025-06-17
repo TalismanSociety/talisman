@@ -1,12 +1,15 @@
-import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
-import { useEvmNetworks } from "@ui/state"
+import { useNetworks } from "@ui/state"
 
-const sortNetworks = (a: SimpleEvmNetwork, b: SimpleEvmNetwork) =>
-  (a.name || "").localeCompare(b.name || "")
+const sortNetworks = (a: EthNetwork, b: EthNetwork) => (a.name || "").localeCompare(b.name || "")
 
 export const useSortedEvmNetworks = (includeTestnets: boolean) => {
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const evmNetworks: EthNetwork[] = useNetworks({
+    platform: "ethereum",
+    activeOnly: true,
+    includeTestnets,
+  }) //as EthNetwork[] // TODO infer
   return useMemo(() => evmNetworks.concat().sort(sortNetworks), [evmNetworks])
 }

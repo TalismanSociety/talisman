@@ -5,9 +5,9 @@ import { assert } from "@polkadot/util"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
-  ChainId,
   githubTokenLogoUrl,
   SubTokensToken,
+  subTokensTokenId,
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
@@ -17,11 +17,9 @@ import {
   encodeStateKey,
   getDynamicBuilder,
   getLookupFn,
-  getMetadataVersion,
   papiParse,
   unifyMetadata,
 } from "@talismn/scale"
-import { compressToEncodedURIComponent } from "lz-string"
 import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -41,18 +39,13 @@ const moduleType: ModuleType = "substrate-tokens"
 
 const defaultPalletId = "Tokens"
 
-export const subTokensTokenId = (chainId: ChainId, onChainId: string | number) =>
-  `${chainId}-substrate-tokens-${compressToEncodedURIComponent(String(onChainId))}`
-
 export type SubTokensChainMeta = {
-  isTestnet: boolean
-  palletId?: string
+  palletId?: string // TODO unlikely it will ever be used - remove this ?
   miniMetadata?: string
-  metadataVersion?: number
 }
 
 export type SubTokensModuleConfig = {
-  palletId?: string
+  palletId?: string // TODO unlikely it will ever be used - remove this ?
   tokens?: Array<
     {
       symbol?: string
@@ -63,7 +56,7 @@ export type SubTokensModuleConfig = {
   >
 }
 
-export type SubTokensBalance = NewBalanceType<ModuleType, "complex", "substrate">
+export type SubTokensBalance = NewBalanceType<ModuleType, "complex">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -97,25 +90,19 @@ export const SubTokensModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet }
-      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
+      if (metadataRpc === undefined) return {}
+      if ((moduleConfig?.tokens ?? []).length < 1) return {}
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
       const metadata = decAnyMetadata(metadataRpc)
       const palletId = moduleConfig?.palletId ?? defaultPalletId
       compactMetadata(metadata, [{ pallet: palletId, items: ["Accounts"] }])
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return palletId === defaultPalletId
-        ? { isTestnet, miniMetadata, metadataVersion }
-        : { isTestnet, palletId, miniMetadata, metadataVersion }
+      return palletId === defaultPalletId ? { miniMetadata } : { palletId, miniMetadata }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
-
       const tokens: Record<string, SubTokensToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
@@ -131,7 +118,6 @@ export const SubTokensModule: NewBalanceModule<
             id,
             type: "substrate-tokens",
             platform: "polkadot",
-            isTestnet,
             isDefault: tokenConfig.isDefault ?? true,
             symbol,
             decimals,
@@ -142,10 +128,6 @@ export const SubTokensModule: NewBalanceModule<
             networkId: chainId,
           }
 
-          if (tokenConfig?.symbol) {
-            token.symbol = tokenConfig?.symbol
-            token.id = subTokensTokenId(chainId, token.onChainId)
-          }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
@@ -351,19 +333,19 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const chainId = token.networkId
-    if (!chainId) {
+    const networkId = token.networkId
+    if (!networkId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-    const chain = chains[chainId]
+    const chain = chains[networkId]
     if (!chain) {
-      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
+      log.warn(`Chain ${networkId} for token ${tokenId} not found`)
       return []
     }
 
     return addresses.flatMap((address): RpcStateQuery<SubTokensBalance | null> | [] => {
-      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const scaleCoder = chainStorageCoders.get(networkId)?.storage
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -374,7 +356,7 @@ async function buildQueries(
 
       const stateKey = encodeStateKey(
         scaleCoder,
-        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
+        `Invalid address / token onChainId in ${networkId} storage query ${address} / ${token.onChainId}`,
         address,
         onChainId,
       )
@@ -391,7 +373,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-tokens balance on chain ${chainId}`,
+          `Failed to decode substrate-tokens balance on chain ${networkId}`,
         ) ?? { free: 0n, reserved: 0n, frozen: 0n }
 
         const free = (decoded?.free ?? 0n).toString()
@@ -408,14 +390,13 @@ async function buildQueries(
           source: "substrate-tokens",
           status: "live",
           address,
-          multiChainId: { subChainId: chainId },
-          chainId,
+          networkId,
           tokenId: token.id,
           values: balanceValues,
         } as SubTokensBalance
       }
 
-      return { chainId, stateKey, decodeResult }
+      return { chainId: networkId, stateKey, decodeResult }
     })
   })
 }

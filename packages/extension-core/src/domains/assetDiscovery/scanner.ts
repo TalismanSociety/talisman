@@ -2,8 +2,8 @@ import PromisePool from "@supercharge/promise-pool"
 import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
   EvmErc20Token,
-  EvmNetwork,
   EvmNetworkId,
+  isEthNetwork,
   Token,
   TokenId,
   TokenList,
@@ -32,10 +32,10 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { isEvmToken } from "../../util/isEvmToken"
 import { appStore } from "../app/store.app"
 import { passwordStore } from "../app/store.password"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
+import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
+import { activeTokensStore } from "../balances/store.activeTokens"
 import { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
-import { activeTokensStore } from "../tokens/store.activeTokens"
 import { fetchMissingTokens } from "./fetchMissingTokens"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
@@ -121,7 +121,7 @@ class AssetDiscoveryScanner {
     let prevAllActiveNetworkIds: string[] | null = null
 
     // identify newly enabled networks and scan those
-    combineLatest([chaindataProvider.evmNetworksByIdObservable, activeEvmNetworksStore.observable])
+    combineLatest([chaindataProvider.evmNetworksByIdObservable, activeNetworksStore.observable])
       .pipe(
         map(([networksById, activeNetworks]) =>
           Object.keys(activeNetworks)
@@ -283,7 +283,7 @@ class AssetDiscoveryScanner {
       chaindataProvider.tokens(),
       chaindataProvider.evmNetworksById(),
       activeTokensStore.get(),
-      activeEvmNetworksStore.get(),
+      activeNetworksStore.get(),
     ])
 
     const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
@@ -361,7 +361,7 @@ class AssetDiscoveryScanner {
         chaindataProvider.tokens(),
         chaindataProvider.evmNetworksById(),
         activeTokensStore.get(),
-        activeEvmNetworksStore.get(),
+        activeNetworksStore.get(),
       ])
 
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
@@ -404,8 +404,8 @@ class AssetDiscoveryScanner {
 
       const erc20aggregators = Object.fromEntries(
         Object.values(evmNetworks)
-          .filter((n) => n.erc20aggregator)
-          .map((n) => [n.id, n.erc20aggregator] as const),
+          .filter((n) => n.contracts?.Erc20Aggregator)
+          .map((n) => [n.id, n.contracts?.Erc20Aggregator] as const),
       )
 
       const stop = log.timer("[AssetDiscovery] Scan completed")
@@ -559,13 +559,13 @@ class AssetDiscoveryScanner {
       .map((acc) => acc.address)
 
     // all active evm networks
-    const [evmNetworks, activeEvmNetworks] = await Promise.all([
+    const [evmNetworks, activeNetworks] = await Promise.all([
       chaindataProvider.evmNetworks(),
-      activeEvmNetworksStore.get(),
+      activeNetworksStore.get(),
     ])
 
     const networkIds = evmNetworks
-      .filter((n) => isEvmNetworkActive(n, activeEvmNetworks))
+      .filter((n) => isNetworkActive(n, activeNetworks))
       .map((n) => n.id)
 
     await appStore.set({ isAssetDiscoveryScanPending: false })
@@ -578,9 +578,9 @@ class AssetDiscoveryScanner {
     this.#preventAutoStart = true
 
     try {
-      const [discoveredBalances, activeEvmNetworks, activeTokens] = await Promise.all([
+      const [discoveredBalances, activeNetworks, activeTokens] = await Promise.all([
         db.assetDiscovery.toArray(),
-        activeEvmNetworksStore.get(),
+        activeNetworksStore.get(),
         activeTokensStore.get(),
       ])
 
@@ -594,7 +594,7 @@ class AssetDiscoveryScanner {
       )
       const evmNetworks = (
         await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))
-      ).filter((network): network is EvmNetwork => !!network)
+      ).filter(isEthNetwork)
 
       // activate tokens that have not been explicitely enabled or disabled
       const tokenIdsToActivate = tokens.filter((t) => activeTokens[t.id] === undefined)
@@ -604,10 +604,10 @@ class AssetDiscoveryScanner {
       }
 
       // activate networks that have not been explicitely enabled or disabled
-      const networkIdsToActivate = evmNetworks.filter((n) => activeEvmNetworks[n.id] === undefined)
+      const networkIdsToActivate = evmNetworks.filter((n) => activeNetworks[n.id] === undefined)
       if (networkIdsToActivate.length) {
         log.debug("[AssetDiscovery] Automatically enabling networks", networkIdsToActivate)
-        await activeEvmNetworksStore.set(
+        await activeNetworksStore.set(
           Object.fromEntries(networkIdsToActivate.map((t) => [t.id, true])),
         )
       }
@@ -626,21 +626,21 @@ class AssetDiscoveryScanner {
 const getActiveNetworkIdsToScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
     chaindataProvider.evmNetworks(),
-    activeEvmNetworksStore.get(),
+    activeNetworksStore.get(),
     // we dont scan substrate tokens for now
     // chaindataProvider.chains(),
     // activeChainsStore.get()
   ])
 
   return evmNetworks
-    .filter((n) => n.forceScan || (!n.isTestnet && isEvmNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
+    .filter((n) => n.forceScan || (!n.isTestnet && isNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
     .map((n) => n.id)
 }
 
 const getNetworkIdsToForceScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
     chaindataProvider.evmNetworks(),
-    activeEvmNetworksStore.get(),
+    activeNetworksStore.get(),
   ])
 
   return evmNetworks

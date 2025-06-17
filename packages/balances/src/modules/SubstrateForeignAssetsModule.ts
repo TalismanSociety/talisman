@@ -5,9 +5,9 @@ import { assert } from "@polkadot/util"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
-  ChainId,
   githubTokenLogoUrl,
   SubForeignAssetsToken,
+  subForeignAssetTokenId,
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
@@ -32,13 +32,10 @@ import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelp
 type ModuleType = "substrate-foreignassets"
 const moduleType: ModuleType = "substrate-foreignassets"
 
-export const subForeignAssetTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-foreignassets-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
 export type SubForeignAssetsChainMeta = {
-  isTestnet: boolean
+  // isTestnet: boolean
   miniMetadata?: string
-  metadataVersion?: number
+  // metadataVersion?: number
 }
 
 export type SubForeignAssetsModuleConfig = {
@@ -49,7 +46,7 @@ export type SubForeignAssetsModuleConfig = {
   >
 }
 
-export type SubForeignAssetsBalance = NewBalanceType<ModuleType, "complex", "substrate">
+export type SubForeignAssetsBalance = NewBalanceType<ModuleType, "complex">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -83,11 +80,13 @@ export const SubForeignAssetsModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet }
-      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
+      //   const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
+      if (metadataRpc === undefined) return {}
+      // if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
       const metadataVersion = getMetadataVersion(metadataRpc)
+      if (metadataVersion < 14) return {}
+
       const metadata = decAnyMetadata(metadataRpc)
 
       compactMetadata(metadata, [
@@ -96,15 +95,16 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return { isTestnet, miniMetadata, metadataVersion }
+      return { miniMetadata }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       if ((moduleConfig?.tokens ?? []).length < 1) return {}
 
-      const { isTestnet, miniMetadata, metadataVersion } = chainMeta
-      if (miniMetadata === undefined || metadataVersion === undefined) return {}
-      if (metadataVersion < 14) return {}
+      const { miniMetadata } = chainMeta
+      if (!miniMetadata) return {}
+      // if (miniMetadata === undefined || metadataVersion === undefined) return {}
+      // if (metadataVersion < 14) return {}
 
       const metadata = decAnyMetadata(miniMetadata)
       const unifiedMetadata = unifyMetadata(metadata)
@@ -167,12 +167,12 @@ export const SubForeignAssetsModule: NewBalanceModule<
           const decimals = assetsMetadata?.decimals ?? 0
           const isFrozen = assetsMetadata?.is_frozen ?? false
 
-          const id = subForeignAssetTokenId(chainId, symbol)
+          const id = subForeignAssetTokenId(chainId, tokenConfig.onChainId)
           const token: SubForeignAssetsToken = {
             id,
             type: "substrate-foreignassets",
             platform: "polkadot",
-            isTestnet,
+            // isTestnet,
             isDefault: tokenConfig?.isDefault ?? true,
             symbol,
             decimals,
@@ -184,10 +184,6 @@ export const SubForeignAssetsModule: NewBalanceModule<
             networkId: chainId,
           }
 
-          if (tokenConfig?.symbol) {
-            token.symbol = tokenConfig?.symbol
-            token.id = subForeignAssetTokenId(chainId, token.symbol)
-          }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
@@ -302,19 +298,19 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const chainId = token.networkId
-    if (!chainId) {
+    const networkId = token.networkId
+    if (!networkId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-    const chain = chains[chainId]
+    const chain = chains[networkId]
     if (!chain) {
-      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
+      log.warn(`Chain ${networkId} for token ${tokenId} not found`)
       return []
     }
 
     return addresses.flatMap((address): RpcStateQuery<SubForeignAssetsBalance | null> | [] => {
-      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const scaleCoder = chainStorageCoders.get(networkId)?.storage
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -325,7 +321,7 @@ async function buildQueries(
 
       const stateKey = encodeStateKey(
         scaleCoder,
-        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
+        `Invalid address / token onChainId in ${networkId} storage query ${address} / ${token.onChainId}`,
         onChainId,
         address,
       )
@@ -344,7 +340,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-foreignassets balance on chain ${chainId}`,
+          `Failed to decode substrate-foreignassets balance on chain ${networkId}`,
         ) ?? {
           balance: 0n,
           is_frozen: false,
@@ -380,14 +376,13 @@ async function buildQueries(
           status: "live",
 
           address,
-          multiChainId: { subChainId: chainId },
-          chainId,
+          networkId,
           tokenId: token.id,
           values: balanceValues,
         } as SubForeignAssetsBalance
       }
 
-      return { chainId, stateKey, decodeResult }
+      return { chainId: networkId, stateKey, decodeResult }
     })
   })
 }

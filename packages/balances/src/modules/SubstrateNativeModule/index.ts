@@ -6,6 +6,7 @@ import {
   CustomSubNativeToken,
   githubTokenLogoUrl,
   SubNativeToken,
+  subNativeTokenId,
   TokenId,
 } from "@talismn/chaindata-provider"
 import {
@@ -54,7 +55,6 @@ import {
   SubNativeBalance,
   SubNativeChainMeta,
   SubNativeModuleConfig,
-  subNativeTokenId,
   SubNativeTransferParams,
 } from "./types"
 import { mergeBalances } from "./util/mergeBalances"
@@ -65,7 +65,6 @@ import { SubNativeBalanceError } from "./util/SubNativeBalanceError"
 export { filterBaseLocks, getLockTitle } from "./util/balanceLockTypes"
 export type { BalanceLockType } from "./util/balanceLockTypes"
 
-export { subNativeTokenId } from "./types"
 export type {
   ModuleType,
   SubNativeBalance,

@@ -25,7 +25,7 @@ export const ChainTokenBalancesUniswapV2Row = ({
   const selectedCurrency = useSelectedCurrency()
   const balancePair = useUniswapV2BalancePair(balance)
 
-  if (!balance.evmNetworkId) return null
+  if (!balance.networkId) return null
   if (!balancePair) return null
   const token = balance.token
   if (token?.type !== "evm-uniswapv2") return null

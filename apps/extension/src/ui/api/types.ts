@@ -2,14 +2,7 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { BalanceJson } from "@talismn/balances"
-import {
-  Chain,
-  ChainId,
-  CustomChain,
-  EvmNetworkId,
-  Token,
-  TokenId,
-} from "@talismn/chaindata-provider"
+import { ChainId, EvmNetworkId, Network, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
@@ -51,15 +44,12 @@ import {
   RequestBalance,
   RequestMetadataId,
   RequestSetVerifierCertificateMnemonic,
-  RequestUpsertCustomChain,
-  RequestUpsertCustomEvmNetwork,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
-  SimpleEvmNetwork,
   Trees,
   UnsubscribeFn,
   ValidRequests,
@@ -170,12 +160,7 @@ export default interface MessageTypes {
   getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({
-    chainId,
-    evmNetworkId,
-    tokenId,
-    address,
-  }: RequestBalance) => Promise<BalanceJson | undefined>
+  getBalance: ({ tokenId, address }: RequestBalance) => Promise<BalanceJson | undefined>
   balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
@@ -205,15 +190,18 @@ export default interface MessageTypes {
   ) => UnsubscribeFn
 
   // chain message types
-  chains: (cb: (chains: Array<Chain | CustomChain>) => void) => UnsubscribeFn
-  chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
-  chainRemove: (id: string) => Promise<boolean>
-  chainReset: (id: string) => Promise<boolean>
+  // chains: (cb: (chains: Array<Chain | CustomChain>) => void) => UnsubscribeFn
+  // chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
+  // chainRemove: (id: string) => Promise<boolean>
+  // chainReset: (id: string) => Promise<boolean>
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
     specVersion?: number,
   ) => Promise<HexString>
+
+  // networks message types
+  networks: (cb: (chains: Array<Network>) => void) => UnsubscribeFn
 
   // token message types
   tokens: (cb: (tokens: Token[]) => void) => UnsubscribeFn
@@ -302,10 +290,10 @@ export default interface MessageTypes {
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
 
   // ethereum networks message types
-  ethereumNetworks: (cb: (networks: Array<SimpleEvmNetwork>) => void) => UnsubscribeFn
-  ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
-  ethNetworkRemove: (id: string) => Promise<boolean>
-  ethNetworkReset: (id: string) => Promise<boolean>
+  // ethereumNetworks: (cb: (networks: Array<SimpleEvmNetwork>) => void) => UnsubscribeFn
+  // ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
+  // ethNetworkRemove: (id: string) => Promise<boolean>
+  // ethNetworkReset: (id: string) => Promise<boolean>
 
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>

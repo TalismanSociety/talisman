@@ -1,4 +1,4 @@
-import { EvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { Chain } from "viem"
 import * as chains from "viem/chains"
 
@@ -26,7 +26,7 @@ export type ChainOptions = {
 }
 
 export const getChainFromEvmNetwork = (
-  evmNetwork: EvmNetwork,
+  evmNetwork: EthNetwork,
   nativeToken: { symbol: string; decimals: number } | null,
   options: ChainOptions = {},
 ): Chain => {
@@ -34,7 +34,7 @@ export const getChainFromEvmNetwork = (
 
   if (!chainsCache.has(evmNetwork.id)) {
     const chainRpcs =
-      evmNetwork.rpcs?.map((rpc) => addOnfinalityApiKey(rpc.url, options.onFinalityApiKey)) ?? []
+      evmNetwork.rpcs.map((url) => addOnfinalityApiKey(url, options.onFinalityApiKey)) ?? []
 
     const viemChain = VIEM_CHAINS[Number(evmNetwork.id)] ?? {}
 

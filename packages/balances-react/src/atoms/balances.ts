@@ -71,12 +71,12 @@ const hydrateBalancesObservableAtom = atom(async (get) => {
 })
 
 const balancesHydrateDataAtom = atom(async (get): Promise<HydrateDb> => {
-  const [{ chainsById, evmNetworksById, tokensById }, tokenRates] = await Promise.all([
+  const [{ networksById, tokensById }, tokenRates] = await Promise.all([
     get(chaindataAtom),
     get(tokenRatesAtom),
   ])
 
-  return { chains: chainsById, evmNetworks: evmNetworksById, tokens: tokensById, tokenRates }
+  return { networks: networksById, tokens: tokensById, tokenRates }
 })
 
 const balancesSubscriptionAtomEffect = atomEffect((get) => {
@@ -234,10 +234,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       if (!balance.address || !allAddresses.includes(balance.address)) return true
 
       // delete cached balances when chain/evmNetwork doesn't exist
-      if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && !chainIds.has(balance.chainId)) return true
-      if (balance.evmNetworkId !== undefined && !evmNetworkIds.has(balance.evmNetworkId))
-        return true
+      if (!chainIds.has(balance.networkId) && !evmNetworkIds.has(balance.networkId)) return true
 
       // delete cached balance when token doesn't exist / is disabled
       if (!enabledTokenIds.includes(balance.tokenId)) return true
@@ -248,9 +245,9 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       // delete cached balance for accounts on incompatible chains
       // (substrate accounts shouldn't have evm balances)
       // (evm accounts shouldn't have substrate balances (unless the chain uses secp256k1 accounts))
-      const chain = (balance.chainId && chains.find(({ id }) => id === balance.chainId)) || null
-      const hasChain = balance.chainId && chainIds.has(balance.chainId)
-      const hasEvmNetwork = balance.evmNetworkId && evmNetworkIds.has(balance.evmNetworkId)
+      const chain = chains.find(({ id }) => id === balance.networkId) || null
+      const hasChain = chainIds.has(balance.networkId)
+      const hasEvmNetwork = evmNetworkIds.has(balance.networkId)
       const chainUsesSecp256k1Accounts = chain?.account === "secp256k1"
       if (!isEthereumAddress(balance.address)) {
         if (!hasChain) return true

@@ -1,4 +1,4 @@
-import { Chain, ChainId, CustomChain, isCustomChain } from "@talismn/chaindata-provider"
+import { ChainId, DotNetwork } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -26,11 +26,10 @@ class ActiveChainsStore extends StorageProvider<ActiveChains> {
   }
 }
 
+/** @deprecated use activeNetworksStore */
 export const activeChainsStore = new ActiveChainsStore()
 
-export const isChainActive = (network: Chain | CustomChain, activeNetworks: ActiveChains) => {
-  return (
-    activeNetworks[network.id] ??
-    (isCustomChain(network) || (network.isDefault && !network.isTestnet))
-  )
+/** @deprecated use isNetworkActive */
+export const isChainActive = (network: DotNetwork, activeNetworks: ActiveChains) => {
+  return activeNetworks[network.id] ?? (network.isDefault && !network.isTestnet)
 }

@@ -1,5 +1,4 @@
-import { evmErc20TokenId } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { evmErc20TokenId, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
 import { CSSProperties, FC, Suspense, useId, useMemo } from "react"

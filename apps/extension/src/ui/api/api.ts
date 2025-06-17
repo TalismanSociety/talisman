@@ -126,8 +126,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, curve }),
 
   // balance messages ---------------------------------------------------
-  getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>
-    messageService.sendMessage("pri(balances.get)", { chainId, evmNetworkId, tokenId, address }),
+  getBalance: ({ tokenId, address }) =>
+    messageService.sendMessage("pri(balances.get)", { tokenId, address }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
   balancesByParams: (addressesByChain, addressesAndEvmNetworks, addressesAndTokens, cb) =>
     messageService.subscribe(
@@ -164,10 +164,10 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(metadata.updates.subscribe)", { id: genesisHash }, cb),
 
   // chain message types
-  chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
-  chainUpsert: (chain) => messageService.sendMessage("pri(chains.upsert)", chain),
-  chainRemove: (id) => messageService.sendMessage("pri(chains.remove)", { id }),
-  chainReset: (id) => messageService.sendMessage("pri(chains.reset)", { id }),
+  // chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
+  // chainUpsert: (chain) => messageService.sendMessage("pri(chains.upsert)", chain),
+  // chainRemove: (id) => messageService.sendMessage("pri(chains.remove)", { id }),
+  // chainReset: (id) => messageService.sendMessage("pri(chains.reset)", { id }),
   generateChainSpecsQr: (genesisHash) =>
     messageService.sendMessage("pri(chains.generateQr.addNetworkSpecs)", { genesisHash }),
   generateChainMetadataQr: (genesisHash, specVersion) =>
@@ -175,6 +175,8 @@ export const api: MessageTypes = {
       genesisHash,
       specVersion,
     }),
+
+  networks: (cb) => messageService.subscribe("pri(networks.subscribe)", null, cb),
 
   // token message types
   tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
@@ -282,10 +284,10 @@ export const api: MessageTypes = {
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
 
   // ethereum network message types
-  ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
-  ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
-  ethNetworkRemove: (id) => messageService.sendMessage("pri(eth.networks.remove)", { id }),
-  ethNetworkReset: (id) => messageService.sendMessage("pri(eth.networks.reset)", { id }),
+  // ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
+  // ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
+  // ethNetworkRemove: (id) => messageService.sendMessage("pri(eth.networks.remove)", { id }),
+  // ethNetworkReset: (id) => messageService.sendMessage("pri(eth.networks.reset)", { id }),
 
   // ethereum watch assets
   ethWatchAssetRequestApprove: (id) =>

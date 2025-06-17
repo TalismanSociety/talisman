@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useActiveChainsState, useChain } from "@ui/state"
+import { useAccounts, useActiveNetworksState, useChain } from "@ui/state"
 
 import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
@@ -83,7 +83,7 @@ const useLedgerChainAccounts = (
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
   const chain = useChain(chainId)
-  const activeChains = useActiveChainsState()
+  const activeChains = useActiveNetworksState()
   const withBalances = useMemo(
     () => !chain?.isTestnet && !!chain && isChainActive(chain, activeChains),
     [chain, activeChains],
@@ -206,7 +206,7 @@ const useLedgerChainAccounts = (
         )
 
         const accountBalances = balances.balances.find(
-          (b) => isAddressEqual(b.address, acc.address) && b.chainId === chain?.id,
+          (b) => isAddressEqual(b.address, acc.address) && b.networkId === chain?.id,
         )
 
         const isBalanceLoading =

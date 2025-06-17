@@ -1,13 +1,15 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import { Chain } from "@talismn/chaindata-provider"
-import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
+import { DotNetwork, Network } from "@talismn/chaindata-provider"
+import { isAddressEqual, isEthereumAddress, KeypairCurve } from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
+  isAccountPlatformEthereum,
 } from "@talismn/keyring"
+import { log } from "extension-shared"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
@@ -128,7 +130,7 @@ export const formatSuri = (mnemonic: string, derivationPath: string) =>
     : `${mnemonic}${derivationPath}`
 
 export const isCurveCompatibleWithChain = (
-  chain: Chain,
+  chain: DotNetwork,
   curve: KeypairCurve,
   genesisHash: `0x${string}` | null | undefined,
 ) => {
@@ -136,7 +138,7 @@ export const isCurveCompatibleWithChain = (
   return curve === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
-export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => {
+const isAccountCompatibleWithChain = (chain: DotNetwork, account: Account) => {
   if (account.type === "ledger-ethereum") return false
 
   const genesisHash = getAccountGenesisHash(account)
@@ -145,4 +147,37 @@ export const isAccountCompatibleWithChain = (chain: Chain, account: Account) => 
   return isAccountAddressEthereum(account)
     ? chain.account === "secp256k1"
     : chain.account !== "secp256k1"
+}
+
+/**
+ * If this is the address of an account, use isAccountCompatibleWithChain instead.
+ * Otherwise it could lead to a loss of funds
+ * @param chain
+ * @param address
+ * @returns
+ */
+export const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
+  switch (network.platform) {
+    case "ethereum":
+      return isEthereumAddress(address)
+    case "polkadot":
+      return isEthereumAddress(address)
+        ? network.account === "secp256k1"
+        : network.account !== "secp256k1"
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
+  }
+}
+
+export const isAccountCompatibleWithNetwork = (network: Network, account: Account) => {
+  switch (network.platform) {
+    case "ethereum":
+      return isAccountPlatformEthereum(account)
+    case "polkadot":
+      return isAccountCompatibleWithChain(network, account)
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
+  }
 }

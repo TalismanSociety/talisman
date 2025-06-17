@@ -30,6 +30,6 @@ export const NetworkBaseSchema = z.strictObject({
     logo: z.string().optional(),
   }),
   themeColor: z.string().nonempty().optional(),
-  blockExplorerUrls: z.array(z.url({ protocol: /^https?$/ })).optional(),
+  blockExplorerUrls: z.array(z.url({ protocol: /^https?$/ })).default([]),
 })
 export type NetworkBase = z.infer<typeof NetworkBaseSchema>

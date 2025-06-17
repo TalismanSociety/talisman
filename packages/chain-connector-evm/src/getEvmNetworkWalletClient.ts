@@ -1,4 +1,4 @@
-import { EvmNetwork, Token } from "@talismn/chaindata-provider"
+import { EthNetwork, Token } from "@talismn/chaindata-provider"
 import { Account, createWalletClient, WalletClient } from "viem"
 
 import { getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
@@ -10,15 +10,15 @@ type WalletClientOptions = {
 }
 
 export const getEvmNetworkWalletClient = (
-  evmNetwork: EvmNetwork,
+  network: EthNetwork,
   nativeToken: Token,
   options: WalletClientOptions = {},
 ): WalletClient => {
-  const chain = getChainFromEvmNetwork(evmNetwork, nativeToken, {
+  const chain = getChainFromEvmNetwork(network, nativeToken, {
     onFinalityApiKey: options.onFinalityApiKey,
   })
 
-  const transport = getTransportForEvmNetwork(evmNetwork, options)
+  const transport = getTransportForEvmNetwork(network, options)
 
   return createWalletClient({ chain, transport, account: options.account })
 }

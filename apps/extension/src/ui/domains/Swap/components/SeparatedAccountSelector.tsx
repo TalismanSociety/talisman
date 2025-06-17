@@ -11,7 +11,7 @@ import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountBitcoin,
-  isAccountCompatibleWithChain,
+  isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
 } from "extension-core"
 import { useAtomValue } from "jotai"
@@ -69,7 +69,7 @@ export const SeparatedAccountSelector = ({
   const chain = useChain(String(asset?.chainId))
 
   const defaultSubstrateAccounts = allAccounts.filter(
-    (a) => chain && isAccountCompatibleWithChain(chain, a),
+    (a) => chain && isAccountCompatibleWithNetwork(chain, a),
   )
   const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
 

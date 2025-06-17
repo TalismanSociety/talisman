@@ -63,7 +63,7 @@ export default class SigningHandler extends ExtensionHandler {
         registry = fullRegistry
 
         const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
-        analyticsProperties.chain = chain?.chainName ?? genesisHash
+        analyticsProperties.chain = chain?.id ?? genesisHash
       }
 
       let signature: HexString | undefined = undefined
@@ -173,7 +173,7 @@ export default class SigningHandler extends ExtensionHandler {
     if (isJsonPayload(payload)) {
       const genesisHash = validateHexString(payload.genesisHash)
       const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
-      analyticsProperties.chain = chain?.chainName ?? undefined
+      analyticsProperties.chain = chain?.id ?? payload.genesisHash
 
       if (chain) {
         const { signedExtensions, specVersion } = payload

@@ -1,14 +1,17 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
-  CustomSubNativeToken,
+  CustomEvmNativeToken,
+  EthNetwork,
+  EthNetworkId,
   EvmNetworkId,
   isCustomEvmNetwork,
-  SimpleEvmNetwork,
+  isEthNetwork,
 } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { RequestUpsertCustomEvmNetwork } from "extension-core"
+import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -29,13 +32,12 @@ import {
 } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
-import { useEvmNetwork, useEvmNetworks, useToken } from "@ui/state"
+import { useEvmNetwork, useNetworkById, useNetworks, useToken } from "@ui/state"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -99,10 +101,10 @@ const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) =>
 export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const { t } = useTranslation()
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
-  const existingEvmNetwork = useEvmNetwork(evmNetworkId)
-  const existingToken = useToken(existingEvmNetwork?.nativeToken?.id)
+  const existingEvmNetwork = useNetworkById(evmNetworkId) as EthNetwork | null
+  const existingToken = useToken(existingEvmNetwork?.nativeTokenId)
 
-  const evmNetworks = useEvmNetworks()
+  const evmNetworks = useNetworks({ platform: "ethereum" })
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
   const tEditMode = evmNetworkId ? t("Edit") : t("Add")
@@ -186,8 +188,10 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
           tokenLogoUrl,
           tokenCoingeckoId: network.tokenCoingeckoId ?? null,
         }
+        log.debug("EvmNetworkForm submit", { requestData })
+        if (Date.now()) throw new Error("Not implemented")
 
-        await api.ethNetworkUpsert(requestData)
+        // await api.ethNetworkUpsert(requestData)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
@@ -351,34 +355,33 @@ const DEFAULT_VALUES: Partial<EvmNetworkFormData> = {
   rpcs: [{ url: "" }], // provides one empty row
 }
 
-const useEditMode = (evmNetworkId?: EvmNetworkId) => {
+const useEditMode = (evmNetworkId?: EthNetworkId) => {
   const evmNetwork = useEvmNetwork(evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomSubNativeToken | undefined
+  const nativeToken = useToken(evmNetwork?.nativeTokenId) as CustomEvmNativeToken | undefined
   const defaultValues = useMemo(() => {
-    if (!evmNetworkId) return DEFAULT_VALUES
+    if (evmNetwork?.platform !== "ethereum") return DEFAULT_VALUES
     return evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined
-  }, [evmNetwork, evmNetworkId, nativeToken])
+  }, [evmNetwork, nativeToken])
 
-  const isCustom = useMemo(() => !!evmNetwork && isCustomEvmNetwork(evmNetwork), [evmNetwork])
+  const isCustom = useMemo(
+    () => !!evmNetwork && isEthNetwork(evmNetwork) && isCustomEvmNetwork(evmNetwork),
+    [evmNetwork],
+  )
 
   return { defaultValues, isEditMode: !!evmNetworkId, isCustom, evmNetwork, nativeToken }
 }
 
 const evmNetworkToFormData = (
-  network?: SimpleEvmNetwork,
-  nativeToken?: CustomSubNativeToken,
+  network?: EthNetwork,
+  nativeToken?: CustomEvmNativeToken,
 ): EvmNetworkFormData | undefined => {
   if (!network || !nativeToken) return undefined
 
   return {
     id: network.id,
     name: network.name ?? "",
-    rpcs: network.rpcs ?? [],
-    blockExplorerUrl:
-      network.explorerUrl ??
-      ("explorerUrls" in network && Array.isArray(network.explorerUrls)
-        ? network.explorerUrls?.[0]
-        : undefined),
+    rpcs: network.rpcs.map((url) => ({ url })) ?? [],
+    blockExplorerUrl: network.blockExplorerUrls[0] ?? "",
     isTestnet: !!network.isTestnet,
     preserveGasEstimate: !!network.preserveGasEstimate,
     tokenCoingeckoId: nativeToken.coingeckoId ?? "",

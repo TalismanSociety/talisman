@@ -24,4 +24,9 @@ export const EthNetworkSchema = NetworkBaseSchema.extend({
   l2FeeType: L2FeeSchema.optional(),
   contracts: z.partialRecord(ContractName, EthereumAddressSchema).optional(),
 })
+
 export type EthNetwork = z.infer<typeof EthNetworkSchema>
+
+export type EthNetworkId = EthNetwork["id"]
+
+export type EthNetworkList = Record<EthNetworkId, EthNetwork>

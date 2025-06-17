@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import {
   useAccountByAddress,
   useBalances,
@@ -18,13 +19,14 @@ import {
   useChainsMap,
   useEvmNetworksMap,
   useIsBalanceInitializing,
+  useNetworks,
   useSelectedCurrency,
   useTokenRatesMap,
   useTokens,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
-import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
+//import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "./ChainLogo"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
@@ -257,7 +259,9 @@ const TokensList: FC<TokensListProps> = ({
   const evmNetworksMap = useEvmNetworksMap({ activeOnly, includeTestnets: true })
   const allTokens = useTokens({ activeOnly, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
-  const formatNetworkName = useFormatNetworkName()
+  const networks = useNetworks()
+
+  // const {fullName} = useNetworkInfo()
   const isBalancesInitializing = useIsBalanceInitializing()
   const balances = useBalances(ownedOnly ? "owned" : "all")
   const currency = useSelectedCurrency()
@@ -297,11 +301,13 @@ const TokensList: FC<TokensListProps> = ({
       .map((token) => {
         const chain = chainsMap[token.networkId]
         const evmNetwork = evmNetworksMap[token.networkId]
+        const networkId = token.networkId
+        const netInfo = getNetworkInfo(t, { networkId, networks })
         return {
           id: token.id,
           token,
           chainNameSearch: chain?.name ?? evmNetwork?.name,
-          chainName: formatNetworkName(chain ?? undefined, evmNetwork ?? undefined),
+          chainName: netInfo.fullName,
           chainLogo: chain?.logo ?? evmNetwork?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
         }
@@ -311,7 +317,8 @@ const TokensList: FC<TokensListProps> = ({
     chainsMap,
     evmNetworksMap,
     filterAccountCompatibleTokens,
-    formatNetworkName,
+    networks,
+    t,
     tokenFilter,
     tokenRatesMap,
   ])

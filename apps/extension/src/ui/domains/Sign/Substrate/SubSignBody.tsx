@@ -1,4 +1,4 @@
-import { Chain } from "extension-core"
+import { DotNetwork } from "extension-core"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -40,7 +40,7 @@ export const SubSignBody: FC = () => {
   )
 }
 
-const ChainLabel = ({ chain }: { chain: Chain | null }) => {
+const ChainLabel = ({ chain }: { chain: DotNetwork | null }) => {
   const { t } = useTranslation()
 
   if (!chain) return null
@@ -56,7 +56,7 @@ const ChainLabel = ({ chain }: { chain: Chain | null }) => {
   )
 }
 
-const ChainName = ({ chain }: { chain: Chain }) => {
+const ChainName = ({ chain }: { chain: DotNetwork }) => {
   return (
     <span className="text-body inline-flex max-w-full items-baseline gap-[0.3em]">
       <span>

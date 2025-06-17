@@ -1,4 +1,4 @@
-import { AccountJson, Balance, Balances } from "extension-core"
+import { AccountJson, Balance, Balances, Network } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 
 export default function useEmptyBalancesFilter(
@@ -24,7 +24,7 @@ export default function useEmptyBalancesFilter(
 
 const moonbeamFilter = (balance: Balance) =>
   (balance.isSource("substrate-native") &&
-    ["moonbeam", "moonriver"].includes(balance.chainId || "")) ||
+    ["moonbeam", "moonriver"].includes(balance.networkId || "")) ||
   balance.transferable.planck !== 0n
 
 const polkadotFilter = (genesisHash?: string | null) => (balance: Balance) => {
@@ -33,9 +33,13 @@ const polkadotFilter = (genesisHash?: string | null) => (balance: Balance) => {
   if (balance.isSource("substrate-native")) {
     showBalance =
       (genesisHash
-        ? balance.chain?.genesisHash === genesisHash
-        : ["polkadot", "kusama"].includes(balance.chainId || "")) || showBalance
+        ? getGenesisHash(balance.network) === genesisHash
+        : ["polkadot", "kusama"].includes(balance.networkId || "")) || showBalance
   }
 
   return showBalance
+}
+
+const getGenesisHash = (network: Network | null) => {
+  return network?.platform === "polkadot" ? network.genesisHash : null
 }

@@ -6,15 +6,20 @@ import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
-  ChainId,
   githubTokenLogoUrl,
   SubPsp22Token,
+  subPsp22TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
 import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  NewBalanceModule,
+  NewTransferParamsType,
+} from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
@@ -23,12 +28,7 @@ import { makeContractCaller } from "./util"
 type ModuleType = "substrate-psp22"
 const moduleType: ModuleType = "substrate-psp22"
 
-export const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-export type SubPsp22ChainMeta = {
-  isTestnet: boolean
-}
+export type SubPsp22ChainMeta = DefaultChainMeta
 
 export type SubPsp22ModuleConfig = {
   tokens?: Array<
@@ -41,7 +41,7 @@ export type SubPsp22ModuleConfig = {
   >
 }
 
-export type SubPsp22Balance = NewBalanceType<ModuleType, "simple", "substrate">
+export type SubPsp22Balance = NewBalanceType<ModuleType, "simple">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -74,13 +74,14 @@ export const SubPsp22Module: NewBalanceModule<
   return {
     ...DefaultBalanceModule(moduleType),
 
-    async fetchSubstrateChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      return { isTestnet }
+    async fetchSubstrateChainMeta(_chainId) {
+      // const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
+      // return { isTestnet }
+      return undefined
     },
 
-    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
+    async fetchSubstrateChainTokens(chainId, _chainMeta, moduleConfig) {
+      // const { isTestnet } = chainMeta
 
       const registry = new TypeRegistry()
       const Psp22Abi = new Abi(psp22Abi)
@@ -133,12 +134,12 @@ export const SubPsp22Module: NewBalanceModule<
                 : decimals
           })()
 
-          const id = subPsp22TokenId(chainId, symbol)
+          const id = subPsp22TokenId(chainId, contractAddress)
           const token: SubPsp22Token = {
             id,
             type: "substrate-psp22",
             platform: "polkadot",
-            isTestnet,
+            // isTestnet,
             isDefault: tokenConfig.isDefault ?? true,
             symbol,
             decimals,
@@ -149,10 +150,6 @@ export const SubPsp22Module: NewBalanceModule<
             networkId: chainId,
           }
 
-          if (tokenConfig?.symbol) {
-            token.symbol = tokenConfig?.symbol
-            token.id = subPsp22TokenId(chainId, token.symbol)
-          }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
@@ -356,8 +353,7 @@ const fetchBalances = async (
         status: "live",
 
         address,
-        multiChainId: { subChainId: token.networkId },
-        chainId: token.networkId,
+        networkId: token.networkId,
         tokenId,
 
         value: balance,

@@ -1,4 +1,6 @@
-import { FC, PropsWithChildren, ReactNode, Suspense, useCallback } from "react"
+import { isDotNetwork, isEthNetwork } from "@talismn/chaindata-provider"
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
+import { FC, PropsWithChildren, ReactNode, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
@@ -32,15 +34,29 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 }
 
 const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
-  const { evmNetworks, chains, addressEncoding } = usePortfolio()
+  const { networks } = usePortfolio()
   const { selectedAccounts } = usePortfolioNavigation()
+
+  const [chains, evmNetworks] = useMemo(() => {
+    const chains = networks.filter(isDotNetwork)
+    const evmNetworks = networks.filter(isEthNetwork)
+    return [chains, evmNetworks]
+  }, [networks])
+
+  const [hasOnlyEthAccounts, hasOnlySs58Accounts] = useMemo(
+    () => [
+      !!selectedAccounts.length && selectedAccounts.every((a) => isAccountAddressEthereum(a)),
+      !!selectedAccounts.length && selectedAccounts.every((a) => isAccountAddressSs58(a)),
+    ],
+    [selectedAccounts],
+  )
 
   if (!selectedAccounts.length) return <GetStarted />
 
-  if (!addressEncoding && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
-  if (addressEncoding === "ss58" && !chains.length) return <EnableNetworkMessage type="substrate" />
+  if (!networks.length) return <EnableNetworkMessage />
+  if (hasOnlySs58Accounts && !chains.length) return <EnableNetworkMessage type="substrate" />
   if (
-    addressEncoding === "ethereum" &&
+    hasOnlyEthAccounts &&
     !evmNetworks.length &&
     !chains.filter((c) => c.account === "secp256k1").length
   )

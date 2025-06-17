@@ -1,13 +1,8 @@
-import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork, isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import {
-  ActiveEvmNetworks,
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-  SimpleEvmNetwork,
-} from "extension-core"
+import { ActiveEvmNetworks, activeEvmNetworksStore, isEvmNetworkActive } from "extension-core"
 import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -16,7 +11,7 @@ import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } f
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import {
-  useActiveEvmNetworksState,
+  useActiveNetworksState,
   useBalances,
   useEvmNetworks,
   useIsBalanceInitializing,
@@ -53,25 +48,25 @@ export const EvmNetworksList: FC<{
     })
   }, [evmNetworks, recommendedNetworks])
 
-  const networksActiveState = useActiveEvmNetworksState()
+  const networksActiveState = useActiveNetworksState()
 
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {
     const lowerSearch = search?.toLowerCase() ?? ""
 
-    const filter = (network: SimpleEvmNetwork) => {
+    const filter = (network: EthNetwork) => {
       if (!lowerSearch && activeOnly && !isEvmNetworkActive(network, networksActiveState))
         return false
 
       return (
         network.name?.toLowerCase().includes(lowerSearch) ||
-        network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+        network.nativeTokenId.toLowerCase().includes(lowerSearch)
       )
     }
 
     const filtered = allSortedNetworks.filter(filter)
     const exactMatches = filtered.flatMap((network) =>
       lowerSearch.trim() === network.name?.toLowerCase().trim() ||
-      lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
+      lowerSearch.trim() === network.nativeTokenId.toLowerCase().trim()
         ? [network.id]
         : [],
     )
@@ -150,7 +145,7 @@ export const EvmNetworksList: FC<{
 }
 
 const VirtualizedRows: FC<{
-  networks: SimpleEvmNetwork[]
+  networks: EthNetwork[]
   activeNetworksState: ActiveEvmNetworks
 }> = ({ networks, activeNetworksState }) => {
   const virtualizer = useVirtualizer({
@@ -190,7 +185,7 @@ const VirtualizedRows: FC<{
 }
 
 const EvmNetworksRow: FC<{
-  network: SimpleEvmNetwork
+  network: EthNetwork
   activeNetworksState: ActiveEvmNetworks
 }> = ({ network, activeNetworksState }) => {
   const isActive = useMemo(
@@ -271,7 +266,7 @@ const ActivateNetworksModalContent: FC<{
   const { t } = useTranslation()
 
   const evmNetworks = useEvmNetworks()
-  const activeNetworks = useActiveEvmNetworksState()
+  const activeNetworks = useActiveNetworksState()
 
   const recommendedNetworkIds = useMemo(() => {
     return evmNetworks
@@ -355,7 +350,7 @@ const DeactivateNetworksModalContent: FC<{
 
     return [
       networkIds,
-      networkIds.filter((evmNetworkId) => !balances.find({ evmNetworkId }).sum.planck.total),
+      networkIds.filter((networkId) => !balances.find({ networkId }).sum.planck.total),
     ]
   }, [evmNetworks, balances])
 

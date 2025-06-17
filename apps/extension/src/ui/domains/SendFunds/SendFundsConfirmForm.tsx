@@ -21,7 +21,6 @@ import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
 import { SendFundsHardwareSubstrate } from "./SendFundsHardwareSubstrate"
-import { useNetworkDetails } from "./useNetworkDetails"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
@@ -41,14 +40,14 @@ const AmountDisplay = () => {
 }
 
 const NetworkDisplay = () => {
-  const { networkId, networkName } = useNetworkDetails()
+  const { network } = useSendFunds()
 
-  if (!networkId) return null
+  if (!network) return null
 
   return (
     <div className="text-body flex items-center gap-4">
-      <ChainLogo id={networkId} className="text-md" />
-      {networkName}
+      <ChainLogo id={network.id} className="text-md" />
+      {network.name}
     </div>
   )
 }
@@ -105,15 +104,13 @@ const TotalAmountRow = () => {
 
 export const ExternalRecipientWarning = () => {
   const { t } = useTranslation()
-  const { to, chain, evmNetwork } = useSendFunds()
+  const { to, network } = useSendFunds()
   const accounts = useAccounts("owned")
 
   const showWarning = useMemo(() => {
-    if (!to || !accounts) return false
+    if (!network || !to || !accounts) return false
     return !accounts.some((account) => isAddressEqual(account.address, to))
-  }, [accounts, to])
-
-  const networkName = useMemo(() => chain?.name ?? evmNetwork?.name, [chain, evmNetwork])
+  }, [accounts, to, network])
 
   if (!showWarning) return null
 
@@ -124,7 +121,7 @@ export const ExternalRecipientWarning = () => {
         <Trans
           t={t}
           components={{
-            Network: <span className="font-bold text-white">{networkName}</span>,
+            Network: <span className="font-bold text-white">{network?.name}</span>,
           }}
           i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
         />
@@ -181,9 +178,9 @@ const SendButton = () => {
 
 const EvmFeeSummary = () => {
   const { t } = useTranslation()
-  const { token, evmNetwork, evmTransaction } = useSendFunds()
+  const { token, network, evmTransaction } = useSendFunds()
 
-  if (!token || !evmTransaction) return null
+  if (!token || !evmTransaction || network?.platform !== "ethereum") return null
 
   const {
     tx,
@@ -201,9 +198,9 @@ const EvmFeeSummary = () => {
       <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">{t("Transaction Priority")}</div>
         <div>
-          {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
+          {network.nativeTokenId && priority && tx && txDetails && (
             <EthFeeSelect
-              tokenId={evmNetwork.nativeToken.id}
+              tokenId={network.nativeTokenId}
               drawerContainerId="main"
               gasSettingsByPriority={gasSettingsByPriority}
               setCustomSettings={setCustomSettings}
@@ -224,10 +221,10 @@ const EvmFeeSummary = () => {
           <div className="inline-flex h-[1.7rem] items-center">
             <>
               {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-              {txDetails?.estimatedFee && evmNetwork?.nativeToken && (
+              {txDetails?.estimatedFee && network && (
                 <TokensAndFiat
                   planck={txDetails.estimatedFee.toString()}
-                  tokenId={evmNetwork.nativeToken.id}
+                  tokenId={network.nativeTokenId}
                 />
               )}
             </>
@@ -296,7 +293,7 @@ const FeeSummary = () => {
 
 export const SendFundsConfirmForm = () => {
   const { t } = useTranslation()
-  const { from, to, chain, evmNetwork, evmTransaction } = useSendFunds()
+  const { from, to, network, evmTransaction } = useSendFunds()
 
   return (
     <RiskAnalysisProvider riskAnalysis={evmTransaction?.riskAnalysis}>
@@ -314,21 +311,11 @@ export const SendFundsConfirmForm = () => {
               </div>
               <div className="flex h-16 items-center justify-between gap-8">
                 <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
-                <AddressDisplay
-                  className="h-16"
-                  address={from}
-                  chainId={chain?.id}
-                  evmNetworkId={evmNetwork?.id}
-                />
+                <AddressDisplay className="h-16" address={from} networkId={network?.id} />
               </div>
               <div className="flex h-16 items-center justify-between gap-8">
                 <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
-                <AddressDisplay
-                  className="h-16"
-                  address={to}
-                  chainId={chain?.id}
-                  evmNetworkId={evmNetwork?.id}
-                />
+                <AddressDisplay className="h-16" address={to} networkId={network?.id} />
               </div>
               <div className="py-8">
                 <hr className="text-grey-800" />

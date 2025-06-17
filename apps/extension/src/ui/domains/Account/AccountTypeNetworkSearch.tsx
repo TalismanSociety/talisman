@@ -5,23 +5,17 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react"
-import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { isDotNetwork } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { isChainActive, isEvmNetworkActive } from "extension-core"
+import { isNetworkActive } from "extension-core"
 import startCase from "lodash/startCase"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import {
-  useActiveChainsState,
-  useActiveEvmNetworksState,
-  useChainsMap,
-  useEvmNetworksMap,
-  useTokensMap,
-} from "@ui/state"
+import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
 
 const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
@@ -36,52 +30,45 @@ export function AccountTypeNetworkSearch({
 
   const [search, setSearch] = useState("")
 
-  const chainsMap = useChainsMap()
-  const evmNetworksMap = useEvmNetworksMap()
   const tokensMap = useTokensMap()
-  const activeEvmNetworks = useActiveEvmNetworksState()
-  const activePolkadotNetworks = useActiveChainsState()
+  const activeNetworkStates = useActiveNetworksState()
+  const allNetworksAggregated = useNetworks()
+  const allNetworksMap = useNetworksMapById()
 
-  const allNetworks = useMemo(
+  const allNetworkItems = useMemo(
     () =>
-      [
-        ...Object.values(chainsMap).flatMap((chain) => {
-          if (chain.isTestnet) return []
-          const relay = chain.relay?.id ? chainsMap[chain.relay.id] : null
-          const { label, type } = getNetworkInfo(t, { chain, relay })
-          const symbol = tokensMap[chain.nativeToken?.id ?? ""]?.symbol
-          const isActive = isChainActive(chain, activePolkadotNetworks)
-
-          return { id: chain.id, label, type, symbol, account: chain.account, isActive }
+      allNetworksAggregated
+        .map((network) => {
+          const { label, type } = getNetworkInfo(t, {
+            networkId: network.id,
+            networks: allNetworksAggregated,
+          })
+          const symbol = tokensMap[network.nativeTokenId]?.symbol
+          const isActive = isNetworkActive(network, activeNetworkStates)
+          const account = isDotNetwork(network) ? network.account : undefined
+          return { id: network.id, label, type, symbol, account, isActive }
+        })
+        .sort((a, b) => {
+          // First sort by isActive (true values first)
+          if (a.isActive !== b.isActive) {
+            return a.isActive ? -1 : 1
+          }
+          // Then sort alphabetically by label
+          return a.label?.localeCompare(b.label ?? "") ?? 0
         }),
-        ...Object.values(evmNetworksMap).flatMap((evmNetwork) => {
-          if (evmNetwork.isTestnet) return []
-          const { label, type } = getNetworkInfo(t, { evmNetwork })
-          const symbol = tokensMap[evmNetwork.nativeToken?.id ?? ""]?.symbol
-          const isActive = isEvmNetworkActive(evmNetwork, activeEvmNetworks)
-          return { id: evmNetwork.id, label, type, symbol, isActive }
-        }),
-      ].sort((a, b) => {
-        // First sort by isActive (true values first)
-        if (a.isActive !== b.isActive) {
-          return a.isActive ? -1 : 1
-        }
-        // Then sort alphabetically by label
-        return a.label?.localeCompare(b.label ?? "") ?? 0
-      }),
 
-    [t, chainsMap, evmNetworksMap, tokensMap, activeEvmNetworks, activePolkadotNetworks],
+    [allNetworksAggregated, t, tokensMap, activeNetworkStates],
   )
-  type Network = (typeof networks)[number]
+  type Network = (typeof filteredNetworkItems)[number]
 
-  const networks = useMemo(() => {
-    if (!search) return allNetworks
-    return allNetworks.filter(
+  const filteredNetworkItems = useMemo(() => {
+    if (!search) return allNetworkItems
+    return allNetworkItems.filter(
       (network) =>
         network.label?.toLowerCase().includes(search.toLowerCase().trim()) ||
         network.symbol?.toLowerCase().includes(search.toLowerCase().trim()),
     )
-  }, [allNetworks, search])
+  }, [allNetworkItems, search])
 
   const [selected, setSelected] = useState<Network | null>(null)
 
@@ -92,19 +79,25 @@ export function AccountTypeNetworkSearch({
 
       if (!option || option.id === DEFAULT_COMBO_BOX_HEADER_ID) return setAccountType()
 
-      const network: Chain | SimpleEvmNetwork | undefined =
-        chainsMap[option.id] ?? evmNetworksMap[option.id] ?? undefined
+      const network = allNetworksMap[option.id] // ?? evmNetworksMap[option.id] ?? undefined
       setAccountType(getAccountType(network))
     },
-    [chainsMap, evmNetworksMap, setAccountType],
+    [allNetworksMap, setAccountType],
   )
 
   const networksWithHeader = useMemo(
     () => [
-      { id: "combobox-header", label: null, type: "", symbol: "", isActive: false },
-      ...networks,
+      {
+        id: "combobox-header",
+        label: "",
+        type: "",
+        symbol: "",
+        account: undefined,
+        isActive: false,
+      },
+      ...filteredNetworkItems,
     ],
-    [networks],
+    [filteredNetworkItems],
   )
 
   return (

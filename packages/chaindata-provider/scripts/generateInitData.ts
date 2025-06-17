@@ -100,7 +100,7 @@ class InitDataFilter {
 
     this.#foundTokenIds = new Set(
       chains.flatMap(({ nativeToken, tokens }) => [
-        ...(nativeToken?.id ? [nativeToken.id] : []),
+        ...(nativeTokenId ? [nativeToken.id] : []),
         ...(tokens ?? []).map(({ id }) => id),
       ]),
     )

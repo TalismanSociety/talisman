@@ -59,9 +59,9 @@ export const FeeEstimateEvm = ({
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {transaction && txDetails && fromEvmNetwork?.nativeToken ? (
+              {transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
                 <FeeTooltip
-                  tokenId={fromEvmNetwork.nativeToken.id}
+                  tokenId={fromEvmNetwork.nativeTokenId}
                   estimatedFee={txDetails.estimatedFee}
                   maxFee={txDetails.maxFee}
                   balance={fastBalance?.balance?.transferable?.planck}
@@ -121,18 +121,18 @@ export const FeeEstimateEvm = ({
             0.0000 TKN ($0.00)
           </div>
         </div>
-      ) : transaction && txDetails && fromEvmNetwork?.nativeToken ? (
+      ) : transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
         <div className="flex items-center justify-between gap-8">
           <div className="h-12">
             <TokensAndFiat
-              tokenId={fromEvmNetwork.nativeToken.id}
+              tokenId={fromEvmNetwork.nativeTokenId}
               planck={txDetails.estimatedFee.toString()}
             />
           </div>
           <div className="h-12">
             <EthFeeSelect
               tx={transaction}
-              tokenId={fromEvmNetwork.nativeToken.id}
+              tokenId={fromEvmNetwork.nativeTokenId}
               disabled={isPayloadLocked}
               gasSettingsByPriority={gasSettingsByPriority}
               setCustomSettings={setCustomSettings}

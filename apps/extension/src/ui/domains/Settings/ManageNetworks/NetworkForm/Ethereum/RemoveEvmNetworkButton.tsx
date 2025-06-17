@@ -1,4 +1,4 @@
-import { SimpleEvmNetwork } from "extension-core"
+import { EthNetwork } from "extension-core"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -6,9 +6,8 @@ import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { api } from "@ui/api"
 
-export const RemoveEvmNetworkButton: FC<{ network: SimpleEvmNetwork }> = ({ network }) => {
+export const RemoveEvmNetworkButton: FC<{ network: EthNetwork }> = ({ network }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
@@ -16,7 +15,8 @@ export const RemoveEvmNetworkButton: FC<{ network: SimpleEvmNetwork }> = ({ netw
   const handleConfirmRemove = useCallback(async () => {
     if (!network) return
     try {
-      await api.ethNetworkRemove(network.id.toString())
+      throw new Error("Not implemented")
+      // await api.ethNetworkRemove(network.id.toString())
       navigate("/settings/networks-tokens/networks/ethereum")
     } catch (err) {
       notify({

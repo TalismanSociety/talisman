@@ -8,21 +8,20 @@ import { ChainLogo } from "../../Asset/ChainLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../../Ethereum/GasSettings/EthFeeSelect"
 import { SendFundsFeeTooltip } from "../SendFundsFeeTooltip"
-import { useNetworkDetails } from "../useNetworkDetails"
 import { useSendFunds } from "../useSendFunds"
 import { Container } from "./Container"
 
 const NetworkRow = () => {
   const [t] = useTranslation()
 
-  const { networkId, networkName } = useNetworkDetails()
+  const { network } = useSendFunds()
 
   return (
     <div className="flex w-full items-center justify-between">
       <div>{t("Network")}</div>
       <div className="flex items-center gap-2">
-        <ChainLogo id={networkId} className="inline-block text-base" />
-        <div>{networkName}</div>
+        <ChainLogo id={network?.id} className="inline-block text-base" />
+        <div>{network?.name}</div>
       </div>
     </div>
   )
@@ -30,9 +29,10 @@ const NetworkRow = () => {
 
 const EvmFeeSettingsRow = () => {
   const { t } = useTranslation()
-  const { token, evmNetwork, evmTransaction } = useSendFunds()
+  const { token, network, evmTransaction } = useSendFunds()
 
-  if (!token || !evmTransaction || !evmNetwork || !isEvmToken(token)) return null
+  if (!token || !evmTransaction || network?.platform !== "ethereum" || !isEvmToken(token))
+    return null
 
   const {
     tx,
@@ -48,9 +48,9 @@ const EvmFeeSettingsRow = () => {
     <div className="flex h-12 w-full items-center justify-between gap-4">
       <div>{t("Transaction Priority")}</div>
       <div>
-        {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
+        {network.nativeTokenId && priority && tx && txDetails && (
           <EthFeeSelect
-            tokenId={evmNetwork.nativeToken.id}
+            tokenId={network.nativeTokenId}
             drawerContainerId="main"
             gasSettingsByPriority={gasSettingsByPriority}
             setCustomSettings={setCustomSettings}

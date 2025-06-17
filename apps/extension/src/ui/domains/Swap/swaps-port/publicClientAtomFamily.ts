@@ -5,16 +5,17 @@ import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
 import { PublicClient } from "viem"
 
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getEvmNetwork$, getToken$ } from "@ui/state"
+import { getNetworkById$, getToken$ } from "@ui/state"
 
 export const publicClientAtomFamily: AtomFamily<
   EvmNetworkId | undefined,
   Atom<Promise<PublicClient | undefined>>
 > = atomFamily((evmNetworkId) =>
   atom(async (get) => {
-    const evmNetwork = await get(atomWithObservable(() => getEvmNetwork$(evmNetworkId)))
-    const nativeToken = await get(atomWithObservable(() => getToken$(evmNetwork?.nativeToken?.id)))
-    if (!evmNetwork || nativeToken?.type !== "evm-native") return
+    const evmNetwork = await get(atomWithObservable(() => getNetworkById$(evmNetworkId)))
+    const nativeToken = await get(atomWithObservable(() => getToken$(evmNetwork?.nativeTokenId)))
+    if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
+      return
 
     return getExtensionPublicClient(evmNetwork, nativeToken)
   }),

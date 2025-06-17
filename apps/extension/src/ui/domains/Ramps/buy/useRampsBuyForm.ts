@@ -5,8 +5,7 @@ import {
   activeChainsStore,
   activeEvmNetworksStore,
   activeTokensStore,
-  isAccountCompatibleWithChain,
-  isAccountPlatformEthereum,
+  isAccountCompatibleWithNetwork,
 } from "extension-core"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -17,7 +16,7 @@ import { z } from "zod"
 
 import { notify } from "@talisman/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { getChain$, getToken$, useAccounts, useChain, useToken } from "@ui/state"
+import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 
@@ -83,17 +82,15 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const quotes = useRampsBuyQuotes(quoteOpts)
 
   const token = useToken(formData.tokenId)
-  const chain = useChain(token?.networkId)
+  const network = useNetworkById(token?.networkId)
   const allAccounts = useAccounts("portfolio")
 
   const accounts = useMemo(
     () =>
-      allAccounts.filter((account) => {
-        if (isEvmToken(token)) return isAccountPlatformEthereum(account)
-        if (isSubToken(token) && chain) return isAccountCompatibleWithChain(chain, account)
-        return false
-      }),
-    [allAccounts, chain, token],
+      allAccounts.filter(
+        (account) => !!network && isAccountCompatibleWithNetwork(network, account),
+      ),
+    [allAccounts, network],
   )
 
   // clear provider choice if the token or currency change
@@ -149,8 +146,9 @@ const redirectToProvider = async (formData: FormData, quote: RampsBuyQuoteSucces
 
   const token = await firstValueFrom(getToken$(formData.tokenId))
   if (token?.networkId) {
-    const chain = await firstValueFrom(getChain$(token.networkId))
-    if (typeof chain?.prefix === "number") address = encodeAddressSs58(address, chain.prefix)
+    const chain = await firstValueFrom(getNetworkById$(token.networkId))
+    if (chain?.platform === "polkadot" && chain.account === "*25519")
+      address = encodeAddressSs58(address, chain.prefix)
   }
 
   const url = await quote.getRedirectUrl(address)

@@ -1,18 +1,15 @@
-import { HexString } from "@polkadot/util/types"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { RequestUpsertCustomChain } from "extension-core"
-import { ReactNode, useCallback, useMemo, useState } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { FormProvider, UseFormReturn } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
-import { useChain, useToken } from "@ui/state"
+import { useChain } from "@ui/state"
 
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
 import { EnableNetworkToggle } from "./EnableNetworkToggle"
@@ -30,13 +27,19 @@ type SubNetworkFormProps = SubNetworkFormBaseProps & {
 export const SubNetworkForm = ({
   formProps,
   title,
-  onSubmitted,
+  //onSubmitted,
   submitButtonText,
   children,
 }: SubNetworkFormProps) => {
   const { t } = useTranslation()
   const {
-    formState: { errors, isDirty, isValid, isSubmitting, touchedFields },
+    formState: {
+      errors,
+      isDirty,
+      isValid,
+      isSubmitting,
+      // touchedFields
+    },
     handleSubmit: submitForm,
     register,
     setValue,
@@ -44,37 +47,35 @@ export const SubNetworkForm = ({
   } = formProps
   const { id, accountFormat, nativeTokenCoingeckoId } = watch()
   const chain = useChain(id)
-  const token = useToken(chain?.nativeToken?.id)
+  // const token = useToken(chain?.nativeTokenId)
 
   const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(nativeTokenCoingeckoId)
-  const nativeTokenLogoUrl = useMemo(
-    // existing icon has priority
-    () =>
-      touchedFields?.nativeTokenCoingeckoId ? coingeckoLogoUrl : (token?.logo ?? coingeckoLogoUrl),
-    [coingeckoLogoUrl, token?.logo, touchedFields?.nativeTokenCoingeckoId],
-  )
+  // const nativeTokenLogoUrl = useMemo(
+  //   // existing icon has priority
+  //   () =>
+  //     touchedFields?.nativeTokenCoingeckoId ? coingeckoLogoUrl : (token?.logo ?? coingeckoLogoUrl),
+  //   [coingeckoLogoUrl, token?.logo, touchedFields?.nativeTokenCoingeckoId],
+  // )
 
   const [submitError, setSubmitError] = useState<string>()
-  const submit = useCallback(
-    async (data: SubNetworkFormData) => {
-      const requestData: RequestUpsertCustomChain = {
-        ...data,
-        rpcs: data.rpcs?.map((rpc) => ({ url: rpc.url })) ?? [],
-        nativeTokenLogoUrl,
-        genesisHash: data.genesisHash as HexString,
-        nativeTokenCoingeckoId: data.nativeTokenCoingeckoId ?? null,
-        subscanUrl: data.subscanUrl ?? null,
-      }
-      try {
-        if (!requestData.rpcs.length) throw new Error(t("At least one RPC is required"))
-        await api.chainUpsert(requestData)
-        onSubmitted?.()
-      } catch (err) {
-        setSubmitError((err as Error).message)
-      }
-    },
-    [nativeTokenLogoUrl, onSubmitted, t],
-  )
+  const submit = useCallback(async (_data: SubNetworkFormData) => {
+    // const requestData: RequestUpsertCustomChain = {
+    //   ...data,
+    //   rpcs: data.rpcs?.map((rpc) => ({ url: rpc.url })) ?? [],
+    //   nativeTokenLogoUrl,
+    //   genesisHash: data.genesisHash as HexString,
+    //   nativeTokenCoingeckoId: data.nativeTokenCoingeckoId ?? null,
+    //   subscanUrl: data.subscanUrl ?? null,
+    // }
+    try {
+      throw new Error("Not implemented")
+      // if (!requestData.rpcs.length) throw new Error(t("At least one RPC is required"))
+      // await api.chainUpsert(requestData)
+      // onSubmitted?.()
+    } catch (err) {
+      setSubmitError((err as Error).message)
+    }
+  }, [])
 
   return (
     <>

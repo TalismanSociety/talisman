@@ -1,4 +1,4 @@
-import { CustomEvmErc20Token, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { CustomEvmErc20Token, EthNetwork } from "@talismn/chaindata-provider"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 
@@ -9,7 +9,7 @@ import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
 type CustomErc20TokenViewDetailsProps = {
   token: CustomEvmErc20Token
-  network: SimpleEvmNetwork
+  network: EthNetwork
 }
 
 export const CustomErc20TokenViewDetails = ({
@@ -32,7 +32,7 @@ export const CustomErc20TokenViewDetails = ({
             <ViewDetailsAddress
               label={t("Contract")}
               address={token.contractAddress}
-              blockExplorerUrl={network.explorerUrl}
+              blockExplorerUrl={network.blockExplorerUrls[0]}
             />
           </div>
           <Button className="mt-12" onClick={close}>

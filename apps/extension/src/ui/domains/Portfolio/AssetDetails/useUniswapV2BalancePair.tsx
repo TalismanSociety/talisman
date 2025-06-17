@@ -1,4 +1,5 @@
-import { Balance, BalanceFormatter, evmErc20TokenId } from "@talismn/balances"
+import { Balance, BalanceFormatter } from "@talismn/balances"
+import { evmErc20TokenId } from "@talismn/chaindata-provider"
 
 import { useTokenRatesMap } from "@ui/state"
 
@@ -7,12 +8,12 @@ export const useUniswapV2BalancePair = (balance: Balance) => {
 
   const token = balance.token
   if (token?.type !== "evm-uniswapv2") return null
-  if (!balance.evmNetworkId) return null
+  if (!balance.networkId) return null
 
   // NOTE: We want to use the symbols & decimals from the contract,
   // But the contract doesn't provide logos, so we'll try to get the logos from the local db
-  const tokenId0 = evmErc20TokenId(balance.evmNetworkId, token.tokenAddress0)
-  const tokenId1 = evmErc20TokenId(balance.evmNetworkId, token.tokenAddress1)
+  const tokenId0 = evmErc20TokenId(balance.networkId, token.tokenAddress0)
+  const tokenId1 = evmErc20TokenId(balance.networkId, token.tokenAddress1)
 
   const extra = balance.extra
   const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []

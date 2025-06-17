@@ -13,7 +13,7 @@ export const EthSignBodyDefault: FC = () => {
   const { t } = useTranslation()
   const { network, request, decodedTx } = useEthSignTransactionRequest()
 
-  const nativeToken = useToken(network?.nativeToken?.id)
+  const nativeToken = useToken(network?.nativeTokenId)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const amount = useMemo(() => {
@@ -54,7 +54,7 @@ export const EthSignBodyDefault: FC = () => {
               <SignParamNetworkAddressButton network={network} address={request.to} />
             ) : (
               <SignParamAccountButton
-                explorerUrl={network.explorerUrl}
+                explorerUrl={network.blockExplorerUrls[0]}
                 address={request.to}
                 withIcon
               />

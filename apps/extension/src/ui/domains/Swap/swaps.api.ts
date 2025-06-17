@@ -1,5 +1,5 @@
 import type { PrimitiveAtom } from "jotai"
-import { evmErc20TokenId } from "@talismn/balances"
+import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { isAccountAddressEthereum, isAccountAddressSs58, remoteConfigStore } from "extension-core"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -10,13 +10,7 @@ import { erc20Abi, isAddress } from "viem"
 import * as allEvmChains from "viem/chains"
 import { type Chain as ViemChain } from "viem/chains"
 
-import {
-  getEvmNetworks$,
-  getTokensMap$,
-  tokenRatesMap$,
-  useAccounts,
-  useTokensMap,
-} from "@ui/state"
+import { getNetworks$, getTokensMap$, tokenRatesMap$, useAccounts, useTokensMap } from "@ui/state"
 
 import type {
   BaseQuote,
@@ -189,7 +183,7 @@ const erc20Atom = atomFamily((addressChainId: string) =>
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find((c) => c.id === chainId)
     if (!chain) return null
-    const evmNetworks = await get(atomWithObservable(() => getEvmNetworks$()))
+    const evmNetworks = await get(atomWithObservable(() => getNetworks$({ platform: "ethereum" })))
     const network = evmNetworks.find((network) => network.id.toString() === chainId.toString())
     if (!network) return null
     const platforms = await get(coingeckoAssetPlatformsAtom)
@@ -483,7 +477,7 @@ export const approvalAtom = atom(async (get) => {
   // chain unsupported
   if (!chain) return null
 
-  const evmNetworks = await get(atomWithObservable(() => getEvmNetworks$()))
+  const evmNetworks = await get(atomWithObservable(() => getNetworks$({ platform: "ethereum" })))
   const network = evmNetworks.find(
     (network) => network.id.toString() === approval.chainId.toString(),
   )

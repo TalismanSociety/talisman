@@ -1,12 +1,12 @@
 import { PolkadotAssetHubCalls, XcmV3Junctions } from "@polkadot-api/descriptors"
 import {
+  DotNetwork,
   SubAssetsToken,
   SubForeignAssetsToken,
   SubNativeToken,
   Token,
 } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
-import { Chain } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -116,7 +116,7 @@ type XcmV3MultiLocation = {
 }
 
 const getTokenFromlocation = (
-  chain: Chain,
+  chain: DotNetwork,
   tokens: Token[],
   location: XcmV3MultiLocation,
 ): Token => {
@@ -150,9 +150,14 @@ const getTokenFromlocation = (
     }
   }
 
-  if (location.parents === 1 && !!chain.relay && location.interior.type === "Here") {
+  if (
+    location.parents === 1 &&
+    chain.topologyInfo.type === "parachain" &&
+    location.interior.type === "Here"
+  ) {
+    const relayId = chain.topologyInfo.relayId
     const token = tokens.find(
-      (t) => t.type === "substrate-native" && t.networkId === chain.relay?.id,
+      (t) => t.type === "substrate-native" && t.networkId === relayId,
     ) as SubNativeToken
     if (token) return token
   }

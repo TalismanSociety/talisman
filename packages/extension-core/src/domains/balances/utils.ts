@@ -6,7 +6,7 @@ import { combineLatest, throttleTime } from "rxjs"
 
 import { db as extensionDb } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { isAccountCompatibleWithChain } from "../accounts/helpers"
+import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
 import { keyringStore } from "../keyring/store"
 import { balancePool } from "./pool"
@@ -41,16 +41,16 @@ export const trackBalanceTotals = async () => {
 
         const balancesByAddress = Object.values(balances).reduce(
           (acc, balance) => {
-            const { address } = balance
+            const { address, networkId } = balance
             const account = mapAccounts[address]
             if (!account) return acc
 
             if (!acc[address]) acc[address] = []
             if (isAccountAddressEthereum(account)) acc[address].push(balance)
             else {
-              const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
+              const chain = chainsById[networkId]
               if (!chain || isAccountOfType(account, "contact")) return acc
-              if (isAccountCompatibleWithChain(chain, account)) acc[address].push(balance)
+              if (isAccountCompatibleWithNetwork(chain, account)) acc[address].push(balance)
             }
             return acc
           },

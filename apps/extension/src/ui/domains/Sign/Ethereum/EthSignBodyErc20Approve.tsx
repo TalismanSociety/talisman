@@ -115,7 +115,10 @@ export const EthSignBodyErc20Approve: FC = () => {
       </div>
       <div className="flex">
         <div>{t("from")}</div>
-        <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
+        <SignParamAccountButton
+          address={account.address}
+          explorerUrl={network.blockExplorerUrls[0]}
+        />
       </div>
     </SignContainer>
   )

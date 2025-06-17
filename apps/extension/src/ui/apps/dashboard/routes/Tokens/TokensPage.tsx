@@ -1,4 +1,4 @@
-import { EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
+import { EthNetwork, EthNetworkId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { InfoIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
@@ -73,13 +73,14 @@ const useBlockExplorerUrl = (token: Token) => {
   const evmNetwork = useEvmNetwork(token.networkId)
 
   return useMemo(() => {
-    if (isErc20Token(token) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
-    if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+    const url = evmNetwork?.blockExplorerUrls[0]
+    if (!url) return null
+
+    if (isErc20Token(token)) return urlJoin(url, "token", token.contractAddress)
+    if (isUniswapV2Token(token)) return urlJoin(url, "token", token.contractAddress)
 
     return null
-  }, [token, evmNetwork?.explorerUrl])
+  }, [evmNetwork?.blockExplorerUrls, token])
 }
 
 const useCoingeckoUrl = (token: Token) => {
@@ -205,7 +206,7 @@ const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
   )
 }
 
-const renderNetwork = (network: SimpleEvmNetwork) => {
+const renderNetwork = (network: EthNetwork) => {
   return (
     <div className="flex items-center gap-5">
       <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
@@ -219,11 +220,11 @@ const NetworkSelect = ({
   selectedId,
   onChange,
 }: {
-  networks: SimpleEvmNetwork[]
-  selectedId: EvmNetworkId | null
+  networks: EthNetwork[]
+  selectedId: EthNetworkId | null
   onChange: (evmNetworkId: EvmNetworkId) => void
 }) => {
-  const [selected, setSelected] = useState<SimpleEvmNetwork | undefined>(
+  const [selected, setSelected] = useState<EthNetwork | undefined>(
     networks.find((n) => n.id === selectedId),
   )
 
@@ -237,7 +238,7 @@ const NetworkSelect = ({
   }, [selectedId, networks, selected])
 
   const handleChange = useCallback(
-    (item: SimpleEvmNetwork | null) => {
+    (item: EthNetwork | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)
@@ -285,11 +286,11 @@ const Content = () => {
 
   const networkOptions = useMemo(() => {
     return [
-      { id: "ALL", name: t("All active networks") } as SimpleEvmNetwork,
+      { id: "ALL", name: t("All active networks") } as EthNetwork,
       ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
   }, [evmNetworks, t])
-  const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
+  const [evmNetworkId, setEvmNetworkId] = useState<EthNetworkId>("ALL")
 
   // search value is debounced by SearchInput component
   // keep search value in location state to preserve it when user clicks a token then goes back

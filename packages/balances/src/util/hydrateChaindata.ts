@@ -7,7 +7,7 @@ export const hydrateChaindataAndMiniMetadata = async (
   miniMetadataUpdater: MiniMetadataUpdater,
 ) => {
   // need chains to be provisioned first, or substrate balances won't fetch on first subscription
-  await chaindataProvider.hydrateChains()
+  await chaindataProvider.hydrate()
 
   await Promise.all([
     miniMetadataUpdater.hydrateFromChaindata(),
@@ -36,7 +36,7 @@ export const updateEvmTokens = async (
   chaindataProvider: ChaindataProvider,
   evmTokenFetcher: EvmTokenFetcher,
 ) => {
-  await chaindataProvider.hydrateEvmNetworks()
+  await chaindataProvider.hydrate()
   const evmNetworkIds = await chaindataProvider.evmNetworkIds()
   await evmTokenFetcher.update(evmNetworkIds)
 }

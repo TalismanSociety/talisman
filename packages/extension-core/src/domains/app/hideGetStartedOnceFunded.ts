@@ -8,7 +8,7 @@ import { combineLatest, throttleTime } from "rxjs"
 
 import { db } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { isAccountCompatibleWithChain } from "../accounts/helpers"
+import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { balancePool } from "../balances/pool"
 import { keyringStore } from "../keyring/store"
 import { appStore } from "./store.app"
@@ -48,9 +48,9 @@ export const hideGetStartedOnceFunded = async () => {
             if (!acc[address]) acc[address] = []
             if (isAccountAddressEthereum(account)) acc[address].push(balance)
             else {
-              const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
+              const chain = chainsById[balance.networkId]
               if (!chain || isAccountOfType(account, "contact")) return acc
-              if (isAccountCompatibleWithChain(chain, account)) acc[address].push(balance)
+              if (isAccountCompatibleWithNetwork(chain, account)) acc[address].push(balance)
             }
             return acc
           },

@@ -1,4 +1,4 @@
-import { Chain, SubNativeToken, Token } from "@talismn/chaindata-provider"
+import { DotNetwork, SubNativeToken, Token } from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { BigMath, blake2Concat, decodeAnyAddress } from "@talismn/util"
 import { Binary, Enum } from "polkadot-api"
@@ -47,7 +47,7 @@ const AccountInfoOverrides: Record<
 }
 
 export async function buildQueries(
-  chains: Record<string, Chain>,
+  chains: Record<string, DotNetwork>,
   tokens: Record<string, Token>,
   chainStorageCoders: StorageCoders<{
     base: ["System", "Account"]
@@ -93,8 +93,7 @@ export async function buildQueries(
         source: "substrate-native",
         status: "live",
         address,
-        multiChainId: { subChainId: chainId },
-        chainId,
+        networkId: chainId,
         tokenId,
         values: [],
       }

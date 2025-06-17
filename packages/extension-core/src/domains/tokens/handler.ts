@@ -1,8 +1,9 @@
 import { assert } from "@polkadot/util"
-import { evmErc20TokenId, evmUniswapV2TokenId } from "@talismn/balances"
 import {
   CustomEvmErc20Token,
   CustomEvmUniswapV2Token,
+  evmErc20TokenId,
+  evmUniswapV2TokenId,
   githubUnknownTokenLogoUrl,
   Token,
 } from "@talismn/chaindata-provider"
@@ -17,7 +18,7 @@ import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updat
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port, RequestIdOnly } from "../../types/base"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
-import { activeTokensStore } from "./store.activeTokens"
+import { activeTokensStore } from "../balances/store.activeTokens"
 import { CustomEvmTokenCreate } from "./types"
 
 export default class TokensHandler extends ExtensionHandler {
@@ -40,6 +41,7 @@ export default class TokensHandler extends ExtensionHandler {
           assetDiscoveryScanner.startPendingScan()
         })
 
+        // this subscription will only close when port is closed
         return genericSubscription(
           id,
           port,

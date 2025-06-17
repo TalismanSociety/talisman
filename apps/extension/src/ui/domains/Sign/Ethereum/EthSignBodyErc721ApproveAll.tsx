@@ -55,7 +55,10 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
       </div>
       <div className="flex">
         <div>{t("NFTs from")}</div>
-        <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
+        <SignParamAccountButton
+          address={account.address}
+          explorerUrl={network.blockExplorerUrls[0]}
+        />
       </div>
     </SignContainer>
   )

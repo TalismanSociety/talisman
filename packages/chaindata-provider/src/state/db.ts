@@ -1,7 +1,7 @@
 import { Dexie } from "dexie"
 
-import { Network, NetworkId } from "./networks"
-import { Token, TokenId } from "./tokens"
+import { Network, NetworkId } from "../chaindata/networks"
+import { Token, TokenId } from "../chaindata/tokens"
 
 export class ChaindataDb extends Dexie {
   tokens!: Dexie.Table<Token, TokenId>
@@ -21,6 +21,7 @@ export class ChaindataDb extends Dexie {
       // https://dexie.org/docs/Version/Version.stores()#warning
       networks: "id, genesisHash",
       tokens: "id, type, platform",
+      miniMetadatas: "id",
     })
   }
 }

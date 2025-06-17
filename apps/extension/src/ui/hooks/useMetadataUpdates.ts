@@ -4,7 +4,7 @@ import { db } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 
 import { api } from "@ui/api"
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 const useMetadata = (genesisHash?: HexString) => {
   const metadata = useLiveQuery(
@@ -16,7 +16,7 @@ const useMetadata = (genesisHash?: HexString) => {
 }
 
 export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number) => {
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
 
   const [isMetadataUpdating, setIsMetadataUpdating] = useState(false)
   const [hasMetadataUpdated, setHasMetadataUpdated] = useState(false)
@@ -43,7 +43,7 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
       specVersion === undefined ? !!metadata : metadata?.specVersion === specVersion
     const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
 
-    const rpcUrl = chain?.rpcs?.[0]?.url
+    const rpcUrl = chain?.rpcs?.[0]
     const updateUrl = rpcUrl
       ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
       : undefined

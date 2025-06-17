@@ -1,29 +1,17 @@
 import { HexString } from "@polkadot/util/types"
+import { Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/util"
-import { Chain, EvmNetworkId, SimpleEvmNetwork, WalletTransaction } from "extension-core"
+import { EvmNetworkId, WalletTransaction } from "extension-core"
+import { log } from "extension-shared"
 import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
-import {
-  useAccountByAddress,
-  useAccounts,
-  useChains,
-  useEvmNetworksMap,
-  useTransactions,
-} from "@ui/state"
+import { useAccountByAddress, useAccounts, useNetworks, useTransactions } from "@ui/state"
 
 const useTxHistoryProvider = () => {
   const accounts = useAccounts("owned")
-  const evmNetworksMap = useEvmNetworksMap()
-  const chains = useChains()
-  const chainsByGenesisHash = useMemo(
-    () =>
-      Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Partial<
-        Record<HexString, Chain>
-      >,
-    [chains],
-  )
+  const allNetworks = useNetworks()
 
   const allTransactions = useTransactions()
 
@@ -42,29 +30,31 @@ const useTxHistoryProvider = () => {
       (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
     )
 
-    const evmNetworks = uniq(
-      accountTransactions?.map((tx) => (tx.networkType === "evm" ? tx.evmNetworkId : null)),
+    const networkIds = uniq(
+      accountTransactions.filter((tx) => tx.networkType === "evm").map((tx) => tx.evmNetworkId),
     )
-      .filter((evmNetworkId): evmNetworkId is string => !!evmNetworkId)
-      .map((evmNetworkId) => evmNetworksMap[evmNetworkId])
-      .filter<SimpleEvmNetwork>((n): n is SimpleEvmNetwork => !!n)
-
-    const chains = uniq(
-      accountTransactions?.map((tx) => (tx.networkType === "substrate" ? tx.genesisHash : null)),
+    const genesisHashes = uniq(
+      accountTransactions
+        .filter((tx) => tx.networkType === "substrate")
+        .map((tx) => tx.genesisHash),
     )
-      .filter((genesisHash): genesisHash is HexString => !!genesisHash)
-      .map((genesisHash) => chainsByGenesisHash[genesisHash])
-      .filter<Chain>((n): n is Chain => !!n)
 
-    return [...evmNetworks, ...chains].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-  }, [encodedAddresses, allTransactions, chainsByGenesisHash, evmNetworksMap])
+    return allNetworks.filter((network) => {
+      switch (network.platform) {
+        case "ethereum":
+          return networkIds.includes(network.id)
+        case "polkadot":
+          return genesisHashes.includes(network.genesisHash)
+        default:
+          log.warn("Unsupported network platform")
+          return false
+      }
+    })
+  }, [allTransactions, allNetworks, encodedAddresses])
 
-  const network = useMemo<Chain | SimpleEvmNetwork | null>(
-    () =>
-      chainsByGenesisHash[(networkId ?? "") as HexString] ??
-      evmNetworksMap[networkId ?? ""] ??
-      null,
-    [chainsByGenesisHash, evmNetworksMap, networkId],
+  const network = useMemo<Network | null>(
+    () => networks.find((n) => n.id === networkId) ?? null,
+    [networkId, networks],
   )
 
   const transactions = useMemo(

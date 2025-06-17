@@ -1,13 +1,13 @@
+import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
-import { isAccountCompatibleWithChain, isAccountPlatformEthereum } from "extension-core"
+import { isAccountCompatibleWithNetwork } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAccounts, useChain, useToken } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
@@ -17,7 +17,7 @@ export const SendFundsAccountPicker = () => {
   const [search, setSearch] = useState("")
 
   const token = useToken(tokenId)
-  const chain = useChain(token?.networkId)
+  const network = useNetworkById(token?.networkId)
 
   const allAccounts = useAccounts("owned")
 
@@ -25,12 +25,8 @@ export const SendFundsAccountPicker = () => {
     () =>
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
-        .filter((account) => {
-          if (chain) return isAccountCompatibleWithChain(chain, account)
-          if (isEvmToken(token)) return isAccountPlatformEthereum(account)
-          return false
-        }),
-    [allAccounts, chain, search, token],
+        .filter((account) => network && isAccountCompatibleWithNetwork(network, account)),
+    [allAccounts, network, search],
   )
 
   const handleSelect = useCallback(
@@ -52,7 +48,7 @@ export const SendFundsAccountPicker = () => {
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <SendFundsAccountsList
           accounts={accounts}
-          genesisHash={chain?.genesisHash}
+          genesisHash={getNetworkGenesisHash(network)}
           selected={from}
           onSelect={handleSelect}
           showBalances

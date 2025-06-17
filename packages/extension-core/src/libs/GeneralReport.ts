@@ -197,9 +197,8 @@ async function getGeneralReport({
   // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
   try {
     /* eslint-disable-next-line no-var */
-    var [chains, evmNetworks, tokens, tokenRates] = await Promise.all([
-      chaindataProvider.chainsById(),
-      chaindataProvider.evmNetworksById(),
+    var [networks, tokens, tokenRates] = await Promise.all([
+      chaindataProvider.networksById(),
       chaindataProvider.tokensById(),
       db.tokenRates
         .toArray()
@@ -212,7 +211,7 @@ async function getGeneralReport({
       ownedAddresses.includes(balance.address),
     )
     /* eslint-disable-next-line no-var */
-    var balances = new Balances(balanceJsons, { chains, evmNetworks, tokens, tokenRates })
+    var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })
     DEBUG && console.error(error) // eslint-disable-line no-console
@@ -226,21 +225,22 @@ async function getGeneralReport({
     balances.each.filter(
       (balance) =>
         balance &&
-        (balance.chain === null || !("isCustom" in balance.chain && balance.chain.isCustom)) &&
+        (balance.network === null ||
+          !("isCustom" in balance.network && balance.network.isCustom)) &&
         (balance.token === null || !("isCustom" in balance.token && balance.token.isCustom)),
     ),
-    (balance) => `${balance.chainId ?? balance.evmNetworkId}-${balance.tokenId}`,
+    (balance) => `${balance.networkId}-${balance.tokenId}`,
   )
 
   // get fiat sum object for those arrays of balances
   const sortedFiatSumPerChainToken = Object.values(balancesPerChainToken)
-    .map((balances) => new Balances(balances, { chains, evmNetworks, tokens, tokenRates }))
+    .map((balances) => new Balances(balances, { networks, tokens, tokenRates }))
     .map((balances) => ({
       totalBalance: balances.sum.fiat("usd").total,
       transferableBalance: balances.sum.fiat("usd").transferable,
       unavailableBalance: balances.sum.fiat("usd").unavailable,
       numAccounts: new Set(balances.each.map((b) => b.address)).size,
-      chainId: balances.sorted[0].chainId ?? balances.sorted[0].evmNetworkId,
+      chainId: balances.sorted[0].networkId,
       tokenId: balances.sorted[0].tokenId,
       symbol: balances.sorted[0].token?.symbol,
     }))
@@ -265,8 +265,14 @@ async function getGeneralReport({
     .reduce(
       (acc, token) => {
         if (!token.chainId) return acc
-
-        const eco = chains[token.chainId] ? acc.dot : evmNetworks[token.chainId] ? acc.eth : null
+        const network = networks[token.chainId]
+        if (!network) return acc
+        const eco =
+          network.platform === "polkadot"
+            ? acc.dot
+            : network.platform === "ethereum"
+              ? acc.eth
+              : null
         if (!eco) return acc
 
         eco.totalBalance += token.totalBalance
