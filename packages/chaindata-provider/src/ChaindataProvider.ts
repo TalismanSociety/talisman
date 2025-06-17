@@ -1,4 +1,5 @@
-import { firstValueFrom, map, of, shareReplay } from "rxjs"
+import { isEqual } from "lodash"
+import { distinctUntilKeyChanged, firstValueFrom, map, of, shareReplay } from "rxjs"
 
 import {
   DotNetwork,
@@ -47,6 +48,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   miniMetadatasObservable = defaultChaindata$.pipe(
+    distinctUntilKeyChanged("miniMetadatas", isEqual),
     map(({ miniMetadatas }) => miniMetadatas),
     shareReplay({ bufferSize: 1, refCount: true }),
   )
@@ -82,6 +84,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   networksObservable = defaultChaindata$.pipe(
+    distinctUntilKeyChanged("networks", isEqual),
     map(({ networks }) => networks),
     shareReplay({ bufferSize: 1, refCount: true }),
   )
@@ -90,6 +93,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   tokensObservable = defaultChaindata$.pipe(
+    distinctUntilKeyChanged("tokens", isEqual),
     map(({ tokens }) => tokens),
     shareReplay({ bufferSize: 1, refCount: true }),
   )

@@ -18,12 +18,14 @@ import {
   isTokenActive,
   Network,
 } from "extension-core"
+import { DEBUG } from "extension-shared"
 import { keyBy } from "lodash"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
+import { getSharedObservable } from "./util/getSharedObservable"
 
 /** @deprecated */
 export type AnyChain = Chain | CustomChain
@@ -55,7 +57,7 @@ const allNetworks$ = new Observable<Network[]>((subscriber) => {
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("allNetworks$"), shareReplay(1))
+}).pipe(debugObservable("allNetworks$", DEBUG), shareReplay(1))
 
 const activeNetworks$ = combineLatest([allNetworks$, activeNetworksState$])
   .pipe(map(([networks, activeState]) => networks.filter((n) => isNetworkActive(n, activeState))))
@@ -64,17 +66,21 @@ const activeNetworks$ = combineLatest([allNetworks$, activeNetworksState$])
 const filterByPlatform =
   <P extends PlatformFilter>(platform: P) =>
   (item: { platform: NetworkPlatform }): item is NetworkOfPlatform<P> =>
-    !platform || item.platform === platform
+    !platform || platform === "all" || item.platform === platform
 const filterIncludeTestnets = (includeTestnets: boolean) => (item: { isTestnet?: boolean }) =>
   includeTestnets || !item.isTestnet
 
 export const [useNetworks, getNetworks$] = bind((options?: ChaindataQueryOptions) => {
-  const { platform, activeOnly, includeTestnets } = { ...ALL, ...options }
-  const networks$ = activeOnly ? activeNetworks$ : allNetworks$
-  return networks$.pipe(
-    map((networks) => networks.filter(filterByPlatform(platform))),
-    map((networks) => networks.filter(filterIncludeTestnets(includeTestnets))),
-  )
+  // argument is an object, need to cache the output observable
+  return getSharedObservable("getNetworks$", options, (opts) => {
+    const { platform, activeOnly, includeTestnets } = { ...ALL, ...opts }
+    const networks$ = activeOnly ? activeNetworks$ : allNetworks$
+    return networks$.pipe(
+      map((networks) => networks.filter(filterByPlatform(platform))),
+      map((networks) => networks.filter(filterIncludeTestnets(includeTestnets))),
+      debugObservable("getNetworks$", DEBUG),
+    )
+  })
 }) as [
   <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => NetworkOfPlatform<P>[],
   <P extends PlatformFilter>(
@@ -82,9 +88,11 @@ export const [useNetworks, getNetworks$] = bind((options?: ChaindataQueryOptions
   ) => StateObservable<NetworkOfPlatform<P>[]>,
 ]
 
-export const [useNetworksMapById, getNetworksMapById$] = bind((options: ChaindataQueryOptions) =>
-  getNetworks$(options).pipe(map((networks) => keyBy(networks, "id"))),
-) as [
+export const [useNetworksMapById, getNetworksMapById$] = bind((options: ChaindataQueryOptions) => {
+  return getSharedObservable("getNetworksMapById$", options, (opts) => {
+    return getNetworks$(opts).pipe(map((networks) => keyBy(networks, "id")))
+  })
+}) as [
   <P extends PlatformFilter>(
     options?: ChaindataQueryOptions<P>,
   ) => Record<NetworkId, NetworkOfPlatform<P>>,
@@ -105,10 +113,13 @@ export const [useNetworkById, getNetworkById$] = bind((id: NetworkId | null | un
 ]
 
 export const [useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
-  (options?: Omit<ChaindataQueryOptions, "platform">) =>
-    getNetworks$({ platform: "polkadot", ...options }).pipe(
-      map((networks) => keyBy(networks, "genesisHash")),
-    ),
+  (options?: Omit<ChaindataQueryOptions, "platform">) => {
+    return getSharedObservable("getNetworksMapByGenesisHash$", options, (opts) => {
+      return getNetworks$({ platform: "polkadot", ...opts }).pipe(
+        map((networks) => keyBy(networks, "genesisHash")),
+      )
+    })
+  },
 )
 
 export const [useNetworkByGenesisHash, getNetworkByGenesisHash$] = bind(
@@ -186,7 +197,7 @@ const rawTokens$ = new Observable<Token[]>((subscriber) => {
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("rawTokens$"), shareReplay(1))
+}).pipe(debugObservable("rawTokens$", DEBUG), shareReplay(1))
 
 const allTokens$ = combineLatest([rawTokens$, getNetworksMapById$()]).pipe(
   map(([tokens, networksById]) => tokens.filter((token) => networksById[token.networkId])),
@@ -201,20 +212,26 @@ const activeTokens$ = combineLatest({
   map(({ tokens, activeNetworksById, activeTokens }) =>
     tokens.filter((n) => activeNetworksById[n.networkId] && isTokenActive(n, activeTokens)),
   ),
+  shareReplay(1),
 )
 
 export const [useTokens, getTokens$] = bind((options?: ChaindataQueryOptions) => {
-  const { platform, activeOnly, includeTestnets } = { ...ALL, ...options }
-  const tokens = activeOnly ? activeTokens$ : allTokens$
-  return tokens.pipe(
-    map((tokens) => tokens.filter(filterByPlatform(platform))),
-    map((tokens) => tokens.filter(filterIncludeTestnets(includeTestnets))),
-  )
+  return getSharedObservable("getTokens$", options, (opts) => {
+    const { platform, activeOnly, includeTestnets } = { ...ALL, ...opts }
+    const tokens$ = activeOnly ? activeTokens$ : allTokens$
+    return tokens$.pipe(
+      map((tokens) => tokens.filter(filterByPlatform(platform))),
+      map((tokens) => tokens.filter(filterIncludeTestnets(includeTestnets))),
+      debugObservable("getTokens$", DEBUG),
+    )
+  })
 })
 
-export const [useTokensMap, getTokensMap$] = bind((options?: ChaindataQueryOptions) =>
-  getTokens$(options).pipe(map((tokens) => keyBy(tokens, "id"))),
-)
+export const [useTokensMap, getTokensMap$] = bind((options?: ChaindataQueryOptions) => {
+  return getSharedObservable("getTokensMap$", options, (opts) =>
+    getTokens$(opts).pipe(map((tokens) => keyBy(tokens, "id"))),
+  )
+})
 
 export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
   return getTokensMap$().pipe(

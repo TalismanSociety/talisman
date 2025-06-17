@@ -1,6 +1,6 @@
 import { liveQuery } from "dexie"
 import { isEqual } from "lodash"
-import { combineLatest, Observable, ReplaySubject, shareReplay } from "rxjs"
+import { combineLatest, distinctUntilChanged, Observable, ReplaySubject, shareReplay } from "rxjs"
 import z from "zod/v4"
 
 import { NetworkSchema } from "../chaindata/networks"
@@ -103,6 +103,7 @@ const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
 export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
+  log.debug("[defaultChaindata$] Subscribing to chaindata updates")
   const subUpdateFromGithub = combineLatest([ghChaindata$, dbChaindata$]).subscribe(
     async ([
       { networks: ghNetworks, tokens: ghTokens, miniMetadatas: ghMiniMetadatas },
@@ -145,9 +146,10 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
     },
   )
 
-  const subOutput = dbChaindata$.subscribe(subscriber)
+  const subOutput = dbChaindata$.pipe(distinctUntilChanged(isEqual)).subscribe(subscriber)
 
   return () => {
+    log.debug("[defaultChaindata$] Unsubscribing from chaindata updates")
     subUpdateFromGithub.unsubscribe()
     subOutput.unsubscribe()
   }

@@ -1,4 +1,5 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
+import { DEBUG } from "extension-shared"
 import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
@@ -40,6 +41,7 @@ import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
 import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
 import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
+import { TestPage } from "./routes/TestPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
@@ -131,6 +133,7 @@ const DashboardInner = () => {
           path="qr-metadata"
           element={<Navigate to="/settings/networks-tokens/qr-metadata" replace />}
         />
+        {DEBUG && <Route path="test" element={<TestPage />} />}
         <Route path="*" element={<NavigateWithQuery url="/portfolio" replace />} />
       </Routes>
     </Suspense>
