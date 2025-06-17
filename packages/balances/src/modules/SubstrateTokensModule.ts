@@ -5,7 +5,6 @@ import { assert } from "@polkadot/util"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
-  githubTokenLogoUrl,
   SubTokensToken,
   subTokensTokenId,
 } from "@talismn/chaindata-provider"
@@ -122,7 +121,7 @@ export const SubTokensModule: NewBalanceModule<
             symbol,
             decimals,
             name: tokenConfig?.name ?? symbol,
-            logo: tokenConfig?.logo || githubTokenLogoUrl(id),
+            logo: tokenConfig?.logo,
             existentialDeposit,
             onChainId,
             networkId: chainId,

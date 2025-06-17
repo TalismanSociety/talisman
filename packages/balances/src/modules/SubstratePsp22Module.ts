@@ -6,7 +6,6 @@ import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
-  githubTokenLogoUrl,
   SubPsp22Token,
   subPsp22TokenId,
   TokenList,
@@ -144,7 +143,7 @@ export const SubPsp22Module: NewBalanceModule<
             symbol,
             decimals,
             name: tokenConfig?.name || symbol,
-            logo: tokenConfig?.logo || githubTokenLogoUrl(id),
+            logo: tokenConfig?.logo,
             existentialDeposit,
             contractAddress,
             networkId: chainId,

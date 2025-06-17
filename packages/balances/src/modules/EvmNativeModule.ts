@@ -5,7 +5,6 @@ import {
   EvmNativeToken,
   evmNativeTokenId,
   EvmNetworkId,
-  githubTokenLogoUrl,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
@@ -93,7 +92,7 @@ export const EvmNativeModule: NewBalanceModule<
         symbol,
         decimals,
         name,
-        logo: moduleConfig?.logo || githubTokenLogoUrl(id),
+        logo: moduleConfig?.logo,
         networkId,
       }
 

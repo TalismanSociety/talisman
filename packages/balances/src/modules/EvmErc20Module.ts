@@ -7,7 +7,6 @@ import {
   evmErc20TokenId,
   EvmErc20TokenSchema,
   EvmNetworkId,
-  githubTokenLogoUrl,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isTruthy } from "@talismn/util"
@@ -152,12 +151,11 @@ export const EvmErc20Module: NewBalanceModule<
           id,
           type: "evm-erc20",
           platform: "ethereum",
-          //isTestnet,
           isDefault: tokenConfig.isDefault ?? true,
           symbol,
           decimals,
           name: contractName ?? symbol,
-          logo: tokenConfig?.logo || githubTokenLogoUrl(id),
+          logo: tokenConfig?.logo,
           contractAddress,
           networkId: chainId,
         }

@@ -1,6 +1,6 @@
 import upperFirst from "lodash/upperFirst"
 
-import { BalanceFormatter, LockedAmount } from "../../../types"
+import { Balance, BalanceFormatter, LockedAmount } from "../../../types"
 
 export type BalanceLockType =
   | "reserved"
@@ -77,9 +77,7 @@ export const filterBaseLocks = (
 // TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
-  // {
-  //   //  balance
-  // }: { balance?: Balance } = {},
+  { balance }: { balance?: Balance } = {},
 ) => {
   if (!lock.label) return lock.label
 
@@ -90,6 +88,11 @@ export const getLockTitle = (
     if (!paraId) return "Crowdloan"
 
     const name = null
+
+    if (balance) {
+      // TODO temporary check
+    }
+
     // balance?.network?.parathreads?.find(
     //   (parathread) => parathread?.paraId === paraId,
     // )?.name

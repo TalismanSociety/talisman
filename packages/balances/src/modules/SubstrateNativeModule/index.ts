@@ -4,7 +4,6 @@ import PromisePool from "@supercharge/promise-pool"
 import { ChainConnectionError } from "@talismn/chain-connector"
 import {
   CustomSubNativeToken,
-  githubTokenLogoUrl,
   SubNativeToken,
   subNativeTokenId,
   TokenId,
@@ -207,7 +206,7 @@ export const SubNativeModule: NewBalanceModule<
         symbol: symbol ?? DEFAULT_SYMBOL,
         name: moduleConfig?.name ?? symbol ?? DEFAULT_SYMBOL,
         decimals: decimals ?? DEFAULT_DECIMALS,
-        logo: moduleConfig?.logo || githubTokenLogoUrl(id),
+        logo: moduleConfig?.logo,
         existentialDeposit: existentialDeposit ?? "0",
         networkId: chainId,
       }

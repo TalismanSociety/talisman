@@ -5,7 +5,6 @@ import { defineMethod } from "@substrate/txwrapper-core"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
-  githubTokenLogoUrl,
   SubAssetsToken,
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
@@ -165,7 +164,7 @@ export const SubAssetsModule: NewBalanceModule<
             symbol,
             name: tokenConfig?.name || symbol,
             decimals,
-            logo: tokenConfig?.logo || githubTokenLogoUrl(id),
+            logo: tokenConfig?.logo,
             existentialDeposit,
             assetId,
             isFrozen,
