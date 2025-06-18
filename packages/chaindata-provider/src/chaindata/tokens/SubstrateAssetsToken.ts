@@ -10,7 +10,8 @@ const TOKEN_TYPE = "substrate-assets"
 export const SubAssetsTokenSchema = TokenBase.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
-  assetId: z.uint32(),
+  // number when used with papi - uint32 in theory (on asset hubs) but astar implemented it to u128 which makes it incompatible with number type
+  assetId: z.union([z.uint32(), z.string()]).transform(String),
   isFrozen: z.boolean().optional(),
   existentialDeposit: z.string(),
 })
@@ -19,11 +20,11 @@ export type SubAssetsToken = z.infer<typeof SubAssetsTokenSchema>
 export type SubAssetTokenIdSpecs = {
   type: typeof TOKEN_TYPE
   networkId: NetworkId
-  assetId: number
+  assetId: string
 }
 
-export const subAssetTokenId = (networkId: NetworkId, assetId: number) =>
-  generateTokenId(networkId, TOKEN_TYPE, String(assetId))
+export const subAssetTokenId = (networkId: NetworkId, assetId: string) =>
+  generateTokenId(networkId, TOKEN_TYPE, assetId)
 
 export const parseSubAssetTokenId = (tokenId: TokenId): SubAssetTokenIdSpecs => {
   const [networkId, type, assetId] = tokenId.split(":")

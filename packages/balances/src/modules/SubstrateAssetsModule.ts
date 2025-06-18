@@ -42,7 +42,7 @@ export type SubAssetsChainMeta = {
 export type SubAssetsModuleConfig = {
   tokens?: Array<
     {
-      assetId: number
+      assetId: number | string
     } & BalancesConfigTokenParams
   >
 }
@@ -109,7 +109,7 @@ export const SubAssetsModule: NewBalanceModule<
       const tokens: Record<string, SubAssetsToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
-          const assetId = tokenConfig.assetId
+          const assetId = String(tokenConfig.assetId)
 
           const assetStateKey =
             tryEncode(assetCoder, BigInt(assetId)) ?? tryEncode(assetCoder, assetId)
