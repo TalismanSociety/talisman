@@ -28,7 +28,7 @@ const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["Assets"]["tra
 
   const token = useMemo(() => {
     return tokens.find(
-      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id),
+      (t) => t.type === "substrate-assets" && t.assetId === decodedCall.args.id,
     ) as SubAssetsToken | undefined
   }, [decodedCall.args.id, tokens])
 
@@ -101,7 +101,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
 
   const token = useMemo(() => {
     return tokens.find(
-      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id),
+      (t) => t.type === "substrate-assets" && t.assetId === decodedCall.args.id,
     ) as SubAssetsToken | undefined
   }, [decodedCall.args.id, tokens])
 

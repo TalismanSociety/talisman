@@ -142,9 +142,9 @@ const getTokenFromlocation = (
       location.interior.value[0].value === 50 &&
       location.interior.value[1].type === "GeneralIndex"
     ) {
-      const assetId = String(location.interior.value[1].value)
+      const assetId = location.interior.value[1].value
       const token = tokens.find(
-        (t) => t.type === "substrate-assets" && t.assetId === assetId,
+        (t) => t.type === "substrate-assets" && BigInt(t.assetId) === assetId,
       ) as SubAssetsToken
       if (token) return token
     }

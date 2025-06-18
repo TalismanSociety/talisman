@@ -1,4 +1,4 @@
-import { ChainId, DotNetwork, NetworkId } from "@talismn/chaindata-provider"
+import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 
 import log from "../../log"
@@ -27,7 +27,7 @@ export const buildStorageCoders = <
   moduleType,
   coders,
 }: {
-  chainIds: ChainId[]
+  chainIds: DotNetworkId[]
   chains: Record<NetworkId, DotNetwork>
   miniMetadatas: Map<string, MiniMetadata>
   moduleType: InferModuleType<TBalanceModule>

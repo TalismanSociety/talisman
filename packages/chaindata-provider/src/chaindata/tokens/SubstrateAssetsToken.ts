@@ -10,7 +10,7 @@ const TOKEN_TYPE = "substrate-assets"
 export const SubAssetsTokenSchema = TokenBase.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
-  assetId: z.string(),
+  assetId: z.uint32(),
   isFrozen: z.boolean().optional(),
   existentialDeposit: z.string(),
 })
@@ -22,7 +22,7 @@ export type SubAssetTokenIdSpecs = {
   assetId: number
 }
 
-export const subAssetTokenId = (networkId: NetworkId, assetId: string | number) =>
+export const subAssetTokenId = (networkId: NetworkId, assetId: number) =>
   generateTokenId(networkId, TOKEN_TYPE, String(assetId))
 
 export const parseSubAssetTokenId = (tokenId: TokenId): SubAssetTokenIdSpecs => {
@@ -33,6 +33,6 @@ export const parseSubAssetTokenId = (tokenId: TokenId): SubAssetTokenIdSpecs => 
   return {
     type,
     networkId,
-    assetId: z.uint32().parse(assetId),
+    assetId: SubAssetsTokenSchema.shape.assetId.parse(assetId),
   }
 }

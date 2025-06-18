@@ -31,7 +31,7 @@ export const getMultiLocationTokenId = (
           (token: Token) =>
             token.type === "substrate-assets" &&
             token.networkId === chain.id &&
-            token.assetId === String(assetId),
+            BigInt(token.assetId) === assetId,
         )?.id ?? null
       )
     }

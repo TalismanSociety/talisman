@@ -37,7 +37,7 @@ export const useRampCryptoAsset = (
         a.type === type &&
         (token.type !== "evm-erc20" ||
           a.address?.toLowerCase() === token.contractAddress.toLowerCase()) &&
-        (token.type !== "substrate-assets" || token.assetId === a.address),
+        (token.type !== "substrate-assets" || token.assetId === Number(a.address)),
     )
 
     return asset

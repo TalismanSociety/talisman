@@ -60,6 +60,23 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
+  get miniMetadatasByIdObservable() {
+    return this.miniMetadatasObservable.pipe(map(util.itemsToMapById))
+  }
+  async miniMetadatasById() {
+    return await util.wrapObservableWithGetter(
+      "Failed to get mini metadatas by id",
+      this.miniMetadatasByIdObservable,
+    )
+  }
+
+  async miniMetadataById(id: string) {
+    return await util.withErrorReason(
+      "Failed to get mini metadata by id",
+      async () => (await this.miniMetadatasById())[id] ?? null,
+    )
+  }
+
   //
   // base items
   //

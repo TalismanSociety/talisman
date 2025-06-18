@@ -70,4 +70,4 @@ export const chaindataTokenByIdUrl = (tokenId: string) =>
 /** @deprecated */
 export const chaindataMiniMetadatasAllUrl = `${githubChaindataDistUrl}/miniMetadatas/all.json`
 
-export const CHAINDATA_URL = `${githubChaindataDistUrl}/chaindata.json`
+// export const CHAINDATA_URL = `${githubChaindataDistUrl}/chaindata.json`

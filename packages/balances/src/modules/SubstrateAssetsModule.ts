@@ -2,9 +2,12 @@ import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
+import { ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
+  DotNetworkId,
+  parseSubAssetTokenId,
   SubAssetsToken,
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
@@ -18,10 +21,12 @@ import {
   getMetadataVersion,
   unifyMetadata,
 } from "@talismn/scale"
+import { keys, toPairs } from "lodash"
 import camelCase from "lodash/camelCase"
 import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
+import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
@@ -37,7 +42,7 @@ export type SubAssetsChainMeta = {
 export type SubAssetsModuleConfig = {
   tokens?: Array<
     {
-      assetId: string | number
+      assetId: number
     } & BalancesConfigTokenParams
   >
 }
@@ -104,10 +109,7 @@ export const SubAssetsModule: NewBalanceModule<
       const tokens: Record<string, SubAssetsToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
-          const assetId =
-            typeof tokenConfig.assetId === "number"
-              ? tokenConfig.assetId.toString()
-              : tokenConfig.assetId
+          const assetId = tokenConfig.assetId
 
           const assetStateKey =
             tryEncode(assetCoder, BigInt(assetId)) ?? tryEncode(assetCoder, assetId)
@@ -193,16 +195,63 @@ export const SubAssetsModule: NewBalanceModule<
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances({ addressesByToken }, callback) {
-      const queries = await buildQueries(chaindataProvider, addressesByToken)
-      const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-        (error, result) => {
-          if (error) return callback(error)
-          const balances = result?.filter((b): b is SubAssetsBalance => b !== null) ?? []
-          if (balances.length > 0) callback(null, new Balances(balances))
+      const byNetwork = keys(addressesByToken).reduce(
+        (acc, tokenId) => {
+          const networkId = parseSubAssetTokenId(tokenId).networkId
+          if (!acc[networkId]) acc[networkId] = {}
+          acc[networkId][tokenId] = addressesByToken[tokenId]
+
+          return acc
         },
+        {} as Record<DotNetworkId, AddressesByToken<SubAssetsToken>>,
       )
 
-      return unsubscribe
+      const controller = new AbortController()
+
+      await Promise.all(
+        toPairs(byNetwork).map(async ([networkId, addressesByToken]) => {
+          const queries = await buildNetworkQueries(
+            networkId,
+            chainConnector,
+            chaindataProvider,
+            addressesByToken,
+          )
+          if (controller.signal.aborted) return
+
+          const stateHelper = new RpcStateQueryHelper(chainConnector, queries)
+
+          const unsubscribe = await stateHelper.subscribe((error, result) => {
+            //  console.log("SubstrateAssetsModule.callback", { error, result })
+            if (error) return callback(error)
+            const balances = result?.filter((b): b is SubAssetsBalance => b !== null) ?? []
+            if (balances.length > 0) callback(null, new Balances(balances))
+          })
+
+          controller.signal.addEventListener("abort", () => {
+            log.debug("TMP subscribeBalances aborted, unsubscribing from network", networkId)
+            unsubscribe()
+          })
+        }),
+      )
+
+      // const networkIds = uniq(uniq(keys(addressesByToken)).map((tokenId) => parseSubAssetTokenId(tokenId).networkId))
+      // const
+
+      //console.log("SubstrateAssetsModule.subscribeBalances 1", { addressesByToken })
+      // const queries = await buildQueries(chaindataProvider, addressesByToken)
+      // //console.log("SubstrateAssetsModule.subscribeBalances 2", { queries, addressesByToken })
+      // const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
+      //   (error, result) => {
+      //     //  console.log("SubstrateAssetsModule.callback", { error, result })
+      //     if (error) return callback(error)
+      //     const balances = result?.filter((b): b is SubAssetsBalance => b !== null) ?? []
+      //     if (balances.length > 0) callback(null, new Balances(balances))
+      //   },
+      // )
+
+      return () => {
+        controller.abort()
+      }
     },
 
     async fetchBalances(addressesByToken) {
@@ -277,12 +326,137 @@ export const SubAssetsModule: NewBalanceModule<
   }
 }
 
+async function buildNetworkQueries(
+  networkId: DotNetworkId,
+  chainConnector: ChainConnector,
+  chaindataProvider: ChaindataProvider,
+  addressesByToken: AddressesByToken<SubAssetsToken>,
+): Promise<Array<RpcStateQuery<SubAssetsBalance | null>>> {
+  const miniMetadata = await getMiniMetadata(
+    chaindataProvider,
+    chainConnector,
+    networkId,
+    moduleType,
+  )
+  const network = await chaindataProvider.chainById(networkId)
+  const tokensById = await chaindataProvider.tokensById()
+
+  const chainIds = [networkId]
+  const chains = network ? { [networkId]: network } : {}
+  const miniMetadatas = new Map([[miniMetadata.id, miniMetadata]])
+
+  const chainStorageCoders = buildStorageCoders({
+    chainIds,
+    chains,
+    miniMetadatas,
+    moduleType,
+    coders: { storage: ["Assets", "Account"] },
+  })
+
+  return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
+    const token = tokensById[tokenId]
+    if (!token) {
+      log.warn(`Token ${tokenId} not found`)
+      return []
+    }
+    if (token.type !== "substrate-assets") {
+      log.debug(`This module doesn't handle tokens of type ${token.type}`)
+      return []
+    }
+    const networkId = token.networkId
+    if (!networkId) {
+      log.warn(`Token ${tokenId} has no chain`)
+      return []
+    }
+    const chain = chains[networkId]
+    if (!chain) {
+      log.warn(`Chain ${networkId} for token ${tokenId} not found`)
+      return []
+    }
+
+    return addresses.flatMap((address): RpcStateQuery<SubAssetsBalance | null> | [] => {
+      const scaleCoder = chainStorageCoders.get(networkId)?.storage
+      const stateKey =
+        tryEncode(scaleCoder, BigInt(token.assetId), address) ??
+        tryEncode(scaleCoder, token.assetId, address)
+      if (!stateKey) {
+        log.warn(
+          `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
+        )
+        return []
+      }
+
+      const decodeResult = (change: string | null) => {
+        /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+        type DecodedType = {
+          balance?: bigint
+          is_frozen?: boolean
+          reason?: { type?: "Sufficient" }
+          status?: { type?: "Liquid" } | { type?: "Frozen" }
+          extra?: undefined
+        }
+
+        const decoded = decodeScale<DecodedType>(
+          scaleCoder,
+          change,
+          `Failed to decode substrate-assets balance on chain ${networkId}`,
+        ) ?? {
+          balance: 0n,
+          is_frozen: false,
+          reason: { type: "Sufficient" },
+          status: { type: "Liquid" },
+          extra: undefined,
+        }
+
+        const isFrozen = decoded?.status?.type === "Frozen"
+        const amount = (decoded?.balance ?? 0n).toString()
+
+        // due to the following balance calculations, which are made in the `Balance` type:
+        //
+        // total balance        = (free balance) + (reserved balance)
+        // transferable balance = (free balance) - (frozen balance)
+        //
+        // when `isFrozen` is true we need to set **both** the `free` and `frozen` amounts
+        // of this balance to the value we received from the RPC.
+        //
+        // if we only set the `frozen` amount, then the `total` calculation will be incorrect!
+        const free = amount
+        const frozen = token.isFrozen || isFrozen ? amount : "0"
+
+        // include balance values even if zero, so that newly-zero values overwrite old values
+        const balanceValues: Array<AmountWithLabel<string>> = [
+          { type: "free", label: "free", amount: free.toString() },
+          { type: "locked", label: "frozen", amount: frozen.toString() },
+        ]
+
+        return {
+          source: "substrate-assets",
+
+          status: "live",
+
+          address,
+          networkId,
+          tokenId: token.id,
+          values: balanceValues,
+        } as SubAssetsBalance
+      }
+
+      return { chainId: networkId, stateKey, decodeResult }
+    })
+  })
+}
+
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<SubAssetsToken>,
 ): Promise<Array<RpcStateQuery<SubAssetsBalance | null>>> {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
+
+  // const networkIds = Object.keys(addressesByToken)
+
+  // const
+  // const miniMetadatas = await getMiniMetadatas(chainConnector, chaindataProvider, network)
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
