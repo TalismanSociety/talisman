@@ -1,8 +1,9 @@
 import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { BalanceSubscriptionResponse, isAccountAddressEthereum } from "extension-core"
+import { BalanceSubscriptionResponse } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
+import { DEBUG } from "extension-shared"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -39,7 +40,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
   return () => unsubscribe()
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
-  debugObservable("rawBalances$"),
+  debugObservable("rawBalances$", DEBUG),
   shareReplay(1),
 )
 
@@ -57,19 +58,15 @@ const allBalances$ = combineLatest([
   rawBalances$.pipe(map((balances) => balances.data)),
   balancesHydrate$,
 ]).pipe(
-  map(([tokens, chains, accounts, balances, hydrate]) => {
+  map(([tokens, networks, accounts, balances, hydrate]) => {
     const validBalances = balances.filter((b) => {
-      // ensure there is a matching token
-      if (!tokens[b.tokenId]) return false
-
+      const token = tokens[b.tokenId]
+      const network = networks[b.networkId]
       const account = accounts[b.address]
-      if (!account || !account.type) return false
 
-      // for chain specific accounts, exclude balances from other chains
-      if ("chainId" in b && chains[b.networkId])
-        return isAccountCompatibleWithNetwork(chains[b.networkId], account)
-      if ("evmNetworkId" in b && b.evmNetworkId) return isAccountAddressEthereum(account)
-      return false
+      if (!token || !network || !account) return false
+
+      return isAccountCompatibleWithNetwork(network, account)
     })
     return new Balances(validBalances, hydrate)
   }),

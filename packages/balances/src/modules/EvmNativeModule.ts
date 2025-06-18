@@ -259,7 +259,6 @@ const fetchBalances = async (
           source: "evm-native",
           status: "live",
           address: address,
-          multiChainId: { evmChainId: networkId },
           networkId,
           tokenId,
           value: freeBalances[i].toString(),
