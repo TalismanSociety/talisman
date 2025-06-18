@@ -1,13 +1,6 @@
 import { NetworkList, TokenList } from "@talismn/chaindata-provider"
 import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import {
-  BigMath,
-  isArrayOf,
-  isBigInt,
-  isTruthy,
-  NonFunctionProperties,
-  planckToTokens,
-} from "@talismn/util"
+import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 
 import log from "../log"
@@ -302,14 +295,9 @@ export class Balances {
   }
 }
 
-// type BalanceJsonEvm = BalanceJson & { evmNetworkId: string }
-
-// const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNetworkId" in balance
-
 export const getBalanceId = (balance: BalanceJson) => {
-  const { source, address, tokenId, networkId } = balance
-  //const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
-  return [source, address, networkId, tokenId].filter(isTruthy).join("::")
+  const { source, address, tokenId } = balance
+  return [source, address, tokenId].join("::")
 }
 
 /**
