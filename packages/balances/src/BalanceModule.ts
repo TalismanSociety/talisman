@@ -125,7 +125,6 @@ interface BalanceModuleSubstrate<
     chainId: ChainId,
     moduleConfig?: TModuleConfig,
     metadataRpc?: `0x${string}`,
-    systemProperties?: Record<string, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */

@@ -173,9 +173,9 @@ abstract class BalancePool {
       ),
     ]).pipe(
       map(([status, data]) => ({ status, data })),
-      tap(({ status, data }) => {
-        log.debug("#balances", { status, data })
-      }),
+      // tap(({ status, data }) => {
+      //   log.debug("#balances", { status, data })
+      // }),
     )
 
     // subscribe this store to all of the inputs it depends on

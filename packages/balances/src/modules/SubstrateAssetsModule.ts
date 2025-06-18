@@ -18,7 +18,6 @@ import {
   encodeMetadata,
   getDynamicBuilder,
   getLookupFn,
-  getMetadataVersion,
   unifyMetadata,
 } from "@talismn/scale"
 import { keys, toPairs } from "lodash"
@@ -80,19 +79,22 @@ export const SubAssetsModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule(moduleType),
 
+    // TODO make synchronous at the module definition level ?
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet }
-      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
+      // const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
+      // if (metadataRpc === undefined) return { isTestnet }
+      // if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
+      if (!metadataRpc) return {}
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
       const metadata = decAnyMetadata(metadataRpc)
+
+      // TODO return null if pallets are not found
 
       compactMetadata(metadata, [{ pallet: "Assets", items: ["Account", "Asset", "Metadata"] }])
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return { isTestnet, miniMetadata, metadataVersion }
+      return { miniMetadata }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
@@ -338,6 +340,7 @@ async function buildNetworkQueries(
     networkId,
     moduleType,
   )
+  // console.log("Fetched miniMetadata for network", networkId, { miniMetadata })
   const network = await chaindataProvider.chainById(networkId)
   const tokensById = await chaindataProvider.tokensById()
 
@@ -352,6 +355,12 @@ async function buildNetworkQueries(
     moduleType,
     coders: { storage: ["Assets", "Account"] },
   })
+  // console.log(
+  //   "Built network storage coders for ",
+  //   networkId,
+  //   chainStorageCoders.size,
+  //   miniMetadatas,
+  // )
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokensById[tokenId]
@@ -378,7 +387,7 @@ async function buildNetworkQueries(
       const scaleCoder = chainStorageCoders.get(networkId)?.storage
       const stateKey =
         tryEncode(scaleCoder, BigInt(token.assetId), address) ??
-        tryEncode(scaleCoder, token.assetId, address)
+        tryEncode(scaleCoder, Number(token.assetId), address)
       if (!stateKey) {
         log.warn(
           `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,

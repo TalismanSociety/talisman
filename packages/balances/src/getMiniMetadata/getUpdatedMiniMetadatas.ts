@@ -8,18 +8,18 @@ import { getMiniMetadatas } from "./getMiniMetadatas"
 export const getUpdatedMiniMetadatas = async (
   chainConnector: ChainConnector,
   chaindataProvider: ChaindataProvider,
-  networkId: DotNetworkId,
+  chainId: DotNetworkId,
   specVersion: number,
 ): Promise<MiniMetadata[]> => {
   const miniMetadatas = await getMiniMetadatas(
     chainConnector,
     chaindataProvider,
-    networkId,
+    chainId,
     specVersion,
   )
 
   await db.transaction("readwrite", "miniMetadatas", async (tx) => {
-    await tx.miniMetadatas.where({ networkId }).delete()
+    await tx.miniMetadatas.where({ chainId }).delete()
     await tx.miniMetadatas.bulkPut(miniMetadatas)
   })
 

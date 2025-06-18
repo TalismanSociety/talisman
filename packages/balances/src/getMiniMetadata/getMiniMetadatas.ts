@@ -1,4 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
 
 import { ChainConnectors } from "../BalanceModule"
@@ -41,6 +42,7 @@ const fetchMiniMetadatas = async (
 
   const chainConnectors: ChainConnectors = {
     substrate: chainConnector,
+    evm: {} as ChainConnectorEvm, // wont be used but workarounds error for module creation
   }
 
   const modules = defaultBalanceModules
@@ -51,7 +53,7 @@ const fetchMiniMetadatas = async (
     modules.map(async (mod) => {
       const source = mod.type
 
-      const chainMeta = await mod.fetchSubstrateChainMeta(chainId, {}, metadataRpc, {})
+      const chainMeta = await mod.fetchSubstrateChainMeta(chainId, {}, metadataRpc)
 
       return {
         id: deriveMiniMetadataId({ source, chainId, specVersion, libVersion }),

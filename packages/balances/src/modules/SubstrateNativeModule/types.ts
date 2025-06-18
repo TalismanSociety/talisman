@@ -15,16 +15,12 @@ export const moduleType: ModuleType = "substrate-native"
 //   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
 export type SubNativeChainMeta = {
-  isTestnet: boolean
   useLegacyTransferableCalculation?: boolean
-  symbol?: string
-  decimals?: number
   existentialDeposit?: string
   nominationPoolsPalletId?: string
   crowdloanPalletId?: string
   hasSubtensorPallet?: boolean
   miniMetadata?: string
-  metadataVersion?: number
 }
 
 export type SubNativeModuleConfig = {

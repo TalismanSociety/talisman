@@ -60,6 +60,7 @@ import { mergeBalances } from "./util/mergeBalances"
 import { QueryCache } from "./util/QueryCache"
 import { sortChains } from "./util/sortChains"
 import { SubNativeBalanceError } from "./util/SubNativeBalanceError"
+import { getChainProperties } from "./util/systemProperties"
 
 export { filterBaseLocks, getLockTitle } from "./util/balanceLockTypes"
 export type { BalanceLockType } from "./util/balanceLockTypes"
@@ -73,9 +74,6 @@ export type {
 } from "./types"
 
 export * from "./util/subtensor"
-
-const DEFAULT_SYMBOL = "Unit"
-const DEFAULT_DECIMALS = 0
 
 const POLLING_WINDOW_SIZE = 20
 const MAX_SUBSCRIPTION_SIZE = 40
@@ -100,24 +98,15 @@ export const SubNativeModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule(moduleType),
 
-    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc, systemProperties) {
-      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (moduleConfig?.disable === true || metadataRpc === undefined) return { isTestnet }
-
-      //
-      // extract system_properties
-      //
-
-      const { tokenSymbol, tokenDecimals } = systemProperties ?? {}
-      const symbol: string =
-        (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? DEFAULT_SYMBOL
-      const decimals: number =
-        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? DEFAULT_DECIMALS
+    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
+      if (!metadataRpc) return {}
 
       //
       // process metadata into SCALE encoders/decoders
       //
       const metadataVersion = getMetadataVersion(metadataRpc)
+      if (metadataVersion < 14) return {}
+
       const metadata = decAnyMetadata(metadataRpc)
       const unifiedMetadata = unifyMetadata(metadata)
 
@@ -173,16 +162,15 @@ export const SubNativeModule: NewBalanceModule<
       const useLegacyTransferableCalculation = !hasFreezesItem
 
       const chainMeta: SubNativeChainMeta = {
-        isTestnet,
+        // isTestnet,
         useLegacyTransferableCalculation,
-        symbol,
-        decimals,
+        // symbol,
+        // decimals,
         existentialDeposit,
         nominationPoolsPalletId,
         crowdloanPalletId,
         hasSubtensorPallet,
         miniMetadata,
-        metadataVersion,
       }
       if (!useLegacyTransferableCalculation) delete chainMeta.useLegacyTransferableCalculation
       if (!hasSubtensorPallet) delete chainMeta.hasSubtensorPallet
@@ -193,7 +181,12 @@ export const SubNativeModule: NewBalanceModule<
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       if (moduleConfig?.disable === true) return {}
 
-      const { isTestnet, symbol, decimals, existentialDeposit } = chainMeta
+      const { tokenSymbol: symbol, tokenDecimals: decimals } = await getChainProperties(
+        chainConnector,
+        chainId,
+      )
+
+      const { existentialDeposit } = chainMeta
 
       const id = subNativeTokenId(chainId)
 
@@ -201,11 +194,10 @@ export const SubNativeModule: NewBalanceModule<
         id,
         type: "substrate-native",
         platform: "polkadot",
-        isTestnet,
         isDefault: moduleConfig?.isDefault ?? true,
-        symbol: symbol ?? DEFAULT_SYMBOL,
-        name: moduleConfig?.name ?? symbol ?? DEFAULT_SYMBOL,
-        decimals: decimals ?? DEFAULT_DECIMALS,
+        symbol: symbol,
+        name: moduleConfig?.name ?? symbol,
+        decimals: decimals,
         logo: moduleConfig?.logo,
         existentialDeposit: existentialDeposit ?? "0",
         networkId: chainId,
@@ -218,8 +210,48 @@ export const SubNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
+    // async subscribeChainBalaneces(chainId: DotNetworkId, { addressesByToken, initialBalances }, callback:SubscriptionCallback<Balances | SubscriptionResultWithStatus>) {
+
+    // }
+
     async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+
+      // const byNetwork = keys(addressesByToken).reduce(
+      //   (acc, tokenId) => {
+      //     const networkId = parseSubNativeTokenId(tokenId).networkId
+      //     if (!acc[networkId]) acc[networkId] = {}
+      //     acc[networkId][tokenId] = addressesByToken[tokenId]
+
+      //     return acc
+      //   },
+      //   {} as Record<DotNetworkId, AddressesByToken<SubNativeToken>>,
+      // )
+
+      // const controller = new AbortController()
+
+      // await Promise.all(
+      //   toPairs(byNetwork).map(async ([networkId, addressesByToken]) => {
+      //     // const queries = await buildNetworkQueries(
+      //     //   networkId,
+      //     //   chainConnector,
+      //     //   chaindataProvider,
+      //     //   addressesByToken,
+      //     // )
+      //     // if (controller.signal.aborted) return
+      //     // const stateHelper = new RpcStateQueryHelper(chainConnector, queries)
+      //     // const unsubscribe = await stateHelper.subscribe((error, result) => {
+      //     //   //  console.log("SubstrateAssetsModule.callback", { error, result })
+      //     //   if (error) return callback(error)
+      //     //   const balances = result?.filter((b): b is SubNativeBalance => b !== null) ?? []
+      //     //   if (balances.length > 0) callback(null, new Balances(balances))
+      //     // })
+      //     // controller.signal.addEventListener("abort", () => {
+      //     //   log.debug("TMP subscribeBalances aborted, unsubscribing from network", networkId)
+      //     //   unsubscribe()
+      //     // })
+      //   }),
+      // )
 
       // full record of balances for this module
       const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>(

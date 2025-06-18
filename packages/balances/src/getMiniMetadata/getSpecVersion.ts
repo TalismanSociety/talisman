@@ -8,7 +8,8 @@ const fetchSpecVersion = async (chainConnector: ChainConnector, networkId: DotNe
   const { specVersion } = await chainConnector.send<{ specVersion: number }>(
     networkId,
     "state_getRuntimeVersion",
-    [true],
+    [],
+    true,
   )
   return specVersion
 }
