@@ -118,11 +118,11 @@ export const EthSignMoonXTokensTransfer: FC = () => {
     if (!target || !substrateChain) return undefined
 
     // assume paraId is on the same relay chain as substrateChain
-    if (substrateChain.topologyInfo.type !== "parachain") return undefined
-    const relayId = substrateChain.topologyInfo.relayId
+    if (substrateChain.topology.type !== "parachain") return undefined
+    const relayId = substrateChain.topology.relayId
 
     return target.paraId
-      ? chains.find((c) => c.topologyInfo.type === "parachain" && c.paraId === target.paraId)
+      ? chains.find((c) => c.topology.type === "parachain" && c.paraId === target.paraId)
       : chains.find((c) => c.id === relayId)
   }, [chains, substrateChain, target])
 

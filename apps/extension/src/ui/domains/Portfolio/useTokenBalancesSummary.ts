@@ -27,7 +27,7 @@ const DEFAULT_SUMMARY: BalanceSummary = {
 }
 
 const isRelayDotNetwork = (network: Network) =>
-  isDotNetwork(network) && network.topologyInfo.type === "relay"
+  isDotNetwork(network) && network.topology.type === "relay"
 
 // This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
 const useBestTokenForSymbol = (balances: Balances) => {

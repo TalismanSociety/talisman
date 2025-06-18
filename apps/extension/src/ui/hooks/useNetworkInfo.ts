@@ -14,13 +14,13 @@ export type NetworkInfoProps = {
 const getDotNetworkType = (t: TFunction, network: DotNetwork, networks: NetworkList) => {
   if (network.isTestnet) return t("Testnet")
 
-  switch (network.topologyInfo.type) {
+  switch (network.topology.type) {
     case "standalone":
       return t("Blockchain")
     case "relay":
       return t("Relay Chain")
     case "parachain": {
-      const relay = networks[network.topologyInfo.relayId]
+      const relay = networks[network.topology.relayId]
       return relay?.name ? t("{{name}} Parachain", { name: relay.name }) : t("Parachain")
     }
   }
@@ -46,7 +46,7 @@ export const getNetworkInfo = (t: TFunction, { networkId, networks }: NetworkInf
         label: network.name,
         type: type,
         fullName:
-          network.topologyInfo.type !== "standalone" ? `${network.name} (${type})` : network.name,
+          network.topology.type !== "standalone" ? `${network.name} (${type})` : network.name,
       }
     }
   }

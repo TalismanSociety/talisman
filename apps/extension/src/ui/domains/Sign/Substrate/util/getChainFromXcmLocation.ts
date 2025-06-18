@@ -3,24 +3,24 @@ import { DotNetwork } from "extension-core"
 import { log } from "extension-shared"
 
 const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): DotNetwork => {
-  switch (chain.topologyInfo.type) {
+  switch (chain.topology.type) {
     case "relay": {
       const parachain = chains.find(
         (c) =>
-          c.topologyInfo.type === "parachain" &&
-          c.topologyInfo.paraId === paraId &&
-          c.topologyInfo.relayId === chain.id,
+          c.topology.type === "parachain" &&
+          c.topology.paraId === paraId &&
+          c.topology.relayId === chain.id,
       )
       if (!parachain) throw new Error("Unknown parachain")
       return parachain
     }
     case "parachain": {
-      const relayId = chain.topologyInfo.relayId
+      const relayId = chain.topology.relayId
       const parachain = chains.find(
         (c) =>
-          c.topologyInfo.type === "parachain" &&
-          c.topologyInfo.paraId === paraId &&
-          c.topologyInfo.relayId === relayId,
+          c.topology.type === "parachain" &&
+          c.topology.paraId === paraId &&
+          c.topology.relayId === relayId,
       )
       if (!parachain) throw new Error("Unknown parachain")
 
@@ -32,9 +32,9 @@ const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): 
 }
 
 const getRelay = (chain: DotNetwork, chains: DotNetwork[]): DotNetwork => {
-  switch (chain.topologyInfo.type) {
+  switch (chain.topology.type) {
     case "parachain": {
-      const relayId = chain.topologyInfo.relayId
+      const relayId = chain.topology.relayId
       const relay = chains.find((c) => c.id === relayId)
       if (!relay) throw new Error("Unknown relay")
       return relay

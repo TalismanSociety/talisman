@@ -152,10 +152,10 @@ const getTokenFromlocation = (
 
   if (
     location.parents === 1 &&
-    chain.topologyInfo.type === "parachain" &&
+    chain.topology.type === "parachain" &&
     location.interior.type === "Here"
   ) {
-    const relayId = chain.topologyInfo.relayId
+    const relayId = chain.topology.relayId
     const token = tokens.find(
       (t) => t.type === "substrate-native" && t.networkId === relayId,
     ) as SubNativeToken

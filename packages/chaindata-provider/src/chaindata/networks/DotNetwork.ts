@@ -3,7 +3,7 @@ import z from "zod/v4"
 import { HexStringSchema } from "../shared"
 import { NetworkBaseSchema } from "./NetworkBase"
 
-export const DotNetworkTopologyInfoSchema = z.discriminatedUnion("type", [
+export const DotNetworkTopologySchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("standalone") }),
   z.strictObject({ type: z.literal("relay") }),
   z.strictObject({
@@ -34,7 +34,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   hasCheckMetadataHash: z.boolean().optional(),
   hasExtrinsicSignatureTypePrefix: z.boolean().optional(),
   isUnknownFeeToken: z.boolean().optional(),
-  topologyInfo: DotNetworkTopologyInfoSchema,
+  topology: DotNetworkTopologySchema,
 })
 
 export type DotNetwork = z.infer<typeof DotNetworkSchema>
