@@ -29,7 +29,6 @@ import {
   tokensAtom,
   tokensByIdAtom,
 } from "./chaindata"
-import { miniMetadataHydratedAtom } from "./chaindataProvider"
 import { enabledChainsAtom, enabledTokensAtom } from "./config"
 import { cryptoWaitReadyAtom } from "./cryptoWaitReady"
 import { tokenRatesAtom } from "./tokenRates"
@@ -89,7 +88,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     get(cryptoWaitReadyAtom),
 
     get(balanceModulesAtom),
-    get(miniMetadataHydratedAtom),
 
     get(allAddressesAtom),
     get(chainsAtom),
@@ -112,7 +110,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       _cryptoReady,
 
       balanceModules,
-      miniMetadataHydrated,
 
       allAddresses,
       chains,
@@ -127,7 +124,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       enabledTokensConfig,
     ] = await atomDependencies
 
-    if (!miniMetadataHydrated) return
     if (abort.signal.aborted) return
 
     // persist data every thirty seconds

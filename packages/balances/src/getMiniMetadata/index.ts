@@ -16,7 +16,6 @@ export const getMiniMetadata = async (
 ): Promise<MiniMetadata> => {
   const specVersion = await getSpecVersion(chainConnector, chainId)
 
-  // TODO when working a chaindata branch, need a way to pass the libVersion used to derive the miniMetadataId got github
   const miniMetadataId = deriveMiniMetadataId({
     source,
     chainId,
