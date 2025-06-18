@@ -5,18 +5,12 @@ import {
   MiniMetadata,
   StoredBalanceJson,
 } from "@talismn/balances"
-import {
-  DotNetwork,
-  EthNetwork,
-  isDotNetwork,
-  isEthNetwork,
-  Network,
-  Token,
-} from "@talismn/chaindata-provider"
-import { Account, getAccountGenesisHash, isAccountNotContact } from "@talismn/keyring"
-import { Deferred, encodeAnyAddress, firstThenDebounce, isEthereumAddress } from "@talismn/util"
+import { Network, NetworkList, Token } from "@talismn/chaindata-provider"
+import { Account, isAccountNotContact } from "@talismn/keyring"
+import { Deferred, encodeAnyAddress, firstThenDebounce } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import { log } from "extension-shared"
+import { keyBy } from "lodash"
 import isEqual from "lodash/isEqual"
 import omit from "lodash/omit"
 import pick from "lodash/pick"
@@ -35,8 +29,9 @@ import { sentry } from "../../config/sentry"
 import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { Addresses, AddressesByChain } from "../../types/base"
+import { AddressesByChain } from "../../types/base"
 import { isBackgroundPage } from "../../util/isBackgroundPage"
+import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { keyringStore } from "../keyring/store"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
@@ -51,9 +46,16 @@ import {
   RequestBalancesByParamsSubscribe,
 } from "./types"
 
-type ChainIdAndRpcs = Pick<DotNetwork, "id" | "genesisHash" | "account" | "rpcs">
-type EvmNetworkIdAndRpcs = Pick<EthNetwork, "id" | "nativeTokenId" | "substrateChainId" | "rpcs">
-type TokenIdAndType = Pick<Token, "id" | "type" | "networkId" | "platform">
+// type AccountInfo = {
+//   address: string
+//   genesisHash?: `0x${string}` | null
+//   type: AccountType
+// }
+
+// type ChainIdAndRpcs = Pick<DotNetwork, "id" | "genesisHash" | "account" | "rpcs">
+// type EvmNetworkIdAndRpcs = Pick<EthNetwork, "id" | "nativeTokenId" | "substrateChainId" | "rpcs">
+// type NetworkIdAndRpcs = Pick<Network, "id" | "platform" | "nativeTokenId" | "substrateChainId" | "rpcs">
+// type TokenIdAndType = Pick<Token, "id" | "type" | "networkId" | "platform">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
@@ -138,10 +140,11 @@ abstract class BalancePool {
    * }
    * ```
    */
-  addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
-  chains: Record<string, ChainIdAndRpcs> = {}
-  evmNetworks: Record<string, EvmNetworkIdAndRpcs> = {}
-  tokens: TokenIdAndType[] = []
+  // use real account type so we can check compatibility with networks based on types
+  // balanceByParams can use watch-only accounts if needed
+  accounts: ReplaySubject<Account[]> = new ReplaySubject(1)
+  networks: NetworkList = {}
+  tokens: Token[] = []
   #miniMetadataIds = new Set<string>()
 
   #cleanupSubs: Array<Promise<Subscription>>
@@ -168,7 +171,12 @@ abstract class BalancePool {
         distinctUntilChanged<Record<string, BalanceJson>>(isEqual),
         map((balances) => Object.values(balances)),
       ),
-    ]).pipe(map(([status, data]) => ({ status, data })))
+    ]).pipe(
+      map(([status, data]) => ({ status, data })),
+      tap(({ status, data }) => {
+        log.debug("#balances", { status, data })
+      }),
+    )
 
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
@@ -423,67 +431,47 @@ abstract class BalancePool {
    *                 Chains with a different health status to what is in the store will be updated.
    */
   private async setChains(networks: Network[], tokens: Token[], miniMetadatas: MiniMetadata[]) {
-    // Check for changes since the last call to this.setChains
-    // compare chains
-    const newChains = Object.fromEntries(
-      networks
-        .filter(isDotNetwork)
-        .map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])]),
+    const getNetworkSnapshot = (network: Network) => {
+      switch (network.platform) {
+        case "polkadot":
+          return pick(network, ["id", "nativeTokenId", "genesisHash", "account", "rpcs"])
+        case "ethereum":
+          return pick(network, ["id", "nativeTokenId", "substrateChainId", "rpcs"])
+      }
+    }
+
+    const sortById = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id)
+    const getTokenSnapshot = (token: Token) => pick(token, ["id"])
+
+    const noNetworkChanges = isEqual(
+      Object.values(this.networks).map(getNetworkSnapshot).sort(sortById),
+      networks.map(getNetworkSnapshot).sort(sortById),
     )
-    const noChainChanges =
-      Object.keys(newChains).length === Object.keys(this.chains).length &&
-      isEqual(newChains, this.chains)
-
-    // compare evm networks
-    const newEvmNetworks = Object.fromEntries(
-      networks
-        .filter(isEthNetwork)
-        .map((evmNetwork) => [
-          evmNetwork.id,
-          pick(evmNetwork, ["id", "nativeTokenId", "substrateChainId", "rpcs"]),
-        ]),
+    const noTokenChanges = isEqual(
+      this.tokens.map(getTokenSnapshot).sort(sortById),
+      tokens.map(getTokenSnapshot).sort(sortById),
     )
-
-    const noEvmNetworkChanges =
-      Object.keys(newEvmNetworks).length === Object.keys(this.evmNetworks).length &&
-      isEqual(newEvmNetworks, this.evmNetworks)
-
-    // compare minimetadatas
-    const existingMiniMetadataIds = this.#miniMetadataIds
-    const noMiniMetadataChanges =
-      existingMiniMetadataIds.size === miniMetadatas.length &&
-      miniMetadatas.every((m) => existingMiniMetadataIds.has(m.id))
-
-    // compare tokens
-    const newTokens = tokens.map(({ id, type, platform, networkId }) => ({
-      id,
-      type,
-      platform,
-      networkId,
-    }))
-
-    const existingTokens = this.tokens
-    const noTokenChanges = isEqual(newTokens, existingTokens)
+    const noMiniMetadataChanges = isEqual(
+      Array.from(this.#miniMetadataIds).sort(),
+      miniMetadatas.map((m) => m.id).sort(),
+    )
 
     // Ignore this call if nothing has changed since the last call to this.setChains
-    if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
+    if (noNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
 
     this.#isRestartPending.next(true)
 
     // Update stored chains, evmNetworks, tokens and miniMetadataIds
-    this.chains = newChains
-    this.evmNetworks = newEvmNetworks
-    this.tokens = newTokens
+    this.networks = keyBy(networks, "id")
+    this.tokens = tokens
     this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
     // Delete stored balances for chains and evmNetworks which are inactive / no longer exist
     const tokenIds = new Set(tokens.map((token) => token.id))
     await this.deleteBalances((balance) => {
       // remove balance if chain/evm network doesn't exist
-      if (balance.networkId) return true
-      if (!this.chains[balance.networkId] && !this.evmNetworks[balance.networkId]) return true
-      // if (balance.chainId !== undefined && !this.chains[balance.chainId]) return true
-      // if (balance.evmNetworkId !== undefined && !this.evmNetworks[balance.evmNetworkId]) return true
+
+      if (!this.networks[balance.networkId]) return true
 
       // remove balance if token doesn't exist
       if (!tokenIds.has(balance.tokenId)) return true
@@ -509,24 +497,13 @@ abstract class BalancePool {
    * @param accounts - The accounts to watch for balances.
    */
   protected async setAccounts(accounts: Account[]) {
-    const addresses = Object.fromEntries(
-      accounts.map((account) => {
-        const genesisHash = getAccountGenesisHash(account)
-        return [account.address, genesisHash ? [genesisHash!] : null]
-      }),
-    )
-    this.addresses.next(addresses)
+    this.accounts.next(accounts)
+
+    // TODO ensure that all balance addresses are normalized
+    const addresses = new Set(accounts.map((account) => account.address))
 
     // delete cached balances for accounts which don't exist anymore
-    await this.deleteBalances((balance) => {
-      //
-      // remove balance if account doesn't exist
-      //
-      if (!balance.address || addresses[balance.address] === undefined) return true
-
-      // keep balance
-      return false
-    }).catch((error) => {
+    await this.deleteBalances((balance) => !addresses.has(balance.address)).catch((error) => {
       log.error("Failed to clean up balances", { error })
     })
 
@@ -581,6 +558,10 @@ abstract class BalancePool {
         )
       })
 
+    // console.log("initialising keys", initializingKeys)
+    // console.log("BALANCE SUB PARAMETERS", initializingKeys)
+    // set initialising balances to initialising
+
     this.#initialising.next([...new Set(existingBalancesKeys.concat(initializingKeys))])
     this.#isRestartPending.next(false)
 
@@ -600,6 +581,12 @@ abstract class BalancePool {
     const currentBalances = Object.values(this.balances)
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) => {
       const initialModuleBalances = currentBalances.filter((b) => b.source === balanceModule.type)
+
+      // console.log("MODULE INIT", {
+      //   balanceModule: balanceModule.type,
+      //   addressesByToken: subscriptionParameters[balanceModule.type] ?? {},
+      //   initialBalances: initialModuleBalances,
+      // })
 
       return balanceModule.subscribeBalances(
         {
@@ -739,37 +726,41 @@ class KeyringBalancePool extends BalancePool {
   }
 
   async getSubscriptionParameters() {
-    const addressesGenesisHashes = await firstValueFrom(this.addresses)
+    const accounts = await firstValueFrom(this.accounts)
 
-    const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
-    this.tokens
-      // filter out tokens on chains/evmNetworks which have no rpcs
-      .filter(
-        (token) =>
-          (token.networkId && (this.chains[token.networkId]?.rpcs?.length ?? 0) > 0) ||
-          (token.networkId && (this.evmNetworks[token.networkId]?.rpcs?.length ?? 0) > 0),
-      )
-      .forEach((token) => {
-        if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-        const chain = token.networkId ? this.chains[token.networkId] : undefined
+    return this.tokens.reduce(
+      (res, token) => {
+        const network = this.networks[token.networkId]
+        if (!network?.rpcs.length) return res
 
-        addressesByTokenByModule[token.type][token.id] = Object.entries(addressesGenesisHashes)
-          .filter(
-            // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
-            ([, genesisHashes]) =>
-              token.platform !== "ethereum" ||
-              !genesisHashes ||
-              genesisHashes.includes(chain?.genesisHash ?? ""),
-          )
-          .filter(([address]) => {
-            // for each address, fetch balances only from compatible chains
-            return isEthereumAddress(address)
-              ? token.networkId || chain?.account === "secp256k1"
-              : token.networkId && chain?.account !== "secp256k1"
-          })
-          .map(([address]) => address)
-      })
-    return addressesByTokenByModule
+        const addresses = accounts
+          .filter((acc) => isAccountCompatibleWithNetwork(network, acc))
+          .map((acc) => acc.address)
+        if (!addresses.length) return res
+
+        if (!res[token.type]) res[token.type] = {}
+        res[token.type][token.id] = addresses
+
+        return res
+      },
+      {} as Record<string, AddressesByToken<Token>>,
+    )
+
+    // const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
+    // this.tokens
+    //   // filter out tokens on chains/evmNetworks which have no rpcs
+    //   .filter(
+    //     (token) => this.networks[token.networkId].rpcs.length,
+    //   )
+    //   .forEach((token) => {
+    //     if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
+    //     const network = this.networks[token.networkId]
+
+    //     addressesByTokenByModule[token.type][token.id] = accounts
+    //       .filter((acc) => isAccountCompatibleWithNetwork(network, acc))
+    //       .map((acc) => acc.address)
+    //   })
+    // return addressesByTokenByModule
   }
 }
 
@@ -794,8 +785,7 @@ export class ExternalBalancePool extends BalancePool {
       addressesByChain,
       addressesAndEvmNetworks,
       addressesAndTokens,
-      this.chains,
-      this.evmNetworks,
+      this.networks,
       this.tokens,
     )
 
@@ -811,9 +801,8 @@ const getSubscriptionParams = (
   addressesByChain: AddressesByChain,
   addressesAndEvmNetworks: AddressesAndEvmNetwork,
   addressesAndTokens: AddressesAndTokens,
-  activeChains: Record<string, ChainIdAndRpcs>,
-  activeEvmNetworks: Record<string, EvmNetworkIdAndRpcs>,
-  activeTokens: TokenIdAndType[],
+  activeNetworks: NetworkList,
+  activeTokens: Token[],
 ) => {
   //
   // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need
@@ -825,32 +814,45 @@ const getSubscriptionParams = (
   const tokensMap = Object.fromEntries(activeTokens.map((t) => [t.id, t]))
 
   // typeguard
-  const isNetworkFilter = <T extends ChainIdAndRpcs | EvmNetworkIdAndRpcs>(
-    chainOrNetwork: T | undefined,
-  ): chainOrNetwork is T => chainOrNetwork !== undefined
+  // const isNetworkFilter = <T extends ChainIdAndRpcs | EvmNetworkIdAndRpcs>(
+  //   chainOrNetwork: T | undefined,
+  // ): chainOrNetwork is T => chainOrNetwork !== undefined
 
-  const chains = Object.keys(addressesByChain)
-    .map((chainId) => activeChains[chainId])
-    .filter(isNetworkFilter)
-  const evmNetworks = addressesAndEvmNetworks.evmNetworks
-    .map(({ id }) => activeEvmNetworks[id])
-    .filter(isNetworkFilter)
+  // const chains = Object.keys(addressesByChain)
+  //   .map((chainId) => activeChains[chainId])
+  //   .filter(isNetworkFilter)
+  // const evmNetworks = addressesAndEvmNetworks.evmNetworks
+  //   .map(({ id }) => activeEvmNetworks[id])
+  //   .filter(isNetworkFilter)
 
-  const chainsAndAddresses = [
-    // includes chains and evmNetworks
-    ...chains.map((chain) => [chain, addressesByChain[chain.id]] as const),
-    ...evmNetworks.map((evmNetwork) => [evmNetwork, addressesAndEvmNetworks.addresses] as const),
-  ]
+  const networkIds = Object.keys(addressesByChain).concat(
+    addressesAndEvmNetworks.evmNetworks.map((n) => n.id),
+  )
 
-  const addressesByToken: AddressesByToken<Token> = chainsAndAddresses
+  const networkAndAddresses = networkIds.map(
+    (networkId) =>
+      [
+        activeNetworks[networkId],
+        (addressesByChain[networkId] ?? []).concat(...(addressesAndEvmNetworks.addresses ?? [])),
+      ] as const,
+  )
+  // const networks = Object.keys(addressesByChain)
+  // //   .map((chainId) => activeChains[chainId])
+  // //   .filter(isNetworkFilter)
+
+  // const chainsAndAddresses = [
+  //   // includes chains and evmNetworks
+  //   ...chains.map((chain) => [chain, addressesByChain[chain.id]] as const),
+  //   ...evmNetworks.map((evmNetwork) => [evmNetwork, addressesAndEvmNetworks.addresses] as const),
+  // ]
+
+  const addressesByToken: AddressesByToken<Token> = networkAndAddresses
     // filter out requested chains/evmNetworks which have no rpcs
     .filter(([{ rpcs }]) => (rpcs?.length ?? 0) > 0)
 
     // convert chains and evmNetworks into a list of tokenIds
-    .flatMap(([chainOrNetwork, addresses]) =>
-      activeTokens
-        .filter((t) => t.networkId === chainOrNetwork.id || t.networkId === chainOrNetwork.id)
-        .map((t) => [t.id, addresses] as const),
+    .flatMap(([network, addresses]) =>
+      activeTokens.filter((t) => t.networkId === network.id).map((t) => [t.id, addresses] as const),
     )
 
     // collect all of the addresses for each tokenId into a map of { [tokenId]: addresses }

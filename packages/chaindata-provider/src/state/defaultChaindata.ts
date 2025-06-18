@@ -11,7 +11,7 @@ import { chaindataDb } from "./db"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
 
-export const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.json`
+export const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
 const getFallbackUrl = (url: string) => {
   // if githack fails, try statically
