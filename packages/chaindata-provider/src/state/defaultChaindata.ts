@@ -1,6 +1,6 @@
 import { liveQuery } from "dexie"
-import { isEqual } from "lodash"
-import { combineLatest, distinctUntilChanged, Observable, ReplaySubject, shareReplay } from "rxjs"
+import { isEqual, isEqualWith, sortBy } from "lodash"
+import { combineLatest, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
 import z from "zod/v4"
 
 import { NetworkSchema } from "../chaindata/networks"
@@ -84,6 +84,7 @@ const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
       log.debug("[defaultChaindata$] Refreshing chaindata from GitHub")
       const data = await fetchChaindata(controller.signal)
       lastUpdatedAt = Date.now()
+
       result.next(data)
     } catch (error) {
       log.error("Failed to fetch chaindata", error)
@@ -102,54 +103,54 @@ const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
+const shouldUpdateGhEntity = (cd1: Chaindata, cd2: Chaindata, key: keyof Chaindata) => {
+  const sorted1 = sortBy(cd1[key], "id")
+  const sorted2 = sortBy(cd2[key], "id")
+  return !isEqualWith(sorted1, sorted2, isEqual)
+}
+
 export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
-  log.debug("[defaultChaindata$] Subscribing to chaindata updates")
-  const subUpdateFromGithub = combineLatest([ghChaindata$, dbChaindata$]).subscribe(
-    async ([
-      { networks: ghNetworks, tokens: ghTokens, miniMetadatas: ghMiniMetadatas },
-      { networks: dbNetworks, tokens: dbTokens, miniMetadatas: dbMiniMetadatas },
-    ]) => {
-      const updateNetworks = !isEqual(ghNetworks, dbNetworks)
-      const updateTokens = !isEqual(ghTokens, dbTokens)
-      const updateMiniMetadata = !isEqual(ghMiniMetadatas, dbMiniMetadatas)
+  const subUpdateFromGithub = ghChaindata$.subscribe(async (ghData) => {
+    const now = performance.now()
+    try {
+      const dbData = await firstValueFrom(dbChaindata$)
+
+      // TODO consider adding a hash in chaindata.json and compare just that ?
+      const updateNetworks = shouldUpdateGhEntity(ghData, dbData, "networks")
+      const updateTokens = shouldUpdateGhEntity(ghData, dbData, "tokens")
+      const updateMiniMetadata = shouldUpdateGhEntity(ghData, dbData, "miniMetadatas")
 
       if (!updateNetworks && !updateTokens && !updateMiniMetadata)
-        return log.debug("[defaultChaindata$] No updates needed")
+        return log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
 
-      try {
-        await chaindataDb.transaction(
-          "rw",
-          chaindataDb.networks,
-          chaindataDb.tokens,
-          chaindataDb.miniMetadatas,
-          async () => {
-            if (updateNetworks) {
-              log.debug("[defaultChaindata$] Updating networks in DB")
-              await chaindataDb.networks.clear()
-              await chaindataDb.networks.bulkAdd(ghNetworks)
-            }
-            if (updateTokens) {
-              log.debug("[defaultChaindata$] Updating tokens in DB")
-              await chaindataDb.tokens.clear()
-              await chaindataDb.tokens.bulkAdd(ghTokens)
-            }
-            if (updateMiniMetadata) {
-              log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
-              await chaindataDb.miniMetadatas.clear()
-              await chaindataDb.miniMetadatas.bulkAdd(ghMiniMetadatas)
-            }
-          },
-        )
-      } catch (cause) {
-        log.error("[defaultChaindata$] Failed to update chaindata", { cause })
-      }
-    },
-  )
+      // update local db if chaindata is found different from GH
+      await chaindataDb.transaction("rw", ["networks", "tokens", "miniMetadatas"], async (ctx) => {
+        if (updateNetworks) {
+          log.debug("[defaultChaindata$] Updating networks in DB")
+          await ctx.networks.clear()
+          await ctx.networks.bulkAdd(ghData.networks)
+        }
+        if (updateTokens) {
+          log.debug("[defaultChaindata$] Updating tokens in DB")
+          await ctx.tokens.clear()
+          await ctx.tokens.bulkAdd(ghData.tokens)
+        }
+        if (updateMiniMetadata) {
+          log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
+          await ctx.miniMetadatas.clear()
+          await ctx.miniMetadatas.bulkAdd(ghData.miniMetadatas)
+        }
+      })
 
-  const subOutput = dbChaindata$.pipe(distinctUntilChanged(isEqual)).subscribe(subscriber)
+      log.debug(`[defaultChaindata$] Db syncoronized with GitHub :${performance.now() - now}ms`)
+    } catch (cause) {
+      log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
+    }
+  })
+
+  const subOutput = dbChaindata$.subscribe(subscriber)
 
   return () => {
-    log.debug("[defaultChaindata$] Unsubscribing from chaindata updates")
     subUpdateFromGithub.unsubscribe()
     subOutput.unsubscribe()
   }
