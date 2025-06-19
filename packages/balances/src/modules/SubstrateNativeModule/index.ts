@@ -53,7 +53,7 @@ import {
   SubscriptionCallback,
 } from "../../types"
 import { detectTransferMethod, RpcStateQueryHelper } from "../util"
-import { getAddresssesByTokenByNetwork } from "../util/getAddresssesBytokenByNetworkRN"
+import { getAddresssesByTokenByNetwork } from "../util/addresssesBytokenByNetworkRN"
 import { subscribeBase } from "./subscribeBase"
 import { subscribeCrowdloans } from "./subscribeCrowdloans"
 import { subscribeNompoolStaking } from "./subscribeNompoolStaking"
