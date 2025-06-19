@@ -1,6 +1,10 @@
 import { u8aToHex } from "@polkadot/util"
 import { xxhashAsU8a } from "@polkadot/util-crypto"
-import { ChainId } from "@talismn/chaindata-provider"
+import { DotNetworkSchema } from "@talismn/chaindata-provider"
+import { HexStringSchema } from "@talismn/chaindata-provider/src/chaindata/shared"
+import z from "zod/v4"
+
+import { AnyNewBalanceModule, InferChainMeta } from "../modules"
 
 /** For fast db access, you can calculate the primary key for a miniMetadata using this method */
 export const deriveMiniMetadataId = ({
@@ -23,22 +27,26 @@ export type MiniMetadataStatus =
   /** Metadata doesn't exist */
   | "none"
 
-export type MiniMetadata = {
+export const MiniMetadataBaseSchema = z.strictObject({
   /** The DB id for this metadata */
-  id: string
-
+  id: z.string().nonempty(),
   /** The balance module which created this miniMetadata */
-  source: string
-
+  source: z.string().nonempty(), // TODO make it an enum of balance module types
   /** The chain this miniMetadata came from */
-  chainId: ChainId
-
+  chainId: DotNetworkSchema.shape.id,
   /** The chain specVersion which this miniMetadata is valid for */
-  specVersion: number
-
+  specVersion: DotNetworkSchema.shape.specVersion,
   /** the version of the balances library used to craft the mini metadata */
-  libVersion: string
-
+  libVersion: z.string().nonempty(),
   /** The miniMetadata encoded as a hex string */
-  data: `0x${string}` | null
+  data: HexStringSchema.nullable(),
+  // /** module specific information about the chain, such as pallet ids for specific features */
+  extra: z.any().nullable(),
+})
+
+export type MiniMetadata<M extends AnyNewBalanceModule = AnyNewBalanceModule> = Omit<
+  z.infer<typeof MiniMetadataBaseSchema>,
+  "extra"
+> & {
+  extra: InferChainMeta<M>["extra"]
 }

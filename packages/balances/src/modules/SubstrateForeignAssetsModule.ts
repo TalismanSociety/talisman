@@ -26,7 +26,12 @@ import {
 import { keys, toPairs } from "lodash"
 import { Binary } from "polkadot-api"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  NewBalanceModule,
+  NewTransferParamsType,
+} from "../BalanceModule"
 import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
@@ -35,11 +40,9 @@ import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from ".
 type ModuleType = "substrate-foreignassets"
 const moduleType: ModuleType = "substrate-foreignassets"
 
-export type SubForeignAssetsChainMeta = {
-  // isTestnet: boolean
-  miniMetadata?: string
-  // metadataVersion?: number
-}
+export type SubForeignAssetsChainMeta = DefaultChainMeta
+
+const UNSUPPORTED_CHAIN_META: SubForeignAssetsChainMeta = { miniMetadata: null, extra: null }
 
 export type SubForeignAssetsModuleConfig = {
   tokens?: Array<
@@ -83,10 +86,10 @@ export const SubForeignAssetsModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      if (metadataRpc === undefined) return {}
+      if (metadataRpc === undefined) return UNSUPPORTED_CHAIN_META
 
       const metadataVersion = getMetadataVersion(metadataRpc)
-      if (metadataVersion < 14) return {}
+      if (metadataVersion < 14) return UNSUPPORTED_CHAIN_META
 
       const metadata = decAnyMetadata(metadataRpc)
 
@@ -96,7 +99,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return { miniMetadata }
+      return { miniMetadata, extra: null }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {

@@ -74,7 +74,8 @@ export const SubPsp22Module: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(_chainId) {
-      return undefined
+      // we dont need anything
+      return { miniMetadata: null, extra: null }
     },
 
     async fetchSubstrateChainTokens(chainId, _chainMeta, moduleConfig) {

@@ -3,18 +3,19 @@ import { ChaindataProvider, NetworkId as DotNetworkId } from "@talismn/chaindata
 
 import { libVersion } from "../libVersion"
 import log from "../log"
+import { AnyNewBalanceModule } from "../modules"
 import { db } from "../TalismanBalancesDatabase"
 import { deriveMiniMetadataId, MiniMetadata } from "../types"
 import { getSpecVersion } from "./getSpecVersion"
 import { getUpdatedMiniMetadatas } from "./getUpdatedMiniMetadatas"
 
-export const getMiniMetadata = async (
+export const getMiniMetadata = async <T extends AnyNewBalanceModule>(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   chainId: DotNetworkId,
   source: string,
   signal?: AbortSignal,
-): Promise<MiniMetadata> => {
+): Promise<MiniMetadata<T>> => {
   const specVersion = await getSpecVersion(chainConnector, chainId)
 
   signal?.throwIfAborted()

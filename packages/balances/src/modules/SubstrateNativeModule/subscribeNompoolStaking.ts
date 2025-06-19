@@ -1,50 +1,54 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChaindataProvider, SubNativeToken } from "@talismn/chaindata-provider"
+import { ChaindataProvider, parseTokenId, SubNativeToken } from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { isEthereumAddress, isNotNil } from "@talismn/util"
+import { keys } from "lodash"
 import { Binary } from "polkadot-api"
 import { combineLatest, map, scan, share, switchAll } from "rxjs"
 
-import type { SubNativeModule } from "./index"
+import { getMiniMetadata } from "../../getMiniMetadata"
 import log from "../../log"
-import { db as balancesDb } from "../../TalismanBalancesDatabase"
-import { AddressesByToken, SubscriptionCallback } from "../../types"
-import {
-  buildStorageCoders,
-  findChainMeta,
-  getUniqueChainIds,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-} from "../util"
+import { AddressesByToken, MiniMetadata, SubscriptionCallback } from "../../types"
+import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelper } from "../util"
 import { SubNativeBalance } from "./types"
 import { asObservable } from "./util/asObservable"
 import { nompoolStashAccountId } from "./util/nompoolAccountId"
 
+// TODO make this method chain-specific
 export async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   addressesByToken: AddressesByToken<SubNativeToken>,
   callback: SubscriptionCallback<SubNativeBalance[]>,
+  signal?: AbortSignal,
 ) {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
-  const miniMetadatas = new Map(
-    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-      miniMetadata.id,
-      miniMetadata,
-    ]),
-  )
+
+  // there should be only one network here when subscribing to balances, we've split it up by network at the top level
+  const networkIds = keys(addressesByToken).map((tokenId) => parseTokenId(tokenId).networkId)
+
+  const miniMetadatas = new Map<string, MiniMetadata>()
+  for (const networkId of networkIds) {
+    const miniMetadata = await getMiniMetadata(
+      chaindataProvider,
+      chainConnector,
+      networkId,
+      "substrate-native",
+    )
+    miniMetadatas.set(networkId, miniMetadata)
+  }
+
+  signal?.throwIfAborted()
+
   const nomPoolTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
       // ignore non-native tokens
       if (token.type !== "substrate-native") return false
+
       // ignore tokens on chains with no nompools pallet
-      const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-        miniMetadatas,
-        "substrate-native",
-        allChains[token.networkId],
-      )
-      return typeof chainMeta?.nominationPoolsPalletId === "string"
+      const miniMetadata = miniMetadatas.get(token.networkId)
+      return typeof miniMetadata?.extra?.nominationPoolsPalletId === "string"
     })
     .map(([tokenId]) => tokenId)
 
@@ -68,7 +72,6 @@ export async function subscribeNompoolStaking(
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
-    moduleType: "substrate-native",
     coders: {
       poolMembers: ["NominationPools", "PoolMembers"],
       bondedPools: ["NominationPools", "BondedPools"],
@@ -99,12 +102,8 @@ export async function subscribeNompoolStaking(
       continue
     }
 
-    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-      miniMetadatas,
-      "substrate-native",
-      chain,
-    )
-    const { nominationPoolsPalletId } = chainMeta ?? {}
+    const miniMetadata = miniMetadatas.get(chainId)
+    const { nominationPoolsPalletId } = miniMetadata?.extra ?? {}
 
     type PoolMembers = {
       tokenId: string

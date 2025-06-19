@@ -19,7 +19,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   isRelay: z.boolean().optional(), // has paras pallet
   chainName: z.string(), // system_chain - used only to lookup typesBundle in p.js, for chains that do not have metadata v14
   specName: z.string(),
-  specVersion: z.number(),
+  specVersion: z.uint32(),
   account: z.enum(["secp256k1", "*25519"]),
   chainspecQrUrl: z.string().nonempty().optional(),
   latestMetadataQrUrl: z.string().nonempty().optional(),

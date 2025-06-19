@@ -108,10 +108,7 @@ export const EvmErc20Module: NewBalanceModule<
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
      */
     async fetchEvmChainMeta(_chainId) {
-      return undefined
-      // const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
-
-      // return { isTestnet }
+      return { miniMetadata: null, extra: null }
     },
 
     /**
@@ -388,7 +385,6 @@ const fetchBalances = async (
               source: "evm-erc20",
               status: "live",
               address: networkParams[i].address,
-              // multiChainId: { evmChainId: evmNetworkId },
               networkId,
               tokenId: networkParams[i].token.id,
               value: free!,

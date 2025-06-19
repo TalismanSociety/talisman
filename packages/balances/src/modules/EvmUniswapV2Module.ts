@@ -74,15 +74,10 @@ export const EvmUniswapV2Module: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchEvmChainMeta(_chainId) {
-      // const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
-
-      // return { isTestnet }
-      return undefined
+      return { miniMetadata: null, extra: null }
     },
 
     async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig) {
-      //const { isTestnet } = chainMeta
-
       const tokens: Record<string, EvmUniswapV2Token> = {}
       for (const tokenConfig of moduleConfig?.pools ?? []) {
         const {

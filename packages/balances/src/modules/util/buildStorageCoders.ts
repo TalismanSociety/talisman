@@ -3,8 +3,7 @@ import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@
 
 import log from "../../log"
 import { MiniMetadata } from "../../types"
-import { findChainMeta } from "./findChainMeta"
-import { AnyNewBalanceModule, InferModuleType } from "./InferBalanceModuleTypes"
+import { AnyNewBalanceModule } from "./InferBalanceModuleTypes"
 
 export type StorageCoders<TCoders extends { [key: string]: [string, string] }> = Map<
   string,
@@ -24,13 +23,11 @@ export const buildStorageCoders = <
   chainIds,
   chains,
   miniMetadatas,
-  moduleType,
   coders,
 }: {
   chainIds: DotNetworkId[]
   chains: Record<NetworkId, DotNetwork>
-  miniMetadatas: Map<string, MiniMetadata>
-  moduleType: InferModuleType<TBalanceModule>
+  miniMetadatas: Map<DotNetworkId, MiniMetadata<TBalanceModule>>
   coders: TCoders
 }) =>
   new Map(
@@ -38,7 +35,7 @@ export const buildStorageCoders = <
       const chain = chains[chainId]
       if (!chain) return []
 
-      const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
+      const miniMetadata = miniMetadatas.get(chainId) // findMiniMetadata<TBalanceModule>(miniMetadatas, moduleType, chain)
       if (!miniMetadata) return []
       if (!miniMetadata.data) return []
 

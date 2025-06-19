@@ -3,55 +3,54 @@ import { ChainConnector } from "@talismn/chain-connector"
 import {
   ChaindataProvider,
   CustomSubNativeToken,
+  parseTokenId,
   SubNativeToken,
 } from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { decodeAnyAddress, isEthereumAddress } from "@talismn/util"
+import { keys } from "lodash"
 import isEqual from "lodash/isEqual"
 import { map, scan, share, switchAll } from "rxjs"
 import { u128 } from "scale-ts"
 
-import type { SubNativeModule } from "./index"
+import { getMiniMetadata } from "../../getMiniMetadata"
 import log from "../../log"
-import { db as balancesDb } from "../../TalismanBalancesDatabase"
-import { AddressesByToken, SubscriptionCallback } from "../../types"
-import {
-  buildStorageCoders,
-  findChainMeta,
-  getUniqueChainIds,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-} from "../util"
+import { AddressesByToken, MiniMetadata, SubscriptionCallback } from "../../types"
+import { buildStorageCoders, getUniqueChainIds, RpcStateQuery, RpcStateQueryHelper } from "../util"
 import { SubNativeBalance } from "./types"
 import { asObservable } from "./util/asObservable"
 import { crowdloanFundContributionsChildKey } from "./util/crowdloanFundContributionsChildKey"
 
+// TODO make this method chain-specific
 export async function subscribeCrowdloans(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<SubNativeBalance[]>,
+  signal?: AbortSignal,
 ) {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
 
-  const miniMetadatas = new Map(
-    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-      miniMetadata.id,
-      miniMetadata,
-    ]),
-  )
+  // there should be only one network here when subscribing to balances, we've split it up by network at the top level
+  const networkIds = keys(addressesByToken).map((tokenId) => parseTokenId(tokenId).networkId)
+
+  const miniMetadatas = new Map<string, MiniMetadata>()
+  for (const networkId of networkIds)
+    miniMetadatas.set(
+      networkId,
+      await getMiniMetadata(chaindataProvider, chainConnector, networkId, "substrate-native"),
+    )
+
+  signal?.throwIfAborted()
+
   const crowdloanTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
       // ignore non-native tokens
       if (token.type !== "substrate-native") return
       // ignore tokens on chains with no crowdloans pallet
-      const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-        miniMetadatas,
-        "substrate-native",
-        allChains[token.networkId],
-      )
-      return typeof chainMeta?.crowdloanPalletId === "string"
+      const miniMetadata = miniMetadatas.get(token.networkId)
+      return typeof miniMetadata?.extra?.crowdloanPalletId === "string"
     })
     .map(([tokenId]) => tokenId)
 
@@ -75,7 +74,6 @@ export async function subscribeCrowdloans(
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
-    moduleType: "substrate-native",
     coders: {
       parachains: ["Paras", "Parachains"],
       funds: ["Crowdloan", "Funds"],

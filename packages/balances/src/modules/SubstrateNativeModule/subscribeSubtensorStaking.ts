@@ -1,15 +1,21 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChaindataProvider, SubNativeToken } from "@talismn/chaindata-provider"
+import {
+  ChaindataProvider,
+  DotNetworkId,
+  parseTokenId,
+  SubNativeToken,
+} from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { isEthereumAddress } from "@talismn/util"
+import { keys } from "lodash"
 import { Binary, SS58String } from "polkadot-api"
 import { exhaustMap, from, interval, map, mergeMap, startWith, toArray } from "rxjs"
 
 import type { SubNativeModule } from "./index"
+import { getMiniMetadata } from "../../getMiniMetadata"
 import log from "../../log"
-import { db as balancesDb } from "../../TalismanBalancesDatabase"
-import { AddressesByToken, SubscriptionCallback } from "../../types"
-import { findChainMeta, getUniqueChainIds } from "../util"
+import { AddressesByToken, MiniMetadata, SubscriptionCallback } from "../../types"
+import { getUniqueChainIds } from "../util"
 import { SubNativeBalance } from "./types"
 import {
   calculateTaoFromDynamicInfo,
@@ -22,31 +28,40 @@ import {
   SUBTENSOR_ROOT_NETUID,
 } from "./util/subtensor"
 
+// TODO make this method chain-specific
 export async function subscribeSubtensorStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   addressesByToken: AddressesByToken<SubNativeToken>,
   callback: SubscriptionCallback<SubNativeBalance[]>,
+  signal?: AbortSignal,
 ) {
   const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
-  const miniMetadatas = new Map(
-    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-      miniMetadata.id,
-      miniMetadata,
-    ]),
-  )
+
+  // there should be only one network here when subscribing to balances, we've split it up by network at the top level
+  const networkIds = keys(addressesByToken).map((tokenId) => parseTokenId(tokenId).networkId)
+
+  const miniMetadatas = new Map<DotNetworkId, MiniMetadata<typeof SubNativeModule>>()
+  for (const networkId of networkIds) {
+    const miniMetadata = await getMiniMetadata(
+      chaindataProvider,
+      chainConnector,
+      networkId,
+      "substrate-native",
+    )
+    miniMetadatas.set(networkId, miniMetadata)
+  }
+
+  signal?.throwIfAborted()
+
   const subtensorTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
       // ignore non-native tokens
       if (token.type !== "substrate-native") return false
       // ignore tokens on chains with no subtensor pallet
-      const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-        miniMetadatas,
-        "substrate-native",
-        allChains[token.networkId],
-      )
-      return chainMeta?.hasSubtensorPallet === true
+      const miniMetadata = miniMetadatas.get(token.networkId)
+      return miniMetadata?.extra?.hasSubtensorPallet === true
     })
     .map(([tokenId]) => tokenId)
 
@@ -79,22 +94,14 @@ export async function subscribeSubtensorStaking(
       continue
     }
     const chainId = token.networkId
-    if (!chainId) {
-      log.warn(`Token ${tokenId} has no chain`)
-      continue
-    }
     const chain = chains[chainId]
     if (!chain) {
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
 
-    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-      miniMetadatas,
-      "substrate-native",
-      chain,
-    )
-    if (!chainMeta?.miniMetadata) {
+    const miniMetadata = miniMetadatas.get(token.networkId)
+    if (!miniMetadata?.data) {
       log.warn(`MiniMetadata for chain ${chainId} not found`)
       continue
     }
@@ -109,7 +116,7 @@ export async function subscribeSubtensorStaking(
             { expectErrors: true }, // don't pollute the wallet logs when this request fails
           ),
       },
-      chainMeta.miniMetadata as `0x${string}`,
+      miniMetadata.data as `0x${string}`,
       token,
       chain.hasCheckMetadataHash,
       chain.signedExtensions,

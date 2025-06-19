@@ -25,27 +25,29 @@ import {
 import { keys, toPairs } from "lodash"
 import { Binary } from "polkadot-api"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
+import {
+  ChainMeta,
+  DefaultBalanceModule,
+  NewBalanceModule,
+  NewTransferParamsType,
+} from "../BalanceModule"
 import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
-import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
-import {
-  buildNetworkStorageCoders,
-  findChainMeta,
-  InferChainMeta,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-} from "./util"
+import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "./util"
 
 type ModuleType = "substrate-tokens"
 const moduleType: ModuleType = "substrate-tokens"
 
 const defaultPalletId = "Tokens"
 
-export type SubTokensChainMeta = {
+export type SubTokensChainMeta = ChainMeta<{
   palletId?: string // TODO unlikely it will ever be used - remove this ?
-  miniMetadata?: string
+}>
+
+const UNSUPPORTED_CHAIN_META: SubTokensChainMeta = {
+  miniMetadata: null,
+  extra: {},
 }
 
 export type SubTokensModuleConfig = {
@@ -94,7 +96,7 @@ export const SubTokensModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      if (metadataRpc === undefined) return {}
+      if (metadataRpc === undefined) return UNSUPPORTED_CHAIN_META
 
       const metadata = decAnyMetadata(metadataRpc)
       const palletId = moduleConfig?.palletId ?? defaultPalletId
@@ -103,7 +105,7 @@ export const SubTokensModule: NewBalanceModule<
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return palletId === defaultPalletId ? { miniMetadata } : { palletId, miniMetadata }
+      return { miniMetadata, extra: { palletId } }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
@@ -219,14 +221,13 @@ export const SubTokensModule: NewBalanceModule<
       const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-      const miniMetadatas = new Map(
-        (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-          miniMetadata.id,
-          miniMetadata,
-        ]),
+      const miniMetadata = await getMiniMetadata<typeof SubTokensModule>(
+        chaindataProvider,
+        chainConnector,
+        chainId,
+        moduleType,
       )
-      const [chainMeta] = findChainMeta<typeof SubTokensModule>(miniMetadatas, moduleType, chain)
-      const tokensPallet = chainMeta?.palletId ?? defaultPalletId
+      const tokensPallet = miniMetadata?.extra?.palletId ?? defaultPalletId
 
       const onChainId = (() => {
         try {
@@ -339,7 +340,7 @@ async function buildNetworkQueries(
   addressesByToken: AddressesByToken<SubTokensToken>,
   signal?: AbortSignal,
 ): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
-  const miniMetadata = await getMiniMetadata(
+  const miniMetadata = await getMiniMetadata<typeof SubTokensModule>(
     chaindataProvider,
     chainConnector,
     networkId,
@@ -354,8 +355,7 @@ async function buildNetworkQueries(
 
   signal?.throwIfAborted()
 
-  const tokensMetadata = miniMetadata as InferChainMeta<typeof SubTokensModule>
-  const palletId = tokensMetadata.palletId ?? defaultPalletId
+  const palletId = miniMetadata.extra.palletId ?? defaultPalletId
 
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     storage: [palletId, "Accounts"],

@@ -24,7 +24,12 @@ import { keys, toPairs } from "lodash"
 import camelCase from "lodash/camelCase"
 import { Binary } from "polkadot-api"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
+import {
+  ChainMeta,
+  DefaultBalanceModule,
+  NewBalanceModule,
+  NewTransferParamsType,
+} from "../BalanceModule"
 import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
@@ -33,9 +38,9 @@ import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from ".
 type ModuleType = "substrate-assets"
 const moduleType: ModuleType = "substrate-assets"
 
-export type SubAssetsChainMeta = {
-  miniMetadata?: string
-}
+export type SubAssetsChainMeta = ChainMeta<null>
+
+const UNSUPPORTED_CHAIN_META: SubAssetsChainMeta = { miniMetadata: null, extra: null }
 
 export type SubAssetsModuleConfig = {
   tokens?: Array<
@@ -80,7 +85,7 @@ export const SubAssetsModule: NewBalanceModule<
 
     // TODO make synchronous at the module definition level ?
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      if (!metadataRpc) return {}
+      if (!metadataRpc) return UNSUPPORTED_CHAIN_META
 
       const metadata = decAnyMetadata(metadataRpc)
 
@@ -88,7 +93,7 @@ export const SubAssetsModule: NewBalanceModule<
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return { miniMetadata }
+      return { miniMetadata, extra: null }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {

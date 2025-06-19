@@ -2,7 +2,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { BalancesConfigTokenParams } from "@talismn/chaindata-provider"
 
-import { NewTransferParamsType } from "../../BalanceModule"
+import { ChainMeta, NewTransferParamsType } from "../../BalanceModule"
 import { NewBalanceType } from "../../types"
 
 export { filterBaseLocks, getLockTitle } from "./util/balanceLockTypes"
@@ -11,17 +11,13 @@ export type { BalanceLockType } from "./util/balanceLockTypes"
 export type ModuleType = "substrate-native"
 export const moduleType: ModuleType = "substrate-native"
 
-// export const subNativeTokenId = (chainId: ChainId) =>
-//   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
-
-export type SubNativeChainMeta = {
+export type SubNativeChainMeta = ChainMeta<{
   useLegacyTransferableCalculation?: boolean
   existentialDeposit?: string
   nominationPoolsPalletId?: string
   crowdloanPalletId?: string
   hasSubtensorPallet?: boolean
-  miniMetadata?: string
-}
+} | null>
 
 export type SubNativeModuleConfig = {
   disable?: boolean

@@ -88,6 +88,11 @@ export * from "./util/subtensor"
 const POLLING_WINDOW_SIZE = 20
 const MAX_SUBSCRIPTION_SIZE = 40
 
+const UNSUPPORTED_CHAIN_META: SubNativeChainMeta = {
+  miniMetadata: null,
+  extra: null,
+}
+
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
@@ -99,7 +104,7 @@ export const SubNativeModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const queryCache = new QueryCache(chaindataProvider)
+  const queryCache = new QueryCache(chaindataProvider, chainConnector)
 
   const getModuleTokens = async () => {
     return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, SubNativeToken>
@@ -362,13 +367,13 @@ export const SubNativeModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      if (!metadataRpc) return {}
+      if (!metadataRpc) return UNSUPPORTED_CHAIN_META
 
       //
       // process metadata into SCALE encoders/decoders
       //
       const metadataVersion = getMetadataVersion(metadataRpc)
-      if (metadataVersion < 14) return {}
+      if (metadataVersion < 14) return UNSUPPORTED_CHAIN_META
 
       const metadata = decAnyMetadata(metadataRpc)
       const unifiedMetadata = unifyMetadata(metadata)
@@ -425,15 +430,18 @@ export const SubNativeModule: NewBalanceModule<
       const useLegacyTransferableCalculation = !hasFreezesItem
 
       const chainMeta: SubNativeChainMeta = {
-        useLegacyTransferableCalculation,
-        existentialDeposit,
-        nominationPoolsPalletId,
-        crowdloanPalletId,
-        hasSubtensorPallet,
         miniMetadata,
+        extra: {
+          useLegacyTransferableCalculation,
+          existentialDeposit,
+          nominationPoolsPalletId,
+          crowdloanPalletId,
+          hasSubtensorPallet,
+        },
       }
-      if (!useLegacyTransferableCalculation) delete chainMeta.useLegacyTransferableCalculation
-      if (!hasSubtensorPallet) delete chainMeta.hasSubtensorPallet
+      if (!useLegacyTransferableCalculation)
+        delete chainMeta.extra?.useLegacyTransferableCalculation
+      if (!hasSubtensorPallet) delete chainMeta.extra?.hasSubtensorPallet
 
       return chainMeta
     },
@@ -446,7 +454,7 @@ export const SubNativeModule: NewBalanceModule<
         chainId,
       )
 
-      const { existentialDeposit } = chainMeta
+      const { existentialDeposit } = chainMeta.extra ?? {}
 
       const id = subNativeTokenId(chainId)
 

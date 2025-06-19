@@ -76,7 +76,8 @@ const fetchMiniMetadatas = async (
           chainId,
           specVersion,
           libVersion,
-          data: (chainMeta?.miniMetadata as `0x${string}`) ?? null,
+          data: chainMeta?.miniMetadata ?? null,
+          extra: chainMeta?.extra ?? null,
         } as MiniMetadata
       }),
     )

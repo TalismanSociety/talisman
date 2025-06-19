@@ -3,8 +3,11 @@ import {
   parseEvmErc20TokenId,
   parseEvmNativeTokenId,
   parseEvmUniswapV2TokenId,
+  parseSubAssetTokenId,
+  parseSubForeignAssetTokenId,
   parseSubNativeTokenId,
   parseSubPsp22TokenId,
+  parseSubTokensTokenId,
   Token,
   TokenId,
   TokenIdSpecs,
@@ -43,21 +46,24 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
   const type = parts[1] as TokenType
 
   switch (type) {
-    case "evm-erc20":
-      return parseEvmErc20TokenId(tokenId) as TokenIdSpecs<T>
     case "evm-native":
       return parseEvmNativeTokenId(tokenId) as TokenIdSpecs<T>
-    case "substrate-native":
-      return parseEvmNativeTokenId(tokenId) as TokenIdSpecs<T>
-    case "substrate-psp22":
-      return parseSubPsp22TokenId(tokenId) as TokenIdSpecs<T>
+    case "evm-erc20":
+      return parseEvmErc20TokenId(tokenId) as TokenIdSpecs<T>
     case "evm-uniswapv2":
       return parseEvmUniswapV2TokenId(tokenId) as TokenIdSpecs<T>
+    case "substrate-native":
+      return parseSubNativeTokenId(tokenId) as TokenIdSpecs<T>
+    case "substrate-psp22":
+      return parseSubPsp22TokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-assets":
-      return parseSubNativeTokenId(tokenId) as TokenIdSpecs<T>
+      return parseSubAssetTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-foreignassets":
-      return parseSubNativeTokenId(tokenId) as TokenIdSpecs<T>
+      return parseSubForeignAssetTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-tokens":
-      return parseSubNativeTokenId(tokenId) as TokenIdSpecs<T>
+      return parseSubTokensTokenId(tokenId) as TokenIdSpecs<T>
   }
 }
+
+export const networkIdFromTokenId = (tokenId: TokenId): Network["id"] =>
+  parseTokenId(tokenId).networkId

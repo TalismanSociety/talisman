@@ -10,14 +10,19 @@ import {
   UnsubscribeFn,
 } from "./types"
 
+export type ChainMeta<Extra extends Record<string, unknown> | null> = {
+  miniMetadata: `0x${string}` | null
+  extra: Extra
+}
+
 export type BalancesCommonTransferMethods = "transfer_keep_alive" | "transfer_all"
 export type BalancesTransferMethods = "transfer_allow_death" | BalancesCommonTransferMethods
 export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
 export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
 
 export type SelectableTokenType = Token
-export type ExtendableChainMeta = Record<string, unknown> | undefined
-export type DefaultChainMeta = undefined
+export type ExtendableChainMeta = ChainMeta<Record<string, unknown> | null> // Record<string, unknown> | undefined
+export type DefaultChainMeta = ChainMeta<null>
 export type ExtendableModuleConfig = Record<string, unknown> | undefined
 export type DefaultModuleConfig = undefined
 export type BaseTransferParams = {
@@ -44,7 +49,7 @@ export type Hydrate = {
 export type NewBalanceModule<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
-  TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
+  TChainMeta extends ExtendableChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > = (
