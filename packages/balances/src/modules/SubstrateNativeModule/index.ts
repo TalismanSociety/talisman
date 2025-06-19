@@ -4,8 +4,6 @@ import PromisePool from "@supercharge/promise-pool"
 import { ChainConnectionError } from "@talismn/chain-connector"
 import {
   CustomSubNativeToken,
-  DotNetworkId,
-  parseSubNativeTokenId,
   SubNativeToken,
   subNativeTokenId,
   TokenId,
@@ -55,6 +53,7 @@ import {
   SubscriptionCallback,
 } from "../../types"
 import { detectTransferMethod, RpcStateQueryHelper } from "../util"
+import { getAddresssesByTokenByNetwork } from "../util/getAddresssesBytokenByNetwork"
 import { subscribeBase } from "./subscribeBase"
 import { subscribeCrowdloans } from "./subscribeCrowdloans"
 import { subscribeNompoolStaking } from "./subscribeNompoolStaking"
@@ -426,10 +425,7 @@ export const SubNativeModule: NewBalanceModule<
       const useLegacyTransferableCalculation = !hasFreezesItem
 
       const chainMeta: SubNativeChainMeta = {
-        // isTestnet,
         useLegacyTransferableCalculation,
-        // symbol,
-        // decimals,
         existentialDeposit,
         nominationPoolsPalletId,
         crowdloanPalletId,
@@ -477,16 +473,7 @@ export const SubNativeModule: NewBalanceModule<
     async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const addressesByTokenByNetwork = keys(addressesByToken).reduce(
-        (acc, tokenId) => {
-          const networkId = parseSubNativeTokenId(tokenId).networkId
-          if (!acc[networkId]) acc[networkId] = {}
-          acc[networkId][tokenId] = addressesByToken[tokenId]
-
-          return acc
-        },
-        {} as Record<DotNetworkId, AddressesByToken<SubNativeToken>>,
-      )
+      const addressesByTokenByNetwork = getAddresssesByTokenByNetwork(addressesByToken)
 
       const initialBalancesByNetwork = groupBy(initialBalances ?? [], "networkId")
 
@@ -615,3 +602,25 @@ export const SubNativeModule: NewBalanceModule<
     },
   }
 }
+
+// import { NetworkId, parseTokenId, TokenId } from "@talismn/chaindata-provider"
+// import { toPairs } from "lodash"
+
+// import { Address } from "../../types"
+
+// export const getAddresssesBytokenByNetwork = (
+//   addressesByToken: Record<TokenId, Address[]>,
+// ): Record<NetworkId, Record<TokenId, Address[]>> => {
+//   const addressesByTokenByNetwork = toPairs(addressesByToken).reduce(
+//     (acc, [tokenId, addresses]) => {
+//       const networkId = parseTokenId(tokenId).networkId as NetworkId
+//       if (!acc[networkId]) acc[networkId] = {}
+//       acc[networkId][tokenId] = addresses as Address[]
+
+//       return acc
+//     },
+//     {} as Record<NetworkId, Record<TokenId, Address[]>>,
+//   )
+
+//   return addressesByTokenByNetwork
+// }
