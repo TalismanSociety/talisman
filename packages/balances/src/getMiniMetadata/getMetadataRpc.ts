@@ -1,6 +1,7 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
+import { isAbortError } from "@talismn/util"
 
 // share requests as all modules will call this at once
 const CACHE = new Map<string, Promise<`0x${string}`>>()
@@ -18,6 +19,7 @@ export const getMetadataRpc = async (chainConnector: ChainConnector, networkId: 
   try {
     return await pResult
   } catch (cause) {
+    if (isAbortError(cause)) throw cause
     throw new Error(`Failed to fetch metadataRpc for network ${networkId}`, { cause })
   } finally {
     CACHE.delete(networkId)

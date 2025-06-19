@@ -1,6 +1,7 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
+import { isAbortError } from "@talismn/util"
 import PQueue from "p-queue"
 
 import { ChainConnectors } from "../BalanceModule"
@@ -35,6 +36,7 @@ export const getMiniMetadatas = async (
   try {
     return await pResult
   } catch (cause) {
+    if (isAbortError(cause)) throw cause
     throw new Error(`Failed to fetch metadataRpc for network ${networkId}`, { cause })
   } finally {
     CACHE.delete(networkId)
