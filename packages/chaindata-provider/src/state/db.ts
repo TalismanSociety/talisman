@@ -10,7 +10,7 @@ export class ChaindataDb extends Dexie {
   miniMetadatas!: Dexie.Table<AnyMiniMetadata, string>
 
   constructor() {
-    super("Chaindata")
+    super("TalismanDefaultChaindata")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
     this.version(1).stores({
@@ -20,7 +20,7 @@ export class ChaindataDb extends Dexie {
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
-      networks: "id, genesisHash",
+      networks: "id, genesisHash, platform",
       tokens: "id, type, platform",
       miniMetadatas: "id",
     })
