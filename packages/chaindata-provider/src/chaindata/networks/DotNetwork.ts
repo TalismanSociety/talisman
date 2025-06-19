@@ -16,7 +16,6 @@ export const DotNetworkTopologySchema = z.discriminatedUnion("type", [
 export const DotNetworkSchema = NetworkBaseSchema.extend({
   genesisHash: HexStringSchema,
   platform: z.literal("polkadot"),
-  isRelay: z.boolean().optional(), // has paras pallet
   chainName: z.string(), // system_chain - used only to lookup typesBundle in p.js, for chains that do not have metadata v14
   specName: z.string(),
   specVersion: z.uint32(),
@@ -27,8 +26,6 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   prefix: z.number(),
   oldPrefix: z.number().optional(),
   rpcs: z.array(z.url({ protocol: /^wss?$/ })),
-  relayId: z.string().nonempty().optional(),
-  paraId: z.number().optional(), // u32, can use number
   registryTypes: z.any().optional(),
   signedExtensions: z.any().optional(),
   hasCheckMetadataHash: z.boolean().optional(),
