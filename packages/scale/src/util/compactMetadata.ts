@@ -41,7 +41,7 @@ export const compactMetadata = (
     ({ pallet: palletName, constants: constantNames, items: itemNames }) => {
       const pallet = metadata.pallets.find((pallet) => pallet.name === palletName)
       if (!pallet) {
-        log.debug("Failed to find pallet", palletName)
+        // log.debug("Failed to find pallet", palletName)
         return []
       }
 
@@ -95,7 +95,7 @@ export const compactMetadata = (
       ({ runtimeApi: runtimeApiName, methods: methodNames }) => {
         const runtimeApi = metadata.apis.find((runtimeApi) => runtimeApi.name === runtimeApiName)
         if (!runtimeApi) {
-          log.debug("Failed to find runtimeApi", runtimeApiName)
+          // log.debug("Failed to find runtimeApi", runtimeApiName)
           return []
         }
 
