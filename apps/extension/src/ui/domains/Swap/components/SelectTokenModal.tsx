@@ -1,5 +1,5 @@
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronLeftIcon } from "@talismn/icons"
+import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useMemo, useState } from "react"
@@ -188,8 +188,8 @@ const OpenSelectorButton = ({
     >
       {selectedAsset && (
         <img
-          key={selectedAsset?.image ?? githubUnknownTokenLogoUrl}
-          src={selectedAsset?.image ?? githubUnknownTokenLogoUrl}
+          key={selectedAsset?.image ?? UNKNOWN_TOKEN_URL}
+          src={selectedAsset?.image ?? UNKNOWN_TOKEN_URL}
           alt=""
           className="h-12 w-12 min-w-12 rounded-full"
         />

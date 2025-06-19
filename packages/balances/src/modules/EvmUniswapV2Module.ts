@@ -7,7 +7,8 @@ import {
   EvmNetworkId,
   EvmUniswapV2Token,
   evmUniswapV2TokenId,
-  githubTokenLogoUrl,
+  getGithubTokenLogoUrl,
+  // githubTokenLogoUrl,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
@@ -118,7 +119,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
           symbol: `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           name: name ?? `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           decimals,
-          logo: tokenConfig?.logo || githubTokenLogoUrl("uniswap"),
+          logo: tokenConfig?.logo || getGithubTokenLogoUrl("uniswap"),
           symbol0,
           decimals0,
           symbol1,

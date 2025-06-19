@@ -1,4 +1,4 @@
-import { githubTokenLogoUrl } from "@talismn/chaindata-provider"
+import { getGithubTokenLogoUrl } from "@talismn/chaindata-provider"
 import { Client } from "viem"
 
 import { EvmAddress, EvmNetworkId } from "../domains/ethereum/types"
@@ -24,7 +24,7 @@ export const getUniswapV2TokenInfo = async (
     symbol,
     name,
     decimals,
-    logo: githubTokenLogoUrl("uniswap"),
+    logo: getGithubTokenLogoUrl("uniswap"),
     symbol0: token0.symbol,
     symbol1: token1.symbol,
     decimals0: token0.decimals,

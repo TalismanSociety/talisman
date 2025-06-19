@@ -1,11 +1,11 @@
 import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { chainConnectorsAtom } from "@talismn/balances-react"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
+import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { atom, ExtractAtomValue, Getter } from "jotai"
 import { withAtomEffect } from "jotai-effect"
 import { atomWithObservable, loadable } from "jotai/utils"
@@ -428,9 +428,8 @@ const assetsAtom = atom(async (get) => {
         if (!id || !chainId) return acc
 
         const image =
-          (knownTokens[id]?.logo !== githubUnknownTokenLogoUrl
-            ? knownTokens[id]?.logo
-            : undefined) ?? currency.icon_url
+          (knownTokens[id]?.logo !== UNKNOWN_TOKEN_URL ? knownTokens[id]?.logo : undefined) ??
+          currency.icon_url
         const asset: SwappableAssetBaseType<{ stealthex: AssetContext }> = {
           id,
           name: specialAsset?.name ?? currency.name,

@@ -1,10 +1,6 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import {
-  CustomEvmErc20Token,
-  evmErc20TokenId,
-  githubUnknownTokenLogoUrl,
-} from "@talismn/chaindata-provider"
+import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
@@ -554,7 +550,7 @@ export class EthTabsHandler extends TabsHandler {
           symbol: symbol ?? tokenInfo.symbol,
           decimals: decimals ?? tokenInfo.decimals,
           name: tokenInfo.name,
-          logo: image ?? tokenInfo.logo ?? githubUnknownTokenLogoUrl,
+          logo: image ?? tokenInfo.logo,
           coingeckoId: tokenInfo.coingeckoId,
           contractAddress: address as `0x${string}`,
           networkId: tokenInfo.networkId,

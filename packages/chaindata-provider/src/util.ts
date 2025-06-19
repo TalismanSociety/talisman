@@ -1,6 +1,7 @@
 import { firstValueFrom, Observable } from "rxjs"
 
 import { DotNetwork, EthNetwork, Token } from "./chaindata"
+import { githubChaindataBaseUrl, githubChaindataTokensAssetsDir } from "./constants"
 import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork } from "./types"
 
 /**
@@ -136,4 +137,19 @@ export const isCustomEvmNetwork = (
   evmNetwork: EvmNetwork | CustomEvmNetwork | SimpleEvmNetwork | EthNetwork,
 ): evmNetwork is CustomEvmNetwork => {
   return "isCustom" in evmNetwork && evmNetwork.isCustom === true
+}
+
+type KNOWN_TOKEN_ID = "uniswap"
+
+export const getGithubTokenLogoUrl = (tokenId: KNOWN_TOKEN_ID): string => {
+  return `${githubChaindataBaseUrl}/${githubChaindataTokensAssetsDir}/${tokenId}.svg`
+}
+
+/**
+ * Use only if you are sure this token is supported by Talisman or the url might 404
+ * @param coingeckoId
+ * @returns
+ */
+export const getGithubTokenLogoUrlByCoingeckoId = (coingeckoId: string): string => {
+  return `${githubChaindataBaseUrl}/assets/tokens/coingecko/${coingeckoId}.webp`
 }

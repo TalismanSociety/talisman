@@ -4,7 +4,6 @@ import {
   CustomEvmUniswapV2Token,
   evmErc20TokenId,
   evmUniswapV2TokenId,
-  githubUnknownTokenLogoUrl,
   Token,
 } from "@talismn/chaindata-provider"
 import { isEqual } from "lodash"
@@ -92,7 +91,7 @@ export default class TokensHandler extends ExtensionHandler {
               symbol: token.symbol,
               name: token.name,
               decimals: Number(token.decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
-              logo: token.logo || githubUnknownTokenLogoUrl,
+              logo: token.logo,
               coingeckoId: token.coingeckoId,
               contractAddress: token.contractAddress,
               networkId: token.networkId,
@@ -108,7 +107,7 @@ export default class TokensHandler extends ExtensionHandler {
               symbol: token.symbol,
               decimals: Number(token.decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
               name: token.name,
-              logo: token.logo || githubUnknownTokenLogoUrl,
+              logo: token.logo,
               symbol0: token.symbol0,
               decimals0: token.decimals0,
               symbol1: token.symbol1,
