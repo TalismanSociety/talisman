@@ -372,27 +372,6 @@ export class Balance {
     return this.#storage.address
   }
 
-  // /** @deprecated */
-  // get chainId() {
-  //   return isBalanceEvm(this.#storage) ? undefined : this.#storage.chainId
-  // }
-  // /** @deprecated */
-  // get chain() {
-  //   return (this.#db?.networks && this.networkId && this.#db?.networks[this.networkId]) || null
-  // }
-
-  // /** @deprecated */
-  // get evmNetworkId() {
-  //   return isBalanceEvm(this.#storage) ? this.#storage.evmNetworkId : undefined
-  // }
-  // /** @deprecated */
-  // get evmNetwork() {
-  //   return (
-  //     (this.#db?.networks && this.networkId && this.#db?.networks[this.networkId]) ||
-  //     null
-  //   )
-  // }
-
   get networkId() {
     return this.#storage.networkId
   }

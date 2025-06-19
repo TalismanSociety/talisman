@@ -128,6 +128,11 @@ const PortfolioContent = () => {
 
   const balancesByStatus = useMemo(() => groupBy(allBalances.each, (b) => b.status), [allBalances])
 
+  const balancesByType = useMemo(
+    () => groupBy(allBalances.each, (b) => b.token?.type),
+    [allBalances],
+  )
+
   return (
     <div className="tabular-nums">
       <div>IsInitializing: {isInitialising?.toString() || "undefined"}</div>
@@ -139,6 +144,14 @@ const PortfolioContent = () => {
         {Object.entries(balancesByStatus).map(([status, balances]) => (
           <div key={status} className="w-[100px]">
             {status}: {balances.length}
+          </div>
+        ))}
+      </div>
+      <div className="">
+        <div>Balances by type:</div>
+        {Object.entries(balancesByType).map(([type, balances]) => (
+          <div key={type}>
+            {type}: {balances.length}
           </div>
         ))}
       </div>
