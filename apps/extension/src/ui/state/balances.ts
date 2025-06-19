@@ -3,7 +3,6 @@ import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceSubscriptionResponse } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
-import { DEBUG } from "extension-shared"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -40,7 +39,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
   return () => unsubscribe()
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
-  debugObservable("rawBalances$", DEBUG),
+  debugObservable("rawBalances$"),
   shareReplay(1),
 )
 

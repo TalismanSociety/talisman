@@ -35,7 +35,7 @@ export type SubPsp22ModuleConfig = {
       symbol?: string
       decimals?: number
       ed?: string
-      contractAddress?: string
+      contractAddress: string
     } & BalancesConfigTokenParams
   >
 }
@@ -74,8 +74,6 @@ export const SubPsp22Module: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(_chainId) {
-      // const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      // return { isTestnet }
       return undefined
     },
 

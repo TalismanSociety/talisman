@@ -18,7 +18,6 @@ import {
   isTokenActive,
   Network,
 } from "extension-core"
-import { DEBUG } from "extension-shared"
 import { keyBy } from "lodash"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
@@ -57,7 +56,7 @@ const allNetworks$ = new Observable<Network[]>((subscriber) => {
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("allNetworks$", DEBUG), shareReplay(1))
+}).pipe(debugObservable("allNetworks$"), shareReplay(1))
 
 const activeNetworks$ = combineLatest([allNetworks$, activeNetworksState$])
   .pipe(map(([networks, activeState]) => networks.filter((n) => isNetworkActive(n, activeState))))
@@ -78,7 +77,7 @@ export const [useNetworks, getNetworks$] = bind((options?: ChaindataQueryOptions
     return networks$.pipe(
       map((networks) => networks.filter(filterByPlatform(platform))),
       map((networks) => networks.filter(filterIncludeTestnets(includeTestnets))),
-      debugObservable("getNetworks$", DEBUG),
+      debugObservable("getNetworks$"),
     )
   })
 }) as [
@@ -197,7 +196,7 @@ const rawTokens$ = new Observable<Token[]>((subscriber) => {
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("rawTokens$", DEBUG), shareReplay(1))
+}).pipe(debugObservable("rawTokens$"), shareReplay(1))
 
 const allTokens$ = combineLatest([rawTokens$, getNetworksMapById$()]).pipe(
   map(([tokens, networksById]) => tokens.filter((token) => networksById[token.networkId])),
@@ -222,7 +221,7 @@ export const [useTokens, getTokens$] = bind((options?: ChaindataQueryOptions) =>
     return tokens$.pipe(
       map((tokens) => tokens.filter(filterByPlatform(platform))),
       map((tokens) => tokens.filter(filterIncludeTestnets(includeTestnets))),
-      debugObservable("getTokens$", DEBUG),
+      debugObservable("getTokens$"),
     )
   })
 })
