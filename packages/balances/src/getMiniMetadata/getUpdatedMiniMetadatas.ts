@@ -10,13 +10,17 @@ export const getUpdatedMiniMetadatas = async (
   chaindataProvider: ChaindataProvider,
   chainId: DotNetworkId,
   specVersion: number,
+  signal?: AbortSignal,
 ): Promise<MiniMetadata[]> => {
   const miniMetadatas = await getMiniMetadatas(
     chainConnector,
     chaindataProvider,
     chainId,
     specVersion,
+    signal,
   )
+
+  signal?.throwIfAborted()
 
   await db.transaction("readwrite", "miniMetadatas", async (tx) => {
     await tx.miniMetadatas.where({ chainId }).delete()

@@ -1,5 +1,6 @@
 import { log } from "extension-shared"
-import { Dispatch, FC, SetStateAction, Suspense, useEffect, useState } from "react"
+import { groupBy } from "lodash"
+import { Dispatch, FC, SetStateAction, Suspense, useEffect, useMemo, useState } from "react"
 
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, usePortfolio, useTokens } from "@ui/state"
@@ -123,7 +124,24 @@ const TestPortfolio = () => {
 }
 
 const PortfolioContent = () => {
-  const { networks } = usePortfolio()
+  const { networks, allBalances, isInitialising, isProvisioned } = usePortfolio()
 
-  return <div>Portfolio networks: {networks.length}</div>
+  const balancesByStatus = useMemo(() => groupBy(allBalances.each, (b) => b.status), [allBalances])
+
+  return (
+    <div className="tabular-nums">
+      <div>IsInitializing: {isInitialising?.toString() || "undefined"}</div>
+      <div>isProvisioned: {isProvisioned?.toString() || "undefined"}</div>
+      <div>Portfolio networks: {networks.length}</div>
+      <div className="flex gap-4">
+        <div className="w-[100px]">Balances:</div>
+        <div className="w-[100px]">total:{allBalances.count}</div>
+        {Object.entries(balancesByStatus).map(([status, balances]) => (
+          <div key={status} className="w-[100px]">
+            {status}: {balances.length}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }

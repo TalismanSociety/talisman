@@ -2,9 +2,12 @@ import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
+import { ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
   ChaindataProvider,
+  DotNetworkId,
+  parseSubTokensTokenId,
   SubTokensToken,
   subTokensTokenId,
 } from "@talismn/chaindata-provider"
@@ -19,16 +22,18 @@ import {
   papiParse,
   unifyMetadata,
 } from "@talismn/scale"
+import { keys, toPairs } from "lodash"
 import { Binary } from "polkadot-api"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
+import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
 import {
-  buildStorageCoders,
+  buildNetworkStorageCoders,
   findChainMeta,
-  getUniqueChainIds,
+  InferChainMeta,
   RpcStateQuery,
   RpcStateQueryHelper,
 } from "./util"
@@ -90,10 +95,10 @@ export const SubTokensModule: NewBalanceModule<
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       if (metadataRpc === undefined) return {}
-      if ((moduleConfig?.tokens ?? []).length < 1) return {}
 
       const metadata = decAnyMetadata(metadataRpc)
       const palletId = moduleConfig?.palletId ?? defaultPalletId
+
       compactMetadata(metadata, [{ pallet: palletId, items: ["Accounts"] }])
 
       const miniMetadata = encodeMetadata(metadata)
@@ -145,22 +150,59 @@ export const SubTokensModule: NewBalanceModule<
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances({ addressesByToken }, callback) {
-      const queries = await buildQueries(chaindataProvider, addressesByToken)
-      const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-        (error, result) => {
-          if (error) return callback(error)
-          const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
-          if (balances.length > 0) callback(null, new Balances(balances))
+      const byNetwork = keys(addressesByToken).reduce(
+        (acc, tokenId) => {
+          const networkId = parseSubTokensTokenId(tokenId).networkId
+          if (!acc[networkId]) acc[networkId] = {}
+          acc[networkId][tokenId] = addressesByToken[tokenId]
+
+          return acc
         },
+        {} as Record<DotNetworkId, AddressesByToken<SubTokensToken>>,
       )
 
-      return unsubscribe
+      const controller = new AbortController()
+
+      const pUnsubs = Promise.all(
+        toPairs(byNetwork).map(async ([networkId, addressesByToken]) => {
+          try {
+            const queries = await buildNetworkQueries(
+              networkId,
+              chainConnector,
+              chaindataProvider,
+              addressesByToken,
+              controller.signal,
+            )
+            if (controller.signal.aborted) return () => {}
+
+            const stateHelper = new RpcStateQueryHelper(chainConnector, queries)
+
+            return await stateHelper.subscribe((error, result) => {
+              //  console.log("SubstrateAssetsModule.callback", { error, result })
+              if (error) return callback(error)
+              const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
+              if (balances.length > 0) callback(null, new Balances(balances))
+            })
+          } catch (err) {
+            if (!controller.signal.aborted)
+              log.error(`Failed to subscribe balances for network ${networkId}`, err)
+            return () => {}
+          }
+        }),
+      )
+
+      return () => {
+        controller.abort()
+        pUnsubs.then((unsubs) => {
+          unsubs.forEach((unsubscribe) => unsubscribe())
+        })
+      }
     },
 
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const queries = await buildQueries(chaindataProvider, addressesByToken)
+      const queries = await buildQueries(chainConnector, chaindataProvider, addressesByToken)
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
       const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
       return new Balances(balances)
@@ -290,36 +332,33 @@ export const SubTokensModule: NewBalanceModule<
   }
 }
 
-async function buildQueries(
+async function buildNetworkQueries(
+  networkId: DotNetworkId,
+  chainConnector: ChainConnector,
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<SubTokensToken>,
+  signal?: AbortSignal,
 ): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
-  const allChains = await chaindataProvider.chainsById()
+  const miniMetadata = await getMiniMetadata(
+    chaindataProvider,
+    chainConnector,
+    networkId,
+    moduleType,
+    signal,
+  )
+
+  const chain = await chaindataProvider.chainById(networkId)
   const tokens = await chaindataProvider.tokensById()
-  const miniMetadatas = new Map(
-    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-      miniMetadata.id,
-      miniMetadata,
-    ]),
-  )
 
-  const tokensPalletByChain = new Map(
-    Object.values(allChains).map((chain) => [
-      chain.id,
-      findChainMeta<typeof SubTokensModule>(miniMetadatas, moduleType, chain)[0]?.palletId,
-    ]),
-  )
+  if (!chain) return []
 
-  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
-  const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
-  const chainStorageCoders = buildStorageCoders({
-    chainIds: uniqueChainIds,
-    chains,
-    miniMetadatas,
-    moduleType: "substrate-tokens",
-    coders: {
-      storage: ({ chainId }) => [tokensPalletByChain.get(chainId) ?? defaultPalletId, "Accounts"],
-    },
+  signal?.throwIfAborted()
+
+  const tokensMetadata = miniMetadata as InferChainMeta<typeof SubTokensModule>
+  const palletId = tokensMetadata.palletId ?? defaultPalletId
+
+  const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
+    storage: [palletId, "Accounts"],
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -332,19 +371,10 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const networkId = token.networkId
-    if (!networkId) {
-      log.warn(`Token ${tokenId} has no chain`)
-      return []
-    }
-    const chain = chains[networkId]
-    if (!chain) {
-      log.warn(`Chain ${networkId} for token ${tokenId} not found`)
-      return []
-    }
 
     return addresses.flatMap((address): RpcStateQuery<SubTokensBalance | null> | [] => {
-      const scaleCoder = chainStorageCoders.get(networkId)?.storage
+      const scaleCoder = networkStorageCoders?.storage
+
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -398,4 +428,35 @@ async function buildQueries(
       return { chainId: networkId, stateKey, decodeResult }
     })
   })
+}
+
+async function buildQueries(
+  chainConnector: ChainConnector,
+  chaindataProvider: ChaindataProvider,
+  addressesByToken: AddressesByToken<SubTokensToken>,
+  signal?: AbortSignal,
+): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
+  const byNetwork = keys(addressesByToken).reduce(
+    (acc, tokenId) => {
+      const networkId = parseSubTokensTokenId(tokenId).networkId
+      if (!acc[networkId]) acc[networkId] = {}
+      acc[networkId][tokenId] = addressesByToken[tokenId]
+      return acc
+    },
+    {} as Record<DotNetworkId, AddressesByToken<SubTokensToken>>,
+  )
+
+  return (
+    await Promise.all(
+      toPairs(byNetwork).map(([networkId, addressesByToken]) => {
+        return buildNetworkQueries(
+          networkId,
+          chainConnector,
+          chaindataProvider,
+          addressesByToken,
+          signal,
+        )
+      }),
+    )
+  ).flat()
 }

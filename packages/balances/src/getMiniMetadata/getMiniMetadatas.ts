@@ -21,11 +21,13 @@ export const getMiniMetadatas = async (
   chaindataProvider: ChaindataProvider,
   networkId: DotNetworkId,
   specVersion: number,
+  signal?: AbortSignal,
 ) => {
   if (CACHE.has(networkId)) return CACHE.get(networkId)!
 
-  const pResult = POOL.add(() =>
-    fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
+  const pResult = POOL.add(
+    () => fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
+    { signal },
   ) as Promise<MiniMetadata[]>
 
   CACHE.set(networkId, pResult)
@@ -44,12 +46,14 @@ const fetchMiniMetadatas = async (
   chaindataProvider: ChaindataProvider,
   chainId: DotNetworkId,
   specVersion: number,
+  signal?: AbortSignal,
 ) => {
   const start = performance.now()
   log.debug("[miniMetadata] fetching minimetadatas for %s", chainId)
 
   try {
     const metadataRpc = await getMetadataRpc(chainConnector, chainId)
+    signal?.throwIfAborted()
 
     const chainConnectors: ChainConnectors = {
       substrate: chainConnector,
@@ -77,6 +81,10 @@ const fetchMiniMetadatas = async (
       }),
     )
   } finally {
-    log.debug("[miniMetadata] updated miniMetadatas for %s in %sms", performance.now() - start)
+    log.debug(
+      "[miniMetadata] updated miniMetadatas for %s in %sms",
+      chainId,
+      performance.now() - start,
+    )
   }
 }

@@ -1,14 +1,7 @@
-import {
-  AddressesByToken,
-  db as balancesDb,
-  configureStore,
-  MiniMetadata,
-  StoredBalanceJson,
-} from "@talismn/balances"
+import { AddressesByToken, configureStore, StoredBalanceJson } from "@talismn/balances"
 import { Network, NetworkList, Token } from "@talismn/chaindata-provider"
 import { Account, isAccountNotContact } from "@talismn/keyring"
 import { Deferred, encodeAnyAddress, firstThenDebounce } from "@talismn/util"
-import { Dexie, liveQuery } from "dexie"
 import { log } from "extension-shared"
 import { keyBy } from "lodash"
 import isEqual from "lodash/isEqual"
@@ -145,7 +138,6 @@ abstract class BalancePool {
   accounts: ReplaySubject<Account[]> = new ReplaySubject(1)
   networks: NetworkList = {}
   tokens: Token[] = []
-  #miniMetadataIds = new Set<string>()
 
   #cleanupSubs: Array<Promise<Subscription>>
 
@@ -405,19 +397,12 @@ abstract class BalancePool {
   private async initializeChaindataSubscription() {
     // subscribe to all the inputs that make up the list of tokens to watch balances for
     // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
-    return combineLatest([
-      // activeChainsObservable,
-      // activeEvmNetworksObservable,
-      activeNetworksObservable,
-      activeTokensObservable,
-      liveQuery(() => balancesDb.miniMetadatas.toArray()),
-    ]).subscribe({
+    return combineLatest([activeNetworksObservable, activeTokensObservable]).subscribe({
       next: (args) => {
         this.setChains(...args)
         this.hasInitialised.resolve(true)
       },
-      error: (error) =>
-        error?.error?.name !== Dexie.errnames.DatabaseClosed && sentry.captureException(error),
+      error: (error) => sentry.captureException(error),
     })
   }
 
@@ -430,7 +415,7 @@ abstract class BalancePool {
    *                 Chains present in the store but not in this list will be removed.
    *                 Chains with a different health status to what is in the store will be updated.
    */
-  private async setChains(networks: Network[], tokens: Token[], miniMetadatas: MiniMetadata[]) {
+  private async setChains(networks: Network[], tokens: Token[]) {
     const getNetworkSnapshot = (network: Network) => {
       switch (network.platform) {
         case "polkadot":
@@ -451,20 +436,15 @@ abstract class BalancePool {
       this.tokens.map(getTokenSnapshot).sort(sortById),
       tokens.map(getTokenSnapshot).sort(sortById),
     )
-    const noMiniMetadataChanges = isEqual(
-      Array.from(this.#miniMetadataIds).sort(),
-      miniMetadatas.map((m) => m.id).sort(),
-    )
 
     // Ignore this call if nothing has changed since the last call to this.setChains
-    if (noNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
+    if (noNetworkChanges && noTokenChanges) return
 
     this.#isRestartPending.next(true)
 
     // Update stored chains, evmNetworks, tokens and miniMetadataIds
     this.networks = keyBy(networks, "id")
     this.tokens = tokens
-    this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
     // Delete stored balances for chains and evmNetworks which are inactive / no longer exist
     const tokenIds = new Set(tokens.map((token) => token.id))

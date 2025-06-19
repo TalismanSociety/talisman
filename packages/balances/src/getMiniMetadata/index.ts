@@ -13,8 +13,11 @@ export const getMiniMetadata = async (
   chainConnector: ChainConnector,
   chainId: DotNetworkId,
   source: string,
+  signal?: AbortSignal,
 ): Promise<MiniMetadata> => {
   const specVersion = await getSpecVersion(chainConnector, chainId)
+
+  signal?.throwIfAborted()
 
   const miniMetadataId = deriveMiniMetadataId({
     source,
@@ -29,6 +32,8 @@ export const getMiniMetadata = async (
     chaindataProvider.miniMetadataById(miniMetadataId),
   ])
 
+  signal?.throwIfAborted()
+
   const miniMetadata = dbMiniMetadata ?? ghMiniMetadata
   if (miniMetadata) return miniMetadata
 
@@ -38,7 +43,10 @@ export const getMiniMetadata = async (
     chaindataProvider,
     chainId,
     specVersion,
+    signal,
   )
+
+  signal?.throwIfAborted()
 
   const found = miniMetadatas.find((m) => m.id === miniMetadataId)
   if (!found) {
