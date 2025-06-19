@@ -17,7 +17,7 @@ import {
   getMetadataVersion,
   unifyMetadata,
 } from "@talismn/scale"
-import { Deferred } from "@talismn/util"
+import { Deferred, isAbortError } from "@talismn/util"
 import { groupBy, keys } from "lodash"
 import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
@@ -492,6 +492,7 @@ export const SubNativeModule: NewBalanceModule<
         result,
       ) => {
         if (controller.signal.aborted) return
+        if (isAbortError(error)) return
         // typescript isnt happy with fowarding parameters as is
         return error
           ? callback(error, undefined)
@@ -511,7 +512,7 @@ export const SubNativeModule: NewBalanceModule<
               controller.signal,
             )
           } catch (err) {
-            if (!controller.signal.aborted)
+            if (!isAbortError(err))
               log.warn("Failed to get native token miniMetadata for network", networkId, err)
             return () => {}
           }

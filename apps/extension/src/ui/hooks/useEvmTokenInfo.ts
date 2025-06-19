@@ -1,4 +1,5 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { isAbortError } from "@talismn/util"
 import {
   CustomEvmTokenCreate,
   EvmAddress,
@@ -33,7 +34,7 @@ export const useEvmTokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?: E
           setToken(token)
         } catch (cause) {
           if (!(cause instanceof ContractFunctionExecutionError)) throw cause
-          if (aborted.signal.aborted) return
+          if (isAbortError(cause)) return
 
           // try erc20 contract
           const token = await getErc20TokenInfo(publicClient, evmNetworkId, contractAddress)

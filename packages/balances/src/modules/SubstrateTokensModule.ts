@@ -22,6 +22,7 @@ import {
   papiParse,
   unifyMetadata,
 } from "@talismn/scale"
+import { isAbortError } from "@talismn/util"
 import { keys, toPairs } from "lodash"
 import { Binary } from "polkadot-api"
 
@@ -186,7 +187,7 @@ export const SubTokensModule: NewBalanceModule<
               if (balances.length > 0) callback(null, new Balances(balances))
             })
           } catch (err) {
-            if (!controller.signal.aborted)
+            if (!isAbortError(err))
               log.error(`Failed to subscribe balances for network ${networkId}`, err)
             return () => {}
           }
