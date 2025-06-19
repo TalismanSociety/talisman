@@ -3,12 +3,12 @@ import z from "zod/v4"
 import { NetworkId } from "../networks"
 import { EthereumAddressSchema } from "../shared"
 import { TokenId } from "./Token"
-import { TokenBase } from "./TokenBase"
+import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
 const TOKEN_TYPE = "evm-erc20"
 
-export const EvmErc20TokenSchema = TokenBase.extend({
+export const EvmErc20TokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("ethereum"),
   contractAddress: EthereumAddressSchema,

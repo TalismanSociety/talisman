@@ -2,14 +2,17 @@ import z from "zod/v4"
 
 import { NetworkId } from "../networks"
 import { EthereumAddressSchema } from "../shared"
-import { EvmErc20TokenSchema } from "./EvmErc20Token"
 import { TokenId } from "./Token"
+import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
 const TOKEN_TYPE = "evm-uniswapv2"
 
-export const EvmUniswapV2TokenSchema = EvmErc20TokenSchema.extend({
+export const EvmUniswapV2TokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
+  platform: z.literal("ethereum"),
+  contractAddress: EthereumAddressSchema,
+  isCustom: z.boolean().optional(),
   symbol0: z.string().nonempty(),
   symbol1: z.string().nonempty(),
   decimals0: z.int().min(0),

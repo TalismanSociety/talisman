@@ -2,12 +2,12 @@ import z from "zod/v4"
 
 import { NetworkId } from "../networks"
 import { TokenId } from "./Token"
-import { TokenBase } from "./TokenBase"
+import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
 const TOKEN_TYPE = "substrate-assets"
 
-export const SubAssetsTokenSchema = TokenBase.extend({
+export const SubAssetsTokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
   // number when used with papi - uint32 in theory (on asset hubs) but astar implemented it to u128 which makes it incompatible with number type

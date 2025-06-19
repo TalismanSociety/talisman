@@ -2,12 +2,12 @@ import z from "zod/v4"
 
 import { NetworkId } from "../networks"
 import { TokenId } from "./Token"
-import { TokenBase } from "./TokenBase"
+import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
 const TOKEN_TYPE = "substrate-psp22"
 
-export const SubPsp22TokenSchema = TokenBase.extend({
+export const SubPsp22TokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
   existentialDeposit: z.string(),

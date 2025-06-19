@@ -1,6 +1,6 @@
 import z from "zod/v4"
 
-export const TokenBase = z.strictObject({
+export const TokenBaseSchema = z.strictObject({
   id: z.string(),
   isTestnet: z.boolean().optional(),
   isDefault: z.boolean().optional(),
@@ -13,4 +13,4 @@ export const TokenBase = z.strictObject({
   noDiscovery: z.boolean().optional(),
   mirrorOf: z.string().optional(),
 })
-export type TokenBase = z.infer<typeof TokenBase>
+export type TokenBase = z.infer<typeof TokenBaseSchema>

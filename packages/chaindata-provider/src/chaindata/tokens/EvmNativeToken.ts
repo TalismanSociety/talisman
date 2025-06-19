@@ -2,12 +2,12 @@ import z from "zod/v4"
 
 import { NetworkId } from "../networks"
 import { TokenId } from "./Token"
-import { TokenBase } from "./TokenBase"
+import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
 const TOKEN_TYPE = "evm-native"
 
-export const EvmNativeTokenSchema = TokenBase.extend({
+export const EvmNativeTokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("ethereum"),
 })

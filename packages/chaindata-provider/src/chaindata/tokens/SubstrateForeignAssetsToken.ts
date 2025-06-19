@@ -3,12 +3,12 @@ import z from "zod/v4"
 
 import { NetworkId } from "../networks"
 import { TokenId } from "./Token"
-import { TokenBase } from "./TokenBase"
+import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
 export const TOKEN_TYPE = "substrate-foreignassets"
 
-export const SubForeignAssetsTokenSchema = TokenBase.extend({
+export const SubForeignAssetsTokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
   onChainId: z.string(),
