@@ -1,4 +1,4 @@
-import { NetworkList, TokenList } from "@talismn/chaindata-provider"
+import { evmErc20TokenId, NetworkList, TokenList } from "@talismn/chaindata-provider"
 import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
@@ -923,8 +923,3 @@ export const filterMirrorTokens = (balance: Balance, i: number, balances: Balanc
   const mirrorOf = balance.token?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
-
-// TODO: Move this into a common module which can then be imported both here and into EvmErc20Module
-// We can't import this directly from EvmErc20Module because then we'd have a circular dependency
-const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
-  `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()

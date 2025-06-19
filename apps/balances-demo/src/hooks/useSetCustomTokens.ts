@@ -1,6 +1,9 @@
-import { evmErc20TokenId } from "@talismn/balances"
 import { useChaindataProvider, useEvmNetworks } from "@talismn/balances-react"
-import { CustomEvmErc20Token, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  CustomEvmErc20Token,
+  evmErc20TokenId,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { useEffect, useMemo } from "react"
 
 export type CustomTokensConfig = CustomTokenConfig[]

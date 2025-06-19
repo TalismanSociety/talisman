@@ -1,4 +1,4 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { evmErc20TokenId, Token, TokenId } from "@talismn/chaindata-provider"
 
 import {
   SUPPORTED_CURRENCIES,
@@ -41,7 +41,11 @@ export async function fetchTokenRates(
       if (token.type === "evm-uniswapv2") {
         if (token.platform !== "ethereum") return []
 
-        const getToken = (evmNetworkId: string, tokenAddress: string, coingeckoId: string) => ({
+        const getToken = (
+          evmNetworkId: string,
+          tokenAddress: `0x${string}`,
+          coingeckoId: string,
+        ) => ({
           id: evmErc20TokenId(evmNetworkId, tokenAddress),
           coingeckoId,
         })
@@ -150,11 +154,6 @@ export async function fetchTokenRates(
 
   return ratesList
 }
-
-// TODO: Move this into a common module which can then be imported both here and into EvmErc20Module
-// We can't import this directly from EvmErc20Module because this package doesn't depend on `@talismn/balances`
-const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
-  `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
 
 // To save on bandwidth and work around response size limits, values are returned without json property names
 // (e.g. [[[12, 12332, 0.5]]] instead of { dot : {usd: { value: 12, marketCap: 12332, change24h: 0.5 }} })
