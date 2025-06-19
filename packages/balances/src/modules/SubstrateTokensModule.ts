@@ -195,10 +195,10 @@ export const SubTokensModule: NewBalanceModule<
       )
 
       return () => {
-        controller.abort()
         pUnsubs.then((unsubs) => {
           unsubs.forEach((unsubscribe) => unsubscribe())
         })
+        controller.abort()
       }
     },
 

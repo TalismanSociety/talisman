@@ -15,7 +15,7 @@ import { getMetadataRpc } from "./getMetadataRpc"
 const CACHE = new Map<string, Promise<MiniMetadata[]>>()
 
 // ensures we dont fetch miniMetadatas on more than 4 chains at once
-const POOL = new PQueue({ concurrency: 4 })
+const POOL = new PQueue({ concurrency: 4, timeout: 30_000 })
 
 export const getMiniMetadatas = async (
   chainConnector: ChainConnector,
@@ -25,6 +25,12 @@ export const getMiniMetadatas = async (
   signal?: AbortSignal,
 ) => {
   if (CACHE.has(networkId)) return CACHE.get(networkId)!
+
+  if (!signal)
+    log.warn(
+      "[miniMetadata] getMiniMetadatas called without signal, this may hang the updates",
+      new Error("No signal provided"), // this will show the stack trace
+    )
 
   const pResult = POOL.add(
     () => fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),

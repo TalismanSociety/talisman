@@ -398,8 +398,8 @@ class AssetDiscoveryScanner {
         .pipe(distinctUntilKeyChanged("currentScanScope", isEqual), skip(1))
         .subscribe(() => {
           log.debug("[AssetDiscovery] Scan cancelled due to currentScanScope change")
-          abortController.abort()
           subScopeChange.unsubscribe()
+          abortController.abort()
         })
 
       const erc20aggregators = Object.fromEntries(

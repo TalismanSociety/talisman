@@ -120,6 +120,7 @@ export const SubNativeModule: NewBalanceModule<
       initialBalances?: BalanceJson[]
     },
     callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>,
+    signal: AbortSignal,
   ): Promise<() => void> => {
     const { addressesByToken, initialBalances } = opts
     // full record of balances for this module
@@ -250,18 +251,21 @@ export const SubNativeModule: NewBalanceModule<
                   chainConnectors.substrate,
                   newAddressesByToken,
                   handleUpdateForSource("subtensor-staking"),
+                  signal,
                 )
                 const unsubNompoolStaking = subscribeNompoolStaking(
                   chaindataProvider,
                   chainConnectors.substrate,
                   newAddressesByToken,
                   handleUpdateForSource("nompools-staking"),
+                  signal,
                 )
                 const unsubCrowdloans = subscribeCrowdloans(
                   chaindataProvider,
                   chainConnectors.substrate,
                   newAddressesByToken,
                   handleUpdateForSource("crowdloan"),
+                  signal,
                 )
                 const unsubBase = subscribeBase(
                   baseQueries,
@@ -526,13 +530,14 @@ export const SubNativeModule: NewBalanceModule<
               initialBalances: initialBalancesByNetwork[networkId] ?? [],
             },
             safeCallback,
+            controller.signal,
           )
         }),
       )
 
       return () => {
-        controller.abort()
         unsubsribeFns.then((fns) => fns.forEach((unsubscribe) => unsubscribe()))
+        controller.abort()
       }
     },
 
