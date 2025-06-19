@@ -1,12 +1,13 @@
 import { Dexie } from "dexie"
 
+import { AnyMiniMetadata } from "../chaindata"
 import { Network, NetworkId } from "../chaindata/networks"
 import { Token, TokenId } from "../chaindata/tokens"
 
 export class ChaindataDb extends Dexie {
   tokens!: Dexie.Table<Token, TokenId>
   networks!: Dexie.Table<Network, NetworkId>
-  miniMetadatas!: Dexie.Table<string, unknown>
+  miniMetadatas!: Dexie.Table<AnyMiniMetadata, string>
 
   constructor() {
     super("Chaindata")

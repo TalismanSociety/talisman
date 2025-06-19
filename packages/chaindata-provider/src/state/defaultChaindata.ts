@@ -1,62 +1,13 @@
 import { liveQuery } from "dexie"
 import { isEqual, isEqualWith, sortBy } from "lodash"
 import { combineLatest, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
-import z from "zod/v4"
 
-import { NetworkSchema } from "../chaindata/networks"
-import { TokenSchema } from "../chaindata/tokens"
-import { githubChaindataDistUrl } from "../constants"
 import log from "../log"
 import { chaindataDb } from "./db"
+import { fetchChaindata } from "./net"
+import { Chaindata } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
-
-export const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
-
-const getFallbackUrl = (url: string) => {
-  // if githack fails, try statically
-  if (url.startsWith("https://raw.githubusercontent.com/"))
-    return url.replace("https://raw.githubusercontent.com/", "https://cdn.statically.io/gh/")
-
-  // can add more fallbacks here such as jsdelivr, unpkg, etc.
-
-  return null
-}
-
-const fetchJsonFromGithubUrl = async <T>(
-  url: string,
-  schema?: z.ZodType<T>,
-  signal?: AbortSignal,
-): Promise<T> => {
-  const req = await fetch(url, { signal })
-
-  if (!req.ok) {
-    const fallbackUrl = getFallbackUrl(url)
-    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, schema, signal)
-    throw new Error(`Failed to fetch from ${url}: ${req.status} ${req.statusText}`)
-  }
-
-  const data = await req.json()
-
-  if (schema) {
-    const result = schema.safeParse(data)
-    if (!result.success) log.warn("Failed to parse data from", url, { error: result.error, data })
-    else return result.data as T
-  }
-
-  return data as T
-}
-
-const ConsolidatedChaindataSchema = z.object({
-  networks: z.array(NetworkSchema),
-  tokens: z.array(TokenSchema),
-  miniMetadatas: z.array(z.any()),
-})
-
-export type Chaindata = z.infer<typeof ConsolidatedChaindataSchema>
-
-const fetchChaindata = (signal: AbortSignal) =>
-  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, ConsolidatedChaindataSchema, signal)
 
 const result = new ReplaySubject<Chaindata>(1)
 
